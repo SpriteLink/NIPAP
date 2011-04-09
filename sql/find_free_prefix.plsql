@@ -1,4 +1,9 @@
 
+CREATE OR REPLACE FUNCTION find_free_prefix(IN arg_prefixes inet[], arg_wanted_prefix_len integer) RETURNS SETOF inet AS $_$
+BEGIN
+	RETURN QUERY SELECT * FROM find_free_prefix(arg_prefixes, arg_wanted_prefix_len, 1) AS prefix;
+END;
+$_$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION find_free_prefix(IN arg_prefixes inet[], arg_wanted_prefix_len integer, arg_count integer) RETURNS SETOF inet AS $_$
 DECLARE
