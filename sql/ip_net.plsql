@@ -22,6 +22,8 @@ CREATE TABLE ip_net_schema (
 	description text
 );
 
+COMMENT ON TABLE ip_net_schema IS 'IP Address schemas, something like namespaces for our address plan';
+
 --
 -- This table is used to store our pools. pools are for a specific
 -- purpose and when you need a specific type of address, ie a core
@@ -37,6 +39,8 @@ CREATE TABLE ip_net_pool (
 	default_prefix_length integer,
 	default_type ip_net_plan_type NOT NULL DEFAULT 'reservation'
 );
+
+COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 
 CREATE UNIQUE INDEX ip_net_pool__family_name ON ip_net_pool (family, name);
 
@@ -61,6 +65,8 @@ CREATE TABLE ip_net_plan (
 	span_order integer,
 	alarm_priority priority_3step NOT NULL DEFAULT 'high'
 );
+
+COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
 
 CREATE UNIQUE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, prefix);
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
