@@ -1,6 +1,6 @@
 
 
-CREATE OR REPLACE FUNCTION get_ip(IN arg_prefixes inet[], arg_wanted_prefix_len integer, arg_count integer) RETURNS SETOF inet AS $_$
+CREATE OR REPLACE FUNCTION find_free_prefix(IN arg_prefixes inet[], arg_wanted_prefix_len integer, arg_count integer) RETURNS SETOF inet AS $_$
 DECLARE
 	i_count integer;
 	i_family integer;
