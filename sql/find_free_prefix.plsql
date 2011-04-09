@@ -87,7 +87,7 @@ BEGIN
 				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
 				CONTINUE;
 			END IF;
-			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE prefix=current_prefix) THEN
+			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema=arg_schema AND prefix=current_prefix) THEN
 				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
 				CONTINUE;
 			END IF;
