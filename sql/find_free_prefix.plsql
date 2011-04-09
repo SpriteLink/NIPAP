@@ -1,11 +1,11 @@
 
-CREATE OR REPLACE FUNCTION find_free_prefix(IN arg_prefixes inet[], arg_wanted_prefix_len integer) RETURNS SETOF inet AS $_$
+CREATE OR REPLACE FUNCTION find_free_prefix(arg_schema integer, IN arg_prefixes inet[], arg_wanted_prefix_len integer) RETURNS SETOF inet AS $_$
 BEGIN
-	RETURN QUERY SELECT * FROM find_free_prefix(arg_prefixes, arg_wanted_prefix_len, 1) AS prefix;
+	RETURN QUERY SELECT * FROM find_free_prefix(arg_schema, arg_prefixes, arg_wanted_prefix_len, 1) AS prefix;
 END;
 $_$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION find_free_prefix(IN arg_prefixes inet[], arg_wanted_prefix_len integer, arg_count integer) RETURNS SETOF inet AS $_$
+CREATE OR REPLACE FUNCTION find_free_prefix(arg_schema integer, IN arg_prefixes inet[], arg_wanted_prefix_len integer, arg_count integer) RETURNS SETOF inet AS $_$
 DECLARE
 	i_count integer;
 	i_family integer;
@@ -66,12 +66,12 @@ BEGIN
 		-- search_prefix
 		WHILE set_masklen(current_prefix, masklen(search_prefix)) <= broadcast(search_prefix) LOOP
 			-- avoid prefixes larger than the current_prefix but inside our search_prefix
-			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE prefix >>= current_prefix AND prefix << search_prefix) THEN
+			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND prefix >>= current_prefix AND prefix << search_prefix) THEN
 				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
 				CONTINUE;
 			END IF;
 			-- prefix must not contain any breakouts, that would mean it's not empty, ie not free
-			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE prefix <<= current_prefix) THEN
+			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND prefix <<= current_prefix) THEN
 				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
 				CONTINUE;
 			END IF;
