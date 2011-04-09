@@ -32,17 +32,24 @@ COMMENT ON TABLE ip_net_schema IS 'IP Address schemas, something like namespaces
 --
 CREATE TABLE ip_net_pool (
 	id serial PRIMARY KEY,
-	family integer CHECK(family = 4 OR family = 6),
-	name text,
+	name text UNIQUE,
 	schema integer REFERENCES ip_net_schema (id) ON UPDATE CASCADE ON DELETE CASCADE DEFAULT 1,
 	description text,
-	default_prefix_length integer,
 	default_type ip_net_plan_type NOT NULL DEFAULT 'reservation'
 );
 
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 
-CREATE UNIQUE INDEX ip_net_pool__family_name ON ip_net_pool (family, name);
+CREATE TABLE ip_net_pool_def_pref_len (
+	id serial primary key,
+	ip_net_pool integer REFERENCES ip_net_pool (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+	family integer CHECK(family = 4 OR family = 6),
+	default_prefix_length integer NOT NULL
+);
+
+COMMENT ON TABLE ip_net_pool_def_pref_len IS 'Store separate default-prefix-length for IPv4/6 per pool';
+
+CREATE UNIQUE INDEX ip_net_pool_def_pref_len__ip_net_pool__family__index ON ip_net_pool_def_pref_len (ip_net_pool, family);
 
 --
 -- this table stores the actual prefixes in the address plan, or net 
