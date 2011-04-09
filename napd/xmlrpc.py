@@ -52,7 +52,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         self.request = None
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Initialising NAP Protocol")
-        self.con_pg = psycopg2.connect("host='localhost' dbname='nap' user='nils' password='a9mzleZN8'")
+        self.con_pg = psycopg2.connect("host='localhost' dbname='nap' user='nap' password='Je9ydmLsBw7gg'")
         self.curs_pg = self.con_pg.cursor()
 
 

@@ -46,26 +46,24 @@ CREATE UNIQUE INDEX ip_net_pool__family_name ON ip_net_pool (family, name);
 --
 -- pool is the pool for which this prefix is part of and from which 
 -- assignments can be made
--- from_pool is the pool id from which the prefix was assigned
 --
 CREATE TABLE ip_net_plan (
 	id serial PRIMARY KEY,
 	family integer CHECK(family = 4 OR family = 6),
 	schema integer REFERENCES ip_net_schema (id) ON UPDATE CASCADE ON DELETE CASCADE DEFAULT 1,
-	prefix inet UNIQUE,
+	prefix inet,
 	description text,
-	node text,
 	comment text,
+	node text,
 	pool integer REFERENCES ip_net_pool (id) ON UPDATE CASCADE ON DELETE SET NULL,
 	type ip_net_plan_type NOT NULL DEFAULT 'reservation',
-	default_type ip_net_plan_type NOT NULL DEFAULT 'host',
-	default_prefix_length integer DEFAULT 32,
 	country text,
 	span_order integer,
 	alarm_priority priority_3step NOT NULL DEFAULT 'high'
 );
 
-CREATE INDEX ip_net_plan__node_index ON ip_net_plan (node);
+CREATE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, prefix);
+CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 
 
 CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family() RETURNS trigger AS $$
