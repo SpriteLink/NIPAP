@@ -1,0 +1,42 @@
+#!/usr/bin/python
+# vim: et sw=4 sts=4 :
+
+import logging
+import logging.handlers
+import optparse
+import xmlrpc
+
+if __name__ == '__main__':
+    parser = optparse.OptionParser()
+    parser.add_option("-d", "--debug", action="store_true", dest="debug", default=False, help="enable debugging, implies -f")
+    parser.add_option("-f", "--foreground", action="store_true", dest="foreground", default=False, help="run in foreground and print to stdout")
+    parser.add_option("-p", "--port", dest="port", type="int", default=1337, help="listen to TCP port PORT")
+
+    (options, args) = parser.parse_args()
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    log_format = "%(levelname)-8s %(message)s"
+
+    # do logging to syslog by default
+    log_syslog = logging.handlers.SysLogHandler(address = '/dev/log')
+    log_syslog.setFormatter(logging.Formatter(log_format))
+    log_syslog.setLevel(logging.WARNING)
+    logger.addHandler(log_syslog)
+
+    if options.debug or options.foreground:
+        # log to stdout
+        log_stream = logging.StreamHandler()
+        log_stream.setFormatter(logging.Formatter("%(asctime)s: " + log_format))
+        if options.debug:
+            log_stream.setLevel(logging.DEBUG)
+
+        logger.addHandler(log_stream)
+    else:
+        import daemon
+        ret = daemon.createDaemon()
+
+    napxml = xmlrpc.NapXMLRPC(options.port)
+    napxml.run()
+
+
