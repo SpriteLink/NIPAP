@@ -1,0 +1,76 @@
+--------------------------------------------------------------------------------
+
+NAME
+	add_prefix
+	
+DESCRIPTION
+Try to add a prefix and associate given attributes in one atomic operation.
+
+ARGUMENTS
+	prefix
+		exact prefix to add
+
+	from-pool
+		name of pool from which to get a prefix prefix-len and type of
+		assignment will be taken from pool default unless explicitly specified
+
+	from-prefix
+		array of prefixes from which to try to allocate new addresses
+		prefix-len and type of assignment must be explicitly specified
+
+	description
+		the description of the newly allocated prefix
+
+	node
+		in case the new prefix is of type host, specifies the hostname of that
+		host
+
+	authoritative_source
+		the system or authoritative source that controls this prefix, for
+		example, if SPAN allocates a prefix, this will be set to "span" and in
+		case anyone tries to make changes to this prefix via the web-interface
+		or some other interface (which is not SPAN), a warning should be
+		exerted.
+
+RETURN VALUES
+	prefix
+		the prefix that was added
+
+--------------------------------------------------------------------------------
+
+NAME
+	list_free_prefix
+	
+DESCRIPTION
+Return a list of free prefixes available for registration. Typically used to
+display a list of free prefixes to the user on a webpage or similar. The
+'start-prefix' option together with 'count' is a good combination for creating
+paginated output on webpages.
+
+ARGUMENTS
+	prefix-length
+		Prefix-length of the wanted new prefixes
+
+	from-pool
+		Name of pool from which to attempt to generate list of free prefixes.
+		Note you must specify family argument too.
+
+	from-prefix
+		Array of prefixes from which to attempt to generate list of free
+		prefixes.
+
+	family
+		Wanted address-family, in case of using from-pool, this must be
+		specified
+
+	start-prefix
+		The prefix to start at when generating list of free prefixes.
+
+	count
+		Don't return more than this number of free prefixes. Defaults to 10.
+
+
+RETURN VALUES
+	prefixes
+		a list of free prefixes
+
