@@ -1,6 +1,6 @@
 
 DROP TABLE ip_net_plan;
-DROP TABLE ip_net_pool_prefix;
+DROP TABLE ip_net_pool_def_prefix_len;
 DROP TABLE ip_net_pool;
 DROP TABLE ip_net_schema;
 
@@ -40,16 +40,16 @@ CREATE TABLE ip_net_pool (
 
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 
-CREATE TABLE ip_net_pool_def_pref_len (
+CREATE TABLE ip_net_pool_def_prefix_len (
 	id serial primary key,
 	ip_net_pool integer REFERENCES ip_net_pool (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
 	family integer CHECK(family = 4 OR family = 6),
 	default_prefix_length integer NOT NULL
 );
 
-COMMENT ON TABLE ip_net_pool_def_pref_len IS 'Store separate default-prefix-length for IPv4/6 per pool';
+COMMENT ON TABLE ip_net_pool_def_prefix_len IS 'Store separate default-prefix-length for IPv4/6 per pool';
 
-CREATE UNIQUE INDEX ip_net_pool_def_pref_len__ip_net_pool__family__index ON ip_net_pool_def_pref_len (ip_net_pool, family);
+CREATE UNIQUE INDEX ip_net_pool_def_prefix_len__ip_net_pool__family__index ON ip_net_pool_def_prefix_len (ip_net_pool, family);
 
 --
 -- this table stores the actual prefixes in the address plan, or net 
@@ -109,11 +109,13 @@ GRANT USAGE ON ip_net_schema_id_seq TO nils;
 -- though you probably always want this
 INSERT INTO ip_net_schema (name, description) VALUES ('global', 'Global address plan, ie the Internet');
 
-INSERT INTO ip_net_pool (family, name, description, default_prefix_length) VALUES (4, 'tele2-infrastructure', 'Tele2 Infrastructure allocation', 0);
-INSERT INTO ip_net_pool (family, name, description, default_prefix_length) VALUES (6, 'tele2-block', 'The complete Tele2 IPv6 allocation', 0);
+INSERT INTO ip_net_pool (name, description) VALUES ('tele2-infrastructure', 'Tele2 Infrastructure allocation');
+INSERT INTO ip_net_pool_def_prefix_len (ip_net_pool, family, default_prefix_length) VALUES ((SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 4, 0);
+INSERT INTO ip_net_pool_def_prefix_len (ip_net_pool, family, default_prefix_length) VALUES ((SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 6, 0);
 
-INSERT INTO ip_net_pool (family, name, description, default_prefix_length) VALUES (4, 'loopback', 'loopback addresses for routers', 32);
-INSERT INTO ip_net_pool (family, name, description, default_prefix_length) VALUES (6, 'loopback', 'loopback addresses for routers', 128);
+INSERT INTO ip_net_pool (name, description) VALUES ('loopback', 'loopback addresses for routers');
+INSERT INTO ip_net_pool_def_prefix_len (ip_net_pool, family, default_prefix_length) VALUES ((SELECT id FROM ip_net_pool WHERE name='loopback'), 4, 32);
+INSERT INTO ip_net_pool_def_prefix_len (ip_net_pool, family, default_prefix_length) VALUES ((SELECT id FROM ip_net_pool WHERE name='loopback'), 6, 128);
 
 INSERT INTO ip_net_plan(prefix, description, pool) VALUES ('130.244.0.0/16', 'Tele2s good ol'' /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'));
 INSERT INTO ip_net_plan(prefix, description, pool) VALUES ('212.151.0.0/16', 'Tele2s middle age /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'));
