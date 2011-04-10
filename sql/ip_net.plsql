@@ -68,6 +68,7 @@ CREATE TABLE ip_net_plan (
 	node text,
 	pool integer REFERENCES ip_net_pool (id) ON UPDATE CASCADE ON DELETE SET NULL,
 	type ip_net_plan_type NOT NULL DEFAULT 'reservation',
+	indent integer,
 	country text,
 	span_order integer,
 	authoritative_source text NOT NULL,
@@ -84,6 +85,7 @@ COMMENT ON COLUMN ip_net_plan.comment IS 'Comment!';
 COMMENT ON COLUMN ip_net_plan.node IS 'FQDN of the IP node where the prefix is/should be configured on';
 COMMENT ON COLUMN ip_net_plan.pool IS 'Pool that this prefix is part of';
 COMMENT ON COLUMN ip_net_plan.type IS 'Type is one of ''reservation'', ''assignment'' or ''host''';
+COMMENT ON COLUMN ip_net_plan.indent IS 'Number of indents to properly render this prefix';
 COMMENT ON COLUMN ip_net_plan.country IS 'ISO3166-1 two letter country code';
 COMMENT ON COLUMN ip_net_plan.span_order IS 'SPAN order';
 COMMENT ON COLUMN ip_net_plan.authoritative_source IS 'The authoritative source for information regarding this prefix';
