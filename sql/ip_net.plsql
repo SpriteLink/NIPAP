@@ -133,10 +133,10 @@ INSERT INTO ip_net_pool (name, description) VALUES ('loopback', 'loopback addres
 INSERT INTO ip_net_pool_def_prefix_len (ip_net_pool, family, default_prefix_length) VALUES ((SELECT id FROM ip_net_pool WHERE name='loopback'), 4, 32);
 INSERT INTO ip_net_pool_def_prefix_len (ip_net_pool, family, default_prefix_length) VALUES ((SELECT id FROM ip_net_pool WHERE name='loopback'), 6, 128);
 
-INSERT INTO ip_net_plan(prefix, description, pool) VALUES ('130.244.0.0/16', 'Tele2s good ol'' /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'));
-INSERT INTO ip_net_plan(prefix, description, pool) VALUES ('212.151.0.0/16', 'Tele2s middle age /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'));
+INSERT INTO ip_net_plan(prefix, description, pool, authoritative_source) VALUES ('130.244.0.0/16', 'Tele2s good ol'' /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 'nap');
+INSERT INTO ip_net_plan(prefix, description, pool, authoritative_source) VALUES ('212.151.0.0/16', 'Tele2s middle age /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 'nap');
 
-INSERT INTO ip_net_plan(prefix, description, pool) VALUES ('2a00:800::/25', 'Tele2s funky new /25', (SELECT id FROM ip_net_pool WHERE name='tele2-block'));
+INSERT INTO ip_net_plan(prefix, description, pool, authoritative_source) VALUES ('2a00:800::/25', 'Tele2s funky new /25', (SELECT id FROM ip_net_pool WHERE name='tele2-block'), 'nap');
 
 
 
