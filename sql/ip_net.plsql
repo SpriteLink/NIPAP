@@ -70,10 +70,24 @@ CREATE TABLE ip_net_plan (
 	type ip_net_plan_type NOT NULL DEFAULT 'reservation',
 	country text,
 	span_order integer,
+	authoritative_source text NOT NULL,
 	alarm_priority priority_3step NOT NULL DEFAULT 'high'
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
+
+COMMENT ON COLUMN ip_net_plan.family IS 'Address family, either ''4'' for IPv4 or ''6'' for IPv6';
+COMMENT ON COLUMN ip_net_plan.schema IS 'Address-schema';
+COMMENT ON COLUMN ip_net_plan.prefix IS 'The IP prefix';
+COMMENT ON COLUMN ip_net_plan.description IS 'Prefix description';
+COMMENT ON COLUMN ip_net_plan.comment IS 'Comment!';
+COMMENT ON COLUMN ip_net_plan.node IS 'FQDN of the IP node where the prefix is/should be configured on';
+COMMENT ON COLUMN ip_net_plan.pool IS 'Pool that this prefix is part of';
+COMMENT ON COLUMN ip_net_plan.type IS 'Type is one of ''reservation'', ''assignment'' or ''host''';
+COMMENT ON COLUMN ip_net_plan.country IS 'ISO3166-1 two letter country code';
+COMMENT ON COLUMN ip_net_plan.span_order IS 'SPAN order';
+COMMENT ON COLUMN ip_net_plan.authoritative_source IS 'The authoritative source for information regarding this prefix';
+COMMENT ON COLUMN ip_net_plan.alarm_priority IS 'Priority of alarms sent for this prefix to NetWatch.';
 
 CREATE UNIQUE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, prefix);
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
