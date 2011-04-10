@@ -12,6 +12,7 @@ import time
 import xmlrpclib
 
 import psycopg2
+import nap
 
 # Naming convention for XML-RPC interface
 # all functions returning a list of something should be named list* and the thing they return
@@ -55,6 +56,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         self.con_pg = psycopg2.connect("host='localhost' dbname='nap' user='nap' password='Je9ydmLsBw7gg'")
         self.curs_pg = self.con_pg.cursor()
 
+        self.nap = nap.Nap()
 
 
     def render(self, request):
@@ -69,7 +71,7 @@ class NapProtocol(xmlrpc.XMLRPC):
 
         try:
             function = self._getFunction(functionPath)
-        except Fault, f:
+        except xmlrpclib.Fault, f:
             self._cbRender(f, request)
         else:
             request.setHeader("content-type", "text/xml")
@@ -104,37 +106,102 @@ class NapProtocol(xmlrpc.XMLRPC):
 
         return { 'result': 'success', 'message': "This is an echo function, if you pass me a string in the argument named 'message', I will return it to you" }
 
+    
+    #
+    # SCHEMA FUNCTIONS
+    #
+    def xmlrpc_add_schema(self, attr):
+        """ Add a new network schema.
+        """
+
+        try:
+            return self.nap.add_schema(attr)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(1000, str(e))
+
+
+    def xmlrpc_remove_schema(self, spec):
+        """ Removes a schema.
+        """
+
+        try:
+            self.nap.remove_schema(spec)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(1000, str(e))
+
+
+    def xmlrpc_list_schema(self, spec=None):
+        """ List schemas.
+        """
+
+        try:
+            return self.nap.list_schema(spec)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(1000, str(e))
+
+    
+    def xmlrpc_edit_schema(self, spec, attr):
+        """ Edit a schema.
+        """
+
+        try:
+            self.nap.edit_schema(spec, attr)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(1000, str(e))
+
+    #
+    # POOL FUNCTIONS
+    #
+    def xmlrpc_add_pool(self, attr):
+        """ Add a pool.
+        """
+
+        try:
+            return self.nap.add_pool(attr)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(1000, str(e))
+
+
+    def xmlrpc_remove_pool(self, spec):
+        """ Remove a pool.
+        """
+
+        try:
+            self.nap.remove_pool(spec)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(1000, str(e))
+
+
+    def xmlrpc_list_pool(self, spec=None):
+        """ List pools.
+        """
+
+        try:
+            return self.nap.list_pool(spec)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(1000, str(e))
+
+
+    def xmlrpc_edit_pool(self, spec, attr):
+        """ Edit pool.
+        """
+
+
+    #
+    # PREFIX FUNCTIONS
+    #
+
+
     def xmlrpc_add_prefix(self, args):
         pass
 
-    def xmlrpc_list_prefix(self, args):
-        sql_where = ''
-        sql_args = {
-                'node': None
-                }
-        if 'node' in args:
-            sql_where = 'WHERE node ~* %(node)s'
-            sql_args['node'] = args['node']
-            print sql_where
 
-        query = """ SELECT prefix, description, node, comment, type, country, span_order, alarm_priority FROM ip_net_plan %s """ % ( sql_where )
-        self.curs_pg.execute(query, sql_args)
-        result = []
-        while True:
-            row = self.curs_pg.fetchone()
-            if row is None:
-                break
+    def xmlrpc_list_prefix(self, spec):
+        """ List prefixes.
+        """
 
-            ri = {}
-            ri['prefix'] = row[0]
-            ri['description'] = row[1]
-            ri['node'] = row[2]
-            ri['comment'] = row[3]
-            ri['type'] = row[4]
-            ri['country'] = row[5]
-            ri['span_order'] = row[6]
-            ri['alarm_priority'] = row[7]
-            result.append(ri)
-
-        return { 'result': 'success', 'prefixes': result }
+        try:
+            return self.nap.list_prefix(spec)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(1000, str(e))
 
