@@ -61,8 +61,9 @@ CREATE UNIQUE INDEX ip_net_pool_def_prefix_len__ip_net_pool__family__index ON ip
 CREATE TABLE ip_net_plan (
 	id serial PRIMARY KEY,
 	family integer CHECK(family = 4 OR family = 6),
-	schema integer REFERENCES ip_net_schema (id) ON UPDATE CASCADE ON DELETE CASCADE DEFAULT 1,
-	prefix inet,
+	schema integer NOT NULL REFERENCES ip_net_schema (id) ON UPDATE CASCADE ON DELETE CASCADE DEFAULT 1,
+	prefix cidr NOT NULL,
+	display_prefix inet,
 	description text,
 	comment text,
 	node text,
@@ -79,12 +80,13 @@ COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
 
 COMMENT ON COLUMN ip_net_plan.family IS 'Address family, either ''4'' for IPv4 or ''6'' for IPv6';
 COMMENT ON COLUMN ip_net_plan.schema IS 'Address-schema';
-COMMENT ON COLUMN ip_net_plan.prefix IS 'The IP prefix';
+COMMENT ON COLUMN ip_net_plan.prefix IS '"true" IP prefix, with hosts registered as /32';
+COMMENT ON COLUMN ip_net_plan.display_prefix IS 'IP prefix with hosts having their covering assignments prefix-length';
 COMMENT ON COLUMN ip_net_plan.description IS 'Prefix description';
 COMMENT ON COLUMN ip_net_plan.comment IS 'Comment!';
 COMMENT ON COLUMN ip_net_plan.node IS 'FQDN of the IP node where the prefix is/should be configured on';
 COMMENT ON COLUMN ip_net_plan.pool IS 'Pool that this prefix is part of';
-COMMENT ON COLUMN ip_net_plan.type IS 'Type is one of ''reservation'', ''assignment'' or ''host''';
+COMMENT ON COLUMN ip_net_plan.type IS 'Type is one of "reservation", "assignment" or "host"';
 COMMENT ON COLUMN ip_net_plan.indent IS 'Number of indents to properly render this prefix';
 COMMENT ON COLUMN ip_net_plan.country IS 'ISO3166-1 two letter country code';
 COMMENT ON COLUMN ip_net_plan.span_order IS 'SPAN order';
@@ -100,6 +102,19 @@ DECLARE
 	r RECORD;
 BEGIN
 	NEW.family = family(NEW.prefix);
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family() RETURNS trigger AS $$
+DECLARE
+	r RECORD;
+BEGIN
+	NEW.family = family(NEW.prefix);
+	-- go through all networks that are covered by this new prefix
+	FOR r IN SELECT * FROM ip_net_plan WHERE prefix <<= NEW.prefix LOOP
+	END LOOP;
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
