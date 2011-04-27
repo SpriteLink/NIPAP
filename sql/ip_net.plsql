@@ -97,7 +97,7 @@ CREATE UNIQUE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, pr
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 
 
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family_before() RETURNS trigger AS $$
 DECLARE
 	r RECORD;
 BEGIN
@@ -106,25 +106,34 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family() RETURNS trigger AS $$
-DECLARE
-	r RECORD;
-BEGIN
-	NEW.family = family(NEW.prefix);
-	-- go through all networks that are covered by this new prefix
-	FOR r IN SELECT * FROM ip_net_plan WHERE prefix <<= NEW.prefix LOOP
-	END LOOP;
-	RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER trigger_ip_net_pool_prefix__iu ON ip_net_plan;
-CREATE TRIGGER trigger_ip_net_pool_prefix__iu 
+DROP TRIGGER trigger_ip_net_pool_prefix__iu_before ON ip_net_plan;
+CREATE TRIGGER trigger_ip_net_pool_prefix__iu_before
 	BEFORE UPDATE OR INSERT
 	ON ip_net_plan
 	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_prefix_family();
+	EXECUTE PROCEDURE tf_ip_net_prefix_family_before();
+
+
+CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family_after() RETURNS trigger AS $$
+DECLARE
+	r RECORD;
+BEGIN
+	IF TG_OP = 'DELETE' THEN
+		PERFORM calc_indent(OLD.prefix);
+	ELSE
+		PERFORM calc_indent(NEW.prefix);
+	END IF;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER trigger_ip_net_pool_prefix__iu_after ON ip_net_plan;
+CREATE TRIGGER trigger_ip_net_pool_prefix__iu_after
+	AFTER DELETE OR INSERT OR UPDATE
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_prefix_family_after();
+
 
 GRANT ALL ON ip_net_plan TO nils;
 GRANT USAGE ON ip_net_plan_id_seq TO nils;
