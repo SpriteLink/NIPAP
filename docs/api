@@ -74,3 +74,105 @@ RETURN VALUES
 	prefixes
 		a list of free prefixes
 
+--------------------------------------------------------------------------------
+
+NAME
+    add_schema
+
+DESCRIPTION
+Adds a new address schema.
+
+ARGUMENTS 
+The function takes one argument, a struct defining the schema with the following
+attributes:
+
+    name
+        The schema name.
+
+    description
+        A text which describes the schema.
+
+--------------------------------------------------------------------------------
+
+NAME
+    remove_schema
+
+DESCRIPTION
+Removes a schema.
+
+ARGUMENTS
+A struct specifying what struct to remove. The following elements are valid:
+
+    name
+        Name of the schema.
+
+    id
+        ID of the schema.
+
+--------------------------------------------------------------------------------
+
+NAME
+list_schema
+
+DESCRIPTION
+List schema(s).
+
+ARGUMENTS
+An optional struct specifying what schema to list. If omitted or nil, all
+schemas are listed. The following elements are valid:
+
+    name
+        Name of the schema.
+
+    id
+        ID of the schema.
+
+--------------------------------------------------------------------------------
+
+NAME
+edit_schema
+
+DESCRIPTION
+Modifies a schema.
+
+ARGUMENTS
+Takes two structs as arguments. The first one specifies what schema to perform
+the operation on and can have the following fields:
+
+    name
+        Name of the schema.
+
+    id
+        ID of the schema
+
+The second struct specifies the changes to be made and can have one or more of
+the following elements:
+    
+    name
+        New name of the schema.
+
+    description
+        Schema description.
+
+--------------------------------------------------------------------------------
+
+NAME
+add_pool
+
+DESCRIPTION
+Adds a new pool.
+
+ARGUMENTS
+A struct specifying the pool properties. Must have the following elements:
+
+    name
+        Pool name.
+
+    schema
+        ID of the schema the pool belongs to.
+
+    description
+        A descriptive text describing the pool.
+
+    default_type
+        The default type of the prefixes allocated from this pool.
