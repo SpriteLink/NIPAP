@@ -8,7 +8,9 @@ sys.path.append('../napd/')
 import nap
 
 class NapBaseTest(unittest.TestCase):
-    # TODO: hmm, we need to empty the database to begin with
+    # TODO: hmm, we need to empty the database to begin with, but just once for
+    #       the entire run of the test suite and not once per test. setUp is run
+    #       once for every test
     first_run = None
     def setUp(self):
         self.nap = nap.Nap()
