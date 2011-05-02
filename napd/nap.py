@@ -234,7 +234,6 @@ class Nap:
         """ List prefixes
         """
 
-        sql = "SELECT * FROM ip_net_plan "
 
         where = str()
         params = list()
@@ -272,7 +271,8 @@ class Nap:
         else:
             raise NapError("invalid prefix specification")
 
-        sql += " WHERE " + where[:-4]
+        sql = "SELECT * FROM ip_net_plan "
+        sql += "WHERE prefix <<= (SELECT prefix FROM ip_net_plan WHERE " + where[:-4] + ") ORDER BY prefix"
 
         self._execute(sql, params)
 

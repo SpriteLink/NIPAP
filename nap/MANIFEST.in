@@ -1,0 +1,3 @@
+include nap/config/deployment.ini_tmpl
+recursive-include nap/public *
+recursive-include nap/templates *
