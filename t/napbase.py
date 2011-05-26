@@ -35,7 +35,7 @@ class NapTest(unittest.TestCase):
 
 
 
-    def test_dupe_check(self):
+    def test_dupe_schema(self):
         """ Check so we can't create duplicate schemas
         """
         schema_attrs = {
@@ -62,6 +62,16 @@ class NapTest(unittest.TestCase):
         schema = self.nap.list_schema({ 'name': 'test-schema' })
         self.assertEqual(schema[0]['name'], attrs['name'], 'Modified name differ from listed name')
         self.assertEqual(schema[0]['description'], attrs['description'], 'Modified description differ from listed description')
+
+
+    def test_remove_schema(self):
+        """ Remove a schema
+        """
+        spec = { 'name': 'test-schema' }
+        self.nap.remove_schema(spec)
+        # check that search for old record doesn't return anything
+        schema = self.nap.list_schema(spec)
+        self.assertEqual(schema, [], 'Old entry still exists')
 
 
 
