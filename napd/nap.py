@@ -140,16 +140,16 @@ class Nap:
         if type(spec) is not dict:
             raise NapError('Invalid pool specification')
 
-        params = list()
+        params = {}
         if 'id' in spec:
-            where = " po.id = %s "
-            params.append(spec['id'])
+            where = " po.id = %(spec_id)s "
+            params['spec_id'] = spec['id']
         elif 'name' in spec:
-            where = " po.name = %s "
-            params.append(spec['name'])
+            where = " po.name = %(spec_name)s "
+            params['spec_name'] = spec['name']
         elif 'family' in spec:
-            where = "pl.family = %s "
-            params.append(spec['family'])
+            where = "pl.family = %(spec_family)s "
+            params['spec_family'] = spec['family']
         else:
             raise NapError('missing valid search key in pool spec')
 
@@ -218,6 +218,29 @@ class Nap:
     def edit_pool(self, spec, attr):
         """ Edit pool.
         """
+
+        sql = "UPDATE ip_net_pool SET "
+
+        if type(attr) is not dict:
+            raise NapInvalid
+
+        where, params = self._expand_pool_spec(spec)
+
+        if 'name' in attr:
+            sql += "name = %(name)s, "
+            params['name'] = attr['name']
+        if 'description' in attr:
+            sql += "description = %(description)s, "
+            params['description'] = attr['description']
+        if 'default_type' in attr:
+            sql += "default_type = %(default_type)s, "
+            params['default_type'] = attr['default_type']
+        if 'schema' in attr:
+            sql += "schema = %(schema)s, "
+            params['schema'] = attr['schema']
+
+        sql = sql[:-2] +  " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND " + where
+        self._execute(sql, params)
 
 
     #
