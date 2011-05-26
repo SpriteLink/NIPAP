@@ -23,15 +23,15 @@ class NapTest(unittest.TestCase):
     def test_add_schema(self):
         """ Add a schema and check it's there using list functions
         """
-        schema_attrs = {
+        attrs = {
                 'name': 'test-schema-wrong',
                 'description': 'A simple test schema with incorrect name!'
                 }
-        schema_id = self.nap.add_schema(schema_attrs)
+        schema_id = self.nap.add_schema(attrs)
         schema = self.nap.list_schema({ 'id': schema_id })
         self.assertEqual(schema[0]['id'], schema_id, 'Add operations returned id differ from listed id')
-        self.assertEqual(schema[0]['name'], schema_attrs['name'], 'Added name differ from listed name')
-        self.assertEqual(schema[0]['description'], schema_attrs['description'], 'Added description differ from listed description')
+        self.assertEqual(schema[0]['name'], attrs['name'], 'Added name differ from listed name')
+        self.assertEqual(schema[0]['description'], attrs['description'], 'Added description differ from listed description')
 
 
 
@@ -55,8 +55,13 @@ class NapTest(unittest.TestCase):
                 'name': 'test-schema',
                 'description': 'A simple test schema with correct name!'
                 }
-        # FIXME: edit_schema is actually broken!?
-        #self.nap.edit_schema(spec, attrs)
+        self.nap.edit_schema(spec, attrs)
+        # check that search for old record doesn't return anything
+        schema = self.nap.list_schema(spec)
+        self.assertEqual(schema, [], 'Old entry still exists')
+        schema = self.nap.list_schema({ 'name': 'test-schema' })
+        self.assertEqual(schema[0]['name'], attrs['name'], 'Modified name differ from listed name')
+        self.assertEqual(schema[0]['description'], attrs['description'], 'Modified description differ from listed description')
 
 
 
