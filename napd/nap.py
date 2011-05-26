@@ -1,3 +1,4 @@
+# vim: et ts=4 :
 import logging
 import psycopg2
 import psycopg2.extras
