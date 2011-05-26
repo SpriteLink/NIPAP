@@ -95,6 +95,25 @@ class NapTest(unittest.TestCase):
 
 
 
+    def test_pool_modify(self):
+        """ Modify a pool!
+        """
+        spec = { 'name': 'test-pool-wrong' }
+        attrs = {
+                'name': 'test-pool',
+                'description': 'A simple test pool with correct name!'
+                }
+        self.nap.edit_pool(spec, attrs)
+        # check that search for old record doesn't return anything
+        pool = self.nap.list_pool(spec)
+        self.assertEqual(pool, [], 'Old entry still exists')
+        pool = self.nap.list_pool({ 'name': 'test-pool' })
+        self.assertEqual(pool[0]['name'], attrs['name'], 'Modified name differ from listed name')
+        self.assertEqual(pool[0]['description'], attrs['description'], 'Modified description differ from listed description')
+
+
+
+
     def test_pool(self):
         """ Simple test of address-pool functions
 
