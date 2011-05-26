@@ -13,28 +13,42 @@ log_format = "%(levelname)-8s %(message)s"
 import nap
 
 
-class NapSchemaTest(unittest.TestCase):
-    logger = logging.getLogger()
+class NapTest(unittest.TestCase):
+    """ Tests the schema features of NAP
+    """
 
+    logger = logging.getLogger()
     nap = nap.Nap()
 
     def test_add_schema(self):
-        """ Add schema with incorrect name
+        """ Add a schema and check it's there using list functions
         """
         schema_attrs = {
                 'name': 'test-schema-wrong',
                 'description': 'A simple test schema with incorrect name!'
                 }
-        self.nap.add_schema(schema_attrs)
-        # FIXME: not needed when the modify_schema test works
+        schema_id = self.nap.add_schema(schema_attrs)
+        schema = self.nap.list_schema({ 'id': schema_id })
+        self.assertEqual(schema[0]['id'], schema_id, 'Add operations returned id differ from listed id')
+        self.assertEqual(schema[0]['name'], schema_attrs['name'], 'Added name differ from listed name')
+        self.assertEqual(schema[0]['description'], schema_attrs['description'], 'Added description differ from listed description')
+
+
+
+    def test_dupe_check(self):
+        """ Check so we can't create duplicate schemas
+        """
         schema_attrs = {
                 'name': 'test-schema-wrong',
                 'description': 'A simple test schema with incorrect name!'
                 }
-        self.nap.add_schema(schema_attrs)
+        # TODO: this should raise a better exception, something like non-unique or duplicate
+        self.assertRaises(nap.NapError, self.nap.add_schema, schema_attrs)
+
+
 
     def test_modify_schema(self):
-        """ Set correct name on address-schema
+        """ Modify schema
         """
         spec = { 'name': 'test-schema-wrong' }
         attrs = {
@@ -43,6 +57,7 @@ class NapSchemaTest(unittest.TestCase):
                 }
         # FIXME: edit_schema is actually broken!?
         #self.nap.edit_schema(spec, attrs)
+
 
 
     def test_pool(self):
@@ -73,14 +88,21 @@ class NapSchemaTest(unittest.TestCase):
 
 
 
+
+
 def clean_db():
-    self.nap._execute("DELETE FROM ip_net_plan")
-    self.nap._execute("DELETE FROM ip_net_pool")
-    self.nap._execute("DELETE FROM ip_net_schema")
+    """ Better start from a clean slate!
+    """
+    # local nap object to avoid fscking up something
+    n = nap.Nap()
+    n._execute("DELETE FROM ip_net_plan")
+    n._execute("DELETE FROM ip_net_pool")
+    n._execute("DELETE FROM ip_net_schema")
+
 
 def main():
-    self.clean_db()
-    if sys.version_info > (2,6):
+    clean_db()
+    if sys.version_info >= (2,7):
         unittest.main(verbosity=2)
     else:
         unittest.main()

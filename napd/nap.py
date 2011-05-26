@@ -21,7 +21,7 @@ class Nap:
 
         # Create database connection
         try:
-            self._con_pg = psycopg2.connect("host='localhost' dbname='nap' user='nap' password='Je9ydmLsBw7gg'")
+            self._con_pg = psycopg2.connect("host='localhost' dbname='nap' user='napd' password='dpan'")
             self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
         except psycopg2.Error, e:
             estr = str(e)
