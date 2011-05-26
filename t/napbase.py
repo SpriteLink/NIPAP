@@ -1,26 +1,22 @@
 #!/usr/bin/python
 # vim: et :
 
+import logging
 import unittest
 import sys
 sys.path.append('../napd/')
 
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+log_format = "%(levelname)-8s %(message)s"
+
 import nap
 
-class NapBaseTest(unittest.TestCase):
-    # TODO: hmm, we need to empty the database to begin with, but just once for
-    #       the entire run of the test suite and not once per test. setUp is run
-    #       once for every test
-    first_run = None
-    def setUp(self):
-        self.nap = nap.Nap()
-        # FIXME: these should only be executed once
-        if self.first_run is None:
-            self.nap._execute("DELETE FROM ip_net_plan")
-            self.nap._execute("DELETE FROM ip_net_pool")
-            self.nap._execute("DELETE FROM ip_net_schema")
-        self.first_run = 1
 
+class NapSchemaTest(unittest.TestCase):
+    logger = logging.getLogger()
+
+    nap = nap.Nap()
 
     def test_add_schema(self):
         """ Add schema with incorrect name
@@ -76,8 +72,21 @@ class NapBaseTest(unittest.TestCase):
         self.assertEqual(1, 1)
 
 
-if __name__ == '__main__':
+
+def clean_db():
+    self.nap._execute("DELETE FROM ip_net_plan")
+    self.nap._execute("DELETE FROM ip_net_pool")
+    self.nap._execute("DELETE FROM ip_net_schema")
+
+def main():
+    self.clean_db()
     if sys.version_info > (2,6):
         unittest.main(verbosity=2)
     else:
         unittest.main()
+
+
+
+
+if __name__ == '__main__':
+    main()

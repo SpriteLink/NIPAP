@@ -25,7 +25,7 @@ class Nap:
             self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
         except psycopg2.Error, e:
             estr = str(e)
-            self.logger.error(estr)
+            self._logger.error(estr)
             raise NapError(estr)
         except psycopg2.Warning, w: 
             self._logger.warning(str(w))
