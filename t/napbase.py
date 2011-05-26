@@ -75,6 +75,26 @@ class NapTest(unittest.TestCase):
 
 
 
+    def test_pool_add(self):
+        """ Add a pool and check it's there using list functions
+        """
+        schema = self.nap.list_schema({ 'name': 'test-schema' })
+        attrs = {
+                'name': 'test-pool-wrong',
+                'schema': schema[0]['id'],
+                'default_type': 'assignment',
+                'description': 'A simple test pool with incorrect name!'
+                }
+        pool_id = self.nap.add_pool(attrs)
+        pool = self.nap.list_pool({ 'id': pool_id })
+        self.assertEqual(pool[0]['id'], pool_id, 'Add operations returned id differ from listed id')
+        self.assertEqual(pool[0]['name'], attrs['name'], 'Added name differ from listed name')
+        self.assertEqual(pool[0]['description'], attrs['description'], 'Added description differ from listed description')
+        self.assertEqual(pool[0]['schema'], schema[0]['id'], 'Added schema differ from listed schema')
+        self.assertEqual(pool[0]['default_type'], attrs['default_type'], 'Added default_type differ from listed default_type')
+
+
+
     def test_pool(self):
         """ Simple test of address-pool functions
 
@@ -92,14 +112,6 @@ class NapTest(unittest.TestCase):
                 'description': 'A test pool!'
                 }
 #        self.nap.add_pool(pool_attrs)
-
-    def test_add_prefix(self):
-        """ Simply test of adding a prefix and verifying it is there
-
-            Will try to add prefix 192.0.2.0/24
-        """
-#        nap.add_prefix()
-        self.assertEqual(1, 1)
 
 
 
