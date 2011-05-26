@@ -42,13 +42,13 @@ class Nap:
         if type(spec) is not dict:
             raise NapError('schema specification must be dict')
 
-        params = list()
+        params = {}
         if 'id' in spec:
-            where = " id = %s "
-            params.append(spec['id'])
+            where = " id = %(spec_id)s "
+            params['spec_id'] = spec['id']
         elif 'name' in spec:
-            where = " name = %s "
-            params.append(spec['name'])
+            where = " name = %(spec_name)s "
+            params['spec_name'] = spec['name']
         else:
             raise NapError('missing both id and name in schema spec')
 
@@ -112,20 +112,19 @@ class Nap:
         """ Edit a schema.
         """
         
-        params = list()
         sql = "UPDATE ip_net_schema SET "
 
         if type(attr) is not dict:
             raise NapInvalid
 
-        if 'name' in attr:
-            sql += "name = %s, "
-            params.append(attr['name'])
-        if 'description' in attr:
-            sql += "description = %s, "
-            params.append(attr['description'])
-
         where, params = self._expand_schema_spec(spec)
+
+        if 'name' in attr:
+            sql += "name = %(name)s, "
+            params['name'] = attr['name']
+        if 'description' in attr:
+            sql += "description = %(description)s, "
+            params['description'] = attr['description']
 
         sql = sql[:-2] + " WHERE " + where
         self._execute(sql, params)
