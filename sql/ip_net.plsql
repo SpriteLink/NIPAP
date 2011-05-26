@@ -1,3 +1,8 @@
+--------------------------------------------
+--
+-- The basic table structure and similar
+--
+--------------------------------------------
 
 DROP TABLE ip_net_plan;
 DROP TABLE ip_net_pool_def_prefix_len;
