@@ -4,15 +4,8 @@
 --
 --------------------------------------------
 
-DROP TABLE ip_net_plan;
-DROP TABLE ip_net_pool_def_prefix_len;
-DROP TABLE ip_net_pool;
-DROP TABLE ip_net_schema;
-
-DROP TYPE ip_net_plan_type;
 CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
 
-DROP TYPE priority_3step;
 CREATE TYPE priority_3step AS ENUM ('low', 'medium', 'high');
 
 --
@@ -111,7 +104,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER trigger_ip_net_pool_prefix__iu_before ON ip_net_plan;
 CREATE TRIGGER trigger_ip_net_pool_prefix__iu_before
 	BEFORE UPDATE OR INSERT
 	ON ip_net_plan
@@ -132,7 +124,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER trigger_ip_net_pool_prefix__iu_after ON ip_net_plan;
 CREATE TRIGGER trigger_ip_net_pool_prefix__iu_after
 	AFTER DELETE OR INSERT OR UPDATE
 	ON ip_net_plan
