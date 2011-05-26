@@ -36,7 +36,7 @@ class Nap:
     # Schema functions
     #
     def _expand_schema_spec(self, spec):
-        """ Expand pool specification to sql.
+        """ Expand schema specification to sql.
         """ 
 
         if type(spec) is not dict:
