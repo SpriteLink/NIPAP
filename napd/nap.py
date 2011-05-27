@@ -184,7 +184,6 @@ class Nap:
 
         self._logger.debug("Removing pool; spec: %s" % str(spec))
 
-
         where, params = self._expand_schema_spec(spec)
         if 'family' in spec:
             raise NapError("don't specify family for remove operation")
@@ -326,6 +325,7 @@ class Nap:
         """ Get ID of last inserted column.
         """
 
+        # TODO: hmm, we can do this by doing fetchone() on our cursor
         self._execute("SELECT lastval() AS last")
         for row in self._curs_pg:
             return row['last']
