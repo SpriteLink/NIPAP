@@ -15,13 +15,23 @@ import nap
 
 class NapTest(unittest.TestCase):
     """ Tests the schema features of NAP
+
+        Please observe that the order of these tests needs to be preserved as
+        there is state being kept in between tests. For example, the
+        schema_remove test relies on that the schema was first successfully
+        created and then modified. If either of those tests are modified,
+        the remove_schema test might fail.
     """
 
     logger = logging.getLogger()
     nap = nap.Nap()
 
-    def test_add_schema(self):
-        """ Add a schema and check it's there using list functions
+
+    def test_schema_add(self):
+        """ Add a schema
+
+            Add a new schema and make sure that all the values we provide are
+            also stored.
         """
         attrs = {
                 'name': 'test-schema-wrong',
@@ -35,8 +45,11 @@ class NapTest(unittest.TestCase):
 
 
 
-    def test_dupe_schema(self):
+    def test_schema_dupe(self):
         """ Check so we can't create duplicate schemas
+
+            There are unique indices in the database that should prevent us
+            from creating duplicate schema (ie, with the same name).
         """
         schema_attrs = {
                 'name': 'test-schema-wrong',
@@ -47,8 +60,13 @@ class NapTest(unittest.TestCase):
 
 
 
-    def test_modify_schema(self):
-        """ Modify schema
+    def test_schema_rename(self):
+        """ Rename a schema
+
+            Uses the edit_schema() functionality to rename our previously
+            created and incorrectly named schema so it hereafter has the
+            correct name. Also tests the list_schema() functionality since we
+            use that to list the modified schema.
         """
         spec = { 'name': 'test-schema-wrong' }
         attrs = {
@@ -64,8 +82,11 @@ class NapTest(unittest.TestCase):
         self.assertEqual(schema[0]['description'], attrs['description'], 'Modified description differ from listed description')
 
 
-    def test_remove_schema(self):
+
+    def test_schema_remove(self):
         """ Remove a schema
+
+            Remove the schema previously modified and make sure it's not there.
         """
         spec = { 'name': 'test-schema' }
         self.nap.remove_schema(spec)
@@ -96,7 +117,7 @@ class NapTest(unittest.TestCase):
 
 
     def test_pool_modify(self):
-        """ Modify a pool!
+        """ Rename a pool using edit_pool() function
         """
         spec = { 'name': 'test-pool-wrong' }
         attrs = {
@@ -113,6 +134,7 @@ class NapTest(unittest.TestCase):
         self.assertEqual(pool[0]['description'], attrs['description'], 'Modified description differ from listed description')
 
 
+
     def test_pool_remove(self):
         """ Remove a pool
         """
@@ -125,23 +147,6 @@ class NapTest(unittest.TestCase):
 
 
 
-    def test_pool(self):
-        """ Simple test of address-pool functions
-
-            1. Add address-schema named 'global'
-            1. Add address-pool named 'test-pool' with default_type of
-               reservation
-            2. Verify 'test-pool' exists and default_type is reservation
-            3. Modify 'test-pool' default_type to assignment
-            4. Remove 'test-pool'
-            5. Verify 'test-pool' does not exist
-        """
-        pool_attrs = {
-                'name': 'test-pool',
-                'schema': 'test-schema',
-                'description': 'A test pool!'
-                }
-#        self.nap.add_pool(pool_attrs)
 
 
 
