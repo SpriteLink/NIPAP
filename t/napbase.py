@@ -82,7 +82,7 @@ class NapTest(unittest.TestCase):
         attrs = {
                 'name': 'test-pool-wrong',
                 'schema': schema[0]['id'],
-                'default_type': 'assignment',
+                'default_type': 'reservation',
                 'description': 'A simple test pool with incorrect name!'
                 }
         pool_id = self.nap.add_pool(attrs)
@@ -101,6 +101,7 @@ class NapTest(unittest.TestCase):
         spec = { 'name': 'test-pool-wrong' }
         attrs = {
                 'name': 'test-pool',
+                'default_type': 'assignment',
                 'description': 'A simple test pool with correct name!'
                 }
         self.nap.edit_pool(spec, attrs)
@@ -110,6 +111,16 @@ class NapTest(unittest.TestCase):
         pool = self.nap.list_pool({ 'name': 'test-pool' })
         self.assertEqual(pool[0]['name'], attrs['name'], 'Modified name differ from listed name')
         self.assertEqual(pool[0]['description'], attrs['description'], 'Modified description differ from listed description')
+
+
+    def test_pool_remove(self):
+        """ Remove a pool
+        """
+        spec = { 'name': 'test-pool' }
+        self.nap.remove_pool(spec)
+        # check that search for old record doesn't return anything
+        pool = self.nap.list_pool(spec)
+        self.assertEqual(pool, [], 'Old entry still exists')
 
 
 
