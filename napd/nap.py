@@ -189,7 +189,7 @@ class Nap:
             raise NapError("don't specify family for remove operation")
 
         sql = "DELETE FROM ip_net_pool AS po WHERE %s" % where
-        self._execute(sql, param)
+        self._execute(sql, params)
 
 
     def list_pool(self, spec = None):
