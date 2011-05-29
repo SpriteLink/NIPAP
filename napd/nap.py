@@ -245,6 +245,28 @@ class Nap:
     #
     # PREFIX FUNCTIONS
     #
+    def add_prefix(self, attr):
+        """ Add a prefix
+        """
+        # sanity check - do we have all attributes?
+        req_attr = ['prefix', 'schema', 'description' ]
+
+        for a in req_attr:
+            if not a in attr:
+                raise NapMissingValueError("missing %s" % a)
+
+        self._logger.debug("Adding prefix; schema: %s prefix: %s desc: %s" %
+            (attr['schema'], attr['prefix'], attr['description']))
+
+        sql = ("INSERT INTO ip_net_plan " +
+            "(schema, prefix, description, comment, node, pool, type) VALUES " +
+            "(%(schema)s, %(prefix)s, %(description)s, %(comment)s, %(node)s, %(pool)s, %(type)s)")
+
+        self._execute(sql, attr)
+        return self._lastrowid()
+
+
+
     def find_free_prefix(self, prefixes, wanted_length, num = 1):
         """ Find a free prefix
 
