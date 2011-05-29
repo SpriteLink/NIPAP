@@ -13,25 +13,35 @@ log_format = "%(levelname)-8s %(message)s"
 import nap
 
 
-class NapTest(unittest.TestCase):
+class NapSchemaTest(unittest.TestCase):
     """ Tests the schema features of NAP
-
-        Please observe that the order of these tests needs to be preserved as
-        there is state being kept in between tests. For example, the
-        schema_remove test relies on that the schema was first successfully
-        created and then modified. If either of those tests are modified,
-        the remove_schema test might fail.
     """
 
     logger = logging.getLogger()
     nap = nap.Nap()
 
+    def setUp(self):
+        """ Better start from a clean slate!
+        """
+        self.nap._execute("DELETE FROM ip_net_plan")
+        self.nap._execute("DELETE FROM ip_net_pool")
+        self.nap._execute("DELETE FROM ip_net_schema")
 
-    def test_schema_add(self):
-        """ Add a schema
+        attrs = {
+                'name': 'test-schema1',
+                'description': 'Test schema numero uno!'
+                }
+        schema_id = self.nap.add_schema(attrs)
+        self.nap.add_schema
 
-            Add a new schema and make sure that all the values we provide are
-            also stored.
+
+    def test_schema_basic(self):
+        """ Basic schema test
+
+            1. Add a new schema 
+            2. List with filters to get newly created schema
+            3. Verify listed schema coincides with input args for added schema
+            4. Remove schema
         """
         attrs = {
                 'name': 'test-schema-wrong',
@@ -52,10 +62,11 @@ class NapTest(unittest.TestCase):
             from creating duplicate schema (ie, with the same name).
         """
         schema_attrs = {
-                'name': 'test-schema-wrong',
-                'description': 'A simple test schema with incorrect name!'
+                'name': 'test-schema-dupe',
+                'description': 'Testing dupe'
                 }
         # TODO: this should raise a better exception, something like non-unique or duplicate
+        self.nap.add_schema(schema_attrs)
         self.assertRaises(nap.NapError, self.nap.add_schema, schema_attrs)
 
 
@@ -68,7 +79,7 @@ class NapTest(unittest.TestCase):
             correct name. Also tests the list_schema() functionality since we
             use that to list the modified schema.
         """
-        spec = { 'name': 'test-schema-wrong' }
+        spec = { 'name': 'test-schema1' }
         attrs = {
                 'name': 'test-schema',
                 'description': 'A simple test schema with correct name!'
@@ -96,13 +107,41 @@ class NapTest(unittest.TestCase):
 
 
 
+class NapPoolTest(unittest.TestCase):
+    """ Tests the pool features of NAP
+    """
+
+    logger = logging.getLogger()
+    nap = nap.Nap()
+
+    def setUp(self):
+        """ Better start from a clean slate!
+        """
+        self.nap._execute("DELETE FROM ip_net_plan")
+        self.nap._execute("DELETE FROM ip_net_pool")
+        self.nap._execute("DELETE FROM ip_net_schema")
+
+        self.schema_attrs = {
+                'name': 'test-schema1',
+                'description': 'Test schema numero uno!'
+                }
+        self.schema_id = self.nap.add_schema(self.schema_attrs)
+        self.pool_attrs = {
+                'schema': self.schema_id, 
+                'name': 'test-pool1',
+                'description': 'Test schema numero uno!',
+                'default_type': 'assignment'
+                }
+        self.pool_attrs['id'] = self.nap.add_pool(self.pool_attrs)
+
+
+
     def test_pool_add(self):
         """ Add a pool and check it's there using list functions
         """
-        schema = self.nap.list_schema({ 'name': 'test-schema' })
         attrs = {
                 'name': 'test-pool-wrong',
-                'schema': schema[0]['id'],
+                'schema': self.schema_id,
                 'default_type': 'reservation',
                 'description': 'A simple test pool with incorrect name!'
                 }
@@ -111,7 +150,7 @@ class NapTest(unittest.TestCase):
         self.assertEqual(pool[0]['id'], pool_id, 'Add operations returned id differ from listed id')
         self.assertEqual(pool[0]['name'], attrs['name'], 'Added name differ from listed name')
         self.assertEqual(pool[0]['description'], attrs['description'], 'Added description differ from listed description')
-        self.assertEqual(pool[0]['schema'], schema[0]['id'], 'Added schema differ from listed schema')
+        self.assertEqual(pool[0]['schema'], self.schema_id, 'Added schema differ from listed schema')
         self.assertEqual(pool[0]['default_type'], attrs['default_type'], 'Added default_type differ from listed default_type')
 
 
@@ -119,7 +158,7 @@ class NapTest(unittest.TestCase):
     def test_pool_modify(self):
         """ Rename a pool using edit_pool() function
         """
-        spec = { 'name': 'test-pool-wrong' }
+        spec = { 'name': self.pool_attrs['name'] }
         attrs = {
                 'name': 'test-pool',
                 'default_type': 'assignment',
@@ -129,7 +168,7 @@ class NapTest(unittest.TestCase):
         # check that search for old record doesn't return anything
         pool = self.nap.list_pool(spec)
         self.assertEqual(pool, [], 'Old entry still exists')
-        pool = self.nap.list_pool({ 'name': 'test-pool' })
+        pool = self.nap.list_pool({ 'name': attrs['name'] })
         self.assertEqual(pool[0]['name'], attrs['name'], 'Modified name differ from listed name')
         self.assertEqual(pool[0]['description'], attrs['description'], 'Modified description differ from listed description')
 
@@ -138,10 +177,13 @@ class NapTest(unittest.TestCase):
     def test_pool_remove(self):
         """ Remove a pool
         """
-        spec = { 'name': 'test-pool' }
-        self.nap.remove_pool(spec)
+        pool = self.nap.list_pool({ 'name': self.pool_attrs['name'] })
+        # first make sure our pool exists
+        self.assertEqual(pool[0], self.pool_attrs, 'Record must exist before we can delete it')
+        # remove the pool
+        self.nap.remove_pool({ 'name': self.pool_attrs['name'] })
         # check that search for old record doesn't return anything
-        pool = self.nap.list_pool(spec)
+        pool = self.nap.list_pool({ 'name': self.pool_attrs['name'] })
         self.assertEqual(pool, [], 'Old entry still exists')
 
 
@@ -152,18 +194,8 @@ class NapTest(unittest.TestCase):
 
 
 
-def clean_db():
-    """ Better start from a clean slate!
-    """
-    # local nap object to avoid fscking up something
-    n = nap.Nap()
-    n._execute("DELETE FROM ip_net_plan")
-    n._execute("DELETE FROM ip_net_pool")
-    n._execute("DELETE FROM ip_net_schema")
-
 
 def main():
-    clean_db()
     if sys.version_info >= (2,7):
         unittest.main(verbosity=2)
     else:
