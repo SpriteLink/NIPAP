@@ -38,7 +38,7 @@ class NapSchemaTest(unittest.TestCase):
     def test_schema_basic(self):
         """ Basic schema test
 
-            1. Add a new schema 
+            1. Add a new schema
             2. List with filters to get newly created schema
             3. Verify listed schema coincides with input args for added schema
             4. Remove schema
@@ -127,7 +127,7 @@ class NapPoolTest(unittest.TestCase):
                 }
         self.schema_id = self.nap.add_schema(self.schema_attrs)
         self.pool_attrs = {
-                'schema': self.schema_id, 
+                'schema': self.schema_id,
                 'name': 'test-pool1',
                 'description': 'Test schema numero uno!',
                 'default_type': 'assignment'
@@ -190,6 +190,45 @@ class NapPoolTest(unittest.TestCase):
 
 
 
+class NapPrefixTest(unittest.TestCase):
+    """ Tests the prefix features of NAP
+    """
+
+    logger = logging.getLogger()
+    nap = nap.Nap()
+
+    def setUp(self):
+        """ Better start from a clean slate!
+        """
+        self.nap._execute("DELETE FROM ip_net_plan")
+        self.nap._execute("DELETE FROM ip_net_pool")
+        self.nap._execute("DELETE FROM ip_net_schema")
+
+        self.schema_attrs = {
+                'name': 'test-schema1',
+                'description': 'Test schema numero uno!'
+                }
+        self.schema_attrs['id'] = self.nap.add_schema(self.schema_attrs)
+        self.pool_attrs = {
+                'schema': self.schema_attrs['id'],
+                'name': 'test-pool1',
+                'description': 'Test schema numero uno!',
+                'default_type': 'assignment'
+                }
+        self.pool_attrs['id'] = self.nap.add_pool(self.pool_attrs)
+
+
+    def test_prefix_basic(self):
+        """
+        """
+        prefix_attrs = {
+                'schema': self.schema_attrs['id'],
+                'prefix': '1.3.3.7/32',
+                'description': 'test prefix'
+                }
+        self.nap.add_prefix(prefix_attrs)
+        prefix = self.nap.list_prefix({ 'prefix': prefix_attrs['prefix'] })
+        self.assertEqual(prefix[0], prefix_attrs)
 
 
 
