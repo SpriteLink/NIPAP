@@ -176,3 +176,7 @@ A struct specifying the pool properties. Must have the following elements:
 
     default_type
         The default type of the prefixes allocated from this pool.
+
+
+
+
