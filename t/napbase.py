@@ -109,6 +109,12 @@ class NapTest(unittest.TestCase):
             functions to expand the schema specification input and so we test
             the separately.
         """
+        # wrong type
+        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, 'string')
+        # wrong type
+        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, 1)
+        # wrong type
+        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, [])
         # missing keys
         self.assertRaises(nap.NapMissingInputError, self.nap._expand_schema_spec, { })
         # crap key
