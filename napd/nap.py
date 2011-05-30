@@ -315,9 +315,9 @@ class Nap:
         if 'description' in attr:
             sql += "description = %(description)s, "
             params['description'] = attr['description']
-        if 'default_type' in attr:
-            sql += "default_type = %(default_type)s, "
-            params['default_type'] = attr['default_type']
+        if 'comment' in attr:
+            sql += "comment = %(comment)s, "
+            params['comment'] = attr['comment']
         if 'schema' in attr:
             sql += "schema = %(schema)s, "
             params['schema'] = attr['schema']
