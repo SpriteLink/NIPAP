@@ -89,8 +89,8 @@ class NapSchemaTest(unittest.TestCase):
         schema = self.nap.list_schema(spec)
         self.assertEqual(schema, [], 'Old entry still exists')
         schema = self.nap.list_schema({ 'name': 'test-schema' })
-        self.assertEqual(schema[0]['name'], attrs['name'], 'Modified name differ from listed name')
-        self.assertEqual(schema[0]['description'], attrs['description'], 'Modified description differ from listed description')
+        for a in attrs:
+            self.assertEqual(schema[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
 
 
 
@@ -147,11 +147,8 @@ class NapPoolTest(unittest.TestCase):
                 }
         pool_id = self.nap.add_pool(attrs)
         pool = self.nap.list_pool({ 'id': pool_id })
-        self.assertEqual(pool[0]['id'], pool_id, 'Add operations returned id differ from listed id')
-        self.assertEqual(pool[0]['name'], attrs['name'], 'Added name differ from listed name')
-        self.assertEqual(pool[0]['description'], attrs['description'], 'Added description differ from listed description')
-        self.assertEqual(pool[0]['schema'], self.schema_id, 'Added schema differ from listed schema')
-        self.assertEqual(pool[0]['default_type'], attrs['default_type'], 'Added default_type differ from listed default_type')
+        for a in attrs:
+            self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
 
 
 
@@ -169,8 +166,8 @@ class NapPoolTest(unittest.TestCase):
         pool = self.nap.list_pool(spec)
         self.assertEqual(pool, [], 'Old entry still exists')
         pool = self.nap.list_pool({ 'name': attrs['name'] })
-        self.assertEqual(pool[0]['name'], attrs['name'], 'Modified name differ from listed name')
-        self.assertEqual(pool[0]['description'], attrs['description'], 'Modified description differ from listed description')
+        for a in attrs:
+            self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
 
 
 
