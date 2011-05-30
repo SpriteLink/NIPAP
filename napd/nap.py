@@ -37,7 +37,7 @@ class Nap:
     #
     def _expand_schema_spec(self, spec):
         """ Expand schema specification to sql.
-        """ 
+        """
 
         if type(spec) is not dict:
             raise NapError('schema specification must be dict')
@@ -135,7 +135,7 @@ class Nap:
     #
     def _expand_pool_spec(self, spec):
         """ Expand pool specification to sql.
-        """ 
+        """
 
         if type(spec) is not dict:
             raise NapError('Invalid pool specification')
@@ -245,6 +245,33 @@ class Nap:
     #
     # PREFIX FUNCTIONS
     #
+    def _expand_prefix_spec(self, spec):
+        """ Expand prefix specification to sql.
+        """
+
+        if type(spec) is not dict:
+            raise NapError('Invalid prefix specification')
+
+        params = {}
+        if 'id' in spec:
+            where = " p.id = %(spec_id)s "
+            params['spec_id'] = spec['id']
+        elif 'prefix' in spec:
+            if 'schema' not in spec:
+                raise NapError('Invalid prefix specification, must include schema and prefix or id (missing schema)')
+            where = " p.prefix = %(spec_prefix)s "
+            params['spec_prefix'] = spec['prefix']
+        elif 'schema' in spec:
+            if 'prefix' not in spec:
+                raise NapError('Invalid prefix specification, must include schema and prefix or id (missing prefix)')
+            where = "p.schema = %(spec_schema)s "
+            params['spec_schema'] = spec['schema']
+        else:
+            raise NapError('missing valid search key in prefix spec')
+
+        return where, params
+
+
     def add_prefix(self, attr):
         """ Add a prefix
         """
@@ -259,11 +286,44 @@ class Nap:
             (attr['schema'], attr['prefix'], attr['description']))
 
         sql = ("INSERT INTO ip_net_plan " +
-            "(schema, prefix, description, comment, node, pool, type) VALUES " +
-            "(%(schema)s, %(prefix)s, %(description)s, %(comment)s, %(node)s, %(pool)s, %(type)s)")
+            "(authoritative_source, schema, prefix) VALUES " +
+            "(%(authoritative_source)s, %(schema)s, %(prefix)s)")
 
         self._execute(sql, attr)
-        return self._lastrowid()
+        prefix_id = self._lastrowid()
+
+        self.edit_prefix({ 'schema': attr['schema'], 'prefix': attr['prefix'] }, attr)
+
+        return prefix_id
+
+
+
+    def edit_prefix(self, spec, attr):
+        """ Edit prefix.
+        """
+
+        sql = "UPDATE ip_net_plan SET "
+
+        if type(attr) is not dict:
+            raise NapInvalid
+
+        where, params = self._expand_prefix_spec(spec)
+
+        if 'name' in attr:
+            sql += "name = %(name)s, "
+            params['name'] = attr['name']
+        if 'description' in attr:
+            sql += "description = %(description)s, "
+            params['description'] = attr['description']
+        if 'default_type' in attr:
+            sql += "default_type = %(default_type)s, "
+            params['default_type'] = attr['default_type']
+        if 'schema' in attr:
+            sql += "schema = %(schema)s, "
+            params['schema'] = attr['schema']
+
+        sql = sql[:-2] +  " FROM ip_net_plan AS p WHERE ip_net_plan.id = p.id AND " + where
+        self._execute(sql, params)
 
 
 
