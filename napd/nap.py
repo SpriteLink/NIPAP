@@ -84,13 +84,22 @@ class Nap:
         """
 
         if type(spec) is not dict:
-            raise NapInputError('schema specification must be dict')
+            raise NapInputError("Schema specification must be dict")
+
+        allowed_values = ['id', 'name']
+        for a in spec:
+            if a not in allowed_values:
+                raise NapInputError("Extraneous specification key %s" %a)
 
         params = {}
         if 'id' in spec:
+            if long(spec['id']) != spec['id']:
+                raise NapValueError("Id should be an integer")
             where = " id = %(spec_id)s "
             params['spec_id'] = spec['id']
         elif 'name' in spec:
+            if type(spec['name']) != type(''):
+                raise NapValueError("Name should be an string")
             where = " name = %(spec_name)s "
             params['spec_name'] = spec['name']
         else:

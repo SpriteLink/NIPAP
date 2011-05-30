@@ -102,6 +102,32 @@ class NapTest(unittest.TestCase):
 
 
 
+    def test_expand_schema_spec(self):
+        """ Test the expand_schema_spec()
+
+            The _expand_schema_spec() function is used throughout the schema
+            functions to expand the schema specification input and so we test
+            the separately.
+        """
+        # missing keys
+        self.assertRaises(nap.NapMissingInputError, self.nap._expand_schema_spec, { })
+        # crap key
+        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, { 'crap': self.schema_attrs['name'] })
+        # required keys and extra crap
+        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, { 'name': self.schema_attrs['name'], 'crap': 'crap' })
+        # proper key but incorrect value (int vs string)
+        self.assertRaises(nap.NapValueError, self.nap._expand_schema_spec, { 'id': '3' })
+        # proper key but incorrect value (int vs string)
+        self.assertRaises(nap.NapValueError, self.nap._expand_schema_spec, { 'name': 3 })
+        # proper key - id
+        where, params = self.nap._expand_schema_spec({ 'id': 3 })
+        self.assertEqual(where, ' id = %(spec_id)s ', "Improperly expanded WHERE clause")
+        self.assertEqual(params, {'spec_id': 3}, "Improperly expanded params dict")
+        # proper spec - name
+        where, params = self.nap._expand_schema_spec({ 'name': 'test' })
+
+
+
     def test_schema_edit_crap_input(self):
         """ Try to input junk into edit_schema and expect error
 
@@ -115,11 +141,7 @@ class NapTest(unittest.TestCase):
                 'description': 'A simple test schema with incorrect name!',
                 'crap': 'this is just some crap'
                 }
-        # crap spec
-        self.assertRaises(nap.NapMissingInputError, self.nap.edit_schema, { 'crap': self.schema_attrs['name'] }, attrs)
-        # proper spec, totally crap attr
-        self.assertRaises(nap.NapMissingInputError, self.nap.edit_schema, { 'name': self.schema_attrs['name'] }, { 'crap': 'crap' })
-        # proper spec, required attr and extra crap
+        # spec is tested elsewhere, just test attrs part
         self.assertRaises(nap.NapInputError, self.nap.edit_schema, { 'name': self.schema_attrs['name'] }, crap_attrs)
 
 
@@ -129,19 +151,7 @@ class NapTest(unittest.TestCase):
 
         """
         # TODO: what do we really expect?
-        self.assertRaises(nap.NapMissingInputError, self.nap.list_schema, { 'crap': 'crap crap' })
-
-
-
-    def test_schema_remove_crap_input(self):
-        """ Try to input junk into remove_schema and expect error
-
-        """
-        # just crap spec
-        self.assertRaises(nap.NapMissingInputError, self.nap.remove_schema, { 'crap': 'crap crap' })
-        # contains required attrs plus some crap
-        # TODO: fix this!
-        #self.assertRaises(nap.NapInputError, self.nap.remove_schema, { 'name': self.schema_attrs['name'], 'crap': 'crap crap' })
+        self.assertRaises(nap.NapInputError, self.nap.list_schema, { 'crap': 'crap crap' })
 
 
 
