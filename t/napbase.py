@@ -48,6 +48,20 @@ class NapTest(unittest.TestCase):
                 'description': 'Test prefix numero uno!'
                 }
         self.prefix_attrs['id'] = self.nap.add_prefix(self.prefix_attrs)
+        self.prefix_attrs2 = {
+                'authoritative_source': 'naptest',
+                'schema': self.schema_attrs['id'],
+                'prefix': '1.3.3.0/24',
+                'description': ''
+                }
+        self.prefix_attrs2['id'] = self.nap.add_prefix(self.prefix_attrs2)
+        self.prefix_attrs3 = {
+                'authoritative_source': 'naptest',
+                'schema': self.schema_attrs['id'],
+                'prefix': '1.3.0.0/16',
+                'description': ''
+                }
+        self.prefix_attrs3['id'] = self.nap.add_prefix(self.prefix_attrs3)
 
 
 
@@ -233,7 +247,7 @@ class NapTest(unittest.TestCase):
 
 
     def test_prefix_basic(self):
-        """
+        """ Test basic prefix functions
         """
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
@@ -246,6 +260,12 @@ class NapTest(unittest.TestCase):
         prefix = self.nap.list_prefix({ 'prefix': prefix_attrs['prefix'] })
         for a in prefix_attrs:
             self.assertEqual(prefix[0][a], prefix_attrs[a], 'Added object differ from listed on attribute: ' + a)
+
+
+
+    def test_prefix_indent(self):
+        """
+        """
 
 
 
