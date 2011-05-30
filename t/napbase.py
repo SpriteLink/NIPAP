@@ -41,6 +41,13 @@ class NapTest(unittest.TestCase):
                 'default_type': 'assignment'
                 }
         self.pool_attrs['id'] = self.nap.add_pool(self.pool_attrs)
+        self.prefix_attrs = {
+                'authoritative_source': 'naptest',
+                'schema': self.schema_attrs['id'],
+                'prefix': '1.3.3.1/32',
+                'description': 'Test prefix numero uno!'
+                }
+        self.prefix_attrs['id'] = self.nap.add_prefix(self.prefix_attrs)
 
 
 
