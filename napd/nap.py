@@ -55,6 +55,7 @@ class Nap:
         return where, params
 
 
+
     def add_schema(self, attr):
         """ Add a new network schema.
         """
@@ -77,6 +78,7 @@ class Nap:
         return self._lastrowid()
 
 
+
     def remove_schema(self, spec):
         """ Removes a schema.
         """
@@ -86,6 +88,7 @@ class Nap:
         where, params = self._expand_schema_spec(spec)
         sql = "DELETE FROM ip_net_schema WHERE %s" % where
         self._execute(sql, params)
+
 
 
     def list_schema(self, spec=None):
@@ -106,6 +109,7 @@ class Nap:
             res.append(dict(row))
 
         return res
+
 
     
     def edit_schema(self, spec, attr):
@@ -128,6 +132,7 @@ class Nap:
 
         sql = sql[:-2] + " WHERE " + where
         self._execute(sql, params)
+
 
 
     #
@@ -156,6 +161,7 @@ class Nap:
         return where, params
 
 
+
     def add_pool(self, attr):
         """ Add a pool.
         """
@@ -177,6 +183,7 @@ class Nap:
         self._execute(sql, attr)
         return self._lastrowid()
 
+
     
     def remove_pool(self, spec):
         """ Remove a pool.
@@ -190,6 +197,7 @@ class Nap:
 
         sql = "DELETE FROM ip_net_pool AS po WHERE %s" % where
         self._execute(sql, params)
+
 
 
     def list_pool(self, spec = None):
@@ -212,6 +220,7 @@ class Nap:
             res.append(dict(row))
 
         return res
+
 
 
     def edit_pool(self, spec, attr):
@@ -242,6 +251,7 @@ class Nap:
         self._execute(sql, params)
 
 
+
     #
     # PREFIX FUNCTIONS
     #
@@ -270,6 +280,7 @@ class Nap:
             raise NapError('missing valid search key in prefix spec')
 
         return where, params
+
 
 
     def add_prefix(self, attr):
@@ -334,6 +345,7 @@ class Nap:
         """
 
 
+
     def list_prefix(self, spec):
         """ List prefixes
         """
@@ -387,6 +399,7 @@ class Nap:
         return res
 
 
+
     def _execute(self, sql, opt=None):
         """ Execute query, catch and log errors. 
         """
@@ -401,6 +414,7 @@ class Nap:
             raise NapError(estr)
         except psycopg2.Warning, w:
             self._logger.warning(str(w))
+
 
     
     def _lastrowid(self):
