@@ -218,17 +218,20 @@ class NapPrefixTest(unittest.TestCase):
         self.pool_attrs['id'] = self.nap.add_pool(self.pool_attrs)
 
 
+
     def test_prefix_basic(self):
         """
         """
         prefix_attrs = {
+                'authoritative_source': 'nap-test',
                 'schema': self.schema_attrs['id'],
                 'prefix': '1.3.3.7/32',
                 'description': 'test prefix'
                 }
         self.nap.add_prefix(prefix_attrs)
         prefix = self.nap.list_prefix({ 'prefix': prefix_attrs['prefix'] })
-        self.assertEqual(prefix[0], prefix_attrs)
+        for a in prefix_attrs:
+            self.assertEqual(prefix[0][a], prefix_attrs[a], 'Added object differ from listed on attribute: ' + a)
 
 
 
