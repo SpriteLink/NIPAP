@@ -404,6 +404,9 @@ class Nap:
 
             # search keys:
             # family, schema, type, pool, prefix
+            if 'id' in spec:
+                where += "id = %s AND "
+                params.append(spec['id'])
             if 'family' in spec:
                 where += "family = %s AND "
                 params.append(spec['family'])

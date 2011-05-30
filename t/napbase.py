@@ -263,6 +263,21 @@ class NapTest(unittest.TestCase):
 
 
 
+    def test_prefix_remove(self):
+        """ Remove a prefix
+        """
+        prefix = self.nap.list_prefix({ 'id': self.prefix_attrs['id'] })
+        # first make sure our prefix exists
+        self.assertEqual(prefix[0]['id'], self.prefix_attrs['id'], 'Record must exist before we can delete it')
+        # remove the prefix, by id
+        # FIXME: uncomment when remove_prefix() is implemented
+        #self.nap.remove_prefix({ 'id': self.prefix_attrs['id'] })
+        # check that search for old record doesn't return anything
+        #prefix = self.nap.list_prefix({ 'id': self.prefix_attrs['id'] })
+        #self.assertEqual(prefix[0]['id'], self.prefix_attrs['id'], 'Old entry still exists')
+
+
+
     def test_prefix_indent(self):
         """
         """
