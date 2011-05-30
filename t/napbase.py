@@ -223,7 +223,8 @@ class NapPrefixTest(unittest.TestCase):
                 'authoritative_source': 'nap-test',
                 'schema': self.schema_attrs['id'],
                 'prefix': '1.3.3.7/32',
-                'description': 'test prefix'
+                'description': 'test prefix',
+                'comment': 'test comment, please remove! ;)'
                 }
         self.nap.add_prefix(prefix_attrs)
         prefix = self.nap.list_prefix({ 'prefix': prefix_attrs['prefix'] })
