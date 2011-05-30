@@ -23,6 +23,7 @@ class Nap:
         # Create database connection
         try:
             self._con_pg = psycopg2.connect("host='localhost' dbname='nap' user='napd' password='dpan'")
+            self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
         except psycopg2.Error, e:
             estr = str(e)
@@ -39,7 +40,6 @@ class Nap:
 
         try:
             self._curs_pg.execute(sql, opt)
-            self._con_pg.commit()
         except psycopg2.Error, e:
             self._con_pg.rollback()
             estr = "Unable to execute query: %s" % e
