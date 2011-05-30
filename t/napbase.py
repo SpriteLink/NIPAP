@@ -13,12 +13,14 @@ log_format = "%(levelname)-8s %(message)s"
 import nap
 
 
-class NapSchemaTest(unittest.TestCase):
-    """ Tests the schema features of NAP
+class NapTest(unittest.TestCase):
+    """ Tests the NAP class
     """
 
     logger = logging.getLogger()
     nap = nap.Nap()
+
+
 
     def setUp(self):
         """ Better start from a clean slate!
@@ -27,12 +29,19 @@ class NapSchemaTest(unittest.TestCase):
         self.nap._execute("DELETE FROM ip_net_pool")
         self.nap._execute("DELETE FROM ip_net_schema")
 
-        attrs = {
+        self.schema_attrs = {
                 'name': 'test-schema1',
                 'description': 'Test schema numero uno!'
                 }
-        schema_id = self.nap.add_schema(attrs)
-        self.nap.add_schema
+        self.schema_attrs['id'] = self.nap.add_schema(self.schema_attrs)
+        self.pool_attrs = {
+                'schema': self.schema_attrs['id'],
+                'name': 'test-pool1',
+                'description': 'Test schema numero uno!',
+                'default_type': 'assignment'
+                }
+        self.pool_attrs['id'] = self.nap.add_pool(self.pool_attrs)
+
 
 
     def test_schema_basic(self):
@@ -47,11 +56,10 @@ class NapSchemaTest(unittest.TestCase):
                 'name': 'test-schema-wrong',
                 'description': 'A simple test schema with incorrect name!'
                 }
-        schema_id = self.nap.add_schema(attrs)
-        schema = self.nap.list_schema({ 'id': schema_id })
-        self.assertEqual(schema[0]['id'], schema_id, 'Add operations returned id differ from listed id')
-        self.assertEqual(schema[0]['name'], attrs['name'], 'Added name differ from listed name')
-        self.assertEqual(schema[0]['description'], attrs['description'], 'Added description differ from listed description')
+        attrs['id'] = self.nap.add_schema(attrs)
+        schema = self.nap.list_schema({ 'id': attrs['id'] })
+        for a in attrs:
+            self.assertEqual(schema[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
 
 
 
@@ -90,7 +98,7 @@ class NapSchemaTest(unittest.TestCase):
         self.assertEqual(schema, [], 'Old entry still exists')
         schema = self.nap.list_schema({ 'name': 'test-schema' })
         for a in attrs:
-            self.assertEqual(schema[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
+            self.assertEqual(schema[0][a], attrs[a], 'Modified schema differ from listed on attribute: ' + a)
 
 
 
@@ -107,41 +115,12 @@ class NapSchemaTest(unittest.TestCase):
 
 
 
-class NapPoolTest(unittest.TestCase):
-    """ Tests the pool features of NAP
-    """
-
-    logger = logging.getLogger()
-    nap = nap.Nap()
-
-    def setUp(self):
-        """ Better start from a clean slate!
-        """
-        self.nap._execute("DELETE FROM ip_net_plan")
-        self.nap._execute("DELETE FROM ip_net_pool")
-        self.nap._execute("DELETE FROM ip_net_schema")
-
-        self.schema_attrs = {
-                'name': 'test-schema1',
-                'description': 'Test schema numero uno!'
-                }
-        self.schema_id = self.nap.add_schema(self.schema_attrs)
-        self.pool_attrs = {
-                'schema': self.schema_id,
-                'name': 'test-pool1',
-                'description': 'Test schema numero uno!',
-                'default_type': 'assignment'
-                }
-        self.pool_attrs['id'] = self.nap.add_pool(self.pool_attrs)
-
-
-
     def test_pool_add(self):
         """ Add a pool and check it's there using list functions
         """
         attrs = {
                 'name': 'test-pool-wrong',
-                'schema': self.schema_id,
+                'schema': self.schema_attrs['id'],
                 'default_type': 'reservation',
                 'description': 'A simple test pool with incorrect name!'
                 }
@@ -182,37 +161,6 @@ class NapPoolTest(unittest.TestCase):
         # check that search for old record doesn't return anything
         pool = self.nap.list_pool({ 'name': self.pool_attrs['name'] })
         self.assertEqual(pool, [], 'Old entry still exists')
-
-
-
-
-
-class NapPrefixTest(unittest.TestCase):
-    """ Tests the prefix features of NAP
-    """
-
-    logger = logging.getLogger()
-    nap = nap.Nap()
-
-    def setUp(self):
-        """ Better start from a clean slate!
-        """
-        self.nap._execute("DELETE FROM ip_net_plan")
-        self.nap._execute("DELETE FROM ip_net_pool")
-        self.nap._execute("DELETE FROM ip_net_schema")
-
-        self.schema_attrs = {
-                'name': 'test-schema1',
-                'description': 'Test schema numero uno!'
-                }
-        self.schema_attrs['id'] = self.nap.add_schema(self.schema_attrs)
-        self.pool_attrs = {
-                'schema': self.schema_attrs['id'],
-                'name': 'test-pool1',
-                'description': 'Test schema numero uno!',
-                'default_type': 'assignment'
-                }
-        self.pool_attrs['id'] = self.nap.add_pool(self.pool_attrs)
 
 
 
