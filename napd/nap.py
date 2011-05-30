@@ -446,6 +446,19 @@ class Nap:
 
 
 
+    def remove_prefix(self, spec):
+        """ Remove a prefix.
+        """
+
+        self._logger.debug("Removing prefix; spec: %s" % str(spec))
+
+        where, params = self._expand_prefix_spec(spec)
+
+        sql = "DELETE FROM ip_net_plan AS p WHERE %s" % where
+        self._execute(sql, params)
+
+
+
 
 class NapError(Exception):
     """ General NAP errors
