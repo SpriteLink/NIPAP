@@ -278,7 +278,12 @@ class NapTest(unittest.TestCase):
 
 
     def test_prefix_indent(self):
-        """
+        """ Check that our indentation calculation is working
+
+            Prefixes gets an indent value automatically assigned to help in
+            displaying prefix information. The indent value is written on
+            updates to the table and this test is to make sure it is correctly
+            calculated.
         """
         p1 = self.nap.list_prefix({ 'prefix': '1.3.3.1/32' })[0]
         p2 = self.nap.list_prefix({ 'prefix': '1.3.3.0/24' })[0]
@@ -287,8 +292,12 @@ class NapTest(unittest.TestCase):
         self.assertEqual(p2['indent'], 1, "Indent calc on add failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on add failed")
         # remove middle prefix
-        # FIXME: uncomment when remove_prefix() is implemented
-        #self.nap.remove_prefix({ 'id': self.prefix_attrs2['id'] })
+        self.nap.remove_prefix({ 'id': self.prefix_attrs2['id'] })
+        # check that child prefix indent level has decreased
+        p1 = self.nap.list_prefix({ 'prefix': '1.3.3.1/32' })[0]
+        p3 = self.nap.list_prefix({ 'prefix': '1.3.0.0/16' })[0]
+        self.assertEqual(p1['indent'], 1, "Indent calc on remove failed")
+        self.assertEqual(p3['indent'], 0, "Indent calc on remove failed")
 
 
 
