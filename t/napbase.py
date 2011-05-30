@@ -70,6 +70,67 @@ class NapTest(unittest.TestCase):
 
 
 
+    def test_schema_add_crap_input(self):
+        """ Try to input junk into add_schema and expect error
+
+        """
+        attrs = {
+                'name': 'test-schema-crap',
+                'description': 'A simple test schema with incorrect name!',
+                'crap': 'this is just some crap'
+                }
+        # missing everything
+        self.assertRaises(nap.NapMissingInputError, self.nap.add_schema, { })
+        # missing description
+        self.assertRaises(nap.NapMissingInputError, self.nap.add_schema, { 'name': 'crapson' })
+        # have required and extra crap
+        self.assertRaises(nap.NapInputError, self.nap.add_schema, attrs)
+
+
+
+    def test_schema_edit_crap_input(self):
+        """ Try to input junk into edit_schema and expect error
+
+        """
+        attrs = {
+                'name': 'test-schema-crap',
+                'description': 'A simple test schema with incorrect name!'
+                }
+        crap_attrs = {
+                'name': 'test-schema-crap',
+                'description': 'A simple test schema with incorrect name!',
+                'crap': 'this is just some crap'
+                }
+        # crap spec
+        self.assertRaises(nap.NapMissingInputError, self.nap.edit_schema, { 'crap': self.schema_attrs['name'] }, attrs)
+        # proper spec, totally crap attr
+        self.assertRaises(nap.NapMissingInputError, self.nap.edit_schema, { 'name': self.schema_attrs['name'] }, { 'crap': 'crap' })
+        # proper spec, required attr and extra crap
+        self.assertRaises(nap.NapInputError, self.nap.edit_schema, { 'name': self.schema_attrs['name'] }, crap_attrs)
+
+
+
+    def test_schema_list_crap_input(self):
+        """ Try to input junk into list_schema and expect error
+
+        """
+        # TODO: what do we really expect?
+        self.assertRaises(nap.NapMissingInputError, self.nap.list_schema, { 'crap': 'crap crap' })
+
+
+
+    def test_schema_remove_crap_input(self):
+        """ Try to input junk into remove_schema and expect error
+
+        """
+        # just crap spec
+        self.assertRaises(nap.NapMissingInputError, self.nap.remove_schema, { 'crap': 'crap crap' })
+        # contains required attrs plus some crap
+        # TODO: fix this!
+        #self.assertRaises(nap.NapInputError, self.nap.remove_schema, { 'name': self.schema_attrs['name'], 'crap': 'crap crap' })
+
+
+
     def test_schema_dupe(self):
         """ Check so we can't create duplicate schemas
 

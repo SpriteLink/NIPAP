@@ -32,6 +32,50 @@ class Nap:
             self._logger.warning(str(w))
 
 
+
+    def _execute(self, sql, opt=None):
+        """ Execute query, catch and log errors.
+        """
+
+        try:
+            self._curs_pg.execute(sql, opt)
+            self._con_pg.commit()
+        except psycopg2.Error, e:
+            self._con_pg.rollback()
+            estr = "Unable to execute query: %s" % e
+            self._logger.error(estr)
+            raise NapError(estr)
+        except psycopg2.Warning, w:
+            self._logger.warning(str(w))
+
+
+
+    def _lastrowid(self):
+        """ Get ID of last inserted column.
+        """
+
+        # TODO: hmm, we can do this by doing fetchone() on our cursor
+        self._execute("SELECT lastval() AS last")
+        for row in self._curs_pg:
+            return row['last']
+
+
+
+    def _check_attr(self, attr, req_attr, allowed_attr):
+        """
+        """
+        if type(attr) is not dict:
+            raise NapInputInvalid
+
+        for a in req_attr:
+            if not a in attr:
+                raise NapMissingInputError("Missing attribute %s" % a)
+        for a in attr:
+            if a not in allowed_attr:
+                raise NapInputError("Extraneous attribute %s" % a)
+
+
+
     #
     # Schema functions
     #
@@ -40,7 +84,7 @@ class Nap:
         """
 
         if type(spec) is not dict:
-            raise NapError('schema specification must be dict')
+            raise NapInputError('schema specification must be dict')
 
         params = {}
         if 'id' in spec:
@@ -50,7 +94,7 @@ class Nap:
             where = " name = %(spec_name)s "
             params['spec_name'] = spec['name']
         else:
-            raise NapError('missing both id and name in schema spec')
+            raise NapMissingInputError('missing both id and name in schema spec')
 
         return where, params
 
@@ -61,11 +105,9 @@ class Nap:
         """
 
         # sanity check - do we have all attributes?
-        req_attr = ['name', 'description']
-
-        for a in req_attr:
-            if not a in attr:
-                raise NapMissingValueError("missing %s" % a)
+        req_attr = [ 'name', 'description']
+        allowed_attr = [ 'name', 'description' ]
+        self._check_attr(attr, req_attr, allowed_attr)
 
         self._logger.debug("Adding schema; name: %s desc: %s" %
             (attr['name'], attr['description']))
@@ -82,7 +124,6 @@ class Nap:
     def remove_schema(self, spec):
         """ Removes a schema.
         """
-
         self._logger.debug("Removing schema; spec: %s" % str(spec))
 
         where, params = self._expand_schema_spec(spec)
@@ -115,11 +156,13 @@ class Nap:
     def edit_schema(self, spec, attr):
         """ Edit a schema.
         """
+
+        # sanity check - do we have all attributes?
+        req_attr = [ 'name', 'description']
+        allowed_attr = [ 'name', 'description' ]
+        self._check_attr(attr, req_attr, allowed_attr)
         
         sql = "UPDATE ip_net_schema SET "
-
-        if type(attr) is not dict:
-            raise NapInvalid
 
         where, params = self._expand_schema_spec(spec)
 
@@ -171,7 +214,7 @@ class Nap:
 
         for a in req_attr:
             if not a in attr:
-                raise NapMissingValueError("missing %s" % a)
+                raise NapMissingInputError("missing %s" % a)
 
         self._logger.debug("Adding pool; name: %s desc: %s" %
             (attr['name'], attr['description']))
@@ -291,7 +334,7 @@ class Nap:
 
         for a in req_attr:
             if not a in attr:
-                raise NapMissingValueError("missing %s" % a)
+                raise NapMissingInputError("missing %s" % a)
 
         self._logger.debug("Adding prefix; schema: %s prefix: %s desc: %s" %
             (attr['schema'], attr['prefix'], attr['description']))
@@ -400,35 +443,29 @@ class Nap:
 
 
 
-    def _execute(self, sql, opt=None):
-        """ Execute query, catch and log errors. 
-        """
-
-        try:
-            self._curs_pg.execute(sql, opt)
-            self._con_pg.commit()
-        except psycopg2.Error, e:
-            self._con_pg.rollback()
-            estr = "Unable to execute query: %s" % e
-            self._logger.error(estr)
-            raise NapError(estr)
-        except psycopg2.Warning, w:
-            self._logger.warning(str(w))
-
-
-    
-    def _lastrowid(self):
-        """ Get ID of last inserted column.
-        """
-
-        # TODO: hmm, we can do this by doing fetchone() on our cursor
-        self._execute("SELECT lastval() AS last")
-        for row in self._curs_pg:
-            return row['last']
-
 
 class NapError(Exception):
+    """ General NAP errors
+    """
     pass
 
-class NapMissingValueError(NapError):
+class NapInputError(NapError):
+    """ Something wrong with the input we received
+
+        For example, an extra key in a dict.
+    """
+    pass
+
+class NapMissingInputError(NapError):
+    """ Missing input
+
+        Most input is passed in dicts, this could mean a missing key in a dict.
+    """
+    pass
+
+class NapValueError(NapError):
+    """ Something wrong with a value we have
+
+        For example, trying to send an integer when an IP address is expected.
+    """
     pass
