@@ -29,7 +29,7 @@ class Nap:
             estr = str(e)
             self._logger.error(estr)
             raise NapError(estr)
-        except psycopg2.Warning, w: 
+        except psycopg2.Warning, w:
             self._logger.warning(str(w))
 
 
@@ -168,7 +168,7 @@ class Nap:
         return res
 
 
-    
+
     def edit_schema(self, spec, attr):
         """ Edit a schema.
         """
@@ -177,7 +177,7 @@ class Nap:
         req_attr = [ 'name', 'description']
         allowed_attr = [ 'name', 'description' ]
         self._check_attr(attr, req_attr, allowed_attr)
-        
+
         sql = "UPDATE ip_net_schema SET "
 
         where, params = self._expand_schema_spec(spec)
@@ -228,8 +228,6 @@ class Nap:
         """ Add a pool.
         """
 
-        self._logger.debug("add_pool() called; spec: %s" % str(attr))
-
         # sanity check - do we have all attributes?
         req_attr = ['name', 'schema', 'description', 'default_type']
 
@@ -241,11 +239,13 @@ class Nap:
             "(name, schema, description, default_type) VALUES " +
             "(%(name)s, %(schema)s, %(description)s, %(default_type)s)")
 
+        self._logger.debug("Adding pool; spec: %s" % str(attr))
+
         self._execute(sql, attr)
         return self._lastrowid()
 
 
-    
+
     def remove_pool(self, spec):
         """ Remove a pool.
         """
@@ -264,7 +264,7 @@ class Nap:
     def list_pool(self, spec = None):
         """ List pools.
         """
-        
+
         sql = ("SELECT po.id, po.name, po.description, po.schema, po.default_type " +
             "FROM ip_net_pool AS po LEFT JOIN ip_net_plan AS pl ON pl.pool = po.id ")
         params = list()
@@ -450,7 +450,7 @@ class Nap:
             if 'prefix' in spec:
                 where += "prefix = %s AND "
                 params.append(spec['prefix'])
-    
+
             if len(where) == 0:
                 raise NapError("no valid search keys found in spec")
 
