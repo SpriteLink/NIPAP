@@ -61,6 +61,7 @@ class Nap:
 
 
 
+    # TODO: make this more generic and use for testing of spec too?
     def _check_attr(self, attr, req_attr, allowed_attr):
         """
         """
@@ -81,6 +82,17 @@ class Nap:
     #
     def _expand_schema_spec(self, spec):
         """ Expand schema specification to SQL.
+
+            id [integer]
+                internal database id of schema
+
+            name [string]
+                name of schema
+
+            A schema is referenced either by its internal database id or by its
+            name. Both are used for exact matching and so no wildcard or
+            regular expressions are allowed. Only one key may be used and an
+            error will be thrown if both id and name is specified.
         """
 
         if type(spec) is not dict:
