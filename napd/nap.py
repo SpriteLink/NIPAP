@@ -283,6 +283,9 @@ class Nap:
                 raise NapInputError("pool specification contain both 'id' and 'key', specify pool id or name")
             # name is only unique together with schema, find schema
             # check that given schema exists and populate 'schema' with correct id
+            # TODO: can we split this into a separate function or something?
+            #       This whole thing looks awefully complex when it really
+            #       should not
             if 'schema_id' in spec:
                 if 'schema_name' in spec:
                     raise NapInputError("schema specification contain both 'id' and 'name', specify schema id or name")
