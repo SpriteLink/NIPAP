@@ -61,13 +61,13 @@ class Nap:
 
 
 
-    def _sql_expand_where(self, spec, key_prefix = ''):
+    def _sql_expand_where(self, spec, key_prefix = '', col_prefix = ''):
         """ Expand a dict so it fits in a WHERE clause
 
             Logical operator is AND.
         """
 
-        sql = ' AND '.join(key + ' = %(' + key_prefix + key + ')s' for key in spec)
+        sql = ' AND '.join(col_prefix + key + ' = %(' + key_prefix + key + ')s' for key in spec)
         params = {}
         for key in spec:
             params[key_prefix + key] = spec[key]
@@ -113,7 +113,7 @@ class Nap:
         """
 
         if type(spec) is not dict:
-            raise NapInputError("schema specification must be dict")
+            raise NapInputError("schema specification must be a dict")
 
         allowed_values = ['id', 'name']
         for a in spec:
@@ -243,20 +243,27 @@ class Nap:
         """
 
         if type(spec) is not dict:
-            raise NapError('invalid pool specification')
+            raise NapInputError("pool specification must be a dict")
 
-        params = {}
+        allowed_values = ['id', 'name']
+        for a in spec:
+            if a not in allowed_values:
+                raise NapInputError("extraneous specification key %s" % a)
+
         if 'id' in spec:
-            where = " po.id = %(spec_id)s "
-            params['spec_id'] = spec['id']
+            if long(spec['id']) != spec['id']:
+                raise NapValueError("pool specification key 'id' must be an integer")
+            if 'name' in spec:
+                raise NapInputError("pool specification contain both 'id' and 'key', specify pool id or name")
         elif 'name' in spec:
-            where = " po.name = %(spec_name)s "
-            params['spec_name'] = spec['name']
-        elif 'family' in spec:
-            where = "pl.family = %(spec_family)s "
-            params['spec_family'] = spec['family']
+            if type(spec['name']) != type(''):
+                raise NapValueError("pool specification key 'name' must be a string")
+            if 'id' in spec:
+                raise NapInputError("pool specification contain both 'id' and 'key', specify pool id or name")
         else:
-            raise NapError('missing valid search key in pool spec')
+            raise NapMissingInputError('missing both id and name in pool spec')
+
+        where, params = self._sql_expand_where(spec, 'spec_', 'po.')
 
         return where, params
 
