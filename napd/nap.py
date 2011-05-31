@@ -78,6 +78,18 @@ class Nap:
 
 
 
+    def _sql_expand_update(self, spec, key_prefix = '', col_prefix = ''):
+        """ Expand a dict so it fits in a INSERT clause
+        """
+        sql = ', '.join(col_prefix + key + ' = %(' + key_prefix + key + ')s' for key in spec)
+        params = {}
+        for key in spec:
+            params[key_prefix + key] = spec[key]
+
+        return sql, params
+
+
+
     def _sql_expand_where(self, spec, key_prefix = '', col_prefix = ''):
         """ Expand a dict so it fits in a WHERE clause
 
@@ -233,18 +245,13 @@ class Nap:
         allowed_attr = [ 'name', 'description' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
-        sql = "UPDATE ip_net_schema SET "
+        where, params1 = self._expand_schema_spec(spec)
+        update, params2 = self._sql_expand_update(attr)
+        params = dict(params2.items() + params1.items())
 
-        where, params = self._expand_schema_spec(spec)
+        sql = "UPDATE ip_net_schema SET " + update
+        sql += " WHERE " + where
 
-        if 'name' in attr:
-            sql += "name = %(name)s, "
-            params['name'] = attr['name']
-        if 'description' in attr:
-            sql += "description = %(description)s, "
-            params['description'] = attr['description']
-
-        sql = sql[:-2] + " WHERE " + where
         self._execute(sql, params)
 
 
