@@ -125,6 +125,8 @@ class NapTest(unittest.TestCase):
         self.assertRaises(nap.NapValueError, self.nap._expand_schema_spec, { 'id': '3' })
         # proper key but incorrect value (int vs string)
         self.assertRaises(nap.NapValueError, self.nap._expand_schema_spec, { 'name': 3 })
+        # both id and name
+        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, { 'id': 3, 'name': '3' })
         # proper key - id
         where, params = self.nap._expand_schema_spec({ 'id': 3 })
         self.assertEqual(where, ' id = %(spec_id)s ', "Improperly expanded WHERE clause")

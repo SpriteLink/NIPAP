@@ -65,14 +65,17 @@ class Nap:
         """
         """
         if type(attr) is not dict:
-            raise NapInputInvalid
+            self._logger.error("invalid input type, must be dict")
+            raise NapInputError()
 
         for a in req_attr:
             if not a in attr:
-                raise NapMissingInputError("Missing attribute %s" % a)
+                self._logger.error("missing attribute %s" % a)
+                raise NapMissingInputError("missing attribute %s" % a)
         for a in attr:
             if a not in allowed_attr:
-                raise NapInputError("Extraneous attribute %s" % a)
+                self._logger.error("missing attribute %s" % a)
+                raise NapInputError("extraneous attribute %s" % a)
 
 
 
@@ -80,26 +83,35 @@ class Nap:
     # Schema functions
     #
     def _expand_schema_spec(self, spec):
-        """ Expand schema specification to sql.
+        """ Expand schema specification to SQL.
         """
 
         if type(spec) is not dict:
-            raise NapInputError("Schema specification must be dict")
+            raise NapInputError("schema specification must be dict")
 
         allowed_values = ['id', 'name']
         for a in spec:
             if a not in allowed_values:
-                raise NapInputError("Extraneous specification key %s" %a)
+                self._logger.error("schema specification contains extraneous key %s" % a)
+                raise NapInputError("extraneous specification key %s" % a)
 
         params = {}
         if 'id' in spec:
             if long(spec['id']) != spec['id']:
-                raise NapValueError("Id should be an integer")
+                self._logger.error("schema specification key 'id' must be an integer")
+                raise NapValueError("schema specification key 'id' must be an integer")
+            if 'name' in spec:
+                self._logger.error("schema specification contain both 'id' and 'key', specify schema id or name")
+                raise NapInputError("schema specification contain both 'id' and 'key', specify schema id or name")
             where = " id = %(spec_id)s "
             params['spec_id'] = spec['id']
         elif 'name' in spec:
             if type(spec['name']) != type(''):
-                raise NapValueError("Name should be an string")
+                self._logger.error("schema specification key 'name' must be a string")
+                raise NapValueError("schema specification key 'name' must be a string")
+            if 'id' in spec:
+                self._logger.error("schema specification contain both 'id' and 'key', specify schema id or name")
+                raise NapInputError("schema specification contain both 'id' and 'key', specify schema id or name")
             where = " name = %(spec_name)s "
             params['spec_name'] = spec['name']
         else:
@@ -131,7 +143,7 @@ class Nap:
 
 
     def remove_schema(self, spec):
-        """ Removes a schema.
+        """ Remove a schema.
         """
         self._logger.debug("Removing schema; spec: %s" % str(spec))
 
@@ -195,7 +207,7 @@ class Nap:
         """
 
         if type(spec) is not dict:
-            raise NapError('Invalid pool specification')
+            raise NapError('invalid pool specification')
 
         params = {}
         if 'id' in spec:
@@ -282,7 +294,7 @@ class Nap:
         sql = "UPDATE ip_net_pool SET "
 
         if type(attr) is not dict:
-            raise NapInvalid
+            raise NapInvalidError()
 
         where, params = self._expand_pool_spec(spec)
 
@@ -312,7 +324,7 @@ class Nap:
         """
 
         if type(spec) is not dict:
-            raise NapError('Invalid prefix specification')
+            raise NapError('invalid prefix specification')
 
         params = {}
         if 'id' in spec:
@@ -320,12 +332,12 @@ class Nap:
             params['spec_id'] = spec['id']
         elif 'prefix' in spec:
             if 'schema' not in spec:
-                raise NapError('Invalid prefix specification, must include schema and prefix or id (missing schema)')
+                raise NapError('invalid prefix specification, must include schema and prefix or id (missing schema)')
             where = " p.prefix = %(spec_prefix)s "
             params['spec_prefix'] = spec['prefix']
         elif 'schema' in spec:
             if 'prefix' not in spec:
-                raise NapError('Invalid prefix specification, must include schema and prefix or id (missing prefix)')
+                raise NapError('invalid prefix specification, must include schema and prefix or id (missing prefix)')
             where = "p.schema = %(spec_schema)s "
             params['spec_schema'] = spec['schema']
         else:
@@ -368,7 +380,7 @@ class Nap:
         sql = "UPDATE ip_net_plan SET "
 
         if type(attr) is not dict:
-            raise NapInvalid
+            raise NapInputError()
 
         where, params = self._expand_prefix_spec(spec)
 
@@ -474,12 +486,14 @@ class NapError(Exception):
     """
     pass
 
+
 class NapInputError(NapError):
     """ Something wrong with the input we received
 
         For example, an extra key in a dict.
     """
     pass
+
 
 class NapMissingInputError(NapError):
     """ Missing input
@@ -488,9 +502,12 @@ class NapMissingInputError(NapError):
     """
     pass
 
+
 class NapValueError(NapError):
     """ Something wrong with a value we have
 
         For example, trying to send an integer when an IP address is expected.
     """
     pass
+
+
