@@ -152,8 +152,7 @@ class Nap:
 
         # sanity check - do we have all attributes?
         req_attr = [ 'name', 'description']
-        allowed_attr = [ 'name', 'description' ]
-        self._check_attr(attr, req_attr, allowed_attr)
+        self._check_attr(attr, req_attr, req_attr)
 
         sql = ("INSERT INTO ip_net_schema " +
             "(name, description) VALUES " +
@@ -277,10 +276,7 @@ class Nap:
 
         # sanity check - do we have all attributes?
         req_attr = ['name', 'schema', 'description', 'default_type']
-
-        for a in req_attr:
-            if not a in attr:
-                raise NapMissingInputError("missing %s" % a)
+        self._check_attr(attr, req_attr, req_attr)
 
         sql = ("INSERT INTO ip_net_pool " +
             "(name, schema, description, default_type) VALUES " +
@@ -298,8 +294,6 @@ class Nap:
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
 
         where, params = self._expand_schema_spec(spec)
-        if 'family' in spec:
-            raise NapError("don't specify family for remove operation")
 
         sql = "DELETE FROM ip_net_pool AS po WHERE %s" % where
         self._execute(sql, params)
@@ -404,10 +398,8 @@ class Nap:
 
         # sanity check - do we have all attributes?
         req_attr = ['prefix', 'schema', 'description' ]
-
-        for a in req_attr:
-            if not a in attr:
-                raise NapMissingInputError("missing %s" % a)
+        allowed_attr = ['authoritative_source', 'schema', 'prefix', 'description', 'comment']
+        self._check_attr(attr, req_attr, allowed_attr)
 
         sql = ("INSERT INTO ip_net_plan " +
             "(authoritative_source, schema, prefix) VALUES " +
