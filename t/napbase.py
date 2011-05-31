@@ -35,7 +35,7 @@ class NapTest(unittest.TestCase):
                 }
         self.schema_attrs['id'] = self.nap.add_schema(self.schema_attrs)
         self.pool_attrs = {
-                'schema': self.schema_attrs['id'],
+                'schema_id': self.schema_attrs['id'],
                 'name': 'test-pool1',
                 'description': 'Test schema numero uno!',
                 'default_type': 'assignment'
