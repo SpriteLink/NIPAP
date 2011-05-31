@@ -61,6 +61,23 @@ class Nap:
 
 
 
+    def _sql_expand_where(self, spec, key_prefix = ''):
+        """ Expand a dict so it fits in a WHERE clause
+
+            Logical operator is AND.
+        """
+
+        sql = ' AND '.join(key + ' = %(' + key_prefix + key + ')s' for key in spec)
+        params = {}
+        for key in spec:
+            params[key_prefix + key] = spec[key]
+
+        return sql, params
+
+
+
+
+
     # TODO: make this more generic and use for testing of spec too?
     def _check_attr(self, attr, req_attr, allowed_attr):
         """
@@ -103,23 +120,20 @@ class Nap:
             if a not in allowed_values:
                 raise NapInputError("extraneous specification key %s" % a)
 
-        params = {}
         if 'id' in spec:
             if long(spec['id']) != spec['id']:
                 raise NapValueError("schema specification key 'id' must be an integer")
             if 'name' in spec:
                 raise NapInputError("schema specification contain both 'id' and 'key', specify schema id or name")
-            where = " id = %(spec_id)s "
-            params['spec_id'] = spec['id']
         elif 'name' in spec:
             if type(spec['name']) != type(''):
                 raise NapValueError("schema specification key 'name' must be a string")
             if 'id' in spec:
                 raise NapInputError("schema specification contain both 'id' and 'key', specify schema id or name")
-            where = " name = %(spec_name)s "
-            params['spec_name'] = spec['name']
         else:
             raise NapMissingInputError('missing both id and name in schema spec')
+
+        where, params = self._sql_expand_where(spec, 'spec_')
 
         return where, params
 
