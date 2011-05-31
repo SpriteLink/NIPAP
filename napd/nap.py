@@ -354,27 +354,15 @@ class Nap:
         self._logger.debug("edit_pool called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
 
-        sql = "UPDATE ip_net_pool SET "
+        allowed_attr = ['name', 'default_type', 'description']
+        self._check_attr(attr, [], allowed_attr)
 
-        if type(attr) is not dict:
-            raise NapInvalidError()
+        where, params1 = self._expand_pool_spec(spec)
+        update, params2 = self._sql_expand_update(attr)
+        params = dict(params2.items() + params1.items())
 
-        where, params = self._expand_pool_spec(spec)
-
-        if 'name' in attr:
-            sql += "name = %(name)s, "
-            params['name'] = attr['name']
-        if 'description' in attr:
-            sql += "description = %(description)s, "
-            params['description'] = attr['description']
-        if 'default_type' in attr:
-            sql += "default_type = %(default_type)s, "
-            params['default_type'] = attr['default_type']
-        if 'schema' in attr:
-            sql += "schema = %(schema)s, "
-            params['schema'] = attr['schema']
-
-        sql = sql[:-2] +  " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND " + where
+        sql = "UPDATE ip_net_pool SET " + update
+        sql += " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND " + where
 
         self._execute(sql, params)
 
@@ -439,27 +427,16 @@ class Nap:
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
 
-        sql = "UPDATE ip_net_plan SET "
+        allowed_attr = [ 'name', 'description', 'comment', 'schema' ]
 
-        if type(attr) is not dict:
-            raise NapInputError()
+        self._check_attr(attr, [], allowed_attr)
 
-        where, params = self._expand_prefix_spec(spec)
+        where, params1 = self._expand_prefix_spec(spec)
+        update, params2 = self._sql_expand_update(attr)
+        params = dict(params2.items() + params1.items())
 
-        if 'name' in attr:
-            sql += "name = %(name)s, "
-            params['name'] = attr['name']
-        if 'description' in attr:
-            sql += "description = %(description)s, "
-            params['description'] = attr['description']
-        if 'comment' in attr:
-            sql += "comment = %(comment)s, "
-            params['comment'] = attr['comment']
-        if 'schema' in attr:
-            sql += "schema = %(schema)s, "
-            params['schema'] = attr['schema']
-
-        sql = sql[:-2] +  " FROM ip_net_plan AS p WHERE ip_net_plan.id = p.id AND " + where
+        sql = "UPDATE ip_net_plan SET " + update
+        sql += " FROM ip_net_plan AS p WHERE ip_net_plan.id = p.id AND " + where
 
         self._execute(sql, params)
 
