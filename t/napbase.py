@@ -215,12 +215,32 @@ class NapTest(unittest.TestCase):
 
 
 
-    def test_pool_add(self):
+    def test_pool_add1(self):
         """ Add a pool and check it's there using list functions
+
+            Refer to schema by id
         """
         attrs = {
                 'name': 'test-pool-wrong',
-                'schema': self.schema_attrs['id'],
+                'schema_id': self.schema_attrs['id'],
+                'default_type': 'reservation',
+                'description': 'A simple test pool with incorrect name!'
+                }
+        pool_id = self.nap.add_pool(attrs)
+        pool = self.nap.list_pool({ 'id': pool_id })
+        for a in attrs:
+            self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
+
+
+
+    def test_pool_add2(self):
+        """ Add a pool and check it's there using list functions
+
+            Refer to schema by name
+        """
+        attrs = {
+                'name': 'test-pool-wrong',
+                'schema_name': self.schema_attrs['name'],
                 'default_type': 'reservation',
                 'description': 'A simple test pool with incorrect name!'
                 }
