@@ -296,6 +296,20 @@ class Nap:
 
         self._logger.debug("add_pool called; spec: %s" % str(attr))
 
+        # check that given schema exists and populate 'schema' with correct id
+        if 'schema_id' in attr:
+            schema = self.list_schema({ 'id': attr['schema_id'] })
+            if schema == []:
+                raise NapInputError("non-existing schema specified")
+            attr['schema'] = schema[0]['id']
+            del(attr['schema_id'])
+        elif 'schema_name' in attr:
+            schema = self.list_schema({ 'name': attr['schema_name'] })
+            if schema == []:
+                raise NapInputError("non-existing schema specified")
+            attr['schema'] = schema[0]['id']
+            del(attr['schema_name'])
+
         # sanity check - do we have all attributes?
         req_attr = ['name', 'schema', 'description', 'default_type']
         self._check_attr(attr, req_attr, req_attr)
