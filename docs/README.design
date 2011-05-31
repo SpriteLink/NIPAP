@@ -54,10 +54,10 @@ which NAP heavily relies on for it's API functionality.
 Twisted is one of the leading concurrency frameworks allowing developers to
 focus on their own application instead of labour-intensive work surrounding it.
 It is used by companies such as Apple (iCal server) and Spotify (playlist
-service). Twisted includes modules for serving data over XML-RPC and/or SOAP as
-well as a complete toolset for asynchronous calls. For NAP, this means we write
-NAP code and not XML-RPC and concurrency code, as most of that is already
-complete.
+service) to serve hundreds of thousands of users. Twisted includes modules for
+serving data over XML-RPC and/or SOAP as well as a complete toolset for
+asynchronous calls. For NAP, this means we write NAP code and not XML-RPC and
+concurrency code, as most of that is already complete.
 
 
  -- Why XML-RPC? --
@@ -69,10 +69,10 @@ available APIs, it was up to chosing the "right one". Twisted offers built-in
 support for SOAP (WebServices) as well as XML-RPC and given design goals such
 as simple, SOAP didn't quite feel right and so XML-RPC was chosen. It should
 however be noted that NAPs XML-RPC protocol is a thin wrapper around an inner
-core and so exposing a SOAP interface in addition to XML-RPC is little work.
-XML-RPC shares a lot of similarities with SOAP but is very much less complex
-and it is possible for a human to read it in a tcpdump or similar while with
-SOAP one likely needs some interpreter or the brain of Albert Einstein.
+core and so exposing a SOAP interface in addition to XML-RPC can be easily
+achieved. XML-RPC shares a lot of similarities with SOAP but is very much less
+complex and it is possible for a human to read it in a tcpdump or similar while
+with SOAP one likely needs some interpreter or the brain of Albert Einstein.
 
 
 
