@@ -61,6 +61,23 @@ class Nap:
 
 
 
+    def _sql_expand_insert(self, spec, key_prefix = '', col_prefix = ''):
+        """ Expand a dict so it fits in a INSERT clause
+        """
+        col = list(spec)
+        sql = '('
+        sql += ', '.join(col_prefix + key for key in col)
+        sql += ') VALUES ('
+        sql += ', '.join('%(' + key_prefix + key + ')s' for key in col)
+        sql += ')'
+        params = {}
+        for key in spec:
+            params[key_prefix + key] = spec[key]
+
+        return sql, params
+
+
+
     def _sql_expand_where(self, spec, key_prefix = '', col_prefix = ''):
         """ Expand a dict so it fits in a WHERE clause
 
@@ -154,12 +171,10 @@ class Nap:
         req_attr = [ 'name', 'description']
         self._check_attr(attr, req_attr, req_attr)
 
-        sql = ("INSERT INTO ip_net_schema " +
-            "(name, description) VALUES " +
-            "(%(name)s, %(description)s)")
+        insert, params = self._sql_expand_insert(attr)
+        sql = "INSERT INTO ip_net_schema " + insert
 
-
-        self._execute(sql, attr)
+        self._execute(sql, params)
         return self._lastrowid()
 
 
@@ -278,11 +293,10 @@ class Nap:
         req_attr = ['name', 'schema', 'description', 'default_type']
         self._check_attr(attr, req_attr, req_attr)
 
-        sql = ("INSERT INTO ip_net_pool " +
-            "(name, schema, description, default_type) VALUES " +
-            "(%(name)s, %(schema)s, %(description)s, %(default_type)s)")
+        insert, params = self._sql_expand_insert(attr)
+        sql = "INSERT INTO ip_net_pool " + insert
 
-        self._execute(sql, attr)
+        self._execute(sql, params)
         return self._lastrowid()
 
 
@@ -401,14 +415,11 @@ class Nap:
         allowed_attr = ['authoritative_source', 'schema', 'prefix', 'description', 'comment']
         self._check_attr(attr, req_attr, allowed_attr)
 
-        sql = ("INSERT INTO ip_net_plan " +
-            "(authoritative_source, schema, prefix) VALUES " +
-            "(%(authoritative_source)s, %(schema)s, %(prefix)s)")
+        insert, params = self._sql_expand_insert(attr)
+        sql = "INSERT INTO ip_net_plan " + insert
 
-        self._execute(sql, attr)
+        self._execute(sql, params)
         prefix_id = self._lastrowid()
-
-        self.edit_prefix({ 'schema': attr['schema'], 'prefix': attr['prefix'] }, attr)
 
         return prefix_id
 
