@@ -251,8 +251,10 @@ class NapTest(unittest.TestCase):
 
 
 
-    def test_pool_modify(self):
-        """ Rename a pool using edit_pool() function
+    def test_edit_pool_by_name(self):
+        """ Try to rename a pool using edit_pool() function
+
+            Pool is not uniquely identified by name and so this should raise an error
         """
         spec = { 'name': self.pool_attrs['name'] }
         attrs = {
@@ -260,9 +262,22 @@ class NapTest(unittest.TestCase):
                 'default_type': 'assignment',
                 'description': 'A simple test pool with correct name!'
                 }
+        self.assertRaises(nap.NapInputError, self.nap.edit_pool, spec, attrs)
+
+
+
+    def test_edit_pool(self):
+        """ Rename a pool using edit_pool() function
+        """
+        spec = { 'id': self.pool_attrs['id'] }
+        attrs = {
+                'name': 'test-pool',
+                'default_type': 'assignment',
+                'description': 'A simple test pool with correct name!'
+                }
         self.nap.edit_pool(spec, attrs)
         # check that search for old record doesn't return anything
-        pool = self.nap.list_pool(spec)
+        pool = self.nap.list_pool({ 'name': self.pool_attrs['name'] })
         self.assertEqual(pool, [], 'Old entry still exists')
         pool = self.nap.list_pool({ 'name': attrs['name'] })
         for a in attrs:
