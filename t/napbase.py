@@ -215,6 +215,40 @@ class NapTest(unittest.TestCase):
 
 
 
+    def test_expand_pool_spec(self):
+        """
+        """
+        # wrong type
+        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, 'string')
+        # wrong type
+        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, 1)
+        # wrong type
+        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, [])
+        # missing keys
+        self.assertRaises(nap.NapMissingInputError, self.nap._expand_pool_spec, { })
+        # crap key
+        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, { 'crap': self.pool_attrs['name'] })
+        # required keys and extra crap
+        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, { 'id': self.pool_attrs['id'], 'crap': 'crap' })
+        # proper key but incorrect value (int vs string)
+        self.assertRaises(nap.NapValueError, self.nap._expand_pool_spec, { 'id': '3' })
+        # non unique key
+        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, { 'name': self.pool_attrs['name'] })
+        # proper key but incorrect value (int vs string)
+        self.assertRaises(nap.NapValueError, self.nap._expand_pool_spec, { 'name': 3 })
+        # both id and name
+        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, { 'id': 3, 'name': '3' })
+        # proper key - id
+        where, params = self.nap._expand_pool_spec({ 'id': 3 })
+        self.assertEqual(where, 'po.id = %(spec_id)s', "Improperly expanded WHERE clause")
+        self.assertEqual(params, {'spec_id': 3}, "Improperly expanded params dict")
+        # proper spec - name
+        where, params = self.nap._expand_pool_spec({ 'name': 'test', 'schema_id': self.schema_attrs['id'] })
+        self.assertEqual(where, 'po.name = %(spec_name)s AND po.schema = %(spec_schema)s', "Improperly expanded WHERE clause")
+        self.assertEqual(params, {'spec_name': 'test', 'spec_schema': self.schema_attrs['id'] }, "Improperly expanded params dict")
+
+
+
     def test_pool_add1(self):
         """ Add a pool and check it's there using list functions
 
