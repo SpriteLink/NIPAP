@@ -40,6 +40,8 @@ CREATE TABLE ip_net_pool (
 	ipv6_default_prefix_length integer
 );
 
+CREATE UNIQUE INDEX ip_net_pool__schema_name__index ON ip_net_pool (schema, name);
+
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 
 
