@@ -127,6 +127,11 @@ class Nap:
 
     def add_schema(self, attr):
         """ Add a new network schema.
+
+            attr [schema_attr]
+                schema_attr, attributes for a schema
+
+            Add a schema based on the values stored in the inputted attr dict.
         """
 
         # sanity check - do we have all attributes?
@@ -147,6 +152,12 @@ class Nap:
 
     def remove_schema(self, spec):
         """ Remove a schema.
+
+            spec [schema_spec]
+                a schema specification, please see documentation for
+                _expand_schema_spec for details
+
+            Remove a schema matching the spec parameter.
         """
 
         where, params = self._expand_schema_spec(spec)
