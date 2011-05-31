@@ -1,4 +1,6 @@
 
+ - make pool unique by schema and name
+
  - find_free_prefix() should support a start address from where it should start
    searching for new candidate prefixes. prolly useful for paginating output in
    a potential web gui

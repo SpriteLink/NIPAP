@@ -277,12 +277,13 @@ class Nap:
             if 'name' in spec:
                 raise NapInputError("pool specification contain both 'id' and 'key', specify pool id or name")
         elif 'name' in spec:
+            # TODO: name is only unique together with schema! FIXME!!
             if type(spec['name']) != type(''):
                 raise NapValueError("pool specification key 'name' must be a string")
             if 'id' in spec:
                 raise NapInputError("pool specification contain both 'id' and 'key', specify pool id or name")
         else:
-            raise NapMissingInputError('missing both id and name in pool spec')
+            raise NapMissingInputError('missing both id and schema/name in pool spec')
 
         where, params = self._sql_expand_where(spec, 'spec_', 'po.')
 
