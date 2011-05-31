@@ -277,24 +277,24 @@ class NapTest(unittest.TestCase):
                 }
         self.nap.edit_pool(spec, attrs)
         # check that search for old record doesn't return anything
-        pool = self.nap.list_pool({ 'name': self.pool_attrs['name'] })
+        pool = self.nap.list_pool({ 'schema_id': self.schema_attrs['id'], 'name': self.pool_attrs['name'] })
         self.assertEqual(pool, [], 'Old entry still exists')
-        pool = self.nap.list_pool({ 'name': attrs['name'] })
+        pool = self.nap.list_pool({ 'schema_id': self.schema_attrs['id'], 'name': attrs['name'] })
         for a in attrs:
             self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
 
 
 
-    def test_pool_remove(self):
-        """ Remove a pool
+    def test_remove_pool_by_id(self):
+        """ Remove a pool by id
         """
-        pool = self.nap.list_pool({ 'name': self.pool_attrs['name'] })
+        pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
         # first make sure our pool exists
         self.assertEqual(pool[0], self.pool_attrs, 'Record must exist before we can delete it')
         # remove the pool
-        self.nap.remove_pool({ 'name': self.pool_attrs['name'] })
+        self.nap.remove_pool({ 'id': self.pool_attrs['id'] })
         # check that search for old record doesn't return anything
-        pool = self.nap.list_pool({ 'name': self.pool_attrs['name'] })
+        pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
         self.assertEqual(pool, [], 'Old entry still exists')
 
 

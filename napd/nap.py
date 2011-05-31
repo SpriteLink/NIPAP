@@ -266,7 +266,7 @@ class Nap:
         if type(spec) is not dict:
             raise NapInputError("pool specification must be a dict")
 
-        allowed_values = ['id', 'name']
+        allowed_values = ['id', 'name', 'schema_id', 'schema_name']
         for a in spec:
             if a not in allowed_values:
                 raise NapInputError("extraneous specification key %s" % a)
@@ -274,14 +274,33 @@ class Nap:
         if 'id' in spec:
             if long(spec['id']) != spec['id']:
                 raise NapValueError("pool specification key 'id' must be an integer")
-            if 'name' in spec:
-                raise NapInputError("pool specification contain both 'id' and 'key', specify pool id or name")
+            if spec != { 'id': spec['id'] }:
+                raise NapInputError("pool specification with 'id' should not contain anything else")
         elif 'name' in spec:
-            # TODO: name is only unique together with schema! FIXME!!
             if type(spec['name']) != type(''):
                 raise NapValueError("pool specification key 'name' must be a string")
             if 'id' in spec:
                 raise NapInputError("pool specification contain both 'id' and 'key', specify pool id or name")
+            # name is only unique together with schema, find schema
+            # check that given schema exists and populate 'schema' with correct id
+            if 'schema_id' in spec:
+                if 'schema_name' in spec:
+                    raise NapInputError("schema specification contain both 'id' and 'name', specify schema id or name")
+                schema = self.list_schema({ 'id': spec['schema_id'] })
+                if schema == []:
+                    raise NapInputError("non-existing schema specified")
+                spec['schema'] = schema[0]['id']
+                del(spec['schema_id'])
+            elif 'schema_name' in spec:
+                if 'schema_id' in spec:
+                    raise NapInputError("schema specification contain both 'id' and 'name', specify schema id or name")
+                schema = self.list_schema({ 'name': spec['schema_name'] })
+                if schema == []:
+                    raise NapInputError("non-existing schema specified")
+                spec['schema'] = schema[0]['id']
+                del(spec['schema_name'])
+            else:
+                raise NapInputError("name must be specified in combination with schema")
         else:
             raise NapMissingInputError('missing both id and schema/name in pool spec')
 
