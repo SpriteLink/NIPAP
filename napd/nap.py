@@ -122,12 +122,11 @@ class Nap:
         allowed_attr = [ 'name', 'description' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
-        self._logger.debug("Adding schema; name: %s desc: %s" %
-            (attr['name'], attr['description']))
-
         sql = ("INSERT INTO ip_net_schema " +
             "(name, description) VALUES " +
             "(%(name)s, %(description)s)")
+
+        self._logger.debug("Adding schema; attr: %s" % str(attr))
 
         self._execute(sql, attr)
         return self._lastrowid()
@@ -137,9 +136,11 @@ class Nap:
     def remove_schema(self, spec):
         """ Remove a schema.
         """
-        self._logger.debug("Removing schema; spec: %s" % str(spec))
 
         where, params = self._expand_schema_spec(spec)
+
+        self._logger.debug("Removing schema; spec: %s" % str(spec))
+
         sql = "DELETE FROM ip_net_schema WHERE %s" % where
         self._execute(sql, params)
 
@@ -155,6 +156,8 @@ class Nap:
         if spec is not None:
             where, params = self._expand_schema_spec(spec)
             sql += " WHERE " + where
+
+        self._logger.debug("Listing schema; spec: %s" % str(spec))
 
         self._execute(sql, params)
 
@@ -185,6 +188,9 @@ class Nap:
         if 'description' in attr:
             sql += "description = %(description)s, "
             params['description'] = attr['description']
+
+        self._logger.debug("Editing schema; spec: %s  attr: %s" %
+                (str(spec), str(attr)))
 
         sql = sql[:-2] + " WHERE " + where
         self._execute(sql, params)
@@ -222,15 +228,14 @@ class Nap:
         """ Add a pool.
         """
 
+        self._logger.debug("add_pool() called; spec: %s" % str(attr))
+
         # sanity check - do we have all attributes?
         req_attr = ['name', 'schema', 'description', 'default_type']
 
         for a in req_attr:
             if not a in attr:
                 raise NapMissingInputError("missing %s" % a)
-
-        self._logger.debug("Adding pool; name: %s desc: %s" %
-            (attr['name'], attr['description']))
 
         sql = ("INSERT INTO ip_net_pool " +
             "(name, schema, description, default_type) VALUES " +
@@ -245,11 +250,11 @@ class Nap:
         """ Remove a pool.
         """
 
-        self._logger.debug("Removing pool; spec: %s" % str(spec))
-
         where, params = self._expand_schema_spec(spec)
         if 'family' in spec:
             raise NapError("don't specify family for remove operation")
+
+        self._logger.debug("Removing pool; spec: %s" % str(spec))
 
         sql = "DELETE FROM ip_net_pool AS po WHERE %s" % where
         self._execute(sql, params)
@@ -269,6 +274,9 @@ class Nap:
             sql += " WHERE " + where
 
         sql += " GROUP BY po.id, po.name, po.description, po.schema, po.default_type"
+
+        self._logger.debug("Listing pool; spec: %s" % str(spec))
+
         self._execute(sql, params)
 
         res = list()
@@ -304,6 +312,10 @@ class Nap:
             params['schema'] = attr['schema']
 
         sql = sql[:-2] +  " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND " + where
+
+        self._logger.debug("Editing pool; spec: %s attr: %s" %
+                (str(spec), str(attr)))
+
         self._execute(sql, params)
 
 
@@ -349,12 +361,11 @@ class Nap:
             if not a in attr:
                 raise NapMissingInputError("missing %s" % a)
 
-        self._logger.debug("Adding prefix; schema: %s prefix: %s desc: %s" %
-            (attr['schema'], attr['prefix'], attr['description']))
-
         sql = ("INSERT INTO ip_net_plan " +
             "(authoritative_source, schema, prefix) VALUES " +
             "(%(authoritative_source)s, %(schema)s, %(prefix)s)")
+
+        self._logger.debug("Adding prefix; attr: %s" % str(attr))
 
         self._execute(sql, attr)
         prefix_id = self._lastrowid()
@@ -390,6 +401,10 @@ class Nap:
             params['schema'] = attr['schema']
 
         sql = sql[:-2] +  " FROM ip_net_plan AS p WHERE ip_net_plan.id = p.id AND " + where
+
+        self._logger.debug("Editing prefix; spec: %s attr: %s" %
+                (str(spec), str(attr)))
+
         self._execute(sql, params)
 
 
@@ -463,11 +478,12 @@ class Nap:
         """ Remove a prefix.
         """
 
-        self._logger.debug("Removing prefix; spec: %s" % str(spec))
-
         where, params = self._expand_prefix_spec(spec)
 
         sql = "DELETE FROM ip_net_plan AS p WHERE %s" % where
+
+        self._logger.debug("Removing prefix; spec: %s" % str(spec))
+
         self._execute(sql, params)
 
 
