@@ -65,16 +65,13 @@ class Nap:
         """
         """
         if type(attr) is not dict:
-            self._logger.error("invalid input type, must be dict")
-            raise NapInputError()
+            raise NapInputError("invalid input type, must be dict")
 
         for a in req_attr:
             if not a in attr:
-                self._logger.error("missing attribute %s" % a)
                 raise NapMissingInputError("missing attribute %s" % a)
         for a in attr:
             if a not in allowed_attr:
-                self._logger.error("missing attribute %s" % a)
                 raise NapInputError("extraneous attribute %s" % a)
 
 
@@ -92,25 +89,20 @@ class Nap:
         allowed_values = ['id', 'name']
         for a in spec:
             if a not in allowed_values:
-                self._logger.error("schema specification contains extraneous key %s" % a)
                 raise NapInputError("extraneous specification key %s" % a)
 
         params = {}
         if 'id' in spec:
             if long(spec['id']) != spec['id']:
-                self._logger.error("schema specification key 'id' must be an integer")
                 raise NapValueError("schema specification key 'id' must be an integer")
             if 'name' in spec:
-                self._logger.error("schema specification contain both 'id' and 'key', specify schema id or name")
                 raise NapInputError("schema specification contain both 'id' and 'key', specify schema id or name")
             where = " id = %(spec_id)s "
             params['spec_id'] = spec['id']
         elif 'name' in spec:
             if type(spec['name']) != type(''):
-                self._logger.error("schema specification key 'name' must be a string")
                 raise NapValueError("schema specification key 'name' must be a string")
             if 'id' in spec:
-                self._logger.error("schema specification contain both 'id' and 'key', specify schema id or name")
                 raise NapInputError("schema specification contain both 'id' and 'key', specify schema id or name")
             where = " name = %(spec_name)s "
             params['spec_name'] = spec['name']
