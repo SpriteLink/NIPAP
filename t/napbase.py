@@ -38,7 +38,9 @@ class NapTest(unittest.TestCase):
                 'schema_id': self.schema_attrs['id'],
                 'name': 'test-pool1',
                 'description': 'Test schema numero uno!',
-                'default_type': 'assignment'
+                'default_type': 'assignment',
+                'ipv4_default_prefix_length': 30,
+                'ipv6_default_prefix_length': 112
                 }
         self.pool_attrs['id'] = self.nap.add_pool(self.pool_attrs)
         self.prefix_attrs = {
@@ -257,13 +259,15 @@ class NapTest(unittest.TestCase):
         attrs = {
                 'name': 'test-pool-wrong',
                 'schema_id': self.schema_attrs['id'],
+                'description': 'A simple test pool with incorrect name!',
                 'default_type': 'reservation',
-                'description': 'A simple test pool with incorrect name!'
+                'ipv4_default_prefix_length': 30,
+                'ipv6_default_prefix_length': 112
                 }
         pool_id = self.nap.add_pool(attrs)
         pool = self.nap.list_pool({ 'id': pool_id })
         for a in attrs:
-            self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
+            self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: %s  %s!=%s' % (a, attrs[a], pool[0][a]))
 
 
 
@@ -307,7 +311,9 @@ class NapTest(unittest.TestCase):
         attrs = {
                 'name': 'test-pool',
                 'default_type': 'assignment',
-                'description': 'A simple test pool with correct name!'
+                'description': 'A simple test pool with correct name!',
+                'ipv4_default_prefix_length': 32,
+                'ipv6_default_prefix_length': 128
                 }
         self.nap.edit_pool(spec, attrs)
         # check that search for old record doesn't return anything

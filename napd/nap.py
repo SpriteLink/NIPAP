@@ -335,7 +335,8 @@ class Nap:
 
         # sanity check - do we have all attributes?
         req_attr = ['name', 'schema', 'description', 'default_type']
-        self._check_attr(attr, req_attr, req_attr)
+        allowed_attr = req_attr + ['ipv4_default_prefix_length', 'ipv6_default_prefix_length']
+        self._check_attr(attr, req_attr, allowed_attr)
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_pool " + insert
@@ -364,15 +365,23 @@ class Nap:
 
         self._logger.debug("list_pool called; spec: %s" % str(spec))
 
-        sql = ("SELECT po.id, po.name, po.description, po.schema, po.default_type " +
-            "FROM ip_net_pool AS po LEFT JOIN ip_net_plan AS pl ON pl.pool = po.id ")
+        sql = """SELECT po.id,
+                        po.name,
+                        po.description,
+                        po.schema,
+                        po.default_type,
+                        po.ipv4_default_prefix_length,
+                        po.ipv6_default_prefix_length
+                FROM ip_net_pool AS po
+                LEFT JOIN ip_net_plan AS pl ON pl.pool = po.id """
         params = list()
 
         if spec is not None:
             where, params = self._expand_pool_spec(spec)
             sql += " WHERE " + where
 
-        sql += " GROUP BY po.id, po.name, po.description, po.schema, po.default_type"
+        # TODO: what the hell is this for?
+        sql += " GROUP BY po.id, po.name, po.description, po.schema, po.default_type, po.ipv4_default_prefix_length, po.ipv6_default_prefix_length"
 
         self._execute(sql, params)
 
@@ -391,7 +400,13 @@ class Nap:
         self._logger.debug("edit_pool called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
 
-        allowed_attr = ['name', 'default_type', 'description']
+        allowed_attr = [
+                'name',
+                'default_type',
+                'description',
+                'ipv4_default_prefix_length',
+                'ipv6_default_prefix_length'
+                ]
         self._check_attr(attr, [], allowed_attr)
 
         where, params1 = self._expand_pool_spec(spec)
