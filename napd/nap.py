@@ -328,7 +328,7 @@ class Nap:
 
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
 
-        where, params = self._expand_schema_spec(spec)
+        where, params = self._expand_pool_spec(spec)
 
         sql = "DELETE FROM ip_net_pool AS po WHERE %s" % where
         self._execute(sql, params)
