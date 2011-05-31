@@ -380,7 +380,7 @@ class Nap:
             where, params = self._expand_pool_spec(spec)
             sql += " WHERE " + where
 
-        # TODO: what the hell is this for?
+        # TODO: what the hell is this for? Why aren't they unique to begin with?
         sql += " GROUP BY po.id, po.name, po.description, po.schema, po.default_type, po.ipv4_default_prefix_length, po.ipv6_default_prefix_length"
 
         self._execute(sql, params)
