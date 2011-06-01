@@ -1,0 +1,3 @@
+# Ignore files we don't want to track.
+*.sw[po]
+*.pyc
