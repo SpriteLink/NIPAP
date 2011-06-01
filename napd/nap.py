@@ -165,6 +165,33 @@ class Nap:
         return where, params
 
 
+    def _translate_schema_spec(self, spec):
+        """ Expand 'schema_name' or 'schema_id'.
+
+            Translates 'schema_name' or 'schema_id' element in spec
+            to a 'schema' element containing the schema ID.
+        """
+
+        if 'schema_id' in spec and 'schema_name' in spec:
+            raise NapExtraneousInputError("specification contain both 'id' and 'name', specify schema id or name")
+
+        if 'schema_id' in spec:
+            schema = self.list_schema({ 'id': spec['schema_id'] })
+            if schema == []:
+                raise NapInputError("non-existing schema specified")
+            spec['schema'] = schema[0]['id']
+            del(spec['schema_id'])
+        elif 'schema_name' in spec:
+            schema = self.list_schema({ 'name': spec['schema_name'] })
+            if schema == []:
+                raise NapInputError("non-existing schema specified")
+            spec['schema'] = schema[0]['id']
+            del(spec['schema_name'])
+        else:
+            raise NapInputError("Missing schema, add schema_id or schema_name to spec!")
+
+        return spec
+
 
     def add_schema(self, attr):
         """ Add a new network schema.
@@ -279,29 +306,10 @@ class Nap:
                 raise NapValueError("pool specification key 'name' must be a string")
             if 'id' in spec:
                 raise NapExtraneousInputError("pool specification contain both 'id' and 'name', specify pool id or name")
+
             # name is only unique together with schema, find schema
-            # check that given schema exists and populate 'schema' with correct id
-            # TODO: can we split this into a separate function or something?
-            #       This whole thing looks awefully complex when it really
-            #       should not
-            if 'schema_id' in spec:
-                if 'schema_name' in spec:
-                    raise NapExtraneousInputError("schema specification contain both 'id' and 'name', specify schema id or name")
-                schema = self.list_schema({ 'id': spec['schema_id'] })
-                if schema == []:
-                    raise NapInputError("non-existing schema specified")
-                spec['schema'] = schema[0]['id']
-                del(spec['schema_id'])
-            elif 'schema_name' in spec:
-                if 'schema_id' in spec:
-                    raise NapExtraneousInputError("schema specification contain both 'id' and 'name', specify schema id or name")
-                schema = self.list_schema({ 'name': spec['schema_name'] })
-                if schema == []:
-                    raise NapInputError("non-existing schema specified")
-                spec['schema'] = schema[0]['id']
-                del(spec['schema_name'])
-            else:
-                raise NapInputError("name must be specified in combination with schema")
+            spec = self._translate_schema_spec(spec)
+
         else:
             raise NapMissingInputError('missing both id and schema/name in pool spec')
 
@@ -422,29 +430,35 @@ class Nap:
     # PREFIX FUNCTIONS
     #
     def _expand_prefix_spec(self, spec):
-        """ Expand prefix specification to sql.
+        """ Expand prefix specification to SQL.
         """
 
+        # sanity checks
         if type(spec) is not dict:
-            raise NapError('invalid prefix specification')
+            raise NapInputError('invalid prefix specification')
 
+        allowed_keys = ['id', 'family', 'schema_name', 'schema_id', 
+            'type', 'pool_name', 'pool_id', 'prefix']
+        for key in spec.keys():
+            if key not in allowed_keys:
+                raise NapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
+
+        where = ""
         params = {}
-        if 'id' in spec:
-            where = " p.id = %(spec_id)s "
-            params['spec_id'] = spec['id']
-        elif 'prefix' in spec:
-            if 'schema' not in spec:
-                raise NapMissingInputError('invalid prefix specification, must include schema and prefix or id (missing schema)')
-            where = " p.prefix = %(spec_prefix)s "
-            params['spec_prefix'] = spec['prefix']
-        elif 'schema' in spec:
-            if 'prefix' not in spec:
-                raise NapMissingInputError('invalid prefix specification, must include schema and prefix or id (missing prefix)')
-            where = "p.schema = %(spec_schema)s "
-            params['spec_schema'] = spec['schema']
-        else:
-            raise NapInputError('missing valid search key in prefix spec')
 
+        # if we have id, no other input is needed
+        if 'id' in spec:
+            if spec != {'id': spec['id']}:
+                raise NapExtraneousInputError("If id specified, no other keys are allowed.")
+            where += "id = %(spec_id)s"
+            params['spec_id'] = spec['id']
+
+        else:
+            # fetch schema ID
+            spec = self._translate_schema_spec(spec)
+            where, params = self._sql_expand_where(spec)
+
+        self._logger.debug("where: %s params: %s" % (where, str(params)))
         return where, params
 
 
@@ -457,7 +471,8 @@ class Nap:
 
         # sanity check - do we have all attributes?
         req_attr = ['prefix', 'schema', 'description' ]
-        allowed_attr = ['authoritative_source', 'schema', 'prefix', 'description', 'comment']
+        allowed_attr = ['authoritative_source', 'prefix', 'schema', 'description', 'comment']
+        attr = self._translate_schema_spec(attr)
         self._check_attr(attr, req_attr, allowed_attr)
 
         insert, params = self._sql_expand_insert(attr)
@@ -469,7 +484,6 @@ class Nap:
         return prefix_id
 
 
-
     def edit_prefix(self, spec, attr):
         """ Edit prefix.
         """
@@ -477,9 +491,12 @@ class Nap:
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
 
-        allowed_attr = [ 'name', 'description', 'comment', 'schema' ]
+        allowed_attr = [ 'name', 'description', 'comment', 'schema_name', 'schema_id' ]
 
         self._check_attr(attr, [], allowed_attr)
+
+        if 'schema_name' in attr or 'schema_id' in attr:
+            attr = self._translate_schema_spec(attr)
 
         where, params1 = self._expand_prefix_spec(spec)
         update, params2 = self._sql_expand_update(attr)
@@ -512,47 +529,18 @@ class Nap:
 
         self._logger.debug("list_prefix called; spec: %s" % str(spec))
 
-        where = str()
-        params = list()
-
         if type(spec) is dict:
 
             if len(spec) == 0:
-                raise NapError("invalid prefix specification")
+                raise NapInputError("empty prefix specification")
 
-            # search keys:
-            # family, schema, type, pool, prefix
-            if 'id' in spec:
-                where += "id = %s AND "
-                params.append(spec['id'])
-            if 'family' in spec:
-                where += "family = %s AND "
-                params.append(spec['family'])
-            if 'schema' in spec:
-                where += "schema = %s AND "
-                params.append(spec['schema'])
-            if 'type' in spec:
-                where += "type = %s AND "
-                params.append(spec['type'])
-            if 'pool' in spec:
-                where += "pool = %s AND "
-                params.append(spec['pool'])
-            if 'prefix' in spec:
-                where += "prefix = %s AND "
-                params.append(spec['prefix'])
-
-            if len(where) == 0:
-                raise NapError("no valid search keys found in spec")
-
-        elif spec is None:
-            # list everything - should we really permit this?
-            pass
+            where, params = self._expand_prefix_spec(spec)
 
         else:
             raise NapError("invalid prefix specification")
 
         sql = "SELECT * FROM ip_net_plan "
-        sql += "WHERE prefix <<= (SELECT prefix FROM ip_net_plan WHERE " + where[:-4] + ") ORDER BY prefix"
+        sql += "WHERE prefix <<= (SELECT prefix FROM ip_net_plan WHERE " + where + ") ORDER BY prefix"
 
         self._execute(sql, params)
 
@@ -575,7 +563,6 @@ class Nap:
         sql = "DELETE FROM ip_net_plan AS p WHERE %s" % where
 
         self._execute(sql, params)
-
 
 
 
