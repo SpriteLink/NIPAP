@@ -62,6 +62,9 @@ class Nap:
             self._logger.warning(str(w))
 
 
+    #
+    # Miscellaneous help functions
+    #
 
     def register_inet(oid=None, conn_or_curs=None):
         """Create the INET type and an Inet adapter."""
@@ -73,6 +76,45 @@ class Nap:
         return _ext.INET
 
 
+
+    def _is_ipv4(self, ip):
+        """ Return true if given arg is a valid IPv4 address
+        """
+        try:
+            socket.inet_aton(ip)
+        except socket.error:
+            return False
+        return True
+
+
+
+    def _is_ipv6(self, ip):
+        """ Return true if given arg is a valid IPv6 address
+        """
+
+        try:
+            socket.inet_pton(socket.AF_INET6, ip)
+        except socket.error:
+            return False
+        return True
+
+
+
+    def _get_afi(self, ip):
+        """ Return address-family (4 or 6) for IP or None if invalid address
+        """
+
+        if is_ipv4(ip):
+            return 4
+        elif is_ipv6(ip):
+            return 6
+        else:
+            return None
+
+
+    #
+    # SQL related functions
+    #
 
     def _execute(self, sql, opt=None):
         """ Execute query, catch and log errors.
