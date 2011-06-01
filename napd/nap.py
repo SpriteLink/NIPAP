@@ -559,9 +559,7 @@ class Nap:
         if type(spec) is not dict:
             raise NapInputError("invalid input, please provide dict as spec")
 
-        # TODO: schema_id and schema_name needs to be resolved, now we just
-        #       accept 'schema' as is and trust input since this is only run
-        #       from our testsuite...
+        spec = self._translate_schema_spec(spec)
 
         if 'from-pool' in spec:
             if 'from-prefix' in spec:
