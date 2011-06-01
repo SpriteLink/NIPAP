@@ -100,7 +100,7 @@ class NapTest(unittest.TestCase):
         # missing description
         self.assertRaises(nap.NapMissingInputError, self.nap.add_schema, { 'name': 'crapson' })
         # have required and extra crap
-        self.assertRaises(nap.NapInputError, self.nap.add_schema, attrs)
+        self.assertRaises(nap.NapExtraneousInputError, self.nap.add_schema, attrs)
 
 
 
@@ -120,15 +120,15 @@ class NapTest(unittest.TestCase):
         # missing keys
         self.assertRaises(nap.NapMissingInputError, self.nap._expand_schema_spec, { })
         # crap key
-        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, { 'crap': self.schema_attrs['name'] })
+        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_schema_spec, { 'crap': self.schema_attrs['name'] })
         # required keys and extra crap
-        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, { 'name': self.schema_attrs['name'], 'crap': 'crap' })
+        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_schema_spec, { 'name': self.schema_attrs['name'], 'crap': 'crap' })
         # proper key but incorrect value (int vs string)
         self.assertRaises(nap.NapValueError, self.nap._expand_schema_spec, { 'id': '3' })
         # proper key but incorrect value (int vs string)
         self.assertRaises(nap.NapValueError, self.nap._expand_schema_spec, { 'name': 3 })
         # both id and name
-        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, { 'id': 3, 'name': '3' })
+        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_schema_spec, { 'id': 3, 'name': '3' })
         # proper key - id
         where, params = self.nap._expand_schema_spec({ 'id': 3 })
         self.assertEqual(where, 'id = %(spec_id)s', "Improperly expanded WHERE clause")
@@ -152,7 +152,7 @@ class NapTest(unittest.TestCase):
                 'crap': 'this is just some crap'
                 }
         # spec is tested elsewhere, just test attrs part
-        self.assertRaises(nap.NapInputError, self.nap.edit_schema, { 'name': self.schema_attrs['name'] }, crap_attrs)
+        self.assertRaises(nap.NapExtraneousInputError, self.nap.edit_schema, { 'name': self.schema_attrs['name'] }, crap_attrs)
 
 
 
@@ -161,7 +161,7 @@ class NapTest(unittest.TestCase):
 
         """
         # TODO: what do we really expect?
-        self.assertRaises(nap.NapInputError, self.nap.list_schema, { 'crap': 'crap crap' })
+        self.assertRaises(nap.NapExtraneousInputError, self.nap.list_schema, { 'crap': 'crap crap' })
 
 
 
@@ -229,9 +229,9 @@ class NapTest(unittest.TestCase):
         # missing keys
         self.assertRaises(nap.NapMissingInputError, self.nap._expand_pool_spec, { })
         # crap key
-        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, { 'crap': self.pool_attrs['name'] })
+        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'crap': self.pool_attrs['name'] })
         # required keys and extra crap
-        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, { 'id': self.pool_attrs['id'], 'crap': 'crap' })
+        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'id': self.pool_attrs['id'], 'crap': 'crap' })
         # proper key but incorrect value (int vs string)
         self.assertRaises(nap.NapValueError, self.nap._expand_pool_spec, { 'id': '3' })
         # non unique key
@@ -239,7 +239,7 @@ class NapTest(unittest.TestCase):
         # proper key but incorrect value (int vs string)
         self.assertRaises(nap.NapValueError, self.nap._expand_pool_spec, { 'name': 3 })
         # both id and name
-        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, { 'id': 3, 'name': '3' })
+        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'id': 3, 'name': '3' })
         # proper key - id
         where, params = self.nap._expand_pool_spec({ 'id': 3 })
         self.assertEqual(where, 'po.id = %(spec_id)s', "Improperly expanded WHERE clause")

@@ -105,8 +105,6 @@ class Nap:
 
 
 
-
-
     # TODO: make this more generic and use for testing of spec too?
     def _check_attr(self, attr, req_attr, allowed_attr):
         """
@@ -119,7 +117,7 @@ class Nap:
                 raise NapMissingInputError("missing attribute %s" % a)
         for a in attr:
             if a not in allowed_attr:
-                raise NapInputError("extraneous attribute %s" % a)
+                raise NapExtraneousInputError("extraneous attribute %s" % a)
 
 
 
@@ -147,18 +145,18 @@ class Nap:
         allowed_values = ['id', 'name']
         for a in spec:
             if a not in allowed_values:
-                raise NapInputError("extraneous specification key %s" % a)
+                raise NapExtraneousInputError("extraneous specification key %s" % a)
 
         if 'id' in spec:
             if long(spec['id']) != spec['id']:
                 raise NapValueError("schema specification key 'id' must be an integer")
             if 'name' in spec:
-                raise NapInputError("schema specification contain both 'id' and 'key', specify schema id or name")
+                raise NapExtraneousInputError("schema specification contain both 'id' and 'key', specify schema id or name")
         elif 'name' in spec:
             if type(spec['name']) != type(''):
                 raise NapValueError("schema specification key 'name' must be a string")
             if 'id' in spec:
-                raise NapInputError("schema specification contain both 'id' and 'key', specify schema id or name")
+                raise NapExtraneousInputError("schema specification contain both 'id' and 'key', specify schema id or name")
         else:
             raise NapMissingInputError('missing both id and name in schema spec')
 
@@ -269,18 +267,18 @@ class Nap:
         allowed_values = ['id', 'name', 'schema_id', 'schema_name']
         for a in spec:
             if a not in allowed_values:
-                raise NapInputError("extraneous specification key %s" % a)
+                raise NapExtraneousInputError("extraneous specification key %s" % a)
 
         if 'id' in spec:
             if long(spec['id']) != spec['id']:
                 raise NapValueError("pool specification key 'id' must be an integer")
             if spec != { 'id': spec['id'] }:
-                raise NapInputError("pool specification with 'id' should not contain anything else")
+                raise NapExtraneousInputError("pool specification with 'id' should not contain anything else")
         elif 'name' in spec:
             if type(spec['name']) != type(''):
                 raise NapValueError("pool specification key 'name' must be a string")
             if 'id' in spec:
-                raise NapInputError("pool specification contain both 'id' and 'key', specify pool id or name")
+                raise NapExtraneousInputError("pool specification contain both 'id' and 'name', specify pool id or name")
             # name is only unique together with schema, find schema
             # check that given schema exists and populate 'schema' with correct id
             # TODO: can we split this into a separate function or something?
@@ -288,7 +286,7 @@ class Nap:
             #       should not
             if 'schema_id' in spec:
                 if 'schema_name' in spec:
-                    raise NapInputError("schema specification contain both 'id' and 'name', specify schema id or name")
+                    raise NapExtraneousInputError("schema specification contain both 'id' and 'name', specify schema id or name")
                 schema = self.list_schema({ 'id': spec['schema_id'] })
                 if schema == []:
                     raise NapInputError("non-existing schema specified")
@@ -296,7 +294,7 @@ class Nap:
                 del(spec['schema_id'])
             elif 'schema_name' in spec:
                 if 'schema_id' in spec:
-                    raise NapInputError("schema specification contain both 'id' and 'name', specify schema id or name")
+                    raise NapExtraneousInputError("schema specification contain both 'id' and 'name', specify schema id or name")
                 schema = self.list_schema({ 'name': spec['schema_name'] })
                 if schema == []:
                     raise NapInputError("non-existing schema specified")
@@ -436,16 +434,16 @@ class Nap:
             params['spec_id'] = spec['id']
         elif 'prefix' in spec:
             if 'schema' not in spec:
-                raise NapError('invalid prefix specification, must include schema and prefix or id (missing schema)')
+                raise NapMissingInputError('invalid prefix specification, must include schema and prefix or id (missing schema)')
             where = " p.prefix = %(spec_prefix)s "
             params['spec_prefix'] = spec['prefix']
         elif 'schema' in spec:
             if 'prefix' not in spec:
-                raise NapError('invalid prefix specification, must include schema and prefix or id (missing prefix)')
+                raise NapMissingInputError('invalid prefix specification, must include schema and prefix or id (missing prefix)')
             where = "p.schema = %(spec_schema)s "
             params['spec_schema'] = spec['schema']
         else:
-            raise NapError('missing valid search key in prefix spec')
+            raise NapInputError('missing valid search key in prefix spec')
 
         return where, params
 
@@ -584,15 +582,23 @@ class NapError(Exception):
 class NapInputError(NapError):
     """ Something wrong with the input we received
 
-        For example, an extra key in a dict.
+		A general case.
     """
     pass
 
 
-class NapMissingInputError(NapError):
+class NapMissingInputError(NapInputError):
     """ Missing input
 
         Most input is passed in dicts, this could mean a missing key in a dict.
+    """
+    pass
+
+
+class NapExtraneousInputError(NapInputError):
+    """ Extraneous input
+
+        Most input is passed in dicts, this could mean an unknown key in a dict.
     """
     pass
 
