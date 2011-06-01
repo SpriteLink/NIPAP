@@ -398,6 +398,22 @@ class NapTest(unittest.TestCase):
 
 
 
+    def test_find_free_prefix(self):
+        """ Test find_free_prefix
+
+        """
+        # set up a prefix not used elsewhere so we have a known good state
+        prefix_attrs = {
+                'authoritative_source': 'nap-test',
+                'schema': self.schema_attrs['id'],
+                'prefix': '100.0.0.0/16',
+                'description': 'test prefix',
+                'comment': 'test comment, please remove! ;)'
+                }
+        self.nap.add_prefix(prefix_attrs)
+        res = self.nap.find_free_prefix({ 'from-prefix': [ '100.0.0.0/16' ] }, 24, 1)
+
+
 
 
 def main():

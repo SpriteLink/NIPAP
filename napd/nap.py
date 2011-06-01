@@ -492,11 +492,17 @@ class Nap:
 
 
 
-    def find_free_prefix(self, prefixes, wanted_length, num = 1):
+    def find_free_prefix(self, spec, wanted_length, num = 1):
         """ Find a free prefix
 
             Arguments:
         """
+        if 'from-pool' in spec:
+            if 'from-prefix' in spec:
+                raise NapInputError("specify 'from-pool' OR 'from-prefix'")
+        elif 'from-prefix' in spec:
+            if 'from-pool' in spec:
+                raise NapInputError("specify 'from-pool' OR 'from-prefix'")
 
 
 
