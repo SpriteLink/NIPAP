@@ -1,4 +1,4 @@
-# !/usr/bin/python
+#!/usr/bin/python
 # vim: et :
 
 import logging
@@ -414,7 +414,6 @@ class NapTest(unittest.TestCase):
                 }
         self.nap.add_prefix(prefix_attrs)
         res = self.nap.find_free_prefix({ 'schema': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ] }, 24, 1)
-        print res
         self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
 

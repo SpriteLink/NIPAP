@@ -598,7 +598,7 @@ class Nap:
         #       address-family, ie 32 for IPv4 and 128 for IPv6
 
 
-        sql = """SELECT find_free_prefix(%(schema)s, (""" + damp + """), %(wanted_length)s, %(max_result)s)"""
+        sql = """SELECT * FROM find_free_prefix(%(schema)s, (""" + damp + """), %(wanted_length)s, %(max_result)s) AS prefix"""
 
         params['schema'] = spec['schema']
         params['prefixes'] = prefixes
@@ -609,7 +609,7 @@ class Nap:
 
         res = list()
         for row in self._curs_pg:
-            res.append(dict(row))
+            res.append(row['prefix'])
 
         return res
 
