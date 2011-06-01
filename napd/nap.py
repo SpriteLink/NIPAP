@@ -6,7 +6,7 @@ import psycopg2.extras
 class Inet(object):
     """ This works around a bug in psycopg2 version somewhere before 2.4.
         The __init__ function in the original class is broken and so this is merely a copy with the bug fixed.
-    
+
         Wrap a string to allow for correct SQL-quoting of inet values.
 
         Note that this adapter does NOT check the passed value to make
@@ -519,7 +519,7 @@ class Nap:
         if type(spec) is not dict:
             raise NapInputError('invalid prefix specification')
 
-        allowed_keys = ['id', 'family', 'schema_name', 'schema_id', 
+        allowed_keys = ['id', 'family', 'schema_name', 'schema_id',
             'type', 'pool_name', 'pool_id', 'prefix']
         for key in spec.keys():
             if key not in allowed_keys:
