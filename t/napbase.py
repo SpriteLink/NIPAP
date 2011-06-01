@@ -1,4 +1,4 @@
-#!/usr/bin/python
+# !/usr/bin/python
 # vim: et :
 
 import logging
@@ -37,7 +37,7 @@ class NapTest(unittest.TestCase):
         self.pool_attrs = {
                 'schema_id': self.schema_attrs['id'],
                 'name': 'test-pool1',
-                'description': 'Test schema numero uno!',
+                'description': 'Test pool numero uno!',
                 'default_type': 'assignment',
                 'ipv4_default_prefix_length': 30,
                 'ipv6_default_prefix_length': 112
@@ -45,21 +45,21 @@ class NapTest(unittest.TestCase):
         self.pool_attrs['id'] = self.nap.add_pool(self.pool_attrs)
         self.prefix_attrs = {
                 'authoritative_source': 'naptest',
-                'schema': self.schema_attrs['id'],
+                'schema_id': self.schema_attrs['id'],
                 'prefix': '1.3.3.1/32',
                 'description': 'Test prefix numero uno!'
                 }
         self.prefix_attrs['id'] = self.nap.add_prefix(self.prefix_attrs)
         self.prefix_attrs2 = {
                 'authoritative_source': 'naptest',
-                'schema': self.schema_attrs['id'],
+                'schema_id': self.schema_attrs['id'],
                 'prefix': '1.3.3.0/24',
                 'description': ''
                 }
         self.prefix_attrs2['id'] = self.nap.add_prefix(self.prefix_attrs2)
         self.prefix_attrs3 = {
                 'authoritative_source': 'naptest',
-                'schema': self.schema_attrs['id'],
+                'schema_id': self.schema_attrs['id'],
                 'prefix': '1.3.0.0/16',
                 'description': ''
                 }
@@ -348,16 +348,19 @@ class NapTest(unittest.TestCase):
         """
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
-                'schema': self.schema_attrs['id'],
+                'schema_id': self.schema_attrs['id'],
                 'prefix': '1.3.3.7/32',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
         self.nap.add_prefix(prefix_attrs)
-        prefix = self.nap.list_prefix({ 'prefix': prefix_attrs['prefix'] })
+        prefix = self.nap.list_prefix({ 'prefix': prefix_attrs['prefix'], 'schema_name': self.schema_attrs['name'] })
         for a in prefix_attrs:
             self.assertEqual(prefix[0][a], prefix_attrs[a], 'Added object differ from listed on attribute: ' + a)
 
+        # fetch many prefixes - all in a schema
+        prefix = self.nap.list_prefix({'schema_id': self.schema_attrs['id']})
+        self.assertGreater(len(prefix), 0, 'Found 0 prefixes in schema ' + self.schema_attrs['name'])
 
 
     def test_prefix_remove(self):
@@ -373,7 +376,6 @@ class NapTest(unittest.TestCase):
         self.assertEqual(prefix, [], 'Old entry still exists')
 
 
-
     def test_prefix_indent(self):
         """ Check that our indentation calculation is working
 
@@ -382,17 +384,17 @@ class NapTest(unittest.TestCase):
             updates to the table and this test is to make sure it is correctly
             calculated.
         """
-        p1 = self.nap.list_prefix({ 'prefix': '1.3.3.1/32' })[0]
-        p2 = self.nap.list_prefix({ 'prefix': '1.3.3.0/24' })[0]
-        p3 = self.nap.list_prefix({ 'prefix': '1.3.0.0/16' })[0]
+        p1 = self.nap.list_prefix({ 'prefix': '1.3.3.1/32', 'schema_name': self.schema_attrs['name'] })[0]
+        p2 = self.nap.list_prefix({ 'prefix': '1.3.3.0/24', 'schema_name': self.schema_attrs['name'] })[0]
+        p3 = self.nap.list_prefix({ 'prefix': '1.3.0.0/16', 'schema_name': self.schema_attrs['name'] })[0]
         self.assertEqual(p1['indent'], 2, "Indent calc on add failed")
         self.assertEqual(p2['indent'], 1, "Indent calc on add failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on add failed")
         # remove middle prefix
         self.nap.remove_prefix({ 'id': self.prefix_attrs2['id'] })
         # check that child prefix indent level has decreased
-        p1 = self.nap.list_prefix({ 'prefix': '1.3.3.1/32' })[0]
-        p3 = self.nap.list_prefix({ 'prefix': '1.3.0.0/16' })[0]
+        p1 = self.nap.list_prefix({ 'prefix': '1.3.3.1/32', 'schema_name': self.schema_attrs['name'] })[0]
+        p3 = self.nap.list_prefix({ 'prefix': '1.3.0.0/16', 'schema_name': self.schema_attrs['name'] })[0]
         self.assertEqual(p1['indent'], 1, "Indent calc on remove failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on remove failed")
 
@@ -405,7 +407,7 @@ class NapTest(unittest.TestCase):
         # set up a prefix not used elsewhere so we have a known good state
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
-                'schema': self.schema_attrs['id'],
+                'schema_id': self.schema_attrs['id'],
                 'prefix': '100.0.0.0/16',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
