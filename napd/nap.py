@@ -3,6 +3,34 @@ import logging
 import psycopg2
 import psycopg2.extras
 
+class Inet(object):
+    """ This works around a bug in psycopg2 version somewhere before 2.4.
+        The __init__ function in the original class is broken and so this is merely a copy with the bug fixed.
+    
+        Wrap a string to allow for correct SQL-quoting of inet values.
+
+        Note that this adapter does NOT check the passed value to make
+        sure it really is an inet-compatible address but DOES call adapt()
+        on it to make sure it is impossible to execute an SQL-injection
+        by passing an evil value to the initializer.
+    """
+    def __init__(self, addr):
+        self.addr = addr
+
+    def prepare(self, conn):
+        self._conn = conn
+
+    def getquoted(self):
+        obj = adapt(self.addr)
+        if hasattr(obj, 'prepare'):
+            obj.prepare(self._conn)
+        return obj.getquoted()+"::inet"
+
+    def __str__(self):
+        return str(self.addr)
+
+
+
 class Nap:
     """ Network Address Planner
     """
@@ -25,12 +53,24 @@ class Nap:
             self._con_pg = psycopg2.connect("host='localhost' dbname='nap' user='napd' password='dpan'")
             self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            self.register_inet()
         except psycopg2.Error, e:
             estr = str(e)
             self._logger.error(estr)
             raise NapError(estr)
         except psycopg2.Warning, w:
             self._logger.warning(str(w))
+
+
+
+    def register_inet(oid=None, conn_or_curs=None):
+        """Create the INET type and an Inet adapter."""
+        from psycopg2 import extensions as _ext
+        if not oid: oid = 869
+        _ext.INET = _ext.new_type((oid, ), "INET",
+                lambda data, cursor: data and Inet(data) or None)
+        _ext.register_type(_ext.INET, conn_or_curs)
+        return _ext.INET
 
 
 
@@ -497,12 +537,64 @@ class Nap:
 
             Arguments:
         """
+
+        # input sanity
+        if type(spec) is not dict:
+            raise NapInputError("invalid input, please provide dict as spec")
+
+        # TODO: schema_id and schema_name needs to be resolved, now we just
+        #       accept 'schema' as is and trust input since this is only run
+        #       from our testsuite...
+
         if 'from-pool' in spec:
             if 'from-prefix' in spec:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
         elif 'from-prefix' in spec:
             if 'from-pool' in spec:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
+
+        prefixes = []
+        if 'from-pool' in spec:
+            raise NotImplementedError()
+            # TODO: hmm, we need to know if the user wants IPv4 or IPv6..
+
+        params = {}
+        if 'from-prefix' in spec:
+            i = 0
+            for prefix in spec['from-prefix']:
+                # TODO: do proper verification this is truely a prefix
+                # TODO: make sure we only have one address-family..
+                prefixes.append(prefix)
+
+            # TODO: this makes me want to piss my pants
+            #       we should really write a patch to psycopg2 or something to
+            #       properly adapt an python list of texts with values looking
+            #       like prefixes to a postgresql array of inets
+            sql_prefix = ' UNION '.join('SELECT %(prefix' + str(prefixes.index(p)) + ')s AS prefix' for p in prefixes)
+            for p in prefixes:
+                params['prefix' + str(prefixes.index(p))] = p
+
+            damp = 'SELECT array_agg(prefix::inet) FROM (' + sql_prefix + ') AS a'
+
+        # TODO: now we now address-family of from-pool or from-prefix, make
+        #       sure wanted_prefix_length falls within boundaries for
+        #       address-family, ie 32 for IPv4 and 128 for IPv6
+
+
+        sql = """SELECT find_free_prefix(%(schema)s, (""" + damp + """), %(wanted_length)s, %(max_result)s)"""
+
+        params['schema'] = spec['schema']
+        params['prefixes'] = prefixes
+        params['wanted_length'] = wanted_length
+        params['max_result'] = num
+
+        self._execute(sql, params)
+
+        res = list()
+        for row in self._curs_pg:
+            res.append(dict(row))
+
+        return res
 
 
 
