@@ -413,7 +413,7 @@ class NapTest(unittest.TestCase):
                 'comment': 'test comment, please remove! ;)'
                 }
         self.nap.add_prefix(prefix_attrs)
-        res = self.nap.find_free_prefix({ 'schema': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ] }, 24, 1)
+        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ] }, 24, 1)
         self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
 
