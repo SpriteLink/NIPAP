@@ -582,7 +582,7 @@ class NapError(Exception):
 class NapInputError(NapError):
     """ Something wrong with the input we received
 
-		A general case.
+        A general case.
     """
     pass
 
