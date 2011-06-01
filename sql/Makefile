@@ -1,5 +1,6 @@
 DB_NAME=nap
 NAPD_USER=napd
+NAPD_PASS=dpan
 
 all:
 	echo "Run this as the postgres user!"
@@ -8,6 +9,7 @@ all:
 db:
 	createuser -S -D -R $(NAPD_USER)
 	createdb -O $(NAPD_USER) $(DB_NAME)
+	psql -q -c "ALTER USER napd ENCRYPTED PASSWORD '$(NAPD_PASS)'"
 
 install:
 	psql -q -d $(DB_NAME) -c 'CREATE LANGUAGE plpgsql' || true
