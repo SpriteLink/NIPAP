@@ -1,6 +1,34 @@
 
+== CORE ==
+
+ - find_free_prefix needs to work :) both from-pool and from-prefix
+
+ - add search_prefix, a more capable search / listing function for prefixes
+   able to do non-equal based listing. should probably implement our wonderful
+   "dict-sql"
+
+ - improve add_prefix, currently "prefix" is required and means a prefix must
+   be manually provided. "from-prefix" or "from-pool" could be provided instead
+   and add_prefix would take from the specified pool or prefix instead.
+    * from-prefix should be a list.
+	* from-pool could maybe be a list, but does it really make sense? and what
+	  happens with default_prefix_length if it's different for the different
+	  pools specified?
+
  - find_free_prefix() should support a start address from where it should start
    searching for new candidate prefixes. prolly useful for paginating output in
    a potential web gui
 
  - add test suite for the XML-RPC API
+
+
+== polish, chrome and shine ==
+
+ - configuration for napd, save DB settings
+
+ - generate random password for DB user on install and save in napd
+   configuration file automatically
+
+ - debian packaging
+
+ - redhat packaging?
