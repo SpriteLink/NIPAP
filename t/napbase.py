@@ -416,8 +416,9 @@ class NapTest(unittest.TestCase):
         self.nap.add_prefix(prefix_attrs)
 
         # no schema, should raise error!
-        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'from-prefix': ['100.0.0.0/16'] }, 24, 1)
-
+        self.assertRaises(nap.NapMissingInputError, self.nap.find_free_prefix, { 'from-prefix': ['100.0.0.0/16'] }, 24, 1)
+        # incorrect from-prefix type, string instead of list of strings (looking like an IP address)
+        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': '100.0.0.0/16' }, 24, 1)
         # try giving both IPv4 and IPv6 in from-prefix which shouldn't work
         self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '2a00:800::0/25' ] }, 24, 1)
         # try giving non-integer as wanted prefix length

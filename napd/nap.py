@@ -651,6 +651,8 @@ class Nap:
         params = {}
         afi = None
         if 'from-prefix' in spec:
+            if type(spec['from-prefix']) != list:
+                raise NapInputError("from-prefix should be a list")
             for prefix in spec['from-prefix']:
                 prefix_afi = self._get_afi(prefix)
                 if afi is None:
