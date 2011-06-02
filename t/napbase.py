@@ -416,6 +416,9 @@ class NapTest(unittest.TestCase):
         res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ] }, 24, 1)
         self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
+        # try giving both IPv4 and IPv6 in from-prefix which shouldn't work
+        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '2a00:800::0/25' ] }, 24, 1)
+
 
 
 

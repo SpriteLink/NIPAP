@@ -4,6 +4,8 @@ import psycopg2
 import psycopg2.extras
 import socket
 
+
+
 class Inet(object):
     """ This works around a bug in psycopg2 version somewhere before 2.4.
         The __init__ function in the original class is broken and so this is merely a copy with the bug fixed.
@@ -81,6 +83,7 @@ class Nap:
     def _is_ipv4(self, ip):
         """ Return true if given arg is a valid IPv4 address
         """
+
         try:
             socket.inet_aton(ip)
         except socket.error:
@@ -104,6 +107,7 @@ class Nap:
     def _get_afi(self, ip):
         """ Return address-family (4 or 6) for IP or None if invalid address
         """
+
         parts = str(ip).split("/")
         if len(parts) == 1:
             # just an address
@@ -645,13 +649,17 @@ class Nap:
             # TODO: hmm, we need to know if the user wants IPv4 or IPv6..
 
         params = {}
+        afi = None
         if 'from-prefix' in spec:
-            afi = None
             for prefix in spec['from-prefix']:
                 # TODO: do proper verification this is truely a prefix
                 # TODO: make sure we only have one address-family..
                 # split prefix into address and mask
-                pafi = self._get_afi(prefix)
+                prefix_afi = self._get_afi(prefix)
+                if afi is None:
+                    afi = prefix_afi
+                elif afi != prefix_afi:
+                    raise NapInputError("mixing of address-family is not allowed for 'from-prefix' arg")
                 prefixes.append(prefix)
 
             # TODO: this makes me want to piss my pants
