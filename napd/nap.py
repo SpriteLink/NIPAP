@@ -606,12 +606,12 @@ class Nap:
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
 
-        # schema sanity
-        attr = self._translate_schema_spec(attr)
+        allowed_attr = [ 'name', 'description', 'comment', 'schema_name', 'schema_id' ]
 
-        req_attr = [ 'name', 'description', 'schema' ]
-        allowed_attr = req_attr + [ 'comment' ]
-        self._check_attr(attr, req_attr, allowed_attr)
+        self._check_attr(attr, [], allowed_attr)
+
+        if 'schema_name' in attr or 'schema_id' in attr:
+            attr = self._translate_schema_spec(attr)
 
         where, params1 = self._expand_prefix_spec(spec)
         update, params2 = self._sql_expand_update(attr)
