@@ -634,14 +634,14 @@ class Nap:
         if type(spec) is not dict:
             raise NapInputError("invalid input, please provide dict as spec")
 
-        spec = self._translate_schema_spec(spec)
-
         if 'from-pool' in spec:
             if 'from-prefix' in spec:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
         elif 'from-prefix' in spec:
             if 'from-pool' in spec:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
+
+        spec = self._translate_schema_spec(spec)
 
         prefixes = []
         if 'from-pool' in spec:
@@ -669,6 +669,7 @@ class Nap:
 
             damp = 'SELECT array_agg(prefix::inet) FROM (' + sql_prefix + ') AS a'
 
+        # santiy check the wanted prefix length
         wl = None
         try:
             wl = int(wanted_length)
@@ -679,7 +680,6 @@ class Nap:
         if afi == 4:
             if wl < 0 or wl > 32:
                 raise NapValueError("the specified wanted prefix length argument must be between 0 and 32 for ipv4")
-
         elif afi == 6:
             if wl < 0 or wl > 128:
                 raise NapValueError("the specified wanted prefix length argument must be between 0 and 128 for ipv6")
