@@ -65,6 +65,8 @@ BEGIN
 		-- length until we are beyond the broadcast size, ie end of our
 		-- search_prefix
 		WHILE set_masklen(current_prefix, masklen(search_prefix)) <= broadcast(search_prefix) LOOP
+			-- TODO: can this be optimized by reordering of tests? could potentially save a lot of time on all these small subselects
+
 			-- avoid prefixes larger than the current_prefix but inside our search_prefix
 			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND prefix >>= current_prefix AND prefix << search_prefix) THEN
 				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
