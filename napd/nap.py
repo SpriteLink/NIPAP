@@ -669,7 +669,7 @@ class Nap:
 
             damp = 'SELECT array_agg(prefix::inet) FROM (' + sql_prefix + ') AS a'
 
-        # santiy check the wanted prefix length
+        # sanity check the wanted prefix length
         wl = None
         try:
             wl = int(wanted_length)

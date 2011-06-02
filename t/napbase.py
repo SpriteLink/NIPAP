@@ -400,9 +400,10 @@ class NapTest(unittest.TestCase):
 
 
 
-    def test_find_free_prefix(self):
-        """ Test find_free_prefix
+    def test_find_free_prefix_input(self):
+        """ Mostly input testing of find_free_prefix
 
+            Try to stress find_free_prefix and send a lot of junk..
         """
         # set up a prefix not used elsewhere so we have a known good state
         prefix_attrs = {
@@ -413,8 +414,6 @@ class NapTest(unittest.TestCase):
                 'comment': 'test comment, please remove! ;)'
                 }
         self.nap.add_prefix(prefix_attrs)
-        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ] }, 24, 1)
-        self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
         # no schema, should raise error!
         self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'from-prefix': ['100.0.0.0/16'] }, 24, 1)
@@ -428,6 +427,22 @@ class NapTest(unittest.TestCase):
         # try giving to high a number as wanted prefix length
         self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '2a00:800::1/25'] }, 150, 1)
 
+
+
+    def test_find_free_prefix(self):
+        """ Functionality testing of find_free_prefix
+        """
+        # set up a prefix not used elsewhere so we have a known good state
+        prefix_attrs = {
+                'authoritative_source': 'nap-test',
+                'schema_id': self.schema_attrs['id'],
+                'prefix': '100.0.0.0/16',
+                'description': 'test prefix',
+                'comment': 'test comment, please remove! ;)'
+                }
+        self.nap.add_prefix(prefix_attrs)
+        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ] }, 24, 1)
+        self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
 
 
