@@ -103,13 +103,41 @@ class Nap:
     def _get_afi(self, ip):
         """ Return address-family (4 or 6) for IP or None if invalid address
         """
+        parts = str(ip).split("/")
+        if len(parts) == 1:
+            # just an address
+            if is_ipv4(ip):
+                return 4
+            elif is_ipv6(ip):
+                return 6
+            else:
+                return None
+        elif len(parts) == 2:
+            # a prefix!
+            try:
+                pl = int(parts[1])
+            except:
+                # if casting parts[1] to int failes, this is not a prefix..
+                return None
 
-        if is_ipv4(ip):
-            return 4
-        elif is_ipv6(ip):
-            return 6
+            if is_ipv4(parts[0]):
+                if pl >= 0 and pl <= 32:
+                    # prefix mask must be between 0 and 32
+                    return 4
+                # otherwise error
+                return None
+            elif is_ipv6(parts[0]):
+                if pl >= 0 and pl <= 128:
+                    # prefix mask must be between 0 and 128
+                    return 6
+                # otherwise error
+                return None
+            else:
+                return None
         else:
+            # more than two parts.. this is neither an address or a prefix
             return None
+
 
 
     #
@@ -617,10 +645,12 @@ class Nap:
 
         params = {}
         if 'from-prefix' in spec:
-            i = 0
+            afi = None
             for prefix in spec['from-prefix']:
                 # TODO: do proper verification this is truely a prefix
                 # TODO: make sure we only have one address-family..
+                # split prefix into address and mask
+                pafi = self._get_afi(prefix)
                 prefixes.append(prefix)
 
             # TODO: this makes me want to piss my pants
