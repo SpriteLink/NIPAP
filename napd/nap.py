@@ -2,6 +2,7 @@
 import logging
 import psycopg2
 import psycopg2.extras
+import socket
 
 class Inet(object):
     """ This works around a bug in psycopg2 version somewhere before 2.4.
@@ -106,9 +107,9 @@ class Nap:
         parts = str(ip).split("/")
         if len(parts) == 1:
             # just an address
-            if is_ipv4(ip):
+            if self._is_ipv4(ip):
                 return 4
-            elif is_ipv6(ip):
+            elif self._is_ipv6(ip):
                 return 6
             else:
                 return None
@@ -120,13 +121,13 @@ class Nap:
                 # if casting parts[1] to int failes, this is not a prefix..
                 return None
 
-            if is_ipv4(parts[0]):
+            if self._is_ipv4(parts[0]):
                 if pl >= 0 and pl <= 32:
                     # prefix mask must be between 0 and 32
                     return 4
                 # otherwise error
                 return None
-            elif is_ipv6(parts[0]):
+            elif self._is_ipv6(parts[0]):
                 if pl >= 0 and pl <= 128:
                     # prefix mask must be between 0 and 128
                     return 6
