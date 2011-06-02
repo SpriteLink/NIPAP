@@ -426,6 +426,10 @@ class NapTest(unittest.TestCase):
         self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'] }, 35, 1)
         # try giving to high a number as wanted prefix length
         self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '2a00:800::1/25'] }, 150, 1)
+        # try giving a high number for wanted prefixes (max is 1000)
+        # TODO: this fails, probably because the stored procedure is throwing
+        #       an exception which we don't really know how to handle
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'] }, 30, 55555)
 
 
 
@@ -443,6 +447,8 @@ class NapTest(unittest.TestCase):
         self.nap.add_prefix(prefix_attrs)
         res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ] }, 24, 1)
         self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
+        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ] }, 24, 999)
+        self.assertEqual(len(res), 256, "Incorrect prefix set returned")
 
 
 
