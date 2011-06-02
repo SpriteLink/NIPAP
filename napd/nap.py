@@ -652,9 +652,6 @@ class Nap:
         afi = None
         if 'from-prefix' in spec:
             for prefix in spec['from-prefix']:
-                # TODO: do proper verification this is truely a prefix
-                # TODO: make sure we only have one address-family..
-                # split prefix into address and mask
                 prefix_afi = self._get_afi(prefix)
                 if afi is None:
                     afi = prefix_afi
@@ -672,9 +669,20 @@ class Nap:
 
             damp = 'SELECT array_agg(prefix::inet) FROM (' + sql_prefix + ') AS a'
 
-        # TODO: now we now address-family of from-pool or from-prefix, make
-        #       sure wanted_prefix_length falls within boundaries for
-        #       address-family, ie 32 for IPv4 and 128 for IPv6
+        wl = None
+        try:
+            wl = int(wanted_length)
+        except:
+            # not an int
+            raise NapValueError("the specified wanted prefix length argument must be an integer")
+
+        if afi == 4:
+            if wl < 0 or wl > 32:
+                raise NapValueError("the specified wanted prefix length argument must be between 0 and 32 for ipv4")
+
+        elif afi == 6:
+            if wl < 0 or wl > 128:
+                raise NapValueError("the specified wanted prefix length argument must be between 0 and 128 for ipv6")
 
 
         sql = """SELECT * FROM find_free_prefix(%(schema)s, (""" + damp + """), %(wanted_length)s, %(max_result)s) AS prefix"""
