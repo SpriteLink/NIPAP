@@ -153,6 +153,7 @@ class Nap:
         """ Execute query, catch and log errors.
         """
 
+        self._logger.debug("SQL: " + sql + "  params: " + str(opt))
         try:
             self._curs_pg.execute(sql, opt)
         except psycopg2.Error, e:
