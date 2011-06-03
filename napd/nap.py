@@ -668,9 +668,9 @@ class Nap:
             #       like prefixes to a postgresql array of inets
             sql_prefix = ' UNION '.join('SELECT %(prefix' + str(prefixes.index(p)) + ')s AS prefix' for p in prefixes)
             for p in prefixes:
-                params['prefix' + str(prefixes.index(p))] = p
+                params['prefix' + str(prefixes.index(p))] = str(p)
 
-            damp = 'SELECT array_agg(prefix::inet) FROM (' + sql_prefix + ') AS a'
+            damp = 'SELECT array_agg((prefix::text)::inet) FROM (' + sql_prefix + ') AS a'
 
         # sanity check the wanted prefix length
         wl = None
