@@ -100,7 +100,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_ip_net_pool_prefix__iu_before
+CREATE TRIGGER trigger_ip_net_plan_prefix__iu_before
 	BEFORE UPDATE OR INSERT
 	ON ip_net_plan
 	FOR EACH ROW
@@ -120,7 +120,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_ip_net_pool_prefix__iu_after
+CREATE TRIGGER trigger_ip_net_plan_prefix__iu_after
 	AFTER DELETE OR INSERT OR UPDATE
 	ON ip_net_plan
 	FOR EACH ROW
