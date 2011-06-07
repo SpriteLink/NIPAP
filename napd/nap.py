@@ -493,17 +493,14 @@ class Nap:
                         po.schema,
                         po.default_type,
                         po.ipv4_default_prefix_length,
-                        po.ipv6_default_prefix_length
-                FROM ip_net_pool AS po
-                LEFT JOIN ip_net_plan AS pl ON pl.pool = po.id """
+                        po.ipv6_default_prefix_length,
+                        (SELECT array_agg(prefix::text) FROM ip_net_plan WHERE pool=po.id) AS prefixes
+                FROM ip_net_pool AS po """
         params = list()
 
         if spec is not None:
             where, params = self._expand_pool_spec(spec)
             sql += " WHERE " + where
-
-        # TODO: what the hell is this for? Why aren't they unique to begin with?
-        sql += " GROUP BY po.id, po.name, po.description, po.schema, po.default_type, po.ipv4_default_prefix_length, po.ipv6_default_prefix_length"
 
         self._execute(sql, params)
 

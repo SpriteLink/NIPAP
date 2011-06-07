@@ -334,12 +334,46 @@ class NapTest(unittest.TestCase):
         """
         pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
         # first make sure our pool exists
-        self.assertEqual(pool[0], self.pool_attrs, 'Record must exist before we can delete it')
+        self.assertNotEqual(pool[0], [], 'Record must exist before we can delete it')
+        for a in self.pool_attrs:
+            self.assertEqual(pool[0][a], self.pool_attrs[a], 'Listed attribute differ from original')
         # remove the pool
         self.nap.remove_pool({ 'id': self.pool_attrs['id'] })
         # check that search for old record doesn't return anything
         pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
         self.assertEqual(pool, [], 'Old entry still exists')
+
+
+
+    def test_prefix_in_a_pool(self):
+        """ Add prefixes to a poll and list!
+        """
+        pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
+        # first make sure our pool exists
+        self.assertNotEqual(pool[0], [], 'Pool must exist!')
+        pfxs = [
+                '1.2.2.0/32',
+                '1.2.2.1/32',
+                '1.2.2.2/32',
+                '1.2.2.3/32',
+                '1.2.2.4/32',
+                '1.2.2.5/32'
+                ]
+        prefix_attrs = {
+                'authoritative_source': 'nap-test',
+                'schema_id': self.schema_attrs['id'],
+                'description': 'test prefix',
+                'pool_id': self.pool_attrs['id'],
+                'comment': 'test comment, please remove! ;)'
+                }
+        for p in pfxs:
+            prefix_attrs['prefix'] = p
+            self.nap.add_prefix(prefix_attrs)
+
+        # list again
+        pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
+        self.assertNotEqual(pool[0], [], 'Pool must exist!')
+        self.assertEqual(set(pfxs), set(pool[0]['prefixes']), 'Returned prefixes do not match added ones')
 
 
 
