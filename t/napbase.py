@@ -359,15 +359,15 @@ class NapTest(unittest.TestCase):
                 '1.2.2.4/32',
                 '1.2.2.5/32'
                 ]
-        prefix_attrs = {
-                'authoritative_source': 'nap-test',
-                'schema_id': self.schema_attrs['id'],
-                'description': 'test prefix',
-                'pool_id': self.pool_attrs['id'],
-                'comment': 'test comment, please remove! ;)'
-                }
         for p in pfxs:
-            prefix_attrs['prefix'] = p
+            prefix_attrs = {
+                    'authoritative_source': 'nap-test',
+                    'schema_id': self.schema_attrs['id'],
+                    'prefix': p,
+                    'description': 'test prefix',
+                    'pool_id': self.pool_attrs['id'],
+                    'comment': 'test comment, please remove! ;)'
+                    }
             self.nap.add_prefix(prefix_attrs)
 
         # list again

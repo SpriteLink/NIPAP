@@ -281,6 +281,7 @@ class Nap:
         return where, params
 
 
+
     def _translate_schema_spec(self, spec):
         """ Expand 'schema_name' or 'schema_id'.
 
@@ -307,6 +308,39 @@ class Nap:
             raise NapInputError("Missing schema, add schema_id or schema_name to spec!")
 
         return spec
+
+
+
+    def _translate_pool_spec(self, spec):
+        """ Expand 'pool_name' or 'pool_id'.
+
+            Translates 'pool_name' or 'pool_id' element in spec
+            to a 'pool' element containing the pool ID.
+        """
+
+        if 'pool_id' in spec and 'pool_name' in spec:
+            raise NapExtraneousInputError("specification contain both 'id' and 'name', specify pool id or name")
+
+        if 'pool_id' in spec:
+            pool = self.list_pool({ 'id': spec['pool_id'] })
+            if pool == []:
+                raise NapInputError("non-existing pool specified")
+            spec['pool'] = pool[0]['id']
+            del(spec['pool_id'])
+        elif 'pool_name' in spec:
+            if 'schema' not in spec:
+                raise NapMissingInputError("schema needs to be specified together with 'pool_name'")
+
+            pool = self.list_pool({ 'schema': spec['schema'], 'name': spec['pool_name'] })
+            if pool == []:
+                raise NapInputError("non-existing pool specified")
+            spec['pool'] = pool[0]['id']
+            del(spec['pool_name'])
+        else:
+            raise NapInputError("Missing pool, add pool_id or pool_name to spec!")
+
+        return spec
+
 
 
     def add_schema(self, attr):
@@ -582,10 +616,14 @@ class Nap:
 
         self._logger.debug("add_prefix called; attr: %s" % str(attr))
 
-        # sanity check - do we have all attributes?
-        req_attr = ['prefix', 'schema', 'description' ]
-        allowed_attr = ['authoritative_source', 'prefix', 'schema', 'description', 'comment']
+        # sanity check
         attr = self._translate_schema_spec(attr)
+        if 'pool_id' in attr or 'pool_name' in attr:
+            attr = self._translate_pool_spec(attr)
+
+        # do we have all attributes?
+        req_attr = ['prefix', 'schema', 'description' ]
+        allowed_attr = ['authoritative_source', 'prefix', 'schema', 'description', 'comment', 'pool']
         self._check_attr(attr, req_attr, allowed_attr)
 
         insert, params = self._sql_expand_insert(attr)
