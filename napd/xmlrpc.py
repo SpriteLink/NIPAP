@@ -8,6 +8,7 @@ import nap
 
 # map exception types to error codes, used for 
 # creating suitable xmlrpclib.Fault-objects
+# TODO: there are normal python ValueErrors raised, catch them too!
 errcode_map = {
     nap.NapError: 1000,
     nap.NapInputError: 1100,
