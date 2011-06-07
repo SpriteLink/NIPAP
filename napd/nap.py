@@ -616,7 +616,7 @@ class Nap:
 
         self._logger.debug("add_prefix called; attr: %s" % str(attr))
 
-        # sanity check
+        # sanity checks
         attr = self._translate_schema_spec(attr)
         if 'pool_id' in attr or 'pool_name' in attr:
             attr = self._translate_pool_spec(attr)
@@ -671,9 +671,7 @@ class Nap:
         # TODO: find good default value for max_num
         # TODO: let max_num be configurable from configuration file
         max_num = 1000
-        if type(num) is not int:
-            raise NapValueError("num must be an integer between 0 and " + max_num)
-        if num > max_num:
+        if int(num) > max_num:
             raise NapValueError("num over the maximum result size")
 
         if type(spec) is not dict:
