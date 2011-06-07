@@ -630,6 +630,14 @@ class Nap:
         """
 
         # input sanity
+        # TODO: find good default value for max_num
+        # TODO: let max_num be configurable from configuration file
+        max_num = 1000
+        if type(num) is not int:
+            raise NapValueError("num must be an integer between 0 and " + max_num)
+        if num > max_num:
+            raise NapValueError("num over the maximum result size")
+
         if type(spec) is not dict:
             raise NapInputError("invalid input, please provide dict as spec")
 
