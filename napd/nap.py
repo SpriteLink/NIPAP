@@ -600,6 +600,7 @@ class Nap:
         return prefix_id
 
 
+
     def edit_prefix(self, spec, attr):
         """ Edit prefix.
         """
