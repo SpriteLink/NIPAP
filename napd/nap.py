@@ -661,42 +661,50 @@ class Nap:
 
 
 
-    def find_free_prefix(self, spec, wanted_length, num = 1):
+    def find_free_prefix(self, args, wanted_prefix_length = None, count = None):
         """ Find a free prefix
 
             Arguments:
         """
 
+        # temporary compatibility stuff
+        if wanted_prefix_length is not None:
+            args['wanted_prefix_length'] = wanted_prefix_length
+
+        if count is not None:
+            args['count'] = count
+
         # input sanity
+        if type(args) is not dict:
+            raise NapInputError("invalid input, please provide dict as args")
+
         # TODO: find good default value for max_num
         # TODO: let max_num be configurable from configuration file
-        max_num = 1000
-        if int(num) > max_num:
-            raise NapValueError("num over the maximum result size")
+        max_count = 1000
+        if 'count' in args:
+            if int(args['count']) > max_count:
+                raise NapValueError("count over the maximum result size")
 
-        if type(spec) is not dict:
-            raise NapInputError("invalid input, please provide dict as spec")
-
-        if 'from-pool' in spec:
-            if 'from-prefix' in spec:
+        if 'from-pool' in args:
+            if 'from-prefix' in args:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
-        elif 'from-prefix' in spec:
-            if type(spec['from-prefix']) is not list:
+        elif 'from-prefix' in args:
+            if type(args['from-prefix']) is not list:
                 raise NapInputError("from-prefix should be a list")
-            if 'from-pool' in spec:
+            if 'from-pool' in args:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
 
-        spec = self._translate_schema_spec(spec)
+        args = self._translate_schema_spec(args)
 
         prefixes = []
-        if 'from-pool' in spec:
+        if 'from-pool' in args:
             raise NotImplementedError()
             # TODO: hmm, we need to know if the user wants IPv4 or IPv6..
 
         params = {}
         afi = None
-        if 'from-prefix' in spec:
-            for prefix in spec['from-prefix']:
+        if 'from-prefix' in args:
+            for prefix in args['from-prefix']:
                 prefix_afi = self._get_afi(prefix)
                 if afi is None:
                     afi = prefix_afi
@@ -715,27 +723,21 @@ class Nap:
             damp = 'SELECT array_agg((prefix::text)::inet) FROM (' + sql_prefix + ') AS a'
 
         # sanity check the wanted prefix length
-        wl = None
-        try:
-            wl = int(wanted_length)
-        except:
-            # not an int
-            raise NapValueError("the specified wanted prefix length argument must be an integer")
-
+        wpl = args['wanted_prefix_length']
         if afi == 4:
-            if wl < 0 or wl > 32:
+            if wpl < 0 or wpl > 32:
                 raise NapValueError("the specified wanted prefix length argument must be between 0 and 32 for ipv4")
         elif afi == 6:
-            if wl < 0 or wl > 128:
+            if wpl < 0 or wpl > 128:
                 raise NapValueError("the specified wanted prefix length argument must be between 0 and 128 for ipv6")
 
 
         sql = """SELECT * FROM find_free_prefix(%(schema)s, (""" + damp + """), %(wanted_length)s, %(max_result)s) AS prefix"""
 
-        params['schema'] = spec['schema']
+        params['schema'] = args['schema']
         params['prefixes'] = prefixes
-        params['wanted_length'] = wanted_length
-        params['max_result'] = num
+        params['wanted_length'] = wpl
+        params['max_result'] = args['count']
 
         self._execute(sql, params)
 
