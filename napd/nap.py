@@ -683,6 +683,8 @@ class Nap:
         if 'from-pool' in args:
             if 'from-prefix' in args:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
+            if 'family' not in args:
+                raise NapMissingInputError("'family' must be specified with 'from-pool' mode")
         elif 'from-prefix' in args:
             if type(args['from-prefix']) is not list:
                 raise NapInputError("from-prefix should be a list")
@@ -690,6 +692,8 @@ class Nap:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
             if 'wanted_prefix_length' not in args:
                 raise NapMissingInputError("'wanted_prefix_length' must be specified with 'from-prefix'")
+            if 'family' in args:
+                raise NapExtraneousInputError("'family' is superfluous when in 'from-prefix' mode")
 
         prefixes = []
         if 'from-pool' in args:
