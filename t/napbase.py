@@ -455,23 +455,23 @@ class NapTest(unittest.TestCase):
         # incorrect from-prefix type, string instead of list of strings (looking like an IP address)
         self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': '100.0.0.0/16' })
 
-        # missing wanted_prefix_length
+        # missing prefix_length
         self.assertRaises(nap.NapMissingInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16' ], 'count': 1 })
 
         # try giving both IPv4 and IPv6 in from-prefix which shouldn't work
-        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '2a00:800::0/25' ], 'wanted_prefix_length': 24, 'count': 1 })
+        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '2a00:800::0/25' ], 'prefix_length': 24, 'count': 1 })
 
         # try giving non-integer as wanted prefix length
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'], 'wanted_prefix_length': '24', 'count': 1 })
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': '24', 'count': 1 })
 
         # try giving to high a number as wanted prefix length for IPv4
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'], 'wanted_prefix_length': 35, 'count': 1 })
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 35, 'count': 1 })
 
         # try giving to high a number as wanted prefix length for IPv6
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '2a00:800::1/25'], 'wanted_prefix_length': 150, 'count': 1 })
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '2a00:800::1/25'], 'prefix_length': 150, 'count': 1 })
 
         # try giving a high number for result count (max is 1000)
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'], 'wanted_prefix_length': 30, 'count': 55555 })
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 30, 'count': 55555 })
 
 
 
@@ -489,14 +489,14 @@ class NapTest(unittest.TestCase):
         self.nap.add_prefix(prefix_attrs)
 
         # simple test
-        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'wanted_prefix_length': 24, 'count': 1 })
+        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'prefix_length': 24, 'count': 1 })
         self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
         # simple test - only one input prefix (which did cause a bug, thus keeping it)
-        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16' ], 'wanted_prefix_length': 24, 'count': 1 })
+        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16' ], 'prefix_length': 24, 'count': 1 })
         self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
-        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'wanted_prefix_length': 24, 'count': 999 })
+        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'prefix_length': 24, 'count': 999 })
         self.assertEqual(len(res), 256, "Incorrect prefix set returned")
 
 

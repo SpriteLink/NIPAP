@@ -690,8 +690,8 @@ class Nap:
                 raise NapInputError("from-prefix should be a list")
             if 'from-pool' in args:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
-            if 'wanted_prefix_length' not in args:
-                raise NapMissingInputError("'wanted_prefix_length' must be specified with 'from-prefix'")
+            if 'prefix_length' not in args:
+                raise NapMissingInputError("'prefix_length' must be specified with 'from-prefix'")
             if 'family' in args:
                 raise NapExtraneousInputError("'family' is superfluous when in 'from-prefix' mode")
 
@@ -722,7 +722,7 @@ class Nap:
             damp = 'SELECT array_agg((prefix::text)::inet) FROM (' + sql_prefix + ') AS a'
 
         # sanity check the wanted prefix length
-        wpl = args['wanted_prefix_length']
+        wpl = args['prefix_length']
         if afi == 4:
             if wpl < 0 or wpl > 32:
                 raise NapValueError("the specified wanted prefix length argument must be between 0 and 32 for ipv4")
@@ -731,11 +731,11 @@ class Nap:
                 raise NapValueError("the specified wanted prefix length argument must be between 0 and 128 for ipv6")
 
 
-        sql = """SELECT * FROM find_free_prefix(%(schema)s, (""" + damp + """), %(wanted_length)s, %(max_result)s) AS prefix"""
+        sql = """SELECT * FROM find_free_prefix(%(schema)s, (""" + damp + """), %(prefix_length)s, %(max_result)s) AS prefix"""
 
         params['schema'] = args['schema']
         params['prefixes'] = prefixes
-        params['wanted_length'] = wpl
+        params['prefix_length'] = wpl
         params['max_result'] = args['count']
 
         self._execute(sql, params)
