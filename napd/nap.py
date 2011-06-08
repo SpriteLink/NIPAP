@@ -705,7 +705,7 @@ class Nap:
 
 
 
-    def list_prefix(self, spec):
+    def list_prefix(self, spec = None):
         """ List prefixes
         """
 

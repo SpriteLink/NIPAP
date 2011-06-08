@@ -195,7 +195,7 @@ class NapProtocol(xmlrpc.XMLRPC):
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 
 
-    def xmlrpc_list_prefix(self, spec):
+    def xmlrpc_list_prefix(self, spec = None):
         """ List prefixes.
         """
 
