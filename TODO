@@ -21,6 +21,12 @@
 
  - add test suite for the XML-RPC API
 
+ - authentication in XML-RPC framework
+
+ - authorization in XML-RPC framework
+
+ - accounting in NAP
+
 
 == polish, chrome and shine ==
 
