@@ -11,6 +11,7 @@ import nap
 # TODO: there are normal python ValueErrors raised, catch them too! make sure
 #       we don't leak internal information in the exception and if possible try
 #       to point out which argument (if any) caused the exception
+# TODO: Catch NapNonExistentError too
 errcode_map = {
     nap.NapError: 1000,
     nap.NapInputError: 1100,
