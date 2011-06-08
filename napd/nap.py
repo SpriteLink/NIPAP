@@ -281,6 +281,7 @@ class Nap:
         return where, params
 
 
+
     def _translate_schema_spec(self, spec):
         """ Expand 'schema_name' or 'schema_id'.
 
@@ -307,6 +308,39 @@ class Nap:
             raise NapInputError("Missing schema, add schema_id or schema_name to spec!")
 
         return spec
+
+
+
+    def _translate_pool_spec(self, spec):
+        """ Expand 'pool_name' or 'pool_id'.
+
+            Translates 'pool_name' or 'pool_id' element in spec
+            to a 'pool' element containing the pool ID.
+        """
+
+        if 'pool_id' in spec and 'pool_name' in spec:
+            raise NapExtraneousInputError("specification contain both 'id' and 'name', specify pool id or name")
+
+        if 'pool_id' in spec:
+            pool = self.list_pool({ 'id': spec['pool_id'] })
+            if pool == []:
+                raise NapInputError("non-existing pool specified")
+            spec['pool'] = pool[0]['id']
+            del(spec['pool_id'])
+        elif 'pool_name' in spec:
+            if 'schema' not in spec:
+                raise NapMissingInputError("schema needs to be specified together with 'pool_name'")
+
+            pool = self.list_pool({ 'schema': spec['schema'], 'name': spec['pool_name'] })
+            if pool == []:
+                raise NapInputError("non-existing pool specified")
+            spec['pool'] = pool[0]['id']
+            del(spec['pool_name'])
+        else:
+            raise NapInputError("Missing pool, add pool_id or pool_name to spec!")
+
+        return spec
+
 
 
     def add_schema(self, attr):
@@ -493,17 +527,14 @@ class Nap:
                         po.schema,
                         po.default_type,
                         po.ipv4_default_prefix_length,
-                        po.ipv6_default_prefix_length
-                FROM ip_net_pool AS po
-                LEFT JOIN ip_net_plan AS pl ON pl.pool = po.id """
+                        po.ipv6_default_prefix_length,
+                        (SELECT array_agg(prefix::text) FROM ip_net_plan WHERE pool=po.id) AS prefixes
+                FROM ip_net_pool AS po """
         params = list()
 
         if spec is not None:
             where, params = self._expand_pool_spec(spec)
             sql += " WHERE " + where
-
-        # TODO: what the hell is this for? Why aren't they unique to begin with?
-        sql += " GROUP BY po.id, po.name, po.description, po.schema, po.default_type, po.ipv4_default_prefix_length, po.ipv6_default_prefix_length"
 
         self._execute(sql, params)
 
@@ -585,10 +616,14 @@ class Nap:
 
         self._logger.debug("add_prefix called; attr: %s" % str(attr))
 
-        # sanity check - do we have all attributes?
-        req_attr = ['prefix', 'schema', 'description' ]
-        allowed_attr = ['authoritative_source', 'prefix', 'schema', 'description', 'comment']
+        # sanity checks
         attr = self._translate_schema_spec(attr)
+        if 'pool_id' in attr or 'pool_name' in attr:
+            attr = self._translate_pool_spec(attr)
+
+        # do we have all attributes?
+        req_attr = ['prefix', 'schema', 'description' ]
+        allowed_attr = ['authoritative_source', 'prefix', 'schema', 'description', 'comment', 'pool']
         self._check_attr(attr, req_attr, allowed_attr)
 
         insert, params = self._sql_expand_insert(attr)
@@ -598,6 +633,7 @@ class Nap:
         prefix_id = self._lastrowid()
 
         return prefix_id
+
 
 
     def edit_prefix(self, spec, attr):
@@ -625,36 +661,45 @@ class Nap:
 
 
 
-    def find_free_prefix(self, spec, wanted_length, num = 1):
+    def find_free_prefix(self, args):
         """ Find a free prefix
 
             Arguments:
         """
 
         # input sanity
-        if type(spec) is not dict:
-            raise NapInputError("invalid input, please provide dict as spec")
+        if type(args) is not dict:
+            raise NapInputError("invalid input, please provide dict as args")
 
-        if 'from-pool' in spec:
-            if 'from-prefix' in spec:
-                raise NapInputError("specify 'from-pool' OR 'from-prefix'")
-        elif 'from-prefix' in spec:
-            if 'from-pool' in spec:
-                raise NapInputError("specify 'from-pool' OR 'from-prefix'")
+        args = self._translate_schema_spec(args)
 
-        spec = self._translate_schema_spec(spec)
+        # TODO: find good default value for max_num
+        # TODO: let max_num be configurable from configuration file
+        max_count = 1000
+        if 'count' in args:
+            if int(args['count']) > max_count:
+                raise NapValueError("count over the maximum result size")
+
+        if 'from-pool' in args:
+            if 'from-prefix' in args:
+                raise NapInputError("specify 'from-pool' OR 'from-prefix'")
+        elif 'from-prefix' in args:
+            if type(args['from-prefix']) is not list:
+                raise NapInputError("from-prefix should be a list")
+            if 'from-pool' in args:
+                raise NapInputError("specify 'from-pool' OR 'from-prefix'")
+            if 'wanted_prefix_length' not in args:
+                raise NapMissingInputError("'wanted_prefix_length' must be specified with 'from-prefix'")
 
         prefixes = []
-        if 'from-pool' in spec:
+        if 'from-pool' in args:
             raise NotImplementedError()
             # TODO: hmm, we need to know if the user wants IPv4 or IPv6..
 
         params = {}
         afi = None
-        if 'from-prefix' in spec:
-            if type(spec['from-prefix']) != list:
-                raise NapInputError("from-prefix should be a list")
-            for prefix in spec['from-prefix']:
+        if 'from-prefix' in args:
+            for prefix in args['from-prefix']:
                 prefix_afi = self._get_afi(prefix)
                 if afi is None:
                     afi = prefix_afi
@@ -673,27 +718,21 @@ class Nap:
             damp = 'SELECT array_agg((prefix::text)::inet) FROM (' + sql_prefix + ') AS a'
 
         # sanity check the wanted prefix length
-        wl = None
-        try:
-            wl = int(wanted_length)
-        except:
-            # not an int
-            raise NapValueError("the specified wanted prefix length argument must be an integer")
-
+        wpl = args['wanted_prefix_length']
         if afi == 4:
-            if wl < 0 or wl > 32:
+            if wpl < 0 or wpl > 32:
                 raise NapValueError("the specified wanted prefix length argument must be between 0 and 32 for ipv4")
         elif afi == 6:
-            if wl < 0 or wl > 128:
+            if wpl < 0 or wpl > 128:
                 raise NapValueError("the specified wanted prefix length argument must be between 0 and 128 for ipv6")
 
 
         sql = """SELECT * FROM find_free_prefix(%(schema)s, (""" + damp + """), %(wanted_length)s, %(max_result)s) AS prefix"""
 
-        params['schema'] = spec['schema']
+        params['schema'] = args['schema']
         params['prefixes'] = prefixes
-        params['wanted_length'] = wanted_length
-        params['max_result'] = num
+        params['wanted_length'] = wpl
+        params['max_result'] = args['count']
 
         self._execute(sql, params)
 

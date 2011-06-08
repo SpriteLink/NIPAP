@@ -7,7 +7,6 @@ $_$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION find_free_prefix(arg_schema integer, IN arg_prefixes inet[], arg_wanted_prefix_len integer, arg_count integer) RETURNS SETOF inet AS $_$
 DECLARE
-	i_count integer;
 	i_family integer;
 	i_found integer;
 	p int;
@@ -41,14 +40,6 @@ BEGIN
 	--
 
 	i_found := 0;
-
-	-- by default, we only return one prefix
-	i_count := 1;
-	IF arg_count > 1000 THEN
-		RAISE EXCEPTION 'Only allowed to return a maximum of 1000 prefixes';
-	ELSIF arg_count IS NOT NULL THEN
-		i_count := arg_count;
-	END IF;
 
 	-- loop through our search list of prefixes
 	FOR p IN SELECT generate_subscripts(arg_prefixes, 1) LOOP
@@ -98,7 +89,7 @@ BEGIN
 			RETURN NEXT current_prefix;
 
 			i_found := i_found + 1;
-			IF i_found >= i_count THEN
+			IF i_found >= arg_count THEN
 				RETURN;
 			END IF;
 
