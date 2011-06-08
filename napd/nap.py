@@ -661,22 +661,17 @@ class Nap:
 
 
 
-    def find_free_prefix(self, args, wanted_prefix_length = None, count = None):
+    def find_free_prefix(self, args):
         """ Find a free prefix
 
             Arguments:
         """
 
-        # temporary compatibility stuff
-        if wanted_prefix_length is not None:
-            args['wanted_prefix_length'] = wanted_prefix_length
-
-        if count is not None:
-            args['count'] = count
-
         # input sanity
         if type(args) is not dict:
             raise NapInputError("invalid input, please provide dict as args")
+
+        args = self._translate_schema_spec(args)
 
         # TODO: find good default value for max_num
         # TODO: let max_num be configurable from configuration file
@@ -693,8 +688,8 @@ class Nap:
                 raise NapInputError("from-prefix should be a list")
             if 'from-pool' in args:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
-
-        args = self._translate_schema_spec(args)
+            if 'wanted_prefix_length' not in args:
+                raise NapMissingInputError("'wanted_prefix_length' must be specified with 'from-prefix'")
 
         prefixes = []
         if 'from-pool' in args:
