@@ -610,7 +610,7 @@ class Nap:
 
 
 
-    def add_prefix(self, attr):
+    def add_prefix(self, attr, args = {}):
         """ Add a prefix
         """
 
@@ -618,6 +618,19 @@ class Nap:
 
         # sanity checks
         attr = self._translate_schema_spec(attr)
+
+        if 'prefix' in attr:
+            if 'from-pool' in args or 'from-prefix' in args:
+                raise NapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
+        else:
+            if 'prefix' in attr:
+                raise NapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
+            # TODO: need to check schema in attr and schema in args coincide
+            args['schema_id'] = attr['schema']
+            res = self.find_free_prefix(args)
+            if res != []:
+                attr['prefix'] = res[0]
+
         if 'pool_id' in attr or 'pool_name' in attr:
             attr = self._translate_pool_spec(attr)
 
