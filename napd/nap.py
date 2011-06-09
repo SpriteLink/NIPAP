@@ -679,6 +679,8 @@ class Nap:
         if 'count' in args:
             if int(args['count']) > max_count:
                 raise NapValueError("count over the maximum result size")
+        else:
+            args['count'] = 1
 
         if 'from-pool' in args:
             if 'from-prefix' in args:
