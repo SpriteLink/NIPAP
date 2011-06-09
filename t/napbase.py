@@ -434,6 +434,10 @@ class NapTest(unittest.TestCase):
         p = self.nap.list_prefix({ 'id': res })
         self.assertEqual(p[0]['prefix'], '10.0.0.0/30', "New prefix differ from what it should be!")
 
+        self.nap.add_schema({ 'name': 'testtest', 'description': 'another test schema!' })
+        # pass different schemas in attr and args
+        self.assertRaises(nap.NapInputError, self.nap.add_prefix, { 'authoritative_source': 'nap-test', 'schema_id': self.schema_attrs['id'], 'description': 'tjong' }, { 'schema_name': 'testtest', 'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
+
 
 
     def test_prefix_search_simple(self):

@@ -695,8 +695,12 @@ class Nap:
         else:
             if 'prefix' in attr:
                 raise NapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
-            # TODO: need to check schema in attr and schema in args coincide
-            args['schema_id'] = attr['schema']
+            if 'schema_id' in args or 'schema_name' in args:
+                args = self._translate_schema_spec(args)
+                if args['schema'] != attr['schema']:
+                    raise NapInputError("inconsistent schema specified in args and attr")
+            else:
+                args['schema_id'] = attr['schema']
             res = self.find_free_prefix(args)
             if res != []:
                 attr['prefix'] = res[0]
