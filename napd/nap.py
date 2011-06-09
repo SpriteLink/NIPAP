@@ -3,7 +3,22 @@ import logging
 import psycopg2
 import psycopg2.extras
 import socket
+import re
 
+
+_operation_map = {
+    'and': 'AND',
+    'or': 'OR',
+    'equals': '=',
+    'not_equals': '!=',
+    'like': 'LIKE',
+    'regex_match': '~*',
+    'regex_not_match': '!~*',
+    'contains': '>>',
+    'contains_equals': '>>=',
+    'contained_within': '<<',
+    'contained_within_equals': '<<='
+    }
 
 
 class Inet(object):
@@ -610,6 +625,61 @@ class Nap:
 
 
 
+    def _expand_prefix_query(self, query):
+        """ Expand prefix query dict into a WHERE-clause.
+        """
+
+        where = str()
+        opt = list()
+
+        if query['val1'].__class__.__name__ == 'dict' and query['val2'].__class__.__name__ == 'dict':
+            # Sub expression, recurse!
+            # add parantheses
+
+            sub_where1, opt1 = self._expand_prefix_query(query['val1'])
+            sub_where2, opt2 = self._expand_prefix_query(query['val2'])
+            try:
+                where += str(" (%s %s %s ) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
+            except KeyError:
+                raise NoSuchOperatorError("No such operation %s" % query['operator'])
+
+            opt += opt1
+            opt += opt2
+
+        # TODO: Handle case with one dict & one string.
+
+        else:
+            # val1 is variable, val2 is string.
+
+            prefix_attr = dict()
+            prefix_attr['prefix'] = 'prefix'
+            prefix_attr['schema'] = 'schema'
+            prefix_attr['description'] = 'description'
+            prefix_attr['pool'] = 'pool'
+            prefix_attr['family'] = 'family'
+            prefix_attr['comment'] = 'comment'
+            prefix_attr['type'] = 'type'
+            prefix_attr['country'] = 'country'
+            prefix_attr['span_order'] = 'span_order'
+            prefix_attr['authoritative_source'] = 'authoritative_source'
+            prefix_attr['alarm_priority'] = 'alarm_priority'
+
+            if query['val1'] not in prefix_attr:
+                raise NapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+
+            try:
+                where = str(" %s %s %%s " %
+                    ( str("%s" % (prefix_attr[query['val1']])),
+                    _operation_map[query['operator']] )
+                )
+            except KeyError:
+                raise NapNoSuchOperatorError("No such operation %s" % query['operator'])
+            opt.append(query['val2'])
+
+        return where, opt
+
+
+
     def add_prefix(self, attr):
         """ Add a prefix
         """
@@ -808,6 +878,101 @@ class Nap:
 
 
 
+    def search_prefix(self, query):
+        """ Search for prefixes.
+        """
+
+        where, opt = self._expand_prefix_query(query)
+        sql = str("SELECT * FROM ip_net_plan WHERE " + where +
+            " ORDER BY prefix")
+
+        self._execute(sql, opt)
+
+        result = list()
+        for row in self._curs_pg:
+            result.append(dict(row))
+
+        return result
+
+
+
+    def smart_search_prefix(self, query_str, schema_spec):
+        """ Perform a smart search.
+
+            The smart search function tries extract a query from
+            a text string. This query is then passed to the search_prefix
+            function, which performs the search.
+        """
+
+        self._logger.debug("Query string: %s" % query_str)
+
+        # find schema
+        schema = self.list_schema(schema_spec)
+        if len(schema) == 0:
+            raise NapNonExistentError("Schema not found")
+        schema = schema[0]
+
+        # find query parts
+        regex = r""" (?: " [^"] * " ) | (?: [^ ] + ) """
+        query_str_parts = list()
+        for m in re.findall(regex, query_str, re.VERBOSE):
+            query_str_parts.append({ 'string': m.strip("\r\n \"\'") })
+
+        # go through parts and add to query_parts list
+        query_parts = list()
+        for query_str_part in query_str_parts:
+
+            # prefix
+            if self._get_afi(query_str_part['string']) is not None:
+                query_str_part['interpretation'] = 'prefix'
+                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
+                query_parts.append({
+                    'operator': 'contained_within_equals',
+                    'val1': 'prefix',
+                    'val2': query_str_part['string']
+                })
+
+            # Description or comment
+            else:
+                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as desc/comment")
+                query_str_part['interpretation'] = 'description'
+                query_parts.append({
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'comment',
+                        'val2': query_str_part['string']
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'description',
+                        'val2': query_str_part['string']
+                    }
+                })
+
+        # Add schema to query part list
+        query_parts.append({
+            'operator': 'equals',
+            'val1': 'schema',
+            'val2': schema['id']
+        })
+
+        # Sum all query parts to one query
+        query = query_parts[0]
+        for query_part in query_parts[1:]:
+
+            query = {
+                'operator': 'and',
+                'val1': query_part,
+                'val2': query
+            }
+
+        self._logger.debug("Expanded to: %s" % str(query))
+
+        return { 'interpretation': query_str_parts, 'result': self.search_prefix(query) }
+
+
+
 class NapError(Exception):
     """ General NAP errors
     """
@@ -834,6 +999,12 @@ class NapExtraneousInputError(NapInputError):
     """ Extraneous input
 
         Most input is passed in dicts, this could mean an unknown key in a dict.
+    """
+    pass
+
+
+class NapNoSuchOperatorError(NapInputError):
+    """ A non existent operator was specified.
     """
     pass
 

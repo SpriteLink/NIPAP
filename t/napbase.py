@@ -397,6 +397,74 @@ class NapTest(unittest.TestCase):
         self.assertGreater(len(prefix), 0, 'Found 0 prefixes in schema ' + self.schema_attrs['name'])
 
 
+
+    def test_prefix_search(self):
+        """ Test prefix search function
+        """
+        prefix_attrs = {
+                'authoritative_source': 'nap-test',
+                'schema_id': self.schema_attrs['id'],
+                'prefix': '1.3.3.7/32',
+                'description': 'test prefix',
+                'comment': 'test comment, please remove! ;)'
+                }
+
+        self.nap.add_prefix(prefix_attrs)
+
+        # perform a very basic search
+        prefix = self.nap.search_prefix(
+            { 'operator': 'and',
+                'val1': {
+                    'operator': 'equals',
+                    'val1': 'schema',
+                    'val2': self.schema_attrs['id']
+                },
+                'val2': {
+                    'operator': 'equals',
+                    'val1': 'prefix',
+                    'val2': '1.3.3.7'
+                }
+            })
+
+        for a in prefix_attrs:
+            self.assertEqual(prefix[0][a], prefix_attrs[a], 'Found object differ from listed on attribute: ' + a)
+
+
+    def test_prefix_search_simple(self):
+        """ Test the simple prefix search function.
+        """
+
+        # First, perform e few tests to verify search string expansion.
+        query_keys = dict()
+        query_keys['testing testing'] = "description"
+        query_keys['1.2.3.4'] = "prefix"
+
+        # build query string
+        query_str = ""
+        for key, val in query_keys.items():
+            if val == "description":
+                query_str += "\"%s\" " % key
+            else:
+                query_str += "%s " % key
+
+        res = self.nap.smart_search_prefix(query_str, {'id': self.schema_attrs['id']})
+        for interp in res['interpretation']:
+            self.assertEqual(interp['string'] in query_keys, True, "Function returned unknown interpreted string %s" % interp['string'])
+
+        prefix_attrs = {
+                'authoritative_source': 'nap-test',
+                'schema_id': self.schema_attrs['id'],
+                'prefix': '1.3.3.77/32',
+                'description': 'test-ish prefix',
+                'comment': 'Test prefix #77! ;)'
+                }
+
+        self.nap.add_prefix(prefix_attrs)
+        res = self.nap.smart_search_prefix(r"""1.3.3.77 "-ish" """, {'id': self.schema_attrs['id']})
+        self.assertEqual(res['result'][0]['prefix'], '1.3.3.77/32', 'Prefix not found')
+
+
+
     def test_prefix_remove(self):
         """ Remove a prefix
         """

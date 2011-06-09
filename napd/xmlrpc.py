@@ -6,7 +6,7 @@ import xmlrpclib
 
 import nap
 
-# map exception types to error codes, used for 
+# map exception types to error codes, used for
 # creating suitable xmlrpclib.Fault-objects
 # TODO: there are normal python ValueErrors raised, catch them too! make sure
 #       we don't leak internal information in the exception and if possible try
@@ -18,6 +18,7 @@ errcode_map = {
     nap.NapMissingInputError: 1110,
     nap.NapExtraneousInputError: 1120,
     nap.NapValueError: 1200,
+    nap.NapNonExistentError: 1300
 }
 
 
@@ -33,7 +34,7 @@ class NapXMLRPC():
         protocol = NapProtocol()
         reactor.listenTCP(self.port, server.Site(protocol))
         reactor.run()
-        
+
 
 class NapProtocol(xmlrpc.XMLRPC):
     """ Class to allow XML-RPC access to the lovely NAP system
@@ -98,7 +99,7 @@ class NapProtocol(xmlrpc.XMLRPC):
 
         return { 'result': 'success', 'message': "This is an echo function, if you pass me a string in the argument named 'message', I will return it to you" }
 
-    
+
     #
     # SCHEMA FUNCTIONS
     #
@@ -131,7 +132,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         except nap.NapError, e:
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 
-    
+
     def xmlrpc_edit_schema(self, spec, attr):
         """ Edit a schema.
         """
@@ -190,13 +191,14 @@ class NapProtocol(xmlrpc.XMLRPC):
 
 
     def xmlrpc_add_prefix(self, attr):
-        """ Add a prefix. 
+        """ Add a prefix.
         """
 
         try:
             return self.nap.add_prefix(spec, attr)
         except nap.NapError, e:
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+
 
 
     def xmlrpc_list_prefix(self, spec = None):
@@ -209,6 +211,7 @@ class NapProtocol(xmlrpc.XMLRPC):
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 
 
+
     def xmlrpc_edit_prefix(self, spec, attr):
         """ Edit prefix.
         """
@@ -219,6 +222,7 @@ class NapProtocol(xmlrpc.XMLRPC):
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 
 
+
     def xmlrpc_remove_prefix(self, spec):
         """ Remove a prefix.
         """
@@ -227,6 +231,36 @@ class NapProtocol(xmlrpc.XMLRPC):
             return self.nap.edit_prefix(spec)
         except nap.NapError, e:
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+
+
+
+    def xmlrpc_search_prefix(self, query):
+        """ Search for prefixes.
+
+            The 'query' input is a specially crafted dict/struct which
+            permits quite flexible searches.
+        """
+
+        try:
+            return self.nap.search_prefix(query)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(errcode_map[type(e), str(e)])
+
+
+
+    def xmlrpc_smart_search_prefix(self, query_string, schema_spec):
+        """ Perform a smart search.
+
+            The smart search function tries extract a query from
+            a text string. This query is then passed to the search_prefix
+            function, which performs the search.
+        """
+
+        try:
+            return self.nap.smart_search_prefix(query_string, schema_spec)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+
 
 
     def xmlrpc_find_free_prefix(self, spec, wanted_length, num = 1):
