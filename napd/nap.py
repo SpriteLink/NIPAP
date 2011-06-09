@@ -932,6 +932,9 @@ class Nap:
         schema = schema[0]
 
         # find query parts
+        # TODO: should probably refine this regexp a bit, general goal is to
+        #       split words into different arguments while allowing for a
+        #       phrase to be quoted and treated like one argument
         regex = r""" (?: " [^"] * " ) | (?: [^ ] + ) """
         query_str_parts = list()
         for m in re.findall(regex, query_str, re.VERBOSE):
@@ -979,7 +982,6 @@ class Nap:
         # Sum all query parts to one query
         query = query_parts[0]
         for query_part in query_parts[1:]:
-
             query = {
                 'operator': 'and',
                 'val1': query_part,
