@@ -1,8 +1,6 @@
 
 == CORE ==
 
- - find_free_prefix needs to work :) both from-pool and from-prefix
-
  - add search_prefix, a more capable search / listing function for prefixes
    able to do non-equal based listing. should probably implement our wonderful
    "dict-sql"

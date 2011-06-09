@@ -683,20 +683,38 @@ class Nap:
         if 'from-pool' in args:
             if 'from-prefix' in args:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
+            if 'family' not in args:
+                raise NapMissingInputError("'family' must be specified with 'from-pool' mode")
+            if int(args['family']) != 4 and int(args['family']) != 6:
+                raise NapValueError("incorrect family specified, must be 4 or 6")
+
         elif 'from-prefix' in args:
             if type(args['from-prefix']) is not list:
                 raise NapInputError("from-prefix should be a list")
             if 'from-pool' in args:
                 raise NapInputError("specify 'from-pool' OR 'from-prefix'")
-            if 'wanted_prefix_length' not in args:
-                raise NapMissingInputError("'wanted_prefix_length' must be specified with 'from-prefix'")
+            if 'prefix_length' not in args:
+                raise NapMissingInputError("'prefix_length' must be specified with 'from-prefix'")
+            if 'family' in args:
+                raise NapExtraneousInputError("'family' is superfluous when in 'from-prefix' mode")
 
+        # determine prefixes
         prefixes = []
+        wpl = 0
         if 'from-pool' in args:
-            raise NotImplementedError()
-            # TODO: hmm, we need to know if the user wants IPv4 or IPv6..
+            # extract prefixes from
+            pool_result = self.list_pool({ 'schema_id': args['schema'], 'name': args['from-pool'] })
+            if pool_result == []:
+                raise NapNonExistentError("Non-existent pool specified")
+            for p in pool_result[0]['prefixes']:
+                if self._get_afi(p) == args['family']:
+                    prefixes.append(p)
+            if 'prefix_length' not in args:
+                if args['family'] == 4:
+                    wpl = pool_result[0]['ipv4_default_prefix_length']
+                else:
+                    wpl = pool_result[0]['ipv6_default_prefix_length']
 
-        params = {}
         afi = None
         if 'from-prefix' in args:
             for prefix in args['from-prefix']:
@@ -707,18 +725,10 @@ class Nap:
                     raise NapInputError("mixing of address-family is not allowed for 'from-prefix' arg")
                 prefixes.append(prefix)
 
-            # TODO: this makes me want to piss my pants
-            #       we should really write a patch to psycopg2 or something to
-            #       properly adapt an python list of texts with values looking
-            #       like prefixes to a postgresql array of inets
-            sql_prefix = ' UNION '.join('SELECT %(prefix' + str(prefixes.index(p)) + ')s AS prefix' for p in prefixes)
-            for p in prefixes:
-                params['prefix' + str(prefixes.index(p))] = str(p)
-
-            damp = 'SELECT array_agg((prefix::text)::inet) FROM (' + sql_prefix + ') AS a'
+        if 'prefix_length' in args:
+            wpl = args['prefix_length']
 
         # sanity check the wanted prefix length
-        wpl = args['wanted_prefix_length']
         if afi == 4:
             if wpl < 0 or wpl > 32:
                 raise NapValueError("the specified wanted prefix length argument must be between 0 and 32 for ipv4")
@@ -726,12 +736,23 @@ class Nap:
             if wpl < 0 or wpl > 128:
                 raise NapValueError("the specified wanted prefix length argument must be between 0 and 128 for ipv6")
 
+        # build SQL
+        params = {}
+        # TODO: this makes me want to piss my pants
+        #       we should really write a patch to psycopg2 or something to
+        #       properly adapt an python list of texts with values looking
+        #       like prefixes to a postgresql array of inets
+        sql_prefix = ' UNION '.join('SELECT %(prefix' + str(prefixes.index(p)) + ')s AS prefix' for p in prefixes)
+        for p in prefixes:
+            params['prefix' + str(prefixes.index(p))] = str(p)
 
-        sql = """SELECT * FROM find_free_prefix(%(schema)s, (""" + damp + """), %(wanted_length)s, %(max_result)s) AS prefix"""
+        damp = 'SELECT array_agg((prefix::text)::inet) FROM (' + sql_prefix + ') AS a'
+
+        sql = """SELECT * FROM find_free_prefix(%(schema)s, (""" + damp + """), %(prefix_length)s, %(max_result)s) AS prefix"""
 
         params['schema'] = args['schema']
         params['prefixes'] = prefixes
-        params['wanted_length'] = wpl
+        params['prefix_length'] = wpl
         params['max_result'] = args['count']
 
         self._execute(sql, params)
@@ -825,3 +846,9 @@ class NapValueError(NapError):
     pass
 
 
+class NapNonExistentError(NapError):
+    """ A non existent object was specified
+
+        For example, try to get a prefix from a pool which doesn't exist.
+    """
+    pass
