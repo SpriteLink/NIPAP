@@ -543,7 +543,7 @@ class Nap:
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
-                        (SELECT array_agg(prefix::text) FROM ip_net_plan WHERE pool=po.id) AS prefixes
+                        (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool=po.id ORDER BY prefix) AS a) AS prefixes
                 FROM ip_net_pool AS po """
         params = list()
 
