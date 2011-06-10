@@ -2,6 +2,7 @@
 import logging
 import psycopg2
 import psycopg2.extras
+import shlex
 import socket
 import re
 
@@ -932,13 +933,9 @@ class Nap:
         schema = schema[0]
 
         # find query parts
-        # TODO: should probably refine this regexp a bit, general goal is to
-        #       split words into different arguments while allowing for a
-        #       phrase to be quoted and treated like one argument
-        regex = r""" (?: " [^"] * " ) | (?: [^ ] + ) """
-        query_str_parts = list()
-        for m in re.findall(regex, query_str, re.VERBOSE):
-            query_str_parts.append({ 'string': m.strip("\r\n \"\'") })
+        query_str_parts = []
+        for part in shlex.split(query_str):
+            query_str_parts.append({ 'string': part })
 
         # go through parts and add to query_parts list
         query_parts = list()
