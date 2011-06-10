@@ -1,0 +1,2 @@
+Pylons>=1.0
+Jinja2

@@ -1,0 +1,3 @@
+include napwww/config/deployment.ini_tmpl
+recursive-include napwww/public *
+recursive-include napwww/templates *

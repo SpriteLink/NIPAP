@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>{{ c.page_title }}</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="/nap.css">
+        <script src="/jquery-1.6.1.min.js"></script>
+        <script>
+        
+        </script>
+		{% block head %}
+		{% endblock %}
+	</head>
+	<body>
+		<div class="top_menu">
+            <form method="post">
+            <div class="menu_entry">
+				<h1 id="schema_title">Schema: 
+                {% if c['schema'] is defined %}
+                    {{ c.schema.name }}
+                {% else %}
+                    None
+                {% endif %}
+
+                </h1>
+			</div>
+			<div class="menu_entry">
+				<a href="{{ h.url(controller='prefix', action='change_schema') }}">change</a>
+			</div>
+		</div>
+        <div class="content">
+		{% block content %}
+		{% endblock %}
+        </div>
+	</body>
+</html>
