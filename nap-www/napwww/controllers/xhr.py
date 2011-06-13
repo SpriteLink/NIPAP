@@ -38,14 +38,24 @@ class XhrController(BaseController):
 
 
     def smart_search_prefix(self):
-        """ Perform a smart search.     
+        """ Perform a smart search.
 
             The smart search function tries extract a query from
             a text string. This query is then passed to the search_prefix
             function, which performs the search.
         """
 
-        result = Prefix.smart_search(request.params['query_string'], {'id': int(request.params['schema'])})
+        log.debug("Smart search query: q=%s search_opt_parent=%s search_opt_child=%s" %
+            (request.params['query_string'],
+            request.params['search_opt_parent'],
+            request.params['search_opt_child'])
+        )
+
+        result = Prefix.smart_search(request.params['query_string'],
+            {'id': int(request.params['schema'])},
+            request.params['search_opt_parent'],
+            request.params['search_opt_child']
+            )
         return json.dumps(result, cls=NapJSONEncoder)
 
 

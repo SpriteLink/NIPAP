@@ -117,7 +117,9 @@
 
 		var search_q = {
 			'query_string': $('#query_string').val(),
-			'schema': schema
+			'schema': schema,
+			'search_opt_parent': $('input[name="search_opt_parent"]:checked').val(),
+			'search_opt_child': $('input[name="search_opt_child"]:checked').val()
 		}
 
 		$.getJSON("http://127.0.0.1:5000/xhr/smart_search_prefix", search_q, receivePrefixList);
@@ -142,33 +144,19 @@
 		
 	}
 
-	function searchKeyDown(e) {
-
-		var query_string = $("#query_string").val();
-
-		if (query_string.length >= 3) {
-			performSearch();
-		}
-
-	}
-
-	function searchSubmit(e) {
-
-		performSearch();
-		e.preventDefault();
-
-	}
-
 	$(function () {
 
-		// fetch prefix list
-		$("form").submit(searchSubmit);
-		$("#query_string").keydown(searchKeyDown);
-		$("#query_string").focus();
+		// register events
+		$("form").submit(function(e) {
+			performSearch();
+			e.preventDefault();
+		});
+		$("#query_string").keyup(performSearch);
+		$('input[name="search_opt_parent"]').change(performSearch);
+		$('input[name="search_opt_child"]').change(performSearch);
 
-		// register events on radio buttons
-//		$('input[name="search_opt_parent"]').onChange();
-//		$('input[name="search_opt_child"]').onChange();
+		// set focus
+		$("#query_string").focus();
 
 	});
 
@@ -208,16 +196,16 @@
 			<input type="radio" name="search_opt_parent" value="none">none</input>
 		{% endif %}
 
-		{% if c.seaech_opt_parent == 'immediate' %}
+		{% if c.search_opt_parent == 'immediate' %}
 			<input type="radio" name="search_opt_parent" value="immediate" selected>immediate</input>
 		{% else %}
 			<input type="radio" name="search_opt_parent" value="immediate">immediate</input>
 		{% endif %}
 
 		{% if c.search_opt_parent == 'all' %}
-			<input type="radio" name="search_opt_parent" value="all" selected>to root</input>
+			<input type="radio" name="search_opt_parent" value="all" selected>all</input>
 		{% else %}
-			<input type="radio" name="search_opt_parent" value="all">to root</input>
+			<input type="radio" name="search_opt_parent" value="all">all</input>
 		{% endif %}
 
 			<br>Include children:

@@ -143,7 +143,7 @@ class Prefix(NapModel):
 
 
     @classmethod
-    def smart_search(cls, query_string, schema_spec):
+    def smart_search(cls, query_string, schema_spec, search_opt_parent, search_opt_child):
         """ Perform a smart prefix search.
         """
 
