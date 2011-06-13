@@ -175,6 +175,9 @@
 		<input type="submit" value="Search">
 	</form>
 </center>
+
+search_opt_parent: {{ c.search_opt_parent }}<br>
+search_opt_child: {{ c.search_opt_child }}
 <table>
 	<tr>
 		<td width="40">&nbsp;</td>
@@ -191,19 +194,19 @@
 			Include parent:
 
 		{% if c.search_opt_parent == 'none' %}
-			<input type="radio" name="search_opt_parent" value="none" selected>none</input>
+			<input type="radio" name="search_opt_parent" value="none" checked>none</input>
 		{% else %}
 			<input type="radio" name="search_opt_parent" value="none">none</input>
 		{% endif %}
 
 		{% if c.search_opt_parent == 'immediate' %}
-			<input type="radio" name="search_opt_parent" value="immediate" selected>immediate</input>
+			<input type="radio" name="search_opt_parent" value="immediate" checked>immediate</input>
 		{% else %}
 			<input type="radio" name="search_opt_parent" value="immediate">immediate</input>
 		{% endif %}
 
 		{% if c.search_opt_parent == 'all' %}
-			<input type="radio" name="search_opt_parent" value="all" selected>all</input>
+			<input type="radio" name="search_opt_parent" value="all" checked>all</input>
 		{% else %}
 			<input type="radio" name="search_opt_parent" value="all">all</input>
 		{% endif %}
@@ -211,19 +214,19 @@
 			<br>Include children:
 
 		{% if c.search_opt_child == 'none' %}
-			<input type="radio" name="search_opt_child" value="none" selected>none
+			<input type="radio" name="search_opt_child" value="none" checked>none
 		{% else %}
 			<input type="radio" name="search_opt_child" value="none">none
 		{% endif %}
 
 		{% if c.search_opt_child == 'immediate' %}
-			<input type="radio" name="search_opt_child" value="immediate" selected>immediate
+			<input type="radio" name="search_opt_child" value="immediate" checked>immediate
 		{% else %}
 			<input type="radio" name="search_opt_child" value="immediate">immediate
 		{% endif %}
 
 		{% if c.search_opt_child == 'all' %}
-			<input type="radio" name="search_opt_child" value="all" selected>all
+			<input type="radio" name="search_opt_child" value="all" checked>all
 		{% else %}
 			<input type="radio" name="search_opt_child" value="all">all
 		{% endif %}

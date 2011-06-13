@@ -30,3 +30,11 @@
  - redhat packaging?
 
  - RIPE integration?
+
+== Web UI ==
+
+ - Show nice error messages when a query fails.
+
+ - Adding and editing schemas
+
+ - Adding and editing prefixes

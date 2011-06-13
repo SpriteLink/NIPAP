@@ -42,8 +42,8 @@ class PrefixController(BaseController):
         else:
             redirect(url(controller = 'prefix', action = 'change_schema'))
 
-        c.search_opt_parent = 'immediate';
-        c.search_opt_child = 'all';
+        c.search_opt_parent = "all"
+        c.search_opt_child = "none"
 
         return render('/index.html')
 
