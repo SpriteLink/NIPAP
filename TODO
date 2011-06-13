@@ -1,5 +1,6 @@
 
 == CORE ==
+ - have schema as a positional argument and always require it
 
  - add search_prefix, a more capable search / listing function for prefixes
    able to do non-equal based listing. should probably implement our wonderful
@@ -30,6 +31,7 @@
  - redhat packaging?
 
  - RIPE integration?
+
 
 == Web UI ==
 
