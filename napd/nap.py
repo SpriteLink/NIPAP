@@ -722,19 +722,18 @@ class Nap:
 
 
 
-    def edit_prefix(self, spec, attr):
+    def edit_prefix(self, schema_spec, spec, attr):
         """ Edit prefix.
         """
 
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
 
-        allowed_attr = [ 'name', 'description', 'comment', 'schema_name', 'schema_id' ]
+        allowed_attr = [ 'name', 'description', 'comment' ]
 
         self._check_attr(attr, [], allowed_attr)
 
-        if 'schema_name' in attr or 'schema_id' in attr:
-            attr = self._translate_schema_spec(attr)
+        spec['schema'] = self._get_schema(schema_spec)['id']
 
         where, params1 = self._expand_prefix_spec(spec)
         update, params2 = self._sql_expand_update(attr)
@@ -902,16 +901,18 @@ class Nap:
         """
 
         # Add schema to query part list
+        schema_q = {
+            'operator': 'equals',
+            'val1': 'schema',
+            'val2': self._get_schema(schema_spec)['id']
+        }
+        if len(query) == 0:
+            query = schema_q
         query = {
             'operator': 'and',
-            'val1': {
-                'operator': 'equals',
-                'val1': 'schema',
-                'val2': self._get_schema(schema_spec)['id']
-            },
+            'val1': schema_q,
             'val2': query
         }
-
 
         where, opt = self._expand_prefix_query(query, 'ip2')
         sql = str("SELECT ip1.* FROM ip_net_plan AS ip1 " +
