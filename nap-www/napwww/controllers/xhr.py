@@ -47,14 +47,14 @@ class XhrController(BaseController):
             function, which performs the search.
         """
 
-        log.debug("Smart search query: q=%s search_opt_parent=%s search_opt_child=%s" %
-            (request.params['query_string'],
+        log.debug("Smart search query: schema=%d q=%s search_opt_parent=%s search_opt_child=%s" %
+            (int(request.params['schema']),
+            request.params['query_string'],
             request.params['search_opt_parent'],
             request.params['search_opt_child'])
         )
 
-        s = Schema()
-        s.id = int(request.params['schema'])
+        s = Schema.get(int(request.params['schema']))
 
         result = Prefix.smart_search(s,
             request.params['query_string'],
@@ -78,6 +78,12 @@ class NapJSONEncoder(json.JSONEncoder):
                 'description': obj.description
             }
         elif isinstance(obj, Prefix):
+
+            if obj.pool is None:
+                pool = None
+            else:
+                pool = obj.pool.id
+
             return {
                 'id': obj.id,
                 'family': obj.family,
@@ -87,7 +93,7 @@ class NapJSONEncoder(json.JSONEncoder):
                 'description': obj.description,
                 'comment': obj.comment,
                 'node': obj.node,
-                'pool': obj.pool.id,
+                'pool': pool,
                 'type': obj.type,
                 'indent': obj.indent,
                 'country': obj.country,

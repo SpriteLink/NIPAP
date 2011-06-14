@@ -1,6 +1,12 @@
 import xmlrpclib
 import logging
 
+_cache = {
+    'Pool': {},
+    'Prefix': {},
+    'Schema': {}
+}
+
 class XMLRPCConnection:
     """ Handles a shared XML-RPC connection. 
     """
@@ -56,6 +62,8 @@ class Schema(NapModel):
     name = None
     description = None
 
+
+
     @classmethod
     def list(cls, spec=None):
         """ List schemas.
@@ -72,6 +80,27 @@ class Schema(NapModel):
             res.append(s)
 
         return res
+
+
+
+    @classmethod
+    def get(cls, id):
+        """ Get the schema with id 'id'.
+        """
+
+        # cached?
+        if id in _cache['Schema']:
+            log.debug('cache hit for schema %d' % id)
+            return _cache['Schema'][id]
+        log.debug('cache miss for schema %d' % id)
+
+        try:
+            schema = Schema.list({ 'id': id })[0]
+        except IndexError, e:
+            raise NapNonExistentError('no schema with ID ' + str(id) + ' found')
+
+        _cache['Schema'][id] = schema
+        return schema
 
 
 
@@ -97,6 +126,91 @@ class Schema(NapModel):
 class Pool(NapModel):
     """ An address pool.
     """
+
+    name = None
+    schema = None
+    description = None
+    default_type = None
+    ipv4_default_prefix_length = None
+    ipv6_default_prefix_length = None
+
+
+    def save(self):
+        """ Save changes made to pool to Nap.
+        """
+
+        data = {
+            'name': self.name,
+            'schema': self.schema.id,
+            'description': self.description,
+            'default_type': self.default_type,
+            'ipv4_default_prefix_length': self.ipv4_default_prefix_length,
+            'ipv6_default_prefix_length': self.ipv6_default_prefix_length
+        }
+
+        if self.id is None:
+            # New object, create
+            self.id = self._xmlrpc.connection.add_pool(data)
+
+        else:
+            # Old object, edit
+            self._xmlrpc.connection.edit_pool({'id': self.id}, data)
+
+
+
+    @classmethod
+    def get(cls, schema, id):
+        """ Get the pool with id 'id'.
+        """
+
+        # cached?
+        if id in _cache['Pool']:
+            log.debug('cache hit for pool %d' % id)
+            return _cache['Pool'][id]
+        log.debug('cache miss for pool %d' % id)
+
+        try:
+            pool = Pool.list(schema, {'id': id})[0]
+        except KeyError, e:
+            raise NapNonExistentError('no pool with ID ' + str(id) + ' found')
+
+        _cache['Pool'][id] = pool
+        return pool
+
+
+
+    @classmethod
+    def from_dict(cls, parm):
+        """ Create new Pool-object from dict.
+
+            Suitable for creating objects from XML-RPC data.
+            All available keys must exist.
+        """
+
+        p = Pool()
+        p['id'] = parm['id']
+        p['schema'] = Schema.get(parm['schema'])
+        p['name'] = parm['name']
+        p['description'] = parm['description']
+        p['default_type'] = parm['default_type']
+        p['ipv4_default_prefix_length'] = parm['ipv4_default_prefix_length']
+        p['ipv6_default_prefix_length'] = parm['ipv6_default_prefix_length']
+        return p
+
+
+
+    @classmethod
+    def list(self, schema, spec):
+        """ List pools.
+        """
+
+        pool_list = xmlrpc.connection.list_pool({ 'id': schema.id }, spec)
+        res = list()
+        for pref in pref_list:
+            p = Pool.from_dict(pref)
+            res.append(p)
+
+        return res
 
 
 
@@ -142,6 +256,7 @@ class Prefix(NapModel):
         return res
 
 
+
     @classmethod
     def smart_search(cls, schema, query_string, search_opt_parent, search_opt_child):
         """ Perform a smart prefix search.
@@ -174,17 +289,33 @@ class Prefix(NapModel):
 
 
 
-    def _fetch(self):
-        """ Fetch info from database.
-        """
-        pass
-
-
-
     def save(self):
         """ Save prefix to Nap.
         """
-        pass
+
+        data = {
+            'family': self.family,
+            'schema': self.schema.id,
+            'prefix': self.prefix,
+            'description': self.description,
+            'comment': self.comment,
+            'node': self.node,
+            'pool': self.pool.id,
+            'type': self.type,
+            'indent': self.indent,
+            'country': self.country,
+            'span_order': self.span_order,
+            'authoritative_source': self.authoritative_source,
+            'alarm_priority': self.alarm_priority
+        }
+
+        if self.id is None:
+            # New object, create
+            self.id = self._xmlrpc.connection.add_prefix({'id': self.schema.id}, data)
+
+        else:
+            # Old object, edit
+            self._xmlrpc.connection.edit_prefix({'id': self.schema.id}, {'id': self.id}, data)
 
 
 
@@ -198,13 +329,16 @@ class Prefix(NapModel):
         p = Prefix()
         p.id = pref['id']
         p.family = pref['family']
-        p.schema = Schema() # TODO: get right object
+        p.schema = Schema.get(pref['schema'])
         p.prefix = pref['prefix']
         p.display_prefix = pref['display_prefix']
         p.description = pref['description']
         p.comment = pref['comment']
-        p.node = pref['node'] # TODO: Nils-object? :)
-        p.pool = Pool() # TODO: get right object
+        p.node = pref['node']
+        if pref['pool'] is None: # Pool is not mandatory
+            p.pool = None
+        else:
+            p.pool = Pool.get(p.schema, pref['pool'])
         p.type = pref['type']
         p.indent = pref['indent']
         p.country = pref['country']
@@ -218,3 +352,23 @@ class Prefix(NapModel):
 
 # Create global XML-RPC connection for static methods...
 xmlrpc = XMLRPCConnection("http://127.0.0.1:1337")
+log = logging.getLogger("NapModel")
+
+#
+# Define exceptions
+#
+
+class NapModelError(Exception):
+    """ A generic NAP model exception.
+
+        All errors thrown from the NAP model extends this exception.
+    """
+    pass
+
+
+
+class NapNonExistentError(NapModelError):
+    """ Thrown when something can not be found.
+
+        For example when a given ID can not be found in the NAP database.
+    """
