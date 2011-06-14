@@ -35,35 +35,31 @@ class NapTest(unittest.TestCase):
                 }
         self.schema_attrs['id'] = self.nap.add_schema(self.schema_attrs)
         self.pool_attrs = {
-                'schema_id': self.schema_attrs['id'],
                 'name': 'test-pool1',
                 'description': 'Test pool numero uno!',
                 'default_type': 'assignment',
                 'ipv4_default_prefix_length': 30,
                 'ipv6_default_prefix_length': 112
                 }
-        self.pool_attrs['id'] = self.nap.add_pool(self.pool_attrs)
+        self.pool_attrs['id'] = self.nap.add_pool({'id': self.schema_attrs['id']}, self.pool_attrs)
         self.prefix_attrs = {
                 'authoritative_source': 'naptest',
-                'schema_id': self.schema_attrs['id'],
                 'prefix': '1.3.3.1/32',
                 'description': 'Test prefix numero uno!'
                 }
-        self.prefix_attrs['id'] = self.nap.add_prefix(self.prefix_attrs)
+        self.prefix_attrs['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix_attrs)
         self.prefix_attrs2 = {
                 'authoritative_source': 'naptest',
-                'schema_id': self.schema_attrs['id'],
                 'prefix': '1.3.3.0/24',
                 'description': ''
                 }
-        self.prefix_attrs2['id'] = self.nap.add_prefix(self.prefix_attrs2)
+        self.prefix_attrs2['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix_attrs2)
         self.prefix_attrs3 = {
                 'authoritative_source': 'naptest',
-                'schema_id': self.schema_attrs['id'],
                 'prefix': '1.3.0.0/16',
                 'description': ''
                 }
-        self.prefix_attrs3['id'] = self.nap.add_prefix(self.prefix_attrs3)
+        self.prefix_attrs3['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix_attrs3)
 
 
 
@@ -218,8 +214,11 @@ class NapTest(unittest.TestCase):
 
 
     def test_expand_pool_spec(self):
+        """ Test the function which expands pool spec to SQL.
         """
-        """
+
+        schema = {'id': self.schema_attrs['id']}
+
         # wrong type
         self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, 'string')
         # wrong type
@@ -231,25 +230,19 @@ class NapTest(unittest.TestCase):
         # crap key
         self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'crap': self.pool_attrs['name'] })
         # required keys and extra crap
-        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'id': self.pool_attrs['id'], 'crap': 'crap' })
+        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'id': self.pool_attrs['id'], 'schema': self.schema_attrs['id'], 'crap': 'crap' })
         # proper key but incorrect value (int vs string)
-        self.assertRaises(nap.NapValueError, self.nap._expand_pool_spec, { 'id': '3' })
-        # non unique key
-        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, { 'name': self.pool_attrs['name'] })
+        self.assertRaises(nap.NapValueError, self.nap._expand_pool_spec, { 'id': '3', 'schema': self.schema_attrs['id'] })
         # proper key but incorrect value (int vs string)
-        self.assertRaises(nap.NapValueError, self.nap._expand_pool_spec, { 'name': 3 })
+        self.assertRaises(nap.NapValueError, self.nap._expand_pool_spec, { 'name': 3, 'schema': self.schema_attrs['id'] })
         # both id and name
-        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'id': 3, 'name': '3' })
+        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'id': 3, 'name': '3', 'schema': self.schema_attrs['id'] })
         # proper key - id
-        where, params = self.nap._expand_pool_spec({ 'id': 3 })
-        self.assertEqual(where, 'po.id = %(spec_id)s', "Improperly expanded WHERE clause")
-        self.assertEqual(params, {'spec_id': 3}, "Improperly expanded params dict")
-        # proper spec - name & schema_id
-        where, params = self.nap._expand_pool_spec({ 'name': 'test', 'schema_id': self.schema_attrs['id'] })
-        self.assertEqual(where, 'po.name = %(spec_name)s AND po.schema = %(spec_schema)s', "Improperly expanded WHERE clause")
-        self.assertEqual(params, {'spec_name': 'test', 'spec_schema': self.schema_attrs['id'] }, "Improperly expanded params dict")
-        # proper spec - name & schema_name
-        where, params = self.nap._expand_pool_spec({ 'name': 'test', 'schema_name': self.schema_attrs['name'] })
+        where, params = self.nap._expand_pool_spec({ 'id': 3, 'schema': self.schema_attrs['id'] })
+        self.assertEqual(where, 'po.id = %(spec_id)s AND po.schema = %(spec_schema)s', "Improperly expanded WHERE clause")
+        self.assertEqual(params, {'spec_id': 3, 'spec_schema': self.schema_attrs['id']}, "Improperly expanded params dict")
+        # proper spec - name
+        where, params = self.nap._expand_pool_spec({ 'name': 'test', 'schema': self.schema_attrs['id'] })
         self.assertEqual(where, 'po.name = %(spec_name)s AND po.schema = %(spec_schema)s', "Improperly expanded WHERE clause")
         self.assertEqual(params, {'spec_name': 'test', 'spec_schema': self.schema_attrs['id'] }, "Improperly expanded params dict")
 
@@ -262,14 +255,14 @@ class NapTest(unittest.TestCase):
         """
         attrs = {
                 'name': 'test-pool-wrong',
-                'schema_id': self.schema_attrs['id'],
                 'description': 'A simple test pool with incorrect name!',
                 'default_type': 'reservation',
                 'ipv4_default_prefix_length': 30,
                 'ipv6_default_prefix_length': 112
                 }
-        pool_id = self.nap.add_pool(attrs)
-        pool = self.nap.list_pool({ 'id': pool_id })
+        schema = {'id': self.schema_attrs['id']}
+        pool_id = self.nap.add_pool(schema, attrs)
+        pool = self.nap.list_pool(schema, { 'id': pool_id })
         for a in attrs:
             self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: %s  %s!=%s' % (a, attrs[a], pool[0][a]))
 
@@ -280,14 +273,14 @@ class NapTest(unittest.TestCase):
 
             Refer to schema by name
         """
+        schema = {'id': self.schema_attrs['id']}
         attrs = {
                 'name': 'test-pool-wrong',
-                'schema_name': self.schema_attrs['name'],
                 'default_type': 'reservation',
                 'description': 'A simple test pool with incorrect name!'
                 }
-        pool_id = self.nap.add_pool(attrs)
-        pool = self.nap.list_pool({ 'id': pool_id })
+        pool_id = self.nap.add_pool(schema, attrs)
+        pool = self.nap.list_pool(schema, { 'id': pool_id })
         for a in attrs:
             self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
 
@@ -298,19 +291,21 @@ class NapTest(unittest.TestCase):
 
             Pool is not uniquely identified by name and so this should raise an error
         """
-        spec = { 'name': self.pool_attrs['name'] }
+        schema = {'id': self.schema_attrs['id']}
+        spec = { }
         attrs = {
-                'name': 'test-pool',
+                'name': self.pool_attrs['name'],
                 'default_type': 'assignment',
                 'description': 'A simple test pool with correct name!'
                 }
-        self.assertRaises(nap.NapInputError, self.nap.edit_pool, spec, attrs)
+        self.assertRaises(nap.NapInputError, self.nap.edit_pool, schema, spec, attrs)
 
 
 
     def test_edit_pool(self):
         """ Rename a pool using edit_pool() function
         """
+        schema = {'id': self.schema_attrs['id']}
         spec = { 'id': self.pool_attrs['id'] }
         attrs = {
                 'name': 'test-pool',
@@ -319,11 +314,11 @@ class NapTest(unittest.TestCase):
                 'ipv4_default_prefix_length': 32,
                 'ipv6_default_prefix_length': 128
                 }
-        self.nap.edit_pool(spec, attrs)
+        self.nap.edit_pool(schema, spec, attrs)
         # check that search for old record doesn't return anything
-        pool = self.nap.list_pool({ 'schema_id': self.schema_attrs['id'], 'name': self.pool_attrs['name'] })
+        pool = self.nap.list_pool(schema, { 'name': self.pool_attrs['name'] })
         self.assertEqual(pool, [], 'Old entry still exists')
-        pool = self.nap.list_pool({ 'schema_id': self.schema_attrs['id'], 'name': attrs['name'] })
+        pool = self.nap.list_pool(schema, { 'name': attrs['name'] })
         for a in attrs:
             self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
 
@@ -332,15 +327,16 @@ class NapTest(unittest.TestCase):
     def test_remove_pool_by_id(self):
         """ Remove a pool by id
         """
-        pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
+        schema = {'id': self.schema_attrs['id']}
+        pool = self.nap.list_pool(schema, { 'id': self.pool_attrs['id'] })
         # first make sure our pool exists
         self.assertNotEqual(pool[0], [], 'Record must exist before we can delete it')
         for a in self.pool_attrs:
             self.assertEqual(pool[0][a], self.pool_attrs[a], 'Listed attribute differ from original')
         # remove the pool
-        self.nap.remove_pool({ 'id': self.pool_attrs['id'] })
+        self.nap.remove_pool(schema, { 'id': self.pool_attrs['id'] })
         # check that search for old record doesn't return anything
-        pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
+        pool = self.nap.list_pool(schema, { 'id': self.pool_attrs['id'] })
         self.assertEqual(pool, [], 'Old entry still exists')
 
 
@@ -348,7 +344,8 @@ class NapTest(unittest.TestCase):
     def test_prefix_in_a_pool(self):
         """ Add prefixes to a poll and list!
         """
-        pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
+        schema = {'id': self.schema_attrs['id']}
+        pool = self.nap.list_pool(schema, { 'id': self.pool_attrs['id'] })
         # first make sure our pool exists
         self.assertNotEqual(pool[0], [], 'Pool must exist!')
         pfxs = [
@@ -362,16 +359,15 @@ class NapTest(unittest.TestCase):
         for p in pfxs:
             prefix_attrs = {
                     'authoritative_source': 'nap-test',
-                    'schema_id': self.schema_attrs['id'],
                     'prefix': p,
                     'description': 'test prefix',
                     'pool_id': self.pool_attrs['id'],
                     'comment': 'test comment, please remove! ;)'
                     }
-            self.nap.add_prefix(prefix_attrs)
+            self.nap.add_prefix(schema, prefix_attrs)
 
         # list again
-        pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
+        pool = self.nap.list_pool(schema, { 'id': self.pool_attrs['id'] })
         self.assertNotEqual(pool[0], [], 'Pool must exist!')
         self.assertEqual(set(pfxs), set(pool[0]['prefixes']), 'Returned prefixes do not match added ones')
 
@@ -380,20 +376,20 @@ class NapTest(unittest.TestCase):
     def test_prefix_basic(self):
         """ Test basic prefix functions
         """
+        schema = {'id': self.schema_attrs['id']}
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
-                'schema_id': self.schema_attrs['id'],
                 'prefix': '1.3.3.7/32',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
-        self.nap.add_prefix(prefix_attrs)
-        prefix = self.nap.list_prefix({ 'prefix': prefix_attrs['prefix'], 'schema_name': self.schema_attrs['name'] })
+        self.nap.add_prefix(schema, prefix_attrs)
+        prefix = self.nap.list_prefix(schema, { 'prefix': prefix_attrs['prefix'] })
         for a in prefix_attrs:
             self.assertEqual(prefix[0][a], prefix_attrs[a], 'Added object differ from listed on attribute: ' + a)
 
         # fetch many prefixes - all in a schema
-        prefix = self.nap.list_prefix({'schema_id': self.schema_attrs['id']})
+        prefix = self.nap.list_prefix(schema, {})
         self.assertGreater(len(prefix), 0, 'Found 0 prefixes in schema ' + self.schema_attrs['name'])
 
 
@@ -401,8 +397,9 @@ class NapTest(unittest.TestCase):
     def test_add_prefix(self):
         """ Test add_prefix in a bit more detail
         """
+        schema = {'id': self.schema_attrs['id']}
         # we need a bloody pool first!
-        pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
+        pool = self.nap.list_pool(schema, { 'id': self.pool_attrs['id'] })
         # first make sure our pool exists
         self.assertNotEqual(pool[0], [], 'Pool must exist!')
         pfxs = [
@@ -415,34 +412,35 @@ class NapTest(unittest.TestCase):
         for p in pfxs:
             prefix_attrs = {
                     'authoritative_source': 'nap-test',
-                    'schema_id': self.schema_attrs['id'],
                     'prefix': p,
                     'description': 'test prefix',
                     'pool_id': self.pool_attrs['id'],
                     'comment': 'test comment, please remove! ;)'
                     }
-            self.nap.add_prefix(prefix_attrs)
+            self.nap.add_prefix(schema, prefix_attrs)
 
         # get an address based on from-prefix
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
-                'schema_id': self.schema_attrs['id'],
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
-        res = self.nap.add_prefix(prefix_attrs, {'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
-        p = self.nap.list_prefix({ 'id': res })
+        res = self.nap.add_prefix(schema, prefix_attrs, {'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
+        p = self.nap.list_prefix(schema, { 'id': res })
         self.assertEqual(p[0]['prefix'], '10.0.0.0/30', "New prefix differ from what it should be!")
 
         self.nap.add_schema({ 'name': 'testtest', 'description': 'another test schema!' })
         # pass different schemas in attr and args
-        self.assertRaises(nap.NapInputError, self.nap.add_prefix, { 'authoritative_source': 'nap-test', 'schema_id': self.schema_attrs['id'], 'description': 'tjong' }, { 'schema_name': 'testtest', 'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
+        # TODO: Find something similar?
+        #self.assertRaises(nap.NapInputError, self.nap.add_prefix, schema, { 'authoritative_source': 'nap-test', 'description': 'tjong' }, { 'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
 
 
 
     def test_prefix_search_simple(self):
         """ Test the simple prefix search function.
         """
+
+        schema = {'id': self.schema_attrs['id']}
 
         # First, perform e few tests to verify search string expansion.
         query_keys = dict()
@@ -457,34 +455,34 @@ class NapTest(unittest.TestCase):
             else:
                 query_str += "%s " % key
 
-        res = self.nap.smart_search_prefix(query_str, {'id': self.schema_attrs['id']})
+        res = self.nap.smart_search_prefix(schema, query_str)
         for interp in res['interpretation']:
             self.assertEqual(interp['string'] in query_keys, True, "Function returned unknown interpreted string %s" % interp['string'])
 
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
-                'schema_id': self.schema_attrs['id'],
                 'prefix': '1.3.3.77/32',
                 'description': 'test-ish prefix',
                 'comment': 'Test prefix #77! ;)'
                 }
 
-        self.nap.add_prefix(prefix_attrs)
-        res = self.nap.smart_search_prefix(r"""1.3.3.77 "-ish" """, {'id': self.schema_attrs['id']})
-        self.assertEqual(res['result'][0]['prefix'], '1.3.3.77/32', 'Prefix not found')
+        self.nap.add_prefix(schema, prefix_attrs)
+        res = self.nap.smart_search_prefix(schema, r"""1.3.3.77 "-ish" """)
+        self.assertEqual(res['result'][-1]['prefix'], '1.3.3.77/32', 'Prefix not found')
 
 
 
     def test_prefix_remove(self):
         """ Remove a prefix
         """
-        prefix = self.nap.list_prefix({ 'id': self.prefix_attrs['id'] })
+        schema = {'id': self.schema_attrs['id']}
+        prefix = self.nap.list_prefix(schema, { 'id': self.prefix_attrs['id'] })
         # first make sure our prefix exists
         self.assertEqual(prefix[0]['id'], self.prefix_attrs['id'], 'Record must exist before we can delete it')
         # remove the prefix, by id
-        self.nap.remove_prefix({ 'id': self.prefix_attrs['id'] })
+        self.nap.remove_prefix(schema, { 'id': self.prefix_attrs['id'] })
         # check that search for old record doesn't return anything
-        prefix = self.nap.list_prefix({ 'id': self.prefix_attrs['id'] })
+        prefix = self.nap.list_prefix(schema, { 'id': self.prefix_attrs['id'] })
         self.assertEqual(prefix, [], 'Old entry still exists')
 
 
@@ -496,17 +494,18 @@ class NapTest(unittest.TestCase):
             updates to the table and this test is to make sure it is correctly
             calculated.
         """
-        p1 = self.nap.list_prefix({ 'prefix': '1.3.3.1/32', 'schema_name': self.schema_attrs['name'] })[0]
-        p2 = self.nap.list_prefix({ 'prefix': '1.3.3.0/24', 'schema_name': self.schema_attrs['name'] })[0]
-        p3 = self.nap.list_prefix({ 'prefix': '1.3.0.0/16', 'schema_name': self.schema_attrs['name'] })[0]
+        schema = {'id': self.schema_attrs['id']}
+        p1 = self.nap.list_prefix(schema, { 'prefix': '1.3.3.1/32' })[0]
+        p2 = self.nap.list_prefix(schema, { 'prefix': '1.3.3.0/24' })[0]
+        p3 = self.nap.list_prefix(schema, { 'prefix': '1.3.0.0/16' })[0]
         self.assertEqual(p1['indent'], 2, "Indent calc on add failed")
         self.assertEqual(p2['indent'], 1, "Indent calc on add failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on add failed")
         # remove middle prefix
-        self.nap.remove_prefix({ 'id': self.prefix_attrs2['id'] })
+        self.nap.remove_prefix(schema, { 'id': self.prefix_attrs2['id'] })
         # check that child prefix indent level has decreased
-        p1 = self.nap.list_prefix({ 'prefix': '1.3.3.1/32', 'schema_name': self.schema_attrs['name'] })[0]
-        p3 = self.nap.list_prefix({ 'prefix': '1.3.0.0/16', 'schema_name': self.schema_attrs['name'] })[0]
+        p1 = self.nap.list_prefix(schema, { 'prefix': '1.3.3.1/32' })[0]
+        p3 = self.nap.list_prefix(schema, { 'prefix': '1.3.0.0/16' })[0]
         self.assertEqual(p1['indent'], 1, "Indent calc on remove failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on remove failed")
 
@@ -517,51 +516,51 @@ class NapTest(unittest.TestCase):
 
             Try to stress find_free_prefix and send a lot of junk..
         """
+        schema = {'id': self.schema_attrs['id']}
         # set up a prefix not used elsewhere so we have a known good state
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
-                'schema_id': self.schema_attrs['id'],
                 'prefix': '100.0.0.0/16',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
-        self.nap.add_prefix(prefix_attrs)
+        self.nap.add_prefix(schema, prefix_attrs)
 
         # no schema, should raise error!
-        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'from-prefix': ['100.0.0.0/16'] })
+        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, schema, { 'from-prefix': ['100.0.0.0/16'] })
 
         # incorrect from-prefix type, string instead of list of strings (looking like an IP address)
-        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': '100.0.0.0/16' })
+        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, schema, { 'from-prefix': '100.0.0.0/16' })
 
         # missing prefix_length
-        self.assertRaises(nap.NapMissingInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16' ], 'count': 1 })
+        self.assertRaises(nap.NapMissingInputError, self.nap.find_free_prefix, schema, { 'from-prefix': [ '100.0.0.0/16' ], 'count': 1 })
 
         # try giving both IPv4 and IPv6 in from-prefix which shouldn't work
-        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '2a00:800::0/25' ], 'prefix_length': 24, 'count': 1 })
+        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, schema, { 'from-prefix': [ '100.0.0.0/16', '2a00:800::0/25' ], 'prefix_length': 24, 'count': 1 })
 
         # try giving non-integer as wanted prefix length
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': '24', 'count': 1 })
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': '24', 'count': 1 })
 
         # try giving to high a number as wanted prefix length for IPv4
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 35, 'count': 1 })
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 35, 'count': 1 })
 
         # try giving to high a number as wanted prefix length for IPv6
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '2a00:800::1/25'], 'prefix_length': 150, 'count': 1 })
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, schema, { 'from-prefix': [ '2a00:800::1/25'], 'prefix_length': 150, 'count': 1 })
 
         # try giving a high number for result count (max is 1000)
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 30, 'count': 55555 })
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 30, 'count': 55555 })
 
         # don't pass 'family', which is required when specifying 'from-pool'
-        self.assertRaises(nap.NapMissingInputError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-pool': self.pool_attrs['name'], 'prefix_length': 24, 'count': 1 })
+        self.assertRaises(nap.NapMissingInputError, self.nap.find_free_prefix, schema, { 'from-pool': self.pool_attrs['name'], 'prefix_length': 24, 'count': 1 })
 
         # pass crap as family, wrong type even
-        self.assertRaises(ValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-pool': self.pool_attrs['name'], 'prefix_length': 24, 'count': 1, 'family': 'crap' })
+        self.assertRaises(ValueError, self.nap.find_free_prefix, schema, { 'from-pool': self.pool_attrs['name'], 'prefix_length': 24, 'count': 1, 'family': 'crap' })
 
         # pass 7 as family
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-pool': self.pool_attrs['name'], 'prefix_length': 24, 'count': 1, 'family': 7 })
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, schema, { 'from-pool': self.pool_attrs['name'], 'prefix_length': 24, 'count': 1, 'family': 7 })
 
         # pass non existent pool
-        self.assertRaises(nap.NapNonExistentError, self.nap.find_free_prefix, { 'schema_id': self.schema_attrs['id'], 'from-pool': 'crap', 'prefix_length': 24, 'count': 1, 'family': 4 })
+        self.assertRaises(nap.NapNonExistentError, self.nap.find_free_prefix, schema, { 'from-pool': 'crap', 'prefix_length': 24, 'count': 1, 'family': 4 })
 
 
 
@@ -570,25 +569,25 @@ class NapTest(unittest.TestCase):
 
             Mostly based on 'from-prefix'
         """
+        schema = { 'id': self.schema_attrs['id'] }
         # set up a prefix not used elsewhere so we have a known good state
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
-                'schema_id': self.schema_attrs['id'],
                 'prefix': '100.0.0.0/16',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
-        self.nap.add_prefix(prefix_attrs)
+        self.nap.add_prefix(schema, prefix_attrs)
 
         # simple test
-        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'prefix_length': 24, 'count': 1 })
+        res = self.nap.find_free_prefix(schema, { 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'prefix_length': 24, 'count': 1 })
         self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
         # simple test - only one input prefix (which did cause a bug, thus keeping it)
-        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16' ], 'prefix_length': 24, 'count': 1 })
+        res = self.nap.find_free_prefix(schema, { 'from-prefix': [ '100.0.0.0/16' ], 'prefix_length': 24, 'count': 1 })
         self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
-        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'prefix_length': 24, 'count': 999 })
+        res = self.nap.find_free_prefix(schema, { 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'prefix_length': 24, 'count': 999 })
         self.assertEqual(len(res), 256, "Incorrect prefix set returned")
 
 
@@ -598,8 +597,9 @@ class NapTest(unittest.TestCase):
 
             Mostly based on 'from-pool'
         """
+        schema = { 'id': self.schema_attrs['id'] }
         # we need a bloody pool first!
-        pool = self.nap.list_pool({ 'id': self.pool_attrs['id'] })
+        pool = self.nap.list_pool(schema, { 'id': self.pool_attrs['id'] })
         # first make sure our pool exists
         self.assertNotEqual(pool[0], [], 'Pool must exist!')
         pfxs = [
@@ -612,20 +612,19 @@ class NapTest(unittest.TestCase):
         for p in pfxs:
             prefix_attrs = {
                     'authoritative_source': 'nap-test',
-                    'schema_id': self.schema_attrs['id'],
                     'prefix': p,
                     'description': 'test prefix',
                     'pool_id': self.pool_attrs['id'],
                     'comment': 'test comment, please remove! ;)'
                     }
-            self.nap.add_prefix(prefix_attrs)
+            self.nap.add_prefix(schema, prefix_attrs)
 
         # from-pool test
-        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-pool': self.pool_attrs['name'], 'count': 1, 'family': 4})
+        res = self.nap.find_free_prefix(schema, { 'from-pool': self.pool_attrs['name'], 'count': 1, 'family': 4})
         self.assertEqual(res, ['10.0.1.0/30'], "Incorrect prefix set returned when requesting default prefix-length")
 
         # from-pool test, specify wanted prefix length
-        res = self.nap.find_free_prefix({ 'schema_id': self.schema_attrs['id'], 'from-pool': self.pool_attrs['name'], 'count': 1, 'family': 4, 'prefix_length': 31})
+        res = self.nap.find_free_prefix(schema, { 'from-pool': self.pool_attrs['name'], 'count': 1, 'family': 4, 'prefix_length': 31})
         self.assertEqual(res, ['10.0.1.0/31'], "Incorrect prefix set returned with explicit prefix-length")
 
 

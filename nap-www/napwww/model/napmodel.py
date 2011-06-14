@@ -129,7 +129,7 @@ class Prefix(NapModel):
 
 
     @classmethod
-    def search(cls, query):
+    def search(cls, schema, query):
         """ Search for prefixes.
         """
 
@@ -143,11 +143,11 @@ class Prefix(NapModel):
 
 
     @classmethod
-    def smart_search(cls, query_string, schema_spec, search_opt_parent, search_opt_child):
+    def smart_search(cls, schema, query_string, search_opt_parent, search_opt_child):
         """ Perform a smart prefix search.
         """
 
-        pref_list = xmlrpc.connection.smart_search_prefix(query_string, schema_spec)
+        pref_list = xmlrpc.connection.smart_search_prefix({ 'id': schema.id }, query_string)
         res = dict()
         res['interpretation'] = pref_list['interpretation']
         res['result'] = list()
@@ -160,11 +160,11 @@ class Prefix(NapModel):
 
 
     @classmethod
-    def list(cls, spec):
+    def list(cls, schema, spec):
         """ List prefixes.
         """
 
-        pref_list = xmlrpc.connection.list_prefix(spec)
+        pref_list = xmlrpc.connection.list_prefix({ 'id': schema.id }, spec)
         res = list()
         for pref in pref_list:
             p = Prefix.from_dict(pref)

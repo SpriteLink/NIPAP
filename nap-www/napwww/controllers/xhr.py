@@ -32,7 +32,9 @@ class XhrController(BaseController):
         """ List prefixes and return JSON encoded result.
         """
 
-        prefixes = Prefix.list({'schema_id': 367, 'prefix': '1.3.0.0/16'})
+        s = Schema()
+        s.id = request.params['schema_id']
+        prefixes = Prefix.list(schema, { 'prefix': '1.3.0.0/16'})
         return json.dumps(prefixes, cls=NapJSONEncoder)
 
 
@@ -51,8 +53,11 @@ class XhrController(BaseController):
             request.params['search_opt_child'])
         )
 
-        result = Prefix.smart_search(request.params['query_string'],
-            {'id': int(request.params['schema'])},
+        s = Schema()
+        s.id = int(request.params['schema'])
+
+        result = Prefix.smart_search(s,
+            request.params['query_string'],
             request.params['search_opt_parent'],
             request.params['search_opt_child']
             )

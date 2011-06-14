@@ -298,36 +298,7 @@ class Nap:
 
 
 
-    def _translate_schema_spec(self, spec):
-        """ Expand 'schema_name' or 'schema_id'.
-
-            Translates 'schema_name' or 'schema_id' element in spec
-            to a 'schema' element containing the schema ID.
-        """
-
-        if 'schema_id' in spec and 'schema_name' in spec:
-            raise NapExtraneousInputError("specification contain both 'id' and 'name', specify schema id or name")
-
-        if 'schema_id' in spec:
-            schema = self.list_schema({ 'id': spec['schema_id'] })
-            if schema == []:
-                raise NapInputError("non-existing schema specified")
-            spec['schema'] = schema[0]['id']
-            del(spec['schema_id'])
-        elif 'schema_name' in spec:
-            schema = self.list_schema({ 'name': spec['schema_name'] })
-            if schema == []:
-                raise NapInputError("non-existing schema specified")
-            spec['schema'] = schema[0]['id']
-            del(spec['schema_name'])
-        else:
-            raise NapInputError("Missing schema, add schema_id or schema_name to spec!")
-
-        return spec
-
-
-
-    def _translate_pool_spec(self, spec):
+    def _translate_pool_spec(self, schema_spec, spec):
         """ Expand 'pool_name' or 'pool_id'.
 
             Translates 'pool_name' or 'pool_id' element in spec
@@ -338,7 +309,7 @@ class Nap:
             raise NapExtraneousInputError("specification contain both 'id' and 'name', specify pool id or name")
 
         if 'pool_id' in spec:
-            pool = self.list_pool({ 'id': spec['pool_id'] })
+            pool = self.list_pool(schema_spec, { 'id': spec['pool_id'] })
             if pool == []:
                 raise NapInputError("non-existing pool specified")
             spec['pool'] = pool[0]['id']
@@ -347,7 +318,7 @@ class Nap:
             if 'schema' not in spec:
                 raise NapMissingInputError("schema needs to be specified together with 'pool_name'")
 
-            pool = self.list_pool({ 'schema': spec['schema'], 'name': spec['pool_name'] })
+            pool = self.list_pool(schema_spec, { 'name': spec['pool_name'] })
             if pool == []:
                 raise NapInputError("non-existing pool specified")
             spec['pool'] = pool[0]['id']
@@ -424,6 +395,24 @@ class Nap:
 
 
 
+    def _get_schema(self, spec):
+        """ Get a schema.
+
+            Shorthand function to reduce code in the functions below, since 
+            more or less all of them needs to perform the actions that are
+            specified here.
+
+            The major difference is that an exception is raised if no schema
+            matching the spec is found.
+        """
+
+        schema = self.list_schema(spec)
+        if len(schema) == 0:
+            raise NapInputError("non-existing schema specified")
+        return schema[0]
+
+
+
     def edit_schema(self, spec, attr):
         """ Edit a schema.
         """
@@ -457,24 +446,24 @@ class Nap:
         if type(spec) is not dict:
             raise NapInputError("pool specification must be a dict")
 
-        allowed_values = ['id', 'name', 'schema_id', 'schema_name']
+        allowed_values = ['id', 'name', 'schema']
         for a in spec:
             if a not in allowed_values:
                 raise NapExtraneousInputError("extraneous specification key %s" % a)
 
+        if 'schema' not in spec:
+            raise NapMissingInputError('missing schema')
+
         if 'id' in spec:
             if long(spec['id']) != spec['id']:
                 raise NapValueError("pool specification key 'id' must be an integer")
-            if spec != { 'id': spec['id'] }:
+            if spec != { 'id': spec['id'], 'schema': spec['schema'] }:
                 raise NapExtraneousInputError("pool specification with 'id' should not contain anything else")
         elif 'name' in spec:
             if type(spec['name']) != type(''):
                 raise NapValueError("pool specification key 'name' must be a string")
             if 'id' in spec:
                 raise NapExtraneousInputError("pool specification contain both 'id' and 'name', specify pool id or name")
-
-            # name is only unique together with schema, find schema
-            spec = self._translate_schema_spec(spec)
 
         else:
             raise NapMissingInputError('missing both id and schema/name in pool spec')
@@ -485,25 +474,17 @@ class Nap:
 
 
 
-    def add_pool(self, attr):
+    def add_pool(self, schema_spec, attr):
         """ Add a pool.
+
+            schema_spec specifies which schema the pool should belong 
+            to, attr contains the pool's attributes.
         """
 
         self._logger.debug("add_pool called; spec: %s" % str(attr))
 
-        # check that given schema exists and populate 'schema' with correct id
-        if 'schema_id' in attr:
-            schema = self.list_schema({ 'id': attr['schema_id'] })
-            if schema == []:
-                raise NapInputError("non-existing schema specified")
-            attr['schema'] = schema[0]['id']
-            del(attr['schema_id'])
-        elif 'schema_name' in attr:
-            schema = self.list_schema({ 'name': attr['schema_name'] })
-            if schema == []:
-                raise NapInputError("non-existing schema specified")
-            attr['schema'] = schema[0]['id']
-            del(attr['schema_name'])
+        # populate 'schema' with correct id
+        attr['schema'] = self._get_schema(schema_spec)['id']
 
         # sanity check - do we have all attributes?
         req_attr = ['name', 'schema', 'description', 'default_type']
@@ -518,11 +499,14 @@ class Nap:
 
 
 
-    def remove_pool(self, spec):
+    def remove_pool(self, schema_spec, spec):
         """ Remove a pool.
         """
 
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
+
+        # populate 'schema' with correct id
+        spec['schema'] = self._get_schema(schema_spec)['id']
 
         where, params = self._expand_pool_spec(spec)
 
@@ -531,7 +515,7 @@ class Nap:
 
 
 
-    def list_pool(self, spec = None):
+    def list_pool(self, schema_spec, spec = None):
         """ List pools.
         """
 
@@ -548,9 +532,12 @@ class Nap:
                 FROM ip_net_pool AS po """
         params = list()
 
-        if spec is not None:
-            where, params = self._expand_pool_spec(spec)
-            sql += " WHERE " + where
+        # populate 'schema' with correct id
+        spec['schema'] = self._get_schema(schema_spec)['id']
+
+        # expand spec
+        where, params = self._expand_pool_spec(spec)
+        sql += " WHERE " + where
 
         self._execute(sql, params)
 
@@ -562,7 +549,7 @@ class Nap:
 
 
 
-    def edit_pool(self, spec, attr):
+    def edit_pool(self, schema_spec, spec, attr):
         """ Edit pool.
         """
 
@@ -577,6 +564,9 @@ class Nap:
                 'ipv6_default_prefix_length'
                 ]
         self._check_attr(attr, [], allowed_attr)
+
+        # populate 'schema' with correct id
+        spec['schema'] = self._get_schema(schema_spec)['id']
 
         where, params1 = self._expand_pool_spec(spec)
         update, params2 = self._sql_expand_update(attr)
@@ -600,7 +590,10 @@ class Nap:
         if type(spec) is not dict:
             raise NapInputError('invalid prefix specification')
 
-        allowed_keys = ['id', 'family', 'schema_name', 'schema_id',
+        if 'schema' not in spec:
+            raise NapMissingInputError('missing schema')
+
+        allowed_keys = ['id', 'family', 'schema',
             'type', 'pool_name', 'pool_id', 'prefix']
         for key in spec.keys():
             if key not in allowed_keys:
@@ -611,34 +604,39 @@ class Nap:
 
         # if we have id, no other input is needed
         if 'id' in spec:
-            if spec != {'id': spec['id']}:
+            if spec != {'id': spec['id'], 'schema': spec['schema']}:
                 raise NapExtraneousInputError("If id specified, no other keys are allowed.")
-            where += "id = %(spec_id)s"
-            params['spec_id'] = spec['id']
 
-        else:
-            # fetch schema ID
-            spec = self._translate_schema_spec(spec)
-            where, params = self._sql_expand_where(spec)
+        where, params = self._sql_expand_where(spec)
 
         self._logger.debug("where: %s params: %s" % (where, str(params)))
         return where, params
 
 
 
-    def _expand_prefix_query(self, query):
+    def _expand_prefix_query(self, query, table_name = None):
         """ Expand prefix query dict into a WHERE-clause.
+
+            If you need to prefix each column reference with a table
+            name, that can be supplied via the table_name argument.
         """
 
         where = str()
         opt = list()
 
+        # handle table name, can be None
+        if table_name is None:
+            col_prefix = ""
+        else:
+            col_prefix = table_name + "."
+
+
         if query['val1'].__class__.__name__ == 'dict' and query['val2'].__class__.__name__ == 'dict':
             # Sub expression, recurse!
             # add parantheses
 
-            sub_where1, opt1 = self._expand_prefix_query(query['val1'])
-            sub_where2, opt2 = self._expand_prefix_query(query['val2'])
+            sub_where1, opt1 = self._expand_prefix_query(query['val1'], table_name)
+            sub_where2, opt2 = self._expand_prefix_query(query['val2'], table_name)
             try:
                 where += str(" (%s %s %s ) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
@@ -668,9 +666,11 @@ class Nap:
             if query['val1'] not in prefix_attr:
                 raise NapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
+            # build where caluse
             try:
-                where = str(" %s %s %%s " %
-                    ( str("%s" % (prefix_attr[query['val1']])),
+                self._logger.debug("hey: %s" % table_name)
+                where = str(" %s%s %s %%s " %
+                    ( col_prefix, prefix_attr[query['val1']],
                     _operation_map[query['operator']] )
                 )
             except KeyError:
@@ -681,36 +681,34 @@ class Nap:
 
 
 
-    def add_prefix(self, attr, args = {}):
-        """ Add a prefix
+    def add_prefix(self, schema_spec, attr, args = {}):
+        """ Add a prefix.
         """
 
         self._logger.debug("add_prefix called; attr: %s" % str(attr))
 
-        # sanity checks
-        attr = self._translate_schema_spec(attr)
+        # populate 'schema' with correct id
+        attr['schema'] = self._get_schema(schema_spec)['id']
 
+        # sanity checks
         if 'prefix' in attr:
             if 'from-pool' in args or 'from-prefix' in args:
                 raise NapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
         else:
-            if 'prefix' in attr:
+            if ('from-pool' not in args and 'from-prefix' not in args) or ('from-pool' in args and 'from-prefix' in args):
                 raise NapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
-            if 'schema_id' in args or 'schema_name' in args:
-                args = self._translate_schema_spec(args)
-                if args['schema'] != attr['schema']:
-                    raise NapInputError("inconsistent schema specified in args and attr")
-            else:
-                args['schema_id'] = attr['schema']
-            res = self.find_free_prefix(args)
+            res = self.find_free_prefix(schema_spec, args)
             if res != []:
                 attr['prefix'] = res[0]
+            else:
+                # TODO: Raise other exception?
+                raise NapNonExistentError("no free prefix found")
 
         if 'pool_id' in attr or 'pool_name' in attr:
-            attr = self._translate_pool_spec(attr)
+            attr = self._translate_pool_spec(schema_spec, attr)
 
         # do we have all attributes?
-        req_attr = ['prefix', 'schema', 'description' ]
+        req_attr = [ 'prefix', 'schema', 'description' ]
         allowed_attr = ['authoritative_source', 'prefix', 'schema', 'description', 'comment', 'pool']
         self._check_attr(attr, req_attr, allowed_attr)
 
@@ -749,7 +747,7 @@ class Nap:
 
 
 
-    def find_free_prefix(self, args):
+    def find_free_prefix(self, schema_spec, args):
         """ Find a free prefix
 
             Arguments:
@@ -759,7 +757,7 @@ class Nap:
         if type(args) is not dict:
             raise NapInputError("invalid input, please provide dict as args")
 
-        args = self._translate_schema_spec(args)
+        args['schema'] = self._get_schema(schema_spec)['id']
 
         # TODO: find good default value for max_num
         # TODO: let max_num be configurable from configuration file
@@ -793,7 +791,7 @@ class Nap:
         wpl = 0
         if 'from-pool' in args:
             # extract prefixes from
-            pool_result = self.list_pool({ 'schema_id': args['schema'], 'name': args['from-pool'] })
+            pool_result = self.list_pool(schema_spec, { 'name': args['from-pool'] })
             if pool_result == []:
                 raise NapNonExistentError("Non-existent pool specified")
             for p in pool_result[0]['prefixes']:
@@ -855,7 +853,7 @@ class Nap:
 
 
 
-    def list_prefix(self, spec = None):
+    def list_prefix(self, schema_spec, spec = None):
         """ List prefixes
         """
 
@@ -863,8 +861,10 @@ class Nap:
 
         if type(spec) is dict:
 
-            if len(spec) == 0:
-                raise NapInputError("empty prefix specification")
+            #if len(spec) == 0:
+            #    raise NapInputError("empty prefix specification")
+
+            spec['schema'] = self._get_schema(schema_spec)['id']
 
             where, params = self._expand_prefix_spec(spec)
 
@@ -884,27 +884,42 @@ class Nap:
 
 
 
-    def remove_prefix(self, spec):
+    def remove_prefix(self, schema_spec, spec):
         """ Remove a prefix.
         """
 
         self._logger.debug("remove_prefix called; spec: %s" % str(spec))
 
+        spec['schema'] = self._get_schema(schema_spec)['id']
         where, params = self._expand_prefix_spec(spec)
-
         sql = "DELETE FROM ip_net_plan AS p WHERE %s" % where
-
         self._execute(sql, params)
 
 
 
-    def search_prefix(self, query):
+    def search_prefix(self, schema_spec, query):
         """ Search for prefixes.
         """
 
-        where, opt = self._expand_prefix_query(query)
-        sql = str("SELECT * FROM ip_net_plan WHERE " + where +
-            " ORDER BY prefix")
+        # Add schema to query part list
+        query = {
+            'operator': 'and',
+            'val1': {
+                'operator': 'equals',
+                'val1': 'schema',
+                'val2': self._get_schema(schema_spec)['id']
+            },
+            'val2': query
+        }
+
+
+        where, opt = self._expand_prefix_query(query, 'ip2')
+        sql = str("SELECT ip1.* FROM ip_net_plan AS ip1 " +
+            "JOIN ip_net_plan AS ip2 " +
+            "ON (" +
+            "   (ip2.prefix <<= ip1.prefix OR ip2.prefix >>= ip1.prefix) " +
+            "   AND (ip1.schema = ip2.schema)" +
+            ") WHERE " + where + " ORDER BY ip1.prefix")
 
         self._execute(sql, opt)
 
@@ -916,7 +931,7 @@ class Nap:
 
 
 
-    def smart_search_prefix(self, query_str, schema_spec):
+    def smart_search_prefix(self, schema_spec, query_str):
         """ Perform a smart search.
 
             The smart search function tries extract a query from
@@ -925,12 +940,6 @@ class Nap:
         """
 
         self._logger.debug("Query string: %s" % query_str)
-
-        # find schema
-        schema = self.list_schema(schema_spec)
-        if len(schema) == 0:
-            raise NapNonExistentError("Schema not found")
-        schema = schema[0]
 
         # find query parts
         query_str_parts = []
@@ -969,13 +978,6 @@ class Nap:
                     }
                 })
 
-        # Add schema to query part list
-        query_parts.append({
-            'operator': 'equals',
-            'val1': 'schema',
-            'val2': schema['id']
-        })
-
         # Sum all query parts to one query
         query = query_parts[0]
         for query_part in query_parts[1:]:
@@ -987,7 +989,7 @@ class Nap:
 
         self._logger.debug("Expanded to: %s" % str(query))
 
-        return { 'interpretation': query_str_parts, 'result': self.search_prefix(query) }
+        return { 'interpretation': query_str_parts, 'result': self.search_prefix(schema_spec, query) }
 
 
 
