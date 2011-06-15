@@ -1,0 +1,28 @@
+{% if c.action == 'edit' %}
+<form method="post" action="{{ h.url(controller="schema", action="edit", id=c.schema.id) }}">
+{% else %}
+<form method="post" action="{{ h.url(controller="schema", action="add") }}">
+{% endif %}
+<input type="hidden" name="action" value="{{ c.action }}">
+<table>
+    <tr>
+		<td>Name</td>
+		{% if c.action == 'edit' %}
+		<td><input type="text" name="name" value="{{ c.schema.name }}"></td>
+		{% else %}
+		<td><input type="text" name="name" value=""></td>
+		{% endif %}
+    </tr>
+    <tr>
+		<td>Description</td>
+		{% if c.action == 'edit' %}
+		<td><textarea name="description" cols="40" rows="10">{{ c.schema.description }}</textarea></td>
+		{% else %}
+		<td><textarea name="description" cols="40" rows="10"></textarea></td>
+		{% endif %}
+    </tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><input type="submit" value="Engage"><td>
+	</tr>
+</table>

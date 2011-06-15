@@ -165,7 +165,7 @@ class NapProtocol(xmlrpc.XMLRPC):
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 
 
-    def xmlrpc_list_pool(self, schema_spec, spec=None):
+    def xmlrpc_list_pool(self, schema_spec, spec = {}):
         """ List pools.
         """
 

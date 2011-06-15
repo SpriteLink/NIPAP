@@ -385,6 +385,8 @@ class Nap:
             where, params = self._expand_schema_spec(spec)
             sql += " WHERE " + where
 
+        sql += " ORDER BY name ASC"
+
         self._execute(sql, params)
 
         res = list()
@@ -465,9 +467,6 @@ class Nap:
             if 'id' in spec:
                 raise NapExtraneousInputError("pool specification contain both 'id' and 'name', specify pool id or name")
 
-        else:
-            raise NapMissingInputError('missing both id and schema/name in pool spec')
-
         where, params = self._sql_expand_where(spec, 'spec_', 'po.')
 
         return where, params
@@ -515,7 +514,7 @@ class Nap:
 
 
 
-    def list_pool(self, schema_spec, spec = None):
+    def list_pool(self, schema_spec, spec = {}):
         """ List pools.
         """
 
@@ -537,7 +536,10 @@ class Nap:
 
         # expand spec
         where, params = self._expand_pool_spec(spec)
-        sql += " WHERE " + where
+        if len(where) > 0:
+            sql += " WHERE " + where
+
+        sql += " ORDER BY name"
 
         self._execute(sql, params)
 
@@ -631,7 +633,7 @@ class Nap:
             col_prefix = table_name + "."
 
 
-        if query['val1'].__class__.__name__ == 'dict' and query['val2'].__class__.__name__ == 'dict':
+        if type(query['val1']) == dict and type(query['val2']) == dict:
             # Sub expression, recurse!
             # add parantheses
 
@@ -640,16 +642,16 @@ class Nap:
             try:
                 where += str(" (%s %s %s ) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NoSuchOperatorError("No such operation %s" % query['operator'])
+                raise NoSuchOperatorError("no such operator %s" % str(query['operator']))
 
             opt += opt1
             opt += opt2
 
-        # TODO: Handle case with one dict & one string.
-
         else:
-            # val1 is variable, val2 is string.
+            
+            # TODO: raise exception if someone passes one dict and one "something else"?
 
+            # val1 is variable, val2 is string.
             prefix_attr = dict()
             prefix_attr['prefix'] = 'prefix'
             prefix_attr['schema'] = 'schema'

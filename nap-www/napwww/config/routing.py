@@ -23,4 +23,6 @@ def make_map(config):
     map.connect('/{controller}/{action}')
     map.connect('/{controller}/{action}/{id}')
 
+    map.connect('/', controller='prefix', action='index')
+
     return map

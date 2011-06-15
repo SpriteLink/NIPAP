@@ -4,7 +4,7 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from napwww.lib.base import BaseController, render
-from napwww.model.napmodel import Schema, Pool, Prefix
+from napwww.model.napmodel import Schema, Pool, Prefix, NapNonExistentError
 
 log = logging.getLogger(__name__)
 
@@ -36,8 +36,8 @@ class PrefixController(BaseController):
         # Handle schema in session.
         if 'schema' in request.params:
             try:
-                c.schema = Schema.list({'id': int(request.params['schema'])})[0]
-            except IndexError:
+                c.schema = Schema.get(int(request.params['schema']))
+            except NapNonExistentError, e:
                 redirect(url(controller = 'prefix', action = 'change_schema'))
         else:
             redirect(url(controller = 'prefix', action = 'change_schema'))
@@ -45,7 +45,7 @@ class PrefixController(BaseController):
         c.search_opt_parent = "all"
         c.search_opt_child = "none"
 
-        return render('/index.html')
+        return render('/prefix_list.html')
 
 
 
@@ -54,8 +54,28 @@ class PrefixController(BaseController):
         """
 
         if 'schema' in request.params:
-            c.schema = Schema.list({'id': int(request.params['schema'])})[0]
+            c.schema = Schema.get({'id': int(request.params['schema'])})
 
         c.schema_list = Schema.list()
 
         return render('/change_schema.html')
+
+
+
+    def add(self):
+        """ Add a prefix.
+        """
+
+        # make sure we have a schema
+        try:
+            c.schema = Schema.get(int(request.params['schema']))
+        except (KeyError, NapNonExistentError), e:
+            redirect(url(controller='prefix', action='change_schema'))
+
+        # pass prefix to template - if we have any
+        if 'prefix' in request.params:
+            c.prefix = request.params['prefix']
+        else:
+            c.prefix = ''
+
+        return render('/prefix_add.html')

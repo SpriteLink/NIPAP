@@ -5,11 +5,16 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from napwww.lib.base import BaseController, render
-from napwww.model.napmodel import Schema, Prefix
+from napwww.model.napmodel import Schema, Prefix, Pool
 
 log = logging.getLogger(__name__)
 
 class XhrController(BaseController):
+    """ Interface to a few of the Nap API functions.
+
+        TODO: verify that we have a schema id or name specified and
+        fail gracefully if not.
+    """
 
     def index(self):
         # Return a rendered template
@@ -28,12 +33,21 @@ class XhrController(BaseController):
 
 
 
+    def list_pool(self):
+        """ List pools and return JSON encoded result.
+        """
+
+        schema = Schema.get(int(request.params['schema_id']))
+        pools = Pool.list(schema)
+        return json.dumps(pools, cls=NapJSONEncoder)
+
+
+
     def list_prefix(self):
         """ List prefixes and return JSON encoded result.
         """
 
-        s = Schema()
-        s.id = request.params['schema_id']
+        schema = Schema.get(int(request.params['schema_id']))
         prefixes = Prefix.list(schema, { 'prefix': '1.3.0.0/16'})
         return json.dumps(prefixes, cls=NapJSONEncoder)
 
@@ -54,9 +68,9 @@ class XhrController(BaseController):
             request.params['search_opt_child'])
         )
 
-        s = Schema.get(int(request.params['schema']))
+        schema = Schema.get(int(request.params['schema']))
 
-        result = Prefix.smart_search(s,
+        result = Prefix.smart_search(schema,
             request.params['query_string'],
             request.params['search_opt_parent'],
             request.params['search_opt_child']
@@ -77,6 +91,18 @@ class NapJSONEncoder(json.JSONEncoder):
                 'name': obj.name,
                 'description': obj.description
             }
+
+        elif isinstance(obj, Pool):
+            return {
+                'id': obj.id,
+                'name': obj.name,
+                'schema': obj.schema.id,
+                'description': obj.description,
+                'default_type': obj.default_type,
+                'ipv4_default_prefix_length': obj.ipv4_default_prefix_length,
+                'ipv6_default_prefix_length': obj.ipv4_default_prefix_length
+            }
+
         elif isinstance(obj, Prefix):
 
             if obj.pool is None:

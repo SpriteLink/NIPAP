@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<table>
+    <tr>
+        <td colspan="3" align="right"><a href="{{ h.url(controller="schema", action="add") }}">add</a></td>
+    </tr>
+    <tr>
+        <th>Name</th><th>Description</th><th>&nbsp;</th>
+    </tr>
+	{% for schema in c.schemas %}
+	<tr id="schema_row{{ schema.id }}">
+		<td style="padding: 10px;">{{ schema.name }}</td>
+		<td style="padding: 10px;">{{ schema.description }}</td>
+		<td>
+            <a href="{{ h.url(controller="schema", action="edit", id=schema.id) }}">edit</a> | 
+            <a href="{{ h.url(controller="schema", action="remove", id=schema.id) }}">del</a>
+        </td>
+	</tr>
+	{% endfor %}
+</table>
+{% endblock %}

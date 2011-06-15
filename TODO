@@ -35,3 +35,7 @@
  - Adding and editing schemas
 
  - Adding and editing prefixes
+
+ - Add a cache timeout to the NapModel object cache
+
+ - Fix a confirmation before a schema is removed

@@ -45,6 +45,18 @@ class NapModel:
     _logger = None
     id = None
 
+    def __eq__(self, other):
+        """ Perform test for equality.
+        """
+
+        # Only possible if we have ID numbers set
+        if self.id is None or other.id is None:
+            return false
+
+        return self.id == other.id
+
+
+
     def __init__(self, id=None):
         """ Creats logger and XML-RPC-connection.
         """
@@ -121,6 +133,18 @@ class Schema(NapModel):
             # Old object, edit
             self._xmlrpc.connection.edit_schema({'id': self.id}, data)
 
+        _cache['Schema'][self.id] = self
+
+
+
+    def remove(self):
+        """ Remove schema.
+        """
+
+        self._xmlrpc.connection.remove_schema({'id': self.id})
+        if self.id in _cache['Schema']:
+            del(_cache['Schema'][self.id])
+
 
 
 class Pool(NapModel):
@@ -156,6 +180,18 @@ class Pool(NapModel):
             # Old object, edit
             self._xmlrpc.connection.edit_pool({'id': self.id}, data)
 
+        _cache['Pool'][self.id] = self
+
+
+
+    def remove(self):
+        """ Remove pool.
+        """
+
+        self._xmlrpc.connection.remove_pool({'id': self.schema.id}, {'id': self.id})
+        if self.id in _cache['Pool']:
+            del(_cache['Pool'][self.id])
+
 
 
     @classmethod
@@ -188,26 +224,26 @@ class Pool(NapModel):
         """
 
         p = Pool()
-        p['id'] = parm['id']
-        p['schema'] = Schema.get(parm['schema'])
-        p['name'] = parm['name']
-        p['description'] = parm['description']
-        p['default_type'] = parm['default_type']
-        p['ipv4_default_prefix_length'] = parm['ipv4_default_prefix_length']
-        p['ipv6_default_prefix_length'] = parm['ipv6_default_prefix_length']
+        p.id = parm['id']
+        p.schema = Schema.get(parm['schema'])
+        p.name = parm['name']
+        p.description = parm['description']
+        p.default_type = parm['default_type']
+        p.ipv4_default_prefix_length = parm['ipv4_default_prefix_length']
+        p.ipv6_default_prefix_length = parm['ipv6_default_prefix_length']
         return p
 
 
 
     @classmethod
-    def list(self, schema, spec):
+    def list(self, schema, spec = {}):
         """ List pools.
         """
 
         pool_list = xmlrpc.connection.list_pool({ 'id': schema.id }, spec)
         res = list()
-        for pref in pref_list:
-            p = Pool.from_dict(pref)
+        for pool in pool_list:
+            p = Pool.from_dict(pool)
             res.append(p)
 
         return res
@@ -293,6 +329,12 @@ class Prefix(NapModel):
         """ Save prefix to Nap.
         """
 
+        # Pool is not mandatory
+        if pref['pool'] is None:
+            pool = None
+        else:
+            pool = Pool.get(p.schema, pref['pool'])
+
         data = {
             'family': self.family,
             'schema': self.schema.id,
@@ -300,7 +342,7 @@ class Prefix(NapModel):
             'description': self.description,
             'comment': self.comment,
             'node': self.node,
-            'pool': self.pool.id,
+            'pool': pool,
             'type': self.type,
             'indent': self.indent,
             'country': self.country,
