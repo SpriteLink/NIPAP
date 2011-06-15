@@ -58,7 +58,8 @@ class NapSql(unittest.TestCase):
         self.assertEqual(self._inspre('1.3.3.0/27', 'assignment'), True)
         self.assertEqual(self._inspre('1.3.3.0/32', 'host'), True)
         self.assertEqual(self._inspre('1.3.3.1/32', 'host'), True)
-        self.assertEqual(self._inspre('1.3.3.2/32', 'assignment'), False, 'Able to create assignment within assignment - we should not')
+        self.assertEqual(self._inspre('1.3.3.2/31', 'host'), False)
+        self.assertEqual(self._inspre('1.3.3.3/32', 'assignment'), False, 'Able to create assignment within assignment - we should not')
         self.assertEqual(self._delpre('1.3.3.0/27'), False, 'Able to delete assignment containing hosts - we should not')
 
 

@@ -93,9 +93,45 @@ CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 
 CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family_before() RETURNS trigger AS $$
 DECLARE
-	r RECORD;
+	parent RECORD;
+	child RECORD;
+	i_max_pref_len integer;
 BEGIN
 	NEW.family = family(NEW.prefix);
+	IF NEW.family = 4 THEN
+		i_max_pref_len := 32;
+	ELSIF NEW.family = 6 THEN
+		i_max_pref_len := 128;
+	END IF;
+
+	-- contains the parent prefix
+	SELECT * INTO parent FROM ip_net_plan WHERE prefix >> NEW.prefix ORDER BY masklen(prefix) LIMIT 1;
+	-- contains one child prefix
+	SELECT * INTO child FROM ip_net_plan WHERE prefix << NEW.prefix ORDER BY masklen(prefix) LIMIT 1;
+
+	IF NEW.type = 'host' THEN
+		IF masklen(NEW.prefix) != i_max_pref_len THEN
+			RAISE EXCEPTION 'Prefix of type host must have all bits set in netmask';
+		END IF;
+		IF parent.type != 'assignment' THEN
+			RAISE EXCEPTION 'Parent prefix must be of type ''assignment''';
+		END IF;
+	ELSIF NEW.type = 'assignment' THEN
+		IF parent.type IS NULL THEN
+			-- all good
+		ELSIF parent.type != 'reservation' THEN
+			RAISE EXCEPTION 'Parent prefix must be of type ''reservation''';
+		END IF;
+	ELSIF NEW.type = 'reservation' THEN
+		IF parent.type IS NULL THEN
+			-- all good
+		ELSIF parent.type != 'reservation' THEN
+			RAISE EXCEPTION 'Parent prefix must be of type ''reservation''';
+		END IF;
+	ELSE
+		RAISE EXCEPTION 'Unknown prefix type';
+	END IF;
+
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
