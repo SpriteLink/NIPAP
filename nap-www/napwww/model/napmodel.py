@@ -8,7 +8,7 @@ _cache = {
 }
 
 class XMLRPCConnection:
-    """ Handles a shared XML-RPC connection. 
+    """ Handles a shared XML-RPC connection.
     """
 
     __shared_state = {}
@@ -18,10 +18,10 @@ class XMLRPCConnection:
 
 
     def __init__(self, url=None):
-        """ Create XML-RPC connection to url. 
+        """ Create XML-RPC connection to url.
 
             If an earlier created instance exists, url
-            does not need to be passed. 
+            does not need to be passed.
         """
 
         self.__dict__ = self.__shared_state
@@ -70,7 +70,7 @@ class NapModel:
 class Schema(NapModel):
     """ A schema.
     """
-    
+
     name = None
     description = None
 
@@ -120,7 +120,7 @@ class Schema(NapModel):
         """ Save changes made to object to Nap.
         """
 
-        data = { 
+        data = {
             'name': self.name,
             'description': self.description
         }
@@ -268,7 +268,7 @@ class Prefix(NapModel):
     span_order = None
     authoritative_source = None
     alarm_priority = None
-    
+
 
     @classmethod
     def find_free(cls):
@@ -324,8 +324,15 @@ class Prefix(NapModel):
         return res
 
 
+    @classmethod
+    def add(cls, schema, attr, args):
+        """ Add a prefix according to the specification.
+        """
 
-    def save(self):
+
+
+
+    def save(self, args={}):
         """ Save prefix to Nap.
         """
 
@@ -338,23 +345,35 @@ class Prefix(NapModel):
         data = {
             'family': self.family,
             'schema': self.schema.id,
-            'prefix': self.prefix,
             'description': self.description,
             'comment': self.comment,
             'node': self.node,
             'pool': pool,
             'type': self.type,
-            'indent': self.indent,
             'country': self.country,
             'span_order': self.span_order,
             'authoritative_source': self.authoritative_source,
             'alarm_priority': self.alarm_priority
         }
 
+        # Prefix can be none if we are creating a new prefix
+        # from a pool or other prefix!
+        if self.prefix is not None:
+            data['prefix'] = self.prefix
+
+        # format args
+        x_args = {}
+        if 'from-pool' in args:
+            x_args['from-pool'] = args['from-pool'].id
+            x_args['family'] = self.family
+        if 'from-prefix' in args:
+            x_args['from-prefix'] = args['from-prefix']
+        if 'prefix_length' in args:
+            x_args['prefix_length'] = args['prefix_length']
+
         if self.id is None:
             # New object, create
-            self.id = self._xmlrpc.connection.add_prefix({'id': self.schema.id}, data)
-
+            self.id = self._xmlrpc.connection.add_prefix({'id': self.schema.id}, data, x_args)
         else:
             # Old object, edit
             self._xmlrpc.connection.edit_prefix({'id': self.schema.id}, {'id': self.id}, data)
@@ -364,7 +383,7 @@ class Prefix(NapModel):
     @classmethod
     def from_dict(cls, pref):
         """ Create a Prefix object from a dict.
-           
+
             Suitable for creating Prefix objects from XML-RPC input.
         """
 

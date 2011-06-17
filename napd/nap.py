@@ -400,7 +400,7 @@ class Nap:
     def _get_schema(self, spec):
         """ Get a schema.
 
-            Shorthand function to reduce code in the functions below, since 
+            Shorthand function to reduce code in the functions below, since
             more or less all of them needs to perform the actions that are
             specified here.
 
@@ -476,7 +476,7 @@ class Nap:
     def add_pool(self, schema_spec, attr):
         """ Add a pool.
 
-            schema_spec specifies which schema the pool should belong 
+            schema_spec specifies which schema the pool should belong
             to, attr contains the pool's attributes.
         """
 
@@ -648,7 +648,7 @@ class Nap:
             opt += opt2
 
         else:
-            
+
             # TODO: raise exception if someone passes one dict and one "something else"?
 
             # val1 is variable, val2 is string.

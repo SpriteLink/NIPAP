@@ -79,6 +79,70 @@ class XhrController(BaseController):
 
 
 
+    def add_prefix(self):
+        """ Add prefix according to the specification.
+
+            The following keys can be used:
+
+            schema          Schema to which the prefix is to be added (mandatory)
+            prefix          the prefix to add if already known
+            family          address family (4 or 6)
+            description     A short description
+            comment         Longer comment
+            node            Hostname of node 
+            type            Type of prefix; reservation, assignment, host
+            pool            ID of pool
+            country         Country where the prefix is used
+            span_order      SPAN order number
+            alarm_priority  Alarm priority of prefix
+
+            from-prefix     A prefix the prefix is to be allocated from
+            from-pool       A pool (ID) the prefix is to be allocated from
+            prefix_length   Prefix length of allocated prefix
+        """
+
+        p = Prefix()
+
+        # parameters which are "special cases"
+        p.schema = Schema.get(request.params['schema'])
+        if 'pool' in request.params:
+            p.pool = Pool.get(request.params['pool'])
+        else:
+            p.pool = None
+
+        # standard parameters
+        if 'family' in request.params:
+            p.family = request.params['family']
+        if 'description' in request.params:
+            p.description = request.params['description']
+        if 'comment' in request.params:
+            p.comment = request.params['comment']
+        if 'node' in request.params:
+            p.node = request.params['node']
+        if 'type' in request.params:
+            p.type = request.params['type']
+        if 'country' in request.params:
+            p.country = request.params['country']
+        if 'span_order' in request.params:
+            p.span_order = request.params['span_order']
+        if 'alarm_priority' in request.params:
+            p.alarm_priority = request.params['alarm_priority']
+
+        # arguments
+        args = {}
+        if 'from-prefix' in request.params:
+            args['from-prefix'] = request.params['from-prefix']
+        if 'from-pool' in request.params:
+            args['from-pool'] = Pool.get(request.params['from-pool'])
+        if 'prefix_length' in request.params:
+            args['prefix_length'] = request.params['prefix_length']
+
+        p.save(args)
+
+        return json.dumps(p, cls=NapJSONEncoder)
+
+
+
 class NapJSONEncoder(json.JSONEncoder):
     """ A class used to encode Nap objects to JSON.
     """
@@ -100,7 +164,7 @@ class NapJSONEncoder(json.JSONEncoder):
                 'description': obj.description,
                 'default_type': obj.default_type,
                 'ipv4_default_prefix_length': obj.ipv4_default_prefix_length,
-                'ipv6_default_prefix_length': obj.ipv4_default_prefix_length
+                'ipv6_default_prefix_length': obj.ipv6_default_prefix_length
             }
 
         elif isinstance(obj, Prefix):
