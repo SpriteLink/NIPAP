@@ -172,6 +172,41 @@ class Nap:
         self._logger.debug("SQL: " + sql + "  params: " + str(opt))
         try:
             self._curs_pg.execute(sql, opt)
+        except psycopg2.InternalError, e:
+            self._con_pg.rollback()
+            # FIXME: move logging
+            estr = "Internal database error: %s" % e
+            self._logger.error(estr)
+
+            # NOTE: psycopg2 is unable to differentiate between exceptions
+            # thrown by stored procedures and certain other database internal
+            # exceptions, thus we do not know if the exception in question is
+            # raised from our stored procedure or from some other error. In
+            # addition, postgresql is unable to pass any error code for the
+            # exception and so the only thing which we can look at is the text
+            # string.
+            #
+            # Exceptions raised by our stored procedures will all start with an
+            # error code followed by a colon, which separates the error code
+            # from the text string that follows next. If the error text does not
+            # follow this format it is likely not one of "our" exceptions and so
+            # we throw (and log) a more general exception.
+
+            # determine if it's "one of our" exceptions or something else
+            if len(str(e).split(":")) < 2:
+                raise NapError(e)
+            code = str(e).split(":", 1)[0]
+            try:
+                int(code)
+            except:
+                raise NapError(e)
+
+            text = str(e).split(":", 1)[1]
+
+            if code == '1200':
+                raise NapValueError(text)
+            else:
+                raise NapError()
         except psycopg2.Error, e:
             self._con_pg.rollback()
             estr = "Unable to execute query: %s" % e
