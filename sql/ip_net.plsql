@@ -91,7 +91,7 @@ CREATE UNIQUE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, pr
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 
 
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family_before() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family_before() RETURNS trigger AS $_$
 DECLARE
 	parent RECORD;
 	child RECORD;
@@ -105,28 +105,28 @@ BEGIN
 	END IF;
 
 	-- contains the parent prefix
-	SELECT * INTO parent FROM ip_net_plan WHERE prefix >> NEW.prefix ORDER BY masklen(prefix) LIMIT 1;
+	SELECT * INTO parent FROM ip_net_plan WHERE prefix >> NEW.prefix ORDER BY masklen(prefix) DESC LIMIT 1;
 	-- contains one child prefix
 	SELECT * INTO child FROM ip_net_plan WHERE prefix << NEW.prefix ORDER BY masklen(prefix) LIMIT 1;
 
 	IF NEW.type = 'host' THEN
 		IF masklen(NEW.prefix) != i_max_pref_len THEN
-			RAISE EXCEPTION 'Prefix of type host must have all bits set in netmask';
+			RAISE EXCEPTION '1200:Prefix of type host must have all bits set in netmask';
 		END IF;
 		IF parent.type != 'assignment' THEN
-			RAISE EXCEPTION 'Parent prefix must be of type ''assignment''';
+			RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''assignment''', parent.prefix, parent.type;
 		END IF;
 	ELSIF NEW.type = 'assignment' THEN
 		IF parent.type IS NULL THEN
 			-- all good
 		ELSIF parent.type != 'reservation' THEN
-			RAISE EXCEPTION 'Parent prefix must be of type ''reservation''';
+			RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
 		END IF;
 	ELSIF NEW.type = 'reservation' THEN
 		IF parent.type IS NULL THEN
 			-- all good
 		ELSIF parent.type != 'reservation' THEN
-			RAISE EXCEPTION 'Parent prefix must be of type ''reservation''';
+			RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
 		END IF;
 	ELSE
 		RAISE EXCEPTION 'Unknown prefix type';
@@ -134,7 +134,7 @@ BEGIN
 
 	RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$_$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_ip_net_plan_prefix__iu_before
 	BEFORE UPDATE OR INSERT
