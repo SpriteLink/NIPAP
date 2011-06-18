@@ -10,11 +10,18 @@ import nap
 class NapSql(unittest.TestCase):
     nap = nap.Nap()
 
-    def setUp(self):
+    def clean_up(self):
         self.nap._execute("DELETE FROM ip_net_plan")
         self.nap._execute("DELETE FROM ip_net_pool")
         self.nap._execute("DELETE FROM ip_net_schema")
+
+
+
+    def setUp(self):
+        self.clean_up()
         self.schema_id = self.nap.add_schema({ 'name': 'test-schema', 'description': '' })
+
+
 
     def test_calc_indent(self):
         """ Test automatic calculation of indent level
@@ -53,13 +60,13 @@ class NapSql(unittest.TestCase):
             DELETE 1.3.3.0/27    a    deny    hosts inside assignment
         """
         self.assertEqual(self._inspre('1.3.0.0/16', 'reservation'), True, 'Unable to insert prefix 1.3.0.0/16')
-        self.assertEqual(self._inspre('1.3.0.0/16', 'reservation'), False, 'Duplicate prefix detection not working')
+        self.assertRaises(Exception, self._inspre, '1.3.0.0/16', 'reservation', 'Duplicate prefix detection not working')
         self.assertEqual(self._inspre('1.3.3.0/24', 'reservation'), True)
         self.assertEqual(self._inspre('1.3.3.0/27', 'assignment'), True)
         self.assertEqual(self._inspre('1.3.3.0/32', 'host'), True)
         self.assertEqual(self._inspre('1.3.3.1/32', 'host'), True)
-        self.assertEqual(self._inspre('1.3.3.2/31', 'host'), False)
-        self.assertEqual(self._inspre('1.3.3.3/32', 'assignment'), False, 'Able to create assignment within assignment - we should not')
+        self.assertRaises(Exception, self._inspre, '1.3.3.2/31', 'host')
+        self.assertRaises(Exception, self._inspre, '1.3.3.3/32', 'assignment', 'Able to create assignment within assignment - we should not')
         self.assertEqual(self._delpre('1.3.3.0/27'), False, 'Able to delete assignment containing hosts - we should not')
 
 
@@ -69,10 +76,7 @@ class NapSql(unittest.TestCase):
 
             Return true on success, false otherwise
         """
-        try:
-            self.nap._execute("INSERT INTO ip_net_plan (authoritative_source, schema, prefix, type) VALUES ('naptest', %(schema)s, %(prefix)s, %(prefix_type)s)", { 'schema': self.schema_id, 'prefix': prefix, 'prefix_type': prefix_type })
-        except:
-            return False
+        self.nap._execute("INSERT INTO ip_net_plan (authoritative_source, schema, prefix, type) VALUES ('naptest', %(schema)s, %(prefix)s, %(prefix_type)s)", { 'schema': self.schema_id, 'prefix': prefix, 'prefix_type': prefix_type })
         return True
 
 
@@ -82,13 +86,11 @@ class NapSql(unittest.TestCase):
 
             Return true on success, false otherwise
         """
-        try:
-            self.nap._execute("DELETE FROM ip_net_plan WHERE schema = %(schema)s AND prefix = %(prefix)s", { 'schema': self.schema_id, 'prefix': prefix })
-        except:
-            return False
+        self.nap._execute("DELETE FROM ip_net_plan WHERE schema = %(schema)s AND prefix = %(prefix)s", { 'schema': self.schema_id, 'prefix': prefix })
         return True
 
 
 if __name__ == '__main__':
     unittest.main()
+    NapSql.clean_up()
 
