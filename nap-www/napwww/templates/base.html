@@ -20,8 +20,14 @@
                 </h1>
 			</div>
 			<div class="menu_entry">
+            {% if c['schema'] is defined %}
+				<a href="{{ h.url(controller='prefix', action='change_schema', schema=c.schema.id) }}">change</a> | 
+                <a href="{{ h.url(controller='schema', action='list', schema=c.schema.id) }}">edit schemas</a> |
+                <a href="{{ h.url(controller='prefix', action='list', schema=c.schema.id) }}">prefix list</a>
+            {% else %}
 				<a href="{{ h.url(controller='prefix', action='change_schema') }}">change</a> | 
                 <a href="{{ h.url(controller='schema', action='list') }}">edit schemas</a>
+            {% endif %}
 			</div>
 		</div>
         <div class="content">

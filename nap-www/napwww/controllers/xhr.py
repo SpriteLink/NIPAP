@@ -140,9 +140,23 @@ class XhrController(BaseController):
             if 'prefix' in request.params:
                 p.prefix = request.params['prefix']
 
-        p.save(args)
+        try:
+            p.save(args)
+            # TODO: finer granularity!
+            # Maybe only NapModelError, and let harder errors propagate
+            # the "ordinary" way?
+        except Exception, e:
+            return json.dumps({'error': 1, 'message': str(e)})
 
         return json.dumps(p, cls=NapJSONEncoder)
+
+
+    def test(self):
+
+        try:
+            raise Exception("ERROR ERROR")
+        except Exception, e:
+            abort(400, 'Invalid fisk: ' + str(e))
 
 
 

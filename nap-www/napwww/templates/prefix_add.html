@@ -175,8 +175,31 @@ function prefixFormSubmit(e) {
  */
 function prefixAdded(data) {
 
-	$('#prefix_added').html(data.prefix);
-	$('#prefix_added_container').show();
+	if ('error' in data) {
+		displayError('warning', data.message);
+	} else {
+		$('#prefix_added').html(data.prefix);
+		$('#prefix_added_container').show();
+	}
+
+}
+
+/*
+ * Display an error message
+ */
+function displayError(level, msg) {
+
+	alert(level + ": " + msg);
+
+}
+
+
+/*
+ * Error handler for ajax-errors.
+ */
+function ajaxErrorHandler(e, jqXHR, ajaxSettings, thrownError) {
+
+	displayError('error', thrownError);
 
 }
 
@@ -184,6 +207,7 @@ $(function () {
 
     // fetch data for pool search box
     $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema_id': {{ c.schema.id }}}, enableFromPoolSearch);
+	$(document).ajaxError(ajaxErrorHandler);
 
     // Enable actions on radio buttons
     $('input[name="prefix_alloc_method"]').change(showAllocContainer);

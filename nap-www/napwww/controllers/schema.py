@@ -21,6 +21,9 @@ class SchemaController(BaseController):
         """ List schemas.
         """
 
+        if 'schema' in request.params:
+            c.schema = Schema.get(int(request.params['schema']))
+
         c.schemas = Schema.list()
         return render('/schema_list.html')
 

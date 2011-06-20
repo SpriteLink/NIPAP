@@ -54,7 +54,7 @@ class PrefixController(BaseController):
         """
 
         if 'schema' in request.params:
-            c.schema = Schema.get({'id': int(request.params['schema'])})
+            c.schema = Schema.get(int(request.params['schema']))
 
         c.schema_list = Schema.list()
 
