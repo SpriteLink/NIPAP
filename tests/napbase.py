@@ -289,10 +289,10 @@ class NapTest(unittest.TestCase):
     def test_edit_pool_by_name(self):
         """ Try to rename a pool using edit_pool() function
 
-            Pool is not uniquely identified by name and so this should raise an error
+            Pool is not uniquely identified (empty spec) so this should raise an error
         """
         schema = {'id': self.schema_attrs['id']}
-        spec = { }
+        spec = {  }
         attrs = {
                 'name': self.pool_attrs['name'],
                 'default_type': 'assignment',
@@ -551,16 +551,16 @@ class NapTest(unittest.TestCase):
         self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 30, 'count': 55555 })
 
         # don't pass 'family', which is required when specifying 'from-pool'
-        self.assertRaises(nap.NapMissingInputError, self.nap.find_free_prefix, schema, { 'from-pool': self.pool_attrs['name'], 'prefix_length': 24, 'count': 1 })
+        self.assertRaises(nap.NapMissingInputError, self.nap.find_free_prefix, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1 })
 
         # pass crap as family, wrong type even
-        self.assertRaises(ValueError, self.nap.find_free_prefix, schema, { 'from-pool': self.pool_attrs['name'], 'prefix_length': 24, 'count': 1, 'family': 'crap' })
+        self.assertRaises(ValueError, self.nap.find_free_prefix, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1, 'family': 'crap' })
 
         # pass 7 as family
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, schema, { 'from-pool': self.pool_attrs['name'], 'prefix_length': 24, 'count': 1, 'family': 7 })
+        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1, 'family': 7 })
 
         # pass non existent pool
-        self.assertRaises(nap.NapNonExistentError, self.nap.find_free_prefix, schema, { 'from-pool': 'crap', 'prefix_length': 24, 'count': 1, 'family': 4 })
+        self.assertRaises(nap.NapNonExistentError, self.nap.find_free_prefix, schema, { 'from-pool': { 'name': 'crap' }, 'prefix_length': 24, 'count': 1, 'family': 4 })
 
 
 
@@ -620,11 +620,11 @@ class NapTest(unittest.TestCase):
             self.nap.add_prefix(schema, prefix_attrs)
 
         # from-pool test
-        res = self.nap.find_free_prefix(schema, { 'from-pool': self.pool_attrs['name'], 'count': 1, 'family': 4})
+        res = self.nap.find_free_prefix(schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'count': 1, 'family': 4})
         self.assertEqual(res, ['10.0.1.0/30'], "Incorrect prefix set returned when requesting default prefix-length")
 
         # from-pool test, specify wanted prefix length
-        res = self.nap.find_free_prefix(schema, { 'from-pool': self.pool_attrs['name'], 'count': 1, 'family': 4, 'prefix_length': 31})
+        res = self.nap.find_free_prefix(schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'count': 1, 'family': 4, 'prefix_length': 31})
         self.assertEqual(res, ['10.0.1.0/31'], "Incorrect prefix set returned with explicit prefix-length")
 
 

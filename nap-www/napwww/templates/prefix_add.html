@@ -131,31 +131,32 @@ function changeFamily() {
  */
 function prefixFormSubmit(e) {
 
+	e.preventDefault();
+
 	// create prefix data object
 	var prefix_data = {
-		'schema': schema,
+		'schema': {{ c.schema.id }},
 		'family': $('input[name="family"]:checked').val(),
 		'description': $('input[name="description"]').val(),
-// TODO: add comment field		'comment': $('textarea[name="comment"]').val(),
+		'comment': $('textarea[name="comment"]').val(),
 		'node': $('input[name="node"]').val(),
-		'type': $('input[name="type"]').val(),
+		'type': $('select[name="type"] option:selected').val(),
 // TODO: add pool		'pool': $('input[name="pool"]'),
 		'country': $('input[name="country"]').val(),
 		'span_order': $('input[name="span_order"]').val(),
-		'alarm_priority': $('input[name="alarm_priority"]').val(),
-
+		'alarm_priority': $('select[name="alarm_priority"] option:selected').val(),
 	};
 
 	// different data due to different allocation methods
 	if (alloc_method == 'from-pool') {
 
-		prefix_data.from-pool = cur_opts.pool.id;
+		prefix_data.from_pool = cur_opts.pool.id;
 		prefix_data.prefix_length = $('input[name="length"]').val();
 
 	} else if (alloc_method == 'from-prefix') {
 
 		// TODO: add prefix
-		// prefix_data.from-prefix = ...;
+		// prefix_data.from_prefix = ...;
 		prefix_data.prefix_length = $('input[name="length"]').val();
 
 	} else {
@@ -164,9 +165,8 @@ function prefixFormSubmit(e) {
 
 	}
 
-	$.getJSON('{{ h.url(controller="xhr", action="add_prefix")}}');
+	$.getJSON('{{ h.url(controller="xhr", action="add_prefix")}}', prefix_data, prefixAdded);
 
-	e.preventDefault();
 
 }
 
@@ -205,6 +205,13 @@ $(function () {
 <h2>Add prefix</h2>
 
 <div style="padding: 15px;">
+
+<!-- 
+
+	PREFIX ALLOCATION METHOD
+
+-->
+
 <h3>Prefix allocation method</h3>
 <table>
 	<tr>
@@ -230,6 +237,12 @@ $(function () {
 	</tr>
 </table>
 </div>
+
+<!--
+
+	FROM-POOL
+
+-->
 
 <div style="padding: 15px; display: none;" id="from-pool_container">
     <table>
@@ -269,13 +282,23 @@ $(function () {
     </table>
 </div>
 
+<!--
+
+	FROM-PREFIX
+
+-->
 <div style="padding: 15px; display: none;" id="from-prefix_container">
     <h3>Choose prefix</h3>
 	<input type="text" name="from-prefix">
 </div>
 
+<!--
+
+	PREFIX DATA
+
+-->
 <div id="prefix_data_container" style="padding: 15px; display: none;">
-<form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add") }}">
+<form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add", schema=c.schema.id) }}">
 <table>
     <tr id="prefix_row">
         <td>Prefix</td>
@@ -296,7 +319,7 @@ $(function () {
         <td>Type</td>
         <td>
 			<select name="type">
-				<option value="assignment">Assignment
+				<option value="assignment" selected>Assignment
 				<option value="host">Host
 				<option value="reservation">Reservation
 			</select>
@@ -325,6 +348,10 @@ $(function () {
 		</td>
 		<td class="help-text"></td>
     </tr>
+	<tr>
+		<td>Comment</td>
+		<td colspan="2"><textarea rows="10" cols="72" name="comment"></textarea></td>
+	</tr>
 	<tr>
 		<td>&nbsp;</td>
 		<td><input type="submit" value="Add"></td>

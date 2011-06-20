@@ -558,6 +558,9 @@ class Nap:
         self._logger.debug("edit_pool called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
 
+        if ('id' not in spec and 'name' not in spec) or ( 'id' in spec and 'name' in spec ):
+            raise NapMissingInputError('''pool spec must contain either 'id' or 'name' ''')
+
         allowed_attr = [
                 'name',
                 'default_type',
@@ -687,7 +690,7 @@ class Nap:
         """ Add a prefix.
         """
 
-        self._logger.debug("add_prefix called; attr: %s" % str(attr))
+        self._logger.debug("add_prefix called; attr: %s; args: %s" % (str(attr), str(args)))
 
         # populate 'schema' with correct id
         attr['schema'] = self._get_schema(schema_spec)['id']
@@ -711,7 +714,10 @@ class Nap:
 
         # do we have all attributes?
         req_attr = [ 'prefix', 'schema', 'description' ]
-        allowed_attr = ['authoritative_source', 'prefix', 'schema', 'description', 'comment', 'pool']
+        allowed_attr = [
+            'authoritative_source', 'prefix', 'schema', 'description',
+            'comment', 'pool', 'node', 'type', 'country',
+            'span_order', 'alarm_priority']
         self._check_attr(attr, req_attr, allowed_attr)
 
         insert, params = self._sql_expand_insert(attr)
@@ -792,12 +798,14 @@ class Nap:
         wpl = 0
         if 'from-pool' in args:
             # extract prefixes from
-            pool_result = self.list_pool(schema_spec, { 'name': args['from-pool'] })
+            pool_result = self.list_pool(schema_spec, args['from-pool'])
             if pool_result == []:
                 raise NapNonExistentError("Non-existent pool specified")
             for p in pool_result[0]['prefixes']:
                 if self._get_afi(p) == args['family']:
                     prefixes.append(p)
+            if len(prefixes) == 0:
+                raise NapInputError('No prefixes of family %d in pool' % args['family'])
             if 'prefix_length' not in args:
                 if args['family'] == 4:
                     wpl = pool_result[0]['ipv4_default_prefix_length']

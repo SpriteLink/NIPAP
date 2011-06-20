@@ -324,31 +324,17 @@ class Prefix(NapModel):
         return res
 
 
-    @classmethod
-    def add(cls, schema, attr, args):
-        """ Add a prefix according to the specification.
-        """
-
-
-
 
     def save(self, args={}):
         """ Save prefix to Nap.
         """
 
-        # Pool is not mandatory
-        if pref['pool'] is None:
-            pool = None
-        else:
-            pool = Pool.get(p.schema, pref['pool'])
-
         data = {
-            'family': self.family,
             'schema': self.schema.id,
             'description': self.description,
             'comment': self.comment,
             'node': self.node,
-            'pool': pool,
+            'pool': self.pool,
             'type': self.type,
             'country': self.country,
             'span_order': self.span_order,
@@ -361,21 +347,30 @@ class Prefix(NapModel):
         if self.prefix is not None:
             data['prefix'] = self.prefix
 
-        # format args
-        x_args = {}
-        if 'from-pool' in args:
-            x_args['from-pool'] = args['from-pool'].id
-            x_args['family'] = self.family
-        if 'from-prefix' in args:
-            x_args['from-prefix'] = args['from-prefix']
-        if 'prefix_length' in args:
-            x_args['prefix_length'] = args['prefix_length']
-
+        # New object, create from scratch
         if self.id is None:
-            # New object, create
+
+            # format args
+            x_args = {}
+            if 'from-pool' in args:
+                x_args['from-pool'] = { 'id': args['from-pool'].id }
+                x_args['family'] = args['family']
+            if 'from-prefix' in args:
+                x_args['from-prefix'] = args['from-prefix']
+            if 'prefix_length' in args:
+                x_args['prefix_length'] = args['prefix_length']
+
             self.id = self._xmlrpc.connection.add_prefix({'id': self.schema.id}, data, x_args)
+
+            # fetch data which is set by Nap
+            p = self._xmlrpc.connection.list_prefix({'id': self.schema.id}, {'id': self.id})[0]
+            self.prefix = p['prefix']
+            self.indent = p['indent']
+            self.family = p['family']
+            self.display_prefix = p['display_prefix']
+    
+        # Old object, edit
         else:
-            # Old object, edit
             self._xmlrpc.connection.edit_prefix({'id': self.schema.id}, {'id': self.id}, data)
 
 
@@ -433,3 +428,45 @@ class NapNonExistentError(NapModelError):
 
         For example when a given ID can not be found in the NAP database.
     """
+
+
+class NapInputError(NapModelError):
+    """ Something wrong with the input we received
+
+        A general case.
+    """
+    pass
+
+
+
+class NapMissingInputError(NapInputError):
+    """ Missing input
+
+        Most input is passed in dicts, this could mean a missing key in a dict.
+    """
+    pass
+
+
+
+class NapExtraneousInputError(NapInputError):
+    """ Extraneous input
+
+        Most input is passed in dicts, this could mean an unknown key in a dict.
+    """
+    pass
+
+
+
+class NapNoSuchOperatorError(NapInputError):
+    """ A non existent operator was specified.
+    """
+    pass
+
+
+
+class NapValueError(NapModelError):
+    """ Something wrong with a value we have
+
+        For example, trying to send an integer when an IP address is expected.
+    """
+    pass

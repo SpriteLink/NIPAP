@@ -104,15 +104,9 @@ class XhrController(BaseController):
         p = Prefix()
 
         # parameters which are "special cases"
-        p.schema = Schema.get(request.params['schema'])
-        if 'pool' in request.params:
-            p.pool = Pool.get(request.params['pool'])
-        else:
-            p.pool = None
+        p.schema = Schema.get(int(request.params['schema']))
 
         # standard parameters
-        if 'family' in request.params:
-            p.family = request.params['family']
         if 'description' in request.params:
             p.description = request.params['description']
         if 'comment' in request.params:
@@ -124,18 +118,27 @@ class XhrController(BaseController):
         if 'country' in request.params:
             p.country = request.params['country']
         if 'span_order' in request.params:
-            p.span_order = request.params['span_order']
+            if request.params['span_order'] != '':
+                p.span_order = request.params['span_order']
         if 'alarm_priority' in request.params:
             p.alarm_priority = request.params['alarm_priority']
+        p.authoritative_source = 'nap-www'
 
         # arguments
         args = {}
-        if 'from-prefix' in request.params:
-            args['from-prefix'] = request.params['from-prefix']
-        if 'from-pool' in request.params:
-            args['from-pool'] = Pool.get(request.params['from-pool'])
+        if 'from_prefix' in request.params:
+            args['from-prefix'] = request.params['from_prefix']
+        if 'from_pool' in request.params:
+            args['from-pool'] = Pool.get(p.schema, int(request.params['from_pool']))
+            if 'family' in request.params:
+                args['family'] = int(request.params['family'])
         if 'prefix_length' in request.params:
             args['prefix_length'] = request.params['prefix_length']
+
+        # manual allocation?
+        if args == {}:
+            if 'prefix' in request.params:
+                p.prefix = request.params['prefix']
 
         p.save(args)
 

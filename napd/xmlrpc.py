@@ -123,7 +123,7 @@ class NapProtocol(xmlrpc.XMLRPC):
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 
 
-    def xmlrpc_list_schema(self, spec=None):
+    def xmlrpc_list_schema(self, spec = None):
         """ List schemas.
         """
 
@@ -190,12 +190,12 @@ class NapProtocol(xmlrpc.XMLRPC):
     #
 
 
-    def xmlrpc_add_prefix(self, schema_spec, attr):
+    def xmlrpc_add_prefix(self, schema_spec, attr, args = {}):
         """ Add a prefix.
         """
 
         try:
-            return self.nap.add_prefix(spec, schema_spec, attr)
+            return self.nap.add_prefix(schema_spec, attr, args)
         except nap.NapError, e:
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 
