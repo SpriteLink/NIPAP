@@ -183,8 +183,8 @@ class Nap:
             # exceptions, thus we do not know if the exception in question is
             # raised from our stored procedure or from some other error. In
             # addition, postgresql is unable to pass any error code for the
-            # exception and so the only thing which we can look at is the text
-            # string.
+            # exception and so the only thing which we can look at is the actual
+            # text string.
             #
             # Exceptions raised by our stored procedures will all start with an
             # error code followed by a colon, which separates the error code
