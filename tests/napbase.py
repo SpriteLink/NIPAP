@@ -65,6 +65,12 @@ class NapTest(unittest.TestCase):
                 'description': ''
                 }
         self.prefix_attrs3['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix_attrs3)
+        self.prefix_attrs4 = {
+                'authoritative_source': 'naptest',
+                'prefix': '1.3.0.0/17',
+                'description': ''
+                }
+        self.prefix_attrs4['id'] = self.nap.add_prefix({'id': self.schema_attrs2['id']}, self.prefix_attrs4)
 
 
 
