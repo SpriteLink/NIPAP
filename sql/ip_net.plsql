@@ -91,15 +91,12 @@ CREATE UNIQUE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, pr
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 
 
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family_before() RETURNS trigger AS $_$
+CREATE OR REPLACE FUNCTION tf_ip_net_prefix_iu_before() RETURNS trigger AS $_$
 DECLARE
 	parent RECORD;
 	child RECORD;
 	i_max_pref_len integer;
 BEGIN
-	IF TG_OP != UPDATE AND OLD.type != NEW.type THEN
-		RAISE EXEPTION '1200:Changing type is disallowed';
-	END IF;
 
 	NEW.family = family(NEW.prefix);
 	IF NEW.family = 4 THEN
@@ -110,33 +107,61 @@ BEGIN
 
 	-- contains the parent prefix
 	SELECT * INTO parent FROM ip_net_plan WHERE prefix >> NEW.prefix ORDER BY masklen(prefix) DESC LIMIT 1;
-	-- contains one child prefix
-	SELECT * INTO child FROM ip_net_plan WHERE prefix << NEW.prefix ORDER BY masklen(prefix) LIMIT 1;
 
-	IF NEW.type = 'host' THEN
-		IF masklen(NEW.prefix) != i_max_pref_len THEN
-			RAISE EXCEPTION '1200:Prefix of type host must have all bits set in netmask';
+	-- check that type is correct on insert
+	IF TG_OP = 'INSERT' THEN
+		IF NEW.type = 'host' THEN
+			IF masklen(NEW.prefix) != i_max_pref_len THEN
+				RAISE EXCEPTION '1200:Prefix of type host must have all bits set in netmask';
+			END IF;
+			IF parent.type != 'assignment' THEN
+				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''assignment''', parent.prefix, parent.type;
+			END IF;
+		ELSIF NEW.type = 'assignment' THEN
+			IF parent.type IS NULL THEN
+				-- all good
+			ELSIF parent.type != 'reservation' THEN
+				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
+			END IF;
+		ELSIF NEW.type = 'reservation' THEN
+			IF parent.type IS NULL THEN
+				-- all good
+			ELSIF parent.type != 'reservation' THEN
+				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
+			END IF;
+		ELSE
+			RAISE EXCEPTION 'Unknown prefix type';
 		END IF;
-		IF parent.type != 'assignment' THEN
-			RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''assignment''', parent.prefix, parent.type;
+	END IF;
+
+	-- don't allow changing of type
+	IF TG_OP = 'UPDATE' THEN
+		IF OLD.type != NEW.type THEN
+			-- FIXME: better exception code
+			RAISE EXCEPTION '1200:Changing type is disallowed';
 		END IF;
-	ELSIF NEW.type = 'assignment' THEN
-		IF parent.type IS NULL THEN
-			-- all good
-		ELSIF parent.type != 'reservation' THEN
-			RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
-		END IF;
-	ELSIF NEW.type = 'reservation' THEN
-		IF parent.type IS NULL THEN
-			-- all good
-		ELSIF parent.type != 'reservation' THEN
-			RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
-		END IF;
-	ELSE
-		RAISE EXCEPTION 'Unknown prefix type';
 	END IF;
 
 	RETURN NEW;
+END;
+$_$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION tf_ip_net_prefix_d_before() RETURNS trigger AS $_$
+BEGIN
+	-- prevent certain deletes to maintain DB integrity
+	IF TG_OP = 'DELETE' THEN
+		-- if an assignment contains hosts, we block the delete
+		IF OLD.type = 'assignment' THEN
+			-- contains one child prefix
+			IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix) > 0 THEN
+				RAISE EXCEPTION '1200:Disallowed delete, prefix (%) contains hosts.', OLD.prefix;
+			END IF;
+		END IF;
+		-- everything else is allowed
+	END IF;
+
+	RETURN OLD;
 END;
 $_$ LANGUAGE plpgsql;
 
@@ -144,7 +169,13 @@ CREATE TRIGGER trigger_ip_net_plan_prefix__iu_before
 	BEFORE UPDATE OR INSERT
 	ON ip_net_plan
 	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_prefix_family_before();
+	EXECUTE PROCEDURE tf_ip_net_prefix_iu_before();
+
+CREATE TRIGGER trigger_ip_net_plan_prefix__d_before
+	BEFORE DELETE
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_prefix_d_before();
 
 
 CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family_after() RETURNS trigger AS $$
