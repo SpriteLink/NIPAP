@@ -60,14 +60,14 @@ class NapSql(unittest.TestCase):
             DELETE 1.3.3.0/27    a    deny    hosts inside assignment
         """
         self.assertEqual(self._inspre('1.3.0.0/16', 'reservation'), True, 'Unable to insert prefix 1.3.0.0/16')
-        self.assertRaises(Exception, self._inspre, '1.3.0.0/16', 'reservation', 'Duplicate prefix detection not working')
+        self.assertRaises(nap.NapDuplicateError, self._inspre, '1.3.0.0/16', 'reservation') # Duplicate prefix detection not working
         self.assertEqual(self._inspre('1.3.3.0/24', 'reservation'), True)
         self.assertEqual(self._inspre('1.3.3.0/27', 'assignment'), True)
         self.assertEqual(self._inspre('1.3.3.0/32', 'host'), True)
         self.assertEqual(self._inspre('1.3.3.1/32', 'host'), True)
-        self.assertRaises(Exception, self._inspre, '1.3.3.2/31', 'host')
-        self.assertRaises(Exception, self._inspre, '1.3.3.3/32', 'assignment', 'Able to create assignment within assignment - we should not')
-        self.assertEqual(self._delpre('1.3.3.0/27'), False, 'Able to delete assignment containing hosts - we should not')
+        self.assertRaises(nap.NapValueError, self._inspre, '1.3.3.2/31', 'host')    # do not allow /31 as type 'host'
+        self.assertRaises(nap.NapValueError, self._inspre, '1.3.3.3/32', 'assignment') # Able to create assignment within assignment - we should not
+        self.assertRaises(nap.NapValueError, self._delpre, '1.3.3.0/27') # Able to delete assignment containing hosts - we should not
 
 
 
