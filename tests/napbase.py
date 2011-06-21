@@ -34,6 +34,11 @@ class NapTest(unittest.TestCase):
                 'description': 'Test schema numero uno!'
                 }
         self.schema_attrs['id'] = self.nap.add_schema(self.schema_attrs)
+        self.schema_attrs2 = {
+                'name': 'test-schema2',
+                'description': 'Test schema numero dos!'
+                }
+        self.schema_attrs2['id'] = self.nap.add_schema(self.schema_attrs2)
         self.pool_attrs = {
                 'name': 'test-pool1',
                 'description': 'Test pool numero uno!',
@@ -627,6 +632,40 @@ class NapTest(unittest.TestCase):
         res = self.nap.find_free_prefix(schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'count': 1, 'family': 4, 'prefix_length': 31})
         self.assertEqual(res, ['10.0.1.0/31'], "Incorrect prefix set returned with explicit prefix-length")
 
+
+
+def test_edit_prefix(self):
+    """ Functionality testing of edit_prefix.
+    """
+
+    schema = { 'id': self.schema_attrs['id'] }
+    data = { 
+        'prefix': '192.0.2.0/24', 
+        'description': 'foo',
+        'comment': 'bar',
+        'span_order': 0xBEEF,
+        'alarm_priority': 'low',
+        'type': 'assignment',
+        'node': 'TOK-CORE-1',
+        'country': 'EE',
+        'authoritative_source': 'unittest',
+        'pool': self.pool_attrs['id']
+        }
+
+    # basic edit
+    self.nap.edit_prefix(schema, { 'id': self.prefix_attrs['id'] }, data)
+    p = self.nap.list_prefix(schema, {'id': self.prefix_attrs['id']})[0]
+    # remove what we did not touch
+    for k, v in data.keys():
+        if k not in p:
+            del p[k]
+    self.assertEqual(data, p, "Prefix data incorrect after edit.")
+
+    # create a collision
+    self.assertRaises(nap.NapError, self.nap.edit_prefix, schema, {'id': self.prefix_attrs2['id']}, {'prefix': data['prefix']})
+
+    # try to change schema - disallowed
+    self.assertRaises(nap.NapExtraneousInputError, self.nap_edit_prefix, schema, {'id': self.prefix_attrs2['id']}, {'schema': self.schema_attrs2['id']})
 
 
 

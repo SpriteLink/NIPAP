@@ -36,7 +36,7 @@
 		prefix_ind_pref.append('<div id="prefix_prefix' + prefix.id + '">');
 		var prefix_prefix = $('#prefix_prefix' + prefix.id);
 		prefix_prefix.addClass("prefix_prefix");
-		prefix_prefix.html(prefix.prefix);
+		prefix_prefix.html('<a href="/prefix/edit/' + prefix.id + '?schema={{ c.schema.id }}">' + prefix.prefix + '</a>');
 
 		// Add prefix type
 		prefix_entry.append('<div id="prefix_type' + prefix.id + '">');

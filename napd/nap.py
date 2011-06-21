@@ -779,7 +779,10 @@ class Nap:
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
 
-        allowed_attr = [ 'name', 'description', 'comment' ]
+        allowed_attr = [
+            'authoritative_source', 'prefix', 'description',
+            'comment', 'pool', 'node', 'type', 'country',
+            'span_order', 'alarm_priority']
 
         self._check_attr(attr, [], allowed_attr)
 
@@ -789,8 +792,7 @@ class Nap:
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())
 
-        sql = "UPDATE ip_net_plan SET " + update
-        sql += " FROM ip_net_plan AS p WHERE ip_net_plan.id = p.id AND " + where
+        sql = "UPDATE ip_net_plan SET " + update + " WHERE " + where
 
         self._execute(sql, params)
 

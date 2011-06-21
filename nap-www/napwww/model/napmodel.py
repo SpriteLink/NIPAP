@@ -271,6 +271,27 @@ class Prefix(NapModel):
 
 
     @classmethod
+    def get(cls, schema, id):
+        """ Get the prefix with id 'id'.
+        """
+
+        # cached?
+        if id in _cache['Prefix']:
+            log.debug('cache hit for prefix %d' % id)
+            return _cache['Prefix'][id]
+        log.debug('cache miss for prefix %d' % id)
+
+        try:
+            prefix = Prefix.list(schema, {'id': id})[0]
+        except KeyError, e:
+            raise NapNonExistentError('no prefix with ID ' + str(id) + ' found')
+
+        _cache['Prefix'][id] = prefix
+        return prefix
+
+
+
+    @classmethod
     def find_free(cls):
         """ Finds a free prefix.
         """
@@ -371,6 +392,10 @@ class Prefix(NapModel):
     
         # Old object, edit
         else:
+            # remove keys which we are not allowed to edit
+            del(data['schema'])
+            del(data['type'])
+
             self._xmlrpc.connection.edit_prefix({'id': self.schema.id}, {'id': self.id}, data)
 
 

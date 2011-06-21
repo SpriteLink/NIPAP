@@ -22,7 +22,7 @@ errcode_map = {
 }
 
 
-class NapXMLRPC():
+class NapXMLRPC:
     stop = None
 
     def __init__(self, port = 1337):
@@ -217,7 +217,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.edit_prefix(schema_spec, spec)
+            return self.nap.edit_prefix(schema_spec, spec, attr)
         except nap.NapError, e:
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 
