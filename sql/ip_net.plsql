@@ -97,6 +97,10 @@ DECLARE
 	child RECORD;
 	i_max_pref_len integer;
 BEGIN
+	IF TG_OP != UPDATE AND OLD.type != NEW.type THEN
+		RAISE EXEPTION '1200:Changing type is disallowed';
+	END IF;
+
 	NEW.family = family(NEW.prefix);
 	IF NEW.family = 4 THEN
 		i_max_pref_len := 32;
