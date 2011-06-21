@@ -1,6 +1,5 @@
 
 DROP TABLE ip_net_plan;
-DROP TABLE ip_net_pool_def_prefix_len;
 DROP TABLE ip_net_pool;
 DROP TABLE ip_net_schema;
 
