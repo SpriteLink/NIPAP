@@ -174,6 +174,7 @@ class Nap:
             self._curs_pg.execute(sql, opt)
         except psycopg2.InternalError, e:
             self._con_pg.rollback()
+
             # FIXME: move logging
             estr = "Internal database error: %s" % e
             self._logger.error(estr)
@@ -207,6 +208,12 @@ class Nap:
                 raise NapValueError(text)
             else:
                 raise NapError()
+        except psycopg2.IntegrityError, e:
+            self._con_pg.rollback()
+
+            if e.pgcode == "23505":
+                raise NapDuplicateError("Objects primary keys already exist")
+
         except psycopg2.Error, e:
             self._con_pg.rollback()
             estr = "Unable to execute query: %s" % e
@@ -1087,5 +1094,13 @@ class NapNonExistentError(NapError):
     """ A non existent object was specified
 
         For example, try to get a prefix from a pool which doesn't exist.
+    """
+    pass
+
+
+class NapDuplicateError(NapError):
+    """ The passed object violates unique constraints
+
+        For example, create a schema with a name of an already existing one.
     """
     pass
