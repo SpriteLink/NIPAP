@@ -1,5 +1,10 @@
 
 == CORE ==
+ - calc_indent is broken, no schema support? fix test case for multi-schema to
+   prove brokeness first and then fix problem :)
+
+ - write performance test suite with output format to GraphViz - we want le
+   graphs!
 
  - find_free_prefix() should support a start address from where it should start
    searching for new candidate prefixes. prolly useful for paginating output in
