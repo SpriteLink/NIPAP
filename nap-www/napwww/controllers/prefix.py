@@ -79,3 +79,34 @@ class PrefixController(BaseController):
             c.prefix = ''
 
         return render('/prefix_add.html')
+
+
+
+    def edit(self, id):
+        """ Edit a prefix.
+        """
+
+        # make sure we have a schema
+        try:
+            c.schema = Schema.get(int(request.params['schema']))
+        except (KeyError, NapNonExistentError), e:
+            redirect(url(controller='prefix', action='change_schema'))
+
+        # find prefix
+        c.prefix = Prefix.get(c.schema, int(id))
+
+        # we got a HTTP POST - edit object
+        if request.method == 'POST':
+            c.prefix.prefix = request.params['prefix']
+            c.prefix.description = request.params['description']
+            c.prefix.node = request.params['node']
+            c.prefix.type = request.params['type']
+            c.prefix.country = request.params['country']
+            c.prefix.span_order = int(request.params['span_order'])
+            c.prefix.alarm_priority = request.params['alarm_priority']
+            c.prefix.comment = request.params['comment']
+            c.prefix.save()
+            redirect(url(controller='prefix', action='list', schema=c.schema.id))
+
+
+        return render('/prefix_edit.html')
