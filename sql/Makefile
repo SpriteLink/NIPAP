@@ -2,6 +2,16 @@ DB_NAME=nap
 NAPD_USER=napd
 NAPD_PASS=dpan
 
+#
+# TODO: need install thingy for ip4r
+# 	- how do we determine if the system has ip4r modules at all?
+# 		* can we ask psql?
+# 		* if it's a debian / ubuntu system we can use apt-cache
+# 	- how do we determine where the .sql file is?
+# 		* we can guess on a few well known paths
+# 		* we know where it's at on debian like systems
+#
+
 all:
 	echo "Run this as the postgres user!"
 
