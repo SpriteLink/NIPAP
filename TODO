@@ -1,8 +1,5 @@
 
 == CORE ==
- - calc_indent is broken, no schema support? fix test case for multi-schema to
-   prove brokeness first and then fix problem :)
-
  - write performance test suite with output format to GraphViz - we want le
    graphs!
 
