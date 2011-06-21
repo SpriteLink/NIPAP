@@ -52,7 +52,7 @@ class bonk:
                 prefix = argp + str(i) + "." + str(j)
                 self.n.add_prefix({'name': 'test-schema' }, { 'authoritative_source': 'nap', 'prefix': prefix, 'description': 'test' })
             t3 = time.time()
-            print i, t3-t2, (t3-t2)/256
+            print i, (t3-t2)/256
         t1 = time.time()
         print "One /16 inserted in:", t1-t0
 
