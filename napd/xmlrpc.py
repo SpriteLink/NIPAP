@@ -22,7 +22,7 @@ errcode_map = {
 }
 
 
-class NapXMLRPC():
+class NapXMLRPC:
     stop = None
 
     def __init__(self, port = 1337):

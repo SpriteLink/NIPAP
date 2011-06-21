@@ -1,5 +1,8 @@
 import logging
-import json
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
