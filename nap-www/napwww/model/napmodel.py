@@ -392,7 +392,10 @@ class Prefix(NapModel):
     
         # Old object, edit
         else:
+            # remove keys which we are not allowed to edit
             del(data['schema'])
+            del(data['type'])
+
             self._xmlrpc.connection.edit_prefix({'id': self.schema.id}, {'id': self.id}, data)
 
 

@@ -10,7 +10,7 @@
 
 {% block content %}
 
-<h2>Edit prefix {{ c.prefix.prefix }}</h2>
+<h2>Edit {{ c.prefix.type }} {{ c.prefix.prefix }}</h2>
 
 <!--
 
@@ -34,14 +34,6 @@
         <td>Node</td>
         <td> <input type="text" name="node" value="{{ c.prefix.node|default("", True) }}"> </td>
 		<td class="help-text">Hostname of the node where the prefix is in use.</td>
-    </tr>
-    <tr>
-        <td>Type</td>
-        <td>
-            {{ h.select("type", c.prefix.type, [ 'assignment', 'host', 'reservation' ]) }}
-		</td>
-		<!-- TODO: write better explanation -->
-		<td class="help-text">Type of prefix.</td>
     </tr>
     <tr>
         <td>Country</td>
