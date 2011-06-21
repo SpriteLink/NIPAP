@@ -183,9 +183,9 @@ DECLARE
 	r RECORD;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
-		PERFORM calc_indent(OLD.prefix);
+		PERFORM calc_indent(OLD.schema, OLD.prefix);
 	ELSE
-		PERFORM calc_indent(NEW.prefix);
+		PERFORM calc_indent(NEW.schema, NEW.prefix);
 	END IF;
 	RETURN NEW;
 END;
