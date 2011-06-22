@@ -1,11 +1,9 @@
 #!/usr/bin/python
 
-# speedtest of find_free_prefix()
-
-import time
-
-import sys
 import logging
+import re
+import sys
+import time
 
 sys.path.append('../napd/')
 logger = logging.getLogger()
@@ -45,16 +43,39 @@ class bonk:
     def prefix_insert(self, argp):
         """ Insert a /16 into the DB
         """
-        t0 = time.time()
-        for i in xrange(0, 255):
-            t2 = time.time()
-            for j in xrange(0, 255):
-                prefix = argp + str(i) + "." + str(j)
-                self.n.add_prefix({'name': 'test-schema' }, { 'authoritative_source': 'nap', 'prefix': prefix, 'description': 'test' })
-            t3 = time.time()
-            print i, (t3-t2)/256
-        t1 = time.time()
-        print "One /16 inserted in:", t1-t0
+        arg_prefix = argp.split("/")[0]
+        arg_pl = argp.split("/")[1]
+        if self.n._is_ipv4(arg_prefix):
+            m = re.match("([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)", arg_prefix)
+            os1 = int(m.group(1))
+            os2 = int(m.group(2))
+            os3 = int(m.group(3))
+            os4 = int(m.group(4))
+            count = 2**(32-int(arg_pl))
+            i = 0
+            t0 = time.time()
+            try:
+                for o1 in xrange(os1, 255):
+                    for o2 in xrange(os2, 255):
+                        for o3 in xrange(os3, 255):
+                            t2 = time.time()
+                            for o4 in xrange(os4, 255):
+                                prefix = "%s.%s.%s.%s" % (o1, o2, o3, o4)
+                                self.n.add_prefix({'name': 'test-schema' }, { 'authoritative_source': 'nap', 'prefix': prefix, 'description': 'test' })
+                                i += 1
+                                if i >= count:
+                                    raise StopIteration()
+                            t3 = time.time()
+                            print o3, (t3-t2)/256
+            except StopIteration:
+                pass
+            t1 = time.time()
+            print count, "prefixes added in:", t1-t0
+
+
+        elif self.n._is_ipv6(argp):
+            print >> sys.stderr, "IPv6 is currently unsupported"
+
 
 
 
@@ -96,12 +117,15 @@ class bonk:
 if __name__ == '__main__':
     import optparse
     parser = optparse.OptionParser()
-    parser.add_option('--prefix-insert', help='insert prefixes!')
+    parser.add_option('--prefix-insert', metavar = 'PREFIX', help='insert prefixes!')
     b = bonk()
 
     options, args = parser.parse_args()
 
     if options.prefix_insert is not None:
+        if not b.n._get_afi(options.prefix_insert):
+            print >> sys.stderr, "Please enter a valid prefix"
+            sys.exit(1)
         b.prefix_insert(options.prefix_insert)
 
 
