@@ -72,7 +72,6 @@ CREATE TABLE ip_net_plan (
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
 
-COMMENT ON COLUMN ip_net_plan.family IS 'Address family, either ''4'' for IPv4 or ''6'' for IPv6';
 COMMENT ON COLUMN ip_net_plan.schema IS 'Address-schema';
 COMMENT ON COLUMN ip_net_plan.prefix IS '"true" IP prefix, with hosts registered as /32';
 COMMENT ON COLUMN ip_net_plan.display_prefix IS 'IP prefix with hosts having their covering assignments prefix-length';
@@ -88,7 +87,10 @@ COMMENT ON COLUMN ip_net_plan.authoritative_source IS 'The authoritative source 
 COMMENT ON COLUMN ip_net_plan.alarm_priority IS 'Priority of alarms sent for this prefix to NetWatch.';
 
 CREATE UNIQUE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, prefix);
+CREATE INDEX ip_net_plan__prefix__ip4r_index ON ip_net_plan USING gist (ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL::cidr END));
+CREATE INDEX ip_net_plan__schema__index ON ip_net_plan (schema);
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
+CREATE INDEX ip_net_plan__family__index ON ip_net_plan (family(prefix));
 
 
 CREATE OR REPLACE FUNCTION tf_ip_net_prefix_iu_before() RETURNS trigger AS $_$
@@ -98,15 +100,16 @@ DECLARE
 	i_max_pref_len integer;
 BEGIN
 
-	NEW.family = family(NEW.prefix);
-	IF NEW.family = 4 THEN
+	IF family(NEW.prefix) = 4 THEN
 		i_max_pref_len := 32;
-	ELSIF NEW.family = 6 THEN
+		-- contains the parent prefix
+		SELECT * INTO parent FROM ip_net_plan WHERE schema = NEW.schema AND family(prefix) = 4 AND ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL::cidr END) >> ip4r(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
+	ELSIF family(NEW.prefix) = 6 THEN
 		i_max_pref_len := 128;
+		-- contains the parent prefix
+		SELECT * INTO parent FROM ip_net_plan WHERE schema = NEW.schema AND family(prefix) = 6 AND prefix >> NEW.prefix ORDER BY masklen(prefix) DESC LIMIT 1;
 	END IF;
 
-	-- contains the parent prefix
-	SELECT * INTO parent FROM ip_net_plan WHERE prefix >> NEW.prefix ORDER BY masklen(prefix) DESC LIMIT 1;
 
 	-- check that type is correct on insert
 	IF TG_OP = 'INSERT' THEN
