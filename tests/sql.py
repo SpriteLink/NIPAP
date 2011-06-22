@@ -11,9 +11,9 @@ class NapSql(unittest.TestCase):
     nap = nap.Nap()
 
     def clean_up(self):
-        self.nap._execute("DELETE FROM ip_net_plan")
-        self.nap._execute("DELETE FROM ip_net_pool")
-        self.nap._execute("DELETE FROM ip_net_schema")
+        self.nap._execute("TRUNCATE ip_net_plan CASCADE")
+        self.nap._execute("TRUNCATE ip_net_pool CASCADE")
+        self.nap._execute("TRUNCATE ip_net_schema CASCADE")
 
 
 
@@ -68,15 +68,26 @@ class NapSql(unittest.TestCase):
         self.assertRaises(nap.NapValueError, self._inspre, '1.3.3.2/31', 'host')    # do not allow /31 as type 'host'
         self.assertRaises(nap.NapValueError, self._inspre, '1.3.3.3/32', 'assignment') # Able to create assignment within assignment - we should not
         self.assertRaises(nap.NapValueError, self._delpre, '1.3.3.0/27') # Able to delete assignment containing hosts - we should not
+        self.assertRaises(nap.NapValueError, self._updpre, '1.3.3.0/24', 'assignment')
 
 
 
     def _inspre(self, prefix, prefix_type):
         """ Insert a prefix
 
-            Return true on success, false otherwise
+            Return true on success, exception otherwise
         """
         self.nap._execute("INSERT INTO ip_net_plan (authoritative_source, schema, prefix, type) VALUES ('naptest', %(schema)s, %(prefix)s, %(prefix_type)s)", { 'schema': self.schema_id, 'prefix': prefix, 'prefix_type': prefix_type })
+        return True
+
+
+
+    def _updpre(self, prefix, prefix_type):
+        """ Update a prefix
+
+            Return true on success, exception otherwise
+        """
+        self.nap._execute("UPDATE ip_net_plan SET type=%(prefix_type)s WHERE schema = %(schema)s AND prefix = %(prefix)s", { 'schema': self.schema_id, 'prefix': prefix, 'prefix_type': prefix_type })
         return True
 
 
@@ -84,7 +95,7 @@ class NapSql(unittest.TestCase):
     def _delpre(self, prefix):
         """ Delete a prefix
 
-            Return true on success, false otherwise
+            Return true on success, exception otherwise
         """
         self.nap._execute("DELETE FROM ip_net_plan WHERE schema = %(schema)s AND prefix = %(prefix)s", { 'schema': self.schema_id, 'prefix': prefix })
         return True
