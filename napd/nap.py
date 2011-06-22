@@ -1,4 +1,101 @@
 # vim: et ts=4 :
+
+""" Main Nap module
+
+    This module contains a large part of the Nap logic, the rest of which is
+    implemented in the postgresql database behind.
+
+    Nap contains three types of objects: schemas, prefixes and pools.
+
+    Schema:
+    A schema can be thought of as a namespace for IP addresses, they make it
+    possible to keep track addresses that are used at mutiple locations. This
+    is relevant for for example customer VPNs, where multiple customers all
+    can be using the same RFC1918 adresses. By far, most operations will be
+    carried out in the global schema which contains addresses used on the
+    Internet. Most API functions require a schema to be passed as the first
+    argument.
+
+    A schema has the following attributes:
+    id -- ID number of the schema.
+    name -- A short name, such as 'global'.
+    description -- A longer description of what the schema is used for.
+
+    Schema functions:
+    `list_schema` -- Return a list of schemas.
+    `add_schema` -- Create a new schema.
+    `edit_schema` -- Edit a schema.
+    `remove_schema` -- Remove a schema.
+
+
+    Prefix:
+    A prefix object defines an address prefix. Prefixes can be of three
+    different types; reservation, assignment or host.
+    Reservation; a prefix which is reserved for future use.
+    Assignment; addresses assigned to a specific purpose.
+    Host; prefix of max length assigned to an end host.
+
+    A prefix has the following attributes:
+    id -- ID number of the prefix.
+    prefix -- The IP prefix itself.
+    display_prefix -- A more user-friendly version of the prefix.
+    family -- Address family (integer 4 or 6)
+    schema -- ID number of the schema the prefix belongs to.
+    description -- A short description of the prefix and its use.
+    comment -- A longer comment.
+    node -- FQDN of node the prefix is assigned to, if type is host.
+    pool -- ID of pool, if the prefix belongs to a pool.
+    type -- Prefix type.
+    indent -- Depth in prefix tree. Calculated by Nap.
+    country -- Country where the prefix resides (two-letter country code).
+    span_order -- SPAN order number (integer).
+    authoritative_source -- String identifying which system added the prefix.
+    alarm_priority -- Used by netwatch.
+
+    Prefix functions:
+    `list_prefix` -- Return a list of prefixes.
+    `add_prefix` -- Add a prefix. The prefix itself can be selected by Nap.
+    `edit_prefix` -- Edit a prefix.
+    `remove_prefix` -- Remove a prefix.
+    `search_prefix` -- Search prefixes from a specifically formatted dict.
+    `smart_search_prefix` -- Search prefixes from arbitarly formatted string.
+
+    Pool:
+    Reserved prefixes can be gathered in a pool which then can be used when
+    adding prefixes. The `add_prefix` can for example be asked to return a
+    prefix from the pool CORE-LOOPBACKS. Then all the prefix member of this
+    pool will be examined for a suitable prefix with the default length
+    specified in the pool if nothing else is given.
+
+    A pool has the following attributes:
+    id -- ID number of the pool.
+    name -- A short name.
+    description -- A longer description of the pool.
+    schema -- ID number of the schema is it associated with.
+    default_type -- Default prefix type (see prefix types above.
+    ipv4_default_prefix_length -- Default prefix length of IPv4 prefixes.
+    ipv6_default_prefix_length -- Default prefix length of IPv6 prefixes.
+
+    Pool functions:
+    `list_pool` -- Return a list of pools.
+    `add_pool` -- Add a pool.
+    `edit_pool` -- Edit a pool.
+    `remove_pool` -- Remove a pool.
+
+
+    The 'spec':
+    Central to use of the Nap API is the spec -- the spcifier. It is used by
+    many functions to in a more dynamic way specify what element(s) you want
+    to select. Mainly it came to be due to the use of two attributes which can
+    be thought of as primary keys for an object, such as a pool's id and name
+    attribute. They are however implemented so that you can use more or less
+    any attribute in the spec, to be able to for example get all prefixes of
+    family 6 in with type reservation.
+
+    The spec is a dict of arbitary size formatted as
+    { 'family': 6, 'type': 'reservation' }
+
+"""
 import logging
 import psycopg2
 import psycopg2.extras
@@ -379,6 +476,7 @@ class Nap:
                 schema_attr, attributes for a schema
 
             Add a schema based on the values stored in the inputted attr dict.
+            Returns the ID of the added schema.
         """
 
         self._logger.debug("add_schema called; attr: %s" % str(attr))
@@ -399,8 +497,7 @@ class Nap:
         """ Remove a schema.
 
             spec [schema_spec]
-                a schema specification, please see documentation for
-                _expand_schema_spec for details
+                a schema specification
 
             Remove a schema matching the spec parameter.
         """
@@ -415,7 +512,12 @@ class Nap:
 
 
     def list_schema(self, spec=None):
-        """ List schemas.
+        """ Return a list of schemas matching 'spec'.
+
+            spec [schema_spec]
+                A schema specification. If omitted, all schemas are returned.
+
+            Returns a list of dicts.
         """
 
         self._logger.debug("list_schema called; spec: %s" % str(spec))
@@ -458,7 +560,12 @@ class Nap:
 
 
     def edit_schema(self, spec, attr):
-        """ Edit a schema.
+        """ Updata schema matching 'spec' with attributes 'attr'.
+
+            spec [schema_spec]
+                A schema specification.
+            attr [schema_attr]
+                A dict specifying fields to be updated and their new values.
         """
 
         self._logger.debug("edit_schema called; spec: %s  attr: %s" %
@@ -518,8 +625,13 @@ class Nap:
     def add_pool(self, schema_spec, attr):
         """ Add a pool.
 
-            schema_spec specifies which schema the pool should belong
-            to, attr contains the pool's attributes.
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+
+            attr [pool_attr]
+                A dict containing the attributes the new pool should have.
+
+            Returns ID of the added pool.
         """
 
         self._logger.debug("add_pool called; spec: %s" % str(attr))
@@ -542,6 +654,11 @@ class Nap:
 
     def remove_pool(self, schema_spec, spec):
         """ Remove a pool.
+
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+            spec [pool_spec]
+                Specifies what pool(s) to remove.
         """
 
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
@@ -557,7 +674,14 @@ class Nap:
 
 
     def list_pool(self, schema_spec, spec = {}):
-        """ List pools.
+        """ Return a list of pools.
+
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+            spec [pool_spec]
+                Specifies what pool(s) to list. Of omitted, all will be listed.
+
+            Returns a list of dicts.
         """
 
         self._logger.debug("list_pool called; spec: %s" % str(spec))
@@ -594,7 +718,14 @@ class Nap:
 
 
     def edit_pool(self, schema_spec, spec, attr):
-        """ Edit pool.
+        """ Update pool given by 'spec' with attributes 'attr'.
+
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+            spec [pool_spec]
+                Specifies what pool to edit.
+            attr [pool_attr]
+                Attributes to update and their new values.
         """
 
         self._logger.debug("edit_pool called; spec: %s attr: %s" %
@@ -729,7 +860,38 @@ class Nap:
 
 
     def add_prefix(self, schema_spec, attr, args = {}):
-        """ Add a prefix.
+        """ Add a prefix and return its ID.
+
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+            attr [prefix_attr]
+                Prefix attributes.
+            args [add_prefix_args]
+                Arguments.
+
+            Returns ID of the added prefix.
+
+            Prefixes can be added in three ways; manually, from a pool or
+            from a prefix.
+
+            Manually:
+            All prefix data, including the prefix itself is specified in the
+            'attr' argument. The 'args'-argument shall be omitted.
+
+            From a pool:
+            Most prefixes are expected to be automatically assigned from a pool.
+            In this case, the 'prefix' key is omitted from the 'attr' argument.
+            Also the 'type' key can be omitted and the prefix type will then be
+            set to the pools default prefix type. The `find_free_prefix`
+            function is used to find available prefixes for this allocation
+            method, see its documentation for a description of how the 'args'
+            argument should be formatted.
+
+            From a prefix:
+            A prefix can also be selected from another prefix. Also in this case
+            the 'prefix' key is omitted from the 'attr' argument. See the
+            documentation for the `find_free_prefix` for a description of how
+            the 'args'-argument is to be formatted.
         """
 
         self._logger.debug("add_prefix called; attr: %s; args: %s" % (str(attr), str(args)))
@@ -773,7 +935,16 @@ class Nap:
 
 
     def edit_prefix(self, schema_spec, spec, attr):
-        """ Edit prefix.
+        """ Update prefix matching 'spec' with attributes 'attr'.
+
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+            spec [prefix_spec]
+                Specifies the prefix to edit.
+            attr [prefix_attr]
+                Prefix attributes.
+
+            Note that a prefix's type or schema can not be changed.
         """
 
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
@@ -799,9 +970,51 @@ class Nap:
 
 
     def find_free_prefix(self, schema_spec, args):
-        """ Find a free prefix
+        """ Finds free prefixes in the sources given in 'args'.
 
-            Arguments:
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+            args [find_free_prefix_args]
+                Arguments to the find free prefix function.
+
+            Returns a list of dicts.
+
+            Prefixes can be found in two ways: from a pool of from a prefix.
+
+            From a pool:
+            The args argument is set to a dict with key 'from-pool' set to a
+            pool spec. This is the pool from which the prefix will be assigned.
+            Also the key 'family' needs to be set to the adress family (integer
+            4 or 6) of the requested prefix.  Optionally, also the key
+            'prefix_length' can be added to the 'attr'-argument, and will then
+            override the default prefix length.
+
+            Example:
+            attr = {
+                'from-pool': { 'name': 'CUSTOMER-' },
+                'family': 6,
+                'prefix_length': 64
+            }
+
+            From a prefix:
+            Instead of specifying a pool, a prefix which will be searched for
+            new prefixes can be specified. In 'args', the key 'from-prefix' is
+            set to the prefix you want to allocate from and the key
+            'prefix_length' is set to the wanted prefix length.
+
+            Example:
+            attr = {
+                'from-prefix': '192.0.2.0/24'
+                'prefix_length': 27
+            }
+
+            The key 'count' can also be set in the 'args' argument to specify
+            how many prefixes that should be returned. If omitted, the default
+            value is 1000.
+
+            The find_free_prefix function is also used internally by the
+            add_prefix function to find available prefixes from the given
+            sources.
         """
 
         # input sanity
@@ -907,7 +1120,18 @@ class Nap:
 
 
     def list_prefix(self, schema_spec, spec = None):
-        """ List prefixes
+        """ List prefixes matching the 'spec'.
+
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+            spec [prefix_spec]
+                Specifies prefixes to list. If omitted, all will be listed.
+
+            Returns a list of dicts.
+
+            This is a quite blunt tool for finding prefixes, mostly useful for
+            fetching data about a single prefix. For more capable alternatives,
+            see the `search_prefix` or `smart_search_prefix` functions.
         """
 
         self._logger.debug("list_prefix called; spec: %s" % str(spec))
@@ -938,7 +1162,12 @@ class Nap:
 
 
     def remove_prefix(self, schema_spec, spec):
-        """ Remove a prefix.
+        """ Remove prefix matching 'spec'.
+
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+            spec [prefix_spec]
+                Specifies prefixe to remove.
         """
 
         self._logger.debug("remove_prefix called; spec: %s" % str(spec))
@@ -951,7 +1180,72 @@ class Nap:
 
 
     def search_prefix(self, schema_spec, query):
-        """ Search for prefixes.
+        """ Search prefix list for prefixes matching 'query'.
+
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+            query [dict_to_sql]
+                How the search should be performed.
+
+            Returns a list of dicts.
+
+            The 'query' argument passed to this function is designed to be able
+            to specify how quite advanced search operations should be performed
+            in a generic format. It is internally expanded to a SQL
+            WHERE-clause.
+
+            The query is a dict with three elements, where one specifies the
+            operation to perform and the two other specifies its arguments. The
+            arguments can themselves be query dicts, to build more complex
+            queries.
+
+            'operator'
+            The 'operator' key specifies what operator should be used for the
+            comparison. Currently the following operators are supported:
+
+            'and' -- Logical AND
+            'or' -- Logical OR
+            'equals' -- Equality; =
+            'not_equals' -- Inequality; !=
+            'like' -- SQL LIKE
+            'regex_match' -- Regular expression match
+            'regex_not_match' -- Regular expression not match
+            'contains' -- IP prefix contains
+            'contains_equals' -- IP prefix contains or is equal to
+            'contained_within' -- IP prefix is contained within
+            'contained_within_equals' -- IP prefix is contained within or equals
+
+            'val1' and 'val2'
+            The 'val1' and 'val2' keys specifies the values which are subjected
+            to the comparison. 'val1' can be either any prefix attribute or an
+            entire query dict. 'val2' can be either the value you want to
+            compare the prefix attribute to, or an entire query dict.
+
+            Example 1 - List the prefixes which contains 192.0.2.0/24:
+            prefix contains 192.0.2.0/24
+            query = {
+                'operator': 'contains',
+                'val1': 'prefix',
+                'val2': '192.0.2.0/24'
+            }
+
+            Example 2 - search for all assignments in prefix 192.0.2.0/24:
+
+            (type == 'assignment') AND (prefix contained within '192.0.2.0/24')
+
+            query = {
+                'operator': 'and',
+                'val1': {
+                    'operator': 'equals',
+                    'val1': 'type',
+                    'val2': 'assignment'
+                },
+                'val2': {
+                    'operator': 'contained_within',
+                    'val1': 'prefix',
+                    'val2': '192.0.2.0/24'
+                }
+            }
         """
 
         # Add schema to query part list
@@ -989,9 +1283,25 @@ class Nap:
     def smart_search_prefix(self, schema_spec, query_str):
         """ Perform a smart search.
 
-            The smart search function tries extract a query from
-            a text string. This query is then passed to the search_prefix
-            function, which performs the search.
+            schema_spec [schema_spec]
+                Specifies what schema we are working within.
+            query_str [string]
+                Search string
+
+            Return a dict with two elements:
+            interpretation -- How the search keys were interpreted.
+            result -- The search result.
+
+            The interpretation is given as a list of dicts, each explaining how
+            a part of the search key was interpreted (ie. what prefix attribute
+            the operation was performed on).
+
+            The result is a list of dicts.
+
+            The smart search function tries extract a query from a text string.
+            This query is then passed to the `search_prefix` function, which
+            performs the search. If multiple search keys are detected, they are
+            combined with a logical AND.
         """
 
         self._logger.debug("Query string: %s" % query_str)
@@ -1049,21 +1359,21 @@ class Nap:
 
 
 class NapError(Exception):
-    """ General NAP errors
+    """ Nap base error class.
     """
     pass
 
 
 class NapInputError(NapError):
-    """ Something wrong with the input we received
+    """ Erroneous input.
 
-        A general case.
+        A general input error.
     """
     pass
 
 
 class NapMissingInputError(NapInputError):
-    """ Missing input
+    """ Missing input.
 
         Most input is passed in dicts, this could mean a missing key in a dict.
     """
@@ -1071,7 +1381,7 @@ class NapMissingInputError(NapInputError):
 
 
 class NapExtraneousInputError(NapInputError):
-    """ Extraneous input
+    """ Extraneous input.
 
         Most input is passed in dicts, this could mean an unknown key in a dict.
     """
@@ -1085,7 +1395,7 @@ class NapNoSuchOperatorError(NapInputError):
 
 
 class NapValueError(NapError):
-    """ Something wrong with a value we have
+    """ Something wrong with a value
 
         For example, trying to send an integer when an IP address is expected.
     """
