@@ -1,3 +1,5 @@
+#.PHONY: install
+
 DB_NAME=nap
 NAPD_USER=napd
 NAPD_PASS=dpan
