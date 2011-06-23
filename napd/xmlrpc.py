@@ -1,4 +1,11 @@
 # vim: et :
+""" XML-RPC glue class
+    ==================
+
+    This module contains a "glue class" used by Twisted to export the Nap API functions over XML-RPC.
+
+    For a detailed description of the API, see :doc:`nap`.
+"""
 from twisted.web import http, xmlrpc, server
 from twisted.internet import defer, protocol, reactor
 import logging
@@ -37,7 +44,7 @@ class NapXMLRPC:
 
 
 class NapProtocol(xmlrpc.XMLRPC):
-    """ Class to allow XML-RPC access to the lovely NAP system
+    """ Class to allow XML-RPC access to the lovely NAP system.
     """
 
     def __init__(self):

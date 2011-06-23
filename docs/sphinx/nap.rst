@@ -1,0 +1,2 @@
+.. automodule:: nap
+   :members:
