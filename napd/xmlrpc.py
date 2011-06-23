@@ -258,9 +258,9 @@ class NapProtocol(xmlrpc.XMLRPC):
     def xmlrpc_smart_search_prefix(self, schema_spec, query_string):
         """ Perform a smart search.
 
-            The smart search function tries extract a query from
-            a text string. This query is then passed to the search_prefix
-            function, which performs the search.
+            The smart search function tries to extract a query from a text
+            string. This query is then passed to the search_prefix function,
+            which performs the actual search.
         """
 
         try:
@@ -278,4 +278,5 @@ class NapProtocol(xmlrpc.XMLRPC):
             return self.nap.find_free_prefix(spec, schema_spec, wantd_length, num)
         except nap.NapError, e:
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+
 
