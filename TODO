@@ -41,3 +41,12 @@
  - Fix a confirmation before a schema is removed
 
  - Implement default type of prefix assigned from a pool
+
+ - Fetch prefixes via xhr when expanding a prefix
+
+ - Pool functions
+  - Add
+  - Edit
+  - Remove
+  - Assign network
+  - list

@@ -1,8 +1,20 @@
 {% extends "base.html" %}
 
+{% block head %}
+    <script>
+        $(function () {
+		    $(".schema_row").hover(
+				function() { $(this).addClass("row_hover"); },
+				function() { $(this).removeClass("row_hover"); }
+		    );
+        });
+    </script>
+{% endblock %}
+
 {% block content %}
 
-<table>
+<h1>Select schema</h1>
+<table style="border-spacing: 0px;">
     <tr>
         <td colspan="3" align="right"><a href="{{ h.url(controller="schema", action="add") }}">add</a></td>
     </tr>
@@ -10,9 +22,9 @@
         <th>Name</th><th>Description</th><th>&nbsp;</th>
     </tr>
 	{% for schema in c.schemas %}
-	<tr id="schema_row{{ schema.id }}">
-		<td style="padding: 10px;">{{ schema.name }}</td>
-		<td style="padding: 10px;">{{ schema.description }}</td>
+	<tr class="schema_row" id="schema_row{{ schema.id }}">
+		<td style="padding: 5px;"><a href="{{ h.url(controller='prefix', action='index', schema=schema.id) }}">{{ schema.name }}</a></td>
+		<td style="padding: 5px;">{{ schema.description }}</td>
 		<td>
             <a href="{{ h.url(controller="schema", action="edit", id=schema.id) }}">edit</a> | 
             <a href="{{ h.url(controller="schema", action="remove", id=schema.id) }}">del</a>
