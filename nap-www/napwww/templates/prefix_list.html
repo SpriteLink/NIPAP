@@ -16,8 +16,8 @@
 		var prefix_entry = $('#prefix_entry' + prefix.id);
 		prefix_entry.attr('class', 'prefix_entry');
 		prefix_entry.hover(
-			function() { prefix_entry.addClass("prefix_hover"); },
-			function() { prefix_entry.removeClass("prefix_hover"); }
+			function() { prefix_entry.addClass("row_hover"); },
+			function() { prefix_entry.removeClass("row_hover"); }
 		);
 
 		// add indent and prefix container
@@ -118,7 +118,7 @@
 			'search_opt_child': $('input[name="search_opt_child"]:checked').val()
 		}
 
-		$.getJSON("http://127.0.0.1:5000/xhr/smart_search_prefix", search_q, receivePrefixList);
+		$.getJSON("{{ h.url(controller='xhr', action='smart_search_prefix') }}", search_q, receivePrefixList);
 
 	}
 

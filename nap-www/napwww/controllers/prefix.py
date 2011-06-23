@@ -23,7 +23,7 @@ class PrefixController(BaseController):
             view = 'prefix'
 
         if 'schema' not in request.params:
-            redirect(url(controller = 'prefix', action = 'change_schema', view = view))
+            redirect(url(controller = 'schema', action = 'list'))
 
         redirect(url(controller = 'prefix', action = 'list', schema = request.params['schema'], view = view))
 
@@ -38,27 +38,14 @@ class PrefixController(BaseController):
             try:
                 c.schema = Schema.get(int(request.params['schema']))
             except NapNonExistentError, e:
-                redirect(url(controller = 'prefix', action = 'change_schema'))
+                redirect(url(controller = 'schema', action = 'list'))
         else:
-            redirect(url(controller = 'prefix', action = 'change_schema'))
+            redirect(url(controller = 'schema', action = 'list'))
 
         c.search_opt_parent = "all"
         c.search_opt_child = "none"
 
         return render('/prefix_list.html')
-
-
-
-    def change_schema(self):
-        """ Change current schema.
-        """
-
-        if 'schema' in request.params:
-            c.schema = Schema.get(int(request.params['schema']))
-
-        c.schema_list = Schema.list()
-
-        return render('/change_schema.html')
 
 
 
@@ -70,7 +57,7 @@ class PrefixController(BaseController):
         try:
             c.schema = Schema.get(int(request.params['schema']))
         except (KeyError, NapNonExistentError), e:
-            redirect(url(controller='prefix', action='change_schema'))
+            redirect(url(controller = 'schema', action = 'list'))
 
         # pass prefix to template - if we have any
         if 'prefix' in request.params:
@@ -90,7 +77,7 @@ class PrefixController(BaseController):
         try:
             c.schema = Schema.get(int(request.params['schema']))
         except (KeyError, NapNonExistentError), e:
-            redirect(url(controller='prefix', action='change_schema'))
+            redirect(url(controller = 'schema', action = 'list'))
 
         # find prefix
         c.prefix = Prefix.get(c.schema, int(id))

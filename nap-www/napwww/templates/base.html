@@ -21,13 +21,12 @@
 			</div>
 			<div class="menu_entry">
             {% if c['schema'] is defined %}
-				<a href="{{ h.url(controller='prefix', action='change_schema', schema=c.schema.id) }}">change</a> | 
-                <a href="{{ h.url(controller='schema', action='list', schema=c.schema.id) }}">edit schemas</a> |
-                <a href="{{ h.url(controller='prefix', action='list', schema=c.schema.id) }}">prefix list</a> |
-                <a href="{{ h.url(controller='prefix', action='add', schema=c.schema.id) }}">add prefix</a>
+				<a href="{{ h.url(controller = 'schema', action = 'list', schema = c.schema.id) }}">schema list</a> | 
+                <a href="{{ h.url(controller = 'prefix', action = 'list', schema = c.schema.id) }}">prefix list</a> |
+                <a href="{{ h.url(controller = 'pool', action = 'list', schema = c.schema.id) }}">pool list</a> |
+                <a href="{{ h.url(controller = 'prefix', action = 'add', schema = c.schema.id) }}">add prefix</a>
             {% else %}
-				<a href="{{ h.url(controller='prefix', action='change_schema') }}">change</a> | 
-                <a href="{{ h.url(controller='schema', action='list') }}">edit schemas</a>
+				<a href="{{ h.url(controller = 'schema', action = 'list') }}">list schemas</a>
             {% endif %}
 			</div>
 		</div>
