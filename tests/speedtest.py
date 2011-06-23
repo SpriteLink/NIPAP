@@ -40,8 +40,8 @@ class bonk:
 
 
 
-    def prefix_insert(self, argp):
-        """ Insert a /16 into the DB
+    def fill_prefix(self, argp):
+        """ Fill the specified prefix with hosts (/32s or /128s for IPv[46])
         """
         arg_prefix = argp.split("/")[0]
         arg_pl = argp.split("/")[1]
@@ -78,9 +78,11 @@ class bonk:
 
 
 
+    def prefix_insert(self, argp):
+        pass
+
 
     def test1(self):
-
         t0 = time.time()
         res = self.n.find_free_prefix({ 'schema_name': 'test-schema', 'from-prefix': ['1.0.0.0/8'] }, 32, 1)
         t1 = time.time()
@@ -117,15 +119,15 @@ class bonk:
 if __name__ == '__main__':
     import optparse
     parser = optparse.OptionParser()
-    parser.add_option('--prefix-insert', metavar = 'PREFIX', help='insert prefixes!')
+    parser.add_option('--fill-prefix', metavar = 'PREFIX', help='fill PREFIX with hosts')
     b = bonk()
 
     options, args = parser.parse_args()
 
-    if options.prefix_insert is not None:
-        if not b.n._get_afi(options.prefix_insert):
+    if options.fill_prefix is not None:
+        if not b.n._get_afi(options.fill_prefix):
             print >> sys.stderr, "Please enter a valid prefix"
             sys.exit(1)
-        b.prefix_insert(options.prefix_insert)
+        b.fill_prefix(options.fill_prefix)
 
 
