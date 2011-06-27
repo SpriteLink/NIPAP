@@ -165,7 +165,6 @@ class Pool(NapModel):
 
         data = {
             'name': self.name,
-            'schema': self.schema.id,
             'description': self.description,
             'default_type': self.default_type,
             'ipv4_default_prefix_length': self.ipv4_default_prefix_length,
@@ -174,11 +173,12 @@ class Pool(NapModel):
 
         if self.id is None:
             # New object, create
-            self.id = self._xmlrpc.connection.add_pool(data)
+            data['schema'] = self.schema.id,
+            self.id = self._xmlrpc.connection.add_pool({'id': self.schema.id}, data)
 
         else:
             # Old object, edit
-            self._xmlrpc.connection.edit_pool({'id': self.id}, data)
+            self._xmlrpc.connection.edit_pool({'id': self.schema.id}, {'id': self.id}, data)
 
         _cache['Pool'][self.id] = self
 

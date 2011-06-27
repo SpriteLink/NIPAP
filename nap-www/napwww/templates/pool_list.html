@@ -16,7 +16,7 @@
 
 <table style="border-spacing: 0px;">
     <tr>
-        <td colspan="5" align="right"><a href="{{ h.url(controller="pool", action="add") }}">add</a></td>
+        <td colspan="5" align="right"><a href="{{ h.url(controller="pool", action="add", schema=c.schema.id) }}">add</a></td>
     </tr>
     <tr>
         <th>Name</th><th>Description</th><th>Default type</th><th>Def. pref. length (4/6)</th>
@@ -28,8 +28,8 @@
 		<td style="padding: 5px;">{{ pool.default_type }}</td>
 		<td style="padding: 5px;">{{ pool.ipv4_default_prefix_length }} / {{ pool.ipv6_default_prefix_length }}</td>
         <td>
-            <a href="{{ h.url(controller = 'pool', action = 'edit', id = pool.id) }}">edit</a> | 
-            <a href="{{ h.url(controller = 'pool', action = 'remove', id = pool.id) }}">del</a>
+            <a href="{{ h.url(controller = 'pool', action = 'edit', id = pool.id, schema = c.schema.id) }}">edit</a> | 
+            <a href="{{ h.url(controller = 'pool', action = 'remove', id = pool.id, schema = c.schema.id) }}">del</a>
         </td>
 	</tr>
 	{% endfor %}

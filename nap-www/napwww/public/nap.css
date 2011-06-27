@@ -141,3 +141,14 @@ html, body {
 	padding-left: 15px;
 	font-size: 10px;
 }
+
+.prefix_select_container {
+    width: 900px;
+    height: 550px;
+    z-index: 10;
+    background-color: gray;
+	position: absolute;
+	top: 20;
+	left: 20;
+	visibility: hidden;
+}

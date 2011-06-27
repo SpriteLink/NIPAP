@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block head %}
+
+   <script>
+
+    var schema = {{ c.schema.id }};
+    var indent_head = Array();
+
+	function showPrefix(prefix, parent_container) {
+
+		// add main prefix container
+		parent_container.append('<div id="prefix_entry' + prefix.id + '">');
+		var prefix_entry = $('#prefix_entry' + prefix.id);
+		prefix_entry.attr('class', 'prefix_entry');
+		prefix_entry.hover(
+			function() { prefix_entry.addClass("row_hover"); },
+			function() { prefix_entry.removeClass("row_hover"); }
+		);
+
+		// add indent and prefix container
+		prefix_entry.append('<div id="prefix_ind_pref' + prefix.id + '">');
+		var prefix_ind_pref = $('#prefix_ind_pref' + prefix.id);
+		prefix_ind_pref.addClass('prefix_ind_pref');
+
+		// add indent
+		prefix_ind_pref.append('<div id="prefix_indent' + prefix.id + '">');
+		var prefix_indent = $('#prefix_indent' + prefix.id);
+		prefix_indent.addClass("prefix_indent");
+		prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="collapse(' + prefix.id + ')">&nbsp;-&nbsp;</span>');
+		prefix_indent.width(prefix_indent.width() + 30 * prefix.indent);
+
+		// add prefix
+		prefix_ind_pref.append('<div id="prefix_prefix' + prefix.id + '">');
+		var prefix_prefix = $('#prefix_prefix' + prefix.id);
+		prefix_prefix.addClass("prefix_prefix");
+		prefix_prefix.html('<a href="#" onClick="selectPrefix(' + prefix.id  ')">' + prefix.prefix + '</a>');
+
+		// Add prefix type
+		prefix_entry.append('<div id="prefix_type' + prefix.id + '">');
+		var prefix_type = $('#prefix_type' + prefix.id);
+		prefix_type.addClass("prefix_type");
+		prefix_type.html(prefix.type);
+
+		// Add prefix description
+		prefix_entry.append('<div id="prefix_description' + prefix.id + '">'); 
+		var prefix_description = $('#prefix_description' + prefix.id);
+		prefix_description.addClass("prefix_description");
+		prefix_description.html(prefix.description);
+
+	}
+
+
+    /*
+     * Is run when a prefix is selected in the list.
+     */
+    function selectPrefix(prefix_id) {
+
+        // set prefix's pool attribute
+        $.getJSON({{ h.url(controller = 'xhr', ) }})
+
+        // display prefix in list
+    
+    }
+
+    /*
+     * Run when prefix has been added to pool
+     */
+    function prefixAdded(prefix) {
+
+    }
+
+	/*
+	 * Callback function called when prefixes are received.
+	 * Plots prefixes and adds them to list.
+	 */
+	function receivePrefixList(pref_list) {
+
+		/*
+		 * Interpretation list
+		 */
+
+		var intp_cont = $("#search_interpret_container");
+		intp_cont.empty();
+		for (key in pref_list.interpretation) {
+
+			var interp = pref_list.interpretation[key];
+			intp_cont.append('<div class="search_interpretation" id="intp' + key + '">');
+			$('#intp' + key).html('<b>' + interp.string + '</b> interpreted as ' + interp.interpretation);
+
+		}
+
+		/*
+		 * Prefix list
+		 */
+
+		$('#prefix_list').empty();
+		indent_head[0] = $('#prefix_list');
+
+		// add prefixes
+		for (key in pref_list.result) {
+
+			var cur_prefix = pref_list.result[key];
+
+			// add prefixes to list - first a special case for the first prefix
+			if (key == 0) {
+				showPrefix(cur_prefix, indent_head[0]);
+			} else {
+				
+				// indent increased - create new collapse group
+				var prev_prefix = pref_list.result[key - 1];
+				if (cur_prefix.indent > prev_prefix.indent) {
+					indent_head[prev_prefix.indent].append('<div id="collapse' + prev_prefix.id + '">');
+					indent_head[cur_prefix.indent] = $('#collapse' + prev_prefix.id);
+				}
+
+				showPrefix(cur_prefix, indent_head[cur_prefix.indent]);
+
+			}
+		}
+
+	}
+
+	/*
+	 * Perform a search operation
+	 */
+	function performSearch() {
+
+        console.log("Searching..");
+
+		var search_q = {
+			'query_string': $('#query_string').val(),
+			'schema': schema,
+			'search_opt_parent': $('input[name="search_opt_parent"]:checked').val(),
+			'search_opt_child': $('input[name="search_opt_child"]:checked').val()
+		}
+
+		$.getJSON("{{ h.url(controller='xhr', action='smart_search_prefix') }}", search_q, receivePrefixList);
+
+	}
+
+	$(function () {
+
+		// register events
+		$("form").submit(function(e) {
+			performSearch();
+			e.preventDefault();
+		});
+		$("#query_string").keyup(performSearch);
+//		$('input[name="search_opt_parent"]').change(performSearch);
+//		$('input[name="search_opt_child"]').change(performSearch);
+
+		// set focus
+		$("#query_string").focus();
+
+	});
+    </script> 
+
+{% endblock %}
+{% block content %}
+
+<h2>{{ c.pool.name }}</h2>
+
+{% include 'pool_form.html' %}
+
+<table>
+	<tr>
+		<th>Prefix</th><th>Name</th>
+	</tr>
+	{% for prefix in c.prefix_list %}
+	<tr>
+		<td>{{ prefix.prefix }}</td><td>{{ prefix.name }}</td>
+	</tr>
+	{% endfor %}
+</table>
+
+<div class="prefix_select_container">
+    <form method="post">
+        <input type="text" id="query_string" name="query_string">
+        <input type="submit" value="Find">
+    </form>
+    <div id="search_interpret_container">
+    </div>
+    <div class="prefix_list" id="prefix_list">
+    </div>
+</div>
+
+{% endblock %}

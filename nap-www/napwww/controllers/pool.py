@@ -4,7 +4,7 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from napwww.lib.base import BaseController, render
-from napwww.model.napmodel import Schema, Pool
+from napwww.model.napmodel import Schema, Pool, Prefix
 
 log = logging.getLogger(__name__)
 
@@ -13,10 +13,12 @@ class PoolController(BaseController):
 
 
     def index(self):
-        # Return a rendered template
-        #return render('/pool.mako')
-        # or, return a string
-        return 'Hello World'
+
+        if 'schema' not in request.params:
+            redirect(url(controller = 'schema', action = 'list'))
+        schema = Schema.get(int(request.params['schema']))
+
+        redirect(url(controller = 'pool', action = 'list', schema = schema.id))
 
 
 
@@ -26,8 +28,8 @@ class PoolController(BaseController):
 
         if 'schema' not in request.params:
             redirect(url(controller = 'schema', action = 'list'))
-
         c.schema = Schema.get(int(request.params['schema']))
+
         c.pools = Pool.list(c.schema)
 
         return render('/pool_list.html')
@@ -38,4 +40,60 @@ class PoolController(BaseController):
         """ Add a pool.
         """
 
-        return "foo"
+        if 'schema' not in request.params:
+            redirect(url(controller = 'schema', action = 'list'))
+        c.schema = Schema.get(int(request.params['schema']))
+
+        # Adding to Nap
+        if request.method == 'POST':
+            p = Pool()
+            p.schema = c.schema
+            p.name = request.params['name']
+            p.description = request.params['description']
+            p.default_type = request.params['default_type']
+            p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+            p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+            p.save()
+            redirect(url(controller = 'pool', action = 'list', schema = c.schema.id))
+
+        return render("/pool_add.html")
+
+
+
+    def edit(self, id):
+        """ Edit a pool.
+        """
+
+        if 'schema' not in request.params:
+            redirect(url(controller = 'schema', action = 'list'))
+        c.schema = Schema.get(int(request.params['schema']))
+
+        c.pool = Pool.get(c.schema, int(id))
+        c.prefix_list = Prefix.list(c.schema, {'pool': c.pool.id})
+
+        # save changes to Nap
+        if request.method == 'POST':
+            c.pool.name = request.params['name']
+            c.pool.description = request.params['description']
+            c.pool.default_type = request.params['default_type']
+            c.pool.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+            c.pool.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+            c.pool.save()
+            redirect(url(controller = 'pool', action = 'list', schema = c.schema.id))
+
+        return render("/pool_edit.html")
+
+
+
+    def remove(self, id):
+        """ Remove pool.
+        """
+
+        if 'schema' not in request.params:
+            redirect(url(controller = 'schema', action = 'list'))
+        schema = Schema.get(int(request.params['schema']))
+
+        p = Pool.get(schema, int(id))
+        p.remove()
+        redirect(url(controller = 'pool', action = 'list', schema = schema.id))
+

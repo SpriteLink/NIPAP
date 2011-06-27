@@ -807,7 +807,7 @@ class Nap:
             raise NapMissingInputError('missing schema')
 
         allowed_keys = ['id', 'family', 'schema',
-            'type', 'pool_name', 'pool_id', 'prefix']
+            'type', 'pool_name', 'pool_id', 'prefix', 'pool']
         for key in spec.keys():
             if key not in allowed_keys:
                 raise NapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
@@ -1176,9 +1176,6 @@ class Nap:
 
         if type(spec) is dict:
 
-            #if len(spec) == 0:
-            #    raise NapInputError("empty prefix specification")
-
             spec['schema'] = self._get_schema(schema_spec)['id']
 
             where, params = self._expand_prefix_spec(spec)
@@ -1187,7 +1184,7 @@ class Nap:
             raise NapError("invalid prefix specification")
 
         sql = "SELECT * FROM ip_net_plan "
-        sql += "WHERE prefix <<= (SELECT prefix FROM ip_net_plan WHERE " + where + ") ORDER BY prefix"
+        sql += "WHERE " + where + " ORDER BY prefix"
 
         self._execute(sql, params)
 
