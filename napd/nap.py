@@ -3,8 +3,8 @@
 """ Nap API
     ===============
 
-    This module contains a the part of the Nap logic which is not implemented in
-    the postgresql database behind.
+    This module contains the Nap class which provides most of the logic in Nap
+    apart from that contained within the PostgreSQL database.
 
     Nap contains three types of objects: schemas, prefixes and pools.
 
@@ -12,12 +12,12 @@
     Schema
     ------
     A schema can be thought of as a namespace for IP addresses, they make it
-    possible to keep track addresses that are used at mutiple locations. This
-    is relevant for for example customer VPNs, where multiple customers all
-    can be using the same RFC1918 adresses. By far, most operations will be
-    carried out in the global schema which contains addresses used on the
-    Internet. Most API functions require a schema to be passed as the first
-    argument.
+    possible to keep track of addresses that are used simultaneously in multiple
+    parallell routing tables / VRFs. A typical example would be customer VPNs,
+    where multiple customers are using the same RFC1918 addresses.  By far, most
+    operations will be carried out in the 'global' schema which contains addresses
+    used on the Internet. Most API functions require a schema to be passed as
+    the first argument.
 
     Schema attributes
     ^^^^^^^^^^^^^^^^^
@@ -35,11 +35,11 @@
 
     Prefix
     ------
-    A prefix object defines an address prefix. Prefixes can be of three
+    A prefix object defines an address prefix. Prefixes can be one of three
     different types; reservation, assignment or host.
     Reservation; a prefix which is reserved for future use.
     Assignment; addresses assigned to a specific purpose.
-    Host; prefix of max length assigned to an end host.
+    Host; prefix of max length within an assigment, assigned to an end host.
 
     Prefix attributes
     ^^^^^^^^^^^^^^^^^
@@ -73,9 +73,9 @@
     ----
     Reserved prefixes can be gathered in a pool which then can be used when
     adding prefixes. The `add_prefix` can for example be asked to return a
-    prefix from the pool CORE-LOOPBACKS. Then all the prefix member of this
-    pool will be examined for a suitable prefix with the default length
-    specified in the pool if nothing else is given.
+    prefix from the pool CORE-LOOPBACKS. Then all the prefix member of this pool
+    will be examined for a suitable prefix with the default length specified in
+    the pool if nothing else is given.
 
     Pool attributes
     ^^^^^^^^^^^^^^^
@@ -97,13 +97,13 @@
 
     The 'spec'
     ----------
-    Central to use of the Nap API is the spec -- the specifier. It is used by
-    many functions to in a more dynamic way specify what element(s) you want
+    Central to the use of the Nap API is the spec -- the specifier. It is used
+    by many functions to in a more dynamic way specify what element(s) you want
     to select. Mainly it came to be due to the use of two attributes which can
-    be thought of as primary keys for an object, such as a pool's :attr:`id` and :attr:`name`
-    attribute. They are however implemented so that you can use more or less
-    any attribute in the spec, to be able to for example get all prefixes of
-    family 6 in with type reservation.
+    be thought of as primary keys for an object, such as a pool's :attr:`id` and
+    :attr:`name` attribute. They are however implemented so that you can use
+    more or less any attribute in the spec, to be able to for example get all
+    prefixes of family 6 with type reservation.
 
     The spec is a dict formatted as::
 
@@ -111,7 +111,7 @@
             'id': 512
         }
 
-    But can also for some objects be more elabourate, as::
+    But can also be elaborated somehwat for certain objects, as::
 
         prefix_spec = { 
             'family': 6, 
@@ -150,15 +150,16 @@ _operation_map = {
 
 
 class Inet(object):
-    """ This works around a bug in psycopg2 version somewhere before 2.4.
-        The __init__ function in the original class is broken and so this is merely a copy with the bug fixed.
+    """ This works around a bug in psycopg2 version somewhere before 2.4.  The
+        __init__ function in the original class is broken and so this is merely
+        a copy with the bug fixed.
 
         Wrap a string to allow for correct SQL-quoting of inet values.
 
-        Note that this adapter does NOT check the passed value to make
-        sure it really is an inet-compatible address but DOES call adapt()
-        on it to make sure it is impossible to execute an SQL-injection
-        by passing an evil value to the initializer.
+        Note that this adapter does NOT check the passed value to make sure it
+        really is an inet-compatible address but DOES call adapt() on it to make
+        sure it is impossible to execute an SQL-injection by passing an evil
+        value to the initializer.
     """
     def __init__(self, addr):
         self.addr = addr
@@ -342,6 +343,7 @@ class Nap:
         except psycopg2.IntegrityError, e:
             self._con_pg.rollback()
 
+            # this is a duplicate key error
             if e.pgcode == "23505":
                 raise NapDuplicateError("Objects primary keys already exist")
 
