@@ -6,10 +6,16 @@
 Nils Address Planner
 ====================
 
-The Nap API documentation is generated from the server side Nap python module
-and therefore contains some irrelevant information regarding internal class
-structures. Don't let that scare you, instead focus on the methods of the Nap
-class which all are available over XML-RPC with the same arguments as listed.
+The majority of this documentation is generated from the Nap Python module
+where most of the server side logic is placed. A thin XML-RPC layer is wrapped
+around the Nap class to expose its function over an XML-RPC interface as well
+as translating internal Exceptions into XML-RPC errors codes. It is feasible to
+implement other wrapper layers should one need a different interface, though
+the XML-RPC interface should serve most well.
+
+Given that the documentation is automatically generated from this internal Nap
+class, there is some irrelevant information regarding class structures - just
+ignore that! :)
 
 Happy hacking!
 
