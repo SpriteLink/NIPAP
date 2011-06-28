@@ -8,7 +8,7 @@ Nils Address Planner
 
 The majority of this documentation is generated from the Nap Python module
 where most of the server side logic is placed. A thin XML-RPC layer is wrapped
-around the Nap class to expose its function over an XML-RPC interface as well
+around the Nap class to expose its functions over an XML-RPC interface as well
 as translating internal Exceptions into XML-RPC errors codes. It is feasible to
 implement other wrapper layers should one need a different interface, though
 the XML-RPC interface should serve most well.
@@ -24,8 +24,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   design
    nap
    xmlrpc
+   todo
 
 
 Indices and tables

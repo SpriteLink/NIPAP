@@ -1,52 +1,42 @@
+TODO
+====
 
-== CORE ==
+Core
+----
  - write performance test suite with output format to GraphViz - we want le
    graphs!
-
  - find_free_prefix() should support a start address from where it should start
    searching for new candidate prefixes. prolly useful for paginating output in
    a potential web gui
-
  - add test suite for the XML-RPC API
-
  - authentication in XML-RPC framework
-
  - authorization in XML-RPC framework
-
  - accounting in NAP
 
 
-== polish, chrome and shine ==
-
- - configuration for napd, save DB settings
-
- - generate random password for DB user on install and save in napd
+polish, chrome and shine
+------------------------
+ - configuration file for napd, save DB settings
+ - generate random password for DB user on make install and save in napd
    configuration file automatically
-
  - debian packaging
-
  - redhat packaging?
-
  - RIPE integration?
 
 
-== Web UI ==
-
+Web UI
+------
  - Show nice error messages when a query fails.
-
  - Removing prefixes
-
  - Add a cache timeout to the NapModel object cache
-
  - Fix a confirmation before a schema is removed
-
  - Implement default type of prefix assigned from a pool
-
  - Fetch prefixes via xhr when expanding a prefix
-
  - Pool functions
   - Add
   - Edit
   - Remove
   - Assign network
   - list
+
+.. todolist::
