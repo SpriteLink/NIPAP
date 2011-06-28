@@ -88,9 +88,12 @@ class PrefixController(BaseController):
             c.prefix.description = request.params['description']
             c.prefix.node = request.params['node']
             c.prefix.country = request.params['country']
-            c.prefix.span_order = int(request.params['span_order'])
             c.prefix.alarm_priority = request.params['alarm_priority']
             c.prefix.comment = request.params['comment']
+            if request.params['span_order'] == '':
+                c.prefix.span_order = None
+            else:
+                c.prefix.span_order = int(request.params['span_order'])
             c.prefix.save()
             redirect(url(controller='prefix', action='list', schema=c.schema.id))
 
