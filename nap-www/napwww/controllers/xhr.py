@@ -150,16 +150,18 @@ class XhrController(BaseController):
             p.alarm_priority = request.params['alarm_priority']
         p.authoritative_source = 'nap-www'
 
+        log.debug('request: %s' % str(request.params))
+
         # arguments
         args = {}
-        if 'from_prefix' in request.params:
-            args['from-prefix'] = request.params['from_prefix']
+        if 'from_prefix[]' in request.params:
+            args['from-prefix'] = request.params.getall('from_prefix[]')
         if 'from_pool' in request.params:
             args['from-pool'] = Pool.get(p.schema, int(request.params['from_pool']))
-            if 'family' in request.params:
-                args['family'] = int(request.params['family'])
+        if 'family' in request.params:
+            args['family'] = int(request.params['family'])
         if 'prefix_length' in request.params:
-            args['prefix_length'] = request.params['prefix_length']
+            args['prefix_length'] = int(request.params['prefix_length'])
 
         # manual allocation?
         if args == {}:

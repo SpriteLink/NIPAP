@@ -346,7 +346,7 @@ class Prefix(NapModel):
 
 
 
-    def save(self, args={}):
+    def save(self, args = {}):
         """ Save prefix to Nap.
         """
 
@@ -374,6 +374,8 @@ class Prefix(NapModel):
 
         # New object, create from scratch
         if self.id is None:
+
+            self._logger.error("save: args = %s" % str(args))
 
             # format args
             x_args = {}

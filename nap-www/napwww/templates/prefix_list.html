@@ -4,7 +4,6 @@
 
 <script>
 
-    var schema = {{ c.schema.id }};
     var prefix_list = Array();
     var indent_head = Array();
         
@@ -113,7 +112,7 @@
 
         var search_q = {
             'query_string': $('#query_string').val(),
-            'schema': schema,
+            'schema': {{ c.schema.id }},
             'search_opt_parent': $('input[name="search_opt_parent"]:checked').val(),
             'search_opt_child': $('input[name="search_opt_child"]:checked').val()
         }

@@ -6,7 +6,9 @@
 <script>
 
 var cur_opts = new Object();
-var alloc_method;
+var indent_head = new Array();
+var alloc_method = '';
+var prefix_list = new Object();
 
 /*
  * Enable from-prefix autocompleting search box.
@@ -17,11 +19,11 @@ function enableFromPoolSearch(data) {
 
     for (p in data) {
         pools.push({
-			'value': data[p].name,
-			'id': data[p].id,
-			'length_v4': data[p].ipv4_default_prefix_length,
-			'length_v6': data[p].ipv6_default_prefix_length
-			});
+            'value': data[p].name,
+            'id': data[p].id,
+            'length_v4': data[p].ipv4_default_prefix_length,
+            'length_v6': data[p].ipv6_default_prefix_length
+            });
     }
 
     $("#from-pool").autocomplete({
@@ -42,10 +44,10 @@ function selectPool(e, ui) {
     // display data form
     $("#prefix_data_container").css('display', 'block');
 
-	// set prefix length
-	changeFamily();
-	$('#length_info_row').css('display', 'table-row');
-	$('#length_edit_row').css('display', 'table-row');
+    // set prefix length
+    changeFamily();
+    $('#length_info_row').css('display', 'table-row');
+    $('#length_edit_row').css('display', 'table-row');
 
 }
 
@@ -55,35 +57,37 @@ function selectPool(e, ui) {
  */
 function showAllocContainer(e) {
 
-	// from-prefix
+    // from-prefix
     if (e.currentTarget.id == 'radio-from-prefix') {
 
-		alloc_method = 'from-prefix';
+        alloc_method = 'from-prefix';
 
-        $("#from-prefix_container").css('display', 'block');
-        $("#from-pool_container").css('display', 'none');
-        $("#prefix_data_container").css('display', 'none');
-		$("#prefix_row").css('display', 'none');
+        $("#from-prefix_container").show();
+        $("#from-pool_container").hide();
+        $("#prefix_data_container").hide();
+        $("#prefix_row").hide();
 
-	// from-pool
+    // from-pool
     } else if (e.currentTarget.id == 'radio-from-pool') {
 
-		alloc_method = 'from-pool';
+        alloc_method = 'from-pool';
 
-        $("#from-prefix_container").css('display', 'none');
-        $("#from-pool_container").css('display', 'block');
-        $("#prefix_data_container").css('display', 'none');
-		$("#prefix_row").css('display', 'none');
+        $("#from-prefix_container").hide();
+        $("#from-pool_container").show();
+        $("#prefix_data_container").hide();
+        $("#prefix_row").hide();
+        $('#prefix_length_prefix_container').hide();
 
-	// else - manual
+    // else - manual
     } else {
 
-		alloc_method = 'manual';
+        alloc_method = 'manual';
 
-        $("#from-prefix_container").css('display', 'none');
-        $("#from-pool_container").css('display', 'none');
-        $("#prefix_data_container").css('display', 'block');
-		$("#prefix_row").css('display', 'table-row');
+        $("#from-prefix_container").hide();
+        $("#from-pool_container").hide();
+        $("#prefix_data_container").show();
+        $("#prefix_row").css('display', 'table-row');
+        $('#prefix_length_prefix_container').hide();
 
     }
 
@@ -94,12 +98,12 @@ function showAllocContainer(e) {
  */
 function toggleLengthEdit(e) {
 
-	// view input field
-	if (e.currentTarget.id == 'edit_length_default_radio') {
-		$('#length_row').hide();
-	} else {
-		$('#length_row').show();
-	}
+    // view input field
+    if (e.currentTarget.id == 'edit_length_default_radio') {
+        $('#length_row').hide();
+    } else {
+        $('#length_row').show();
+    }
 
 }
 
@@ -108,21 +112,21 @@ function toggleLengthEdit(e) {
  */
 function changeFamily() {
 
-	// set prefix length in pool length input
-	if (alloc_method == 'from-pool') {
+    // set prefix length in pool length input
+    if (alloc_method == 'from-pool') {
 
-		$('input[name="prefix_length"]').val(cur_opts.pool.length_v4);
+        $('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v4);
 
-		if ($('input[name="family"]:checked').val() == '4') {
-			$('input[name="prefix_length"]').val(cur_opts.pool.length_v4);
-			$('#def_length_container').html("Pool's default IPv4 prefix-length is " + cur_opts.pool.length_v4 + ".");
-		} else {
-			$('input[name="prefix_length"]').val(cur_opts.pool.length_v6);
-			$('#def_length_container').html("Pool's default IPv6 prefix-length is " + cur_opts.pool.length_v6 + ".");
-		}
-	}
+        if ($('input[name="family"]:checked').val() == '4') {
+            $('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v4);
+            $('#def_length_container').html("Pool's default IPv4 prefix-length is " + cur_opts.pool.length_v4 + ".");
+        } else {
+            $('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v6);
+            $('#def_length_container').html("Pool's default IPv6 prefix-length is " + cur_opts.pool.length_v6 + ".");
+        }
+    }
 
-	// TODO: set prefix length in prefix input
+    // TODO: set prefix length in prefix input
 
 }
 
@@ -131,41 +135,40 @@ function changeFamily() {
  */
 function prefixFormSubmit(e) {
 
-	e.preventDefault();
+    e.preventDefault();
 
-	// create prefix data object
-	var prefix_data = {
-		'schema': {{ c.schema.id }},
-		'family': $('input[name="family"]:checked').val(),
-		'description': $('input[name="description"]').val(),
-		'comment': $('textarea[name="comment"]').val(),
-		'node': $('input[name="node"]').val(),
-		'type': $('select[name="type"] option:selected').val(),
-// TODO: add pool		'pool': $('input[name="pool"]'),
-		'country': $('input[name="country"]').val(),
-		'span_order': $('input[name="span_order"]').val(),
-		'alarm_priority': $('select[name="alarm_priority"] option:selected').val(),
-	};
+    // create prefix data object
+    var prefix_data = {
+        'schema': {{ c.schema.id }},
+        'description': $('input[name="description"]').val(),
+        'comment': $('textarea[name="comment"]').val(),
+        'node': $('input[name="node"]').val(),
+        'type': $('select[name="type"] option:selected').val(),
+// TODO: add pool        'pool': $('input[name="pool"]'),
+        'country': $('input[name="country"]').val(),
+        'span_order': $('input[name="span_order"]').val(),
+        'alarm_priority': $('select[name="alarm_priority"] option:selected').val(),
+    };
 
-	// different data due to different allocation methods
-	if (alloc_method == 'from-pool') {
+    // different data due to different allocation methods
+    if (alloc_method == 'from-pool') {
 
-		prefix_data.from_pool = cur_opts.pool.id;
-		prefix_data.prefix_length = $('input[name="length"]').val();
+        prefix_data.from_pool = cur_opts.pool.id;
+        prefix_data.prefix_length = $('input[name="prefix_length_pool"]').val();
+        prefix_data.family = $('input[name="family"]:checked').val();
 
-	} else if (alloc_method == 'from-prefix') {
+    } else if (alloc_method == 'from-prefix') {
 
-		// TODO: add prefix
-		// prefix_data.from_prefix = ...;
-		prefix_data.prefix_length = $('input[name="length"]').val();
+        prefix_data.from_prefix = cur_opts.from_prefix;
+        prefix_data.prefix_length = $('input[name="prefix_length_prefix"]').val();
 
-	} else {
+    } else {
 
-		prefix_data.prefix = $('input[name="prefix"]').val();
+        prefix_data.prefix = $('input[name="prefix"]').val();
 
-	}
+    }
 
-	$.getJSON('{{ h.url(controller="xhr", action="add_prefix")}}', prefix_data, prefixAdded);
+    $.getJSON('{{ h.url(controller="xhr", action="add_prefix")}}', prefix_data, prefixAdded);
 
 
 }
@@ -175,12 +178,12 @@ function prefixFormSubmit(e) {
  */
 function prefixAdded(data) {
 
-	if ('error' in data) {
-		displayError('warning', data.message);
-	} else {
-		$('#prefix_added').html(data.prefix);
-		$('#prefix_added_container').show();
-	}
+    if ('error' in data) {
+        displayError('warning', data.message);
+    } else {
+        $('#prefix_added').html(data.prefix);
+        $('#prefix_added_container').show();
+    }
 
 }
 
@@ -190,7 +193,7 @@ function prefixAdded(data) {
  */
 function displayError(level, msg) {
 
-	alert(level + ": " + msg);
+    alert(level + ": " + msg);
 
 }
 
@@ -200,7 +203,143 @@ function displayError(level, msg) {
  */
 function ajaxErrorHandler(e, jqXHR, ajaxSettings, thrownError) {
 
-	displayError('error', thrownError);
+    displayError('error', thrownError);
+
+}
+
+/*
+ * Displays a prefix in the prefix search result list.
+ */
+function showPrefix(prefix, parent_container) {
+
+    // add main prefix container
+    parent_container.append('<div id="prefix_entry' + prefix.id + '">');
+    var prefix_entry = $('#prefix_entry' + prefix.id);
+    prefix_entry.attr('class', 'prefix_entry');
+    prefix_entry.hover(
+        function() { prefix_entry.addClass("row_hover"); },
+        function() { prefix_entry.removeClass("row_hover"); }
+    );
+
+    // add indent and prefix container
+    prefix_entry.append('<div id="prefix_ind_pref' + prefix.id + '">');
+    var prefix_ind_pref = $('#prefix_ind_pref' + prefix.id);
+    prefix_ind_pref.addClass('prefix_ind_pref');
+
+    // add indent
+    prefix_ind_pref.append('<div id="prefix_indent' + prefix.id + '">');
+    var prefix_indent = $('#prefix_indent' + prefix.id);
+    prefix_indent.addClass("prefix_indent");
+    prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="collapse(' + prefix.id + ')">&nbsp;-&nbsp;</span>');
+    prefix_indent.width(prefix_indent.width() + 30 * prefix.indent);
+
+    // add prefix
+    prefix_ind_pref.append('<div id="prefix_prefix' + prefix.id + '">');
+    var prefix_prefix = $('#prefix_prefix' + prefix.id);
+    prefix_prefix.addClass("prefix_prefix");
+    prefix_prefix.html('<a href="javascript:void(0)" onClick="selectPrefix(' + prefix.id + '); return false;">' + prefix.prefix + '</a>');
+
+    // Add prefix type
+    prefix_entry.append('<div id="prefix_type' + prefix.id + '">');
+    var prefix_type = $('#prefix_type' + prefix.id);
+    prefix_type.addClass("prefix_type");
+    prefix_type.html(prefix.type);
+
+    // Add prefix description
+    prefix_entry.append('<div id="prefix_description' + prefix.id + '">'); 
+    var prefix_description = $('#prefix_description' + prefix.id);
+    prefix_description.addClass("prefix_description");
+    prefix_description.html(prefix.description);
+
+}
+
+
+/*
+ * Is run when a prefix is selected in the list.
+ */
+function selectPrefix(prefix_id) {
+
+    // set prefix's pool attribute in Nap
+    $('#prefix_data_container').show();
+    $('#prefix_length_prefix_container').show();
+    if ('from_prefix' in cur_opts) {
+        cur_str = $('#alloc_from_prefix').html();
+        $('#alloc_from_prefix').html(cur_str + ', ' + prefix_list[prefix_id].prefix);
+        cur_opts.from_prefix.push(prefix_list[prefix_id].prefix);
+    } else {
+        $('#alloc_from_prefix').html(prefix_list[prefix_id].prefix);
+        cur_opts.from_prefix = new Array(prefix_list[prefix_id].prefix);
+    }
+
+}
+
+
+/*
+ * Callback function called when prefixes are received.
+ * Plots prefixes and adds them to list.
+ */
+function receivePrefixList(pref_list) {
+
+    /*
+     * Interpretation list
+     */
+    var intp_cont = $("#search_interpret_container");
+    intp_cont.empty();
+    for (key in pref_list.interpretation) {
+
+        var interp = pref_list.interpretation[key];
+        intp_cont.append('<div class="search_interpretation" id="intp' + key + '">');
+        $('#intp' + key).html('<b>' + interp.string + '</b> interpreted as ' + interp.interpretation);
+
+    }
+
+
+    /*
+     * Prefix list
+     */
+    $('#prefix_list').empty();
+    indent_head[0] = $('#prefix_list');
+    prefix_list = new Object();
+
+    // add prefixes
+    for (key in pref_list.result) {
+
+        var cur_prefix = pref_list.result[key];
+        prefix_list[cur_prefix.id] = cur_prefix;
+
+        // add prefixes to list - first a special case for the first prefix
+        if (key == 0) {
+            showPrefix(cur_prefix, indent_head[0]);
+        } else {
+            
+            // indent increased - create new collapse group
+            var prev_prefix = pref_list.result[key - 1];
+            if (cur_prefix.indent > prev_prefix.indent) {
+                indent_head[prev_prefix.indent].append('<div id="collapse' + prev_prefix.id + '">');
+                indent_head[cur_prefix.indent] = $('#collapse' + prev_prefix.id);
+            }
+
+            showPrefix(cur_prefix, indent_head[cur_prefix.indent]);
+
+        }
+    }
+}
+
+/*
+ * Perform a search operation
+ */
+function performSearch() {
+
+    console.log("Searching..");
+
+    var search_q = {
+        'query_string': $('#query_string').val(),
+        'schema': {{ c.schema.id }},
+        'search_opt_parent': $('input[name="search_opt_parent"]:checked').val(),
+        'search_opt_child': $('input[name="search_opt_child"]:checked').val()
+    }
+
+    $.getJSON("{{ h.url(controller='xhr', action='smart_search_prefix') }}", search_q, receivePrefixList);
 
 }
 
@@ -208,17 +347,19 @@ $(function () {
 
     // fetch data for pool search box
     $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema_id': {{ c.schema.id }}}, enableFromPoolSearch);
-	$(document).ajaxError(ajaxErrorHandler);
+    $(document).ajaxError(ajaxErrorHandler);
 
     // Enable actions on radio buttons
     $('input[name="prefix_alloc_method"]').change(showAllocContainer);
-	$('input[name="edit_length"]').change(toggleLengthEdit);
+    $('input[name="edit_length"]').change(toggleLengthEdit);
 
-	// Enable action on the adress family select box
-	$('input[name="family"]').change(changeFamily);
+    // Enable action on the adress family select box
+    $('input[name="family"]').change(changeFamily);
 
-	// catch submit action
-	$('#prefix_data_form').submit(prefixFormSubmit);
+    // catch submit action
+    $('#prefix_data_form').submit(prefixFormSubmit);
+
+    $("#query_string").keyup(performSearch);
 
 
 });
@@ -233,162 +374,190 @@ $(function () {
 
 <!-- 
 
-	PREFIX ALLOCATION METHOD
+    PREFIX ALLOCATION METHOD
 
 -->
-
 <h3>Prefix allocation method</h3>
 <table>
-	<tr>
-		<td width="120" valign="top">
+    <tr>
+        <td width="120" valign="top">
             <input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool">
             <label for="radio-from-pool">From pool</label>
         </td>
-		<td>Get a prefix from a pre-defined prefix pool.</td>
-	</tr>
-	<tr>
-		<td valign="top">
+        <td>Get a prefix from a pre-defined prefix pool.</td>
+    </tr>
+    <tr>
+        <td valign="top">
             <input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix">
             <label for="radio-from-prefix">From prefix</label>
         </td>
-		<td>Get a prefix allocated from another prefix.</td>
-	</tr>
-	<tr>
-		<td valign="top">
+        <td>Get a prefix allocated from another prefix.</td>
+    </tr>
+    <tr>
+        <td valign="top">
             <input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual">
             <label for="radio-manual">Manual</label>
         </td>
-		<td>Specify all data manually</td>
-	</tr>
+        <td>Specify all data manually</td>
+    </tr>
 </table>
 </div>
 
 <!--
 
-	FROM-POOL
+    FROM-POOL
 
 -->
-
 <div style="padding: 15px; display: none;" id="from-pool_container">
     <table>
-		<tr>
-			<td>Family</td>
-			<td>
-				<label for="family_4_radio">IPv4</label><input type="radio" name="family" value="4" id="family_4_radio" checked>
-				<label for="family_6_radio">IPv6</label><input type="radio" name="family" value="6" id="family_6_radio">
-			</td>
-		</tr>
+        <tr>
+            <td>Family</td>
+            <td>
+                <label for="family_4_radio">IPv4</label><input type="radio" name="family" value="4" id="family_4_radio" checked>
+                <label for="family_6_radio">IPv6</label><input type="radio" name="family" value="6" id="family_6_radio">
+            </td>
+        </tr>
         <tr>
             <td><label for="from-pool">Pool</label></td>
-	        <td><input id="from-pool" type="text" name="from-pool"></td>
+            <td><input id="from-pool" type="text" name="from-pool"></td>
         </tr>
         <tr style="display: none;" id="length_info_row">
             <td style="padding-right: 20px;">Prefix-length</td>
             <td>
-				<span id="def_length_container"></span>
+                <span id="def_length_container"></span>
             </td>
         </tr>
-		<tr style="display: none;" id="length_edit_row">
+        <tr style="display: none;" id="length_edit_row">
             <td>&nbsp;</td>
-			<td>
-				<label for="edit_length_default_radio">Use default</label>
-				<input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
-				<label for="edit_length_override_radio">Override</label>
-				<input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
-			</td>
-		</tr>
-        <tr style="display: none;" id="length_row">
-			<td>&nbsp;</td>
             <td>
-				<input type="text" name="prefix_length">
+                <label for="edit_length_default_radio">Use default</label>
+                <input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
+                <label for="edit_length_override_radio">Override</label>
+                <input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
             </td>
-			<td>&nbsp;</td>
+        </tr>
+        <tr style="display: none;" id="length_row">
+            <td>&nbsp;</td>
+            <td>
+                <input type="text" name="prefix_length_pool">
+            </td>
+            <td>&nbsp;</td>
         </tr>
     </table>
 </div>
 
 <!--
 
-	FROM-PREFIX
+    FROM-PREFIX
 
 -->
 <div style="padding: 15px; display: none;" id="from-prefix_container">
     <h3>Choose prefix</h3>
-	<input type="text" name="from-prefix">
+    <center>
+        <form method="post">
+            <input type="text" id="query_string" name="query_string"  size="50" autocomplete="off">
+            <input type="submit" value="Search">
+        </form>
+    </center>
+    <table>
+        <tr>
+            <td width="40">&nbsp;</td>
+            <td class="opt_left">
+                Search interpretation
+            </td>
+            <td class="opt_right" id="search_interpret_container"> </td>
+        </tr>
+    </table>
+    <div class="prefix_list" id="prefix_list"></div>
+</div>
+
+<div id="prefix_length_prefix_container" style="display: none; padding: 15px;">
+    <table>
+        <tr>
+            <td>Allocating from</td>
+            <td><span id="alloc_from_prefix"></span></td>
+        </tr>
+        <tr id="length_info_row">
+            <td style="padding-right: 20px;">Prefix-length</td>
+            <td>
+                <input type="text" name="prefix_length_prefix">
+            </td>
+        </tr>
+    </table>
 </div>
 
 <!--
 
-	PREFIX DATA
+    PREFIX DATA
 
 -->
 <div id="prefix_data_container" style="padding: 15px; display: none;">
-<form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add", schema=c.schema.id) }}">
-<table>
-    <tr id="prefix_row">
-        <td>Prefix</td>
-        <td><input type="text" name="prefix" value="{{ c.prefix }}"></td>
-		<td class="help-text">192.0.2.16/28</td>
-    </tr>
-    <tr>
-        <td>Description</td>
-        <td><input type="text" name="description"></td>
-		<td class="help-text">A short text describing the prefix.</td>
-    </tr>
-    <tr>
-        <td>Node</td>
-        <td><input type="text" name="node"></td>
-		<td class="help-text">Hostname of the node where the prefix is in use.</td>
-    </tr>
-    <tr>
-        <td>Type</td>
-        <td>
-			<select name="type">
-				<option value="assignment" selected>Assignment
-				<option value="host">Host
-				<option value="reservation">Reservation
-			</select>
-		</td>
-		<!-- TODO: write better explanation -->
-		<td class="help-text">Type of prefix.</td>
-    </tr>
-    <tr>
-        <td>Country</td>
-        <td><input type="text" name="country"></td>
-		<td class="help-text">Two-letter country code according to ISO-3166-1</td>
-    </tr>
-    <tr>
-        <td>SPAN order</td>
-        <td><input type="text" name="span_order"></td>
-		<td class="help-text"></td>
-    </tr>
-    <tr>
-        <td>Alarm priority</td>
-        <td>
-			<select name="alarm_priority">
-				<option value="low">low
-				<option value="medium">medium
-				<option value="high">high
-			</select>
-		</td>
-		<td class="help-text"></td>
-    </tr>
-	<tr>
-		<td>Comment</td>
-		<td colspan="2"><textarea rows="10" cols="72" name="comment"></textarea></td>
-	</tr>
-	<tr>
-		<td>&nbsp;</td>
-		<td><input type="submit" value="Add"></td>
-		<td>&nbsp;</td>
-	</tr>
-</table>
-</form>
-
-<div style="display: none;" id="prefix_added_container">
-	The prefix <span id="prefix_added"></span> was successfully added to NAP.
+    <h3>Prefix data</h3>
+    <form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add", schema=c.schema.id) }}">
+    <table>
+        <tr id="prefix_row">
+            <td>Prefix</td>
+            <td><input type="text" name="prefix" value="{{ c.prefix }}"></td>
+            <td class="help-text">192.0.2.16/28</td>
+        </tr>
+        <tr>
+            <td>Description</td>
+            <td><input type="text" name="description"></td>
+            <td class="help-text">A short text describing the prefix.</td>
+        </tr>
+        <tr>
+            <td>Node</td>
+            <td><input type="text" name="node"></td>
+            <td class="help-text">Hostname of the node where the prefix is in use.</td>
+        </tr>
+        <tr>
+            <td>Type</td>
+            <td>
+                <select name="type">
+                    <option value="assignment" selected>Assignment
+                    <option value="host">Host
+                    <option value="reservation">Reservation
+                </select>
+            </td>
+            <!-- TODO: write better explanation -->
+            <td class="help-text">Type of prefix.</td>
+        </tr>
+        <tr>
+            <td>Country</td>
+            <td><input type="text" name="country"></td>
+            <td class="help-text">Two-letter country code according to ISO-3166-1</td>
+        </tr>
+        <tr>
+            <td>SPAN order</td>
+            <td><input type="text" name="span_order"></td>
+            <td class="help-text"></td>
+        </tr>
+        <tr>
+            <td>Alarm priority</td>
+            <td>
+                <select name="alarm_priority">
+                    <option value="low">low
+                    <option value="medium">medium
+                    <option value="high">high
+                </select>
+            </td>
+            <td class="help-text"></td>
+        </tr>
+        <tr>
+            <td>Comment</td>
+            <td colspan="2"><textarea rows="10" cols="72" name="comment"></textarea></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td><input type="submit" value="Add"></td>
+            <td>&nbsp;</td>
+        </tr>
+    </table>
+    </form>
 </div>
 
+<div style="display: none;" id="prefix_added_container">
+    The prefix <span id="prefix_added"></span> was successfully added to NAP.
 </div>
 
 {% endblock %}
