@@ -809,7 +809,7 @@ class Nap:
             raise NapMissingInputError('missing schema')
 
         allowed_keys = ['id', 'family', 'schema',
-            'type', 'pool_name', 'pool_id', 'prefix']
+            'type', 'pool_name', 'pool_id', 'prefix', 'pool']
         for key in spec.keys():
             if key not in allowed_keys:
                 raise NapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
@@ -1178,9 +1178,6 @@ class Nap:
 
         if type(spec) is dict:
 
-            #if len(spec) == 0:
-            #    raise NapInputError("empty prefix specification")
-
             spec['schema'] = self._get_schema(schema_spec)['id']
 
             where, params = self._expand_prefix_spec(spec)
@@ -1189,7 +1186,7 @@ class Nap:
             raise NapError("invalid prefix specification")
 
         sql = "SELECT * FROM ip_net_plan "
-        sql += "WHERE prefix <<= (SELECT prefix FROM ip_net_plan WHERE " + where + ") ORDER BY prefix"
+        sql += "WHERE " + where + " ORDER BY prefix"
 
         self._execute(sql, params)
 
@@ -1388,13 +1385,18 @@ class Nap:
                 })
 
         # Sum all query parts to one query
-        query = query_parts[0]
-        for query_part in query_parts[1:]:
-            query = {
-                'operator': 'and',
-                'val1': query_part,
-                'val2': query
-            }
+        query = {}
+        if len(query_parts) > 0:
+            query = query_parts[0]
+
+        if len(query_parts) > 1:
+            for query_part in query_parts[1:]:
+                query = {
+                    'operator': 'and',
+                    'val1': query_part,
+                    'val2': query
+                }
+            
 
         self._logger.debug("Expanded to: %s" % str(query))
 

@@ -6,11 +6,16 @@
 Nils Address Planner
 ====================
 
-This is where the mail Nap documentation is located. The API documentation is
-generated from the main Nap python module, which places som irrelevant
-information about the classes on the same page. Don't let that scare you,
-instead focus on the methods of the Nap class which all are published with the
-same arguments as listed there.
+The majority of this documentation is generated from the Nap Python module
+where most of the server side logic is placed. A thin XML-RPC layer is wrapped
+around the Nap class to expose its function over an XML-RPC interface as well
+as translating internal Exceptions into XML-RPC errors codes. It is feasible to
+implement other wrapper layers should one need a different interface, though
+the XML-RPC interface should serve most well.
+
+Given that the documentation is automatically generated from this internal Nap
+class, there is some irrelevant information regarding class structures - just
+ignore that! :)
 
 Happy hacking!
 

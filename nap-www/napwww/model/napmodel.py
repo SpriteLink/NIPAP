@@ -165,7 +165,6 @@ class Pool(NapModel):
 
         data = {
             'name': self.name,
-            'schema': self.schema.id,
             'description': self.description,
             'default_type': self.default_type,
             'ipv4_default_prefix_length': self.ipv4_default_prefix_length,
@@ -174,11 +173,12 @@ class Pool(NapModel):
 
         if self.id is None:
             # New object, create
-            self.id = self._xmlrpc.connection.add_pool(data)
+            data['schema'] = self.schema.id,
+            self.id = self._xmlrpc.connection.add_pool({'id': self.schema.id}, data)
 
         else:
             # Old object, edit
-            self._xmlrpc.connection.edit_pool({'id': self.id}, data)
+            self._xmlrpc.connection.edit_pool({'id': self.schema.id}, {'id': self.id}, data)
 
         _cache['Pool'][self.id] = self
 
@@ -346,7 +346,7 @@ class Prefix(NapModel):
 
 
 
-    def save(self, args={}):
+    def save(self, args = {}):
         """ Save prefix to Nap.
         """
 
@@ -355,7 +355,6 @@ class Prefix(NapModel):
             'description': self.description,
             'comment': self.comment,
             'node': self.node,
-            'pool': self.pool,
             'type': self.type,
             'country': self.country,
             'span_order': self.span_order,
@@ -368,8 +367,15 @@ class Prefix(NapModel):
         if self.prefix is not None:
             data['prefix'] = self.prefix
 
+        if self.pool is not None:
+            data['pool'] = self.pool.id
+        else:
+            data['pool'] = None
+
         # New object, create from scratch
         if self.id is None:
+
+            self._logger.error("save: args = %s" % str(args))
 
             # format args
             x_args = {}
@@ -396,6 +402,7 @@ class Prefix(NapModel):
             del(data['schema'])
             del(data['type'])
 
+            self._logger.error('schema id: %d prefix id: %d prefix data: %s' % (self.schema.id, self.id, str(data)))
             self._xmlrpc.connection.edit_prefix({'id': self.schema.id}, {'id': self.id}, data)
 
 

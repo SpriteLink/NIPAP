@@ -51,7 +51,20 @@ class XhrController(BaseController):
         """
 
         schema = Schema.get(int(request.params['schema_id']))
-        prefixes = Prefix.list(schema, { 'prefix': '1.3.0.0/16'})
+
+        # add attributes
+        # TODO: add more?
+        attr = {}
+        if 'pool' in request.params:
+            attr['pool'] = { 'id': request.params['pool'] }
+        if 'node' in request.params:
+            attr['node'] = request.params['node']
+        if 'type' in request.params:
+            attr['type'] = request.params['type']
+        if 'country' in request.params:
+            attr['country'] = request.params['country']
+
+        prefixes = Prefix.list(schema, attr)
         return json.dumps(prefixes, cls=NapJSONEncoder)
 
 
@@ -64,19 +77,29 @@ class XhrController(BaseController):
             function, which performs the search.
         """
 
+        if 'search_opt_parent' in request.params:
+            sop = request.params['search_opt_parent']
+        else:
+            sop = None
+
+        if 'search_opt_child' in request.params:
+            soc = request.params['search_opt_child']
+        else:
+            soc = None
+
         log.debug("Smart search query: schema=%d q=%s search_opt_parent=%s search_opt_child=%s" %
             (int(request.params['schema']),
             request.params['query_string'],
-            request.params['search_opt_parent'],
-            request.params['search_opt_child'])
-        )
+            sop,
+            soc
+        ))
 
         schema = Schema.get(int(request.params['schema']))
 
         result = Prefix.smart_search(schema,
             request.params['query_string'],
-            request.params['search_opt_parent'],
-            request.params['search_opt_child']
+            sop,
+            soc
             )
         return json.dumps(result, cls=NapJSONEncoder)
 
@@ -127,16 +150,18 @@ class XhrController(BaseController):
             p.alarm_priority = request.params['alarm_priority']
         p.authoritative_source = 'nap-www'
 
+        log.debug('request: %s' % str(request.params))
+
         # arguments
         args = {}
-        if 'from_prefix' in request.params:
-            args['from-prefix'] = request.params['from_prefix']
+        if 'from_prefix[]' in request.params:
+            args['from-prefix'] = request.params.getall('from_prefix[]')
         if 'from_pool' in request.params:
             args['from-pool'] = Pool.get(p.schema, int(request.params['from_pool']))
-            if 'family' in request.params:
-                args['family'] = int(request.params['family'])
+        if 'family' in request.params:
+            args['family'] = int(request.params['family'])
         if 'prefix_length' in request.params:
-            args['prefix_length'] = request.params['prefix_length']
+            args['prefix_length'] = int(request.params['prefix_length'])
 
         # manual allocation?
         if args == {}:
@@ -154,12 +179,22 @@ class XhrController(BaseController):
         return json.dumps(p, cls=NapJSONEncoder)
 
 
-    def test(self):
 
-        try:
-            raise Exception("ERROR ERROR")
-        except Exception, e:
-            abort(400, 'Invalid fisk: ' + str(e))
+    def edit_prefix(self):
+        """ Edit a prefix.
+        """
+
+        schema = Schema.get(int(request.params['schema']))
+
+        p = Prefix.get(schema, int(request.params['id']))
+
+        # TODO: add more attributes!
+        if 'pool' in request.params:
+            pool = Pool.get(schema, int(request.params['pool']))
+            p.pool = pool
+
+        p.save()
+        return json.dumps(p, cls=NapJSONEncoder)
 
 
 

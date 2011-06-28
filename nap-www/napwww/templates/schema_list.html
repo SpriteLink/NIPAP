@@ -3,10 +3,10 @@
 {% block head %}
     <script>
         $(function () {
-		    $(".schema_row").hover(
-				function() { $(this).addClass("row_hover"); },
-				function() { $(this).removeClass("row_hover"); }
-		    );
+            $(".schema_row").hover(
+                function() { $(this).addClass("row_hover"); },
+                function() { $(this).removeClass("row_hover"); }
+            );
         });
     </script>
 {% endblock %}
@@ -21,15 +21,15 @@
     <tr>
         <th>Name</th><th>Description</th><th>&nbsp;</th>
     </tr>
-	{% for schema in c.schemas %}
-	<tr class="schema_row" id="schema_row{{ schema.id }}">
-		<td style="padding: 5px;"><a href="{{ h.url(controller='prefix', action='index', schema=schema.id) }}">{{ schema.name }}</a></td>
-		<td style="padding: 5px;">{{ schema.description }}</td>
-		<td>
+    {% for schema in c.schemas %}
+    <tr class="schema_row" id="schema_row{{ schema.id }}">
+        <td style="padding: 5px;"><a href="{{ h.url(controller='prefix', action='index', schema=schema.id) }}">{{ schema.name }}</a></td>
+        <td style="padding: 5px;">{{ schema.description }}</td>
+        <td>
             <a href="{{ h.url(controller="schema", action="edit", id=schema.id) }}">edit</a> | 
             <a href="{{ h.url(controller="schema", action="remove", id=schema.id) }}">del</a>
         </td>
-	</tr>
-	{% endfor %}
+    </tr>
+    {% endfor %}
 </table>
 {% endblock %}
