@@ -355,7 +355,6 @@ class Prefix(NapModel):
             'description': self.description,
             'comment': self.comment,
             'node': self.node,
-            'pool': self.pool,
             'type': self.type,
             'country': self.country,
             'span_order': self.span_order,
@@ -367,6 +366,11 @@ class Prefix(NapModel):
         # from a pool or other prefix!
         if self.prefix is not None:
             data['prefix'] = self.prefix
+
+        if self.pool is not None:
+            data['pool'] = self.pool.id
+        else:
+            data['pool'] = None
 
         # New object, create from scratch
         if self.id is None:
@@ -396,6 +400,7 @@ class Prefix(NapModel):
             del(data['schema'])
             del(data['type'])
 
+            self._logger.error('schema id: %d prefix id: %d prefix data: %s' % (self.schema.id, self.id, str(data)))
             self._xmlrpc.connection.edit_prefix({'id': self.schema.id}, {'id': self.id}, data)
 
 

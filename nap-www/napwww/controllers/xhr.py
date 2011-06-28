@@ -177,13 +177,6 @@ class XhrController(BaseController):
         return json.dumps(p, cls=NapJSONEncoder)
 
 
-    def test(self):
-
-        try:
-            raise Exception("ERROR ERROR")
-        except Exception, e:
-            abort(400, 'Invalid fisk: ' + str(e))
-
 
     def edit_prefix(self):
         """ Edit a prefix.
@@ -191,13 +184,12 @@ class XhrController(BaseController):
 
         schema = Schema.get(int(request.params['schema']))
 
-        p = Prefix.get(schema, request.params['id'])
+        p = Prefix.get(schema, int(request.params['id']))
 
         # TODO: add more attributes!
         if 'pool' in request.params:
             pool = Pool.get(schema, int(request.params['pool']))
             p.pool = pool
-
 
         p.save()
         return json.dumps(p, cls=NapJSONEncoder)

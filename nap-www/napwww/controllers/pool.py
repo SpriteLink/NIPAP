@@ -97,3 +97,20 @@ class PoolController(BaseController):
         p.remove()
         redirect(url(controller = 'pool', action = 'list', schema = schema.id))
 
+
+
+    def remove_prefix(self, id):
+        """ Remove a prefix from pool 'id'.
+        """
+
+        if 'schema' not in request.params:
+            redirect(url(controller = 'schema', action = 'list'))
+        schema = Schema.get(int(request.params['schema']))
+
+        if 'prefix' not in request.params:
+            abort(400, 'Missin prefix.')
+        prefix = Prefix.get(schema, int(request.params['prefix']))
+        prefix.pool = None
+        prefix.save()
+
+        redirect(url(controller = 'pool', action = 'edit', id = id, schema = schema.id))

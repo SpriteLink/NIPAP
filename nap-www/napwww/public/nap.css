@@ -29,6 +29,8 @@ html, body {
 
 .content {
     padding: 10px;
+    z-index: 0;
+    position: absolute;
 }
 
 #schema_selector {
@@ -143,12 +145,14 @@ html, body {
 }
 
 .prefix_select_container {
-    width: 900px;
-    height: 550px;
+    padding: 15px;
+    width: 800px;
+    height: 400px;
     z-index: 10;
-    background-color: gray;
+    border: solid black 1px;
+    background-color: #ffffff;
 	position: absolute;
-	top: 20;
-	left: 20;
-	visibility: hidden;
+	top: 20px;
+	left: 20px;
+	display: none;
 }
