@@ -1383,13 +1383,18 @@ class Nap:
                 })
 
         # Sum all query parts to one query
-        query = query_parts[0]
-        for query_part in query_parts[1:]:
-            query = {
-                'operator': 'and',
-                'val1': query_part,
-                'val2': query
-            }
+        query = {}
+        if len(query_parts) > 0:
+            query = query_parts[0]
+
+        if len(query_parts) > 1:
+            for query_part in query_parts[1:]:
+                query = {
+                    'operator': 'and',
+                    'val1': query_part,
+                    'val2': query
+                }
+            
 
         self._logger.debug("Expanded to: %s" % str(query))
 
