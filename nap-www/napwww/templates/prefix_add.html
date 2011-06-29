@@ -237,7 +237,7 @@ function showPrefix(prefix, parent_container) {
     prefix_ind_pref.append('<div id="prefix_prefix' + prefix.id + '">');
     var prefix_prefix = $('#prefix_prefix' + prefix.id);
     prefix_prefix.addClass("prefix_prefix");
-    prefix_prefix.html('<a href="javascript:void(0)" onClick="selectPrefix(' + prefix.id + '); return false;">' + prefix.prefix + '</a>');
+    prefix_prefix.html('<a href="javascript:void(0)" onClick="selectPrefix(' + prefix.id + '); return false;">' + prefix.display_prefix + '</a>');
 
     // Add prefix type
     prefix_entry.append('<div id="prefix_type' + prefix.id + '">');
