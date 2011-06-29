@@ -112,7 +112,7 @@ BEGIN
 
 
 	-- check that type is correct on insert
-	IF TG_OP = 'INSERT' THEN
+	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
 		IF NEW.type = 'host' THEN
 			IF masklen(NEW.prefix) != i_max_pref_len THEN
 				RAISE EXCEPTION '1200:Prefix of type host must have all bits set in netmask';
