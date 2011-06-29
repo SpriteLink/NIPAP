@@ -111,7 +111,7 @@ BEGIN
 	END IF;
 
 
-	-- check that type is correct on insert
+	-- check that type is correct on insert and update
 	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
 		IF NEW.type = 'host' THEN
 			IF masklen(NEW.prefix) != i_max_pref_len THEN

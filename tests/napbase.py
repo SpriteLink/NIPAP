@@ -182,9 +182,8 @@ class NapTest(unittest.TestCase):
                 'name': 'test-schema-dupe',
                 'description': 'Testing dupe'
                 }
-        # TODO: this should raise a better exception, something like non-unique or duplicate
         self.nap.add_schema(schema_attrs)
-        self.assertRaises(nap.NapError, self.nap.add_schema, schema_attrs)
+        self.assertRaises(nap.NapDuplicateError, self.nap.add_schema, schema_attrs)
 
 
 
@@ -495,6 +494,7 @@ class NapTest(unittest.TestCase):
         # check that search for old record doesn't return anything
         prefix = self.nap.list_prefix(schema, { 'id': self.prefix_attrs['id'] })
         self.assertEqual(prefix, [], 'Old entry still exists')
+
 
 
     def test_prefix_indent(self):
