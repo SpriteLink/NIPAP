@@ -401,7 +401,7 @@ class NapTest(unittest.TestCase):
 
         # fetch many prefixes - all in a schema
         prefix = self.nap.list_prefix(schema, {})
-        self.assertGreater(len(prefix), 0, 'Found 0 prefixes in schema ' + self.schema_attrs['name'])
+        self.assertNotEqual(len(prefix), 0, 'Found 0 prefixes in schema ' + self.schema_attrs['name'])
 
 
 
