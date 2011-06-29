@@ -120,18 +120,21 @@ BEGIN
 			IF parent.type != 'assignment' THEN
 				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''assignment''', parent.prefix, parent.type;
 			END IF;
+			NEW.display_prefix := set_masklen(NEW.prefix, masklen(parent.prefix));
 		ELSIF NEW.type = 'assignment' THEN
 			IF parent.type IS NULL THEN
 				-- all good
 			ELSIF parent.type != 'reservation' THEN
 				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
 			END IF;
+			NEW.display_prefix := NEW.prefix;
 		ELSIF NEW.type = 'reservation' THEN
 			IF parent.type IS NULL THEN
 				-- all good
 			ELSIF parent.type != 'reservation' THEN
 				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
 			END IF;
+			NEW.display_prefix := NEW.prefix;
 		ELSE
 			RAISE EXCEPTION 'Unknown prefix type';
 		END IF;
