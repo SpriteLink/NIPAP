@@ -34,7 +34,7 @@
         prefix_ind_pref.append('<div id="prefix_prefix' + prefix.id + '">');
         var prefix_prefix = $('#prefix_prefix' + prefix.id);
         prefix_prefix.addClass("prefix_prefix");
-        prefix_prefix.html('<a href="#" onClick="selectPrefix(' + prefix.id + ')">' + prefix.prefix + '</a>');
+        prefix_prefix.html('<a href="#" onClick="selectPrefix(' + prefix.id + ')">' + prefix.display_prefix + '</a>');
 
         // Add prefix type
         prefix_entry.append('<div id="prefix_type' + prefix.id + '">');
@@ -72,7 +72,7 @@
         
         // display prefix in list
         $("#pool_prefix_list").append('<tr id="pool_prefix_' + prefix.id + '">');
-        $("#pool_prefix_" + prefix.id).append('<td>' + prefix.prefix + '</td>');
+        $("#pool_prefix_" + prefix.id).append('<td>' + prefix.display_prefix + '</td>');
         $("#pool_prefix_" + prefix.id).append('<td>' + prefix.description + '</td>');
         $("#pool_prefix_" + prefix.id).append('<td><a href="/pool/remove_prefix/{{ c.pool.id }}?schema={{ c.schema.id }}&prefix='+ prefix.id +'">del</a></td>');
 
@@ -178,7 +178,7 @@
     </tr>
     {% for prefix in c.prefix_list %}
     <tr>
-        <td>{{ prefix.prefix }}</td>
+        <td>{{ prefix.display_prefix }}</td>
         <td>{{ prefix.description }}</td>
         <td>
             <a href="{{ h.url(controller = 'pool', action = 'remove_prefix', id = c.pool.id, prefix = prefix.id, schema = c.schema.id) }}">del</a>
