@@ -1292,8 +1292,9 @@ class Nap:
                 SELECT * FROM prefix WHERE (type == 'assignment') AND (prefix contained within '192.0.2.0/24')
 
             The search options `parents` and `children` are used to specify
-            which of the matching prefixs' parents to return.  Both of them are
-            strings which can have the following values:
+            which of the matching prefixes' parents to return.  Both of them are
+            strings with the following values allowed:
+
             * :data:`none` - Display only the matching prefix, no parents/children.
             * :data:`immediate` - Display immediate parent/child.
             * :data:`all` - Display all parents/children.
@@ -1384,7 +1385,7 @@ class Nap:
             :func:`search_prefix` function.  If multiple search keys are
             detected, they are combined with a logical AND.
 
-            See the :func:`search_prefix` function for an explenation of the
+            See the :func:`search_prefix` function for an explanation of the
             `parents` and `children` arguments.
         """
 
