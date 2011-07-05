@@ -4,10 +4,9 @@
 
 <script>
 
-    var prefix_list = Array();
+    var prefix_list = Object();
     var indent_head = Array();
         
-
     function showPrefix(prefix, parent_container) {
 
         // add main prefix container
@@ -77,7 +76,8 @@
          */
 
         $('#prefix_list').empty();
-        indent_head[0] = $('#prefix_list');
+
+		prefix_list = new Object();
 
         // add prefixes
         for (key in pref_list.result) {
@@ -88,6 +88,7 @@
 
             // add prefixes to list - first a special case for the first prefix
             if (key == 0) {
+				indent_head[cur_prefix.indent] = $('#prefix_list');
                 showPrefix(cur_prefix, indent_head[0]);
             } else {
                 

@@ -319,7 +319,8 @@ class Prefix(NapModel):
         """ Perform a smart prefix search.
         """
 
-        pref_list = xmlrpc.connection.smart_search_prefix({ 'id': schema.id }, query_string)
+        pref_list = xmlrpc.connection.smart_search_prefix({ 'id': schema.id },
+            query_string, search_opt_parent, search_opt_child)
         res = dict()
         res['interpretation'] = pref_list['interpretation']
         res['result'] = list()
@@ -395,7 +396,7 @@ class Prefix(NapModel):
             self.indent = p['indent']
             self.family = p['family']
             self.display_prefix = p['display_prefix']
-    
+
         # Old object, edit
         else:
             # remove keys which we are not allowed to edit

@@ -113,9 +113,9 @@
 
     But can also be elaborated somehwat for certain objects, as::
 
-        prefix_spec = { 
-            'family': 6, 
-            'type': 'reservation' 
+        prefix_spec = {
+            'family': 6,
+            'type': 'reservation'
         }
 
     If multiple keys are given, they will be ANDed together.
@@ -883,7 +883,6 @@ class Nap:
 
             # build where caluse
             try:
-                self._logger.debug("hey: %s" % table_name)
                 where = str(" %s%s %s %%s " %
                     ( col_prefix, prefix_attr[query['val1']],
                     _operation_map[query['operator']] )
@@ -1216,13 +1215,17 @@ class Nap:
 
 
 
-    def search_prefix(self, schema_spec, query):
+    def search_prefix(self, schema_spec, query, parents = 'all', children = 'none'):
         """ Search prefix list for prefixes matching `query`.
 
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `query` [dict_to_sql]
                 How the search should be performed.
+            * `parents` [string]
+                Select which of the prefix's parents to return.
+            * `children` [string]
+                Select which of the prefix's children to return.
 
             Returns a list of dicts.
 
@@ -1287,13 +1290,23 @@ class Nap:
             This will be expanded to the pseudo-SQL query::
 
                 SELECT * FROM prefix WHERE (type == 'assignment') AND (prefix contained within '192.0.2.0/24')
+
+            The search options `parents` and `children` are used to specify
+            which of the matching prefixs' parents to return.  Both of them are
+            strings which can have the following values:
+            * :data:`none` - Display only the matching prefix, no parents/children.
+            * :data:`immediate` - Display immediate parent/child.
+            * :data:`all` - Display all parents/children.
         """
 
+        self._logger.debug('search_prefix: parents: %s children: %s' % (parents, children))
+
         # Add schema to query part list
+        schema = self._get_schema(schema_spec)
         schema_q = {
             'operator': 'equals',
             'val1': 'schema',
-            'val2': self._get_schema(schema_spec)['id']
+            'val2': schema['id']
         }
         if len(query) == 0:
             query = schema_q
@@ -1303,13 +1316,36 @@ class Nap:
             'val2': query
         }
 
-        where, opt = self._expand_prefix_query(query, 'ip2')
-        sql = str("SELECT ip1.* FROM ip_net_plan AS ip1 " +
-            "JOIN ip_net_plan AS ip2 " +
-            "ON (" +
-            "   (ip2.prefix <<= ip1.prefix OR ip2.prefix >>= ip1.prefix) " +
-            "   AND (ip1.schema = ip2.schema)" +
-            ") WHERE " + where + " ORDER BY ip1.prefix")
+        # translate search options to SQL
+        where_parents = ''
+        if parents == 'immediate':
+            where_parents = 'AND ip1.indent BETWEEN ip2.indent - 1 AND ip2.indent'
+        elif parents == 'none':
+            where_parents = 'AND ip1.indent = ip2.indent'
+
+        where_children = ''
+        if children == 'immediate':
+            where_children = 'AND ip1.indent BETWEEN ip2.indent AND ip2.indent + 1'
+        elif children == 'none':
+            where_children = 'AND ip1.indent = ip2.indent'
+
+        where, opt = self._expand_prefix_query(query)
+        sql = """SELECT DISTINCT ON(ip1.prefix) ip1.*
+            FROM ip_net_plan AS ip1
+            JOIN ip_net_plan AS ip2 ON
+            (
+                (
+                    (ip2.prefix <<= ip1.prefix """ + where_parents + """)
+                    OR
+                    (ip2.prefix >>= ip1.prefix """ + where_children + """)
+                )
+                AND
+                (ip1.schema = ip2.schema)
+            )
+            WHERE ip2.schema = %s AND ip2.prefix = (
+                SELECT prefix FROM ip_net_plan WHERE """ + where + """ ORDER BY prefix ASC LIMIT 1
+            ) ORDER BY ip1.prefix"""
+        opt.insert(0, schema['id'])
 
         self._execute(sql, opt)
 
@@ -1321,13 +1357,17 @@ class Nap:
 
 
 
-    def smart_search_prefix(self, schema_spec, query_str):
+    def smart_search_prefix(self, schema_spec, query_str, parents = 'all', children = 'immediate'):
         """ Perform a smart search.
 
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `query_str` [string]
                 Search string
+            * `parents` [string]
+                Select which of the prefix's parents to return.
+            * `children` [string]
+                Select which of the prefix's children to return.
 
             Return a dict with two elements:
                 * :attr:`interpretation` - How the search keys were interpreted.
@@ -1343,6 +1383,9 @@ class Nap:
             string to a `query` dict which is passed to the
             :func:`search_prefix` function.  If multiple search keys are
             detected, they are combined with a logical AND.
+
+            See the :func:`search_prefix` function for an explenation of the
+            `parents` and `children` arguments.
         """
 
         self._logger.debug("Query string: %s" % query_str)
@@ -1396,11 +1439,11 @@ class Nap:
                     'val1': query_part,
                     'val2': query
                 }
-            
+
 
         self._logger.debug("Expanded to: %s" % str(query))
 
-        return { 'interpretation': query_str_parts, 'result': self.search_prefix(schema_spec, query) }
+        return { 'interpretation': query_str_parts, 'result': self.search_prefix(schema_spec, query, parents, children) }
 
 
 

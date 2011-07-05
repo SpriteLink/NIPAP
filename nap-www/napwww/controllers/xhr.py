@@ -80,12 +80,12 @@ class XhrController(BaseController):
         if 'search_opt_parent' in request.params:
             sop = request.params['search_opt_parent']
         else:
-            sop = None
+            sop = 'all'
 
         if 'search_opt_child' in request.params:
             soc = request.params['search_opt_child']
         else:
-            soc = None
+            soc = 'immediate'
 
         log.debug("Smart search query: schema=%d q=%s search_opt_parent=%s search_opt_child=%s" %
             (int(request.params['schema']),
@@ -115,7 +115,7 @@ class XhrController(BaseController):
             family          address family (4 or 6)
             description     A short description
             comment         Longer comment
-            node            Hostname of node 
+            node            Hostname of node
             type            Type of prefix; reservation, assignment, host
             pool            ID of pool
             country         Country where the prefix is used
