@@ -57,7 +57,7 @@ html, body {
 
 .prefix_entry {
     height: 25px;
-    width: 100%;
+    width: 900px;
     border 1px solid #dcdcdc;
     line-height: 25px;
 }
@@ -79,38 +79,6 @@ html, body {
     padding-right: 5px;
 }
 
-.prefix_indent0 {
-    width: 10px;
-    float: left;
-    height: 100%;
-    text-align: right;
-    padding-right: 5px;
-}
-
-.prefix_indent1 {
-    width: 40px;
-    float: left;
-    height: 100%;
-    text-align: right;
-    padding-right: 5px;
-}
-
-.prefix_indent2 {
-    width: 70px;
-    float: left;
-    height: 100%;
-    text-align: right;
-    padding-right: 5px;
-}
-
-.prefix_indent3 {
-    width: 100px;
-    float: left;
-    height: 100%;
-    text-align: right;
-    padding-right: 5px;
-}
-
 .prefix_prefix {
 
 }
@@ -124,6 +92,10 @@ html, body {
     width: 100%;
     clear: right;
 }
+
+.prefix_collapse {
+	display: none;
+};
 
 .opt_left {
     width: 200px;

@@ -5,7 +5,7 @@
 <script>
 
     var prefix_list = Object();
-    var indent_head = Array();
+    var indent_head = Object();
         
     function showPrefix(prefix, parent_container) {
 
@@ -27,7 +27,15 @@
         prefix_ind_pref.append('<div id="prefix_indent' + prefix.id + '">');
         var prefix_indent = $('#prefix_indent' + prefix.id);
         prefix_indent.addClass("prefix_indent");
-        prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="collapse(' + prefix.id + ')">&nbsp;-&nbsp;</span>');
+
+		// add expand button
+        prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="toggleGroup(' + prefix.id + ')">&nbsp;+&nbsp;</span>');
+		// If we are sure that the children has been fetched, the group will
+		// already be fully expanded and a minus sign should be shown
+		if (prefix.children_fetched) {
+			$("#prefix_exp" + prefix.id).html("&mbsp;-&nbsp;");
+		}
+
         prefix_indent.width(prefix_indent.width() + 30 * prefix.indent);
 
         // add prefix
@@ -78,30 +86,48 @@
         $('#prefix_list').empty();
 
 		prefix_list = new Object();
+		indent_head = new Object();
 
         // add prefixes
         for (key in pref_list.result) {
 
             var cur_prefix = pref_list.result[key];
-
+			cur_prefix.children_fetched = false;
             prefix_list[cur_prefix.id] = cur_prefix;
 
-            // add prefixes to list - first a special case for the first prefix
-            if (key == 0) {
+			// if we miss a previous prefix, set prev_prefix to the current
+			// (we need something...)
+			// TODO: make less ugly ;)
+			if (key - 1 in pref_list.result) {
+            	var prev_prefix = pref_list.result[key - 1];
+			} else {
+				var prev_prefix = cur_prefix;
+			}
+
+			// if there is no indent container for the current level, set
+			// indent head for current indent level to the top level container
+			if (!(cur_prefix.indent in indent_head)) {
 				indent_head[cur_prefix.indent] = $('#prefix_list');
-                showPrefix(cur_prefix, indent_head[0]);
-            } else {
-                
-                // indent increased - create new collapse group
-                var prev_prefix = pref_list.result[key - 1];
-                if (cur_prefix.indent > prev_prefix.indent) {
-                    indent_head[prev_prefix.indent].append('<div id="collapse' + prev_prefix.id + '">');
-                    indent_head[cur_prefix.indent] = $('#collapse' + prev_prefix.id);
-                }
+				console.log("Adding element to top level group");
+			}
 
-                showPrefix(cur_prefix, indent_head[cur_prefix.indent]);
-
+			// TODO: make this network aware. A network kan have a higher
+			// indent than a previous one and still not belong to the 
+			// previous network's collapse group.
+            if (cur_prefix.indent > prev_prefix.indent) {
+				// we're adding to previous prefix's collapse group - expand it
+				expandGroup(prev_prefix.id);
             }
+
+            showPrefix(cur_prefix, indent_head[cur_prefix.indent]);
+			console.log("Added prefix " + cur_prefix.id + " (" + cur_prefix.display_prefix + ") to container " + indent_head[cur_prefix.indent].attr('id'));
+
+			// add collapse container for current prefix
+			// TODO: do not add if prefix is host
+            indent_head[cur_prefix.indent].append('<div class="prefix_collapse" id="collapse' + cur_prefix.id + '">');
+            indent_head[cur_prefix.indent + 1] = $('#collapse' + cur_prefix.id);
+			console.log("Added collapse container " + indent_head[cur_prefix.indent + 1].attr('id'));
+
         }
 
     }
@@ -123,22 +149,46 @@
     }
 
     /*
-     * Collapses a collapse group
+     * Switches a collapse group
      */
-    function collapse(id) {
+    function toggleGroup(id) {
 
         var col = $('#collapse' + id);
         var exp = $('#prefix_exp' + id);
 
         if (col.css('display') == 'none') {
-            col.slideDown();
-            exp.html('&nbsp;-&nbsp;');
+			expandGroup(id);
         } else {
-            col.slideUp();
-            exp.html('&nbsp;+&nbsp;');
+			collapseGroup(id);
         }
         
     }
+
+	/*
+	 * Expand a collapse group
+	 */
+	function expandGroup(id) {
+
+        var col = $('#collapse' + id);
+        var exp = $('#prefix_exp' + id);
+
+        col.slideDown();
+        exp.html('&nbsp;-&nbsp;');
+
+	}
+
+	/*
+	 * Collapse a collapse group
+	 */
+	function collapseGroup(id) {
+
+        var col = $('#collapse' + id);
+        var exp = $('#prefix_exp' + id);
+
+        col.slideUp();
+        exp.html('&nbsp;+&nbsp;');
+
+	}
 
     $(function () {
 
