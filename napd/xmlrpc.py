@@ -235,7 +235,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.edit_prefix(schema_spec, spec)
+            return self.nap.remove_prefix(schema_spec, spec)
         except nap.NapError, e:
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 

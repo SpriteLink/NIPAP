@@ -268,6 +268,7 @@ class Prefix(NapModel):
     span_order = None
     authoritative_source = None
     alarm_priority = None
+    display = True
 
 
     @classmethod
@@ -434,6 +435,8 @@ class Prefix(NapModel):
         p.span_order = pref['span_order']
         p.authoritative_source = pref['authoritative_source']
         p.alarm_priority = pref['alarm_priority']
+        if 'display' in pref:
+            p.display = pref['display']
 
         return p
 

@@ -119,7 +119,12 @@
 				expandGroup(prev_prefix.id);
             }
 
-            showPrefix(cur_prefix, indent_head[cur_prefix.indent]);
+			// Only display prefixes we are supposed to display
+			// TODO: avoid creating alot of unneccesary collapse containers
+			if (cur_prefix.display == true) {
+	            showPrefix(cur_prefix, indent_head[cur_prefix.indent]);
+			}
+
 			console.log("Added prefix " + cur_prefix.id + " (" + cur_prefix.display_prefix + ") to container " + indent_head[cur_prefix.indent].attr('id'));
 
 			// add collapse container for current prefix

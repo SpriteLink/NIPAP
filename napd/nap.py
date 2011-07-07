@@ -1298,6 +1298,19 @@ class Nap:
             * :data:`none` - Display only the matching prefix, no parents/children.
             * :data:`immediate` - Display immediate parent/child.
             * :data:`all` - Display all parents/children.
+
+            The `parents` and `children` options behave a bit differently
+            regarding how the search result is presented.  When the parensts
+            option is set to anything else then `all`, all parent prefixes will
+            be returned anyway but with the attribute :attr:`display` set to
+            `false`.  When the children option is set to anything else then
+            `all`, the children will instead be missing entirely from the search
+            result, as one would expect.
+
+            This somewhat non-intuitive behaviour is there to simplify user
+            interfaces; by always providing a tree all the way to the root there
+            is no doubt about the relations between the returned prefixes (which
+            one is parent or child to which).
         """
 
         self._logger.debug('search_prefix: parents: %s children: %s' % (parents, children))
@@ -1318,11 +1331,9 @@ class Nap:
         }
 
         # translate search options to SQL
-        where_parents = ''
-        if parents == 'immediate':
-            where_parents = 'AND ip1.indent BETWEEN ip2.indent - 1 AND ip2.indent'
-        elif parents == 'none':
-            where_parents = 'AND ip1.indent = ip2.indent'
+        display_parents = 'true'
+        if parents == 'none' or parents == 'immediate':
+            display_parents = 'ip1.prefix <<= ip2.prefix'
 
         where_children = ''
         if children == 'immediate':
@@ -1331,28 +1342,36 @@ class Nap:
             where_children = 'AND ip1.indent = ip2.indent'
 
         where, opt = self._expand_prefix_query(query)
-        sql = """SELECT DISTINCT ON(ip1.prefix) ip1.*
+        sql = """SELECT DISTINCT ON(ip1.prefix) ip1.*,
+            (""" + display_parents + """) AS display
             FROM ip_net_plan AS ip1
             JOIN ip_net_plan AS ip2 ON
             (
                 (
-                    (ip2.prefix <<= ip1.prefix """ + where_parents + """)
+                    (ip2.prefix <<= ip1.prefix)
                     OR
                     (ip2.prefix >>= ip1.prefix """ + where_children + """)
                 )
                 AND
                 (ip1.schema = ip2.schema)
             )
-            WHERE ip2.schema = %s AND ip2.prefix = (
-                SELECT prefix FROM ip_net_plan WHERE """ + where + """ ORDER BY prefix ASC LIMIT 1
+            WHERE ip2.schema = %s AND ip2.prefix IN (
+                SELECT prefix FROM ip_net_plan WHERE """ + where + """
             ) ORDER BY ip1.prefix"""
         opt.insert(0, schema['id'])
 
         self._execute(sql, opt)
 
         result = list()
+        prev_disp = False
         for row in self._curs_pg:
+            # If we are asked to display immediate parents, we need to set the
+            # row before the first visible one to visible. Would be nice to
+            # solve this in the SQL query above instead.
+            if len(result) > 0 and parents == 'immediate' and prev_disp == False and row['display'] == True:
+                result[-1]['display'] = True
             result.append(dict(row))
+            prev_disp = row['display']
 
         return result
 

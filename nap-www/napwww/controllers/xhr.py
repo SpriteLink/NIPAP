@@ -20,9 +20,7 @@ class XhrController(BaseController):
     """
 
     def index(self):
-        # Return a rendered template
-        #return render('/xhr.mako')
-        # or, return a string
+        # TODO: write a function which lists the available XHR functions?
         return 'Hello World'
 
 
@@ -244,7 +242,8 @@ class NapJSONEncoder(json.JSONEncoder):
                 'country': obj.country,
                 'span_order': obj.span_order,
                 'authoritative_source': obj.authoritative_source,
-                'alarm_priority': obj.alarm_priority
+                'alarm_priority': obj.alarm_priority,
+                'display': obj.display
             }
         else:
             return json.JSONEncoder.default(self, obj)
