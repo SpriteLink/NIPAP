@@ -58,6 +58,9 @@
     * :attr:`span_order` - SPAN order number (integer).
     * :attr:`authoritative_source` - String identifying which system added the prefix.
     * :attr:`alarm_priority` - String 'low', 'medium' or 'high'. Used by netwatch.
+    * :attr:`display` - Only set by the :func:`search_prefix` and
+        :func:`smart_search_prefix` functions, see their documentation for
+        explanation.
 
     Prefix functions
     ^^^^^^^^^^^^^^^^
@@ -866,6 +869,7 @@ class Nap:
 
             # val1 is variable, val2 is string.
             prefix_attr = dict()
+            prefix_attr['id'] = 'id'
             prefix_attr['prefix'] = 'prefix'
             prefix_attr['schema'] = 'schema'
             prefix_attr['description'] = 'description'
@@ -1184,14 +1188,11 @@ class Nap:
         else:
             raise NapError("invalid prefix specification")
 
-        sql = "SELECT * FROM ip_net_plan "
-        sql += "WHERE " + where + " ORDER BY prefix"
+        sql = """SELECT * FROM ip_net_plan WHERE %s ORDER BY prefix""" % where
 
         self._execute(sql, params)
 
         res = list()
-        for row in self._curs_pg:
-            res.append(dict(row))
 
         return res
 
@@ -1215,17 +1216,15 @@ class Nap:
 
 
 
-    def search_prefix(self, schema_spec, query, parents = 'all', children = 'none'):
+    def search_prefix(self, schema_spec, query, search_options = {}):
         """ Search prefix list for prefixes matching `query`.
 
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `query` [dict_to_sql]
                 How the search should be performed.
-            * `parents` [string]
-                Select which of the prefix's parents to return.
-            * `children` [string]
-                Select which of the prefix's children to return.
+            * `search_options` [options_dict]
+                Search options, see below.
 
             Returns a list of dicts.
 
@@ -1299,21 +1298,34 @@ class Nap:
             * :data:`immediate` - Display immediate parent/child.
             * :data:`all` - Display all parents/children.
 
-            The `parents` and `children` options behave a bit differently
-            regarding how the search result is presented.  When the parensts
-            option is set to anything else then `all`, all parent prefixes will
-            be returned anyway but with the attribute :attr:`display` set to
-            `false`.  When the children option is set to anything else then
-            `all`, the children will instead be missing entirely from the search
-            result, as one would expect.
+            The `options` argument provides a way to alter the search result a
+            bit to assist in client implementations. So far the options all
+            regard parent and children prefixes, that is the prefixes which
+            contain the prefix(es) matching the search terms (parents) or the
+            prefixes which are contained by the prefix(es) matching the search
+            terms.
 
-            This somewhat non-intuitive behaviour is there to simplify user
-            interfaces; by always providing a tree all the way to the root there
-            is no doubt about the relations between the returned prefixes (which
-            one is parent or child to which).
+            The following options are available:
+            * :attr:`parents_depth` - How many levels of parents to return. Set to :data:`-1` to include all parents.
+            * :attr:`children_depth` - How many levels of children to return. Set to :data:`-1` to include all children.
+            * :attr:`include_all_parents` - Include all parents, no matter what depth is specified.
+            * :attr:`include_all_children` - Include all children, no matter what depth is specified.
+
+            The options above gives the possibility to specify how many levels
+            of parent and child prefixes to return in addition to the prefixes
+            that actually matched the search terms. This is done by setting the
+            :attr:`parents_depth` and :attr:`children depth` keys in the
+            `search_options` dict to an integer value.  In addition to this it
+            is possible to get all all parents and/or children included in the
+            result set even though they are outside the limits set with
+            :attr:`*_depth`.  The extra prefixes included will have the
+            attribute :attr:`display` set to :data:`false` while the other ones
+            (the actual search result togther with the ones included due to
+            given depth) :attr:`display` set to :data:`true`. This feature is
+            usable obtain search results with some context given around them,
+            useful for example when displaying prefixes in a tree without the
+            need to implement client side IP address logic.
         """
-
-        self._logger.debug('search_prefix: parents: %s children: %s' % (parents, children))
 
         # Add schema to query part list
         schema = self._get_schema(schema_spec)
@@ -1330,64 +1342,111 @@ class Nap:
             'val2': query
         }
 
-        # translate search options to SQL
-        display_parents = 'true'
-        if parents == 'none' or parents == 'immediate':
-            display_parents = 'ip1.prefix <<= ip2.prefix'
+        #
+        # sanitize search options and set default if option missing
+        #
 
-        where_children = ''
-        if children == 'immediate':
-            where_children = 'AND ip1.indent BETWEEN ip2.indent AND ip2.indent + 1'
-        elif children == 'none':
-            where_children = 'AND ip1.indent = ip2.indent'
+        # include_parents
+        if 'include_all_parents' not in search_options:
+            search_options['include_all_parents'] = False
+        else:
+            if (search_options['include_all_parents'] != True and
+                search_options['include_all_parents'] != False):
+                raise NapValueError('Invalid value for option' +
+                ''' 'include_all_parents'. Only true and false valid. %s''' % str(search_options['include_parents']))
+
+        # include_children
+        if 'include_all_children' not in search_options:
+            search_options['include_all_children'] = False
+        else:
+            if (search_options['include_all_children'] != True and
+                search_options['include_all_children'] != False):
+                raise NapValueError('Invalid value for option' +
+                ''' 'include_all_children'. Only true and false valid.''')
+
+        # parents_depth
+        if 'parents_depth' not in search_options:
+            search_options['parents_depth'] = 0
+        else:
+            try:
+                search_options['parents_depth'] = int(search_options['parents_depth'])
+            except (ValueError, TypeError), e:
+                raise NapValueError('Invalid value for option' +
+                    ''' 'parent_depth'. Only integer values allowed.''')
+
+        # children_depth
+        if 'children_depth' not in search_options:
+            search_options['children_depth'] = 0
+        else:
+            try:
+                search_options['children_depth'] = int(search_options['children_depth'])
+            except (ValueError, TypeError), e:
+                raise NapValueError('Invalid value for option' +
+                    ''' 'children_depth'. Only integer values allowed.''')
+
+        self._logger.debug('search_prefix search_options: %s' % str(search_options))
+
+        # translate search options to SQL
+        if search_options['parents_depth'] >= 0:
+            parents_selector = 'AND p1.indent BETWEEN p2.indent - %d AND p1.indent' % search_options['parents_depth']
+        else:
+            parents_selector = ''
+
+        if search_options['children_depth'] >= 0:
+            children_selector = 'AND p1.indent BETWEEN p2.indent AND p2.indent + %d' % search_options['children_depth']
+        else:
+            children_selector = ''
+
+        if search_options['include_all_parents']:
+            where_parents = ''
+        else:
+            where_parents = parents_selector
+
+        if search_options['include_all_children']:
+            where_children = ''
+        else:
+            where_children = children_selector
+
+        display = '(p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (parents_selector, children_selector)
 
         where, opt = self._expand_prefix_query(query)
-        sql = """SELECT DISTINCT ON(ip1.prefix) ip1.*,
-            (""" + display_parents + """) AS display
-            FROM ip_net_plan AS ip1
-            JOIN ip_net_plan AS ip2 ON
+        sql = """SELECT DISTINCT ON(p1.prefix) p1.*,
+            (""" + display + """) AS display
+            FROM ip_net_plan AS p1
+            JOIN ip_net_plan AS p2 ON
             (
                 (
-                    (ip2.prefix <<= ip1.prefix)
+                    (p2.prefix <<= p1.prefix """ + where_parents + """)
                     OR
-                    (ip2.prefix >>= ip1.prefix """ + where_children + """)
+                    (p2.prefix >>= p1.prefix """ + where_children + """)
                 )
                 AND
-                (ip1.schema = ip2.schema)
+                (p1.schema = p2.schema)
             )
-            WHERE ip2.schema = %s AND ip2.prefix IN (
+            WHERE p2.schema = %s AND p2.prefix IN (
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
-            ) ORDER BY ip1.prefix"""
+            ) ORDER BY p1.prefix"""
         opt.insert(0, schema['id'])
 
         self._execute(sql, opt)
 
         result = list()
-        prev_disp = False
         for row in self._curs_pg:
-            # If we are asked to display immediate parents, we need to set the
-            # row before the first visible one to visible. Would be nice to
-            # solve this in the SQL query above instead.
-            if len(result) > 0 and parents == 'immediate' and prev_disp == False and row['display'] == True:
-                result[-1]['display'] = True
             result.append(dict(row))
-            prev_disp = row['display']
 
         return result
 
 
 
-    def smart_search_prefix(self, schema_spec, query_str, parents = 'all', children = 'immediate'):
+    def smart_search_prefix(self, schema_spec, query_str, search_options = {}):
         """ Perform a smart search.
 
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `query_str` [string]
                 Search string
-            * `parents` [string]
-                Select which of the prefix's parents to return.
-            * `children` [string]
-                Select which of the prefix's children to return.
+            * `search_options` [options_dict]
+                Search options. See :func:`search_prefix`.
 
             Return a dict with two elements:
                 * :attr:`interpretation` - How the search keys were interpreted.
@@ -1405,7 +1464,7 @@ class Nap:
             detected, they are combined with a logical AND.
 
             See the :func:`search_prefix` function for an explanation of the
-            `parents` and `children` arguments.
+            `search_options` argument.
         """
 
         self._logger.debug("Query string: %s" % query_str)
@@ -1424,7 +1483,7 @@ class Nap:
                 query_str_part['interpretation'] = 'prefix'
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
                 query_parts.append({
-                    'operator': 'contained_within_equals',
+                    'operator': 'contains_equals',
                     'val1': 'prefix',
                     'val2': query_str_part['string']
                 })
@@ -1463,7 +1522,7 @@ class Nap:
 
         self._logger.debug("Expanded to: %s" % str(query))
 
-        return { 'interpretation': query_str_parts, 'result': self.search_prefix(schema_spec, query, parents, children) }
+        return { 'interpretation': query_str_parts, 'result': self.search_prefix(schema_spec, query, search_options) }
 
 
 

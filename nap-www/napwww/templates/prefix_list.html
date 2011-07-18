@@ -4,6 +4,18 @@
 
 <script>
 
+    /*
+     * The prefix_list variable is used to keep a copy of all the prefixes
+     * currently in the displayed list. Before adding, they are given a new
+     * attribute: has_children. It is used to save information regarding
+     * whether the prefix has children or not. These values are allowed:
+     *  -2: We have no clue
+     *  -1: At least one, but might be more (used for parent prefixes which
+     *      was received when a prefix further down was requested including
+     *      parents)
+     *   0: No children
+     *   1: Has children
+     */
     var prefix_list = Object();
     var indent_head = Object();
         
@@ -28,12 +40,21 @@
         var prefix_indent = $('#prefix_indent' + prefix.id);
         prefix_indent.addClass("prefix_indent");
 
-		// add expand button
-        prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="toggleGroup(' + prefix.id + ')">&nbsp;+&nbsp;</span>');
-		// If we are sure that the children has been fetched, the group will
-		// already be fully expanded and a minus sign should be shown
-		if (prefix.children_fetched) {
-			$("#prefix_exp" + prefix.id).html("&mbsp;-&nbsp;");
+		// If the prefixes has children  (or we do not know), add expand button
+        // TODO: this needs a cleanup. We have both the has_children attribute
+        // and the type attribute which gives us information about this
+        // (in case of type being 'host')
+		if (prefix.has_children != 0) {
+
+			// add expand button
+	        prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="collapseClick(' + prefix.id + ')">&nbsp;+&nbsp;</span>');
+
+			// If we are sure that the children has been fetched, the group will
+			// already be fully expanded and a minus sign should be shown
+			if (prefix.has_children == 1) {
+				$("#prefix_exp" + prefix.id).html("&mbsp;-&nbsp;");
+			}
+
 		}
 
         prefix_indent.width(prefix_indent.width() + 30 * prefix.indent);
@@ -92,8 +113,16 @@
         for (key in pref_list.result) {
 
             var cur_prefix = pref_list.result[key];
-			cur_prefix.children_fetched = false;
             prefix_list[cur_prefix.id] = cur_prefix;
+
+			// Determine if the prefix has children of not.
+			// A host never has
+			if (cur_prefix.type == 'host') {
+				cur_prefix.has_children = 0;
+			// We do not know
+			} else {
+				cur_prefix.has_children = -2;
+			}
 
 			// if we miss a previous prefix, set prev_prefix to the current
 			// (we need something...)
@@ -115,8 +144,12 @@
 			// indent than a previous one and still not belong to the 
 			// previous network's collapse group.
             if (cur_prefix.indent > prev_prefix.indent) {
+
 				// we're adding to previous prefix's collapse group - expand it
 				expandGroup(prev_prefix.id);
+
+				// The previous prefix apparantly has at least one child
+				prev_prefix.has_children = -1;
             }
 
 			// Only display prefixes we are supposed to display
@@ -137,6 +170,21 @@
 
     }
 
+
+    /*
+     * Translate form search options to depth levels
+     */
+    function optToDepth(opt) {
+
+        switch (opt) {
+            case 'none': return 0;
+            case 'immediate': return 1;
+            case 'all': return -1;
+            default: return 0;
+        }
+
+    }
+
     /*
      * Perform a search operation
      */
@@ -145,13 +193,100 @@
         var search_q = {
             'query_string': $('#query_string').val(),
             'schema': {{ c.schema.id }},
-            'search_opt_parent': $('input[name="search_opt_parent"]:checked').val(),
-            'search_opt_child': $('input[name="search_opt_child"]:checked').val()
+            'parents_depth': optToDepth($('input[name="search_opt_parent"]:checked').val()),
+            'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
+            'include_all_parents': 'true',
+            'include_all_children': 'false'
         }
 
-        $.getJSON("{{ h.url(controller='xhr', action='smart_search_prefix') }}", search_q, receivePrefixList);
+        $.getJSON("{{ h.url(controller = 'xhr', action = 'smart_search_prefix') }}", search_q, receivePrefixList);
 
     }
+
+	/*
+	 * Function which is run when a collapse +/- sign is clicked.
+	 */
+	function collapseClick(id) {
+
+		// Determine if we need to fetch data
+		if (prefix_list[id].has_children == -2) {
+
+			// Yes, ask server for prefix list
+			var data = {
+				'schema': {{c.schema.id}},
+				'id': id,
+                'include_parents': false,
+                'include_children': false,
+                'parents_depth': 0,
+                'children_depth': 1
+			};
+			$.getJSON("{{ h.url(controller = 'xhr', action = 'search_prefix') }}", data, insertPrefixList);
+
+		} else {
+			toggleGroup(id);
+		}
+
+	}
+
+	/*
+	 * Insert prefixes into the list
+	 */
+	function insertPrefixList(pref_list) {
+
+		console.log('Got ' + pref_list.length + ' prefixes.');
+
+		// Zero result elements. Should not happen as we at least always should
+		// get the prefix we select to list, even if it has no children.
+		if (pref_list.length == 0) {
+			
+			console.log('Warning: no prefixes returned from list operation.');
+			return true;
+
+		// One result element (the prefix we searched for)
+		} else if (pref_list.length == 1) {
+			
+			// remove expand button
+			$("#prefix_indent" + pref_list[0].id).html('&nbsp;');
+            prefix_list[pref_list[0].id].has_children = 0;
+			return true;
+
+		}
+
+		// OK, we got a bunch of prefixes to diplay. Where to put them?
+        // Expand and locate collapse container 
+		expandGroup(pref_list[0].id);
+        col_group = $('#collapse' + pref_list[0].id)
+
+        // go through received prefixes
+		for (key in pref_list) {
+
+            // skip first prefix as that's the one that was clicked
+            if (key == 0) {
+                continue;
+            }
+
+            prefix = pref_list[key];
+
+            // a host has no children, otherwise we do not know
+            if (prefix.type == 'host') {
+                prefix.has_children = 0;
+            } else {
+                prefix.has_children = -2;
+            }
+    
+            prefix_list[prefix.id] = prefix;
+            showPrefix(prefix, col_group)
+
+			// add collapse container for current prefix
+			// TODO: do not add if prefix is host
+            col_group.append('<div class="prefix_collapse" id="collapse' + prefix.id + '">');
+		}
+
+        // Note that we now know that the parent now has children.
+        prefix_list[pref_list[0].id].has_children = 1;
+
+	}
+
 
     /*
      * Switches a collapse group

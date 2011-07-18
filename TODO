@@ -12,6 +12,7 @@ Core
  - authentication in XML-RPC framework
  - authorization in XML-RPC framework
  - accounting in NAP
+ - write test cases for the search_prefix function
 
 
 polish, chrome and shine
@@ -30,6 +31,5 @@ Web UI
  - Removing prefixes
  - Add a cache timeout to the NapModel object cache
  - Implement default type of prefix assigned from a pool
- - Fetch prefixes via xhr when expanding a prefix
 
 .. todolist::

@@ -19,6 +19,28 @@ class XhrController(BaseController):
         fail gracefully if not.
     """
 
+    @classmethod
+    def extract_prefix_attr(cls, req):
+        """ Extract prefix attributes from arbitary dict.
+        """
+
+        # TODO: add more?
+        attr = {}
+        if 'id' in request.params:
+            attr['id'] = request.params['id']
+        if 'pool' in request.params:
+            attr['pool'] = { 'id': request.params['pool'] }
+        if 'node' in request.params:
+            attr['node'] = request.params['node']
+        if 'type' in request.params:
+            attr['type'] = request.params['type']
+        if 'country' in request.params:
+            attr['country'] = request.params['country']
+
+        return attr
+
+
+
     def index(self):
         # TODO: write a function which lists the available XHR functions?
         return 'Hello World'
@@ -48,21 +70,64 @@ class XhrController(BaseController):
         """ List prefixes and return JSON encoded result.
         """
 
-        schema = Schema.get(int(request.params['schema_id']))
+        schema = Schema.get(int(request.params['schema']))
 
-        # add attributes
-        # TODO: add more?
-        attr = {}
-        if 'pool' in request.params:
-            attr['pool'] = { 'id': request.params['pool'] }
-        if 'node' in request.params:
-            attr['node'] = request.params['node']
-        if 'type' in request.params:
-            attr['type'] = request.params['type']
-        if 'country' in request.params:
-            attr['country'] = request.params['country']
+        # fetch attributes from request.params
+        attr = XhrController.extract_prefix_attr(request.params)
 
         prefixes = Prefix.list(schema, attr)
+        return json.dumps(prefixes, cls=NapJSONEncoder)
+
+
+    def search_prefix(self):
+        """ Search prefixes. Does not yet incorporate all the functions of the
+            search_prefix API function due to difficulties with transferring
+            a complete 'dict-to-sql' encoded data structure.
+
+            Instead, a list of prefix attributes can be given which will be
+            matched with the 'equals' operator. If multiple attributes are
+            given, they will be combined with the 'and' operator.
+        """
+
+        schema = Schema.get(int(request.params['schema']))
+
+        # fetch attributes from request.params
+        attr = XhrController.extract_prefix_attr(request.params)
+
+        # build query dict
+        # TODO: make prettier...
+        n = 0
+        for key, val in attr.items():
+            if n == 0:
+                q = {
+                    'operator': 'equals',
+                    'val1': key,
+                    'val2': val
+                }
+            else:
+                q = {
+                    'operator': 'and',
+                    'val1': {
+                        'operator': 'equals',
+                        'val1': key,
+                        'val2': val
+                    },
+                    'val2': q
+                }
+            n += 1
+
+        # extract search options
+        search_opts = {}
+        if 'children_depth' in request.params:
+            search_opts['children_depth'] = request.params['children_depth']
+        if 'parents_depth' in request.params:
+            search_opts['parents_depth'] = request.params['parents_depth']
+        if 'display_children' in request.params:
+            search_opts['display_children'] = request.params['display_children']
+        if 'display_parents' in request.params:
+            search_opts['display_parents'] = request.params['display_parents']
+
+        prefixes = Prefix.search(schema, q, search_opts)
         return json.dumps(prefixes, cls=NapJSONEncoder)
 
 
@@ -75,29 +140,38 @@ class XhrController(BaseController):
             function, which performs the search.
         """
 
-        if 'search_opt_parent' in request.params:
-            sop = request.params['search_opt_parent']
-        else:
-            sop = 'all'
+        search_options = {}
 
-        if 'search_opt_child' in request.params:
-            soc = request.params['search_opt_child']
-        else:
-            soc = 'immediate'
+        if 'include_all_parents' in request.params:
+            if request.params['include_all_parents'] == 'true':
+                search_options['include_all_parents'] = True
+            else:
+                search_options['include_all_parents'] = False
+                
+        if 'include_all_children' in request.params:
+            if request.params['include_all_children'] == 'true':
+                search_options['include_all_children'] = True
+            else:
+                search_options['include_all_children'] = False
 
-        log.debug("Smart search query: schema=%d q=%s search_opt_parent=%s search_opt_child=%s" %
+        if 'parents_depth' in request.params:
+            search_options['parents_depth'] = request.params['parents_depth']
+        if 'children_depth' in request.params:
+            search_options['children_depth'] = request.params['children_depth']
+
+        log.debug("params: %s" % str(request.params))
+
+        log.debug("Smart search query: schema=%d q=%s search_options=%s" %
             (int(request.params['schema']),
             request.params['query_string'],
-            sop,
-            soc
+            str(search_options)
         ))
 
         schema = Schema.get(int(request.params['schema']))
 
         result = Prefix.smart_search(schema,
             request.params['query_string'],
-            sop,
-            soc
+            search_options
             )
         return json.dumps(result, cls=NapJSONEncoder)
 

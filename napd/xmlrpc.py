@@ -241,7 +241,7 @@ class NapProtocol(xmlrpc.XMLRPC):
 
 
 
-    def xmlrpc_search_prefix(self, schema_spec, query):
+    def xmlrpc_search_prefix(self, schema_spec, query, search_options = {}):
         """ Search for prefixes.
 
             The 'query' input is a specially crafted dict/struct which
@@ -249,13 +249,13 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.search_prefix(schema_spec, query)
+            return self.nap.search_prefix(schema_spec, query, search_options)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e), str(e)])
+            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 
 
 
-    def xmlrpc_smart_search_prefix(self, schema_spec, query_string, parents = 'all', children = 'immediate'):
+    def xmlrpc_smart_search_prefix(self, schema_spec, query_string, search_options = {}):
         """ Perform a smart search.
 
             The smart search function tries to extract a query from a text
@@ -264,7 +264,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.smart_search_prefix(schema_spec, query_string, parents, children)
+            return self.nap.smart_search_prefix(schema_spec, query_string, search_options)
         except nap.NapError, e:
             return xmlrpclib.Fault(errcode_map[type(e)], str(e))
 
