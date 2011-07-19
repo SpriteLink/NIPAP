@@ -18,7 +18,7 @@
      */
     var prefix_list = Object();
     var indent_head = Object();
-        
+
     function showPrefix(prefix, parent_container) {
 
         // add main prefix container
@@ -40,22 +40,22 @@
         var prefix_indent = $('#prefix_indent' + prefix.id);
         prefix_indent.addClass("prefix_indent");
 
-		// If the prefixes has children  (or we do not know), add expand button
+        // If the prefixes has children  (or we do not know), add expand button
         // TODO: this needs a cleanup. We have both the has_children attribute
         // and the type attribute which gives us information about this
         // (in case of type being 'host')
-		if (prefix.has_children != 0) {
+        if (prefix.has_children != 0) {
 
-			// add expand button
-	        prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="collapseClick(' + prefix.id + ')">&nbsp;+&nbsp;</span>');
+            // add expand button
+            prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="collapseClick(' + prefix.id + ')">&nbsp;+&nbsp;</span>');
 
-			// If we are sure that the children has been fetched, the group will
-			// already be fully expanded and a minus sign should be shown
-			if (prefix.has_children == 1) {
-				$("#prefix_exp" + prefix.id).html("&mbsp;-&nbsp;");
-			}
+            // If we are sure that the children has been fetched, the group will
+            // already be fully expanded and a minus sign should be shown
+            if (prefix.has_children == 1) {
+                $("#prefix_exp" + prefix.id).html("&mbsp;-&nbsp;");
+            }
 
-		}
+        }
 
         prefix_indent.width(prefix_indent.width() + 30 * prefix.indent);
 
@@ -72,7 +72,7 @@
         prefix_type.html(prefix.type);
 
         // Add prefix description
-        prefix_entry.append('<div id="prefix_description' + prefix.id + '">'); 
+        prefix_entry.append('<div id="prefix_description' + prefix.id + '">');
         var prefix_description = $('#prefix_description' + prefix.id);
         prefix_description.addClass("prefix_description");
         prefix_description.html(prefix.description);
@@ -106,8 +106,8 @@
 
         $('#prefix_list').empty();
 
-		prefix_list = new Object();
-		indent_head = new Object();
+        prefix_list = new Object();
+        indent_head = new Object();
 
         // add prefixes
         for (key in pref_list.result) {
@@ -115,56 +115,56 @@
             var cur_prefix = pref_list.result[key];
             prefix_list[cur_prefix.id] = cur_prefix;
 
-			// Determine if the prefix has children of not.
-			// A host never has
-			if (cur_prefix.type == 'host') {
-				cur_prefix.has_children = 0;
-			// We do not know
-			} else {
-				cur_prefix.has_children = -2;
-			}
-
-			// if we miss a previous prefix, set prev_prefix to the current
-			// (we need something...)
-			// TODO: make less ugly ;)
-			if (key - 1 in pref_list.result) {
-            	var prev_prefix = pref_list.result[key - 1];
-			} else {
-				var prev_prefix = cur_prefix;
-			}
-
-			// if there is no indent container for the current level, set
-			// indent head for current indent level to the top level container
-			if (!(cur_prefix.indent in indent_head)) {
-				indent_head[cur_prefix.indent] = $('#prefix_list');
-				console.log("Adding element to top level group");
-			}
-
-			// TODO: make this network aware. A network kan have a higher
-			// indent than a previous one and still not belong to the 
-			// previous network's collapse group.
-            if (cur_prefix.indent > prev_prefix.indent) {
-
-				// we're adding to previous prefix's collapse group - expand it
-				expandGroup(prev_prefix.id);
-
-				// The previous prefix apparantly has at least one child
-				prev_prefix.has_children = -1;
+            // Determine if the prefix has children of not.
+            // A host never has
+            if (cur_prefix.type == 'host') {
+                cur_prefix.has_children = 0;
+            // We do not know
+            } else {
+                cur_prefix.has_children = -2;
             }
 
-			// Only display prefixes we are supposed to display
-			// TODO: avoid creating alot of unneccesary collapse containers
-			if (cur_prefix.display == true) {
-	            showPrefix(cur_prefix, indent_head[cur_prefix.indent]);
-			}
+            // if we miss a previous prefix, set prev_prefix to the current
+            // (we need something...)
+            // TODO: make less ugly ;)
+            if (key - 1 in pref_list.result) {
+                var prev_prefix = pref_list.result[key - 1];
+            } else {
+                var prev_prefix = cur_prefix;
+            }
 
-			console.log("Added prefix " + cur_prefix.id + " (" + cur_prefix.display_prefix + ") to container " + indent_head[cur_prefix.indent].attr('id'));
+            // if there is no indent container for the current level, set
+            // indent head for current indent level to the top level container
+            if (!(cur_prefix.indent in indent_head)) {
+                indent_head[cur_prefix.indent] = $('#prefix_list');
+                console.log("Adding element to top level group");
+            }
 
-			// add collapse container for current prefix
-			// TODO: do not add if prefix is host
+            // TODO: make this network aware. A network kan have a higher
+            // indent than a previous one and still not belong to the
+            // previous network's collapse group.
+            if (cur_prefix.indent > prev_prefix.indent) {
+
+                // we're adding to previous prefix's collapse group - expand it
+                expandGroup(prev_prefix.id);
+
+                // The previous prefix apparantly has at least one child
+                prev_prefix.has_children = -1;
+            }
+
+            // Only display prefixes we are supposed to display
+            // TODO: avoid creating alot of unneccesary collapse containers
+            if (cur_prefix.display == true) {
+                showPrefix(cur_prefix, indent_head[cur_prefix.indent]);
+            }
+
+            console.log("Added prefix " + cur_prefix.id + " (" + cur_prefix.display_prefix + ") to container " + indent_head[cur_prefix.indent].attr('id'));
+
+            // add collapse container for current prefix
+            // TODO: do not add if prefix is host
             indent_head[cur_prefix.indent].append('<div class="prefix_collapse" id="collapse' + cur_prefix.id + '">');
             indent_head[cur_prefix.indent + 1] = $('#collapse' + cur_prefix.id);
-			console.log("Added collapse container " + indent_head[cur_prefix.indent + 1].attr('id'));
+            console.log("Added collapse container " + indent_head[cur_prefix.indent + 1].attr('id'));
 
         }
 
@@ -203,62 +203,62 @@
 
     }
 
-	/*
-	 * Function which is run when a collapse +/- sign is clicked.
-	 */
-	function collapseClick(id) {
+    /*
+     * Function which is run when a collapse +/- sign is clicked.
+     */
+    function collapseClick(id) {
 
-		// Determine if we need to fetch data
-		if (prefix_list[id].has_children == -2) {
+        // Determine if we need to fetch data
+        if (prefix_list[id].has_children == -2) {
 
-			// Yes, ask server for prefix list
-			var data = {
-				'schema': {{c.schema.id}},
-				'id': id,
+            // Yes, ask server for prefix list
+            var data = {
+                'schema': {{c.schema.id}},
+                'id': id,
                 'include_parents': false,
                 'include_children': false,
                 'parents_depth': 0,
                 'children_depth': 1
-			};
-			$.getJSON("{{ h.url(controller = 'xhr', action = 'search_prefix') }}", data, insertPrefixList);
+            };
+            $.getJSON("{{ h.url(controller = 'xhr', action = 'search_prefix') }}", data, insertPrefixList);
 
-		} else {
-			toggleGroup(id);
-		}
+        } else {
+            toggleGroup(id);
+        }
 
-	}
+    }
 
-	/*
-	 * Insert prefixes into the list
-	 */
-	function insertPrefixList(pref_list) {
+    /*
+     * Insert prefixes into the list
+     */
+    function insertPrefixList(pref_list) {
 
-		console.log('Got ' + pref_list.length + ' prefixes.');
+        console.log('Got ' + pref_list.length + ' prefixes.');
 
-		// Zero result elements. Should not happen as we at least always should
-		// get the prefix we select to list, even if it has no children.
-		if (pref_list.length == 0) {
-			
-			console.log('Warning: no prefixes returned from list operation.');
-			return true;
+        // Zero result elements. Should not happen as we at least always should
+        // get the prefix we select to list, even if it has no children.
+        if (pref_list.length == 0) {
 
-		// One result element (the prefix we searched for)
-		} else if (pref_list.length == 1) {
-			
-			// remove expand button
-			$("#prefix_indent" + pref_list[0].id).html('&nbsp;');
+            console.log('Warning: no prefixes returned from list operation.');
+            return true;
+
+        // One result element (the prefix we searched for)
+        } else if (pref_list.length == 1) {
+
+            // remove expand button
+            $("#prefix_indent" + pref_list[0].id).html('&nbsp;');
             prefix_list[pref_list[0].id].has_children = 0;
-			return true;
+            return true;
 
-		}
+        }
 
-		// OK, we got a bunch of prefixes to diplay. Where to put them?
-        // Expand and locate collapse container 
-		expandGroup(pref_list[0].id);
+        // OK, we got a bunch of prefixes to diplay. Where to put them?
+        // Expand and locate collapse container
+        expandGroup(pref_list[0].id);
         col_group = $('#collapse' + pref_list[0].id)
 
         // go through received prefixes
-		for (key in pref_list) {
+        for (key in pref_list) {
 
             // skip first prefix as that's the one that was clicked
             if (key == 0) {
@@ -273,19 +273,19 @@
             } else {
                 prefix.has_children = -2;
             }
-    
+
             prefix_list[prefix.id] = prefix;
             showPrefix(prefix, col_group)
 
-			// add collapse container for current prefix
-			// TODO: do not add if prefix is host
+            // add collapse container for current prefix
+            // TODO: do not add if prefix is host
             col_group.append('<div class="prefix_collapse" id="collapse' + prefix.id + '">');
-		}
+        }
 
         // Note that we now know that the parent now has children.
         prefix_list[pref_list[0].id].has_children = 1;
 
-	}
+    }
 
 
     /*
@@ -297,17 +297,17 @@
         var exp = $('#prefix_exp' + id);
 
         if (col.css('display') == 'none') {
-			expandGroup(id);
+            expandGroup(id);
         } else {
-			collapseGroup(id);
+            collapseGroup(id);
         }
-        
+
     }
 
-	/*
-	 * Expand a collapse group
-	 */
-	function expandGroup(id) {
+    /*
+     * Expand a collapse group
+     */
+    function expandGroup(id) {
 
         var col = $('#collapse' + id);
         var exp = $('#prefix_exp' + id);
@@ -315,12 +315,12 @@
         col.slideDown();
         exp.html('&nbsp;-&nbsp;');
 
-	}
+    }
 
-	/*
-	 * Collapse a collapse group
-	 */
-	function collapseGroup(id) {
+    /*
+     * Collapse a collapse group
+     */
+    function collapseGroup(id) {
 
         var col = $('#collapse' + id);
         var exp = $('#prefix_exp' + id);
@@ -328,7 +328,7 @@
         col.slideUp();
         exp.html('&nbsp;+&nbsp;');
 
-	}
+    }
 
     $(function () {
 
@@ -352,70 +352,91 @@
 
 {% block content %}
 
-<a href="{{ h.url(controller='prefix', action='list', schema=c.schema.id, view='prefix') }}">prefix</a> | 
-<a href="{{ h.url(controller='prefix', action='list', schema=c.schema.id, view='pool') }}">pool</a>
-
-<center>
+<div id="search_box">
     <form id="prefix_search" method="post">
-        <input id="query_string" type="text" size="50" autocomplete="off" autofocus="autofocus">
-        <input type="submit" value="Search">
+        <center>
+            <div style="padding-bottom: 2px; padding-top: 1px;">
+                <table cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td style="padding-right: 20px">
+                                        <table id="sftab" class="lst-d lst-tbb" cellspacing="0" cellpadding="0" border="0">
+                                        <input id="query_string" type="text" size="30" autocomplete="off" autofocus="autofocus">
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <div id="sbd">
+                                            <input name="search_button" type="submit" value="Search"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table border=0>
+                                <tr>
+                                    <td class="opt_left" name="search_interpret" style="border-bottom: 1px dotted #EEEEEE;">
+                                        Search interpretation
+                                    </td>
+                                    <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td>
+                                </tr>
+                                <tr>
+                                    <td class="opt_left">
+                                        Display options
+                                    </td><td class="opt_right">
+                                        Include parent:
+
+                                    {% if c.search_opt_parent == 'none' %}
+                                        <input type="radio" name="search_opt_parent" value="none" checked>none</input>
+                                    {% else %}
+                                        <input type="radio" name="search_opt_parent" value="none">none</input>
+                                    {% endif %}
+
+                                    {% if c.search_opt_parent == 'immediate' %}
+                                        <input type="radio" name="search_opt_parent" value="immediate" checked>immediate</input>
+                                    {% else %}
+                                        <input type="radio" name="search_opt_parent" value="immediate">immediate</input>
+                                    {% endif %}
+
+                                    {% if c.search_opt_parent == 'all' %}
+                                        <input type="radio" name="search_opt_parent" value="all" checked>all</input>
+                                    {% else %}
+                                        <input type="radio" name="search_opt_parent" value="all">all</input>
+                                    {% endif %}
+
+                                        <br>Include children:
+
+                                    {% if c.search_opt_child == 'none' %}
+                                        <input type="radio" name="search_opt_child" value="none" checked>none
+                                    {% else %}
+                                        <input type="radio" name="search_opt_child" value="none">none
+                                    {% endif %}
+
+                                    {% if c.search_opt_child == 'immediate' %}
+                                        <input type="radio" name="search_opt_child" value="immediate" checked>immediate
+                                    {% else %}
+                                        <input type="radio" name="search_opt_child" value="immediate">immediate
+                                    {% endif %}
+
+                                    {% if c.search_opt_child == 'all' %}
+                                        <input type="radio" name="search_opt_child" value="all" checked>all
+                                    {% else %}
+                                        <input type="radio" name="search_opt_child" value="all">all
+                                    {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </center>
     </form>
-</center>
-<table>
-    <tr>
-        <td width="40">&nbsp;</td>
-        <td class="opt_left">
-            Search interpretation
-        </td>
-        <td class="opt_right" id="search_interpret_container"> </td>
-    </tr>
-    <tr>
-        <td width="40">&nbsp;</td>
-        <td class="opt_left">
-            Display options
-        </td><td class="opt_right">
-            Include parent:
-
-        {% if c.search_opt_parent == 'none' %}
-            <input type="radio" name="search_opt_parent" value="none" checked>none</input>
-        {% else %}
-            <input type="radio" name="search_opt_parent" value="none">none</input>
-        {% endif %}
-
-        {% if c.search_opt_parent == 'immediate' %}
-            <input type="radio" name="search_opt_parent" value="immediate" checked>immediate</input>
-        {% else %}
-            <input type="radio" name="search_opt_parent" value="immediate">immediate</input>
-        {% endif %}
-
-        {% if c.search_opt_parent == 'all' %}
-            <input type="radio" name="search_opt_parent" value="all" checked>all</input>
-        {% else %}
-            <input type="radio" name="search_opt_parent" value="all">all</input>
-        {% endif %}
-
-            <br>Include children:
-
-        {% if c.search_opt_child == 'none' %}
-            <input type="radio" name="search_opt_child" value="none" checked>none
-        {% else %}
-            <input type="radio" name="search_opt_child" value="none">none
-        {% endif %}
-
-        {% if c.search_opt_child == 'immediate' %}
-            <input type="radio" name="search_opt_child" value="immediate" checked>immediate
-        {% else %}
-            <input type="radio" name="search_opt_child" value="immediate">immediate
-        {% endif %}
-
-        {% if c.search_opt_child == 'all' %}
-            <input type="radio" name="search_opt_child" value="all" checked>all
-        {% else %}
-            <input type="radio" name="search_opt_child" value="all">all
-        {% endif %}
-        </td>
-    </tr>
-</table>
+</div>
 <div id="prefix_list">
 </div>
 
