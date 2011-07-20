@@ -10,24 +10,35 @@
     </head>
     <body>
         <div class="top_menu">
-            <div class="menu_entry">
-                <h1 id="schema_title">Schema: 
-                {% if c['schema'] is defined %}
-                    {{ c.schema.name }}
-                {% else %}
-                    None
-                {% endif %}
+            <div class="menu_entry" style="line-height: 0px">
+				<div class="menu_entry" style="font-size: 10pt; color: #CCCCCC; padding-top: 11px; font-weight: bold;">
+				Schema:
+				</div>
+				<div class="menu_entry" style="position: relative;">
+                <h1 id="schema_title" style="line-height: 27px">
+					{% if c['schema'] is defined %}
+						<a href="{{ h.url(controller = 'schema', action = 'list', schema = c.schema.id) }}" class="schema_title">
+							{{ c.schema.name }}
+						</a>
+					{% else %}
+						<a href="{{ h.url(controller = 'schema', action = 'list') }}" class="schema_title">
+							&lt;None&gt;
+						</a>
+					{% endif %}
                 </h1>
+				</div>
             </div>
-            <div class="menu_entry">
-            {% if c['schema'] is defined %}
-                <a href="{{ h.url(controller = 'schema', action = 'list', schema = c.schema.id) }}">schema list</a> | 
-                <a href="{{ h.url(controller = 'prefix', action = 'list', schema = c.schema.id) }}">prefix list</a> |
-                <a href="{{ h.url(controller = 'pool', action = 'list', schema = c.schema.id) }}">pool list</a> |
-                <a href="{{ h.url(controller = 'prefix', action = 'add', schema = c.schema.id) }}">add prefix</a>
-            {% else %}
-                <a href="{{ h.url(controller = 'schema', action = 'list') }}">list schemas</a>
-            {% endif %}
+            <div class="menu_entry" style="position: absolute; left: 43%; padding-top: 0px;">
+				<ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
+				{% if c['schema'] is defined %}
+				<li style="display: inline-block; padding-left: 5px; padding-right: 5px; {% if page == 'prefixes' %} border-top: 3px solid; {% else %} padding-top: 3px; {% endif %} border-top-color: #dd4b39; " >
+						<a href="{{ h.url(controller = 'prefix', action = 'list', schema = c.schema.id) }}" class="menu_link"><span>prefixes</span></a>
+					</li>
+					<li style="display: inline-block; padding-left: 5px; padding-right: 5px; {% if page == 'pools' %} border-top: 3px solid; {% else %} padding-top: 3px; {% endif %} border-top-color: #dd4b39;" >
+						<a href="{{ h.url(controller = 'pool', action = 'list', schema = c.schema.id) }}" class="menu_link">pools</a>
+					</li>
+				{% endif %}
+				</ol>
             </div>
         </div>
         <div class="content">
