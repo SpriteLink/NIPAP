@@ -1463,6 +1463,10 @@ class Nap:
             :func:`search_prefix` function.  If multiple search keys are
             detected, they are combined with a logical AND.
 
+            It tries to automatically detect IP addresses and prefixes and put
+            these into the `query` dict with "contains_within" operators and so
+            forth.
+
             See the :func:`search_prefix` function for an explanation of the
             `search_options` argument.
         """
@@ -1478,10 +1482,43 @@ class Nap:
         query_parts = list()
         for query_str_part in query_str_parts:
 
-            # prefix
-            if self._get_afi(query_str_part['string']) is not None:
-                query_str_part['interpretation'] = 'prefix'
+            self._logger.debug("QSP: " + query_str_part['string'] + " split-len: " + str(len(query_str_part['string'].split('.'))))
+            # IPv4 prefix
+            if self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('/')) == 2:
+                query_str_part['interpretation'] = 'IPv4 prefix'
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
+                query_parts.append({
+                    'operator': 'contained_within_equals',
+                    'val1': 'prefix',
+                    'val2': query_str_part['string']
+                })
+
+            # IPv4 address
+            # split on dot to make sure we have all four octets before we do a
+            # search
+            elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('.')) == 4:
+                query_str_part['interpretation'] = 'IPv4 address'
+                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
+                query_parts.append({
+                    'operator': 'contains_equals',
+                    'val1': 'prefix',
+                    'val2': query_str_part['string']
+                })
+
+            # IPv6 prefix
+            elif self._get_afi(query_str_part['string']) == 6 and len(query_str_part['string'].split('/')) == 2:
+                query_str_part['interpretation'] = 'IPv6 prefix'
+                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 prefix")
+                query_parts.append({
+                    'operator': 'contained_within_equals',
+                    'val1': 'prefix',
+                    'val2': query_str_part['string']
+                })
+
+            # IPv6 address
+            elif self._get_afi(query_str_part['string']) == 6:
+                query_str_part['interpretation'] = 'prefix'
+                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 address")
                 query_parts.append({
                     'operator': 'contains_equals',
                     'val1': 'prefix',
