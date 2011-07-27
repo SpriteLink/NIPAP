@@ -368,40 +368,44 @@ $(function () {
 {% endblock %}
 
 {% block content %}
-
-<h2>Add prefix</h2>
-
 <div style="padding: 15px;">
+
+<h2>Add a new prefix</h2>
+
+<div style="padding: 15px">
 
 <!-- 
 
     PREFIX ALLOCATION METHOD
 
 -->
-<h3>Prefix allocation method</h3>
-<table>
-    <tr>
-        <td width="120" valign="top">
-            <input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool">
-            <label for="radio-from-pool">From pool</label>
-        </td>
-        <td>Get a prefix from a pre-defined prefix pool.</td>
-    </tr>
-    <tr>
-        <td valign="top">
-            <input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix">
-            <label for="radio-from-prefix">From prefix</label>
-        </td>
-        <td>Get a prefix allocated from another prefix.</td>
-    </tr>
-    <tr>
-        <td valign="top">
-            <input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual">
-            <label for="radio-manual">Manual</label>
-        </td>
-        <td>Specify all data manually</td>
-    </tr>
-</table>
+<div class="options-group">
+	<div class="options-content">
+		<h3 class="options-group-heading">Prefix allocation method</h3>
+		<table>
+			<tr>
+				<td width="120" valign="top">
+					<input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool">
+					<label for="radio-from-pool">From pool</label>
+				</td>
+				<td>Get a prefix from a pre-defined prefix pool.</td>
+			</tr>
+			<tr>
+				<td valign="top">
+					<input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix">
+					<label for="radio-from-prefix">From prefix</label>
+				</td>
+				<td>Get a prefix allocated from another prefix.</td>
+			</tr>
+			<tr>
+				<td valign="top">
+					<input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual">
+					<label for="radio-manual">Manual</label>
+				</td>
+				<td>Specify all data manually</td>
+			</tr>
+		</table>
+	</div>
 </div>
 
 <!--
@@ -409,42 +413,47 @@ $(function () {
     FROM-POOL
 
 -->
-<div style="padding: 15px; display: none;" id="from-pool_container">
-    <table>
-        <tr>
-            <td>Family</td>
-            <td>
-                <label for="family_4_radio">IPv4</label><input type="radio" name="family" value="4" id="family_4_radio" checked>
-                <label for="family_6_radio">IPv6</label><input type="radio" name="family" value="6" id="family_6_radio">
-            </td>
-        </tr>
-        <tr>
-            <td><label for="from-pool">Pool</label></td>
-            <td><input id="from-pool" type="text" name="from-pool"></td>
-        </tr>
-        <tr style="display: none;" id="length_info_row">
-            <td style="padding-right: 20px;">Prefix-length</td>
-            <td>
-                <span id="def_length_container"></span>
-            </td>
-        </tr>
-        <tr style="display: none;" id="length_edit_row">
-            <td>&nbsp;</td>
-            <td>
-                <label for="edit_length_default_radio">Use default</label>
-                <input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
-                <label for="edit_length_override_radio">Override</label>
-                <input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
-            </td>
-        </tr>
-        <tr style="display: none;" id="length_row">
-            <td>&nbsp;</td>
-            <td>
-                <input type="text" name="prefix_length_pool">
-            </td>
-            <td>&nbsp;</td>
-        </tr>
-    </table>
+<div style="display: none;" id="from-pool_container">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Pool allocation options</h3>
+			<table>
+				<tr>
+					<td>Family</td>
+					<td>
+						<label for="family_4_radio">IPv4</label><input type="radio" name="family" value="4" id="family_4_radio" checked>
+						<label for="family_6_radio">IPv6</label><input type="radio" name="family" value="6" id="family_6_radio">
+					</td>
+				</tr>
+				<tr>
+					<td><label for="from-pool">Pool</label></td>
+					<td><input id="from-pool" type="text" name="from-pool"></td>
+				</tr>
+				<tr style="display: none;" id="length_info_row">
+					<td style="padding-right: 20px;">Prefix-length</td>
+					<td>
+						<span id="def_length_container"></span>
+					</td>
+				</tr>
+				<tr style="display: none;" id="length_edit_row">
+					<td>&nbsp;</td>
+					<td>
+						<label for="edit_length_default_radio">Use default</label>
+						<input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
+						<label for="edit_length_override_radio">Override</label>
+						<input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
+					</td>
+				</tr>
+				<tr style="display: none;" id="length_row">
+					<td>&nbsp;</td>
+					<td>
+						<input type="text" name="prefix_length_pool">
+					</td>
+					<td>&nbsp;</td>
+				</tr>
+			</table>
+		</div>
+	</div>
 </div>
 
 <!--
@@ -452,39 +461,43 @@ $(function () {
     FROM-PREFIX
 
 -->
-<div style="padding: 15px; display: none;" id="from-prefix_container">
-    <h3>Choose prefix</h3>
-    <center>
-        <form method="post">
-            <input type="text" id="query_string" name="query_string"  size="50" autocomplete="off">
-            <input type="submit" value="Search">
-        </form>
-    </center>
-    <table>
-        <tr>
-            <td width="40">&nbsp;</td>
-            <td class="opt_left">
-                Search interpretation
-            </td>
-            <td class="opt_right" id="search_interpret_container"> </td>
-        </tr>
-    </table>
-    <div class="prefix_list" id="prefix_list"></div>
-</div>
+<div style="display: none;" id="from-prefix_container">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Prefix allocation options</h3>
+				<center>
+					<form method="post">
+						<input type="text" id="query_string" name="query_string"  size="50" autocomplete="off">
+						<input type="submit" value="Search">
+					</form>
+				</center>
+				<table>
+					<tr>
+						<td width="40">&nbsp;</td>
+						<td class="opt_left">
+							Search interpretation
+						</td>
+						<td class="opt_right" id="search_interpret_container"> </td>
+					</tr>
+				</table>
+				<div class="prefix_list" id="prefix_list"></div>
+		</div>
 
-<div id="prefix_length_prefix_container" style="display: none; padding: 15px;">
-    <table>
-        <tr>
-            <td>Allocating from</td>
-            <td><span id="alloc_from_prefix"></span></td>
-        </tr>
-        <tr id="length_info_row">
-            <td style="padding-right: 20px;">Prefix-length</td>
-            <td>
-                <input type="text" name="prefix_length_prefix">
-            </td>
-        </tr>
-    </table>
+		<div id="prefix_length_prefix_container" style="display: none; padding: 15px;">
+			<table>
+				<tr>
+					<td>Allocating from</td>
+					<td><span id="alloc_from_prefix"></span></td>
+				</tr>
+				<tr id="length_info_row">
+					<td style="padding-right: 20px;">Prefix-length</td>
+					<td>
+						<input type="text" name="prefix_length_prefix">
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
 </div>
 
 <!--
@@ -492,73 +505,79 @@ $(function () {
     PREFIX DATA
 
 -->
-<div id="prefix_data_container" style="padding: 15px; display: none;">
-    <h3>Prefix data</h3>
-    <form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add", schema=c.schema.id) }}">
-    <table>
-        <tr id="prefix_row">
-            <td>Prefix</td>
-            <td><input type="text" name="prefix" value="{{ c.prefix }}"></td>
-            <td class="help-text">192.0.2.16/28</td>
-        </tr>
-        <tr>
-            <td>Description</td>
-            <td><input type="text" name="description"></td>
-            <td class="help-text">A short text describing the prefix.</td>
-        </tr>
-        <tr>
-            <td>Node</td>
-            <td><input type="text" name="node"></td>
-            <td class="help-text">Hostname of the node where the prefix is in use.</td>
-        </tr>
-        <tr>
-            <td>Type</td>
-            <td>
-                <select name="type">
-                    <option value="assignment" selected>Assignment
-                    <option value="host">Host
-                    <option value="reservation">Reservation
-                </select>
-            </td>
-            <!-- TODO: write better explanation -->
-            <td class="help-text">Type of prefix.</td>
-        </tr>
-        <tr>
-            <td>Country</td>
-            <td><input type="text" name="country"></td>
-            <td class="help-text">Two-letter country code according to ISO-3166-1</td>
-        </tr>
-        <tr>
-            <td>SPAN order</td>
-            <td><input type="text" name="span_order"></td>
-            <td class="help-text"></td>
-        </tr>
-        <tr>
-            <td>Alarm priority</td>
-            <td>
-                <select name="alarm_priority">
-                    <option value="low">low
-                    <option value="medium">medium
-                    <option value="high">high
-                </select>
-            </td>
-            <td class="help-text"></td>
-        </tr>
-        <tr>
-            <td>Comment</td>
-            <td colspan="2"><textarea rows="10" cols="72" name="comment"></textarea></td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td><input type="submit" value="Add"></td>
-            <td>&nbsp;</td>
-        </tr>
-    </table>
-    </form>
+<div id="prefix_data_container" style="display: none;">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Manual prefix options</h3>
+			<form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add", schema=c.schema.id) }}">
+			<table>
+				<tr id="prefix_row">
+					<td>Prefix</td>
+					<td><input type="text" name="prefix" value="{{ c.prefix }}"></td>
+					<td class="help-text">192.0.2.16/28</td>
+				</tr>
+				<tr>
+					<td>Description</td>
+					<td><input type="text" name="description"></td>
+					<td class="help-text">A short text describing the prefix.</td>
+				</tr>
+				<tr>
+					<td>Node</td>
+					<td><input type="text" name="node"></td>
+					<td class="help-text">Hostname of the node where the prefix is in use.</td>
+				</tr>
+				<tr>
+					<td>Type</td>
+					<td>
+						<select name="type">
+							<option value="assignment" selected>Assignment
+							<option value="host">Host
+							<option value="reservation">Reservation
+						</select>
+					</td>
+					<!-- TODO: write better explanation -->
+					<td class="help-text">Type of prefix.</td>
+				</tr>
+				<tr>
+					<td>Country</td>
+					<td><input type="text" name="country"></td>
+					<td class="help-text">Two-letter country code according to ISO-3166-1</td>
+				</tr>
+				<tr>
+					<td>SPAN order</td>
+					<td><input type="text" name="span_order"></td>
+					<td class="help-text"></td>
+				</tr>
+				<tr>
+					<td>Alarm priority</td>
+					<td>
+						<select name="alarm_priority">
+							<option value="low">low
+							<option value="medium">medium
+							<option value="high">high
+						</select>
+					</td>
+					<td class="help-text"></td>
+				</tr>
+				<tr>
+					<td>Comment</td>
+					<td colspan="2"><textarea rows="10" cols="72" name="comment"></textarea></td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td><input type="submit" value="Add"></td>
+					<td>&nbsp;</td>
+				</tr>
+			</table>
+			</form>
+		</div>
+	</div>
 </div>
 
 <div style="display: none;" id="prefix_added_container">
     The prefix <span id="prefix_added"></span> was successfully added to NAP.
+</div>
+
 </div>
 
 {% endblock %}

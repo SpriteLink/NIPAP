@@ -205,6 +205,31 @@ input[name="search_button"] {
     background-image: linear-gradient(top, #dd4b39, #c53523);
 }
 
+.options-group {
+	background: none repeat scroll 0 0 #eeeeee;
+	padding: 5px;
+	margin: 0 0 30px;
+}
+
+.options-content {
+	border: 1px solid #cacaca;
+	background-color: #ffffff;
+	width: 100%;
+	height: 100%;
+}
+
+.options-group-heading {
+	padding: 7px;
+	margin: 0;
+    background-color: #ebeced;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f8f8), to(#ebeced));
+    background-image: -webkit-linear-gradient(top, #f6f8f8, #ebeced);
+    background-image: -moz-linear-gradient(center top , #f6f8f8, #ebeced);
+    background-image: -ms-linear-gradient(top, #f6f8f8, #ebeced);
+    background-image: -o-linear-gradient(top, #f6f8f8, #ebeced);
+    background-image: linear-gradient(top, #f6f8f8, #ebeced);
+}
+
 #prefix_list {
     padding: 10px;
     padding-top: 20px;
