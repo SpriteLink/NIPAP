@@ -133,7 +133,10 @@ a.schema_title:hover {
     -webkit-border-radius: 2px;
 
     text-align: center;
+
+    cursor: pointer;
 }
+
 #sbd:hover {
     -webit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
     -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
@@ -151,6 +154,7 @@ a.schema_title:hover {
 }
 
 input[name="search_button"] {
+    cursor: pointer;
     -moz-box-sizing: content-box;
     -moz-padding-end: 0;
     -moz-padding-start: 0;
