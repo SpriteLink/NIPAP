@@ -33,6 +33,5 @@ Web UI
  - Implement default type of prefix assigned from a pool
  - Fix highlighting for menu-items. Gray box only covers text, not entire "button"
  - Implement some form of nice pop-up system, Google+ style for help dialogs
- - Button on "prefixes" page to "Add prefix"
 
 .. todolist::
