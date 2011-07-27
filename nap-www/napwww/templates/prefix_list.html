@@ -356,7 +356,7 @@
 <div id="search_box">
     <form id="prefix_search" method="post">
         <center>
-            <div style="padding-bottom: 2px; padding-top: 1px;">
+            <div style="padding-bottom: 2px; padding-top: 1px; position: relative;">
                 <table cellspacing="0" cellpadding="0" border="0">
                     <tr>
                         <td>
@@ -432,6 +432,15 @@
                         </td>
                     </tr>
                 </table>
+				<div style="position: absolute; right: 10px; top: 4px;">
+					<a href="{{ h.url(controller = 'prefix', action = 'add', schema = c.schema.id) }}">
+						<div id="anpb">
+							<div style="display: inline-block; vertical-align: middle;">
+								Add prefix
+							</div>
+						</div>
+					</a>
+				</div>
             </div>
         </center>
     </form>
