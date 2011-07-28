@@ -2,10 +2,10 @@ Nap documentation
 -----------------
 
 The main Nap documentation is generated using the Sphinx
-(http://sphinx.pocoo.org) document generator. To build everything, make sure you
-hace sphinx installed and run
+(http://sphinx.pocoo.org) document generator. To build everything, make sure
+you have sphinx installed and run:
 
-make html
+  make html
 
-in the current directory to generate the HTML documentation. The generated files
-are found in the _build/html/ directory.
+in the current directory to generate the HTML documentation. The generated
+files are then placed in the _build/html/ directory.
