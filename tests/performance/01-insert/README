@@ -1,16 +1,16 @@
 
 speedtest.py started doing only basic add_prefix calls for a range of prefixes.
 After some polishing the code and output of the test looked pretty good (and
-should be feedable into GraphViz). First test only concentrated on inserting
+should be feedable into Octave). First test only concentrated on inserting
 prefixes but it was immediately apparent that there was a slow down with time.
 When adding a prefix there is not much going on, we do some simple sanity
 checking and then a DB INSERT. In the database there are triggers both before
-and after the row has been inserted and seeming like good candidates this was
-where focus was placed.
+and after the row has been inserted and seeming like good candidates for
+optimization this was where focus was placed.
 
-See 'insert-start' for a file (truncated) with performance stats for inserting
-prefixes. It's one /24 per row starting with 0 and going through a /16 although
-it was aborted around 214.
+See 'data.insert-start' for a file (truncated) with performance stats for
+inserting prefixes. It's one /24 per row starting with 0 and going through a
+/16 although it was aborted around 214.
 
 Commenting out the triggers resulted in linear performance again, so it's
 somewhere in the triggers and going through the code you'll find that both
@@ -97,7 +97,8 @@ is a very acceptable latency for one transaction, NAP is currently
 single-threaded and so it is blocked during this period. This means we get some
 50 adds per second. With asynchronous operation we could certainly raise this.
 
-On the downside, ip4r only supports IPv4 at this point.
+On the downside, ip4r only supports IPv4 at this point, so the graph for IPv6
+will likely look much like the "before" plot.
 
 
 
