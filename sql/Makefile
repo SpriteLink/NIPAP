@@ -6,6 +6,8 @@ NAPD_PASS=dpan
 
 #
 # TODO: need install thingy for ip4r
+# psql -f /usr/lib/postgresql/8.4/lib/ip4r.so nap
+#
 # 	- how do we determine if the system has ip4r modules at all?
 # 		* can we ask psql?
 # 		* if it's a debian / ubuntu system we can use apt-cache
