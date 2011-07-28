@@ -1193,6 +1193,8 @@ class Nap:
         self._execute(sql, params)
 
         res = list()
+        for row in self._curs_pg:
+            res.append(dict(row))
 
         return res
 
