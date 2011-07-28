@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python -u
 
 import logging
 import re
 import sys
 import time
 
-sys.path.append('../napd/')
+sys.path.append('../../napd/')
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
@@ -38,10 +38,47 @@ class bonk:
         """ Initialise a few things we need in the db, a schema, a pool, a truck
         """
 
+    def find_prefix(self, argp):
+        """
+        """
+        arg_prefix = argp.split("/")[0]
+        arg_pl = argp.split("/")[1]
+        if self.n._is_ipv4(arg_prefix):
+            m = re.match("([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)", arg_prefix)
+            os1 = int(m.group(1))
+            os2 = int(m.group(2))
+            os3 = int(m.group(3))
+            os4 = int(m.group(4))
+            count = 2**(32-int(arg_pl))
+            i = 0
+            t0 = time.time()
+            try:
+                for o1 in xrange(os1, 255):
+                    for o2 in xrange(os2, 255):
+                        for o3 in xrange(os3, 255):
+                            t2 = time.time()
+                            for o4 in xrange(os4, 255):
+                                prefix = "%s.%s.%s.%s" % (o1, o2, o3, o4)
+                                self.n.list_prefix({ 'name': 'test-schema'}, { 'prefix': prefix })
+                                i += 1
+                                if i >= count:
+                                    raise StopIteration()
+                            t3 = time.time()
+                            print o3, (t3-t2)/256
+            except StopIteration:
+                pass
+            t1 = time.time()
+            print count, "prefixes found in:", t1-t0
 
 
-    def prefix_insert(self, argp):
-        """ Insert a /16 into the DB
+        elif self.n._is_ipv6(argp):
+            print >> sys.stderr, "IPv6 is currently unsupported"
+
+
+
+
+    def fill_prefix(self, argp):
+        """ Fill the specified prefix with hosts (/32s or /128s for IPv[46])
         """
         arg_prefix = argp.split("/")[0]
         arg_pl = argp.split("/")[1]
@@ -78,9 +115,11 @@ class bonk:
 
 
 
+    def prefix_insert(self, argp):
+        pass
+
 
     def test1(self):
-
         t0 = time.time()
         res = self.n.find_free_prefix({ 'schema_name': 'test-schema', 'from-prefix': ['1.0.0.0/8'] }, 32, 1)
         t1 = time.time()
@@ -117,15 +156,15 @@ class bonk:
 if __name__ == '__main__':
     import optparse
     parser = optparse.OptionParser()
-    parser.add_option('--prefix-insert', metavar = 'PREFIX', help='insert prefixes!')
+    parser.add_option('--fill-prefix', metavar = 'PREFIX', help='fill PREFIX with hosts')
     b = bonk()
 
     options, args = parser.parse_args()
 
-    if options.prefix_insert is not None:
-        if not b.n._get_afi(options.prefix_insert):
+    if options.fill_prefix is not None:
+        if not b.n._get_afi(options.fill_prefix):
             print >> sys.stderr, "Please enter a valid prefix"
             sys.exit(1)
-        b.prefix_insert(options.prefix_insert)
+        b.fill_prefix(options.fill_prefix)
 
 
