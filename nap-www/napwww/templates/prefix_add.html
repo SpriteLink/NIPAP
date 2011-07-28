@@ -524,15 +524,15 @@ $(function () {
 				<tr>
 					<td>Node</td>
 					<td><input type="text" name="node"></td>
-					<td class="help-text">Hostname of the node where the prefix is in use.</td>
+					<td class="help-text">FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'</td>
 				</tr>
 				<tr>
 					<td>Type</td>
 					<td>
 						<select name="type">
-							<option value="assignment" selected>Assignment
-							<option value="host">Host
-							<option value="reservation">Reservation
+							<option value="reservation">Reservation</option>
+							<option value="assignment" selected>Assignment</option>
+							<option value="host">Host</option>
 						</select>
 					</td>
 					<!-- TODO: write better explanation -->
