@@ -508,7 +508,7 @@ $(function () {
 <div id="prefix_data_container" style="display: none;">
 	<div class="options-group">
 		<div class="options-content">
-			<h3 class="options-group-heading">Manual prefix options</h3>
+			<h3 class="options-group-heading">Prefix options</h3>
 			<form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add", schema=c.schema.id) }}">
 			<table>
 				<tr id="prefix_row">
@@ -541,7 +541,7 @@ $(function () {
 				<tr>
 					<td>Country</td>
 					<td><input type="text" name="country"></td>
-					<td class="help-text">Two-letter country code according to ISO-3166-1</td>
+					<td class="help-text">Two-letter country code according to <a href="http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements">ISO-3166-1</a></td>
 				</tr>
 				<tr>
 					<td>SPAN order</td>
