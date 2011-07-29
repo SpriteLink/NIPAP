@@ -101,5 +101,16 @@ On the downside, ip4r only supports IPv4 at this point, so the graph for IPv6
 will likely look much like the "before" plot.
 
 
-
+The second test, plotted in plot-4610-24s.png is a test where I let my office
+PC insert prefixes over a night, it managed to insert 4610 /24s and in the plot
+we can see how the time it takes to insert a prefix increases from roughly 10ms
+to closer to 100ms. Around prefix 4200 there is a quite distinct increase in
+insertion time which I cannot explain. The test setup is running inside a
+VirtualBox machine on a Windows PC and perhaps Windows decided to start doing
+something.. or PostgreSQL is planning the query differently. Regardless, given
+the low-end hardware I find the results rather satisfactory. There are close to
+1.2 million prefixes in the database by the end of the test and with an
+insertion time of 0.2 seconds users would likely perceive it as "instant".
+Higher end hardware will, needless to say, perform better. With asynchronous
+operation, we could handle several of these queries in parallell too.
 
