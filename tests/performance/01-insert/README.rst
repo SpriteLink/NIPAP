@@ -10,6 +10,8 @@ implements a number of stored procedures to calculate certain values (such as
 the indent level) and if nothing else, it might be interesting just to see how
 the database fares with our specific table setups.
 
+Read on to see how we achieved a speedup by several magnitudes!
+
 Testing method
 --------------
 We use a small script called speedtest.py to perform our test. It has a mode of
