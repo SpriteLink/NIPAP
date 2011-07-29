@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<title>Testing prefix insertion time</title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5951 2009-05-18 18:03:10Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left{
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: left }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="testing-prefix-insertion-time">
+<h1 class="title">Testing prefix insertion time</h1>
+
+<p>Here we look at the time it takes to insert a new prefix into the database.
+This is a silly test, one might say, since it should only be limited by the
+database and could be seen as any general insertion test. That is true in one
+sence, it is mostly limited by the database as there is quite little overhead
+added by the NIPAP class and it is quite constant. However, the database
+implements a number of stored procedures to calculate certain values (such as
+the indent level) and if nothing else, it might be interesting just to see how
+the database fares with our specific table setups.</p>
+<div class="section" id="testing-method">
+<h1>Testing method</h1>
+<p>We use a small script called speedtest.py to perform our test. It has a mode of
+operation called &quot;fill-prefix&quot; in which it takes a prefix as an argument and
+fills that prefix with /32s. For every /24 inserted it outputs one line with
+the number of the /24 starting at 0 and the time it took on average to insert
+one prefix in that /24.</p>
+</div>
+<div class="section" id="first-run-baseline">
+<h1>First run - baseline</h1>
+<p>Running the test resulted in a rather apparent decrease in speed with the
+number of inserted prefixes. Here's a test inserting a /16, though aborted at
+the 214th /24 due to the time it took to run the test.</p>
+<img alt="plot-before.png" src="plot-before.png" />
+<p>The output can also be viewed raw, see the file data.insert-start</p>
+<p>When adding a prefix there is not much going on, we do some simple sanity
+checking and then a DB INSERT. In the database there are triggers both before
+and after the row has been inserted and seeming like good candidates for
+optimization this was where focus was placed.</p>
+<p>Commenting out the triggers resulted in linear performance again, so it's
+somewhere in the triggers and going through the code you'll find that both
+calc_indent and the before trigger placed SELECT queries with a ternary value
+operator on the 'prefix' column (ie &quot;contains&quot; or &quot;is contained within&quot;). Those
+operators are not indexable by default in PostgreSQL with a B-tree index but
+instead require the ip4r datatype and GiST indices.</p>
+<p>Extracting one of the basic queries from the before trigger, it looks like this:</p>
+<pre class="literal-block">
+SELECT * INTO parent
+FROM ip_net_plan
+WHERE schema = NEW.schema
+    AND prefix &gt;&gt; NEW.prefix
+ORDER BY masklen(prefix) DESC
+LIMIT 1;
+</pre>
+<p>The &quot;&gt;&gt;&quot; operator on prefix is the magic that makes us not use indices. With
+the query slightly rewritten (so that it may be run manually) and EXPLAIN
+ANALYZE added for timing;</p>
+<pre class="literal-block">
+EXPLAIN ANALYZE
+SELECT *
+FROM ip_net_plan
+WHERE
+    schema = (SELECT id FROM ip_net_schema WHERE name='test-schema')
+    AND ip4r(prefix) &gt;&gt; ip4r('1.3.3.1/32')
+ORDER BY masklen(prefix) DESC LIMIT 1;
+</pre>
+<p>Results in:</p>
+<pre class="literal-block">
+                                QUERY PLAN
+-------------------------------------------------------------------------------
+ Limit  (cost=1021.61..1021.61 rows=1 width=175) (actual time=26.121..26.123 rows=1 loops=1)
+   InitPlan 1 (returns $0)
+     -&gt;  Seq Scan on ip_net_schema  (cost=0.00..1.02 rows=1 width=4) (actual time=0.013..0.017 rows=1 loops=1)
+           Filter: (name = 'test-schema'::text)
+   -&gt;  Sort  (cost=1020.58..1020.63 rows=21 width=175) (actual time=26.117..26.117 rows=1 loops=1)
+         Sort Key: (masklen((ip_net_plan.prefix)::inet))
+         Sort Method:  quicksort  Memory: 25kB
+         -&gt;  Index Scan using ip_net_plan__schema__index on ip_net_plan  (cost=0.00..1020.48 rows=21 width=175) (actual time=26.080..26.084 rows=2 loops=1)
+               Index Cond: (schema = $0)
+               Filter: (ip4r(prefix) &gt;&gt; '1.3.3.1'::ip4r))
+ Total runtime: 26.203 ms
+(11 rows)
+</pre>
+</div>
+<div class="section" id="optimizing">
+<h1>Optimizing</h1>
+<p>ip4r is a PostgreSQL extension that amongst other things bring GiST indexability
+for ternary lookup operators such as the &lt;&lt; or &gt;&gt;.  The biggest problem with
+ip4r is that it currently only supports IPv4 but given that we will have far
+more IPv4 entries in the short term, this should do for now and it's definitely
+better than nothing. Rewriting the query so it works with both IPv4 and IPv6
+input and mixed IPv4 and IPv6 content in the table required some fiddling but
+here's the result:</p>
+<pre class="literal-block">
+EXPLAIN ANALYZE
+SELECT *
+FROM ip_net_plan
+WHERE
+    schema = (SELECT id FROM ip_net_schema WHERE name='test-schema')
+    AND ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL::cidr END) &gt;&gt; ip4r('1.3.3.1/32')
+ORDER BY masklen(prefix) DESC LIMIT 1
+
+
+                                QUERY PLAN
+-------------------------------------------------------------------------------
+ Limit  (cost=126.11..126.11 rows=1 width=175) (actual time=0.127..0.129 rows=1 loops=1)
+   InitPlan 1 (returns $0)
+     -&gt;  Seq Scan on ip_net_schema  (cost=0.00..1.02 rows=1 width=4) (actual time=0.010..0.011 rows=1 loops=1)
+           Filter: (name = 'test-schema'::text)
+   -&gt;  Sort  (cost=125.08..125.13 rows=20 width=175) (actual time=0.124..0.124 rows=1 loops=1)
+         Sort Key: (masklen((ip_net_plan.prefix)::inet))
+         Sort Method:  quicksort  Memory: 25kB
+         -&gt;  Bitmap Heap Scan on ip_net_plan  (cost=4.57..124.98 rows=20 width=175) (actual time=0.089..0.095 rows=2 loops=1)
+               Recheck Cond: (ip4r(CASE WHEN (family((prefix)::inet) = 4) THEN prefix ELSE NULL::cidr END) &gt;&gt; '1.3.3.1'::ip4r)
+               Filter: (schema = $0)
+               -&gt;  Bitmap Index Scan on ip_net_plan__prefix__ip4r_index  (cost=0.00..4.56 rows=40 width=0) (actual time=0.056..0.056 rows=3 loops=1)
+                     Index Cond: (ip4r(CASE WHEN (family((prefix)::inet) = 4) THEN prefix ELSE NULL::cidr END) &gt;&gt; '1.3.3.1'::ip4r)
+ Total runtime: 0.210 ms
+(13 rows)
+</pre>
+<p>Total runtime down from ~26ms to 0.2! After performing a similar change to
+calc_indent, the performance of add_prefix is rather linear and stays around
+20ms per operation.</p>
+<img alt="plot-before-and-after.png" src="plot-before-and-after.png" />
+<p>It is unlikely my laptop will perform any better but a modern server certainly
+should. One thing to keep in mind is that although 20ms is a very acceptable
+latency for one transaction, NIPAP is currently single-threaded and so it is
+blocked during this period. This means we get some 50 adds per second. With
+asynchronous operation we could certainly raise this.</p>
+<p>On the downside, ip4r only supports IPv4 at this point, so the graph for IPv6
+will likely look much like the &quot;before&quot; plot.</p>
+</div>
+<div class="section" id="and-then-what">
+<h1>And then what?</h1>
+<img alt="plot-after-4610-24s.png" src="plot-after-4610-24s.png" />
+<p>The second test, here plotted is a test where I let my office workstation
+insert prefixes over a night, it managed to insert 4610 /24s and in the plot we
+can see how the time it takes to insert a prefix increases from roughly 10ms to
+closer to 100ms. Around prefix 4200 there is a quite distinct increase in
+insertion time which I cannot explain. The test setup is running inside a
+VirtualBox machine on a Windows PC and perhaps Windows decided to start doing
+something.. or PostgreSQL is planning the query differently. Regardless, given
+the low-end hardware I find the results rather satisfactory. There are close to
+1.2 million prefixes in the database by the end of the test and with an
+insertion time of 0.2 seconds users would likely perceive it as &quot;instant&quot;.
+Higher end hardware will, needless to say, perform better. With asynchronous
+operation, we could handle several of these queries in parallell too.</p>
+</div>
+</div>
+</body>
+</html>
