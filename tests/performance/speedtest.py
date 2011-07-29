@@ -1,4 +1,5 @@
 #!/usr/bin/python -u
+# vim: et :
 
 import logging
 import re
@@ -82,6 +83,7 @@ class bonk:
         """
         arg_prefix = argp.split("/")[0]
         arg_pl = argp.split("/")[1]
+        netcount = 0
         if self.n._is_ipv4(arg_prefix):
             m = re.match("([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)", arg_prefix)
             os1 = int(m.group(1))
@@ -103,7 +105,8 @@ class bonk:
                                 if i >= count:
                                     raise StopIteration()
                             t3 = time.time()
-                            print o3, (t3-t2)/256
+                            print netcount, (t3-t2)/256
+                            netcount += 1
             except StopIteration:
                 pass
             t1 = time.time()
