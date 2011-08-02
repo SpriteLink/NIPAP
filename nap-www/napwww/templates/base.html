@@ -13,7 +13,14 @@
         <title>{{ c.page_title }}</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="/nap.css">
+        <link rel="stylesheet" href="/tipTip.css">
         <script src="/jquery-1.6.1.min.js"></script>
+        <script src="/jquery.tipTip.minified.js"></script>
+        <script>
+            $(function() {
+                $(".tooltip").tipTip({delay: 100});
+            });
+        </script>
         {% block head %}
         {% endblock %}
     </head>
@@ -26,11 +33,11 @@
 				<div class="menu_entry" style="position: relative;">
                 <h1 id="schema_title" style="line-height: 27px">
 					{% if c['schema'] is defined %}
-						<a href="{{ h.url(controller = 'schema', action = 'list', schema = c.schema.id) }}" class="schema_title">
+						<a href="{{ h.url(controller = 'schema', action = 'list', schema = c.schema.id) }}" class="schema_title tooltip" title="This is the currently selected schema. Click to change.">
 							{{ c.schema.name }}
 						</a>
 					{% else %}
-						<a href="{{ h.url(controller = 'schema', action = 'list') }}" class="schema_title">
+						<a href="{{ h.url(controller = 'schema', action = 'list') }}" class="schema_title tooltip" title="No schema selected. Click to do so!">
 							&lt;None&gt;
 						</a>
 					{% endif %}
