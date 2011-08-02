@@ -33,11 +33,11 @@
 				<div class="menu_entry" style="position: relative;">
                 <h1 id="schema_title" style="line-height: 27px">
 					{% if c['schema'] is defined %}
-						<a href="{{ h.url(controller = 'schema', action = 'list', schema = c.schema.id) }}" class="schema_title tooltip" title="This is the currently selected schema. Click to change.">
+						<a href="{{ h.url(controller = 'schema', action = 'list', schema = c.schema.id) }}" class="schema_title tooltip" title="This is the currently active schema. Click to change.">
 							{{ c.schema.name }}
 						</a>
 					{% else %}
-						<a href="{{ h.url(controller = 'schema', action = 'list') }}" class="schema_title tooltip" title="No schema selected. Click to do so!">
+						<a href="{{ h.url(controller = 'schema', action = 'list') }}" class="schema_title tooltip" title="No active schema selected. Click to select one!">
 							&lt;None&gt;
 						</a>
 					{% endif %}
