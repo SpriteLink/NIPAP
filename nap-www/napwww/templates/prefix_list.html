@@ -386,46 +386,63 @@
                                 <tr>
                                     <td class="opt_left">
                                         Display options
-                                    </td><td class="opt_right">
-                                        Include parent:
+									</td>
+									<td class="opt_right">
+										<table>
+											<tr>
+												<td style="text-align: right; padding: 0; margin: 0;">
+													Include parent:
+												</td>
+												<td style="padding: 0; margin: 0;">
 
-                                    {% if c.search_opt_parent == 'none' %}
-                                        <input type="radio" name="search_opt_parent" value="none" checked>none</input>
-                                    {% else %}
-                                        <input type="radio" name="search_opt_parent" value="none">none</input>
-                                    {% endif %}
+												{% if c.search_opt_parent == 'none' %}
+													<input type="radio" name="search_opt_parent" value="none" checked>none</input>
+												{% else %}
+													<input type="radio" name="search_opt_parent" value="none">none</input>
+												{% endif %}
 
-                                    {% if c.search_opt_parent == 'immediate' %}
-                                        <input type="radio" name="search_opt_parent" value="immediate" checked>immediate</input>
-                                    {% else %}
-                                        <input type="radio" name="search_opt_parent" value="immediate">immediate</input>
-                                    {% endif %}
+												{% if c.search_opt_parent == 'immediate' %}
+													<input type="radio" name="search_opt_parent" value="immediate" checked>immediate</input>
+												{% else %}
+													<input type="radio" name="search_opt_parent" value="immediate">immediate</input>
+												{% endif %}
 
-                                    {% if c.search_opt_parent == 'all' %}
-                                        <input type="radio" name="search_opt_parent" value="all" checked>all</input>
-                                    {% else %}
-                                        <input type="radio" name="search_opt_parent" value="all">all</input>
-                                    {% endif %}
+												{% if c.search_opt_parent == 'all' %}
+													<input type="radio" name="search_opt_parent" value="all" checked>all</input>
+												{% else %}
+													<input type="radio" name="search_opt_parent" value="all">all</input>
+												{% endif %}
 
-                                        <br>Include children:
+												</td>
+											</tr>
+											<tr>
+												<td style="text-align: right; padding: 0; margin: 0;">
+													Include children:
+												</td>
+												<td style="padding: 0; margin: 0;">
 
-                                    {% if c.search_opt_child == 'none' %}
-                                        <input type="radio" name="search_opt_child" value="none" checked>none
-                                    {% else %}
-                                        <input type="radio" name="search_opt_child" value="none">none
-                                    {% endif %}
+												{% if c.search_opt_child == 'none' %}
+													<input type="radio" name="search_opt_child" value="none" checked>none
+												{% else %}
+													<input type="radio" name="search_opt_child" value="none">none
+												{% endif %}
 
-                                    {% if c.search_opt_child == 'immediate' %}
-                                        <input type="radio" name="search_opt_child" value="immediate" checked>immediate
-                                    {% else %}
-                                        <input type="radio" name="search_opt_child" value="immediate">immediate
-                                    {% endif %}
+												{% if c.search_opt_child == 'immediate' %}
+													<input type="radio" name="search_opt_child" value="immediate" checked>immediate
+												{% else %}
+													<input type="radio" name="search_opt_child" value="immediate">immediate
+												{% endif %}
 
-                                    {% if c.search_opt_child == 'all' %}
-                                        <input type="radio" name="search_opt_child" value="all" checked>all
-                                    {% else %}
-                                        <input type="radio" name="search_opt_child" value="all">all
-                                    {% endif %}
+												{% if c.search_opt_child == 'all' %}
+													<input type="radio" name="search_opt_child" value="all" checked>all
+												{% else %}
+													<input type="radio" name="search_opt_child" value="all">all
+												{% endif %}
+
+												</td>
+											</tr>
+										</table>
+
                                     </td>
                                 </tr>
                             </table>
