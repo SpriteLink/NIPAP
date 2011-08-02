@@ -31,7 +31,6 @@ Web UI
  - Removing prefixes
  - Add a cache timeout to the NapModel object cache
  - Implement default type of prefix assigned from a pool
- - Fix highlighting for menu-items. Gray box only covers text, not entire "button"
  - Implement some form of nice pop-up system, Google+ style for help dialogs
 
  - Possible race condition, when entering a query, searches are performed for every character entered. If 1.3.3.0/24 is entered, amongst others there will be a query for '1.3.3.0/2' and then the final one for '1.3.3.0/24'. The final one can maximally return ~250 prefixes while the one before that can return way more and thus is likely to take more time. The web interface seems to display the last returned result and so would in this instance display the final-1 instead of the final search quert result.
