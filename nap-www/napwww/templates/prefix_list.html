@@ -433,13 +433,7 @@
                     </tr>
                 </table>
 				<div style="position: absolute; right: 10px; top: 4px;">
-					<a href="{{ h.url(controller = 'prefix', action = 'add', schema = c.schema.id) }}">
-						<div id="anpb">
-							<div style="display: inline-block; vertical-align: middle;">
-								Add prefix
-							</div>
-						</div>
-					</a>
+					{{ button('Add prefix', color='red', url=h.url(controller = 'prefix', action = 'add', schema = c.schema.id)) }}
 				</div>
             </div>
         </center>

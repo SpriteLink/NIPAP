@@ -1,4 +1,13 @@
 <!DOCTYPE html>
+{% macro button(text, color='red', width='100px', height='30px', url='') -%}
+	<a href="{{url}}">
+		<div id="button" class="button_{{color}}" style="height: {{height}}; width: {{width}};">
+			<div style="display: inline-block; vertical-align: middle;">
+				{{text}}
+			</div>
+		</div>
+	</a>
+{%- endmacro %}
 <html lang="en">
     <head>
         <title>{{ c.page_title }}</title>
