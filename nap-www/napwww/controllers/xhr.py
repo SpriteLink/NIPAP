@@ -8,7 +8,7 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from napwww.lib.base import BaseController, render
-from napwww.model.napmodel import Schema, Prefix, Pool
+from napwww.model.napmodel import Schema, Prefix, Pool, NapError
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +51,11 @@ class XhrController(BaseController):
         """ List schemas and return JSON encoded result.
         """
 
-        schemas = Schema.list()
+        try:
+            schemas = Schema.list()
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
         return json.dumps(schemas, cls=NapJSONEncoder)
 
 
@@ -60,8 +64,11 @@ class XhrController(BaseController):
         """ List pools and return JSON encoded result.
         """
 
-        schema = Schema.get(int(request.params['schema_id']))
-        pools = Pool.list(schema)
+        try:
+            schema = Schema.get(int(request.params['schema_id']))
+            pools = Pool.list(schema)
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
         return json.dumps(pools, cls=NapJSONEncoder)
 
 
@@ -70,13 +77,17 @@ class XhrController(BaseController):
         """ List prefixes and return JSON encoded result.
         """
 
-        schema = Schema.get(int(request.params['schema']))
-
         # fetch attributes from request.params
         attr = XhrController.extract_prefix_attr(request.params)
 
-        prefixes = Prefix.list(schema, attr)
+        try:
+            schema = Schema.get(int(request.params['schema']))
+            prefixes = Prefix.list(schema, attr)
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
         return json.dumps(prefixes, cls=NapJSONEncoder)
+
 
 
     def search_prefix(self):
@@ -88,8 +99,6 @@ class XhrController(BaseController):
             matched with the 'equals' operator. If multiple attributes are
             given, they will be combined with the 'and' operator.
         """
-
-        schema = Schema.get(int(request.params['schema']))
 
         # fetch attributes from request.params
         attr = XhrController.extract_prefix_attr(request.params)
@@ -127,7 +136,12 @@ class XhrController(BaseController):
         if 'display_parents' in request.params:
             search_opts['display_parents'] = request.params['display_parents']
 
-        prefixes = Prefix.search(schema, q, search_opts)
+        try:
+            schema = Schema.get(int(request.params['schema']))
+            prefixes = Prefix.search(schema, q, search_opts)
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
         return json.dumps(prefixes, cls=NapJSONEncoder)
 
 
@@ -171,12 +185,15 @@ class XhrController(BaseController):
             str(search_options)
         ))
 
-        schema = Schema.get(int(request.params['schema']))
+        try:
+            schema = Schema.get(int(request.params['schema']))
+            result = Prefix.smart_search(schema,
+                request.params['query_string'],
+                search_options
+                )
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        result = Prefix.smart_search(schema,
-            request.params['query_string'],
-            search_options
-            )
         return json.dumps(result, cls=NapJSONEncoder)
 
 
@@ -206,7 +223,10 @@ class XhrController(BaseController):
         p = Prefix()
 
         # parameters which are "special cases"
-        p.schema = Schema.get(int(request.params['schema']))
+        try:
+            p.schema = Schema.get(int(request.params['schema']))
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         # standard parameters
         if 'description' in request.params:
@@ -233,7 +253,10 @@ class XhrController(BaseController):
         if 'from_prefix[]' in request.params:
             args['from-prefix'] = request.params.getall('from_prefix[]')
         if 'from_pool' in request.params:
-            args['from-pool'] = Pool.get(p.schema, int(request.params['from_pool']))
+            try:
+                args['from-pool'] = Pool.get(p.schema, int(request.params['from_pool']))
+            except NapError, e:
+                return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
         if 'family' in request.params:
             args['family'] = int(request.params['family'])
         if 'prefix_length' in request.params:
@@ -246,11 +269,8 @@ class XhrController(BaseController):
 
         try:
             p.save(args)
-            # TODO: finer granularity!
-            # Maybe only NapModelError, and let harder errors propagate
-            # the "ordinary" way?
-        except Exception, e:
-            return json.dumps({'error': 1, 'message': str(e)})
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(p, cls=NapJSONEncoder)
 
@@ -260,16 +280,22 @@ class XhrController(BaseController):
         """ Edit a prefix.
         """
 
-        schema = Schema.get(int(request.params['schema']))
+        try:
 
-        p = Prefix.get(schema, int(request.params['id']))
+            schema = Schema.get(int(request.params['schema']))
 
-        # TODO: add more attributes!
-        if 'pool' in request.params:
-            pool = Pool.get(schema, int(request.params['pool']))
-            p.pool = pool
+            p = Prefix.get(schema, int(request.params['id']))
 
-        p.save()
+            # TODO: add more attributes!
+            if 'pool' in request.params:
+                pool = Pool.get(schema, int(request.params['pool']))
+                p.pool = pool
+
+            p.save()
+
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
         return json.dumps(p, cls=NapJSONEncoder)
 
 

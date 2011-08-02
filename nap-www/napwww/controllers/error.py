@@ -1,10 +1,15 @@
 import cgi
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from paste.urlparser import PkgResourcesParser
 from pylons.middleware import error_document_template
 from webhelpers.html.builder import literal
 
 from napwww.lib.base import BaseController
+from napwww.controllers.xhr import XhrController
 
 class ErrorController(BaseController):
     """Generates error documents as and when they are required.
@@ -25,7 +30,12 @@ class ErrorController(BaseController):
             dict(prefix=request.environ.get('SCRIPT_NAME', ''),
                  code=cgi.escape(request.GET.get('code', str(resp.status_int))),
                  message=content)
-        return page
+
+        # If the error was raised from the XhrController, return HTML-less response
+        if type(request.environ['pylons.original_request'].environ['pylons.controller']) == XhrController:
+            return content
+        else:
+            return page
 
     def img(self, id):
         """Serve Pylons' stock images"""

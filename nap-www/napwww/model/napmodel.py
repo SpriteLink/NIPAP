@@ -1,12 +1,6 @@
 import xmlrpclib
 import logging
 
-_cache = {
-    'Pool': {},
-    'Prefix': {},
-    'Schema': {}
-}
-
 class XMLRPCConnection:
     """ Handles a shared XML-RPC connection.
     """
@@ -320,8 +314,11 @@ class Prefix(NapModel):
         """ Perform a smart prefix search.
         """
 
-        pref_list = xmlrpc.connection.smart_search_prefix({ 'id': schema.id },
-            query_string, search_options)
+        try:
+            pref_list = xmlrpc.connection.smart_search_prefix({ 'id': schema.id },
+                query_string, search_options)
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
         res = dict()
         res['interpretation'] = pref_list['interpretation']
         res['result'] = list()
@@ -338,7 +335,10 @@ class Prefix(NapModel):
         """ List prefixes.
         """
 
-        pref_list = xmlrpc.connection.list_prefix({ 'id': schema.id }, spec)
+        try:
+            pref_list = xmlrpc.connection.list_prefix({ 'id': schema.id }, spec)
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
         res = list()
         for pref in pref_list:
             p = Prefix.from_dict(pref)
@@ -389,10 +389,16 @@ class Prefix(NapModel):
             if 'prefix_length' in args:
                 x_args['prefix_length'] = args['prefix_length']
 
-            self.id = self._xmlrpc.connection.add_prefix({'id': self.schema.id}, data, x_args)
+            try:
+                self.id = self._xmlrpc.connection.add_prefix({'id': self.schema.id}, data, x_args)
+            except xmlrpclib.Fault, f:
+                raise _fault_to_exception(f)
 
             # fetch data which is set by Nap
-            p = self._xmlrpc.connection.list_prefix({'id': self.schema.id}, {'id': self.id})[0]
+            try:
+                p = self._xmlrpc.connection.list_prefix({'id': self.schema.id}, {'id': self.id})[0]
+            except xmlrpclib.Fault, f:
+                raise _fault_to_exception(f)
             self.prefix = p['prefix']
             self.indent = p['indent']
             self.family = p['family']
@@ -404,8 +410,10 @@ class Prefix(NapModel):
             del(data['schema'])
             del(data['type'])
 
-            self._logger.error('schema id: %d prefix id: %d prefix data: %s' % (self.schema.id, self.id, str(data)))
-            self._xmlrpc.connection.edit_prefix({'id': self.schema.id}, {'id': self.id}, data)
+            try:
+                self._xmlrpc.connection.edit_prefix({'id': self.schema.id}, {'id': self.id}, data)
+            except xmlrpclib.Fault, f:
+                raise _fault_to_exception(f)
 
 
 
@@ -442,15 +450,11 @@ class Prefix(NapModel):
 
 
 
-# Create global XML-RPC connection for static methods...
-xmlrpc = XMLRPCConnection("http://127.0.0.1:1337")
-log = logging.getLogger("NapModel")
-
 #
 # Define exceptions
 #
 
-class NapModelError(Exception):
+class NapError(Exception):
     """ A generic NAP model exception.
 
         All errors thrown from the NAP model extends this exception.
@@ -459,14 +463,14 @@ class NapModelError(Exception):
 
 
 
-class NapNonExistentError(NapModelError):
+class NapNonExistentError(NapError):
     """ Thrown when something can not be found.
 
         For example when a given ID can not be found in the NAP database.
     """
 
 
-class NapInputError(NapModelError):
+class NapInputError(NapError):
     """ Something wrong with the input we received
 
         A general case.
@@ -500,9 +504,47 @@ class NapNoSuchOperatorError(NapInputError):
 
 
 
-class NapValueError(NapModelError):
+class NapValueError(NapError):
     """ Something wrong with a value we have
 
         For example, trying to send an integer when an IP address is expected.
     """
     pass
+
+
+
+#
+# GLOBAL STUFF
+#
+
+# Simple object cache
+# TODO: fix somekind of timeout
+_cache = {
+    'Pool': {},
+    'Prefix': {},
+    'Schema': {}
+}
+
+# Map from XML-RPC Fault codes to Exception classes
+_fault_to_exception_map = {
+    1000: NapError,
+    1100: NapInputError,
+    1110: NapMissingInputError,
+    1120: NapExtraneousInputError,
+    1200: NapValueError,
+    1300: NapNonExistentError
+}
+
+# Create global XML-RPC connection and logger for static methods...
+xmlrpc = XMLRPCConnection("http://127.0.0.1:1337")
+log = logging.getLogger("NapModel")
+
+
+
+def _fault_to_exception(f):
+    """ Converts XML-RPC Fault objects to NapModel-exceptions.
+
+        TODO: Is this one neccesary? Can be done inline...
+    """
+
+    return _fault_to_exception_map[f.faultCode](f.faultString)
