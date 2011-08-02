@@ -25,9 +25,8 @@ class NapTest(unittest.TestCase):
     def setUp(self):
         """ Better start from a clean slate!
         """
-        self.nap._execute("TRUNCATE ip_net_plan")
-        self.nap._execute("TRUNCATE FROM ip_net_pool")
-        self.nap._execute("TRUNCATE FROM ip_net_schema")
+
+        self.nap._execute("TRUNCATE ip_net_plan, ip_net_pool, ip_net_schema")
 
         self.schema_attrs = {
                 'name': 'test-schema1',
