@@ -63,12 +63,19 @@ a.menu_link:hover {
     background-color: #444444;
 }
 
-.content {
+.content_outer {
     padding: 0px;
     margin: 0px;
     z-index: 0;
     position: absolute;
     width: 100%;
+	text-align: center;
+}
+.content_inner {
+	width: 70%;
+	max-width: 1200px;
+	display: inline-block;
+	text-align: left;
 }
 
 #schema_selector {
@@ -271,6 +278,20 @@ input[name="search_button"] {
     background-image: -ms-linear-gradient(top, #f6f8f8, #ebeced);
     background-image: -o-linear-gradient(top, #f6f8f8, #ebeced);
     background-image: linear-gradient(top, #f6f8f8, #ebeced);
+}
+
+.listing th,td {
+	padding: 5px;
+	padding-left: 10px;
+}
+
+.listing th {
+	border-bottom: 1px solid #333333;
+	font-size: 1.1em;
+}
+
+.listing td {
+	padding-right: 30px;
 }
 
 #prefix_list {

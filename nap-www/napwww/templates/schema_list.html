@@ -32,22 +32,35 @@
 {% block content %}
 
 <h1>Select schema</h1>
-<table style="border-spacing: 0px;">
-    <tr>
-        <td colspan="3" align="right"><a href="{{ h.url(controller="schema", action="add") }}">add</a></td>
-    </tr>
-    <tr>
-        <th>Name</th><th>Description</th><th>&nbsp;</th>
-    </tr>
-    {% for schema in c.schemas %}
-    <tr class="schema_row" id="schema_row{{ schema.id }}">
-        <td style="padding: 5px;"><a href="{{ h.url(controller='prefix', action='index', schema=schema.id) }}">{{ schema.name }}</a></td>
-        <td style="padding: 5px;">{{ schema.description }}</td>
-        <td>
-            <a href="{{ h.url(controller="schema", action="edit", id=schema.id) }}">edit</a> | 
-            <a href="javascript:void(0);" onclick="verifyDialog('Really remove {{ schema.name }}? This will remove ALL prefixes in the schema!', '{{ h.url(controller="schema", action="remove", id=schema.id) }}');">del</a>
-        </td>
-    </tr>
-    {% endfor %}
+	<div style="text-align: center; padding: 20px;">
+		<div style="display: inline-block; text-align: justify; width: 80%;">
+			<b>TODO: this text is merely a placeholder, reword it!</b><br/>
+			Schemas is like different address plans which within no addresses must collide. It's similar to the sheets in a Excel document and bare almost always a perfect equality to VRFs.<br/>
+			<br/>
+		</div>
+	</div>
+
+	<div style="position: absolute; right: 20px; top: 14px;">
+		{{ button('Add schema', color='red', url=h.url(controller = 'schema', action = 'add')) }}
+	</div>
+
+<table style="border-spacing: 0px; width: 100%;">
+	<thead class="listing">
+		<tr>
+			<th style="padding-left: 30px;">Name</th><th>Description</th><th></th>
+		</tr>
+	</thead>
+	<tbody class="listing">
+		{% for schema in c.schemas %}
+		<tr class="schema_row" id="schema_row{{ schema.id }}">
+			<td style="padding-left: 30px;"><a href="{{ h.url(controller='prefix', action='index', schema=schema.id) }}">{{ schema.name }}</a></td>
+			<td>{{ schema.description }}</td>
+			<td>
+				<a href="{{ h.url(controller="schema", action="edit", id=schema.id) }}">edit</a> | 
+				<a href="javascript:void(0);" onclick="verifyDialog('Really remove {{ schema.name }}? This will remove ALL prefixes in the schema!', '{{ h.url(controller="schema", action="remove", id=schema.id) }}');">del</a>
+			</td>
+		</tr>
+		{% endfor %}
+	</tbody>
 </table>
 {% endblock %}

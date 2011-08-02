@@ -13,26 +13,43 @@
     </script>
 {% endblock %}
 
-{% block content %}
-<div style="position: absolute; right: 20px; top: 14px;">
-	{{ button('Add pool', color='red', url=h.url(controller = 'pool', action = 'add', schema = c.schema.id)) }}
-</div>
 
-<table style="border-spacing: 0px;">
-    <tr>
-        <th>Name</th><th>Description</th><th>Default type</th><th>Def. pref. length (4/6)</th>
-    </tr>
-    {% for pool in c.pools %}
-    <tr class="pool_row">
-        <td style="padding: 5px;">{{ pool.name }}</td>
-        <td style="padding: 5px;">{{ pool.description }}</td>
-        <td style="padding: 5px;">{{ pool.default_type }}</td>
-        <td style="padding: 5px;">{{ pool.ipv4_default_prefix_length }} / {{ pool.ipv6_default_prefix_length }}</td>
-        <td>
-            <a href="{{ h.url(controller = 'pool', action = 'edit', id = pool.id, schema = c.schema.id) }}">edit</a> | 
-            <a href="{{ h.url(controller = 'pool', action = 'remove', id = pool.id, schema = c.schema.id) }}">del</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+{% block content %}
+
+	<div style="text-align: center; padding: 20px;">
+		<div style="display: inline-block; text-align: left; width: 70%;">
+			<b>TODO: this text is merely a placeholder, reword it!</b><br/>
+			Pools allow for simplified assignment of new addresses. Instead of manually browsing and finding a new prefix, NIPAP can assign a prefix from a pool.<br/>
+			<br/>
+			Every pool has a unique name and a short description, briefly explaining for what addresses from that pool should be used for. Adding new prefixes is easy, just say you want a prefix that matches what a pool has been set up as and NIPAP will help you automatically assigned.
+		</div>
+	</div>
+
+	<div style="position: absolute; right: 20px; top: 14px;">
+		{{ button('Add pool', color='red', url=h.url(controller = 'pool', action = 'add', schema = c.schema.id)) }}
+	</div>
+
+	<table style="border-spacing: 0px; width: 100%;" border=0>
+		<thead class="listing">
+			<tr>
+				<th style="padding-left: 30px;">Name</th><th>Description</th><th>Default type</th><th>Def. pref. length (4/6)</th><th></th>
+			</tr>
+		</thead>
+		<tbody class="listing">
+			{% for pool in c.pools %}
+			<tr class="pool_row">
+				<td style="padding-left: 30px;">{{ pool.name }}</td>
+				<td>{{ pool.description }}</td>
+				<td>{{ pool.default_type }}</td>
+				<td>{{ pool.ipv4_default_prefix_length }} / {{ pool.ipv6_default_prefix_length }}</td>
+				<td>
+					<a href="{{ h.url(controller = 'pool', action = 'edit', id = pool.id, schema = c.schema.id) }}">edit</a> | 
+					<a href="{{ h.url(controller = 'pool', action = 'remove', id = pool.id, schema = c.schema.id) }}">del</a>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+
 {% endblock %}
