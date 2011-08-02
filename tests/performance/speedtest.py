@@ -117,6 +117,14 @@ class bonk:
             print >> sys.stderr, "IPv6 is currently unsupported"
 
 
+    def find_free_prefix(self, argp):
+        t0 = time.time()
+        prefix = self.n.find_free_prefix({ 'name': 'test-schema' }, { 'from-prefix': [argp], 'prefix_length': 32 })
+        t1 = time.time()
+        d1 = t1-t0
+        print "First free prefix:", prefix, "found in", d1, "seconds"
+
+
 
     def prefix_insert(self, argp):
         pass
@@ -160,6 +168,7 @@ if __name__ == '__main__':
     import optparse
     parser = optparse.OptionParser()
     parser.add_option('--fill-prefix', metavar = 'PREFIX', help='fill PREFIX with hosts')
+    parser.add_option('--find-free-prefix', metavar = 'PREFIX', help='try to find the next free /32 in PREFIX')
     b = bonk()
 
     options, args = parser.parse_args()
@@ -171,3 +180,5 @@ if __name__ == '__main__':
         b.fill_prefix(options.fill_prefix)
 
 
+    if options.find_free_prefix is not None:
+        b.find_free_prefix(options.find_free_prefix)
