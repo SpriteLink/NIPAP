@@ -31,18 +31,19 @@
 
 {% block content %}
 
-<h1>Select schema</h1>
-	<div style="text-align: center; padding: 20px;">
-		<div style="display: inline-block; text-align: justify; width: 80%;">
-			<b>TODO: this text is merely a placeholder, reword it!</b><br/>
-			Schemas is like different address plans which within no addresses must collide. It's similar to the sheets in a Excel document and bare almost always a perfect equality to VRFs.<br/>
-			<br/>
-		</div>
-	</div>
-
 	<div style="position: absolute; right: 20px; top: 14px;">
 		{{ button('Add schema', color='red', url=h.url(controller = 'schema', action = 'add')) }}
 	</div>
+
+	<div style="text-align: center; padding: 20px;">
+		<div style="display: inline-block; text-align: justify; width: 80%; max-width: 600px;">
+			Schemas provide the means to separate prefixes and pools in a manner analogous to how a directory allows files to be separated and the same filename be reused within each directory.
+			<br/> <br/>
+			A prefix must be unique within the schema it is stored. Multiple schemas can thus be used to document the address space of customer VRFs and similar which often contain overlapping addresses.
+			<br/> <br/>
+		</div>
+	</div>
+
 
 <table style="border-spacing: 0px; width: 100%;">
 	<thead class="listing">
