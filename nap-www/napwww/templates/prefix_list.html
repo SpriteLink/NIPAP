@@ -197,7 +197,9 @@
             'parents_depth': optToDepth($('input[name="search_opt_parent"]:checked').val()),
             'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
             'include_all_parents': 'true',
-            'include_all_children': 'false'
+            'include_all_children': 'false',
+            'max_result': 50,
+            'offset': 0
         }
 
         $.getJSON("{{ h.url(controller = 'xhr', action = 'smart_search_prefix') }}", search_q, receivePrefixList);

@@ -1292,26 +1292,21 @@ class Nap:
 
                 SELECT * FROM prefix WHERE (type == 'assignment') AND (prefix contained within '192.0.2.0/24')
 
-            The search options `parents` and `children` are used to specify
-            which of the matching prefixes' parents to return.  Both of them are
-            strings with the following values allowed:
-
-            * :data:`none` - Display only the matching prefix, no parents/children.
-            * :data:`immediate` - Display immediate parent/child.
-            * :data:`all` - Display all parents/children.
-
             The `options` argument provides a way to alter the search result a
-            bit to assist in client implementations. So far the options all
-            regard parent and children prefixes, that is the prefixes which
-            contain the prefix(es) matching the search terms (parents) or the
-            prefixes which are contained by the prefix(es) matching the search
-            terms.
+            bit to assist in client implementations. Most options regard parent
+            and children prefixes, that is the prefixes which contain the
+            prefix(es) matching the search terms (parents) or the prefixes
+            which are contained by the prefix(es) matching the search terms.
+            The search options can also be used to limit the number of rows
+            returned.
 
             The following options are available:
             * :attr:`parents_depth` - How many levels of parents to return. Set to :data:`-1` to include all parents.
             * :attr:`children_depth` - How many levels of children to return. Set to :data:`-1` to include all children.
             * :attr:`include_all_parents` - Include all parents, no matter what depth is specified.
             * :attr:`include_all_children` - Include all children, no matter what depth is specified.
+            * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
+            * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
 
             The options above gives the possibility to specify how many levels
             of parent and child prefixes to return in addition to the prefixes
@@ -1386,6 +1381,26 @@ class Nap:
                 raise NapValueError('Invalid value for option' +
                     ''' 'children_depth'. Only integer values allowed.''')
 
+        # max_result
+        if 'max_result' not in search_options:
+            search_options['max_result'] = 50
+        else:
+            try:
+                search_options['max_result'] = int(search_options['max_result'])
+            except (ValueError, TypeError), e:
+                raise NapValueError('Invalid value for option' +
+                    ''' 'max_result'. Only integer values allowed.''')
+
+        # offset
+        if 'offset' not in search_options:
+            search_options['offset'] = 0
+        else:
+            try:
+                search_options['offset'] = int(search_options['offset'])
+            except (ValueError, TypeError), e:
+                raise NapValueError('Invalid value for option' +
+                    ''' 'offset'. Only integer values allowed.''')
+
         self._logger.debug('search_prefix search_options: %s' % str(search_options))
 
         # translate search options to SQL
@@ -1427,7 +1442,7 @@ class Nap:
             )
             WHERE p2.schema = %s AND p2.prefix IN (
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
-            ) ORDER BY p1.prefix"""
+            ) ORDER BY p1.prefix LIMIT """ + str(search_options['max_result']) + """ OFFSET """  + str(search_options['offset'])
         opt.insert(0, schema['id'])
 
         self._execute(sql, opt)

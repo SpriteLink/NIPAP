@@ -158,6 +158,10 @@ class XhrController(BaseController):
             search_options['parents_depth'] = request.params['parents_depth']
         if 'children_depth' in request.params:
             search_options['children_depth'] = request.params['children_depth']
+        if 'max_result' in request.params:
+            search_options['max_result'] = request.params['max_result']
+        if 'offset' in request.params:
+            search_options['offset'] = request.params['offset']
 
         log.debug("params: %s" % str(request.params))
 
