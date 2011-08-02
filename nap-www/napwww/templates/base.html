@@ -35,7 +35,7 @@
 				<a href="{{ h.url(controller = 'prefix', action = 'list', schema = c.schema.id) }}" class="menu_link {% if page == 'prefixes' -%}menu_link_active{%- endif -%}">prefixes</a>
 					</li>
 					<li style="display: inline-block;">
-						<a href="{{ h.url(controller = 'pool', action = 'list', schema = c.schema.id) }}" class="menu_link">pools</a>
+					<a href="{{ h.url(controller = 'pool', action = 'list', schema = c.schema.id) }}" class="menu_link {% if page == 'prefixes' -%}menu_link_active{%- endif -%}">pools</a>
 					</li>
 				{% endif %}
 				</ol>
