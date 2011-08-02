@@ -458,7 +458,7 @@ class Nap:
                 raise NapExtraneousInputError("extraneous specification key %s" % a)
 
         if 'id' in spec:
-            if long(spec['id']) != spec['id']:
+            if type(spec['id']) not in (int, long):
                 raise NapValueError("schema specification key 'id' must be an integer")
             if 'name' in spec:
                 raise NapExtraneousInputError("schema specification contain both 'id' and 'key', specify schema id or name")
@@ -646,7 +646,7 @@ class Nap:
             raise NapMissingInputError('missing schema')
 
         if 'id' in spec:
-            if long(spec['id']) != spec['id']:
+            if type(spec['id']) not in (long, int):
                 raise NapValueError("pool specification key 'id' must be an integer")
             if spec != { 'id': spec['id'], 'schema': spec['schema'] }:
                 raise NapExtraneousInputError("pool specification with 'id' should not contain anything else")
