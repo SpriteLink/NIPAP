@@ -14,11 +14,11 @@
 {% endblock %}
 
 {% block content %}
+<div style="position: absolute; right: 20px; top: 14px;">
+	{{ button('Add pool', color='red', url=h.url(controller = 'pool', action = 'add', schema = c.schema.id)) }}
+</div>
 
 <table style="border-spacing: 0px;">
-    <tr>
-        <td colspan="5" align="right"><a href="{{ h.url(controller="pool", action="add", schema=c.schema.id) }}">add</a></td>
-    </tr>
     <tr>
         <th>Name</th><th>Description</th><th>Default type</th><th>Def. pref. length (4/6)</th>
     </tr>
