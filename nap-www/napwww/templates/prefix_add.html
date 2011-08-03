@@ -66,7 +66,7 @@ function showAllocContainer(e) {
         $("#from-pool_container").hide();
         $("#prefix_data_container").hide();
         $("#prefix_row").hide();
-		$("body").animate({ scrollTop: $("#from-prefix_container").offset().top - 50}, 700);
+		$("html,body").animate({ scrollTop: $("#from-prefix_container").offset().top - 50}, 700);
 
     // from-pool
     } else if (e.currentTarget.id == 'radio-from-pool') {
@@ -78,7 +78,7 @@ function showAllocContainer(e) {
         $("#prefix_data_container").hide();
         $("#prefix_row").hide();
         $('#prefix_length_prefix_container').hide();
-		$("body").animate({ scrollTop: $("#from-pool_container").offset().top - 50}, 700);
+		$("html,body").animate({ scrollTop: $("#from-pool_container").offset().top - 50}, 700);
 
     // else - manual
     } else {
@@ -90,7 +90,7 @@ function showAllocContainer(e) {
         $("#prefix_data_container").show();
         $("#prefix_row").css('display', 'table-row');
         $('#prefix_length_prefix_container').hide();
-		$("body").animate({ scrollTop: $("#prefix_data_container").offset().top - 50}, 700);
+		$("html,body").animate({ scrollTop: $("#prefix_data_container").offset().top - 50}, 700);
 
     }
 
@@ -185,6 +185,8 @@ function prefixAdded(data) {
     } else {
         $('#prefix_added').html(data.prefix);
         $('#prefix_added_container').show();
+        $("html,body").animate({ scrollTop: $("#prefix_added_container").offset().top - 50}, 700);
+        $("#prefix_added_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#3d9400" }, 700).delay(200).animate({ backgroundColor: "#ccffcc" }, 1000);
     }
 
 }
@@ -206,6 +208,9 @@ function selectPrefix(prefix_id) {
         $('#alloc_from_prefix').html(prefix_list[prefix_id].prefix);
         cur_opts.from_prefix = new Array(prefix_list[prefix_id].prefix);
     }
+
+    $("html,body").animate({ scrollTop: $("#prefix_length_prefix_container").offset().top - 50}, 700);
+    $("#prefix_length_prefix_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
 
 }
 
@@ -365,19 +370,21 @@ Prefix administration &mdash;&gt; add prefix
 				<div class="prefix_list" id="prefix_list"></div>
 		</div>
 
-		<div id="prefix_length_prefix_container" style="display: none; padding: 15px;">
-			<table>
-				<tr>
-					<td>Allocating from</td>
-					<td><span id="alloc_from_prefix"></span></td>
-				</tr>
-				<tr id="length_info_row">
-					<td style="padding-right: 20px;">Prefix-length</td>
-					<td>
-						<input type="text" name="prefix_length_prefix">
-					</td>
-				</tr>
-			</table>
+		<div id="prefix_length_prefix_container" style="display: none;">
+			<div id="prefix_length_prefix_bg" class="options-content">
+				<table>
+					<tr>
+						<td>Allocating from</td>
+						<td><span id="alloc_from_prefix"></span></td>
+					</tr>
+					<tr id="length_info_row">
+						<td style="padding-right: 20px;">Prefix-length</td>
+						<td>
+							<input type="text" name="prefix_length_prefix">
+						</td>
+					</tr>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>
@@ -456,8 +463,15 @@ Prefix administration &mdash;&gt; add prefix
 	</div>
 </div>
 
-<div style="display: none;" id="prefix_added_container">
-    The prefix <span id="prefix_added"></span> was successfully added to NAP.
+<div id="prefix_added_container" style="display: none;">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Result</h3>
+			<div id="prefix_added_bg" style="padding: 15px; background-color: #ccffcc;">
+				The prefix <span id="prefix_added"></span> was successfully added to NAP.
+			</div>
+		</div>
+	</div>
 </div>
 
 {% endblock %}
