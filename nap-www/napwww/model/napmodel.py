@@ -121,11 +121,17 @@ class Schema(NapModel):
 
         if self.id is None:
             # New object, create
-            self.id = self._xmlrpc.connection.add_schema(data)
+            try:
+                self.id = self._xmlrpc.connection.add_schema(data)
+            except xmlrpclib.Fault, f:
+                raise _fault_to_exception(f)
 
         else:
             # Old object, edit
-            self._xmlrpc.connection.edit_schema({'id': self.id}, data)
+            try:
+                self._xmlrpc.connection.edit_schema({'id': self.id}, data)
+            except xmlrpclib.Fault, f:
+                raise _fault_to_exception(f)
 
         _cache['Schema'][self.id] = self
 
@@ -135,7 +141,10 @@ class Schema(NapModel):
         """ Remove schema.
         """
 
-        self._xmlrpc.connection.remove_schema({'id': self.id})
+        try:
+            self._xmlrpc.connection.remove_schema({'id': self.id})
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
         if self.id in _cache['Schema']:
             del(_cache['Schema'][self.id])
 
@@ -168,11 +177,17 @@ class Pool(NapModel):
         if self.id is None:
             # New object, create
             data['schema'] = self.schema.id,
-            self.id = self._xmlrpc.connection.add_pool({'id': self.schema.id}, data)
+            try:
+                self.id = self._xmlrpc.connection.add_pool({'id': self.schema.id}, data)
+            except xmlrpclib.Fault, f:
+                raise _fault_to_exception(f)
 
         else:
             # Old object, edit
-            self._xmlrpc.connection.edit_pool({'id': self.schema.id}, {'id': self.id}, data)
+            try:
+                self._xmlrpc.connection.edit_pool({'id': self.schema.id}, {'id': self.id}, data)
+            except xmlrpclib.Fault, f:
+                raise _fault_to_exception(f)
 
         _cache['Pool'][self.id] = self
 
@@ -182,7 +197,10 @@ class Pool(NapModel):
         """ Remove pool.
         """
 
-        self._xmlrpc.connection.remove_pool({'id': self.schema.id}, {'id': self.id})
+        try:
+            self._xmlrpc.connection.remove_pool({'id': self.schema.id}, {'id': self.id})
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
         if self.id in _cache['Pool']:
             del(_cache['Pool'][self.id])
 
@@ -513,6 +531,12 @@ class NapValueError(NapError):
 
 
 
+class NapDuplicateError(NapError):
+    """ A duplicate entry was encountered
+    """
+    pass
+
+
 #
 # GLOBAL STUFF
 #
@@ -532,7 +556,8 @@ _fault_to_exception_map = {
     1110: NapMissingInputError,
     1120: NapExtraneousInputError,
     1200: NapValueError,
-    1300: NapNonExistentError
+    1300: NapNonExistentError,
+    1400: NapDuplicateError
 }
 
 # Create global XML-RPC connection and logger for static methods...
