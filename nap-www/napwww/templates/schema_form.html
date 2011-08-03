@@ -4,25 +4,27 @@
 <form method="post" action="{{ h.url(controller="schema", action="add") }}">
 {% endif %}
 <input type="hidden" name="action" value="{{ c.action }}">
-<table>
-    <tr>
-        <td>Name</td>
-        {% if c.action == 'edit' %}
-        <td><input type="text" name="name" value="{{ c.schema.name }}"></td>
-        {% else %}
-        <td><input type="text" name="name" value=""></td>
-        {% endif %}
-    </tr>
-    <tr>
-        <td>Description</td>
-        {% if c.action == 'edit' %}
-        <td><textarea name="description" cols="40" rows="10">{{ c.schema.description }}</textarea></td>
-        {% else %}
-        <td><textarea name="description" cols="40" rows="10"></textarea></td>
-        {% endif %}
-    </tr>
-    <tr>
-        <td>&nbsp;</td>
-        <td><input type="submit" value="Engage"><td>
-    </tr>
-</table>
+
+<div class="options-group">
+	<div class="options-content">
+		<h3 class="options-group-heading">Properties of {% if c.action == 'edit' %}schema: {{ c.schema.name }} {% else %}new schema{% endif %}</h3>
+		<table>
+			<tr>
+				<td>Name</td>
+				<td><input type="text" name="name" value="{%- if c.action == 'edit' %}{{ c.schema.name|default('') }}{%- endif %}"></td>
+			</tr>
+			<tr>
+				<td valign="top">Description</td>
+				<td><textarea name="description" cols="50" rows="1" class="tooltip" title="Enter a short description of what this schema is used for.">
+					{%- if c.action == 'edit' -%}
+						{{ c.schema.description }}
+					{%- endif -%}
+				</textarea></td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td><input type="submit" value="Engage"><td>
+			</tr>
+		</table>
+	</div>
+</div>
