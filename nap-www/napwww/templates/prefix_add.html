@@ -257,6 +257,9 @@ function selectPrefix(prefix_id) {
         cur_opts.from_prefix = new Array(prefix_list[prefix_id].prefix);
     }
 
+    $("html,body").animate({ scrollTop: $("#prefix_length_prefix_container").offset().top - 50}, 700);
+    $("#prefix_length_prefix_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
+
 }
 
 
@@ -466,19 +469,21 @@ Prefix administration &mdash;&gt; add prefix
 				<div class="prefix_list" id="prefix_list"></div>
 		</div>
 
-		<div id="prefix_length_prefix_container" style="display: none; padding: 15px;">
-			<table>
-				<tr>
-					<td>Allocating from</td>
-					<td><span id="alloc_from_prefix"></span></td>
-				</tr>
-				<tr id="length_info_row">
-					<td style="padding-right: 20px;">Prefix-length</td>
-					<td>
-						<input type="text" name="prefix_length_prefix">
-					</td>
-				</tr>
-			</table>
+		<div id="prefix_length_prefix_container" style="display: none;">
+			<div id="prefix_length_prefix_bg" class="options-content">
+				<table>
+					<tr>
+						<td>Allocating from</td>
+						<td><span id="alloc_from_prefix"></span></td>
+					</tr>
+					<tr id="length_info_row">
+						<td style="padding-right: 20px;">Prefix-length</td>
+						<td>
+							<input type="text" name="prefix_length_prefix">
+						</td>
+					</tr>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>
