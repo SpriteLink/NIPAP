@@ -392,10 +392,13 @@ input[name="search_button"] {
     background: #FFFFFF;
     border: 2px solid #cecece;
     z-index: 200;
-    padding: 12px;
     top: 260px;
     left: 50%;
     margin-left: -150px;
+    border: 5px solid #cacaca;
+    background-color: #ffffff;
+/*    width: 100%;
+    height: 100%; */
 }
 
 /*
@@ -403,16 +406,22 @@ input[name="search_button"] {
  */
 .dialog_title {
     padding: 7px;
-    text-align: center;
+    margin: 0;
+    background-color: #ebeced;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f8f8), to(#ebeced));
+    background-image: -webkit-linear-gradient(top, #f6f8f8, #ebeced);
+    background-image: -moz-linear-gradient(center top , #f6f8f8, #ebeced);
+    background-image: -ms-linear-gradient(top, #f6f8f8, #ebeced);
+    background-image: -o-linear-gradient(top, #f6f8f8, #ebeced);
+    background-image: linear-gradient(top, #f6f8f8, #ebeced);
 }
 
 /*
  * Dialog content
  */
-.dialog_content {
-    margin-top: 40px;
-    text-align: center;
-    padding: 20px;
+.dialog_text {
+    padding: 10px;
+    height: 100%;
 }
 
 /*
@@ -421,9 +430,10 @@ input[name="search_button"] {
 .dialog_options {
     width: 100%;
     text-align: center;
-    padding: 15px;
     margin-left: auto;
     margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 /*

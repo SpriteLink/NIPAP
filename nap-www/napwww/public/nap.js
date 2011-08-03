@@ -24,8 +24,8 @@ function displayNotice(title, msg) {
 
     $("body").append('<div class="fade_bg">');
     $("body").append('<div id="notice_dialog" class="dialog">');
-    $("#notice_dialog").html('<div class="dialog_title"><h3>' + title +
-		'</h3></div><div class="dialog_text">' + msg + "</div>" +
+    $("#notice_dialog").html('<h3 class="dialog_title">' + title + '</h3>' +
+		'<div class="dialog_text">' + msg + "</div>" +
 		'<div class="dialog_options">' +
 		'<div class="button button_green" id="close_notice_btn">' +
 		'<div style="display: inline-block; vertical-align: middle;">OK</div>' +
@@ -63,13 +63,13 @@ function displayVerify(msg, url) {
 	$('body').append('<div class="fade_bg">');
 	$('body').append('<div class="dialog" id="verify_dialog">');
 	var d = $('#verify_dialog');
-	d.append('<div class="dialog_title"><h3>Are you sure?</h3></div>');
+	d.append('<h3 class="dialog_title">Are you sure?</h3>');
 	d.append('<div class="dialog_text">' + msg + '</div>');
 	d.append('<div class="dialog_options">' +
-	'<a href="' + url + '"><div class="button button_green" style="float: left;">' +
+	'<a href="' + url + '"><div class="button button_green" style="margin: 10px;">' +
 	'<div style="display: inline-block; vertical-align: middle;">YES</div></div></a>' +
 	'<a href="javascript:void(0);" onclick="removeVerify();">' +
-	'<div class="button button_red" style="clear: right;">' +
+	'<div class="button button_red" style="margin: 10px;">' +
 	'<div style="display: inline-block; vertical-align: middle;">NO</div></div></a>');
 
     $(".fade_bg").fadeIn(200);
