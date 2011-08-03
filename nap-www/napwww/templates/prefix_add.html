@@ -6,10 +6,9 @@
 <script src="/jquery-ui-1.8.13.custom.min.js"></script>
 <script>
 
+prefix_link_type = 'select';
 var cur_opts = new Object();
-var indent_head = new Array();
 var alloc_method = '';
-var prefix_list = new Object();
 
 /*
  * Enable from-prefix autocompleting search box.
@@ -192,53 +191,6 @@ function prefixAdded(data) {
 
 
 /*
- * Displays a prefix in the prefix search result list.
- */
-function showPrefix(prefix, parent_container) {
-
-    // add main prefix container
-    parent_container.append('<div id="prefix_entry' + prefix.id + '">');
-    var prefix_entry = $('#prefix_entry' + prefix.id);
-    prefix_entry.attr('class', 'prefix_entry');
-    prefix_entry.hover(
-        function() { prefix_entry.addClass("row_hover"); },
-        function() { prefix_entry.removeClass("row_hover"); }
-    );
-
-    // add indent and prefix container
-    prefix_entry.append('<div id="prefix_ind_pref' + prefix.id + '">');
-    var prefix_ind_pref = $('#prefix_ind_pref' + prefix.id);
-    prefix_ind_pref.addClass('prefix_ind_pref');
-
-    // add indent
-    prefix_ind_pref.append('<div id="prefix_indent' + prefix.id + '">');
-    var prefix_indent = $('#prefix_indent' + prefix.id);
-    prefix_indent.addClass("prefix_indent");
-    prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="collapse(' + prefix.id + ')">&nbsp;-&nbsp;</span>');
-    prefix_indent.width(prefix_indent.width() + 30 * prefix.indent);
-
-    // add prefix
-    prefix_ind_pref.append('<div id="prefix_prefix' + prefix.id + '">');
-    var prefix_prefix = $('#prefix_prefix' + prefix.id);
-    prefix_prefix.addClass("prefix_prefix");
-    prefix_prefix.html('<a href="javascript:void(0)" onClick="selectPrefix(' + prefix.id + '); return false;">' + prefix.display_prefix + '</a>');
-
-    // Add prefix type
-    prefix_entry.append('<div id="prefix_type' + prefix.id + '">');
-    var prefix_type = $('#prefix_type' + prefix.id);
-    prefix_type.addClass("prefix_type");
-    prefix_type.html(prefix.type);
-
-    // Add prefix description
-    prefix_entry.append('<div id="prefix_description' + prefix.id + '">'); 
-    var prefix_description = $('#prefix_description' + prefix.id);
-    prefix_description.addClass("prefix_description");
-    prefix_description.html(prefix.description);
-
-}
-
-
-/*
  * Is run when a prefix is selected in the list.
  */
 function selectPrefix(prefix_id) {
@@ -257,57 +209,6 @@ function selectPrefix(prefix_id) {
 
 }
 
-
-/*
- * Callback function called when prefixes are received.
- * Plots prefixes and adds them to list.
- */
-function receivePrefixList(pref_list) {
-
-    /*
-     * Interpretation list
-     */
-    var intp_cont = $("#search_interpret_container");
-    intp_cont.empty();
-    for (key in pref_list.interpretation) {
-
-        var interp = pref_list.interpretation[key];
-        intp_cont.append('<div class="search_interpretation" id="intp' + key + '">');
-        $('#intp' + key).html('<b>' + interp.string + '</b> interpreted as ' + interp.interpretation);
-
-    }
-
-
-    /*
-     * Prefix list
-     */
-    $('#prefix_list').empty();
-    indent_head[0] = $('#prefix_list');
-    prefix_list = new Object();
-
-    // add prefixes
-    for (key in pref_list.result) {
-
-        var cur_prefix = pref_list.result[key];
-        prefix_list[cur_prefix.id] = cur_prefix;
-
-        // add prefixes to list - first a special case for the first prefix
-        if (key == 0) {
-            showPrefix(cur_prefix, indent_head[0]);
-        } else {
-            
-            // indent increased - create new collapse group
-            var prev_prefix = pref_list.result[key - 1];
-            if (cur_prefix.indent > prev_prefix.indent) {
-                indent_head[prev_prefix.indent].append('<div id="collapse' + prev_prefix.id + '">');
-                indent_head[cur_prefix.indent] = $('#collapse' + prev_prefix.id);
-            }
-
-            showPrefix(cur_prefix, indent_head[cur_prefix.indent]);
-
-        }
-    }
-}
 
 /*
  * Perform a search operation
