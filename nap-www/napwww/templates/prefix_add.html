@@ -67,6 +67,7 @@ function showAllocContainer(e) {
         $("#from-pool_container").hide();
         $("#prefix_data_container").hide();
         $("#prefix_row").hide();
+		$("body").animate({ scrollTop: $("#from-prefix_container").offset().top - 50}, 700);
 
     // from-pool
     } else if (e.currentTarget.id == 'radio-from-pool') {
@@ -78,6 +79,7 @@ function showAllocContainer(e) {
         $("#prefix_data_container").hide();
         $("#prefix_row").hide();
         $('#prefix_length_prefix_container').hide();
+		$("body").animate({ scrollTop: $("#from-pool_container").offset().top - 50}, 700);
 
     // else - manual
     } else {
@@ -89,6 +91,7 @@ function showAllocContainer(e) {
         $("#prefix_data_container").show();
         $("#prefix_row").css('display', 'table-row');
         $('#prefix_length_prefix_container').hide();
+		$("body").animate({ scrollTop: $("#prefix_data_container").offset().top - 50}, 700);
 
     }
 
