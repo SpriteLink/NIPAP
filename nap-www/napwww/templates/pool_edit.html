@@ -70,6 +70,12 @@
      * Run when prefix has been added to pool
      */
     function prefixAdded(prefix) {
+
+        // Error?
+        if ('error' in pref_list) {
+            displayNotice("Error", pref_list.message);
+            return;
+        }
         
         // display prefix in list
         $("#pool_prefix_list").append('<tr id="pool_prefix_' + prefix.id + '">');

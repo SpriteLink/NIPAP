@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 {% macro button(text, color='red', width='100px', height='30px', url='') -%}
 	<a href="{{url}}">
-		<div id="button" class="button_{{color}}" style="height: {{height}}; width: {{width}};">
+		<div class="button button_{{color}}" style="height: {{height}}; width: {{width}};">
 			<div style="display: inline-block; vertical-align: middle;">
 				{{text}}
 			</div>
@@ -16,9 +16,11 @@
         <link rel="stylesheet" href="/tipTip.css">
         <script src="/jquery-1.6.1.min.js"></script>
         <script src="/jquery.tipTip.minified.js"></script>
+        <script src="/nap.js"></script>
         <script>
             $(function() {
                 $(".tooltip").tipTip({delay: 100});
+                $(document).ajaxError(ajaxErrorHandler);
             });
         </script>
         {% block head %}

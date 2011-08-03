@@ -179,7 +179,7 @@ function prefixFormSubmit(e) {
 function prefixAdded(data) {
 
     if ('error' in data) {
-        displayError('warning', data.message);
+        displayNotice('Operation failed', data.message);
     } else {
         $('#prefix_added').html(data.prefix);
         $('#prefix_added_container').show();
@@ -187,25 +187,6 @@ function prefixAdded(data) {
 
 }
 
-/*
- * Display an error message
- * TODO: create a nice div or sumthin' instead.
- */
-function displayError(level, msg) {
-
-    alert(level + ": " + msg);
-
-}
-
-
-/*
- * Error handler for ajax-errors.
- */
-function ajaxErrorHandler(e, jqXHR, ajaxSettings, thrownError) {
-
-    displayError('error', thrownError);
-
-}
 
 /*
  * Displays a prefix in the prefix search result list.
@@ -347,7 +328,6 @@ $(function () {
 
     // fetch data for pool search box
     $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema_id': {{ c.schema.id }}}, enableFromPoolSearch);
-    $(document).ajaxError(ajaxErrorHandler);
 
     // Enable actions on radio buttons
     $('input[name="prefix_alloc_method"]').change(showAllocContainer);

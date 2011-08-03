@@ -86,6 +86,12 @@
      */
     function receivePrefixList(pref_list) {
 
+        // Error?
+        if ('error' in pref_list) {
+            displayNotice("Error", pref_list.message);
+            return;
+        }
+
         /*
          * Interpretation list
          */
@@ -235,6 +241,12 @@
      * Insert prefixes into the list
      */
     function insertPrefixList(pref_list) {
+
+        // Error?
+        if ('error' in pref_list) {
+            displayNotice("Error", pref_list.message);
+            return;
+        }
 
         console.log('Got ' + pref_list.length + ' prefixes.');
 

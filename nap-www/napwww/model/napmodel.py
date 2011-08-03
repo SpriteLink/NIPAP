@@ -547,4 +547,7 @@ def _fault_to_exception(f):
         TODO: Is this one neccesary? Can be done inline...
     """
 
-    return _fault_to_exception_map[f.faultCode](f.faultString)
+    e = _fault_to_exception_map.get(f.faultCode)
+    if e is None:
+        e = NapError
+    return e(f.faultString)
