@@ -78,6 +78,32 @@ a.menu_link:hover {
 	text-align: left;
 }
 
+.page-title {
+    border-radius: 3px;
+    -moz-border-radius: 3px 3px 3px 3px;
+    -webkit-border-radius: 3px;
+	border-color: #D1D1D1 #D1D1D1 #BBBBBB;
+	border-style: solid;
+	border-width: 1px;
+
+    background-color: #cccccc;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#eeeeee), to(#cccccc));
+    background-image: -webkit-linear-gradient(top, #eeeeee, #cccccc);
+    background-image: -moz-linear-gradient(center top , #eeeeee, #cccccc);
+    background-image: -ms-linear-gradient(top, #eeeeee, #cccccc);
+    background-image: -o-linear-gradient(top, #eeeeee, #cccccc);
+    background-image: linear-gradient(top, #eeeeee, #cccccc);
+
+	height: 20px;
+	padding: 5px;
+	padding-bottom: 0px;
+	margin-top: 30px;
+	margin-bottom: 15px;
+
+	font-weight: bold;
+	color: #555555;
+}
+
 #schema_selector {
     display: none;
     height: 480px;

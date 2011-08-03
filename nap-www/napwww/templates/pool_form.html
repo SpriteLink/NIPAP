@@ -3,55 +3,64 @@
 {% else %}
 <form method="post" action="{{ h.url(controller="pool", action="add") }}">
 {% endif %}
-<table>
-    <tr>
-        <td>Name</td>
-        {% if c.pool is defined %}
-        <td><input type="text" name="name" value="{{ c.pool.name }}"></td>
-        {% else %}
-        <td><input type="text" name="name" value=""></td>
-        {% endif %}
-    </tr>
-    <tr>
-        <td>Description</td>
-        {% if c.pool is defined %}
-        <td><textarea name="description" cols="40" rows="10">{{ c.pool.description }}</textarea></td>
-        {% else %}
-        <td><textarea name="description" cols="40" rows="10"></textarea></td>
-        {% endif %}
-    </tr>
-    <tr>
-        <td>Default type</td>
-        <td>
-            {% if c.pool is defined %}
-            {{ h.select('default_type', ( c.pool.default_type ), ('reservation', 'assignment', 'host')) }}
-            {% else %}
-            {{ h.select('default_type', ('reservation'), ('reservation', 'assignment', 'host')) }}
-            {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <td>Default IPv4 prefix length</td>
-        {% if c.pool is defined %}
-        <td><input type="text" name="ipv4_default_prefix_length" value="{{ c.pool.ipv4_default_prefix_length }}"></td>
-        {% else %}
-        <td><input type="text" name="ipv4_default_prefix_length" value=""></td>
-        {% endif %}
-    </tr>
-    <tr>
-        <td>Default IPv6 prefix length</td>
-        {% if c.pool is defined %}
-        <td><input type="text" name="ipv6_default_prefix_length" value="{{ c.pool.ipv6_default_prefix_length }}"></td>
-        {% else %}
-        <td><input type="text" name="ipv6_default_prefix_length" value=""></td>
-        {% endif %}
-    </tr>
-    <tr>
-        <td>&nbsp;</td>
-        <td>
-            <input type="hidden" name="schema" value="{{ c.schema.id }}">
-            <input type="submit" value="Engage">
-        <td>
-    </tr>
-</table>
+
+<div class="options-group">
+	<div class="options-content">
+
+		<h3 class="options-group-heading">Properties of {% if c.pool is defined %}pool: {{ c.pool.name }} {% else %}new pool{% endif %}</h3>
+
+		<table>
+			<tr>
+				<td>Name</td>
+				{% if c.pool is defined %}
+				<td><input type="text" name="name" value="{{ c.pool.name }}"></td>
+				{% else %}
+				<td><input type="text" name="name" value=""></td>
+				{% endif %}
+			</tr>
+			<tr>
+				<td>Description</td>
+				{% if c.pool is defined %}
+				<td><textarea name="description" cols="40" rows="10">{{ c.pool.description }}</textarea></td>
+				{% else %}
+				<td><textarea name="description" cols="40" rows="10"></textarea></td>
+				{% endif %}
+			</tr>
+			<tr>
+				<td>Default type</td>
+				<td>
+					{% if c.pool is defined %}
+					{{ h.select('default_type', ( c.pool.default_type ), ('reservation', 'assignment', 'host')) }}
+					{% else %}
+					{{ h.select('default_type', ('reservation'), ('reservation', 'assignment', 'host')) }}
+					{% endif %}
+				</td>
+			</tr>
+			<tr>
+				<td>Default IPv4 prefix length</td>
+				{% if c.pool is defined %}
+				<td><input type="text" name="ipv4_default_prefix_length" value="{{ c.pool.ipv4_default_prefix_length }}"></td>
+				{% else %}
+				<td><input type="text" name="ipv4_default_prefix_length" value=""></td>
+				{% endif %}
+			</tr>
+			<tr>
+				<td>Default IPv6 prefix length</td>
+				{% if c.pool is defined %}
+				<td><input type="text" name="ipv6_default_prefix_length" value="{{ c.pool.ipv6_default_prefix_length }}"></td>
+				{% else %}
+				<td><input type="text" name="ipv6_default_prefix_length" value=""></td>
+				{% endif %}
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td>
+					<input type="hidden" name="schema" value="{{ c.schema.id }}">
+					<input type="submit" value="Engage">
+				<td>
+			</tr>
+		</table>
+
+	</div>
+</div>
 </form>

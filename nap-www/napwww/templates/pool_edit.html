@@ -171,47 +171,53 @@
 {% endblock %}
 {% block content %}
 
-<h2>{{ c.pool.name }}</h2>
+<div class="page-title">
+Pool administration &mdash;&gt; edit pool
+</div>
 
 {% include 'pool_form.html' %}
 
-<h3>Prefixes in pool</h3>
-<table id="pool_prefix_list">
-    <tr>
-        <td colspan="3" align="right"><a href="javascript:void(0);" id="show_prefix_select_btn">add</a></td>
-    </tr>
-    <tr>
-        <th>Prefix</th><th>Description</th><th>&nbsp;</th>
-    </tr>
-    {% for prefix in c.prefix_list %}
-    <tr>
-        <td>{{ prefix.display_prefix }}</td>
-        <td>{{ prefix.description }}</td>
-        <td>
-            <a href="{{ h.url(controller = 'pool', action = 'remove_prefix', id = c.pool.id, prefix = prefix.id, schema = c.schema.id) }}">del</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="options-group">
+	<div class="options-content">
+		<h3 class="options-group-heading">Prefixes in pool</h3>
+		<table id="pool_prefix_list">
+			<tr>
+				<td colspan="3" align="right"><a href="javascript:void(0);" id="show_prefix_select_btn">add</a></td>
+			</tr>
+			<tr>
+				<th>Prefix</th><th>Description</th><th>&nbsp;</th>
+			</tr>
+			{% for prefix in c.prefix_list %}
+			<tr>
+				<td>{{ prefix.display_prefix }}</td>
+				<td>{{ prefix.description }}</td>
+				<td>
+					<a href="{{ h.url(controller = 'pool', action = 'remove_prefix', id = c.pool.id, prefix = prefix.id, schema = c.schema.id) }}">del</a>
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
 
-<div class="prefix_select_container" id="prefix_select_container">
-    <div style="position: absolute; top: 0px; right: 0px; padding: 5px;"><a href="javascript:void(0);" id="close_prefix_select_btn">hide</a></div>
-    <center>
-        <form method="post">
-            <input type="text" id="query_string" name="query_string"  size="50" autocomplete="off">
-            <input type="submit" value="Search">
-        </form>
-    </center>
-    <table>
-        <tr>
-            <td width="40">&nbsp;</td>
-            <td class="opt_left">
-                Search interpretation
-            </td>
-            <td class="opt_right" id="search_interpret_container"> </td>
-        </tr>
-    </table>
-    <div class="prefix_list" id="prefix_list"></div>
+		<div class="prefix_select_container" id="prefix_select_container">
+			<div style="position: absolute; top: 0px; right: 0px; padding: 5px;"><a href="javascript:void(0);" id="close_prefix_select_btn">hide</a></div>
+			<center>
+				<form method="post">
+					<input type="text" id="query_string" name="query_string"  size="50" autocomplete="off">
+					<input type="submit" value="Search">
+				</form>
+			</center>
+			<table>
+				<tr>
+					<td width="40">&nbsp;</td>
+					<td class="opt_left">
+						Search interpretation
+					</td>
+					<td class="opt_right" id="search_interpret_container"> </td>
+				</tr>
+			</table>
+			<div class="prefix_list" id="prefix_list"></div>
+		</div>
+	</div>
 </div>
 
 {% endblock %}
