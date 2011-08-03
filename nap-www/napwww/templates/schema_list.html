@@ -3,23 +3,6 @@
 {% block head %}
     <script>
 
-		/*
-		 * Verification dialog.
-		 * TODO: create nice divs/images for yes/no options
-		 * TODO: remove inline javascript on no-option
-		 */
-		function verifyDialog(text, url) {
-
-			$('body').append('<div class="verify_dialog">');
-			var d = $('.verify_dialog');
-			d.append('<div class="verify_dialog_text">' + text + '</div>');
-			d.append('<div class="verify_dialog_options"><a href="' + url + '">YES</a> <a href="javascript:void(0);" onclick="$(\'.verify_dialog\').remove();">NO</a>');
-
-			return false;
-			
-		}
-
-
         $(function () {
             $(".schema_row").hover(
                 function() { $(this).addClass("row_hover"); },
@@ -58,7 +41,7 @@
 			<td>{{ schema.description }}</td>
 			<td>
 				<a href="{{ h.url(controller="schema", action="edit", id=schema.id) }}">edit</a> | 
-				<a href="javascript:void(0);" onclick="verifyDialog('Really remove {{ schema.name }}? This will remove ALL prefixes in the schema!', '{{ h.url(controller="schema", action="remove", id=schema.id) }}');">del</a>
+				<a href="javascript:void(0);" onclick="displayVerify('Really remove {{ schema.name }}? This will remove ALL prefixes in the schema!', '{{ h.url(controller="schema", action="remove", id=schema.id) }}');">del</a>
 			</td>
 		</tr>
 		{% endfor %}

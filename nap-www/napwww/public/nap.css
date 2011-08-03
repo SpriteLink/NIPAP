@@ -191,20 +191,23 @@ input[name="search_button"] {
 }
 
 
-#button {
+.button {
     display: inline-block;
 
     border-radius: 2px;
     -moz-border-radius: 2px 2px 2px 2px;
     -webkit-border-radius: 2px;
 
+    cursor: pointer;
     font-family: arial;
     font-weight: bold;
     color: #ffffff;
     text-align: center;
     line-height: 2.3em;
+    height: 30px;
+    width: 100px;
 }
-#button:hover {
+.button:hover {
     -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
     -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
@@ -302,7 +305,6 @@ input[name="search_button"] {
 .prefix_entry {
     height: 25px;
     width: 900px;
-    border 1px solid #dcdcdc;
     line-height: 25px;
 }
 
@@ -381,30 +383,63 @@ input[name="search_button"] {
 /*
  * A dialog box which pops up to confirm things.
  */
-.verify_dialog {
-    width: 242px;
-    height: 130px;
-    position: absolute;
-    top: 150px;
+.dialog {
+    display: none;
+    position: fixed;
+    _position: absolute; /* Hack for IE 6 */
+    min-height: 100px;
+    width: 300px;
+    background: #FFFFFF;
+    border: 2px solid #cecece;
+    z-index: 200;
+    padding: 12px;
+    top: 260px;
     left: 50%;
-    margin-left: -141px;
-    background-color: #f5f5f5;
-    border: 1px solid #dcdcdc;
-    padding: 10px;
+    margin-left: -150px;
 }
 
 /*
- * Dialog text
+ * Dialog box title
  */
-.verify_dialog_text {
+.dialog_title {
+    padding: 7px;
+    text-align: center;
+}
+
+/*
+ * Dialog content
+ */
+.dialog_content {
     margin-top: 40px;
     text-align: center;
+    padding: 20px;
 }
 
 /*
  * Dialog options; yes/no links
  */
-.verify_dialog_options {
+.dialog_options {
+    width: 100%;
     text-align: center;
     padding: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/*
+ * Div placed on top of everything to fade background
+ */
+.fade_bg {
+    display: none;
+    opacity: 0.7;
+    position: fixed;
+    _position: absolute; /* Hack for IE 6 */
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background: #000000;
+    border: 1px solid #cecece;
+    z-index: 100;
+    text-align: center;
 }
