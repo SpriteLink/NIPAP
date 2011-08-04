@@ -312,7 +312,6 @@ input[name="search_button"] {
 .option div,dl,dt,dd {
 	padding: 1px;
 	margin: 0;
-	font-weight: bold;
 }
 
 .option dl {
@@ -324,8 +323,10 @@ input[name="search_button"] {
 }
 .option dt {
 	width: 160px;
+	vertical-align: top;
 	text-align: right;
 	padding-right: 0;
+	font-weight: bold;
 }
 .option dd {
 	width: 70%;

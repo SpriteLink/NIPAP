@@ -47,8 +47,9 @@ function selectPool(e, ui) {
 
     // set prefix length
     changeFamily();
-    $('#length_info_row').css('display', 'table-row');
-    $('#length_edit_row').css('display', 'table-row');
+	$('#length_info_row').css('display', 'block');
+	$('#length_edit_row').css('display', 'inline-block');
+
 
 }
 
@@ -256,29 +257,47 @@ Prefix administration &mdash;&gt; add prefix
 <div class="options-group">
 	<div class="options-content">
 		<h3 class="options-group-heading">Prefix allocation method</h3>
-		<table>
-			<tr>
-				<td width="120" valign="top">
+
+		<div class="option">
+			<dl>
+				<dt style="text-align: left;">
 					<input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool">
 					<label for="radio-from-pool">From pool</label>
-				</td>
-				<td>Get a prefix from a pre-defined prefix pool.</td>
-			</tr>
-			<tr>
-				<td valign="top">
+				</dt>
+				<dd>
+					Get a prefix from a pre-defined prefix pool.
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt style="text-align: left;">
 					<input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix">
 					<label for="radio-from-prefix">From prefix</label>
-				</td>
-				<td>Get a prefix allocated from another prefix.</td>
-			</tr>
-			<tr>
-				<td valign="top">
+				</dt>
+				<dd>
+					Get a prefix allocated from another prefix.
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt style="text-align: left;">
 					<input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual">
 					<label for="radio-manual">Manual</label>
-				</td>
-				<td>Specify all data manually</td>
-			</tr>
-		</table>
+				</dt>
+				<dd>
+					Specify all data manually
+				</dd>
+			</dl>
+		</div>
+
 	</div>
 </div>
 
@@ -291,41 +310,55 @@ Prefix administration &mdash;&gt; add prefix
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Pool allocation options</h3>
-			<table>
-				<tr>
-					<td>Family</td>
-					<td>
+
+
+			<div class="option">
+				<dl>
+					<dt style="text-align: left;">
+						Family
+					</dt>
+					<dd>
 						<label for="family_4_radio">IPv4</label><input type="radio" name="family" value="4" id="family_4_radio" checked>
 						<label for="family_6_radio">IPv6</label><input type="radio" name="family" value="6" id="family_6_radio">
-					</td>
-				</tr>
-				<tr>
-					<td><label for="from-pool">Pool</label></td>
-					<td><input id="from-pool" type="text" name="from-pool"></td>
-				</tr>
-				<tr style="display: none;" id="length_info_row">
-					<td style="padding-right: 20px;">Prefix-length</td>
-					<td>
-						<span id="def_length_container"></span>
-					</td>
-				</tr>
-				<tr style="display: none;" id="length_edit_row">
-					<td>&nbsp;</td>
-					<td>
-						<label for="edit_length_default_radio">Use default</label>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt style="text-align: left;">
+						Pool
+					</dt>
+					<dd>
+						<input id="from-pool" type="text" name="from-pool">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option" id="length_info_row" style="display: none;">
+				<dl>
+					<dt style="text-align: left;" id="length_edit_row">
+						Prefix-length
+					</dt>
+					<dd id="length_edit_row">
+						<span id="def_length_container"></span><br/>
+
 						<input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
-						<label for="edit_length_override_radio">Override</label>
+						<label for="edit_length_default_radio">Use default</label>
 						<input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
-					</td>
-				</tr>
-				<tr style="display: none;" id="length_row">
-					<td>&nbsp;</td>
-					<td>
-						<input type="text" name="prefix_length_pool">
-					</td>
-					<td>&nbsp;</td>
-				</tr>
-			</table>
+						<label for="edit_length_override_radio">Override</label>
+						<br/>
+						<div style="display: none;" id="length_row">
+							<input type="text" name="prefix_length_pool">
+						</div>
+					</dd>
+				</dl>
+			</div>
+
 		</div>
 	</div>
 </div>
