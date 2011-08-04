@@ -54,7 +54,6 @@ COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 --
 CREATE TABLE ip_net_plan (
 	id serial PRIMARY KEY,
-	family integer CHECK(family = 4 OR family = 6),
 	schema integer NOT NULL REFERENCES ip_net_schema (id) ON UPDATE CASCADE ON DELETE CASCADE DEFAULT 1,
 	prefix cidr NOT NULL,
 	display_prefix inet,

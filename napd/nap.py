@@ -1188,15 +1188,13 @@ class Nap:
         else:
             raise NapError("invalid prefix specification")
 
-        sql = """SELECT * FROM ip_net_plan WHERE %s ORDER BY prefix""" % where
+        sql = """SELECT *, family(prefix) AS family FROM ip_net_plan WHERE %s ORDER BY prefix""" % where
 
         self._execute(sql, params)
 
         res = list()
         for row in self._curs_pg:
-            r = dict(row)
-            r['family'] = self._get_afi(r['prefix'])
-            res.append(r)
+            res.append(dict(row))
 
         return res
 
@@ -1429,7 +1427,7 @@ class Nap:
         display = '(p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (parents_selector, children_selector)
 
         where, opt = self._expand_prefix_query(query)
-        sql = """SELECT DISTINCT ON(p1.prefix) p1.*,
+        sql = """SELECT DISTINCT ON(p1.prefix) p1.*, family(p1.prefix) AS family,
             (""" + display + """) AS display
             FROM ip_net_plan AS p1
             JOIN ip_net_plan AS p2 ON
@@ -1451,9 +1449,7 @@ class Nap:
 
         result = list()
         for row in self._curs_pg:
-            r = dict(row)
-            r['family'] = self._get_afi(r['prefix'])
-            result.append(r)
+            result.append(dict(row))
 
         return result
 
