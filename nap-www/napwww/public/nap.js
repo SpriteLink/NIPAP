@@ -174,6 +174,32 @@ function collapseGroup(id) {
 }
 
 /*
+ * Perform a search operation
+ */
+function performPrefixSearch() {
+
+	// Skip search if query string empty
+	if (jQuery.trim($('#query_string').val()).length < 1) {
+		return true;
+	}
+
+	var search_q = {
+		'query_string': $('#query_string').val(),
+		'schema': schema_id,
+		'parents_depth': optToDepth($('input[name="search_opt_parent"]:checked').val()),
+		'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
+		'include_all_parents': 'true',
+		'include_all_children': 'false',
+		'max_result': 50,
+		'offset': 0
+	}
+
+	$.getJSON("/xhr/smart_search_prefix", search_q, receivePrefixList);
+
+}
+
+
+/*
  * Add a prefix to the prefix list.
  */
 function showPrefix(prefix, parent_container) {
@@ -386,6 +412,31 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 	    	indent_head[prefix.indent + 1] = $('#collapse' + prefix.id);
         }
 
+	}
+
+}
+
+/*
+ * Function which is run when a collapse +/- sign is clicked.
+ */
+function collapseClick(id) {
+
+	// Determine if we need to fetch data
+	if (prefix_list[id].has_children == -2) {
+
+		// Yes, ask server for prefix list
+		var data = {
+			'schema': schema_id,
+			'id': id,
+			'include_parents': false,
+			'include_children': false,
+			'parents_depth': 0,
+			'children_depth': 1
+		};
+		$.getJSON("/xhr/search_prefix", data, receivePrefixListUpdate);
+
+	} else {
+		toggleGroup(id);
 	}
 
 }

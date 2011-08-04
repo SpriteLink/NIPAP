@@ -8,52 +8,6 @@
     prefix_link_type = 'edit';
 
     /*
-     * Perform a search operation
-     */
-    function performPrefixSearch() {
-
-        var search_q = {
-            'query_string': $('#query_string').val(),
-            'schema': schema_id,
-            'parents_depth': optToDepth($('input[name="search_opt_parent"]:checked').val()),
-            'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
-            'include_all_parents': 'true',
-            'include_all_children': 'false',
-            'max_result': 50,
-            'offset': 0
-        }
-
-        $.getJSON("{{ h.url(controller = 'xhr', action = 'smart_search_prefix') }}", search_q, receivePrefixList);
-
-    }
-
-    /*
-     * Function which is run when a collapse +/- sign is clicked.
-     */
-    function collapseClick(id) {
-
-        // Determine if we need to fetch data
-        if (prefix_list[id].has_children == -2) {
-
-            // Yes, ask server for prefix list
-            var data = {
-                'schema': schema_id,
-                'id': id,
-                'include_parents': false,
-                'include_children': false,
-                'parents_depth': 0,
-                'children_depth': 1
-            };
-            $.getJSON("{{ h.url(controller = 'xhr', action = 'search_prefix') }}", data, receivePrefixListUpdate);
-
-        } else {
-            toggleGroup(id);
-        }
-
-    }
-
-
-    /*
      * Things to do on page load.
      */
     $(function () {
