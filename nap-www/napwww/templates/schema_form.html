@@ -15,7 +15,7 @@
 					Name
 				</dt>
 				<dd>
-					<input type="text" name="name" value="{%- if c.action == 'edit' %}{{ c.schema.name|default('') }}{%- endif %}" class="tooltip" title="Name of the schema. Try to use less than 20 characters and no spaces."><span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+					<input type="text" name="name" value="{%- if c.action == 'edit' %}{{ c.schema.name|default('') }}{%- endif %}" class="tooltip" title="Name of the schema. Try to use less than 20 characters and no spaces."> <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
 				</dd>
 			</dl>
 		</div>
@@ -28,7 +28,7 @@
 					Description
 				</dt>
 				<dd>
-					<input type="text" style="margin-left: 2px; width: 100%;" name="description" value="{%- if c.action == 'edit' -%}{{ c.schema.description }}{%- endif -%}" class="tooltip" title="Enter a short description of what this schema is used for.">
+					<input type="text" style="width: 100%;" name="description" value="{%- if c.action == 'edit' -%}{{ c.schema.description }}{%- endif -%}" class="tooltip" title="Enter a short description of what this schema is used for.">
 				</dd>
 			</dl>
 		</div>
