@@ -327,6 +327,9 @@ input[name="search_button"] {
 	text-align: right;
 	padding-right: 0;
 }
+.option dd {
+	width: 70%;
+}
 
 .option input,textarea {
 	border: 1px solid #999999;
