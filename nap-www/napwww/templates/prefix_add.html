@@ -7,6 +7,7 @@
 <script>
 
 prefix_link_type = 'select';
+
 var cur_opts = new Object();
 var alloc_method = '';
 
@@ -172,8 +173,8 @@ function prefixFormSubmit(e) {
 
     $.getJSON('{{ h.url(controller="xhr", action="add_prefix")}}', prefix_data, prefixAdded);
 
-
 }
+
 
 /*
  * Run when prefix addition is complete.
@@ -215,24 +216,6 @@ function selectPrefix(prefix_id) {
 }
 
 
-/*
- * Perform a search operation
- */
-function performSearch() {
-
-    console.log("Searching..");
-
-    var search_q = {
-        'query_string': $('#query_string').val(),
-        'schema': schema_id,
-        'search_opt_parent': $('input[name="search_opt_parent"]:checked').val(),
-        'search_opt_child': $('input[name="search_opt_child"]:checked').val()
-    }
-
-    $.getJSON("{{ h.url(controller='xhr', action='smart_search_prefix') }}", search_q, receivePrefixList);
-
-}
-
 $(function () {
 
     // fetch data for pool search box
@@ -248,11 +231,11 @@ $(function () {
     // catch submit actions
     $('#prefix_data_form').submit(prefixFormSubmit);
     $("form[name='prefix_search']").submit(function(e) {
-        performSearch();
+        performPrefixSearch();
         e.preventDefault();
     });
 
-    $("#query_string").keyup(performSearch);
+    $("#query_string").keyup(performPrefixSearch);
 
 
 });
