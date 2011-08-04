@@ -73,7 +73,7 @@ a.menu_link:hover {
 }
 .content_inner {
 	width: 70%;
-	max-width: 1200px;
+	max-width: 1000px;
 	display: inline-block;
 	text-align: left;
 }
@@ -307,6 +307,43 @@ input[name="search_button"] {
     background-image: -ms-linear-gradient(top, #f6f8f8, #ebeced);
     background-image: -o-linear-gradient(top, #f6f8f8, #ebeced);
     background-image: linear-gradient(top, #f6f8f8, #ebeced);
+}
+
+.option div,dl,dt,dd {
+	padding: 1px;
+	margin: 0;
+	font-weight: bold;
+}
+
+.option dl {
+	display: block;
+}
+.option dt,dd {
+	padding: 8px;
+	display: inline-block;
+}
+.option dt {
+	width: 100px;
+	text-align: right;
+	padding-right: 0;
+}
+
+.option input,textarea {
+	border: 1px solid #999999;
+}
+
+.option:hover {
+    background-color: #ebf2fc;
+}
+
+.rule {
+	border-bottom: 1px solid #DDDDDD;
+}
+
+.required {
+	color: #ea3333;
+	font-size: 1.5em;
+	font-weight: bold;
 }
 
 .listing th,td {

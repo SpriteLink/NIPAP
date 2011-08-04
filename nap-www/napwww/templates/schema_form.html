@@ -8,23 +8,40 @@
 <div class="options-group">
 	<div class="options-content">
 		<h3 class="options-group-heading">Properties of {% if c.action == 'edit' %}schema: {{ c.schema.name }} {% else %}new schema{% endif %}</h3>
-		<table>
-			<tr>
-				<td>Name</td>
-				<td><input type="text" name="name" value="{%- if c.action == 'edit' %}{{ c.schema.name|default('') }}{%- endif %}"></td>
-			</tr>
-			<tr>
-				<td valign="top">Description</td>
-				<td><textarea name="description" cols="50" rows="1" class="tooltip" title="Enter a short description of what this schema is used for.">
-					{%- if c.action == 'edit' -%}
-						{{ c.schema.description }}
-					{%- endif -%}
-				</textarea></td>
-			</tr>
-			<tr>
-				<td>&nbsp;</td>
-				<td><input class="button button_green" type="submit" value="Engage"><td>
-			</tr>
-		</table>
+
+		<div class="option">
+			<dl>
+				<dt>
+				Name
+				</dt>
+				<dd>
+				<input type="text" name="name" value="{%- if c.action == 'edit' %}{{ c.schema.name|default('') }}{%- endif %}" class="tooltip" title="Name of the schema. Try to use less than 20 characters and no spaces."><span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt>
+				Description
+				</dt>
+				<dd style="width: 70%;">
+					<input type="text" style="margin-left: 2px; width: 100%;" name="description" value="{%- if c.action == 'edit' -%}{{ c.schema.description }}{%- endif -%}" class="tooltip" title="Enter a short description of what this schema is used for.">
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt></dt>
+				<dd>
+					<input class="button button_green" type="submit" value="Engage">
+				</dd>
+			</dl>
+		</div>
 	</div>
 </div>
