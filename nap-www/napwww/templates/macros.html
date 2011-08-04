@@ -1,5 +1,5 @@
-{% macro button(text, color='red', width='100px', height='30px', url='') -%}
-<a href="{{url}}">
+{% macro button(text, color='red', width='100px', height='30px', url='', id='btn') -%}
+<a href="{{url}}" id="{{id}}">
 	<div class="button button_{{color}}" style="height: {{height}}; width: {{width}};">
 		<div style="display: inline-block; vertical-align: middle;">
             {{text}}
