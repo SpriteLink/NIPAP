@@ -401,7 +401,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 		// Only display prefixes we are supposed to display
 		if (prefix.display != true) {
-			return;
+			continue;
 		}
 
 		showPrefix(prefix, indent_head[prefix.indent]);

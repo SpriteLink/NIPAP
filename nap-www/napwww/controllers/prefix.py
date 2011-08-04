@@ -65,6 +65,9 @@ class PrefixController(BaseController):
         else:
             c.prefix = ''
 
+        c.search_opt_parent = "all"
+        c.search_opt_child = "none"
+
         return render('/prefix_add.html')
 
 

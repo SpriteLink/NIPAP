@@ -230,10 +230,13 @@ $(function () {
 
     // catch submit actions
     $('#prefix_data_form').submit(prefixFormSubmit);
+
     $("form[name='prefix_search']").submit(function(e) {
         performPrefixSearch();
         e.preventDefault();
     });
+    $('input[name="search_opt_parent"]').change(performPrefixSearch);
+    $('input[name="search_opt_child"]').change(performPrefixSearch);
 
     $("#query_string").keyup(performPrefixSearch);
 
@@ -339,22 +342,8 @@ Prefix administration &mdash;&gt; add prefix
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Prefix allocation options</h3>
-				<center>
-					<form method="post" name="prefix_search">
-						<input type="text" id="query_string" name="query_string"  size="50" autocomplete="off">
-						<div id="sbd"><input type="submit" name="search_button" value="Search"></div>
-					</form>
-				</center>
-				<table>
-					<tr>
-						<td width="40">&nbsp;</td>
-						<td class="opt_left">
-							Search interpretation
-						</td>
-						<td class="opt_right" id="search_interpret_container"> </td>
-					</tr>
-				</table>
-				<div class="prefix_list" id="prefix_list"></div>
+			{{ nap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
+			{{ nap.prefix_search_result() }}
 		</div>
 
 		<div id="prefix_length_prefix_container" style="display: none;">
