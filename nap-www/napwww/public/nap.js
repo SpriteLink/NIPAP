@@ -390,6 +390,12 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 }
 
+/**********************************************************************
+*
+* Misc convenience functions
+*
+**********************************************************************/
+
 /*
  * Returns true if prefix has max prefix length.
  */
