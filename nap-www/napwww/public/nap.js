@@ -32,6 +32,9 @@ var indent_head = Object();
  */
 var prefix_link_type = 'edit';
 
+// Max prefix lengths for different address families
+var max_prefix_length = [32, 128];
+
 
 /**
  * Display a notice popup
@@ -195,10 +198,12 @@ function showPrefix(prefix, parent_container) {
 	prefix_indent.addClass("prefix_indent");
 
 	// If the prefixes has children  (or we do not know), add expand button
-	// TODO: this needs a cleanup. We have both the has_children attribute
-	// and the type attribute which gives us information about this
-	// (in case of type being 'host')
-	if (prefix.has_children != 0) {
+	if (prefix.has_children == 0 || hasMaxPreflen(prefix)) {
+
+        // the prefix_indent container must contain _something_
+		prefix_indent.html('&nbsp;');
+
+	} else {
 
 		// add expand button
 		prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="collapseClick(' + prefix.id + ')">&nbsp;+&nbsp;</span>');
@@ -209,7 +214,7 @@ function showPrefix(prefix, parent_container) {
 			$("#prefix_exp" + prefix.id).html("&mbsp;-&nbsp;");
 		}
 
-	}
+    }
 
 	prefix_indent.width(prefix_indent.width() + 30 * prefix.indent);
 
@@ -376,10 +381,31 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		showPrefix(prefix, indent_head[prefix.indent]);
 
 		// add collapse container for current prefix
-		// TODO: do not add if prefix is host
-		indent_head[prefix.indent].append('<div class="prefix_collapse" id="collapse' + prefix.id + '">');
-		indent_head[prefix.indent + 1] = $('#collapse' + prefix.id);
+        if (!hasMaxPreflen(prefix)) {
+    		indent_head[prefix.indent].append('<div class="prefix_collapse" id="collapse' + prefix.id + '">');
+	    	indent_head[prefix.indent + 1] = $('#collapse' + prefix.id);
+        }
 
+	}
+
+}
+
+/**********************************************************************
+*
+* Misc convenience functions
+*
+**********************************************************************/
+
+/*
+ * Returns true if prefix has max prefix length.
+ */
+function hasMaxPreflen(prefix) {
+
+	if ((prefix.family == 4 && parseInt(prefix.prefix.split('/')[1]) == 32) ||
+		(prefix.family == 6 && parseInt(prefix.prefix.split('/')[1]) == 128)) {
+		return true;
+	} else {
+		return false;
 	}
 
 }

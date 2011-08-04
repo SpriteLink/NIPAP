@@ -1194,7 +1194,9 @@ class Nap:
 
         res = list()
         for row in self._curs_pg:
-            res.append(dict(row))
+            r = dict(row)
+            r['family'] = self._get_afi(r['prefix'])
+            res.append(r)
 
         return res
 
@@ -1449,7 +1451,9 @@ class Nap:
 
         result = list()
         for row in self._curs_pg:
-            result.append(dict(row))
+            r = dict(row)
+            r['family'] = self._get_afi(r['prefix'])
+            result.append(r)
 
         return result
 
