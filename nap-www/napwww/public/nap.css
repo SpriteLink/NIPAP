@@ -323,7 +323,7 @@ input[name="search_button"] {
 	display: inline-block;
 }
 .option dt {
-	width: 100px;
+	width: 160px;
 	text-align: right;
 	padding-right: 0;
 }
@@ -347,6 +347,7 @@ input[name="search_button"] {
 	color: #ea3333;
 	font-size: 1.5em;
 	font-weight: bold;
+	font-family: arial;
 }
 
 .listing th,td {
