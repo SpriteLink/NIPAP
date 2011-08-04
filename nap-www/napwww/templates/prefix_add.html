@@ -146,7 +146,7 @@ function prefixFormSubmit(e) {
         'description': $('input[name="description"]').val(),
         'comment': $('textarea[name="comment"]').val(),
         'node': $('input[name="node"]').val(),
-        'type': $('select[name="type"] option:selected').val(),
+        'type': $('input[name="type"]:checked').val(),
         'country': $('input[name="country"]').val(),
         'span_order': $('input[name="span_order"]').val(),
         'alarm_priority': $('select[name="alarm_priority"] option:selected').val(),
@@ -408,11 +408,11 @@ Prefix administration &mdash;&gt; add prefix
 				<tr>
 					<td>Type</td>
 					<td>
-						<input id="radio-prefix-type-reservation" type="radio" name="prefix_type" value="reservation"/>
+						<input id="radio-prefix-type-reservation" type="radio" name="type" value="reservation"/>
 						<label for="radio-prefix-type-reservation">Reservation</label>
-						<input id="radio-prefix-type-assignment" type="radio" name="prefix_type" value="assignment"/>
+						<input id="radio-prefix-type-assignment" type="radio" name="type" value="assignment"/>
 						<label for="radio-prefix-type-assignment">Assignment</label>
-						<input id="radio-prefix-type-host" type="radio" name="prefix_type" value="host"/>
+						<input id="radio-prefix-type-host" type="radio" name="type" value="host"/>
 						<label for="radio-prefix-type-host">Host</label>
 					</td>
 					<!-- TODO: write better explanation, and put it as tooltips on radio button labels -->
@@ -421,8 +421,7 @@ Prefix administration &mdash;&gt; add prefix
 				<tr>
 					<td>Description</td>
 					<td><input type="text" name="description"></td>
-					<td class="help-text">A short text describing the prefix.</td>
-				</tr>
+
 				<tr>
 					<td>Node</td>
 					<td><input type="text" name="node"></td>
