@@ -195,10 +195,7 @@ function showPrefix(prefix, parent_container) {
 	prefix_indent.addClass("prefix_indent");
 
 	// If the prefixes has children  (or we do not know), add expand button
-	// TODO: this needs a cleanup. We have both the has_children attribute
-	// and the type attribute which gives us information about this
-	// (in case of type being 'host')
-	if (prefix.has_children != 0) {
+	if (prefix.has_children != 0 && prefix.type != 'host') {
 
 		// add expand button
 		prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="collapseClick(' + prefix.id + ')">&nbsp;+&nbsp;</span>');
@@ -376,9 +373,10 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		showPrefix(prefix, indent_head[prefix.indent]);
 
 		// add collapse container for current prefix
-		// TODO: do not add if prefix is host
-		indent_head[prefix.indent].append('<div class="prefix_collapse" id="collapse' + prefix.id + '">');
-		indent_head[prefix.indent + 1] = $('#collapse' + prefix.id);
+        if (prefix.type != 'host') {
+    		indent_head[prefix.indent].append('<div class="prefix_collapse" id="collapse' + prefix.id + '">');
+	    	indent_head[prefix.indent + 1] = $('#collapse' + prefix.id);
+        }
 
 	}
 
