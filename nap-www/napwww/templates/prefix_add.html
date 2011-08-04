@@ -142,7 +142,7 @@ function prefixFormSubmit(e) {
 
     // create prefix data object
     var prefix_data = {
-        'schema': {{ c.schema.id }},
+        'schema': schema_id,
         'description': $('input[name="description"]').val(),
         'comment': $('textarea[name="comment"]').val(),
         'node': $('input[name="node"]').val(),
@@ -224,7 +224,7 @@ function performSearch() {
 
     var search_q = {
         'query_string': $('#query_string').val(),
-        'schema': {{ c.schema.id }},
+        'schema': schema_id,
         'search_opt_parent': $('input[name="search_opt_parent"]:checked').val(),
         'search_opt_child': $('input[name="search_opt_child"]:checked').val()
     }
@@ -236,7 +236,7 @@ function performSearch() {
 $(function () {
 
     // fetch data for pool search box
-    $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema_id': {{ c.schema.id }}}, enableFromPoolSearch);
+    $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema_id': schema_id }, enableFromPoolSearch);
 
     // Enable actions on radio buttons
     $('input[name="prefix_alloc_method"]').change(showAllocContainer);
@@ -245,8 +245,12 @@ $(function () {
     // Enable action on the adress family select box
     $('input[name="family"]').change(changeFamily);
 
-    // catch submit action
+    // catch submit actions
     $('#prefix_data_form').submit(prefixFormSubmit);
+    $("form[name='prefix_search']").submit(function(e) {
+        performSearch();
+        e.preventDefault();
+    });
 
     $("#query_string").keyup(performSearch);
 
@@ -353,9 +357,9 @@ Prefix administration &mdash;&gt; add prefix
 		<div class="options-content">
 			<h3 class="options-group-heading">Prefix allocation options</h3>
 				<center>
-					<form method="post">
+					<form method="post" name="prefix_search">
 						<input type="text" id="query_string" name="query_string"  size="50" autocomplete="off">
-						<input type="submit" value="Search">
+						<div id="sbd"><input type="submit" name="search_button" value="Search"></div>
 					</form>
 				</center>
 				<table>
@@ -454,7 +458,7 @@ Prefix administration &mdash;&gt; add prefix
 				</tr>
 				<tr>
 					<td>&nbsp;</td>
-					<td><input type="submit" value="Add"></td>
+					<td><input class="button button_green" type="submit" value="Add"></td>
 					<td>&nbsp;</td>
 				</tr>
 			</table>
