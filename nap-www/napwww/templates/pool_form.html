@@ -1,3 +1,5 @@
+{% import 'macros.html' as nap %}
+
 {% if c.pool is defined %}
 <form method="post" action="{{ h.url(controller="pool", action="edit", id=c.pool.id) }}">
 {% else %}
@@ -56,7 +58,7 @@
 				<td>&nbsp;</td>
 				<td>
 					<input type="hidden" name="schema" value="{{ c.schema.id }}">
-					<input type="submit" value="Engage">
+					<input type="submit" value="Engage" class="button button_green">
 				<td>
 			</tr>
 		</table>

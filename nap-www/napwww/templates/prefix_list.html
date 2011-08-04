@@ -92,7 +92,7 @@
                                     </td>
                                     <td>
                                         <div id="sbd">
-                                            <input name="search_button" type="submit" value="Search"/>
+                                            <input name="search_button" type="submit" value="Search">
                                         </div>
                                     </td>
                                 </tr>
@@ -175,7 +175,7 @@
                     </tr>
                 </table>
 				<div style="position: absolute; right: 10px; top: 4px;">
-					{{ button('Add prefix', color='red', url=h.url(controller = 'prefix', action = 'add', schema = c.schema.id)) }}
+					{{ nap.button('Add prefix', color='red', url=h.url(controller = 'prefix', action = 'add', schema = c.schema.id)) }}
 				</div>
             </div>
         </center>
