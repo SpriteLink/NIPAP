@@ -406,6 +406,19 @@ Prefix administration &mdash;&gt; add prefix
 					<td class="help-text">192.0.2.16/28</td>
 				</tr>
 				<tr>
+					<td>Type</td>
+					<td>
+						<input id="radio-prefix-type-reservation" type="radio" name="prefix_type" value="reservation"/>
+						<label for="radio-prefix-type-reservation">Reservation</label>
+						<input id="radio-prefix-type-assignment" type="radio" name="prefix_type" value="assignment"/>
+						<label for="radio-prefix-type-assignment">Assignment</label>
+						<input id="radio-prefix-type-host" type="radio" name="prefix_type" value="host"/>
+						<label for="radio-prefix-type-host">Host</label>
+					</td>
+					<!-- TODO: write better explanation, and put it as tooltips on radio button labels -->
+					<td class="help-text">Type of prefix.</td>
+				</tr>
+				<tr>
 					<td>Description</td>
 					<td><input type="text" name="description"></td>
 					<td class="help-text">A short text describing the prefix.</td>
@@ -414,18 +427,6 @@ Prefix administration &mdash;&gt; add prefix
 					<td>Node</td>
 					<td><input type="text" name="node"></td>
 					<td class="help-text">FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'</td>
-				</tr>
-				<tr>
-					<td>Type</td>
-					<td>
-						<select name="type">
-							<option value="reservation">Reservation</option>
-							<option value="assignment" selected>Assignment</option>
-							<option value="host">Host</option>
-						</select>
-					</td>
-					<!-- TODO: write better explanation -->
-					<td class="help-text">Type of prefix.</td>
 				</tr>
 				<tr>
 					<td>Country</td>
