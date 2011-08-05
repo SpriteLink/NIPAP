@@ -108,9 +108,30 @@ class PoolController(BaseController):
         schema = Schema.get(int(request.params['schema']))
 
         if 'prefix' not in request.params:
-            abort(400, 'Missin prefix.')
+            abort(400, 'Missing prefix.')
         prefix = Prefix.get(schema, int(request.params['prefix']))
         prefix.pool = None
+        prefix.save()
+
+        redirect(url(controller = 'pool', action = 'edit', id = id, schema = schema.id))
+
+
+
+    def add_prefix(self, id):
+        """ Add a prefix to pool 'id'
+        """
+
+        if 'schema' not in request.params:
+            redirect(url(controller = 'schema', action = 'list'))
+        schema = Schema.get(int(request.params['schema']))
+
+        if 'prefix' not in request.params:
+            abort(400, 'Missing prefix.')
+
+        pool = Pool.get(schema, int(id))
+
+        prefix = Prefix.get(schema, int(request.params['prefix']))
+        prefix.pool = pool
         prefix.save()
 
         redirect(url(controller = 'pool', action = 'edit', id = id, schema = schema.id))

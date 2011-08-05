@@ -53,50 +53,6 @@ function selectPool(e, ui) {
 
 }
 
-/*
- * Show prefix allocation container depending on what allocation
- * method is chosen.
- */
-function showAllocContainer(e) {
-
-    // from-prefix
-    if (e.currentTarget.id == 'radio-from-prefix') {
-
-        alloc_method = 'from-prefix';
-
-        $("#from-prefix_container").show();
-        $("#from-pool_container").hide();
-        $("#prefix_data_container").hide();
-        $("#prefix_row").hide();
-        $("html,body").animate({ scrollTop: $("#from-prefix_container").offset().top - 50}, 700);
-
-    // from-pool
-    } else if (e.currentTarget.id == 'radio-from-pool') {
-
-        alloc_method = 'from-pool';
-
-        $("#from-prefix_container").hide();
-        $("#from-pool_container").show();
-        $("#prefix_data_container").hide();
-        $("#prefix_row").hide();
-        $('#prefix_length_prefix_container').hide();
-        $("html,body").animate({ scrollTop: $("#from-pool_container").offset().top - 50}, 700);
-
-    // else - manual
-    } else {
-
-        alloc_method = 'manual';
-
-        $("#from-prefix_container").hide();
-        $("#from-pool_container").hide();
-        $("#prefix_data_container").show();
-        $("#prefix_row").css('display', 'table-row');
-        $('#prefix_length_prefix_container').hide();
-        $("html,body").animate({ scrollTop: $("#prefix_data_container").offset().top - 50}, 700);
-
-    }
-
-}
 
 /*
  * Toggle change of prefix length
@@ -231,11 +187,13 @@ $(function () {
 
     // catch submit actions
     $('#prefix_data_form').submit(prefixFormSubmit);
+
     $("form[name='prefix_search']").submit(function(e) {
         performPrefixSearch();
         e.preventDefault();
     });
-
+    $('input[name="search_opt_parent"]').change(performPrefixSearch);
+    $('input[name="search_opt_child"]').change(performPrefixSearch);
     $("#query_string").keyup(performPrefixSearch);
 
 
@@ -374,22 +332,8 @@ Prefix administration &mdash;&gt; add prefix
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Prefix allocation options</h3>
-				<center>
-					<form method="post" name="prefix_search">
-						<input type="text" id="query_string" name="query_string"  size="50" autocomplete="off">
-						<div id="sbd"><input type="submit" name="search_button" value="Search"></div>
-					</form>
-				</center>
-				<table>
-					<tr>
-						<td width="40">&nbsp;</td>
-						<td class="opt_left">
-							Search interpretation
-						</td>
-						<td class="opt_right" id="search_interpret_container"> </td>
-					</tr>
-				</table>
-				<div class="prefix_list" id="prefix_list"></div>
+			{{ nap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
+			{{ nap.prefix_search_result() }}
 		</div>
 
 		<div id="prefix_length_prefix_container" style="display: none;">
