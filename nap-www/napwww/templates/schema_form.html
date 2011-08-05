@@ -39,7 +39,7 @@
 			<dl>
 				<dt></dt>
 				<dd>
-					<input class="button button_green" type="submit" value="Engage">
+					<input class="button button_green" type="submit" value="{% if c.action == 'edit' %}Save schema{% else %}Add schema{% endif %}">
 				</dd>
 			</dl>
 		</div>
