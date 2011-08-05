@@ -32,7 +32,7 @@ class ErrorController(BaseController):
                  message=content)
 
         # If the error was raised from the XhrController, return HTML-less response
-        if type(request.environ['pylons.original_request'].environ['pylons.controller']) == XhrController:
+        if type(request.environ['pylons.original_request'].environ.get('pylons.controller')) == XhrController:
             return content
         else:
             return page
