@@ -229,10 +229,15 @@ input[name="search_button"] {
     font-weight: bold;
     color: #ffffff;
     text-align: center;
-    line-height: 2.3em;
+    line-height: 28px;
+    font-size: 12px;
     height: 30px;
     width: 100px;
 }
+input[type="submit"] {
+	line-height: 0;
+}
+
 .button:hover {
     -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
     -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
