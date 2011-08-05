@@ -1503,10 +1503,18 @@ class Nap:
             if self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('/')) == 2:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
                 query_str_part['interpretation'] = 'IPv4 prefix'
+                address, prefix_length = query_str_part['string'].split('/')
+
+                # complete a prefix to it's fully expanded form
+                # 10/8 will be expanded into 10.0.0.0/8 which PostgreSQL can
+                # parse correctly
+                while len(address.split('.')) < 4:
+                    address += '.0'
+
                 query_parts.append({
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
-                    'val2': query_str_part['string']
+                    'val2': address + '/' + prefix_length
                 })
 
             # IPv4 address
@@ -1534,7 +1542,7 @@ class Nap:
             # IPv6 address
             elif self._get_afi(query_str_part['string']) == 6:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 address")
-                query_str_part['interpretation'] = 'prefix'
+                query_str_part['interpretation'] = 'IPv6 address'
                 query_parts.append({
                     'operator': 'contains_equals',
                     'val1': 'prefix',
