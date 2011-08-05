@@ -489,19 +489,15 @@ class NapTest(unittest.TestCase):
         # test full ipv4 address
         res = self.nap.smart_search_prefix(schema, '1.3.3.7')
         self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 address')
-        self.assertEqual(res['interpretation'][0]['string'], '1.3.3.7')
 
         res = self.nap.smart_search_prefix(schema, '1.1')
         self.assertEqual(res['interpretation'][0]['interpretation'], 'description', "Incorrectly interpreted '1.1' as : " + res['interpretation'][0]['interpretation'])
-        self.assertEqual(res['interpretation'][0]['string'], '1.1')
 
-        res = self.nap.smart_search_prefix(schema, '1/24')
-        self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 address')
-        self.assertEqual(res['interpretation'][0]['string'], '1.0.0.0/24')
+        res = self.nap.smart_search_prefix(schema, '10/8')
+        self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 prefix')
 
-        res = self.nap.smart_search_prefix(schema, '2000:0:01')
-        self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 address')
-        self.assertEqual(res['interpretation'][0]['string'], '2000::1')
+        res = self.nap.smart_search_prefix(schema, '2000:0::01')
+        self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv6 address')
 
 
 
