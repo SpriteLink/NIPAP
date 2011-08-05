@@ -226,7 +226,7 @@ function showPrefix(prefix, parent_container) {
 	// If the prefixes has children  (or we do not know), add expand button
 	if (prefix.has_children == 0 || hasMaxPreflen(prefix)) {
 
-        // the prefix_indent container must contain _something_
+		// the prefix_indent container must contain _something_
 		prefix_indent.html('&nbsp;');
 
 	} else {
@@ -240,7 +240,7 @@ function showPrefix(prefix, parent_container) {
 			$("#prefix_exp" + prefix.id).html("&mbsp;-&nbsp;");
 		}
 
-    }
+	}
 
 	prefix_indent.width(prefix_indent.width() + 30 * prefix.indent);
 
@@ -250,6 +250,8 @@ function showPrefix(prefix, parent_container) {
 	prefix_prefix.addClass("prefix_prefix");
 	if (prefix_link_type == 'select') {
 		prefix_prefix.html('<a href="javascript:void(0);" onClick="selectPrefix(' + prefix.id + '); return false;">' + prefix.display_prefix + '</a>');
+	} else if (prefix_link_type == 'add_too_pool') {
+		prefix_prefix.html('<a href="/pool/add_prefix/' + pool_id + '?prefix=' + prefix.id + '&schema=' + schema_id + '" onClick="selectPrefix(' + prefix.id + '); return false;">' + prefix.display_prefix + '</a>');
 	} else {
 		prefix_prefix.html('<a href="/prefix/edit/' + prefix.id + '?schema=' + schema_id + '">' + prefix.display_prefix + '</a>');
 	}
@@ -407,10 +409,10 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		showPrefix(prefix, indent_head[prefix.indent]);
 
 		// add collapse container for current prefix
-        if (!hasMaxPreflen(prefix)) {
-    		indent_head[prefix.indent].append('<div class="prefix_collapse" id="collapse' + prefix.id + '">');
-	    	indent_head[prefix.indent + 1] = $('#collapse' + prefix.id);
-        }
+		if (!hasMaxPreflen(prefix)) {
+			indent_head[prefix.indent].append('<div class="prefix_collapse" id="collapse' + prefix.id + '">');
+			indent_head[prefix.indent + 1] = $('#collapse' + prefix.id);
+		}
 
 	}
 
@@ -437,6 +439,58 @@ function collapseClick(id) {
 
 	} else {
 		toggleGroup(id);
+	}
+
+}
+
+
+/**********************************************************************
+ *
+ * Add prefix functions
+ *
+ *********************************************************************/
+
+/*
+ * Show prefix allocation container depending on what allocation
+ * method is chosen.
+ */
+function showAllocContainer(e) {
+
+	// from-prefix
+	if (e.currentTarget.id == 'radio-from-prefix') {
+
+		alloc_method = 'from-prefix';
+
+		$("#from-prefix_container").show();
+		$("#from-pool_container").hide();
+		$("#prefix_data_container").hide();
+		$("#prefix_row").hide();
+		$("html,body").animate({ scrollTop: $("#from-prefix_container").offset().top - 50}, 700);
+
+	// from-pool
+	} else if (e.currentTarget.id == 'radio-from-pool') {
+
+		alloc_method = 'from-pool';
+
+		$("#from-prefix_container").hide();
+		$("#from-pool_container").show();
+		$("#prefix_data_container").hide();
+		$("#prefix_row").hide();
+		$('#prefix_length_prefix_container').hide();
+		$("html,body").animate({ scrollTop: $("#from-pool_container").offset().top - 50}, 700);
+
+	// else - manual
+	} else {
+
+		alloc_method = 'manual';
+
+		$("#from-prefix_container").hide();
+		$("#from-pool_container").hide();
+		$("#prefix_data_container").show();
+		$("#prefix_row").css('display', 'table-row');
+		$('#prefix_length_prefix_container').hide();
+		$("html,body").animate({ scrollTop: $("#prefix_data_container").offset().top - 50}, 700);
+
 	}
 
 }

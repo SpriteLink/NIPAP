@@ -108,7 +108,7 @@ class PoolController(BaseController):
         schema = Schema.get(int(request.params['schema']))
 
         if 'prefix' not in request.params:
-            abort(400, 'Missin prefix.')
+            abort(400, 'Missing prefix.')
         prefix = Prefix.get(schema, int(request.params['prefix']))
         prefix.pool = None
         prefix.save()
@@ -126,7 +126,7 @@ class PoolController(BaseController):
         schema = Schema.get(int(request.params['schema']))
 
         if 'prefix' not in request.params:
-            abort(400, 'Missin prefix.')
+            abort(400, 'Missing prefix.')
 
         pool = Pool.get(schema, int(id))
 

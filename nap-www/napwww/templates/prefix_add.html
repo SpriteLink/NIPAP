@@ -52,50 +52,6 @@ function selectPool(e, ui) {
 
 }
 
-/*
- * Show prefix allocation container depending on what allocation
- * method is chosen.
- */
-function showAllocContainer(e) {
-
-    // from-prefix
-    if (e.currentTarget.id == 'radio-from-prefix') {
-
-        alloc_method = 'from-prefix';
-
-        $("#from-prefix_container").show();
-        $("#from-pool_container").hide();
-        $("#prefix_data_container").hide();
-        $("#prefix_row").hide();
-		$("html,body").animate({ scrollTop: $("#from-prefix_container").offset().top - 50}, 700);
-
-    // from-pool
-    } else if (e.currentTarget.id == 'radio-from-pool') {
-
-        alloc_method = 'from-pool';
-
-        $("#from-prefix_container").hide();
-        $("#from-pool_container").show();
-        $("#prefix_data_container").hide();
-        $("#prefix_row").hide();
-        $('#prefix_length_prefix_container').hide();
-		$("html,body").animate({ scrollTop: $("#from-pool_container").offset().top - 50}, 700);
-
-    // else - manual
-    } else {
-
-        alloc_method = 'manual';
-
-        $("#from-prefix_container").hide();
-        $("#from-pool_container").hide();
-        $("#prefix_data_container").show();
-        $("#prefix_row").css('display', 'table-row');
-        $('#prefix_length_prefix_container').hide();
-		$("html,body").animate({ scrollTop: $("#prefix_data_container").offset().top - 50}, 700);
-
-    }
-
-}
 
 /*
  * Toggle change of prefix length
