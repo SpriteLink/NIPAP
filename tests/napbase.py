@@ -481,6 +481,30 @@ class NapTest(unittest.TestCase):
 
 
 
+    def test_prefix_search_smart(self):
+        """ Test the smart prefix search function.
+        """
+        schema = {'id': self.schema_attrs['id']}
+
+        # test full ipv4 address
+        res = self.nap.smart_search_prefix(schema, '1.3.3.7')
+        self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 address')
+        self.assertEqual(res['interpretation'][0]['string'], '1.3.3.7')
+
+        res = self.nap.smart_search_prefix(schema, '1.1')
+        self.assertEqual(res['interpretation'][0]['interpretation'], 'description', "Incorrectly interpreted '1.1' as : " + res['interpretation'][0]['interpretation'])
+        self.assertEqual(res['interpretation'][0]['string'], '1.1')
+
+        res = self.nap.smart_search_prefix(schema, '1/24')
+        self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 address')
+        self.assertEqual(res['interpretation'][0]['string'], '1.0.0.0/24')
+
+        res = self.nap.smart_search_prefix(schema, '2000:0:01')
+        self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 address')
+        self.assertEqual(res['interpretation'][0]['string'], '2000::1')
+
+
+
     def test_prefix_remove(self):
         """ Remove a prefix
         """
