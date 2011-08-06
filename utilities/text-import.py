@@ -5,7 +5,7 @@ import re
 
 import sys
 sys.path.append('../nap-www')
-from napwww.model.napmodel import Schema, Pool, Prefix, NapNonExistentError
+from napwww.model.napmodel import Schema, Pool, Prefix, NapNonExistentError, NapDuplicateError
 
 import logging
 
@@ -62,7 +62,11 @@ class TextImporter(Importer):
     def parse_file(self, filename):
         f = open(filename)
         for line in f.readlines():
-            params = self.parse_line(line)
+            try:
+                params = self.parse_line(line)
+            except NapDuplicateError:
+                pass
+
 
         f.close()
 
@@ -84,7 +88,6 @@ class TextImporter(Importer):
             print "Loopback:", tp['prefix']
             p = Prefix()
             p.schema = self.schema
-            print p.schema.id
             p.prefix = tp['prefix']
             # loopbacks are always of type 'assignment'
             p.type = 'assignment'
@@ -110,7 +113,7 @@ class TextImporter(Importer):
             raise TypeError('. is not a valid prefix')
 
         # is it a real IP prefix?
-        m = re.match('(((2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)\.){3}(2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)(/(3[12]|[12]?[0-9])))', prefix)
+        m = re.match('!?(((2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)\.){3}(2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)(/(3[12]|[12]?[0-9])))', prefix)
         if m is None:
             raise TypeError("Incorrect prefix on line: " + line)
 
