@@ -1524,7 +1524,7 @@ class Nap:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
                 query_str_part['interpretation'] = 'IPv4 address'
                 query_parts.append({
-                    'operator': 'contains_equals',
+                    'operator': 'equals',
                     'val1': 'prefix',
                     'val2': query_str_part['string']
                 })
@@ -1544,7 +1544,7 @@ class Nap:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 address")
                 query_str_part['interpretation'] = 'IPv6 address'
                 query_parts.append({
-                    'operator': 'contains_equals',
+                    'operator': 'equals',
                     'val1': 'prefix',
                     'val2': query_str_part['string']
                 })
