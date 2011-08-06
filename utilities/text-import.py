@@ -1,12 +1,37 @@
 #!/usr/bin/python
+# vim: et :
 
 import re
+
 import sys
+sys.path.append('../nap-www')
+from napwww.model.napmodel import Schema, Pool, Prefix, NapNonExistentError
+
+import logging
+
+
+class CommentLine(Exception):
+    pass
 
 
 class Importer:
-    def __init__:
+    def __init__(self, schema_name):
+        self._logger = logging.getLogger(self.__class__.__name__)
+
         # import nap class and stuff
+        sl = Schema.list({ 'name': schema_name })
+        try:
+            sl = Schema.list({ 'name': schema_name })
+        except:
+            # TODO: handle this?
+            pass
+
+        if len(sl) == 0:
+            raise Exception("Non-existant schema specified: " + schema_name)
+
+        s = sl[0]
+
+        self.schema = Schema.get(int(s.id))
 
 
 
@@ -37,7 +62,8 @@ class TextImporter(Importer):
     def parse_file(self, filename):
         f = open(filename)
         for line in f.readlines():
-            self.parse_line(line)
+            params = self.parse_line(line)
+
         f.close()
 
 
@@ -46,33 +72,53 @@ class TextImporter(Importer):
         """ Parse one line
         """
 
-        # ignore comments, that is lines starting with one of ; # !
-        if re.match(r'^$', line) or re.match(' *[;#!]', line):
-            continue
+        try:
+            # text params, ie params from the text file
+            tp = self.split_columns(line)
+        except CommentLine:
+            # just ignore comments
+            return
 
-        params = self.split_columns(line)
+
+        if tp['prefix_length'] == 32:   # loopback
+            print "Loopback:", tp['prefix']
+            p = Prefix()
+            p.schema = self.schema
+            print p.schema.id
+            p.prefix = tp['prefix']
+            # loopbacks are always of type 'assignment'
+            p.type = 'assignment'
+            p.node = tp['node']
+            p.description = tp['description']
+            p.alarm_priority = tp['alarm_priority']
+            p.authoritative_source = 'nw'
+            p.save({})
 
 
 
     def split_columns(self, line):
+
+        # ignore comments, that is lines starting with one of ; # !
+        if re.match(r'^$', line) or re.match(' *[;#!]', line):
+            raise CommentLine("Comment line")
 
         params = {}
         (prefix, priority, country, type, span_order, node, description) = re.split(r'[\t\s]+', line.rstrip(), 6)
 
         # one of those silly lines for documenting L2 circuits
         if prefix == '.':
-            continue
+            raise TypeError('. is not a valid prefix')
+
         # is it a real IP prefix?
         m = re.match('(((2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)\.){3}(2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)(/(3[12]|[12]?[0-9])))', prefix)
         if m is None:
-            print >> sys.stderr, "Incorrect prefix on line:", line
-            continue
+            raise TypeError("Incorrect prefix on line: " + line)
 
         prefix_len = m.group(8)
 
-        # -----------------
-
         params['prefix'] = prefix
+        params['address'] = m.group(1)
+        params['prefix_length'] = int(m.group(8))
 
         if priority == 'H':
             params['alarm_priority'] = 'high'
@@ -91,14 +137,9 @@ class TextImporter(Importer):
 
         params['description'] = description.decode('latin1')
 
-        if prefix_len == '32':
-            params['type'] = 'host'
-        elif prefix_len > '26':
-            params['type'] = 'assignment'
-        else:
-            params['type'] = 'reservation'
+        params['type'] = type
 
-        params['authoritative_source'] = 'nw'
+        return params
 
 
 
@@ -107,9 +148,15 @@ class TextImporter(Importer):
 if __name__ == '__main__':
     import optparse
     parser = optparse.OptionParser()
+    parser.add_option('--schema', help = 'Name of schema to import into')
+
     options, args = parser.parse_args()
 
-    ti = TextImporter()
+    if options.schema is None:
+        print >> sys.stderr, "You must specify a schema"
+        sys.exit(1)
+
+    ti = TextImporter(options.schema)
     for filename in args:
         ti.parse_file(filename)
 
