@@ -1503,6 +1503,7 @@ class Nap:
             if self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('/')) == 2:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
                 query_str_part['interpretation'] = 'IPv4 prefix'
+
                 address, prefix_length = query_str_part['string'].split('/')
 
                 # complete a prefix to it's fully expanded form
@@ -1511,10 +1512,14 @@ class Nap:
                 while len(address.split('.')) < 4:
                     address += '.0'
 
+                prefix = address + '/' + prefix_length
+
+                query_str_part['expanded'] = prefix
+
                 query_parts.append({
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
-                    'val2': address + '/' + prefix_length
+                    'val2': prefix
                 })
 
             # IPv4 address
