@@ -97,6 +97,7 @@ class TextImporter(Importer):
             p.alarm_priority = 'low'
             p.authoritative_source = 'nw'
             p.save({})
+            return
 
         elif tp['prefix_length'] == 32:   # loopback
             print "Loopback:", tp['prefix']
@@ -110,8 +111,46 @@ class TextImporter(Importer):
             p.alarm_priority = tp['alarm_priority']
             p.authoritative_source = 'nw'
             p.save({})
+            return
 
         elif tp['prefix_length'] == 30 or tp['prefix_length'] == 31:   # link network
+            m = re.match('(ETHER_KAP|ETHER_PORT|IP-KAP|IP-PORT|IP-SIPNET|IP-SNIX|IPSUR|L2L|RED-IPPORT|SNIX|SWIP|T2V-@|T2V-DIGTV|T2V-SUR)[0-9]{4,}', tp['span_order'])
+            if m is not None:
+                print "Customer link", tp['prefix'], ':', tp['description']
+                p = Prefix()
+                p.schema = self.schema
+                p.prefix = tp['prefix']
+                p.type = 'assignment'
+                p.node = tp['node']
+                p.description = tp['description']
+                p.alarm_priority = tp['alarm_priority']
+                p.authoritative_source = 'nw'
+                p.save({})
+                return
+
+            m = re.match(r'([^\s]+)\s*<->\s*([^\s]+)', tp['description'])
+            if m is not None:
+                node1 = m.group(1)
+                node2 = m.group(2)
+                print "Link network: ", tp['prefix'], "  ", node1, "<->", node2
+
+                p = Prefix()
+                p.schema = self.schema
+                p.prefix = tp['prefix']
+                p.type = 'assignment'
+                p.node = tp['node']
+                p.description = node1 + '<->' + node2
+                p.alarm_priority = tp['alarm_priority']
+                p.authoritative_source = 'nw'
+                p.save({})
+
+                # insert node1 and node2
+                return
+
+            else:
+                #print "Link network:", tp
+                pass
+#%10s %10s %10s %s" % (tp['prefix'], tp['type'], tp[')
             return
 
 
@@ -158,13 +197,15 @@ class TextImporter(Importer):
 
         params['country'] = country
         params['node'] = node
-        m = re.search(r'([0-9]{4,})', span_order)
-        if m is not None:
-            params['span_order'] = m.group(1)
-        else:
-            params['span_order'] = None
+        #m = re.search(r'([0-9]{4,})', span_order)
+        #if m is not None:
+        #    params['span_order'] = m.group(1)
+        #else:
+        #    params['span_order'] = None
+        params['span_order'] = span_order
 
         params['description'] = description.decode('latin1')
+        params['description'] = description
 
         params['type'] = type
 
