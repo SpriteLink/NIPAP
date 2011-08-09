@@ -300,7 +300,10 @@ function receivePrefixList(pref_list) {
 		var interp = pref_list.interpretation[key];
 		intp_cont.append('<div class="search_interpretation" id="intp' + key + '">');
 		var text = '<b>' + interp.string + '</b> interpreted as ' + interp.interpretation;
-		if ('expanded' in interp) {
+		if ('strict_prefix' in interp) {
+			text = text + ' (<b>' + interp.strict_prefix + '</b>)';
+		}
+		else if ('expanded' in interp) {
 			text = text + ' (<b>' + interp.expanded + '</b>)';
 		}
 		$('#intp' + key).html(text);

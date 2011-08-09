@@ -132,6 +132,7 @@ import psycopg2.extras
 import shlex
 import socket
 import re
+import IPy
 
 
 _operation_map = {
@@ -1531,10 +1532,14 @@ class Nap:
                 if prefix != query_str_part['string']:
                     query_str_part['expanded'] = prefix
 
+                strict_prefix = str(IPy.IP(query_str_part['string'], make_net = True))
+                if prefix != strict_prefix:
+                    query_str_part['strict_prefix'] = strict_prefix
+
                 query_parts.append({
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
-                    'val2': prefix
+                    'val2': strict_prefix
                 })
 
             # IPv4 address
