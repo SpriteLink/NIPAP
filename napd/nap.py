@@ -1528,7 +1528,8 @@ class Nap:
 
                 prefix = address + '/' + prefix_length
 
-                query_str_part['expanded'] = prefix
+                if prefix != query_str_part['string']:
+                    query_str_part['expanded'] = prefix
 
                 query_parts.append({
                     'operator': 'contained_within_equals',
