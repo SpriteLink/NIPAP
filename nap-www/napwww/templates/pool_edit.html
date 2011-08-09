@@ -11,11 +11,12 @@
     var indent_head = Array();
     prefix_link_type = 'add_too_pool';
     var pool_id = {{ c.pool.id }};
+    var cur_opts = new Object();
 
     /*
      * Is run when a prefix is selected in the list.
      */
-    function selectPrefix(prefix_id) {
+    function addToPool(prefix_id) {
 
         // set prefix's pool attribute in Nap
         data = new Object();
@@ -54,18 +55,39 @@
 
         // allocate new prefix
         if (e.currentTarget.id == 'radio-create-new') {
-            $('#exp-prefix-alloc-method_container').show();
-            $('#exp-select-existing_container').hide();
-            $("html,body").animate({scrollTop: $("#exp-prefix-alloc-method_container").offset().top - 50}, 700);
+
+            // fetch data for pool search box
+            $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema_id': schema_id }, enableFromPoolSearch);
+
+            prefix_link_type = 'select';
+            $('#prefix_list').empty();
+            $('#query_string').val('');
+
+            $('#prefix-alloc-method_container').show();
+            $('#from-prefix_container').hide();
+
+            $("html,body").animate({scrollTop: $("#prefix-alloc-method_container").offset().top - 50}, 700);
 
         // select already existing prefix
         } else {
-            $('#exp-prefix-alloc-method_container').hide();
-            $('#exp-select-existing_container').show();
-            $("html,body").animate({scrollTop: $("#exp-select-existing_container").offset().top - 50}, 700);
+
+            prefix_link_type = 'add_to_pool';
+            $('#prefix_list').empty();
+            $('#query_string').val('');
+
+            $('#prefix-alloc-method_container').hide();
+            $("#from-prefix_container").show();
+            $("#from-pool_container").hide();
+            $("#prefix_data_container").hide();
+            $("#prefix_row").hide();
+            $('#prefix_length_prefix_container').hide();
+
+            $("html,body").animate({scrollTop: $("#from-prefix_container").offset().top - 50}, 700);
         }
 
     }
+
+
 
 
     /*
@@ -76,14 +98,24 @@
         /*
          * register events
          */
-        // Prefix search
-        $("form[name='prefix_search']").submit(function(e) {
+        // Prefix search, select
+        $("form[name='prefix_search_select']").submit(function(e) {
+            prefix_link_type = 'add_to_pool';
             performPrefixSearch();
             e.preventDefault();
         });
-        $('input[name="search_opt_parent"]').change(performPrefixSearch);
-        $('input[name="search_opt_child"]').change(performPrefixSearch);
-        $("#query_string").keyup(performPrefixSearch);
+        $('input[name="search_opt_parent_select"]').change(function() { prefix_link_type = 'add_to_pool'; performPrefixSearch(); });
+        $('input[name="search_opt_child_select"]').change(function() { prefix_link_type = 'add_to_pool'; performPrefixSearch(); });
+        $("#query_string_select").keyup(function() { prefix_link_type = 'add_to_pool'; performPrefixSearch(); });
+
+        // prefix search, allocate
+        $("form[name='prefix_search']").submit(function(e) {
+            performPrefixSearch('select');
+            e.preventDefault();
+        });
+        $('input[name="search_opt_parent"]').change(function() { prefix_link_type = 'select'; performPrefixSearch(); });
+        $('input[name="search_opt_child"]').change(function() { prefix_link_type = 'select'; performPrefixSearch(); });
+        $("#query_string").keyup(function() { prefix_link_type = 'select'; performPrefixSearch(); });
 
         // Expand pool button
         $("#exp_pool_btn").click(function() {
@@ -95,6 +127,15 @@
         $('input[name="pool_exp_method_1"]').change(displayStep2);
 
         $('input[name="prefix_alloc_method"]').change(showAllocContainer);
+        $('input[name="edit_length"]').change(toggleLengthEdit);
+
+        // catch submit actions
+        $('#prefix_data_form').submit(prefixFormSubmit);
+
+        $("form[name='prefix_search']").submit(function(e) {
+            performPrefixSearch();
+            e.preventDefault();
+        });
 
         /*
          * Other stuff
@@ -150,225 +191,35 @@ Pool administration &mdash;&gt; edit pool
 <div class="options-group" style="display: none;" id="exp-method_container">
     <div class="options-content">
         <h3 class="options-group-heading">Pool expansion method</h3>
-        <table>
-            <tr>
-                <td width="120" valign="top">
+        <div class="option">
+            <dl>
+                <dt style="text-align: left;">
                     <input id="radio-create-new" type="radio" name="pool_exp_method_1" value="create-new">
                     <label for="radio-create-new">Allocate new</label>
-                </td>
-                <td>Allocate a new prefix.</td>
-            </tr>
-            <tr>
-                <td valign="top">
+                </dt>
+                <dd>
+                    Allocate a new prefix.
+                </dd>
+            </dl>
+        </div>
+
+        <div class="rule"></div>
+
+        <div class="option">
+            <dl>
+                <dt style="text-align: left;">
                     <input id="radio-use-existing" type="radio" name="pool_exp_method_1" value="use-existing">
                     <label for="radio-use-existing">Add existing</label>
-                </td>
-                <td>Add an already existing prefix to the pool.</td>
-            </tr>
-        </table>
-
-    </div>
-</div>
-
-<!--
-
-    SEARCH & ADD PREFIX TO POOL
-
--->
-<div class="options-group" style="display: none;" id="exp-select-existing_container">
-    <div class="options-content">
-        <h3 class="options-group-heading">Select prefix</h3>
-        {{ nap.prefix_search_form() }}
-        {{ nap.prefix_search_result() }}
-    </div>
-</div>
-
-<!--
-
-    PREFIX ALLOCATION METHOD
-
--->
-<div class="options-group" id="exp-prefix-alloc-method_container" style="display: none;">
-    <div class="options-content">
-        <h3 class="options-group-heading">Prefix allocation method</h3>
-        <table>
-            <tr>
-                <td width="120" valign="top">
-                    <input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool">
-                    <label for="radio-from-pool">From pool</label>
-                </td>
-                <td>Get a prefix from a pre-defined prefix pool.</td>
-            </tr>
-            <tr>
-                <td valign="top">
-                    <input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix">
-                    <label for="radio-from-prefix">From prefix</label>
-                </td>
-                <td>Get a prefix allocated from another prefix.</td>
-            </tr>
-            <tr>
-                <td valign="top">
-                    <input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual">
-                    <label for="radio-manual">Manual</label>
-                </td>
-                <td>Specify all data manually</td>
-            </tr>
-        </table>
-    </div>
-</div>
-
-<!--
-
-    FROM-POOL
-
--->
-<div style="display: none;" id="from-pool_container">
-    <div class="options-group">
-        <div class="options-content">
-            <h3 class="options-group-heading">Pool allocation options</h3>
-            <table>
-                <tr>
-                    <td>Family</td>
-                    <td>
-                        <label for="family_4_radio">IPv4</label><input type="radio" name="family" value="4" id="family_4_radio" checked>
-                        <label for="family_6_radio">IPv6</label><input type="radio" name="family" value="6" id="family_6_radio">
-                    </td>
-                </tr>
-                <tr>
-                    <td><label for="from-pool">Pool</label></td>
-                    <td><input id="from-pool" type="text" name="from-pool"></td>
-                </tr>
-                <tr style="display: none;" id="length_info_row">
-                    <td style="padding-right: 20px;">Prefix-length</td>
-                    <td>
-                        <span id="def_length_container"></span>
-                    </td>
-                </tr>
-                <tr style="display: none;" id="length_edit_row">
-                    <td>&nbsp;</td>
-                    <td>
-                        <label for="edit_length_default_radio">Use default</label>
-                        <input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
-                        <label for="edit_length_override_radio">Override</label>
-                        <input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
-                    </td>
-                </tr>
-                <tr style="display: none;" id="length_row">
-                    <td>&nbsp;</td>
-                    <td>
-                        <input type="text" name="prefix_length_pool">
-                    </td>
-                    <td>&nbsp;</td>
-                </tr>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!--
-
-    FROM-PREFIX
-
--->
-<div style="display: none;" id="from-prefix_container">
-    <div class="options-group">
-        <div class="options-content">
-            <h3 class="options-group-heading">Prefix allocation options</h3>
-            {{ nap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
-            {{ nap.prefix_search_result() }}
+                </dt>
+                <dd>
+                    Add an already existing prefix to the pool.
+                </dd>
+            </dl>
         </div>
 
-        <div id="prefix_length_prefix_container" style="display: none;">
-            <div id="prefix_length_prefix_bg" class="options-content">
-                <table>
-                    <tr>
-                        <td>Allocating from</td>
-                        <td><span id="alloc_from_prefix"></span></td>
-                    </tr>
-                    <tr id="length_info_row">
-                        <td style="padding-right: 20px;">Prefix-length</td>
-                        <td>
-                            <input type="text" name="prefix_length_prefix">
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
     </div>
 </div>
 
-<!--
-
-    PREFIX DATA
-
--->
-<div id="prefix_data_container" style="display: none;">
-    <div class="options-group">
-        <div class="options-content">
-            <h3 class="options-group-heading">Prefix options</h3>
-            <form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add", schema=c.schema.id) }}">
-            <table>
-                <tr id="prefix_row">
-                    <td>Prefix</td>
-                    <td><input type="text" name="prefix" value="{{ c.prefix }}"></td>
-                    <td class="help-text">192.0.2.16/28</td>
-                </tr>
-                <tr>
-                    <td>Type</td>
-                    <td>
-                        <input id="radio-prefix-type-reservation" type="radio" name="type" value="reservation"/>
-                        <label for="radio-prefix-type-reservation">Reservation</label>
-                        <input id="radio-prefix-type-assignment" type="radio" name="type" value="assignment"/>
-                        <label for="radio-prefix-type-assignment">Assignment</label>
-                        <input id="radio-prefix-type-host" type="radio" name="type" value="host"/>
-                        <label for="radio-prefix-type-host">Host</label>
-                    </td>
-                    <!-- TODO: write better explanation, and put it as tooltips on radio button labels -->
-                    <td class="help-text">Type of prefix.</td>
-                </tr>
-                <tr>
-                    <td>Description</td>
-                    <td><input type="text" name="description"></td>
-
-                <tr>
-                    <td>Node</td>
-                    <td><input type="text" name="node"></td>
-                    <td class="help-text">FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'</td>
-                </tr>
-                <tr>
-                    <td>Country</td>
-                    <td><input type="text" name="country"></td>
-                    <td class="help-text">Two-letter country code according to <a href="http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements">ISO-3166-1</a></td>
-                </tr>
-                <tr>
-                    <td>SPAN order</td>
-                    <td><input type="text" name="span_order"></td>
-                    <td class="help-text"></td>
-                </tr>
-                <tr>
-                    <td>Alarm priority</td>
-                    <td>
-                        <select name="alarm_priority">
-                            <option value="low">low
-                            <option value="medium">medium
-                            <option value="high">high
-                        </select>
-                    </td>
-                    <td class="help-text"></td>
-                </tr>
-                <tr>
-                    <td>Comment</td>
-                    <td colspan="2"><textarea rows="10" cols="72" name="comment"></textarea></td>
-                </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td><input class="button button_green" type="submit" value="Add"></td>
-                    <td>&nbsp;</td>
-                </tr>
-            </table>
-            </form>
-        </div>
-    </div>
-</div>
+{% include 'prefix_add_containers.html' %}
 
 {% endblock %}

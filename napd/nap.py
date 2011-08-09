@@ -1111,6 +1111,7 @@ class Nap:
         if 'from-pool' in args:
             # extract prefixes from
             pool_result = self.list_pool(schema_spec, args['from-pool'])
+            self._logger.debug(args)
             if pool_result == []:
                 raise NapNonExistentError("Non-existent pool specified")
             for p in pool_result[0]['prefixes']:

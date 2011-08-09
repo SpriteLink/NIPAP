@@ -248,12 +248,25 @@ function showPrefix(prefix, parent_container) {
 	prefix_ind_pref.append('<div id="prefix_prefix' + prefix.id + '">');
 	var prefix_prefix = $('#prefix_prefix' + prefix.id);
 	prefix_prefix.addClass("prefix_prefix");
+
+	// Different actions for different list types...
+	// First: select a prefix in the list
 	if (prefix_link_type == 'select') {
-		prefix_prefix.html('<a href="javascript:void(0);" onClick="selectPrefix(' + prefix.id + '); return false;">' + prefix.display_prefix + '</a>');
-	} else if (prefix_link_type == 'add_too_pool') {
-		prefix_prefix.html('<a href="/pool/add_prefix/' + pool_id + '?prefix=' + prefix.id + '&schema=' + schema_id + '" onClick="selectPrefix(' + prefix.id + '); return false;">' + prefix.display_prefix + '</a>');
+
+		prefix_prefix.html('<a href="javascript:void(0);" onClick="selectPrefix(' +
+			prefix.id + '); return false;">' + prefix.display_prefix + '</a>');
+
+	// Add prefix to pool
+	} else if (prefix_link_type == 'add_to_pool') {
+
+		prefix_prefix.html('<a href="/pool/add_prefix/' + pool_id + '?prefix=' +
+			prefix.id + '&schema=' + schema_id + '" onClick="addToPool(' + prefix.id +
+			'); return false;">' + prefix.display_prefix + '</a>');
+
+	// Or edit prefix
 	} else {
-		prefix_prefix.html('<a href="/prefix/edit/' + prefix.id + '?schema=' + schema_id + '">' + prefix.display_prefix + '</a>');
+		prefix_prefix.html('<a href="/prefix/edit/' + prefix.id + '?schema=' +
+			schema_id + '">' + prefix.display_prefix + '</a>');
 	}
 
 	// Add prefix type
@@ -490,14 +503,170 @@ function showAllocContainer(e) {
 
 		$("#from-prefix_container").hide();
 		$("#from-pool_container").hide();
+		$("#prefix-row").show();
 		$("#prefix_data_container").show();
-		$("#prefix_row").css('display', 'table-row');
 		$('#prefix_length_prefix_container').hide();
 		$("html,body").animate({ scrollTop: $("#prefix_data_container").offset().top - 50}, 700);
 
 	}
 
 }
+
+
+/*
+ * Is run when the adress family is changed
+ */
+function changeFamily() {
+
+	// set prefix length in pool length input
+	if (alloc_method == 'from-pool') {
+
+		$('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v4);
+
+		if ($('input[name="family"]:checked').val() == '4') {
+			$('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v4);
+			$('#def_length_container').html("Pool's default IPv4 prefix-length is " + cur_opts.pool.length_v4 + ".");
+		} else {
+			$('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v6);
+			$('#def_length_container').html("Pool's default IPv6 prefix-length is " + cur_opts.pool.length_v6 + ".");
+		}
+	}
+
+	// TODO: set prefix length in prefix input
+
+}
+
+
+/*
+ * Run when a pool is selected from the pool list.
+ */
+function selectPool(e, ui) {
+
+	// Save the pool
+	cur_opts.pool = ui.item;
+
+	// display data form
+	$("#prefix_data_container").css('display', 'block');
+
+	// set prefix length
+	changeFamily();
+	$('#length_info_row').css('display', 'block');
+	$('#length_edit_row').css('display', 'inline-block');
+
+}
+
+
+/*
+ * Enable from-pool autocompleting search box.
+ */
+function enableFromPoolSearch(data) {
+
+	var pools = new Array();
+
+	for (p in data) {
+		pools.push({
+			'value': data[p].name,
+			'id': data[p].id,
+			'length_v4': data[p].ipv4_default_prefix_length,
+			'length_v6': data[p].ipv6_default_prefix_length
+			});
+	}
+
+	$("#from-pool").autocomplete({
+		'source': pools,
+		'select': selectPool
+	});
+
+}
+
+
+/*
+ * Toggle change of prefix length
+ */
+function toggleLengthEdit(e) {
+
+	// view input field
+	if (e.currentTarget.id == 'edit_length_default_radio') {
+		$('#length_row').hide();
+	} else {
+		$('#length_row').show();
+	}
+
+}
+
+
+/*
+ * Perform operation
+ */
+function prefixFormSubmit(e) {
+
+	e.preventDefault();
+
+	// create prefix data object
+	var prefix_data = {
+		'schema': schema_id,
+		'description': $('input[name="description"]').val(),
+		'comment': $('textarea[name="comment"]').val(),
+		'node': $('input[name="node"]').val(),
+		'type': $('input[name="type"]:checked').val(),
+		'country': $('input[name="country"]').val(),
+		'span_order': $('input[name="span_order"]').val(),
+		'alarm_priority': $('select[name="alarm_priority"] option:selected').val(),
+	};
+
+    // Add pool to prefix data if it is available
+    if (typeof pool_id != undefined) {
+        prefix_data.pool = pool_id;
+    }
+
+	// different data due to different allocation methods
+	if (alloc_method == 'from-pool') {
+
+		prefix_data.from_pool = cur_opts.pool.id;
+		prefix_data.prefix_length = $('input[name="prefix_length_pool"]').val();
+		prefix_data.family = $('input[name="family"]:checked').val();
+
+	} else if (alloc_method == 'from-prefix') {
+
+		prefix_data.from_prefix = cur_opts.from_prefix;
+		prefix_data.prefix_length = $('input[name="prefix_length_prefix"]').val();
+
+	} else {
+
+		prefix_data.prefix = $('input[name="prefix"]').val();
+
+	}
+
+	$.getJSON('/xhr/add_prefix', prefix_data, prefixAdded);
+
+}
+
+
+/*
+ * Is run when a prefix is selected in the list.
+ */
+function selectPrefix(prefix_id) {
+
+	// set prefix's pool attribute in Nap
+	$('#prefix_data_container').show();
+	$('#prefix_length_prefix_container').show();
+	if ('from_prefix' in cur_opts) {
+		cur_str = $('#alloc_from_prefix').html();
+		$('#alloc_from_prefix').html(cur_str + ', ' + prefix_list[prefix_id].prefix);
+		cur_opts.from_prefix.push(prefix_list[prefix_id].prefix);
+	} else {
+		$('#alloc_from_prefix').html(prefix_list[prefix_id].prefix);
+		cur_opts.from_prefix = new Array(prefix_list[prefix_id].prefix);
+	}
+
+	$("html,body").animate({ scrollTop: $("#prefix_length_prefix_container").offset().top - 50}, 700);
+	$("#prefix_length_prefix_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
+
+}
+
+
+
+
 
 /**********************************************************************
 *
