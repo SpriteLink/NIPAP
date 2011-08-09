@@ -850,15 +850,15 @@ class Nap:
 
 
         if type(query['val1']) == dict and type(query['val2']) == dict:
-            # Sub expression, recurse!
+            # Sub expression, recurse! This is used for boolean operators: AND OR
             # add parantheses
 
             sub_where1, opt1 = self._expand_prefix_query(query['val1'], table_name)
             sub_where2, opt2 = self._expand_prefix_query(query['val2'], table_name)
             try:
-                where += str(" (%s %s %s ) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
+                where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NoSuchOperatorError("no such operator %s" % str(query['operator']))
+                raise NoSuchOperatorError("No such operator %s" % str(query['operator']))
 
             opt += opt1
             opt += opt2
@@ -886,13 +886,25 @@ class Nap:
                 raise NapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
             # build where clause
-            try:
+            if query['operator'] not in _operation_map:
+                raise NapNoSuchOperatorError("No such operator %s" % query['operator'])
+
+            if query['operator'] in (
+                    'contains',
+                    'contains_equals',
+                    'contained_within',
+                    'contained_within_equals') and self._get_afi(query['val2']) == 4:
+
+                where = " family(%(col_prefix)sprefix) = 4 AND ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL END) %(operator)s %%s " % {
+                        'col_prefix': col_prefix,
+                        'operator': _operation_map[query['operator']]
+                        }
+            else:
                 where = str(" %s%s %s %%s " %
                     ( col_prefix, prefix_attr[query['val1']],
                     _operation_map[query['operator']] )
                 )
-            except KeyError:
-                raise NapNoSuchOperatorError("No such operation %s" % query['operator'])
+
             opt.append(query['val2'])
 
         return where, opt
