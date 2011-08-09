@@ -208,9 +208,11 @@ BEGIN
 		-- OLD.prefix. Today, when calling calc_indent, we iterate over each
 		-- and every one.. for a /16 or larger (not to think of IPv6) this can
 		-- make a huuuge difference.
-		PERFORM calc_indent(OLD.schema, OLD.prefix);
+		PERFORM calc_indent(OLD.schema, OLD.prefix, -1);
+	ELSIF TG_OP = 'INSERT' THEN
+		PERFORM calc_indent(NEW.schema, NEW.prefix, 1);
 	ELSE
-		PERFORM calc_indent(NEW.schema, NEW.prefix);
+		-- nothing!
 	END IF;
 	RETURN NEW;
 END;
