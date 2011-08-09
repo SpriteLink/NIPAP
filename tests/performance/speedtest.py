@@ -77,7 +77,6 @@ class bonk:
 
 
 
-
     def fill_prefix(self, argp):
         """ Fill the specified prefix with hosts (/32s or /128s for IPv[46])
         """
@@ -126,6 +125,25 @@ class bonk:
 
 
 
+    def add_prefix(self, argp):
+        t0 = time.time()
+        prefix = self.n.add_prefix({ 'name': 'test-schema' }, { 'prefix': argp, 'description': 'test' })
+        t1 = time.time()
+        d1 = t1-t0
+        print "Add prefix:", argp, "took", d1, "seconds"
+
+
+
+    def remove_prefix(self, argp):
+        t0 = time.time()
+        prefix = self.n.remove_prefix({ 'name': 'test-schema' }, { 'prefix': argp })
+        t1 = time.time()
+        d1 = t1-t0
+        print "Delete prefix:", argp, "took", d1, "seconds"
+
+
+
+
     def prefix_insert(self, argp):
         pass
 
@@ -167,8 +185,10 @@ class bonk:
 if __name__ == '__main__':
     import optparse
     parser = optparse.OptionParser()
+    parser.add_option('--add-prefix', metavar = 'PREFIX', help='Add PREFIX')
     parser.add_option('--fill-prefix', metavar = 'PREFIX', help='fill PREFIX with hosts')
     parser.add_option('--find-free-prefix', metavar = 'PREFIX', help='try to find the next free /32 in PREFIX')
+    parser.add_option('--remove-prefix', metavar = 'PREFIX', help='delete PREFIX')
     b = bonk()
 
     options, args = parser.parse_args()
@@ -182,3 +202,9 @@ if __name__ == '__main__':
 
     if options.find_free_prefix is not None:
         b.find_free_prefix(options.find_free_prefix)
+
+    if options.add_prefix is not None:
+        b.add_prefix(options.add_prefix)
+
+    if options.remove_prefix is not None:
+        b.remove_prefix(options.remove_prefix)
