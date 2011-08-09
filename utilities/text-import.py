@@ -66,6 +66,10 @@ class TextImporter(Importer):
                 params = self.parse_line(line)
             except NapDuplicateError:
                 pass
+            except TypeError:
+                pass
+            except ValueError:
+                pass
 
 
         f.close()
@@ -83,8 +87,18 @@ class TextImporter(Importer):
             # just ignore comments
             return
 
+        if tp['prefix_type'] == 'reservation':  # reservations / aggregates
+            print "Reservation:", tp['prefix'], tp['description']
+            p = Prefix()
+            p.schema = self.schema
+            p.prefix = tp['prefix']
+            p.type = 'reservation'
+            p.description = tp['description']
+            p.alarm_priority = 'low'
+            p.authoritative_source = 'nw'
+            p.save({})
 
-        if tp['prefix_length'] == 32:   # loopback
+        elif tp['prefix_length'] == 32:   # loopback
             print "Loopback:", tp['prefix']
             p = Prefix()
             p.schema = self.schema
@@ -97,27 +111,39 @@ class TextImporter(Importer):
             p.authoritative_source = 'nw'
             p.save({})
 
+        elif tp['prefix_length'] == 30 or tp['prefix_length'] == 31:   # link network
+            return
+
 
 
     def split_columns(self, line):
+
+        m = re.match(r'^! (((2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)\.){3}(2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)(/(3[12]|[12]?[0-9])))[\t\s]+([^\t]+)$', line)
+        if m is not None:
+            params = {}
+            params['prefix'] = m.group(1)
+            params['address'] = m.group(1)
+            params['prefix_length'] = int(m.group(8))
+            params['description'] = m.group(9).rstrip()
+            params['prefix_type'] = 'reservation'
+            return params
 
         # ignore comments, that is lines starting with one of ; # !
         if re.match(r'^$', line) or re.match(' *[;#!]', line):
             raise CommentLine("Comment line")
 
         params = {}
+        params['prefix_type'] = 'assorhost'
         (prefix, priority, country, type, span_order, node, description) = re.split(r'[\t\s]+', line.rstrip(), 6)
 
         # one of those silly lines for documenting L2 circuits
         if prefix == '.':
-            raise TypeError('. is not a valid prefix')
+            raise TypeError('. is not a valid prefix, line: ' + line)
 
         # is it a real IP prefix?
         m = re.match('!?(((2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)\.){3}(2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)(/(3[12]|[12]?[0-9])))', prefix)
         if m is None:
             raise TypeError("Incorrect prefix on line: " + line)
-
-        prefix_len = m.group(8)
 
         params['prefix'] = prefix
         params['address'] = m.group(1)
