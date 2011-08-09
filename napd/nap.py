@@ -1454,6 +1454,7 @@ class Nap:
             )
             WHERE p2.schema = %s AND p2.prefix IN (
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
+                LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
             ) ORDER BY p1.prefix LIMIT """ + str(search_options['max_result']) + """ OFFSET """  + str(search_options['offset'])
         opt.insert(0, schema['id'])
 
