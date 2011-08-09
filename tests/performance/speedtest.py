@@ -127,7 +127,7 @@ class bonk:
 
     def add_prefix(self, argp):
         t0 = time.time()
-        prefix = self.n.add_prefix({ 'name': 'test-schema' }, { 'prefix': argp, 'description': 'test' })
+        prefix = self.n.add_prefix({ 'name': 'test-schema' }, { 'prefix': argp, 'description': 'test', 'authoritative_source': 'test' })
         t1 = time.time()
         d1 = t1-t0
         print "Add prefix:", argp, "took", d1, "seconds"
