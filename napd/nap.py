@@ -885,7 +885,7 @@ class Nap:
             if query['val1'] not in prefix_attr:
                 raise NapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
-            # build where caluse
+            # build where clause
             try:
                 where = str(" %s%s %s %%s " %
                     ( col_prefix, prefix_attr[query['val1']],
