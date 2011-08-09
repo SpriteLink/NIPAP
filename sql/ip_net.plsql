@@ -98,6 +98,19 @@ DECLARE
 	child RECORD;
 	i_max_pref_len integer;
 BEGIN
+	-- this is a shortcut to avoid running the rest of this trigger as it
+	-- can be fairly costly performance wise
+	--
+	-- sanity checking is done on 'type' and derivations of 'prefix' so if
+	-- those stay the same, we don't need to run the rest of the sanity
+	-- checks.
+	IF TG_OP = 'UPDATE' THEN
+		-- we need to nest cause plpgsql is stupid :(
+		IF OLD.type = NEW.type AND OLD.prefix = NEW.prefix THEN
+			RETURN NEW;
+		END IF;
+	END IF;
+
 
 	IF family(NEW.prefix) = 4 THEN
 		i_max_pref_len := 32;
