@@ -35,6 +35,8 @@ var prefix_link_type = 'edit';
 // Max prefix lengths for different address families
 var max_prefix_length = [32, 128];
 
+var current_query = '';
+
 
 /**
  * Display a notice popup
@@ -182,6 +184,11 @@ function performPrefixSearch() {
 	if (jQuery.trim($('#query_string').val()).length < 1) {
 		return true;
 	}
+	// Skip search if it's the currently rendered or outstanding query string
+	if ($('#query_string').val() == current_query) {
+		return true;
+	}
+	current_query = $('#query_string').val();
 
 	var search_q = {
 		'query_string': $('#query_string').val(),
