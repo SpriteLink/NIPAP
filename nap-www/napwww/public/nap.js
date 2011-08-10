@@ -207,6 +207,9 @@ function performPrefixSearch() {
 		'offset': 0
 	}
 
+	$('#prefix_list').empty();
+
+	showLoadingIndicator($('#prefix_list'));
 	$.getJSON("/xhr/smart_search_prefix", search_q, receivePrefixList);
 
 }
@@ -347,7 +350,6 @@ function receivePrefixList(pref_list) {
 
 		// insert prefix list
 		insertPrefixList(pref_list.result, $("#prefix_list"), pref_list.result[0]);
-		stats.finished = new Date().getTime();
 
 	} else {
 
@@ -355,6 +357,8 @@ function receivePrefixList(pref_list) {
 		$('#prefix_list').html('No prefixes found.');
 
 	}
+
+	stats.finished = new Date().getTime();
 
 	// Keep track of search state
 	if (stats.last_state != 2) {
@@ -726,5 +730,24 @@ function hasMaxPreflen(prefix) {
 	} else {
 		return false;
 	}
+
+}
+
+/*
+ * Add loading indicator
+ */
+function showLoadingIndicator(p_container) {
+
+	p_container.append('<div class="loading">&nbsp;</div>');
+	$(".loading").fadeIn();
+
+}
+
+/*
+ * Hide loading indicator
+ */
+function hideLoadingIndicator() {
+
+	$(".loading").fadeOut().remove();
 
 }
