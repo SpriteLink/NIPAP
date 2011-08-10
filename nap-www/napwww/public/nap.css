@@ -526,3 +526,17 @@ input[type="submit"] {
     z-index: 100;
     text-align: center;
 }
+
+/*
+ * Loading indicator
+ */
+.loading {
+    display: none;
+    background-image: url('/loading.gif');
+    height: 32px;
+    width: 32px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}

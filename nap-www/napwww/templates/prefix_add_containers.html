@@ -1,0 +1,289 @@
+{% import 'macros.html' as nap %}
+
+<!-- 
+
+    PREFIX ALLOCATION METHOD
+
+-->
+<div class="options-group" style="display: none;" id="prefix-alloc-method_container">
+	<div class="options-content">
+		<h3 class="options-group-heading">Prefix allocation method</h3>
+
+		<div class="option">
+			<dl>
+				<dt style="text-align: left;">
+					<input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool">
+					<label for="radio-from-pool">From pool</label>
+				</dt>
+				<dd>
+					Get a prefix from a pre-defined prefix pool.
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt style="text-align: left;">
+					<input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix">
+					<label for="radio-from-prefix">From prefix</label>
+				</dt>
+				<dd>
+					Get a prefix allocated from another prefix.
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt style="text-align: left;">
+					<input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual">
+					<label for="radio-manual">Manual</label>
+				</dt>
+				<dd>
+					Specify all data manually
+				</dd>
+			</dl>
+		</div>
+
+	</div>
+</div>
+
+<!--
+
+    FROM-POOL
+
+-->
+<div style="display: none;" id="from-pool_container">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Pool allocation options</h3>
+
+
+			<div class="option">
+				<dl>
+					<dt style="text-align: left;">
+						Family
+					</dt>
+					<dd>
+						<input type="radio" name="family" value="4" id="family_4_radio" checked>
+						<label for="family_4_radio">IPv4</label>
+						<input type="radio" name="family" value="6" id="family_6_radio">
+						<label for="family_6_radio">IPv6</label>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt style="text-align: left;">
+						Pool
+					</dt>
+					<dd>
+						<input id="from-pool" type="text" name="from-pool">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option" id="length_info_row" style="display: none;">
+				<dl>
+					<dt style="text-align: left;" id="length_edit_row">
+						Prefix-length
+					</dt>
+					<dd id="length_edit_row">
+						<span id="def_length_container"></span><br/>
+
+						<input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
+						<label for="edit_length_default_radio">Use default</label>
+						<input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
+						<label for="edit_length_override_radio">Override</label>
+						<br/>
+						<div style="display: none;" id="length_row">
+							<input type="text" name="prefix_length_pool">
+						</div>
+					</dd>
+				</dl>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<!--
+
+    FROM-PREFIX
+
+-->
+<div style="display: none;" id="from-prefix_container">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Prefix allocation options</h3>
+			{{ nap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
+			{{ nap.prefix_search_result() }}
+		</div>
+
+		<div id="prefix_length_prefix_container" style="display: none;">
+			<div id="prefix_length_prefix_bg" class="options-content">
+				<table>
+					<tr>
+						<td>Allocating from</td>
+						<td><span id="alloc_from_prefix"></span></td>
+					</tr>
+					<tr id="length_info_row">
+						<td style="padding-right: 20px;">Prefix-length</td>
+						<td>
+							<input type="text" name="prefix_length_prefix">
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--
+
+    PREFIX DATA
+
+-->
+<div id="prefix_data_container" style="display: none;">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Prefix options</h3>
+			<form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add", schema=c.schema.id) }}">
+
+			<div class="option" style="display: none;" id="prefix-row">
+				<dl>
+					<dt>
+						Prefix
+					</dt>
+					<dd>
+						<input type="text" name="prefix" value="{{ c.prefix }}">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Type
+					</dt>
+					<dd>
+						<input id="radio-prefix-type-reservation" type="radio" name="type" value="reservation"/>
+						<label for="radio-prefix-type-reservation">Reservation</label>
+						<input id="radio-prefix-type-assignment" type="radio" name="type" value="assignment"/>
+						<label for="radio-prefix-type-assignment">Assignment</label>
+						<input id="radio-prefix-type-host" type="radio" name="type" value="host"/>
+						<label for="radio-prefix-type-host">Host</label>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Description
+					</dt>
+					<dd>
+						<input type="text" name="description">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Node&nbsp;FQDN
+					</dt>
+					<dd>
+						<input type="text" name="node" class="tooltip" title="FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Country
+					</dt>
+					<dd>
+						<input type="text" name="country" class="tooltip" title="Two-letter country code according to <a href='http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements ISO-3166-1'">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						SPAN order
+					</dt>
+					<dd>
+						<input type="text" name="span_order">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Alarm&nbsp;priority
+					</dt>
+					<dd>
+						<select name="alarm_priority">
+							<option value="low">low
+							<option value="medium">medium
+							<option value="high">high
+						</select>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Comment
+					</dt>
+					<dd>
+						<input type="text" name="comment">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+					</dt>
+					<dd>
+						<input class="button button_green" type="submit" value="Add">
+					</dd>
+				</dl>
+			</div>
+
+			</form>
+		</div>
+	</div>
+</div>
+

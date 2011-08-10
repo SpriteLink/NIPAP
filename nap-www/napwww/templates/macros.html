@@ -1,15 +1,15 @@
 {% macro button(text, color='red', width='100px', height='30px', url='', id='btn') -%}
 <a href="{{url}}" id="{{id}}">
-	<div class="button button_{{color}}" style="height: {{height}}; width: {{width}};">
-		<div style="display: inline-block; vertical-align: middle;">
+    <div class="button button_{{color}}" style="height: {{height}}; width: {{width}};">
+        <div style="display: inline-block; vertical-align: middle;">
             {{text}}
         </div>
-	</div>
+    </div>
 </a>
 {%- endmacro %}
 
-{% macro prefix_search_form(search_opt_parent='all', search_opt_child='none') %}
-<form id="prefix_search" method="post">
+{% macro prefix_search_form(search_opt_parent='all', search_opt_child='none', id_suffix='') %}
+<form name="prefix_search{{ id_suffix }}" method="post">
     <center>
         <div style="padding-bottom: 2px; padding-top: 1px; position: relative;">
             <table cellspacing="0" cellpadding="0" border="0">
@@ -18,7 +18,7 @@
                         <table>
                             <tr>
                                 <td style="padding-right: 20px">
-                                    <input id="query_string" type="text" size="30" autocomplete="off" autofocus="autofocus">
+                                    <input id="query_string{{ id_suffix }}" type="text" size="30" autocomplete="off" autofocus="autofocus">
                                 </td>
                                 <td>
                                     <div id="sbd">
@@ -41,62 +41,62 @@
                             <tr>
                                 <td class="opt_left">
                                     Display options
-								</td>
-								<td class="opt_right">
-									<table>
-										<tr>
-											<td style="text-align: right; padding: 0; margin: 0;">
-												Include parent:
-											</td>
-											<td style="padding: 0; margin: 0;">
+                                </td>
+                                <td class="opt_right">
+                                    <table>
+                                        <tr>
+                                            <td style="text-align: right; padding: 0; margin: 0;">
+                                                Include parent:
+                                            </td>
+                                            <td style="padding: 0; margin: 0;">
 
-											{% if search_opt_parent == 'none' %}
-												<input type="radio" name="search_opt_parent" value="none" checked>none</input>
-											{% else %}
-												<input type="radio" name="search_opt_parent" value="none">none</input>
-											{% endif %}
+                                            {% if search_opt_parent == 'none' %}
+                                                <input type="radio" name="search_opt_parent{{ id_suffix }}" value="none" checked>none</input>
+                                            {% else %}
+                                                <input type="radio" name="search_opt_parent{{ id_suffix }}" value="none">none</input>
+                                            {% endif %}
 
-											{% if search_opt_parent == 'immediate' %}
-												<input type="radio" name="search_opt_parent" value="immediate" checked>immediate</input>
-											{% else %}
-												<input type="radio" name="search_opt_parent" value="immediate">immediate</input>
-											{% endif %}
+                                            {% if search_opt_parent == 'immediate' %}
+                                                <input type="radio" name="search_opt_parent{{ id_suffix }}" value="immediate" checked>immediate</input>
+                                            {% else %}
+                                                <input type="radio" name="search_opt_parent{{ id_suffix }}" value="immediate">immediate</input>
+                                            {% endif %}
 
-											{% if search_opt_parent == 'all' %}
-												<input type="radio" name="search_opt_parent" value="all" checked>all</input>
-											{% else %}
-												<input type="radio" name="search_opt_parent" value="all">all</input>
-											{% endif %}
+                                            {% if search_opt_parent == 'all' %}
+                                                <input type="radio" name="search_opt_parent{{ id_suffix }}" value="all" checked>all</input>
+                                            {% else %}
+                                                <input type="radio" name="search_opt_parent{{ id_suffix }}" value="all">all</input>
+                                            {% endif %}
 
-											</td>
-										</tr>
-										<tr>
-											<td style="text-align: right; padding: 0; margin: 0;">
-												Include children:
-											</td>
-											<td style="padding: 0; margin: 0;">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: right; padding: 0; margin: 0;">
+                                                Include children:
+                                            </td>
+                                            <td style="padding: 0; margin: 0;">
 
-											{% if search_opt_child == 'none' %}
-												<input type="radio" name="search_opt_child" value="none" checked>none
-											{% else %}
-												<input type="radio" name="search_opt_child" value="none">none
-											{% endif %}
+                                            {% if search_opt_child == 'none' %}
+                                                <input type="radio" name="search_opt_child{{ id_suffix }}" value="none" checked>none
+                                            {% else %}
+                                                <input type="radio" name="search_opt_child{{ id_suffix }}" value="none">none
+                                            {% endif %}
 
-											{% if search_opt_child == 'immediate' %}
-												<input type="radio" name="search_opt_child" value="immediate" checked>immediate
-											{% else %}
-												<input type="radio" name="search_opt_child" value="immediate">immediate
-											{% endif %}
+                                            {% if search_opt_child == 'immediate' %}
+                                                <input type="radio" name="search_opt_child{{ id_suffix }}" value="immediate" checked>immediate
+                                            {% else %}
+                                                <input type="radio" name="search_opt_child{{ id_suffix }}" value="immediate">immediate
+                                            {% endif %}
 
-											{% if search_opt_child == 'all' %}
-												<input type="radio" name="search_opt_child" value="all" checked>all
-											{% else %}
-												<input type="radio" name="search_opt_child" value="all">all
-											{% endif %}
+                                            {% if search_opt_child == 'all' %}
+                                                <input type="radio" name="search_opt_child{{ id_suffix }}" value="all" checked>all
+                                            {% else %}
+                                                <input type="radio" name="search_opt_child{{ id_suffix }}" value="all">all
+                                            {% endif %}
 
-											</td>
-										</tr>
-									</table>
+                                            </td>
+                                        </tr>
+                                    </table>
 
                                 </td>
                             </tr>
@@ -110,6 +110,6 @@
 
 {% endmacro %}
 
-{% macro prefix_search_result() %}
-<div class="prefix_list" id="prefix_list"></div>
+{% macro prefix_search_result(id_suffix='') %}
+<div class="prefix_list" id="prefix_list{{ id_suffix }}"></div>
 {% endmacro %}
