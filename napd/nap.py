@@ -1360,19 +1360,17 @@ class Nap:
         if 'include_all_parents' not in search_options:
             search_options['include_all_parents'] = False
         else:
-            if (search_options['include_all_parents'] != True and
-                search_options['include_all_parents'] != False):
-                raise NapValueError('Invalid value for option' +
-                ''' 'include_all_parents'. Only true and false valid. %s''' % str(search_options['include_parents']))
+            if search_options['include_all_parents'] not in (True, False):
+                raise NapValueError('Invalid value for option ' +
+                    "'include_all_parents'. Only true and false valid. Supplied value :'%s'" % str(search_options['include_all_parents']))
 
         # include_children
         if 'include_all_children' not in search_options:
             search_options['include_all_children'] = False
         else:
-            if (search_options['include_all_children'] != True and
-                search_options['include_all_children'] != False):
-                raise NapValueError('Invalid value for option' +
-                ''' 'include_all_children'. Only true and false valid.''')
+            if search_options['include_all_children'] not in (True, False):
+                raise NapValueError('Invalid value for option ' +
+                    "'include_all_children'. Only true and false valid. Supplied value: '%s'" % str(search_options['include_all_children']))
 
         # parents_depth
         if 'parents_depth' not in search_options:
@@ -1440,8 +1438,10 @@ class Nap:
         display = '(p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (parents_selector, children_selector)
 
         where, opt = self._expand_prefix_query(query)
-        sql = """SELECT DISTINCT ON(p1.prefix) p1.*, family(p1.prefix) AS family,
-            (""" + display + """) AS display
+        sql = """SELECT DISTINCT ON(p1.prefix) p1.*,
+            family(p1.prefix) AS family,
+            (""" + display + """) AS display,
+            CASE WHEN p1.prefix = p2.prefix THEN true ELSE false END AS match
             FROM ip_net_plan AS p1
             JOIN ip_net_plan AS p2 ON
             (
