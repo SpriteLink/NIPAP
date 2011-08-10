@@ -24,6 +24,9 @@ var schema_id = 0;
 var prefix_list = Object();
 var indent_head = Object();
 
+// Object for storing statistics
+var stats = Object();
+
 /*
  * Holy shit, this is an ugly hack...
  * As the prefix search results sometimes need to link to an edit-prefix-page
@@ -183,6 +186,16 @@ function performPrefixSearch() {
 		return true;
 	}
 
+	// Keep track of search state
+	stats.query_sent = new Date().getTime();
+	if (!('last_state' in stats)) {
+		stats.last_state = 3;
+	}
+	if (stats.last_state != 3) {
+		console.log('Warning: State is ' + stats.last_state + ', should be 3!');
+	}
+	stats.last_state = 1;
+
 	var search_q = {
 		'query_string': $('#query_string').val(),
 		'schema': schema_id,
@@ -290,6 +303,14 @@ function showPrefix(prefix, parent_container) {
  */
 function receivePrefixList(pref_list) {
 
+	stats.response_received = new Date().getTime();
+
+	// Keep track of search state
+	if (stats.last_state != 1) {
+		console.log('Warning: State is ' + stats.last_state + ', should be 1!');
+	}
+	stats.last_state = 2;
+
 	// Error?
 	if ('error' in pref_list) {
 		displayNotice("Error", pref_list.message);
@@ -312,6 +333,7 @@ function receivePrefixList(pref_list) {
 		$('#intp' + key).html(text);
 
 	}
+	stats.draw_intp_finished = new Date().getTime();
 
 	/*
 	 * Prefix list
@@ -321,8 +343,28 @@ function receivePrefixList(pref_list) {
 	prefix_list = new Object();
 	indent_head = new Object();
 
-	// insert prefix list
-	insertPrefixList(pref_list.result, $("#prefix_list"), pref_list.result[0]);
+	if (pref_list.result.length > 0) {
+
+		// insert prefix list
+		insertPrefixList(pref_list.result, $("#prefix_list"), pref_list.result[0]);
+		stats.finished = new Date().getTime();
+
+	} else {
+
+		// No prefixes received
+		$('#prefix_list').html('No prefixes found.');
+
+	}
+
+	// Keep track of search state
+	if (stats.last_state != 2) {
+		console.log('Warning: State is ' + stats.last_state + ', should be 2!');
+	}
+	stats.last_state = 3;
+
+	// Display search statistics
+	console.log('Query took ' + (stats.response_received - stats.query_sent) + ' milliseconds');
+	console.log('Rendering took ' + (stats.finished - stats.response_received) + ' milliseconds');
 
 }
 
@@ -383,7 +425,6 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 	// return if we did not get any prefixes
 	if (pref_list.length == 0) {
-		console.log("insertPrefixList: No prefixes received");
 		return;
 	}
 
