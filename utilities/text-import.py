@@ -5,7 +5,7 @@ import re
 
 import sys
 sys.path.append('../nap-www')
-from napwww.model.napmodel import Schema, Pool, Prefix, NapNonExistentError, NapDuplicateError
+from napwww.model.napmodel import Schema, Pool, Prefix, NapNonExistentError, NapDuplicateError, NapValueError
 
 import logging
 
@@ -99,29 +99,48 @@ class TextImporter(Importer):
             p.save({})
             return
 
-        elif tp['prefix_length'] == 32:   # loopback
-            print "Loopback:", tp['prefix']
-            p = Prefix()
-            p.schema = self.schema
-            p.prefix = tp['prefix']
-            # loopbacks are always of type 'assignment'
-            p.type = 'assignment'
-            p.node = tp['node']
-            p.description = tp['description']
-            p.alarm_priority = tp['alarm_priority']
-            p.authoritative_source = 'nw'
-            p.save({})
+        elif tp['node'] == '.' and tp['description'] == '.':
+            # ignore prefixes without description or node set
             return
+
+        elif tp['prefix_length'] == 32:   # loopback
+            # if it's a loopback, the covering prefix will be a reservation and we can just insert an assignment.
+            # if this insert fails, it means the parent prefix is an assignment and we instead insert a host
+            try:
+                p = Prefix()
+                p.schema = self.schema
+                p.prefix = tp['prefix']
+                # loopbacks are always of type 'assignment'
+                p.type = 'assignment'
+                p.node = tp['node']
+                p.description = tp['description']
+                p.alarm_priority = tp['alarm_priority']
+                p.authoritative_source = 'nw'
+                p.save({})
+                print "Loopback:", tp['prefix']
+                return
+            except:
+                p = Prefix()
+                p.schema = self.schema
+                p.prefix = tp['prefix']
+                # loopbacks are always of type 'assignment'
+                p.type = 'host'
+                p.node = tp['node']
+                p.description = tp['description']
+                p.alarm_priority = tp['alarm_priority']
+                p.authoritative_source = 'nw'
+                p.save({})
+                print "Host:", tp['prefix']
+                return
 
         elif tp['prefix_length'] == 30 or tp['prefix_length'] == 31:   # link network
             m = re.match('(ETHER_KAP|ETHER_PORT|IP-KAP|IP-PORT|IP-SIPNET|IP-SNIX|IPSUR|L2L|RED-IPPORT|SNIX|SWIP|T2V-@|T2V-DIGTV|T2V-SUR)[0-9]{4,}', tp['span_order'])
-            if m is not None:
+            if m is not None or tp['type'] == 'CUSTOMER':
                 print "Customer link", tp['prefix'], ':', tp['description']
                 p = Prefix()
                 p.schema = self.schema
                 p.prefix = tp['prefix']
                 p.type = 'assignment'
-                p.node = tp['node']
                 p.description = tp['description']
                 p.alarm_priority = tp['alarm_priority']
                 p.authoritative_source = 'nw'
@@ -139,7 +158,7 @@ class TextImporter(Importer):
                 p.prefix = tp['prefix']
                 p.type = 'assignment'
                 p.node = tp['node']
-                p.description = node1 + '<->' + node2
+                p.description = node1 + ' <-> ' + node2
                 p.alarm_priority = tp['alarm_priority']
                 p.authoritative_source = 'nw'
                 p.save({})
@@ -147,10 +166,45 @@ class TextImporter(Importer):
                 # insert node1 and node2
                 return
 
-            else:
-                #print "Link network:", tp
-                pass
-#%10s %10s %10s %s" % (tp['prefix'], tp['type'], tp[')
+            m = re.match('(DN)[0-9]{4,}', tp['span_order'])
+            if m is not None:
+                print "Internal order link network", tp['prefix'], ':', tp['description']
+                p = Prefix()
+                p.schema = self.schema
+                p.prefix = tp['prefix']
+                p.type = 'assignment'
+                p.description = tp['description']
+                p.alarm_priority = tp['alarm_priority']
+                p.authoritative_source = 'nw'
+                p.save({})
+                return
+
+            print "Other link link network", tp['prefix'], ':', tp['description']
+            p = Prefix()
+            p.schema = self.schema
+            p.prefix = tp['prefix']
+            p.type = 'assignment'
+            p.description = tp['description']
+            p.alarm_priority = tp['alarm_priority']
+            p.authoritative_source = 'nw'
+            p.save({})
+            return
+
+        else:
+            try:
+                p = Prefix()
+                p.schema = self.schema
+                p.prefix = tp['prefix']
+                p.type = 'assignment'
+                p.description = tp['description']
+                p.alarm_priority = 'low'
+                p.authoritative_source = 'nw'
+                p.save({})
+                print "Other:", tp['prefix']
+            except NapValueError, e:
+                print tp['prefix'], ':', e
+                sys.exit(1)
+
             return
 
 
@@ -161,7 +215,7 @@ class TextImporter(Importer):
         if m is not None:
             params = {}
             params['prefix'] = m.group(1)
-            params['address'] = m.group(1)
+            params['address'] = m.group(2)
             params['prefix_length'] = int(m.group(8))
             params['description'] = m.group(9).rstrip()
             params['prefix_type'] = 'reservation'
@@ -180,13 +234,13 @@ class TextImporter(Importer):
             raise TypeError('. is not a valid prefix, line: ' + line)
 
         # is it a real IP prefix?
-        m = re.match('!?(((2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)\.){3}(2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)(/(3[12]|[12]?[0-9])))', prefix)
+        m = re.match('!?((((2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?)\.){3}(2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?))(/(3[012]|[12]?[0-9])))', prefix)
         if m is None:
             raise TypeError("Incorrect prefix on line: " + line)
 
         params['prefix'] = prefix
-        params['address'] = m.group(1)
-        params['prefix_length'] = int(m.group(8))
+        params['address'] = m.group(2)
+        params['prefix_length'] = int(m.group(9))
 
         if priority == 'H':
             params['alarm_priority'] = 'high'
