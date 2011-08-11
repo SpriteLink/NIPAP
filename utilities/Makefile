@@ -1,6 +1,8 @@
+START=^
+
 clean:
 	for I in `seq 32|sort -nr`; do echo "Deleting IPv4 prefixes with length: $$I"; psql -c "DELETE FROM ip_net_plan WHERE family(prefix) = 4 AND masklen(prefix)=$$I" nap > /dev/null; done ;
-	rm 1 2
+	rm -f 1 2
 
 transfer:
 	scp mcore1.tele2.net:/misc/NetWatch/NetWatch.conf 1
@@ -17,9 +19,12 @@ except:
 import:
 	./text-import.py --schema global 1
 
+genpartial:
+	sed -ne '/$(START)/,$$p' 1 > 2
+	mv 2 1
 
 reread: clean except import
 
 full:	clean transfer utf8 except import
 
-half:	clean transfer utf8 except import
+partial:	clean transfer utf8 except genpartial import
