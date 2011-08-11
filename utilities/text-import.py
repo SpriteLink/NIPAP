@@ -179,7 +179,7 @@ class TextImporter(Importer):
                 p.save({})
                 return
 
-            print "Other link link network", tp['prefix'], ':', tp['description']
+            print "Other link network", tp['prefix'], ':', tp['description']
             p = Prefix()
             p.schema = self.schema
             p.prefix = tp['prefix']
