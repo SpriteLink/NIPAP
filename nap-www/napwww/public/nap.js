@@ -377,8 +377,8 @@ function receivePrefixList(pref_list) {
 	stats.last_state = 3;
 
 	// Display search statistics
-	console.log('Query took ' + (stats.response_received - stats.query_sent) + ' milliseconds');
 	console.log('Rendering took ' + (stats.finished - stats.response_received) + ' milliseconds');
+    $('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
 
 }
 
