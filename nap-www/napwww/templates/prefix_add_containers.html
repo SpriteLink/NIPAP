@@ -1,5 +1,13 @@
 {% import 'macros.html' as nap %}
 
+{#
+
+    This file is included by pool_edit.html and prefix_add.html. To suit each
+    of these pages, the content is modified slightly at runtime when the page
+    loads, so beware, this might cause some 'WTF!?'.
+
+#}
+
 <!-- 
 
     PREFIX ALLOCATION METHOD
@@ -178,12 +186,12 @@
 						Type
 					</dt>
 					<dd>
-						<input id="radio-prefix-type-reservation" type="radio" name="prefix_type" value="reservation"/>
+						<input id="radio-prefix-type-reservation" type="radio" name="prefix_type" value="reservation">
 						<label for="radio-prefix-type-reservation">Reservation</label>
-						<input id="radio-prefix-type-assignment" type="radio" name="prefix_type" value="assignment"/>
+						<input id="radio-prefix-type-assignment" type="radio" name="prefix_type" value="assignment">
 						<label for="radio-prefix-type-assignment">Assignment</label>
-						<input id="radio-prefix-type-host" type="radio" name="prefix_type" value="host"/>
-						<label for="radio-prefix-type-host">Host</label>
+						<input id="radio-prefix-type-host" type="radio" name="prefix_type" value="host">
+						<label id="label-prefix-type-host" for="radio-prefix-type-host">Host</label>
 					</dd>
 				</dl>
 			</div>

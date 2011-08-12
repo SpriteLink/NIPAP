@@ -139,6 +139,11 @@
             e.preventDefault();
         });
 
+        // Remove prefix type 'host', as these should not be a member of a pool
+        $('#radio-prefix-type-host').remove();
+        $('#label-prefix-type-host').remove();
+
+
         /*
          * Other stuff
          */
