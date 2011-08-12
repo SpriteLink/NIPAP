@@ -40,7 +40,11 @@
 			<td style="padding-left: 30px;"><a href="{{ h.url(controller='prefix', action='index', schema=schema.id) }}">{{ schema.name }}</a></td>
 			<td>{{ schema.description }}</td>
 			<td>
+                {% if c.schema is defined %}
+				<a href="{{ h.url(controller="schema", action="edit", id=schema.id, schema=c.schema.id) }}">edit</a> |
+                {% else %}
 				<a href="{{ h.url(controller="schema", action="edit", id=schema.id) }}">edit</a> | 
+                {% endif %}
 				<a href="javascript:void(0);" onclick="displayVerify('Really remove {{ schema.name }}? This will remove ALL prefixes in the schema!', '{{ h.url(controller="schema", action="remove", id=schema.id) }}');">del</a>
 			</td>
 		</tr>

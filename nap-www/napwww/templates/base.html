@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>{{ c.page_title }}</title>
+        <title>{{ c.page_title|default('NIPAP') }}</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="/nap.css">
         <link rel="stylesheet" href="/tipTip.css">
@@ -30,7 +30,7 @@
 				</div>
 				<div class="menu_entry" style="position: relative;">
                 <h1 id="schema_title" style="line-height: 27px">
-					{% if c['schema'] is defined %}
+					{% if c.schema is defined %}
 						<a href="{{ h.url(controller = 'schema', action = 'list', schema = c.schema.id) }}" class="schema_title tooltip" title="This is the currently active schema. Click to change.">
 							{{ c.schema.name }}
 						</a>
