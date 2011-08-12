@@ -237,6 +237,8 @@ class XhrController(BaseController):
             p.node = request.params['node']
         if 'type' in request.params:
             p.type = request.params['type']
+        if 'pool' in request.params:
+            p.pool = Pool.get(p.schema, int(request.params['pool']))
         if 'country' in request.params:
             p.country = request.params['country']
         if 'span_order' in request.params:
