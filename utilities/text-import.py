@@ -157,13 +157,42 @@ class TextImporter(Importer):
                 p.schema = self.schema
                 p.prefix = tp['prefix']
                 p.type = 'assignment'
-                p.node = tp['node']
                 p.description = node1 + ' <-> ' + node2
                 p.alarm_priority = tp['alarm_priority']
                 p.authoritative_source = 'nw'
                 p.save({})
 
                 # insert node1 and node2
+                octets = tp['address'].split('.')
+                prefix_node1 = None
+                prefix_node2 = None
+                if tp['prefix_length'] == 30:
+                    prefix_node1 = '.'.join(octets[:3] + [str( int(octets[3]) + 1 )] ) + '/32'
+                    prefix_node2 = '.'.join(octets[:3] + [str( int(octets[3]) + 2 )] ) + '/32'
+                else:
+                    prefix_node1 = '.'.join(octets) + '/32'
+                    prefix_node2 = '.'.join(octets[:3] + [str( int(octets[3]) + 1 )] ) + '/32'
+
+                p1 = Prefix()
+                p1.schema = self.schema
+                p1.prefix = prefix_node1
+                p1.type = 'host'
+                p1.node = node1
+                p2.description = node1
+                p1.authoritative_source = 'nw'
+                p1.alarm_priority = 'low'
+                p1.save({})
+
+                p2 = Prefix()
+                p2.schema = self.schema
+                p2.prefix = prefix_node2
+                p2.type = 'host'
+                p2.node = node2
+                p2.description = node2
+                p2.authoritative_source = 'nw'
+                p2.alarm_priority = 'low'
+                p2.save({})
+
                 return
 
             m = re.match('(DN)[0-9]{4,}', tp['span_order'])
