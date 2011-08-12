@@ -45,6 +45,19 @@
         $("#pool_prefix_" + prefix.id).append('<td>' + prefix.description + '</td>');
         $("#pool_prefix_" + prefix.id).append('<td><a href="/pool/remove_prefix/{{ c.pool.id }}?schema=' + schema_id + '&prefix='+ prefix.id +'">del</a></td>');
 
+        // Hide all expansion boxes
+        $('#prefix-alloc-method_container').hide();
+        $('#from-pool_container').hide();
+        $('#from-prefix_container').hide()
+        $('#prefix_data_container').hide();
+        $('#exp-method_container').hide();
+
+
+        $('#prefix_added').html(prefix.prefix);
+        $('#prefix_added_container').show();
+        $("html,body").animate({ scrollTop: $("#prefix_added_container").offset().top - 50}, 700);
+        $("#prefix_added_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#3d9400" }, 700).delay(200).animate({ backgroundColor: "#ccffcc" }, 1000);
+
     }
 
 
@@ -88,8 +101,6 @@
     }
 
 
-
-
     /*
      * Things to do when page loads
      */
@@ -98,24 +109,14 @@
         /*
          * register events
          */
-        // Prefix search, select
-        $("form[name='prefix_search_select']").submit(function(e) {
-            prefix_link_type = 'add_to_pool';
+        // prefix search
+        $("form[name='prefix_search']").submit(function(e) {
             performPrefixSearch();
             e.preventDefault();
         });
-        $('input[name="search_opt_parent_select"]').change(function() { prefix_link_type = 'add_to_pool'; performPrefixSearch(); });
-        $('input[name="search_opt_child_select"]').change(function() { prefix_link_type = 'add_to_pool'; performPrefixSearch(); });
-        $("#query_string_select").keyup(function() { prefix_link_type = 'add_to_pool'; performPrefixSearch(); });
-
-        // prefix search, allocate
-        $("form[name='prefix_search']").submit(function(e) {
-            performPrefixSearch('select');
-            e.preventDefault();
-        });
-        $('input[name="search_opt_parent"]').change(function() { prefix_link_type = 'select'; performPrefixSearch(); });
-        $('input[name="search_opt_child"]').change(function() { prefix_link_type = 'select'; performPrefixSearch(); });
-        $("#query_string").keyup(function() { prefix_link_type = 'select'; performPrefixSearch(); });
+        $('input[name="search_opt_parent"]').change(performPrefixSearch);
+        $('input[name="search_opt_child"]').change(performPrefixSearch);
+        $("#query_string").keyup(performPrefixSearch);
 
         // Expand pool button
         $("#exp_pool_btn").click(function() {
@@ -123,11 +124,12 @@
             $("html,body").animate({scrollTop: $("#exp-method_container").offset().top - 50}, 700); return false;
         });
 
-        // Radio buttons regarding expansion method
+        // Radio buttons
         $('input[name="pool_exp_method_1"]').change(displayStep2);
-
         $('input[name="prefix_alloc_method"]').change(showAllocContainer);
         $('input[name="edit_length"]').change(toggleLengthEdit);
+        $('input[name="prefix_family"]').change(changeFamily);
+
 
         // catch submit actions
         $('#prefix_data_form').submit(prefixFormSubmit);
@@ -142,6 +144,9 @@
          */
         // TODO: add highlight when hovering prefix in list
         // TODO: Fix error when prefix is selected multiple times
+        // TODO: When prefix added to pool, hide all boxes related to adding
+        //       prefixes and scroll up. Also make sure that all fields are
+        //       cleaned in case of the user wanting to add another prefix.
 
     });
     </script> 
@@ -221,5 +226,16 @@ Pool administration &mdash;&gt; edit pool
 </div>
 
 {% include 'prefix_add_containers.html' %}
+
+<div id="prefix_added_container" style="display: none;">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Result</h3>
+			<div id="prefix_added_bg" style="padding: 15px; background-color: #ccffcc;">
+				The pool was successfully expanded with the prefix <span id="prefix_added"></span>.
+			</div>
+		</div>
+	</div>
+</div>
 
 {% endblock %}

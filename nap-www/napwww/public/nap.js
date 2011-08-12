@@ -578,7 +578,7 @@ function changeFamily() {
 
 		$('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v4);
 
-		if ($('input[name="family"]:checked').val() == '4') {
+		if ($('input[name="prefix_family"]:checked').val() == '4') {
 			$('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v4);
 			$('#def_length_container').html("Pool's default IPv4 prefix-length is " + cur_opts.pool.length_v4 + ".");
 		} else {
@@ -660,17 +660,17 @@ function prefixFormSubmit(e) {
 	// create prefix data object
 	var prefix_data = {
 		'schema': schema_id,
-		'description': $('input[name="description"]').val(),
-		'comment': $('textarea[name="comment"]').val(),
-		'node': $('input[name="node"]').val(),
-		'type': $('input[name="type"]:checked').val(),
-		'country': $('input[name="country"]').val(),
-		'span_order': $('input[name="span_order"]').val(),
-		'alarm_priority': $('select[name="alarm_priority"] option:selected').val(),
+		'description': $('input[name="prefix_description"]').val(),
+		'comment': $('textarea[name="prefix_comment"]').val(),
+		'node': $('input[name="prefix_node"]').val(),
+		'type': $('input[name="prefix_type"]:checked').val(),
+		'country': $('input[name="prefix_country"]').val(),
+		'span_order': $('input[name="prefix_span_order"]').val(),
+		'alarm_priority': $('select[name="prefix_alarm_priority"] option:selected').val(),
 	};
 
     // Add pool to prefix data if it is available
-    if (typeof pool_id != undefined) {
+    if (typeof pool_id != "undefined") {
         prefix_data.pool = pool_id;
     }
 
@@ -679,7 +679,7 @@ function prefixFormSubmit(e) {
 
 		prefix_data.from_pool = cur_opts.pool.id;
 		prefix_data.prefix_length = $('input[name="prefix_length_pool"]').val();
-		prefix_data.family = $('input[name="family"]:checked').val();
+		prefix_data.family = $('input[name="prefix_family"]:checked').val();
 
 	} else if (alloc_method == 'from-prefix') {
 
@@ -688,7 +688,7 @@ function prefixFormSubmit(e) {
 
 	} else {
 
-		prefix_data.prefix = $('input[name="prefix"]').val();
+		prefix_data.prefix = $('input[name="prefix_prefix"]').val();
 
 	}
 

@@ -69,9 +69,9 @@
 						Family
 					</dt>
 					<dd>
-						<input type="radio" name="family" value="4" id="family_4_radio" checked>
+						<input type="radio" name="prefix_family" value="4" id="family_4_radio" checked>
 						<label for="family_4_radio">IPv4</label>
-						<input type="radio" name="family" value="6" id="family_6_radio">
+						<input type="radio" name="prefix_family" value="6" id="family_6_radio">
 						<label for="family_6_radio">IPv6</label>
 					</dd>
 				</dl>
@@ -165,7 +165,7 @@
 						Prefix
 					</dt>
 					<dd>
-						<input type="text" name="prefix" value="{{ c.prefix }}">
+						<input type="text" name="prefix_prefix" value="{{ c.prefix }}">
 					</dd>
 				</dl>
 			</div>
@@ -178,11 +178,11 @@
 						Type
 					</dt>
 					<dd>
-						<input id="radio-prefix-type-reservation" type="radio" name="type" value="reservation"/>
+						<input id="radio-prefix-type-reservation" type="radio" name="prefix_type" value="reservation"/>
 						<label for="radio-prefix-type-reservation">Reservation</label>
-						<input id="radio-prefix-type-assignment" type="radio" name="type" value="assignment"/>
+						<input id="radio-prefix-type-assignment" type="radio" name="prefix_type" value="assignment"/>
 						<label for="radio-prefix-type-assignment">Assignment</label>
-						<input id="radio-prefix-type-host" type="radio" name="type" value="host"/>
+						<input id="radio-prefix-type-host" type="radio" name="prefix_type" value="host"/>
 						<label for="radio-prefix-type-host">Host</label>
 					</dd>
 				</dl>
@@ -196,7 +196,7 @@
 						Description
 					</dt>
 					<dd>
-						<input type="text" name="description">
+						<input type="text" name="prefix_description">
 					</dd>
 				</dl>
 			</div>
@@ -209,7 +209,7 @@
 						Node&nbsp;FQDN
 					</dt>
 					<dd>
-						<input type="text" name="node" class="tooltip" title="FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'">
+						<input type="text" name="prefix_node" class="tooltip" title="FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'">
 					</dd>
 				</dl>
 			</div>
@@ -222,7 +222,7 @@
 						Country
 					</dt>
 					<dd>
-						<input type="text" name="country" class="tooltip" title="Two-letter country code according to <a href='http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements ISO-3166-1'">
+						<input type="text" name="prefix_country" class="tooltip" title="Two-letter country code according to <a href='http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements ISO-3166-1'">
 					</dd>
 				</dl>
 			</div>
@@ -235,7 +235,7 @@
 						SPAN order
 					</dt>
 					<dd>
-						<input type="text" name="span_order">
+						<input type="text" name="prefix_span_order">
 					</dd>
 				</dl>
 			</div>
@@ -248,7 +248,7 @@
 						Alarm&nbsp;priority
 					</dt>
 					<dd>
-						<select name="alarm_priority">
+						<select name="prefix_alarm_priority">
 							<option value="low">low
 							<option value="medium">medium
 							<option value="high">high
@@ -265,7 +265,7 @@
 						Comment
 					</dt>
 					<dd>
-						<input type="text" name="comment">
+						<input type="text" name="prefix_comment">
 					</dd>
 				</dl>
 			</div>

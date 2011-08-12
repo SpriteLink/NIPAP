@@ -752,7 +752,12 @@ class Nap:
 
         res = list()
         for row in self._curs_pg:
-            res.append(dict(row))
+            p = dict(row)
+
+            # Make sure that prefixes is an array, even if there are no prefixes
+            if p['prefixes'] == None:
+                p['prefixes'] = []
+            res.append(p)
 
         return res
 
