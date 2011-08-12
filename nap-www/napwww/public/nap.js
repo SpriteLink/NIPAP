@@ -371,7 +371,7 @@ function receivePrefixList(pref_list) {
 			text += ' equal to <b>' + interp.string + '</b>';
 			tooltip = "The " + interp.interpretation + " must equal " + interp.string;
 		} else {
-			text += ' matching <b>' + interp.string + '</b>';
+			text += " matching '<b>" + interp.string + "</b>'";
 			tooltip = "The description OR the comment should regexp match '" + interp.string + "'";
 		}
 
