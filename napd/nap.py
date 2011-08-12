@@ -342,14 +342,17 @@ class Nap:
 
             if code == '1200':
                 raise NapValueError(text)
-            else:
-                raise NapError()
+
+            raise NapError(str(e))
+
         except psycopg2.IntegrityError, e:
             self._con_pg.rollback()
 
             # this is a duplicate key error
             if e.pgcode == "23505":
                 raise NapDuplicateError("Objects primary keys already exist")
+
+            raise NapError(str(e))
 
         except psycopg2.Error, e:
             self._con_pg.rollback()
