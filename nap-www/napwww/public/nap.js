@@ -204,6 +204,8 @@ function performPrefixSearch() {
 
 	// Skip search if query string empty
 	if (jQuery.trim($('#query_string').val()).length < 1) {
+		$('#prefix_list').empty();
+		$('#search_interpret_container').empty();
 		return true;
 	}
 	// Skip search if it's the currently rendered or outstanding query string
