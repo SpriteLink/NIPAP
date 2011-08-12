@@ -975,12 +975,14 @@ class Nap:
             attr = self._translate_pool_spec(schema_spec, attr)
 
         # do we have all attributes?
-        req_attr = [ 'prefix', 'schema', 'description' ]
+        req_attr = [ 'prefix', 'schema', 'authoritative_source' ]
         allowed_attr = [
             'authoritative_source', 'prefix', 'schema', 'description',
             'comment', 'pool', 'node', 'type', 'country',
             'span_order', 'alarm_priority']
         self._check_attr(attr, req_attr, allowed_attr)
+        if ('description' not in attr) and ('host' not in attr):
+            raise NapMissingInputError('Either description or host must be specified.')
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_plan " + insert
