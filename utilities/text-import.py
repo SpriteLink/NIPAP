@@ -15,7 +15,7 @@ class CommentLine(Exception):
 
 
 class Importer:
-    def __init__(self, schema_name):
+    def __init__(self, url, schema_name):
         self._logger = logging.getLogger(self.__class__.__name__)
 
         # import nap class and stuff
@@ -302,6 +302,7 @@ if __name__ == '__main__':
     import optparse
     parser = optparse.OptionParser()
     parser.add_option('--schema', help = 'Name of schema to import into')
+    parser.add_option('--url', default='http://127.0.0.1:1337/', help = 'the NIPAP XML-RPC server url')
 
     options, args = parser.parse_args()
 
@@ -309,7 +310,7 @@ if __name__ == '__main__':
         print >> sys.stderr, "You must specify a schema"
         sys.exit(1)
 
-    ti = TextImporter(options.schema)
+    ti = TextImporter(options.url, options.schema)
     for filename in args:
         ti.parse_file(filename)
 
