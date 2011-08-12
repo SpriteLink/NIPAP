@@ -468,8 +468,8 @@ class Prefix(NapModel):
         p.span_order = pref['span_order']
         p.authoritative_source = pref['authoritative_source']
         p.alarm_priority = pref['alarm_priority']
-		if 'match' in pref:
-			p.match = pref['match']
+        if 'match' in pref:
+            p.match = pref['match']
         if 'display' in pref:
             p.display = pref['display']
 
