@@ -284,6 +284,7 @@ class Prefix(NapModel):
     authoritative_source = None
     alarm_priority = None
     display = True
+    match = False
 
 
     @classmethod
@@ -466,6 +467,7 @@ class Prefix(NapModel):
         p.country = pref['country']
         p.span_order = pref['span_order']
         p.authoritative_source = pref['authoritative_source']
+        p.match = pref['match']
         p.alarm_priority = pref['alarm_priority']
         if 'display' in pref:
             p.display = pref['display']
