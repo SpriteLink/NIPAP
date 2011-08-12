@@ -42,6 +42,25 @@ var current_query = '';
 
 
 /**
+ * A general log function
+ *
+ * This will try to post a message to the javascript console available in
+ * Chrome / Firefox, if that's not available, it'll try opera and thereafter
+ * give up.
+ */
+function log(msg) {
+	try {
+		console.log(msg);
+	} catch (error) {
+		try {
+			window.opera.postError(msg)
+		} catch (error) {
+			// no console available
+		}
+	}
+}
+
+/**
  * Display a notice popup
  *
  * @param title string Title to display above error message.
@@ -199,7 +218,7 @@ function performPrefixSearch() {
 		stats.last_state = 3;
 	}
 	if (stats.last_state != 3) {
-		console.log('Warning: State is ' + stats.last_state + ', should be 3!');
+		log('Warning: State is ' + stats.last_state + ', should be 3!');
 	}
 	stats.last_state = 1;
 
@@ -317,7 +336,7 @@ function receivePrefixList(pref_list) {
 
 	// Keep track of search state
 	if (stats.last_state != 1) {
-		console.log('Warning: State is ' + stats.last_state + ', should be 1!');
+		log('Warning: State is ' + stats.last_state + ', should be 1!');
 	}
 	stats.last_state = 2;
 
@@ -372,12 +391,12 @@ function receivePrefixList(pref_list) {
 
 	// Keep track of search state
 	if (stats.last_state != 2) {
-		console.log('Warning: State is ' + stats.last_state + ', should be 2!');
+		log('Warning: State is ' + stats.last_state + ', should be 2!');
 	}
 	stats.last_state = 3;
 
 	// Display search statistics
-	console.log('Rendering took ' + (stats.finished - stats.response_received) + ' milliseconds');
+	log('Rendering took ' + (stats.finished - stats.response_received) + ' milliseconds');
 	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
 
 }
@@ -398,7 +417,7 @@ function receivePrefixListUpdate(pref_list, link_type) {
 	if (pref_list.length == 0) {
 
 		// TODO: Display notice dialog?
-		console.log('Warning: no prefixes returned from list operation.');
+		log('Warning: no prefixes returned from list operation.');
 		return true;
 
 	// One result element (the prefix we searched for)
@@ -461,7 +480,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		// indent head for current indent level to the top level container
 		if (!(prefix.indent in indent_head)) {
 			indent_head[prefix.indent] = $('#prefix_list');
-			console.log("Adding element to top level group");
+			log("Adding element to top level group");
 		}
 
 		// Has indent level increased?
