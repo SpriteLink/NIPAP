@@ -5,7 +5,7 @@ clean:
 
 transfer:
 	rm -f 1 2
-	scp mcore1.tele2.net:/misc/NetWatch/NetWatch.conf 1
+	scp $(TEXTFILE) 1
 	chmod u+w 1
 
 utf8:
