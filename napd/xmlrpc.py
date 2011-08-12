@@ -13,21 +13,6 @@ import xmlrpclib
 
 import nap
 
-# map exception types to error codes, used for
-# creating suitable xmlrpclib.Fault-objects
-# TODO: there are normal python ValueErrors raised, catch them too! make sure
-#       we don't leak internal information in the exception and if possible try
-#       to point out which argument (if any) caused the exception
-errcode_map = {
-    nap.NapError: 1000,
-    nap.NapInputError: 1100,
-    nap.NapMissingInputError: 1110,
-    nap.NapExtraneousInputError: 1120,
-    nap.NapValueError: 1200,
-    nap.NapNonExistentError: 1300,
-    nap.NapDuplicateError: 1400
-}
-
 
 class NapXMLRPC:
     stop = None
@@ -53,15 +38,11 @@ class NapProtocol(xmlrpc.XMLRPC):
         self.request = None
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Initialising NAP Protocol")
-#        self.con_pg = psycopg2.connect("host='localhost' dbname='nap' user='nap' password='Je9ydmLsBw7gg'")
-#        self.curs_pg = self.con_pg.cursor()
 
         self.nap = nap.Nap()
 
 
     def render(self, request):
-        llf = "XMLRPC render: "
-        lle = llf + "Authentication failed: "
         self.request = request
 
         # TODO: add authentication! how should we do auth?
@@ -117,7 +98,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.add_schema(attr)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
     def xmlrpc_remove_schema(self, spec):
@@ -127,7 +108,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             self.nap.remove_schema(spec)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
     def xmlrpc_list_schema(self, spec = None):
@@ -137,7 +118,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.list_schema(spec)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
     def xmlrpc_edit_schema(self, spec, attr):
@@ -147,7 +128,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             self.nap.edit_schema(spec, attr)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
     #
     # POOL FUNCTIONS
@@ -159,7 +140,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.add_pool(schema_spec, attr)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
     def xmlrpc_remove_pool(self, schema_spec, spec):
@@ -169,7 +150,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             self.nap.remove_pool(schema_spec, spec)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
     def xmlrpc_list_pool(self, schema_spec, spec = {}):
@@ -179,7 +160,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.list_pool(schema_spec, spec)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
     def xmlrpc_edit_pool(self, schema_spec, spec, attr):
@@ -189,7 +170,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.edit_pool(schema_spec, spec, attr)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
     #
@@ -204,7 +185,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.add_prefix(schema_spec, attr, args)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
@@ -215,7 +196,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.list_prefix(schema_spec, spec)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
@@ -226,7 +207,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.edit_prefix(schema_spec, spec, attr)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
@@ -237,7 +218,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.remove_prefix(schema_spec, spec)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
@@ -251,7 +232,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.search_prefix(schema_spec, query, search_options)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
@@ -266,7 +247,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.smart_search_prefix(schema_spec, query_string, search_options)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
+            return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
@@ -277,6 +258,4 @@ class NapProtocol(xmlrpc.XMLRPC):
         try:
             return self.nap.find_free_prefix(spec, schema_spec, wantd_length, num)
         except nap.NapError, e:
-            return xmlrpclib.Fault(errcode_map[type(e)], str(e))
-
-
+            return xmlrpclib.Fault(e.error_code, str(e))
