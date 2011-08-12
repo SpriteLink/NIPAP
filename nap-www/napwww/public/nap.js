@@ -362,10 +362,12 @@ function receivePrefixList(pref_list) {
 			if ('strict_prefix' in interp) {
 				text += '<b>' + interp.strict_prefix + '</b>';
 				tooltip = 'Prefix must be contained within ' + interp.strict_prefix + ', which is the base prefix of ' + interp.expanded + ' (automatically expanded from ' + interp.string + ')';
-			}
-			else if ('expanded' in interp) {
+			} else if ('expanded' in interp) {
 				text += '<b>' + interp.expanded + '</b>';
 				tooltip = 'Prefix must be contained within ' + interp.expanded + ' (automatically expanded from ' + interp.string + ').';
+			} else {
+				text += '<b>' + interp.string + '</b>';
+				tooltip = 'Prefix must be contained within ' + interp.string;
 			}
 		} else if (interp.attribute == 'prefix' && interp.operator == 'equals') {
 			text += ' equal to <b>' + interp.string + '</b>';
