@@ -2,9 +2,9 @@ START=^
 
 clean:
 	for I in `seq 32|sort -nr`; do echo "Deleting IPv4 prefixes with length: $$I"; psql -c "DELETE FROM ip_net_plan WHERE family(prefix) = 4 AND masklen(prefix)=$$I" nap > /dev/null; done ;
-	rm -f 1 2
 
 transfer:
+	rm -f 1 2
 	scp mcore1.tele2.net:/misc/NetWatch/NetWatch.conf 1
 	chmod u+w 1
 
