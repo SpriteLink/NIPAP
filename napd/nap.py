@@ -1621,7 +1621,8 @@ class Nap:
 class NapError(Exception):
     """ Nap base error class.
     """
-    pass
+
+    error_code = 1000
 
 
 class NapInputError(NapError):
@@ -1629,7 +1630,8 @@ class NapInputError(NapError):
 
         A general input error.
     """
-    pass
+
+    error_code = 1100
 
 
 class NapMissingInputError(NapInputError):
@@ -1637,7 +1639,8 @@ class NapMissingInputError(NapInputError):
 
         Most input is passed in dicts, this could mean a missing key in a dict.
     """
-    pass
+
+    error_code = 1110
 
 
 class NapExtraneousInputError(NapInputError):
@@ -1645,13 +1648,15 @@ class NapExtraneousInputError(NapInputError):
 
         Most input is passed in dicts, this could mean an unknown key in a dict.
     """
-    pass
+
+    error_code = 1120
 
 
 class NapNoSuchOperatorError(NapInputError):
     """ A non existent operator was specified.
     """
-    pass
+
+    error_code = 1130
 
 
 class NapValueError(NapError):
@@ -1659,7 +1664,8 @@ class NapValueError(NapError):
 
         For example, trying to send an integer when an IP address is expected.
     """
-    pass
+
+    error_code = 1200
 
 
 class NapNonExistentError(NapError):
@@ -1667,7 +1673,8 @@ class NapNonExistentError(NapError):
 
         For example, try to get a prefix from a pool which doesn't exist.
     """
-    pass
+
+    error_code = 1300
 
 
 class NapDuplicateError(NapError):
@@ -1675,4 +1682,5 @@ class NapDuplicateError(NapError):
 
         For example, create a schema with a name of an already existing one.
     """
-    pass
+
+    error_code = 1400
