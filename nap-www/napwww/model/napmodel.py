@@ -339,14 +339,15 @@ class Prefix(NapModel):
 
         xmlrpc = XMLRPCConnection()
         try:
-            pref_list = xmlrpc.connection.smart_search_prefix({ 'id': schema.id },
+            smart_result = xmlrpc.connection.smart_search_prefix({ 'id': schema.id },
                 query_string, search_options)
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         res = dict()
-        res['interpretation'] = pref_list['interpretation']
+        res['interpretation'] = smart_result['interpretation']
+        res['search_options'] = smart_result['search_options']
         res['result'] = list()
-        for pref in pref_list['result']:
+        for pref in smart_result['result']:
             p = Prefix.from_dict(pref)
             res['result'].append(p)
 

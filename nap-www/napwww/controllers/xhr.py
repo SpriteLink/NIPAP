@@ -156,6 +156,9 @@ class XhrController(BaseController):
 
         search_options = {}
 
+        if 'query_id' in request.params:
+            search_options['query_id'] = request.params['query_id']
+
         if 'include_all_parents' in request.params:
             if request.params['include_all_parents'] == 'true':
                 search_options['include_all_parents'] = True

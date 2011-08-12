@@ -1477,7 +1477,7 @@ class Nap:
         for row in self._curs_pg:
             result.append(dict(row))
 
-        return result
+        return search_options, result
 
 
 
@@ -1629,7 +1629,9 @@ class Nap:
 
         self._logger.debug("Expanded to: %s" % str(query))
 
-        return { 'interpretation': query_str_parts, 'result': self.search_prefix(schema_spec, query, search_options) }
+        result_search_options, result = self.search_prefix(schema_spec, query, search_options)
+
+        return { 'interpretation': query_str_parts, 'result': result, 'search_options': result_search_options }
 
 
 
