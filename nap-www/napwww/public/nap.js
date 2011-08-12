@@ -250,6 +250,11 @@ function showPrefix(prefix, parent_container) {
 	parent_container.append('<div id="prefix_entry' + prefix.id + '">');
 	var prefix_entry = $('#prefix_entry' + prefix.id);
 	prefix_entry.attr('class', 'prefix_entry');
+	if (prefix.match == true) {
+		prefix_entry.addClass("row_match");
+	} else {
+		prefix_entry.addClass("row_collateral");
+	}
 	prefix_entry.hover(
 		function() { prefix_entry.addClass("row_hover"); },
 		function() { prefix_entry.removeClass("row_hover"); }

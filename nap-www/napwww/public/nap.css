@@ -381,6 +381,13 @@ input[type="submit"] {
     line-height: 25px;
 }
 
+.row_highlight {
+}
+
+.row_collateral {
+	color: #aaaaaa;
+}
+
 .row_hover {
     background-color: #ebf2fc;
 }
