@@ -1591,7 +1591,7 @@ class Nap:
             # Description or comment
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as desc/comment")
-                query_str_part['interpretation'] = 'description'
+                query_str_part['interpretation'] = 'text'
                 query_str_part['operator'] = 'regex'
                 query_str_part['attribute'] = 'description or comment'
                 query_parts.append({

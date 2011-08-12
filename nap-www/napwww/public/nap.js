@@ -354,15 +354,30 @@ function receivePrefixList(pref_list) {
 	for (key in pref_list.interpretation) {
 
 		var interp = pref_list.interpretation[key];
-		intp_cont.append('<div class="search_interpretation" id="intp' + key + '">');
-		var text = '<b>' + interp.string + '</b> interpreted as ' + interp.interpretation;
-		if ('strict_prefix' in interp) {
-			text = text + ' (<b>' + interp.strict_prefix + '</b>)';
+		var text = '<b>' + interp.string + ':</b> ' + interp.interpretation;
+		var tooltip = '';
+		if (interp.attribute == 'prefix' && interp.operator == 'contained_within_equals') {
+			text += ' within ';
+
+			if ('strict_prefix' in interp) {
+				text += '<b>' + interp.strict_prefix + '</b>';
+				tooltip = 'Prefix must be contained within ' + interp.strict_prefix + ', which is the base prefix of ' + interp.expanded + ' (automatically expanded from ' + interp.string + ')';
+			}
+			else if ('expanded' in interp) {
+				text += '<b>' + interp.expanded + '</b>';
+				tooltip = 'Prefix must be contained within ' + interp.expanded + ' (automatically expanded from ' + interp.string + ').';
+			}
+		} else if (interp.attribute == 'prefix' && interp.operator == 'equals') {
+			text += ' equal to <b>' + interp.string + '</b>';
+			tooltip = "The " + interp.interpretation + " must equal " + interp.string;
+		} else {
+			text += ' matching <b>' + interp.string + '</b>';
+			tooltip = "The description OR the comment should regexp match '" + interp.string + "'";
 		}
-		else if ('expanded' in interp) {
-			text = text + ' (<b>' + interp.expanded + '</b>)';
-		}
+
+		intp_cont.append('<div class="search_interpretation tooltip" id="intp' + key + '" title="' + tooltip + '">');
 		$('#intp' + key).html(text);
+		$('#intp' + key).tipTip({delay: 100});
 
 	}
 	stats.draw_intp_finished = new Date().getTime();
