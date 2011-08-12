@@ -11,23 +11,24 @@ class XMLRPCConnection:
     _logger = None
 
 
-    def __init__(self, url=None):
+    def __init__(self, url = "http://127.0.0.1:1337"):
         """ Create XML-RPC connection to url.
 
             If an earlier created instance exists, url
             does not need to be passed.
         """
 
-        self.__dict__ = self.__shared_state
+        # Currently not used due to threading safety issues
+        #self.__dict__ = self.__shared_state
 
-        if len(self.__shared_state) == 0 and url is None:
-            raise Exception("Missing URL.")
+        #if len(self.__shared_state) == 0 and url is None:
+        #    raise Exception("Missing URL.")
 
-        if len(self.__shared_state) == 0:
+        #if len(self.__shared_state) == 0:
 
-            # creating new instance
-            self.connection = xmlrpclib.ServerProxy(url, allow_none=True)
-            self._logger = logging.getLogger(self.__class__.__name__)
+        # creating new instance
+        self.connection = xmlrpclib.ServerProxy(url, allow_none=True)
+        self._logger = logging.getLogger(self.__class__.__name__)
 
 
 
@@ -75,6 +76,7 @@ class Schema(NapModel):
         """ List schemas.
         """
 
+        xmlrpc = XMLRPCConnection()
         schema_list = xmlrpc.connection.list_schema(spec)
 
         res = list()
@@ -252,6 +254,7 @@ class Pool(NapModel):
         """ List pools.
         """
 
+        xmlrpc = XMLRPCConnection()
         pool_list = xmlrpc.connection.list_pool({ 'id': schema.id }, spec)
         res = list()
         for pool in pool_list:
@@ -317,6 +320,7 @@ class Prefix(NapModel):
         """ Search for prefixes.
         """
 
+        xmlrpc = XMLRPCConnection()
         pref_list = xmlrpc.connection.search_prefix({'id': schema.id}, query, search_opts)
         res = list()
         for pref in pref_list:
@@ -332,6 +336,7 @@ class Prefix(NapModel):
         """ Perform a smart prefix search.
         """
 
+        xmlrpc = XMLRPCConnection()
         try:
             pref_list = xmlrpc.connection.smart_search_prefix({ 'id': schema.id },
                 query_string, search_options)
@@ -353,6 +358,7 @@ class Prefix(NapModel):
         """ List prefixes.
         """
 
+        xmlrpc = XMLRPCConnection()
         try:
             pref_list = xmlrpc.connection.list_prefix({ 'id': schema.id }, spec)
         except xmlrpclib.Fault, f:
@@ -561,7 +567,7 @@ _fault_to_exception_map = {
 }
 
 # Create global XML-RPC connection and logger for static methods...
-xmlrpc = XMLRPCConnection("http://127.0.0.1:1337")
+xmlrpc = XMLRPCConnection()
 log = logging.getLogger("NapModel")
 
 
