@@ -31,7 +31,7 @@
 <table style="border-spacing: 0px; width: 100%;">
 	<thead class="listing">
 		<tr>
-			<th style="padding-left: 30px;">Name</th><th>Description</th><th></th>
+			<th style="padding-left: 30px;">Name</th><th>Description</th><th>VRF</th><th></th>
 		</tr>
 	</thead>
 	<tbody class="listing">
@@ -39,6 +39,7 @@
 		<tr class="schema_row" id="schema_row{{ schema.id }}">
 			<td style="padding-left: 30px;"><a href="{{ h.url(controller='prefix', action='index', schema=schema.id) }}">{{ schema.name }}</a></td>
 			<td>{{ schema.description }}</td>
+			<td>{{ schema.vrf }}</td>
 			<td>
                 {% if c.schema is defined %}
 				<a href="{{ h.url(controller="schema", action="edit", id=schema.id, schema=c.schema.id) }}">edit</a> |

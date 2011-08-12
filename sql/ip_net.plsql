@@ -18,7 +18,8 @@ CREATE TYPE priority_3step AS ENUM ('low', 'medium', 'high');
 CREATE TABLE ip_net_schema (
 	id serial PRIMARY KEY,
 	name text UNIQUE,
-	description text
+	description text,
+    vrf text UNIQUE
 );
 
 COMMENT ON TABLE ip_net_schema IS 'IP Address schemas, something like namespaces for our address plan';
@@ -67,6 +68,7 @@ CREATE TABLE ip_net_plan (
 	span_order integer,
 	authoritative_source text NOT NULL,
 	alarm_priority priority_3step NOT NULL DEFAULT 'high'
+    monitor boolean NOT NULL DEFAULT false
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';

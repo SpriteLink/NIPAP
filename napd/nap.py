@@ -24,6 +24,7 @@
     * :attr:`id` - ID number of the schema.
     * :attr:`name` - A short name, such as 'global'.
     * :attr:`description` - A longer description of what the schema is used for.
+    * :attr:`vrf` - The VRF where the addresses in the schema is used.
 
     Schema functions
     ^^^^^^^^^^^^^^^^
@@ -58,6 +59,8 @@
     * :attr:`span_order` - SPAN order number (integer).
     * :attr:`authoritative_source` - String identifying which system added the prefix.
     * :attr:`alarm_priority` - String 'low', 'medium' or 'high'. Used by netwatch.
+    * :attr:`monitor` - A boolean specifying whether the prefix should be
+        monitored or not.
     * :attr:`display` - Only set by the :func:`search_prefix` and
         :func:`smart_search_prefix` functions, see their documentation for
         explanation.
@@ -456,7 +459,7 @@ class Nap:
         if type(spec) is not dict:
             raise NapInputError("schema specification must be a dict")
 
-        allowed_values = ['id', 'name']
+        allowed_values = ['id', 'name', 'vrf']
         for a in spec:
             if a not in allowed_values:
                 raise NapExtraneousInputError("extraneous specification key %s" % a)
@@ -526,8 +529,9 @@ class Nap:
         self._logger.debug("add_schema called; attr: %s" % str(attr))
 
         # sanity check - do we have all attributes?
-        req_attr = [ 'name', 'description']
-        self._check_attr(attr, req_attr, req_attr)
+        req_attr = [ 'name', 'description' ]
+        allowed_attr = [ 'name', 'description', 'vrf' ]
+        self._check_attr(attr, req_attr, allowed_attr)
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_schema " + insert
@@ -821,7 +825,7 @@ class Nap:
             raise NapMissingInputError('missing schema')
 
         allowed_keys = ['id', 'family', 'schema',
-            'type', 'pool_name', 'pool_id', 'prefix', 'pool']
+            'type', 'pool_name', 'pool_id', 'prefix', 'pool', 'monitor']
         for key in spec.keys():
             if key not in allowed_keys:
                 raise NapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
@@ -890,6 +894,7 @@ class Nap:
             prefix_attr['span_order'] = 'span_order'
             prefix_attr['authoritative_source'] = 'authoritative_source'
             prefix_attr['alarm_priority'] = 'alarm_priority'
+            prefix_attr['monitor'] = 'monitor'
 
             if query['val1'] not in prefix_attr:
                 raise NapInputError('Search variable \'%s\' unknown' % str(query['val1']))
@@ -982,7 +987,7 @@ class Nap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'schema', 'description',
             'comment', 'pool', 'node', 'type', 'country',
-            'span_order', 'alarm_priority']
+            'span_order', 'alarm_priority', 'monitor']
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('host' not in attr):
             raise NapMissingInputError('Either description or host must be specified.')

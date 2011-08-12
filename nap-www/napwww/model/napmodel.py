@@ -68,7 +68,7 @@ class Schema(NapModel):
 
     name = None
     description = None
-
+    vrf = None
 
 
     @classmethod
@@ -85,6 +85,7 @@ class Schema(NapModel):
             s.id = schema['id']
             s.name = schema['name']
             s.description = schema['description']
+            s.vrf = schema['vrf']
             res.append(s)
 
         return res
@@ -119,6 +120,7 @@ class Schema(NapModel):
         data = {
             'name': self.name,
             'description': self.description
+            'vrf': self.vrf
         }
 
         if self.id is None:
@@ -283,6 +285,7 @@ class Prefix(NapModel):
     span_order = None
     authoritative_source = None
     alarm_priority = None
+    monitor = None
     display = True
     match = False
 
@@ -387,6 +390,7 @@ class Prefix(NapModel):
             'span_order': self.span_order,
             'authoritative_source': self.authoritative_source,
             'alarm_priority': self.alarm_priority
+            'monitor': self.monitor
         }
 
         # Prefix can be none if we are creating a new prefix
@@ -470,6 +474,7 @@ class Prefix(NapModel):
         p.span_order = pref['span_order']
         p.authoritative_source = pref['authoritative_source']
         p.alarm_priority = pref['alarm_priority']
+        p.monitor = pref['monitor']
         if 'match' in pref:
             p.match = pref['match']
         if 'display' in pref:

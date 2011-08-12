@@ -45,6 +45,7 @@ class SchemaController(BaseController):
             if request.params['action'] == 'edit':
                 c.edit_schema.name = request.params['name']
                 c.edit_schema.description = request.params['description']
+                c.edit_schema.vrf = request.params['vrf']
                 c.edit_schema.save()
 
                 if hasattr(c, 'schema'):
