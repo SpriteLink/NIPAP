@@ -1,5 +1,5 @@
 {% if c.action == 'edit' %}
-<form method="post" action="{{ h.url(controller="schema", action="edit", id=c.schema.id) }}">
+<form method="post" action="{{ h.url(controller="schema", action="edit", id=c.edit_schema.id) }}">
 {% else %}
 <form method="post" action="{{ h.url(controller="schema", action="add") }}">
 {% endif %}
@@ -7,7 +7,7 @@
 
 <div class="options-group">
 	<div class="options-content">
-		<h3 class="options-group-heading">Properties of {% if c.action == 'edit' %}schema: {{ c.schema.name }} {% else %}new schema{% endif %}</h3>
+		<h3 class="options-group-heading">Properties of {% if c.action == 'edit' %}schema: {{ c.edit_schema.name }} {% else %}new schema{% endif %}</h3>
 
 		<div class="option">
 			<dl>
@@ -15,7 +15,7 @@
 					Name
 				</dt>
 				<dd>
-					<input type="text" name="name" value="{%- if c.action == 'edit' %}{{ c.schema.name|default('') }}{%- endif %}" class="tooltip" title="Name of the schema. Try to use less than 20 characters and no spaces."> <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+					<input type="text" name="name" value="{%- if c.action == 'edit' %}{{ c.edit_schema.name|default('') }}{%- endif %}" class="tooltip" title="Name of the schema. Try to use less than 20 characters and no spaces."> <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
 				</dd>
 			</dl>
 		</div>
@@ -28,7 +28,7 @@
 					Description
 				</dt>
 				<dd>
-					<input type="text" style="width: 100%;" name="description" value="{%- if c.action == 'edit' -%}{{ c.schema.description }}{%- endif -%}" class="tooltip" title="Enter a short description of what this schema is used for.">
+					<input type="text" style="width: 100%;" name="description" value="{%- if c.action == 'edit' -%}{{ c.edit_schema.description }}{%- endif -%}" class="tooltip" title="Enter a short description of what this schema is used for.">
 				</dd>
 			</dl>
 		</div>
@@ -39,6 +39,9 @@
 			<dl>
 				<dt></dt>
 				<dd>
+                    {% if c.schema is defined %}
+                    <input type="hidden" name="schema" value="{{ c.schema.id }}">
+                    {% endif %}
 					<input class="button button_green" type="submit" value="{% if c.action == 'edit' %}Save schema{% else %}Add schema{% endif %}">
 				</dd>
 			</dl>

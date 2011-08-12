@@ -33,17 +33,28 @@ class SchemaController(BaseController):
         """ Edit a schema
         """
 
+        if 'schema' in request.params:
+            c.schema = Schema.get(int(request.params['schema']))
+
         c.action = 'edit'
-        c.schema = Schema.get(int(id))
+        c.edit_schema = Schema.get(int(id))
 
         # Did we have any action passed to us?
         if 'action' in request.params:
 
             if request.params['action'] == 'edit':
-                c.schema.name = request.params['name']
-                c.schema.description = request.params['description']
-                c.schema.save()
-                redirect(url(controller='schema', action='list'))
+                c.edit_schema.name = request.params['name']
+                c.edit_schema.description = request.params['description']
+                c.edit_schema.save()
+
+                if hasattr(c, 'schema'):
+                    r_url = url(controller='schema', action='list', schema=c.schema.id)
+                    log.error('Has schema')
+                else:
+                    log.error('No schema')
+                    r_url = url(controller='schema', action='list')
+
+                redirect(r_url)
 
         return render('/schema_edit.html')
 
