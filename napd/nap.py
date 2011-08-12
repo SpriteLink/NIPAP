@@ -621,7 +621,7 @@ class Nap:
 
         # sanity check - do we have all attributes?
         req_attr = [ 'name', 'description']
-        allowed_attr = [ 'name', 'description' ]
+        allowed_attr = [ 'name', 'description', 'vrf' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
         where, params1 = self._expand_schema_spec(spec)

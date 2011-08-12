@@ -41,7 +41,7 @@
 					VRF
 				</dt>
 				<dd>
-					<input type="text" style="width: 100%;" name="vrf" value="{%- if c.action == 'edit' -%}{{ c.edit_schema.vrf }}{%- endif -%}" class="tooltip" title="The VRF where the schema's addresses resides..">
+					<input type="text" style="width: 100%;" name="vrf" value="{%- if c.action == 'edit' -%}{{ c.edit_schema.vrf|default('') }}{%- endif -%}" class="tooltip" title="The VRF where the schema's addresses resides.">
 				</dd>
 			</dl>
 		</div>

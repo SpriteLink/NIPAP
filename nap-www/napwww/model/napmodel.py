@@ -119,7 +119,7 @@ class Schema(NapModel):
 
         data = {
             'name': self.name,
-            'description': self.description
+            'description': self.description,
             'vrf': self.vrf
         }
 
@@ -389,7 +389,7 @@ class Prefix(NapModel):
             'country': self.country,
             'span_order': self.span_order,
             'authoritative_source': self.authoritative_source,
-            'alarm_priority': self.alarm_priority
+            'alarm_priority': self.alarm_priority,
             'monitor': self.monitor
         }
 
