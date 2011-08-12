@@ -1542,6 +1542,7 @@ class Nap:
                 if prefix != strict_prefix:
                     query_str_part['strict_prefix'] = strict_prefix
 
+                query_str_part['operator'] = 'contained_within_equals'
                 query_parts.append({
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
@@ -1554,6 +1555,7 @@ class Nap:
             elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('.')) == 4:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
                 query_str_part['interpretation'] = 'IPv4 address'
+                query_str_part['operator'] = 'equals'
                 query_parts.append({
                     'operator': 'equals',
                     'val1': 'prefix',
@@ -1564,6 +1566,7 @@ class Nap:
             elif self._get_afi(query_str_part['string']) == 6 and len(query_str_part['string'].split('/')) == 2:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 prefix")
                 query_str_part['interpretation'] = 'IPv6 prefix'
+                query_str_part['operator'] = 'contained_within_equals'
                 query_parts.append({
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
@@ -1574,6 +1577,7 @@ class Nap:
             elif self._get_afi(query_str_part['string']) == 6:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 address")
                 query_str_part['interpretation'] = 'IPv6 address'
+                query_str_part['operator'] = 'equals'
                 query_parts.append({
                     'operator': 'equals',
                     'val1': 'prefix',
@@ -1584,6 +1588,7 @@ class Nap:
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as desc/comment")
                 query_str_part['interpretation'] = 'description'
+                query_str_part['operator'] = 'regex'
                 query_parts.append({
                     'operator': 'or',
                     'val1': {
