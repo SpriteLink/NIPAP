@@ -14,7 +14,7 @@
 
         // register events
         $("form").submit(function(e) {
-            performPrefixSearch();
+            performPrefixSearch(true);
             e.preventDefault();
         });
         $("#query_string").keyup(performPrefixSearch);

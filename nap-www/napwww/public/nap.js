@@ -92,7 +92,7 @@ function displayNotice(title, msg) {
  * Remove notice popup.
  */
 function removeNotice() {
-	
+
 	$("#notice_dialog").fadeOut(200);
 	$(".fade_bg").fadeOut(200);
 	window.setTimeout(function() { $("#notice_dialog").remove(); }, 200);
@@ -123,7 +123,7 @@ function displayVerify(msg, url) {
 	$("#verify_dialog").fadeIn(200);
 
 	return false;
-	
+
 }
 
 /*
@@ -200,7 +200,10 @@ function collapseGroup(id) {
 /*
  * Perform a search operation
  */
-function performPrefixSearch() {
+function performPrefixSearch(explicit) {
+	if (explicit != true) {
+		explicit = false;
+	}
 
 	// Skip search if query string empty
 	if (jQuery.trim($('#query_string').val()).length < 1) {
@@ -209,7 +212,7 @@ function performPrefixSearch() {
 		return true;
 	}
 	// Skip search if it's the currently rendered or outstanding query string
-	if ($('#query_string').val() == current_query) {
+	if ($('#query_string').val() == current_query && explicit == false) {
 		return true;
 	}
 	current_query = $('#query_string').val();
