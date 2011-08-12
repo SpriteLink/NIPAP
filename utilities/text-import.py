@@ -178,7 +178,7 @@ class TextImporter(Importer):
                 p1.prefix = prefix_node1
                 p1.type = 'host'
                 p1.node = node1
-                p2.description = node1
+                p1.description = node1
                 p1.authoritative_source = 'nw'
                 p1.alarm_priority = 'low'
                 p1.save({})
