@@ -424,6 +424,8 @@ class Prefix(NapModel):
                 p = self._xmlrpc.connection.list_prefix({'id': self.schema.id}, {'id': self.id})[0]
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
+            except IndexError:
+                raise NapNonExistantError('Added prefix not found.')
             self.prefix = p['prefix']
             self.indent = p['indent']
             self.family = p['family']
