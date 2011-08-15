@@ -204,7 +204,7 @@
 						Description
 					</dt>
 					<dd>
-						<input type="text" name="prefix_description">
+						<input type="text" name="prefix_description" class="tooltip" title="A brief description of the prefix.">
 					</dd>
 				</dl>
 			</div>
@@ -217,7 +217,7 @@
 						Node&nbsp;FQDN
 					</dt>
 					<dd>
-						<input type="text" name="prefix_node" class="tooltip" title="FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'">
+						<input type="text" name="prefix_node" class="tooltip" title="FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'ams-rtr-1.example.com'">
 					</dd>
 				</dl>
 			</div>
@@ -230,7 +230,7 @@
 						Country
 					</dt>
 					<dd>
-						<input type="text" name="prefix_country" class="tooltip" title="Two-letter country code according to <a href='http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements ISO-3166-1'">
+						<input type="text" name="prefix_country" class="tooltip" title="Two-letter country code according to ISO-3166-1">
 					</dd>
 				</dl>
 			</div>
@@ -249,18 +249,18 @@
 			</div>
 
 			<div class="rule"></div>
-
 			<div class="option">
 				<dl>
 					<dt>
 						Alarm&nbsp;priority
 					</dt>
 					<dd>
-						<select name="prefix_alarm_priority">
-							<option value="low">low
-							<option value="medium">medium
-							<option value="high">high
-						</select>
+						<input id="radio-prefix-alarmprio-reservation" type="radio" name="prefix_alarm_priority" value="low">
+						<label for="radio-prefix-alarmprio-reservation">Low</label>
+						<input id="radio-prefix-alarmprio-assignment" type="radio" name="prefix_alarm_priority" value="medium">
+						<label for="radio-prefix-alarmprio-assignment">Medium</label>
+						<input id="radio-prefix-alarmprio-host" type="radio" name="prefix_alarm_priority" value="high">
+						<label for="radio-prefix-type-host">High</label>
 					</dd>
 				</dl>
 			</div>
