@@ -1462,9 +1462,9 @@ class Nap:
             JOIN ip_net_plan AS p2 ON
             (
                 (
-                    (p2.prefix <<= p1.prefix """ + where_parents + """)
+                    (iprange(p2.prefix) <<= iprange(p1.prefix) """ + where_parents + """)
                     OR
-                    (p2.prefix >>= p1.prefix """ + where_children + """)
+                    (iprange(p2.prefix) >>= iprange(p1.prefix) """ + where_children + """)
                 )
                 AND
                 (p1.schema = p2.schema)
