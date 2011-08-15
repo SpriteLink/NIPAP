@@ -324,11 +324,11 @@ class Prefix(NapModel):
         xmlrpc = XMLRPCConnection()
         search_result = xmlrpc.connection.search_prefix({'id': schema.id}, query, search_opts)
         result = dict()
-        result['result'] = []
+        result['prefix_list'] = []
         result['search_options'] = search_result['search_options']
         for prefix in search_result['prefix_list']:
             p = Prefix.from_dict(prefix)
-            result['result'].append(p)
+            result['prefix_list'].append(p)
 
         return result
 
