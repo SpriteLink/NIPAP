@@ -622,6 +622,23 @@ function showAllocContainer(e) {
 }
 
 
+
+/*
+ * Run whenever the prefix monitor checkbox is toggled.
+ * Makes sure that the alarm priority select box is shown when
+ * it should be.
+ */
+function prefixMonitorToggled() {
+
+	if ($('input[name="prefix_monitor"]').is(":checked")) {
+		$("#alarm_priority_container").show();
+	} else {
+		$("#alarm_priority_container").hide();
+	}
+
+}
+
+
 /*
  * Is run when the adress family is changed
  */
@@ -721,12 +738,13 @@ function prefixFormSubmit(e) {
 		'country': $('input[name="prefix_country"]').val(),
 		'span_order': $('input[name="prefix_span_order"]').val(),
 		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
+        'monitor': $('input[name="prefix_monitor"]').val(),
 	};
 
-    // Add pool to prefix data if it is available
-    if (typeof pool_id != "undefined") {
-        prefix_data.pool = pool_id;
-    }
+	// Add pool to prefix data if it is available
+	if (typeof pool_id != "undefined") {
+		prefix_data.pool = pool_id;
+	}
 
 	// different data due to different allocation methods
 	if (alloc_method == 'from-pool') {

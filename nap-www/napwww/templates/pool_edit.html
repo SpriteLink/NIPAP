@@ -130,6 +130,8 @@
         $('input[name="edit_length"]').change(toggleLengthEdit);
         $('input[name="prefix_family"]').change(changeFamily);
 
+        $('input[name="prefix_monitor"]').change(prefixMonitorToggled);
+        prefixMonitorToggled();
 
         // catch submit actions
         $('#prefix_data_form').submit(prefixFormSubmit);

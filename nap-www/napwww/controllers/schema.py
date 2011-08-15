@@ -45,13 +45,15 @@ class SchemaController(BaseController):
             if request.params['action'] == 'edit':
                 c.edit_schema.name = request.params['name']
                 c.edit_schema.description = request.params['description']
+                if request.params['vrf'].strip() == '':
+                    c.edit_schema.vrf = None
+                else:
+                    c.edit_schema.vrf = request.params['vrf']
                 c.edit_schema.save()
 
                 if hasattr(c, 'schema'):
                     r_url = url(controller='schema', action='list', schema=c.schema.id)
-                    log.error('Has schema')
                 else:
-                    log.error('No schema')
                     r_url = url(controller='schema', action='list')
 
                 redirect(r_url)

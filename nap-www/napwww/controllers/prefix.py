@@ -87,16 +87,20 @@ class PrefixController(BaseController):
 
         # we got a HTTP POST - edit object
         if request.method == 'POST':
-            c.prefix.prefix = request.params['prefix']
-            c.prefix.description = request.params['description']
-            c.prefix.node = request.params['node']
-            c.prefix.country = request.params['country']
-            c.prefix.alarm_priority = request.params['alarm_priority']
-            c.prefix.comment = request.params['comment']
-            if request.params['span_order'] == '':
+            c.prefix.prefix = request.params['prefix_prefix']
+            c.prefix.description = request.params['prefix_description']
+            c.prefix.node = request.params['prefix_node']
+            c.prefix.country = request.params['prefix_country']
+            c.prefix.alarm_priority = request.params['prefix_alarm_priority']
+            c.prefix.comment = request.params['prefix_comment']
+            if request.params['prefix_span_order'] == '':
                 c.prefix.span_order = None
             else:
-                c.prefix.span_order = int(request.params['span_order'])
+                c.prefix.span_order = int(request.params['prefix_span_order'])
+            if request.params.get('prefix_monitor') != None:
+                c.prefix.monitor = True
+            else:
+                c.prefix.monitor = False
             c.prefix.save()
             redirect(url(controller='prefix', action='list', schema=c.schema.id))
 

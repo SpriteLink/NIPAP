@@ -18,7 +18,8 @@ CREATE TYPE priority_3step AS ENUM ('low', 'medium', 'high');
 CREATE TABLE ip_net_schema (
 	id serial PRIMARY KEY,
 	name text UNIQUE,
-	description text
+	description text,
+	vrf text UNIQUE
 );
 
 COMMENT ON TABLE ip_net_schema IS 'IP Address schemas, something like namespaces for our address plan';
@@ -66,7 +67,8 @@ CREATE TABLE ip_net_plan (
 	country text,
 	span_order integer,
 	authoritative_source text NOT NULL,
-	alarm_priority priority_3step NOT NULL DEFAULT 'high'
+	alarm_priority priority_3step NOT NULL DEFAULT 'high',
+	monitor boolean NOT NULL DEFAULT false
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
@@ -84,6 +86,7 @@ COMMENT ON COLUMN ip_net_plan.country IS 'ISO3166-1 two letter country code';
 COMMENT ON COLUMN ip_net_plan.span_order IS 'SPAN order';
 COMMENT ON COLUMN ip_net_plan.authoritative_source IS 'The authoritative source for information regarding this prefix';
 COMMENT ON COLUMN ip_net_plan.alarm_priority IS 'Priority of alarms sent for this prefix to NetWatch.';
+COMMENT ON COLUMN ip_net_plan.monitor IS 'Whether the prefix should be monitored or not.';
 
 CREATE UNIQUE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, prefix);
 CREATE INDEX ip_net_plan__prefix__ip4r_index ON ip_net_plan USING gist (ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL::cidr END));

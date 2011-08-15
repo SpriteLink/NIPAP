@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% set page = 'prefixes' %}
 
+{% block head %}
+    <script>
+
+        $(function() {
+            $('input[name="prefix_monitor"]').change(prefixMonitorToggled);
+            prefixMonitorToggled();
+        });
+
+    </script>
+{% endblock %}
+
 {% block content %}
 
 <h2>Edit {{ c.prefix.type }} {{ c.prefix.prefix }}</h2>
@@ -12,52 +23,116 @@
 -->
 <div id="prefix_data_container" style="padding: 15px;">
 <form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="edit", id=c.prefix.id, schema=c.schema.id) }}">
-<table>
-    <tr>
-        <td>Prefix</td>
-        <td><input type="text" name="prefix" value="{{ c.prefix.prefix }}"></td>
-        <td class="help-text">192.0.2.16/28</td>
-    </tr>
-    <tr>
-        <td>Description</td>
-        <td><input type="text" name="description" value="{{ c.prefix.description|default("", True) }}"></td>
-        <td class="help-text">A short text describing the prefix.</td>
-    </tr>
-    <tr>
-        <td>Node</td>
-        <td> <input type="text" name="node" value="{{ c.prefix.node|default("", True) }}"> </td>
-        <td class="help-text">Hostname of the node where the prefix is in use.</td>
-    </tr>
-    <tr>
-        <td>Country</td>
-        <td><input type="text" name="country" value="{{ c.prefix.country|default("", True) }}"></td>
-        <td class="help-text">Two-letter country code according to ISO-3166-1</td>
-    </tr>
-    <tr>
-        <td>SPAN order</td>
-        <td><input type="text" name="span_order" value="{{ c.prefix.span_order|default("", True) }}"></td>
-        <td class="help-text"></td>
-    </tr>
-    <tr>
-        <td>Alarm priority</td>
-        <td>
-            {{ h.select("alarm_priority", c.prefix.alarm_priority, ['low', 'medium', 'high']) }}
-        </td>
-        <td class="help-text"></td>
-    </tr>
-    <tr>
-        <td>Comment</td>
-        <td colspan="2"><textarea rows="10" cols="72" name="comment">{{ c.prefix.comment|default("", True) }}</textarea></td>
-    </tr>
-    <tr>
-        <td>&nbsp;</td>
-        <td>
-            <input type="hidden" name="id" value="{{ c.prefix.id }}">
-            <input class="button button_green" type="submit" value="Edit">
-        </td>
-        <td>&nbsp;</td>
-    </tr>
-</table>
+    <div class="options-group">
+        <div class="options-content">
+            <div class="option">
+                <dl>
+                    <dt>Prefix</dt>
+                    <dd><input type="text" name="prefix_prefix" value="{{ c.prefix.prefix }}" class="tooltip" title="The prefix, i.e. 192.0.2.16/28"></dd>
+                </dl>
+            </div>
+
+            <div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Description
+					</dt>
+					<dd>
+						<input type="text" name="prefix_description" value="{{ c.prefix.description or '' }}">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Node&nbsp;FQDN
+					</dt>
+					<dd>
+						<input type="text" name="prefix_node" value="{{ c.prefix.node or '' }}" class="tooltip" title="FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Country
+					</dt>
+					<dd>
+						<input type="text" name="prefix_country" value="{{ c.prefix.country or '' }}" class="tooltip" title="Two-letter country code according to <a href='http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements ISO-3166-1'">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						SPAN order
+					</dt>
+					<dd>
+						<input type="text" name="prefix_span_order" value="{{ c.prefix.span_order or '' }}">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Monitor
+					</dt>
+					<dd style="height: 20px; line-height: 20px;">
+                        <input type="checkbox" name="prefix_monitor" value="true"{% if c.prefix.monitor == True %} checked{% endif %}>
+                        <span id="alarm_priority_container">
+                            Priority:
+                            <input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low"{% if c.prefix.alarm_priority == 'low' %} checked{% endif %}>
+                            <label for="radio-prefix-alarm-prio-low">low</label>
+                            <input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium"{% if c.prefix.alarm_priority == 'medium' %} checked{% endif %}>
+                            <label for="radio-prefix-alarm-prio-medium">medium</label>
+                            <input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high"{% if c.prefix.alarm_priority == 'high' %} checked{% endif %}>
+                            <label for="radio-prefix-alarm-prio-high">high</label>
+                        </span>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Comment
+					</dt>
+					<dd>
+						<input type="text" name="prefix_comment" value="{{ c.prefix.comment or '' }}">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+					</dt>
+					<dd>
+                        <input type="hidden" name="id" value="{{ c.prefix.id }}">
+						<input class="button button_green" type="submit" value="Save">
+					</dd>
+				</dl>
+			</div>
+        </div>
+    <div>
 </form>
 
 </div>

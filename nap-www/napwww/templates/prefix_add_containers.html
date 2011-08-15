@@ -252,15 +252,19 @@
 			<div class="option">
 				<dl>
 					<dt>
-						Alarm&nbsp;priority
+						Monitor
 					</dt>
 					<dd>
-						<input id="radio-prefix-alarmprio-reservation" type="radio" name="prefix_alarm_priority" value="low">
-						<label for="radio-prefix-alarmprio-reservation">Low</label>
-						<input id="radio-prefix-alarmprio-assignment" type="radio" name="prefix_alarm_priority" value="medium">
-						<label for="radio-prefix-alarmprio-assignment">Medium</label>
-						<input id="radio-prefix-alarmprio-host" type="radio" name="prefix_alarm_priority" value="high">
-						<label for="radio-prefix-type-host">High</label>
+                        <input type="checkbox" name="prefix_monitor" value="true">
+                        <span id="alarm_priority_container">
+                            Priority:
+                            <input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low">
+                            <label for="radio-prefix-alarm-prio-low">low</label>
+                            <input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium">
+                            <label for="radio-prefix-alarm-prio-medium">medium</label>
+                            <input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high">
+                            <label for="radio-prefix-alarm-prio-high">high</label>
+                        </span>
 					</dd>
 				</dl>
 			</div>
