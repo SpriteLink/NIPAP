@@ -253,14 +253,11 @@
 			<div class="option">
 				<dl>
 					<dt>
-						Alarm&nbsp;priority
+						Monitor
 					</dt>
 					<dd>
-						<select name="prefix_alarm_priority">
-							<option value="low">low
-							<option value="medium">medium
-							<option value="high">high
-						</select>
+                        <input type="checkbox" name="prefix_monitor" value="true">
+                        <span id="alarm_priority_container"><label for="select-alarm-prio">Priority {{ h.select("prefix_alarm_priority", None, ['low', 'medium', 'high'], 'select-alarm-prio') }}</span>
 					</dd>
 				</dl>
 			</div>

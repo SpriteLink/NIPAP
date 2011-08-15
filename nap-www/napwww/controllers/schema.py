@@ -45,7 +45,7 @@ class SchemaController(BaseController):
             if request.params['action'] == 'edit':
                 c.edit_schema.name = request.params['name']
                 c.edit_schema.description = request.params['description']
-                if request.params['vrf'] == '':
+                if request.params['vrf'].strip() == '':
                     c.edit_schema.vrf = None
                 else:
                     c.edit_schema.vrf = request.params['vrf']

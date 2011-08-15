@@ -1021,7 +1021,7 @@ class Nap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool', 'node', 'type', 'country',
-            'span_order', 'alarm_priority']
+            'span_order', 'alarm_priority', 'monitor' ]
 
         self._check_attr(attr, [], allowed_attr)
 

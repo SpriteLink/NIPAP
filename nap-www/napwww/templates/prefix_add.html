@@ -43,6 +43,9 @@ $(function () {
     // Enable action on the adress family select box
     $('input[name="family"]').change(changeFamily);
 
+    $('input[name="prefix_monitor"]').change(prefixMonitorToggled);
+    prefixMonitorToggled();
+
     // catch submit actions
     $('#prefix_data_form').submit(prefixFormSubmit);
 

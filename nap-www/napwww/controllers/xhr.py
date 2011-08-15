@@ -214,6 +214,7 @@ class XhrController(BaseController):
             country         Country where the prefix is used
             span_order      SPAN order number
             alarm_priority  Alarm priority of prefix
+            monitor         If the prefix should be monitored or not
 
             from-prefix     A prefix the prefix is to be allocated from
             from-pool       A pool (ID) the prefix is to be allocated from
@@ -246,6 +247,11 @@ class XhrController(BaseController):
                 p.span_order = request.params['span_order']
         if 'alarm_priority' in request.params:
             p.alarm_priority = request.params['alarm_priority']
+        if 'monitor' in request.params:
+            if request.params['monitor'] == 'true':
+                p.monitor = True
+            else:
+                p.monitor = False
         p.authoritative_source = 'nap-www'
 
         log.debug('request: %s' % str(request.params))
