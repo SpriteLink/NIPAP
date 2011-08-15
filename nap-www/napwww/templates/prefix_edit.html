@@ -91,9 +91,17 @@
 					<dt>
 						Monitor
 					</dt>
-					<dd>
+					<dd style="height: 20px; line-height: 20px;">
                         <input type="checkbox" name="prefix_monitor" value="true"{% if c.prefix.monitor == True %} checked{% endif %}>
-                        <span id="alarm_priority_container"><label for="select-alarm-prio">Priority {{ h.select("prefix_alarm_priority", c.prefix.alarm_priority, ['low', 'medium', 'high'], 'select-alarm-prio') }}</span>
+                        <span id="alarm_priority_container">
+                            Priority:
+                            <input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low"{% if c.prefix.alarm_priority == 'low' %} checked{% endif %}>
+                            <label for="radio-prefix-alarm-prio-low">low</label>
+                            <input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium"{% if c.prefix.alarm_priority == 'medium' %} checked{% endif %}>
+                            <label for="radio-prefix-alarm-prio-medium">medium</label>
+                            <input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high"{% if c.prefix.alarm_priority == 'high' %} checked{% endif %}>
+                            <label for="radio-prefix-alarm-prio-high">high</label>
+                        </span>
 					</dd>
 				</dl>
 			</div>

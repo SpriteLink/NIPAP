@@ -257,7 +257,15 @@
 					</dt>
 					<dd>
                         <input type="checkbox" name="prefix_monitor" value="true">
-                        <span id="alarm_priority_container"><label for="select-alarm-prio">Priority {{ h.select("prefix_alarm_priority", None, ['low', 'medium', 'high'], 'select-alarm-prio') }}</span>
+                        <span id="alarm_priority_container">
+                            Priority:
+                            <input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low">
+                            <label for="radio-prefix-alarm-prio-low">low</label>
+                            <input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium">
+                            <label for="radio-prefix-alarm-prio-medium">medium</label>
+                            <input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high">
+                            <label for="radio-prefix-alarm-prio-high">high</label>
+                        </span>
 					</dd>
 				</dl>
 			</div>

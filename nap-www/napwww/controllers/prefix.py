@@ -85,8 +85,6 @@ class PrefixController(BaseController):
         # find prefix
         c.prefix = Prefix.get(c.schema, int(id))
 
-        log.error('Input data: %s' % (request.params))
-
         # we got a HTTP POST - edit object
         if request.method == 'POST':
             c.prefix.prefix = request.params['prefix_prefix']

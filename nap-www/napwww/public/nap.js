@@ -729,7 +729,7 @@ function prefixFormSubmit(e) {
 		'type': $('input[name="prefix_type"]:checked').val(),
 		'country': $('input[name="prefix_country"]').val(),
 		'span_order': $('input[name="prefix_span_order"]').val(),
-		'alarm_priority': $('select[name="prefix_alarm_priority"] option:selected').val(),
+		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
         'monitor': $('input[name="prefix_monitor"]').val(),
 	};
 
