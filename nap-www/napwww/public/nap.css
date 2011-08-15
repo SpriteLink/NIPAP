@@ -414,6 +414,16 @@ input[type="submit"] {
     float: left;
 }
 
+.prefix_node {
+    width: 150px;
+    float: left;
+}
+
+.prefix_span_order {
+    width: 80px;
+    float: left;
+}
+
 .prefix_description {
     width: 100%;
     clear: right;
