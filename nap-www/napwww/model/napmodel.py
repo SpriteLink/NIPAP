@@ -326,7 +326,7 @@ class Prefix(NapModel):
         result = dict()
         result['result'] = []
         result['search_options'] = search_result['search_options']
-        for prefix in result['prefix_list']:
+        for prefix in search_result['prefix_list']:
             p = Prefix.from_dict(prefix)
             result['result'].append(p)
 
