@@ -42,6 +42,8 @@ var current_query = '';
 var query_id = 0;
 var newest_query = 0;
 
+var offset = 0;
+var outstanding_nextpage = 0;
 
 /**
  * A general log function
@@ -241,11 +243,38 @@ function performPrefixSearch(explicit) {
 		'offset': 0
 	}
 	query_id += 1;
+	offset = 0;
 
 	$('#prefix_list').empty();
 
 	showLoadingIndicator($('#prefix_list'));
 	$.getJSON("/xhr/smart_search_prefix", search_q, receivePrefixList);
+
+}
+
+function performPrefixNextPage () {
+	if (outstanding_nextpage == 1) {
+		return;
+	}
+	outstanding_nextpage = 1;
+
+	offset += 49;
+
+	var search_q = {
+		'query_id': query_id,
+		'query_string': current_query,
+		'schema': schema_id,
+		'parents_depth': optToDepth($('input[name="search_opt_parent"]:checked').val()),
+		'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
+		'include_all_parents': 'true',
+		'include_all_children': 'false',
+		'max_result': 50,
+		'offset': offset
+	}
+	query_id += 1;
+
+	log("Getting next page, offset: " + offset);
+	$.getJSON("/xhr/smart_search_prefix", search_q, receivePrefixListNextPage);
 
 }
 
@@ -496,6 +525,32 @@ function receivePrefixListUpdate(search_result, link_type) {
 
 
 /*
+ * Receive the "next page" of a prefix list
+ */
+function receivePrefixListNextPage(search_result) {
+	pref_list = search_result.prefix_list
+
+	// Zero result elements. Should not happen as we at least always should
+	// get the prefix we select to list, even if it has no children.
+	if (pref_list.length == 0) {
+
+		// TODO: Display notice dialog?
+		log('Warning: no prefixes returned from list operation.');
+		return true;
+
+	// One result element (the prefix we searched for)
+	} else if (pref_list.length == 1) {
+		return true;
+	}
+
+	insertPrefixList(pref_list.slice(1), indent_head[pref_list[1].indent], pref_list[0]);
+
+	outstanding_nextpage = 0;
+
+}
+
+
+/*
  * Translate form search options to depth levels
  */
 function optToDepth(opt) {
@@ -544,7 +599,6 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 		// Has indent level increased?
 		if (prefix.indent > prev_prefix.indent) {
-
 			expandGroup(prev_prefix.id);
 			prev_prefix.has_children = -1;
 		}
