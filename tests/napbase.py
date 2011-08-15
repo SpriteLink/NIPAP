@@ -477,7 +477,7 @@ class NapTest(unittest.TestCase):
 
         self.nap.add_prefix(schema, prefix_attrs)
         res = self.nap.smart_search_prefix(schema, r"""1.3.3.77 "-ish" """)
-        self.assertEqual(res['result'][-1]['prefix'], '1.3.3.77/32', 'Prefix not found')
+        self.assertEqual(res['prefix_list'][-1]['prefix'], '1.3.3.77/32', 'Prefix not found')
 
 
 
@@ -491,7 +491,7 @@ class NapTest(unittest.TestCase):
         self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 address')
 
         res = self.nap.smart_search_prefix(schema, '1.1')
-        self.assertEqual(res['interpretation'][0]['interpretation'], 'description', "Incorrectly interpreted '1.1' as : " + res['interpretation'][0]['interpretation'])
+        self.assertEqual(res['interpretation'][0]['interpretation'], 'text', "Incorrectly interpreted '1.1' as : " + res['interpretation'][0]['interpretation'])
 
         res = self.nap.smart_search_prefix(schema, '10/8')
         self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 prefix')

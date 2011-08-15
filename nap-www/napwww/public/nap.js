@@ -39,6 +39,8 @@ var prefix_link_type = 'edit';
 var max_prefix_length = [32, 128];
 
 var current_query = '';
+var query_id = 0;
+var newest_query = 0;
 
 
 /**
@@ -228,6 +230,7 @@ function performPrefixSearch(explicit) {
 	stats.last_state = 1;
 
 	var search_q = {
+		'query_id': query_id,
 		'query_string': $('#query_string').val(),
 		'schema': schema_id,
 		'parents_depth': optToDepth($('input[name="search_opt_parent"]:checked').val()),
@@ -237,6 +240,7 @@ function performPrefixSearch(explicit) {
 		'max_result': 50,
 		'offset': 0
 	}
+	query_id += 1;
 
 	$('#prefix_list').empty();
 
@@ -340,9 +344,17 @@ function showPrefix(prefix, parent_container) {
  * Callback function called when prefixes are received.
  * Plots prefixes and adds them to list.
  */
-function receivePrefixList(pref_list) {
-
+function receivePrefixList(search_result) {
 	stats.response_received = new Date().getTime();
+
+	if (! ('query_id' in search_result.search_options)) {
+		displayNotice("Error", 'No query_id');
+		return;
+	}
+	if (parseInt(search_result.search_options.query_id) < parseInt(newest_query)) {
+		return;
+	}
+	newest_query = parseInt(search_result.search_options.query_id);
 
 	// Keep track of search state
 	if (stats.last_state != 1) {
@@ -351,8 +363,8 @@ function receivePrefixList(pref_list) {
 	stats.last_state = 2;
 
 	// Error?
-	if ('error' in pref_list) {
-		displayNotice("Error", pref_list.message);
+	if ('error' in search_result) {
+		displayNotice("Error", search_result.message);
 		return;
 	}
 
@@ -361,9 +373,9 @@ function receivePrefixList(pref_list) {
 	 */
 	var intp_cont = $("#search_interpret_container");
 	intp_cont.empty();
-	for (key in pref_list.interpretation) {
+	for (key in search_result.interpretation) {
 
-		var interp = pref_list.interpretation[key];
+		var interp = search_result.interpretation[key];
 		var text = '<b>' + interp.string + ':</b> ' + interp.interpretation;
 		var tooltip = '';
 		if (interp.attribute == 'prefix' && interp.operator == 'contained_within_equals') {
@@ -402,10 +414,10 @@ function receivePrefixList(pref_list) {
 	prefix_list = new Object();
 	indent_head = new Object();
 
-	if (pref_list.result.length > 0) {
+	if (search_result.prefix_list.length > 0) {
 
 		// insert prefix list
-		insertPrefixList(pref_list.result, $("#prefix_list"), pref_list.result[0]);
+		insertPrefixList(search_result.prefix_list, $("#prefix_list"), search_result.prefix_list[0]);
 
 	} else {
 
@@ -432,12 +444,8 @@ function receivePrefixList(pref_list) {
 /*
  * Receive an updated prefix list
  */
-function receivePrefixListUpdate(pref_list, link_type) {
-
-	// handle different return data from search and smart_search
-	if ('result' in pref_list) {
-		pref_list = pref_list.result;
-	}
+function receivePrefixListUpdate(search_result, link_type) {
+	pref_list = search_result.prefix_list
 
 	// Zero result elements. Should not happen as we at least always should
 	// get the prefix we select to list, even if it has no children.

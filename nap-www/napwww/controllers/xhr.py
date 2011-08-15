@@ -138,11 +138,11 @@ class XhrController(BaseController):
 
         try:
             schema = Schema.get(int(request.params['schema']))
-            prefixes = Prefix.search(schema, q, search_opts)
+            result = Prefix.search(schema, q, search_opts)
         except NapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(prefixes, cls=NapJSONEncoder)
+        return json.dumps(result, cls=NapJSONEncoder)
 
 
 
@@ -155,6 +155,9 @@ class XhrController(BaseController):
         """
 
         search_options = {}
+
+        if 'query_id' in request.params:
+            search_options['query_id'] = request.params['query_id']
 
         if 'include_all_parents' in request.params:
             if request.params['include_all_parents'] == 'true':
