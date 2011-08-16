@@ -135,7 +135,7 @@ BEGIN
 			IF parent.type != 'assignment' THEN
 				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''assignment''', parent.prefix, parent.type;
 			END IF;
-			NEW.display_prefix := set_masklen(NEW.prefix, masklen(parent.prefix));
+			NEW.display_prefix := set_masklen(NEW.prefix::inet, masklen(parent.prefix));
 		ELSIF NEW.type = 'assignment' THEN
 			IF parent.type IS NULL THEN
 				-- all good
