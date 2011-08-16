@@ -44,6 +44,7 @@ var newest_query = 0;
 
 var offset = 0;
 var outstanding_nextpage = 0;
+var end_of_result = 0;
 
 /**
  * A general log function
@@ -219,6 +220,7 @@ function performPrefixSearch(explicit) {
 	if ($('#query_string').val() == current_query && explicit == false) {
 		return true;
 	}
+	end_of_result = 0;
 	current_query = $('#query_string').val();
 
 	// Keep track of search state
@@ -253,7 +255,7 @@ function performPrefixSearch(explicit) {
 }
 
 function performPrefixNextPage () {
-	if (outstanding_nextpage == 1) {
+	if (outstanding_nextpage == 1 || end_of_result == 1) {
 		return;
 	}
 	outstanding_nextpage = 1;
@@ -491,7 +493,13 @@ function receivePrefixList(search_result) {
 	log('Rendering took ' + (stats.finished - stats.response_received) + ' milliseconds');
 	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
 
-	$('#nextpage').show();
+	// less than max_result means we reached the end of the result set
+	if (search_result.prefix_list.length < search_result.search_options.max_result) {
+		end_of_result = 1;
+		$('#nextpage').hide();
+	} else {
+		$('#nextpage').show();
+	}
 }
 
 
@@ -499,7 +507,7 @@ function receivePrefixList(search_result) {
  * Receive an updated prefix list
  */
 function receivePrefixListUpdate(search_result, link_type) {
-	pref_list = search_result.prefix_list
+	pref_list = search_result.prefix_list;
 
 	// Zero result elements. Should not happen as we at least always should
 	// get the prefix we select to list, even if it has no children.
@@ -529,19 +537,21 @@ function receivePrefixListUpdate(search_result, link_type) {
  * Receive the "next page" of a prefix list
  */
 function receivePrefixListNextPage(search_result) {
-	pref_list = search_result.prefix_list
+	pref_list = search_result.prefix_list;
 
 	// Zero result elements. Should not happen as we at least always should
-	// get the prefix we select to list, even if it has no children.
+	// get the last prefix currently listed
 	if (pref_list.length == 0) {
 
 		// TODO: Display notice dialog?
 		log('Warning: no prefixes returned from list operation.');
 		return true;
 
-	// One result element (the prefix we searched for)
-	} else if (pref_list.length == 1) {
-		return true;
+	// less than max_result means we reached the end of the result set
+	} else if (pref_list.length < search_result.search_options.max_result) {
+		end_of_result = 1;
+		$('#nextpage').hide();
+		return;
 	}
 
 	insertPrefixList(pref_list.slice(1), indent_head[pref_list[1].indent], pref_list[0]);
