@@ -30,7 +30,7 @@
 					Description
 				</dt>
 				<dd>
-					<input type="text" style="width: 100%;" name="description" value="{%- if c.pool is defined -%}{{ c.pool.description }}{%- endif -%}" class="tooltip" title="Enter a short description of what this pool is used for.">
+					<input type="text" style="width: 100%;" name="description" value="{%- if c.pool is defined -%}{{ c.pool.description or '' }}{%- endif -%}" class="tooltip" title="Enter a short description of what this pool is used for.">
 				</dd>
 			</dl>
 		</div>
@@ -43,11 +43,12 @@
 					Default type
 				</dt>
 				<dd>
-					{% if c.pool is defined %}
-					{{ h.select('default_type', ( c.pool.default_type ), ('reservation', 'assignment', 'host')) }}
-					{% else %}
-					{{ h.select('default_type', ('reservation'), ('reservation', 'assignment', 'host')) }}
-					{% endif %}
+					<input id="radio-default-type-reservation" type="radio" name="default_type" value="reservation" {% if c.pool is defined %}{% if c.pool.default_type == 'reservation' %} checked{% endif %}{% endif %}>
+					<label for="radio-default-type-reservation">Reservation</label>
+					<input id="radio-default-type-assignment" type="radio" name="default_type" value="assignment" {% if c.pool is defined %}{% if c.pool.default_type == 'assignment' %} checked{% endif %}{% endif %}>
+					<label for="radio-default-type-assignment">Assignment</label>
+					<input id="radio-default-type-host" type="radio" name="default_type" value="host" {% if c.pool is defined %}{% if c.pool.default_type == 'host' %} checked{% endif %}{% endif %}>
+					<label id="label-default-type-host" for="radio-default-type-host">Host</label>
 				</dd>
 			</dl>
 		</div>
@@ -60,11 +61,7 @@
 					Default IPv4 prefix length
 				</dt>
 				<dd>
-					{% if c.pool is defined %}
-					<input type="text" name="ipv4_default_prefix_length" value="{{ c.pool.ipv4_default_prefix_length }}">
-					{% else %}
-					<input type="text" name="ipv4_default_prefix_length" value="">
-					{% endif %}
+					<input type="text" name="ipv4_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv4_default_prefix_length or '' }}{% endif %}" class="tooltip" title="The default IPv4 prefix length of prefixes assigned from this pool. Should be an integer value, for example 24 or 31.">
 				</dd>
 			</dl>
 		</div>
@@ -77,11 +74,7 @@
 					Default IPv6 prefix length
 				</dt>
 				<dd>
-					{% if c.pool is defined %}
-					<input type="text" name="ipv6_default_prefix_length" value="{{ c.pool.ipv6_default_prefix_length }}">
-					{% else %}
-					<input type="text" name="ipv6_default_prefix_length" value="">
-					{% endif %}
+					<input type="text" name="ipv6_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv6_default_prefix_length or '' }}{% endif %}" class="tooltip" title="The default IPv6 prefix length of prefixes assigned from this pool. Should be an integer value, for example 64 or 112.">
 				</dd>
 			</dl>
 		</div>

@@ -51,8 +51,14 @@ class PoolController(BaseController):
             p.name = request.params['name']
             p.description = request.params['description']
             p.default_type = request.params['default_type']
-            p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
-            p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+            if request.params['ipv4_default_prefix_length'].strip() == '':
+                p.ipv4_default_prefix_length = None
+            else:
+                p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+            if request.params['ipv6_default_prefix_length'].strip() == '':
+                p.ipv6_default_prefix_length = None
+            else:
+                p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
             p.save()
             redirect(url(controller = 'pool', action = 'list', schema = c.schema.id))
 
@@ -76,8 +82,14 @@ class PoolController(BaseController):
             c.pool.name = request.params['name']
             c.pool.description = request.params['description']
             c.pool.default_type = request.params['default_type']
-            c.pool.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
-            c.pool.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+            if request.params['ipv4_default_prefix_length'].strip() == '':
+                c.pool.ipv4_default_prefix_length = None
+            else:
+                c.pool.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+            if request.params['ipv6_default_prefix_length'].strip() == '':
+                c.pool.ipv6_default_prefix_length = None
+            else:
+                c.pool.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
             c.pool.save()
             redirect(url(controller = 'pool', action = 'list', schema = c.schema.id))
 
