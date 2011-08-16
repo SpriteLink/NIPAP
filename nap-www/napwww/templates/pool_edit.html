@@ -133,6 +133,14 @@
         $('input[name="prefix_monitor"]').change(prefixMonitorToggled);
         prefixMonitorToggled();
 
+        // handle the comment input field
+        $("input[name='prefix_comment']").hide();
+        $('#add_comment').show();
+        $('#add_comment').click(function() {
+            $("input[name='prefix_comment']").slideDown();
+            $("#add_comment").hide();
+        });
+
         // catch submit actions
         $('#prefix_data_form').submit(prefixFormSubmit);
 
