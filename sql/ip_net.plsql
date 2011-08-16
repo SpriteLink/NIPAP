@@ -93,6 +93,7 @@ CREATE INDEX ip_net_plan__prefix__ip4r_index ON ip_net_plan USING gist (ip4r(CAS
 CREATE INDEX ip_net_plan__schema__index ON ip_net_plan (schema);
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 CREATE INDEX ip_net_plan__family__index ON ip_net_plan (family(prefix));
+CREATE INDEX ip_net_plan__prefix_iprange_index ON ip_net_plan USING gist(iprange(prefix));
 
 
 CREATE OR REPLACE FUNCTION tf_ip_net_prefix_iu_before() RETURNS trigger AS $_$
