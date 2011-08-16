@@ -113,5 +113,5 @@
 
 {% macro prefix_search_result(id_suffix='') %}
 <div class="prefix_list" id="prefix_list{{ id_suffix }}"></div>
-<div style="display: none;"><a href="">Display more...</a></div>
+<div id='nextpage' style="display: none; text-align: center; padding: 20px;"><a href="javascript: void();" onclick="performPrefixNextPage();">Display more...</a></div>
 {% endmacro %}

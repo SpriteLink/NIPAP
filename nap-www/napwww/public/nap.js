@@ -491,6 +491,7 @@ function receivePrefixList(search_result) {
 	log('Rendering took ' + (stats.finished - stats.response_received) + ' milliseconds');
 	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
 
+	$('#nextpage').show();
 }
 
 
