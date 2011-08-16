@@ -94,6 +94,7 @@ class TextImporter(Importer):
             p.prefix = tp['prefix']
             p.type = 'reservation'
             p.description = tp['description']
+            p.monitor = True
             p.alarm_priority = 'low'
             p.authoritative_source = 'nw'
             p.save({})
@@ -114,6 +115,7 @@ class TextImporter(Importer):
                 p.type = 'assignment'
                 p.node = tp['node']
                 p.description = tp['description']
+                p.monitor = True
                 p.alarm_priority = tp['alarm_priority']
                 p.authoritative_source = 'nw'
                 p.save({})
@@ -127,6 +129,7 @@ class TextImporter(Importer):
                 p.type = 'host'
                 p.node = tp['node']
                 p.description = tp['description']
+                p.monitor = True
                 p.alarm_priority = tp['alarm_priority']
                 p.authoritative_source = 'nw'
                 p.save({})
@@ -158,6 +161,7 @@ class TextImporter(Importer):
                 p.prefix = tp['prefix']
                 p.type = 'assignment'
                 p.description = node1 + ' <-> ' + node2
+                p.monitor = True
                 p.alarm_priority = tp['alarm_priority']
                 p.authoritative_source = 'nw'
                 p.save({})
@@ -180,7 +184,6 @@ class TextImporter(Importer):
                 p1.node = node1
                 p1.description = node1
                 p1.authoritative_source = 'nw'
-                p1.alarm_priority = 'low'
                 p1.save({})
 
                 p2 = Prefix()
@@ -190,7 +193,6 @@ class TextImporter(Importer):
                 p2.node = node2
                 p2.description = node2
                 p2.authoritative_source = 'nw'
-                p2.alarm_priority = 'low'
                 p2.save({})
 
                 return
@@ -203,6 +205,7 @@ class TextImporter(Importer):
                 p.prefix = tp['prefix']
                 p.type = 'assignment'
                 p.description = tp['description']
+                p.monitor = True
                 p.alarm_priority = tp['alarm_priority']
                 p.authoritative_source = 'nw'
                 p.save({})
@@ -214,6 +217,7 @@ class TextImporter(Importer):
             p.prefix = tp['prefix']
             p.type = 'assignment'
             p.description = tp['description']
+            p.monitor = True
             p.alarm_priority = tp['alarm_priority']
             p.authoritative_source = 'nw'
             p.save({})
@@ -226,6 +230,7 @@ class TextImporter(Importer):
                 p.prefix = tp['prefix']
                 p.type = 'assignment'
                 p.description = tp['description']
+                p.monitor = True
                 p.alarm_priority = 'low'
                 p.authoritative_source = 'nw'
                 p.save({})
