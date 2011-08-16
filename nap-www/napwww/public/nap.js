@@ -38,7 +38,11 @@ var prefix_link_type = 'edit';
 // Max prefix lengths for different address families
 var max_prefix_length = [32, 128];
 
-var current_query = '';
+var current_query = {
+	'query_string': '',
+	'parents_depth': 0,
+	'children_depth': 0
+};
 var query_id = 0;
 var newest_query = 0;
 
@@ -216,22 +220,10 @@ function performPrefixSearch(explicit) {
 		$('#search_interpret_container').empty();
 		return true;
 	}
-	// Skip search if it's the currently rendered or outstanding query string
-	if ($('#query_string').val() == current_query && explicit == false) {
-		return true;
-	}
 	end_of_result = 0;
-	current_query = $('#query_string').val();
 
-	// Keep track of search state
+	// Keep track of search timing
 	stats.query_sent = new Date().getTime();
-	if (!('last_state' in stats)) {
-		stats.last_state = 3;
-	}
-	if (stats.last_state != 3) {
-		log('Warning: State is ' + stats.last_state + ', should be 3!');
-	}
-	stats.last_state = 1;
 
 	var search_q = {
 		'query_id': query_id,
@@ -244,16 +236,30 @@ function performPrefixSearch(explicit) {
 		'max_result': 50,
 		'offset': 0
 	}
+
+	// Skip search if it's equal to the currently displayed search
+	if (
+		(search_q.query_string == current_query.query_string &&
+		 search_q.parents_depth == current_query.parents_depth &&
+		 search_q.children_depth == current_query.children_depth)
+		 && explicit == false) {
+		return true;
+
+
+	current_query = search_q;
 	query_id += 1;
 	offset = 0;
 
 	$('#prefix_list').empty();
 
 	showLoadingIndicator($('#prefix_list'));
-	$.getJSON("/xhr/smart_search_prefix", search_q, receivePrefixList);
+	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixList);
 
 }
 
+/*
+ * Called when next page of results is requested by the user.
+ */
 function performPrefixNextPage () {
 	if (outstanding_nextpage == 1 || end_of_result == 1) {
 		return;
@@ -262,21 +268,13 @@ function performPrefixNextPage () {
 
 	offset += 49;
 
-	var search_q = {
-		'query_id': query_id,
-		'query_string': current_query,
-		'schema': schema_id,
-		'parents_depth': optToDepth($('input[name="search_opt_parent"]:checked').val()),
-		'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
-		'include_all_parents': 'true',
-		'include_all_children': 'false',
-		'max_result': 50,
-		'offset': offset
-	}
+	current_query.query_id = query_id;
+	current_query.offset = offset;
+
 	query_id += 1;
 
 	log("Getting next page, offset: " + offset);
-	$.getJSON("/xhr/smart_search_prefix", search_q, receivePrefixListNextPage);
+	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixListNextPage);
 
 }
 
@@ -411,12 +409,6 @@ function receivePrefixList(search_result) {
 	}
 	newest_query = parseInt(search_result.search_options.query_id);
 
-	// Keep track of search state
-	if (stats.last_state != 1) {
-		log('Warning: State is ' + stats.last_state + ', should be 1!');
-	}
-	stats.last_state = 2;
-
 	// Error?
 	if ('error' in search_result) {
 		displayNotice("Error", search_result.message);
@@ -482,12 +474,6 @@ function receivePrefixList(search_result) {
 	}
 
 	stats.finished = new Date().getTime();
-
-	// Keep track of search state
-	if (stats.last_state != 2) {
-		log('Warning: State is ' + stats.last_state + ', should be 2!');
-	}
-	stats.last_state = 3;
 
 	// Display search statistics
 	log('Rendering took ' + (stats.finished - stats.response_received) + ' milliseconds');
