@@ -1473,7 +1473,7 @@ class Nap:
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
                 ORDER BY prefix
                 LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
-            ) ORDER BY p1.prefix OFFSET """  + str(search_options['offset'])
+            ) ORDER BY p1.prefix, p2.prefix OFFSET """  + str(search_options['offset'])
         opt.insert(0, schema['id'])
 
         self._execute(sql, opt)
