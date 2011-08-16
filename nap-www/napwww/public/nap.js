@@ -244,6 +244,7 @@ function performPrefixSearch(explicit) {
 		 search_q.children_depth == current_query.children_depth)
 		 && explicit == false) {
 		return true;
+    }
 
 
 	current_query = search_q;
