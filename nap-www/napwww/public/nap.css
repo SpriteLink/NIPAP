@@ -40,12 +40,14 @@ html, body {
     padding-right: 5px;
     border-top: 3px solid;
     border-top-color: #2d2d2d;
+    color: #cccccc;
 }
 .menu_link:hover {
     border-top-color: #444444;
 }
 
 .menu_link_active {
+    color: #ffffff;
     border-top-color: #dd4b39;
 }
 .menu_link_active:hover {
@@ -53,7 +55,6 @@ html, body {
 }
 
 a.menu_link {
-    color: #ffffff;
     text-decoration: none;
     font-weight: bold;
     font-size: 14pt;
