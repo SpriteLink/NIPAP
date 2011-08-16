@@ -1451,7 +1451,7 @@ class Nap:
         else:
             where_children = children_selector
 
-        display = '(p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (parents_selector, children_selector)
+        display = '(p1.prefix << p2.display_prefix OR p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (parents_selector, children_selector)
 
         where, opt = self._expand_prefix_query(query)
         sql = """SELECT DISTINCT ON(p1.prefix) p1.*,
@@ -1461,19 +1461,21 @@ class Nap:
             FROM ip_net_plan AS p1
             JOIN ip_net_plan AS p2 ON
             (
-                (
-                    (iprange(p2.prefix) <<= iprange(p1.prefix) """ + where_parents + """)
-                    OR
-                    (iprange(p2.prefix) >>= iprange(p1.prefix) """ + where_children + """)
-                )
-                AND
                 (p1.schema = p2.schema)
+                AND
+                (
+                    (iprange(p1.prefix) >>= iprange(p2.prefix) """ + where_parents + """)
+                    OR
+                    (iprange(p1.prefix) << iprange(p2.prefix) """ + where_children + """)
+                    OR
+                    (iprange(p1.prefix) <<= iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
+                )
             )
             WHERE p2.schema = %s AND p2.prefix IN (
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
                 ORDER BY prefix
                 LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
-            ) ORDER BY p1.prefix, p2.prefix OFFSET """  + str(search_options['offset'])
+            ) ORDER BY p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset'])
         opt.insert(0, schema['id'])
 
         self._execute(sql, opt)
