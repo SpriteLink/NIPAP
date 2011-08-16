@@ -68,7 +68,7 @@ CREATE TABLE ip_net_plan (
 	span_order integer,
 	authoritative_source text NOT NULL,
 	alarm_priority priority_3step NOT NULL DEFAULT 'high',
-	monitor boolean NOT NULL DEFAULT false
+	monitor boolean DEFAULT false
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
