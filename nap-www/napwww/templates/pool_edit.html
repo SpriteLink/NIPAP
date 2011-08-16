@@ -111,7 +111,7 @@
          */
         // prefix search
         $("form[name='prefix_search']").submit(function(e) {
-            performPrefixSearch();
+            performPrefixSearch(true);
             e.preventDefault();
         });
         $('input[name="search_opt_parent"]').change(performPrefixSearch);
@@ -137,7 +137,7 @@
         $('#prefix_data_form').submit(prefixFormSubmit);
 
         $("form[name='prefix_search']").submit(function(e) {
-            performPrefixSearch();
+            performPrefixSearch(true);
             e.preventDefault();
         });
 
