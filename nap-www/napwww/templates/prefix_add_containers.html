@@ -211,6 +211,19 @@
 
 			<div class="rule"></div>
 
+			<div class="option" id="prefix_comment_container">
+				<dl>
+					<dt>
+						Comment
+					</dt>
+					<dd>
+						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer; display: none;">add comment</span><input type="text" name="prefix_comment">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule" id="prefix_comment_rule"></div>
+
 			<div class="option">
 				<dl>
 					<dt>
@@ -258,26 +271,13 @@
                         <input type="checkbox" name="prefix_monitor" value="true">
                         <span id="alarm_priority_container">
                             Priority:
-                            <input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low">
-                            <label for="radio-prefix-alarm-prio-low">low</label>
+                            <input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low" checked>
+                            <label for="radio-prefix-alarm-prio-low">Low</label>
                             <input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium">
-                            <label for="radio-prefix-alarm-prio-medium">medium</label>
+                            <label for="radio-prefix-alarm-prio-medium">Medium</label>
                             <input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high">
-                            <label for="radio-prefix-alarm-prio-high">high</label>
+                            <label for="radio-prefix-alarm-prio-high">High</label>
                         </span>
-					</dd>
-				</dl>
-			</div>
-
-			<div class="rule"></div>
-
-			<div class="option">
-				<dl>
-					<dt>
-						Comment
-					</dt>
-					<dd>
-						<input type="text" name="prefix_comment">
 					</dd>
 				</dl>
 			</div>
