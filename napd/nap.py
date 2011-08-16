@@ -1473,7 +1473,7 @@ class Nap:
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
                 ORDER BY prefix
                 LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
-            ) ORDER BY p1.prefix LIMIT """ + str(search_options['max_result']) + """ OFFSET """  + str(search_options['offset'])
+            ) ORDER BY p1.prefix OFFSET """  + str(search_options['offset'])
         opt.insert(0, schema['id'])
 
         self._execute(sql, opt)
@@ -1481,6 +1481,16 @@ class Nap:
         result = list()
         for row in self._curs_pg:
             result.append(dict(row))
+            # This is a SQL LIMIT clause implemented in Python. It is performed
+            # here to avoid a silly planner missestimate in PostgreSQL. For too
+            # low values of LIMIT, the planner will prefer plans with very low
+            # startup costs which will in turn lead to the slow plan. We avoid
+            # the low value (or any value really) of LIMIT by performing the
+            # LIMIT in Python. There is still a LIMIT on the inner query which
+            # together with the OFFSET, which is still performed in PostgreSQL,
+            # yields a rather small result set and thus high speed.
+            if len(result) >= int(search_options['max_result']):
+                break
 
         return { 'search_options': search_options, 'prefix_list': result }
 
