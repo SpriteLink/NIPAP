@@ -3,6 +3,7 @@
 import xmlrpclib
 
 import optparse
+import time
 
 parser = optparse.OptionParser()
 parser.add_option('-p', '--port', dest='port', type='int', default='1337', help="TCP port")
@@ -11,8 +12,14 @@ parser.add_option('-p', '--port', dest='port', type='int', default='1337', help=
 
 server_url = 'http://127.0.0.1:%(port)d/XMLRPC' % { 'port': options.port }
 server = xmlrpclib.Server(server_url, allow_none=1);
+time.sleep(5)
 
-print server.search_prefix({ 'name': 'test-schema' }, {'operator': 'contained_within', 'val2': '10.0.0.0/30', 'val1': 'prefix'}, { 'include_all_children': False })
+t0 = time.time()
+res = server.smart_search_prefix({ 'name': 'global' }, 'avk', { 'max_result': 500 })
+t1 = time.time()
+d1 = t1-t0
+print "Timing:", d1
+#print res
 
 #
 # echo test
