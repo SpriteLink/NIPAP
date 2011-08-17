@@ -287,20 +287,23 @@ function showPrefix(prefix, parent_container) {
 	// add main prefix container
 	parent_container.append('<div id="prefix_entry' + prefix.id + '">');
 	var prefix_entry = $('#prefix_entry' + prefix.id);
-	prefix_entry.attr('class', 'prefix_entry');
+	prefix_entry.addClass('prefix_entry');
+	prefix_entry.append('<div id="prefix_row' + prefix.id + '">');
+	var prefix_row = $('#prefix_row' + prefix.id );
 	if (prefix.match == true) {
-		prefix_entry.addClass("row_match");
+		prefix_row.addClass("row_match");
 	} else {
-		prefix_entry.addClass("row_collateral");
+		prefix_row.addClass("row_collateral");
 	}
-	prefix_entry.hover(
-		function() { prefix_entry.addClass("row_hover"); },
-		function() { prefix_entry.removeClass("row_hover"); }
+	prefix_row.hover(
+		function() { prefix_row.addClass("row_hover"); },
+		function() { prefix_row.removeClass("row_hover"); }
 	);
 
 	// add indent and prefix container
-	prefix_entry.append('<div id="prefix_ind_pref' + prefix.id + '">');
+	prefix_row.append('<div id="prefix_ind_pref' + prefix.id + '">');
 	var prefix_ind_pref = $('#prefix_ind_pref' + prefix.id);
+	prefix_ind_pref.addClass('prefix_column');
 	prefix_ind_pref.addClass('prefix_ind_pref');
 
 	// add indent
@@ -332,7 +335,8 @@ function showPrefix(prefix, parent_container) {
 	// add prefix
 	prefix_ind_pref.append('<div id="prefix_prefix' + prefix.id + '">');
 	var prefix_prefix = $('#prefix_prefix' + prefix.id);
-	prefix_prefix.addClass("prefix_prefix");
+	prefix_prefix.addClass('prefix_column');
+	prefix_prefix.addClass('prefix_prefix');
 
 	// Different actions for different list types...
 	// First: select a prefix in the list
@@ -355,15 +359,25 @@ function showPrefix(prefix, parent_container) {
 	}
 
 	// Add prefix type
-	prefix_entry.append('<div id="prefix_type' + prefix.id + '">');
+	prefix_row.append('<div id="prefix_type' + prefix.id + '">');
 	var prefix_type = $('#prefix_type' + prefix.id);
-	prefix_type.addClass("prefix_type");
-	prefix_type.html(prefix.type);
+	prefix_type.addClass('prefix_column');
+	prefix_type.addClass('prefix_type');
+	prefix_type.append('<div id="prefix_type_icon' + prefix.id + '">');
+	var prefix_type_icon = $('#prefix_type_icon' + prefix.id);
+	prefix_type_icon.addClass('prefix_type_icon');
+	prefix_type_icon.addClass('prefix_type_' + prefix.type);
+
+	// Add tooltip to prefix type icon
+	prefix_type_icon.addClass('tooltip');
+    prefix_type_icon.attr('title', prefix.type[0].toUpperCase() + prefix.type.slice(1));
+	prefix_type_icon.html(prefix.type[0].toUpperCase());
 
 	// Add order number
-	prefix_entry.append('<div id="prefix_span_order' + prefix.id + '">');
+	prefix_row.append('<div id="prefix_span_order' + prefix.id + '">');
 	var prefix_span_order = $('#prefix_span_order' + prefix.id);
-	prefix_span_order.addClass("prefix_span_order");
+	prefix_span_order.addClass('prefix_column');
+	prefix_span_order.addClass('prefix_span_order');
 	if (prefix.span_order == null || prefix.span_order == '') {
 		prefix_span_order.html("&nbsp;");
 	} else {
@@ -371,9 +385,10 @@ function showPrefix(prefix, parent_container) {
 	}
 
 	// Add node
-	prefix_entry.append('<div id="prefix_node' + prefix.id + '">');
+	prefix_row.append('<div id="prefix_node' + prefix.id + '">');
 	var prefix_node = $('#prefix_node' + prefix.id);
-	prefix_node.addClass("prefix_node");
+	prefix_node.addClass('prefix_column');
+	prefix_node.addClass('prefix_node');
 	if (prefix.node == null || prefix.node == '') {
 		prefix_node.html("&nbsp;");
 	} else {
@@ -381,9 +396,10 @@ function showPrefix(prefix, parent_container) {
 	}
 
 	// Add prefix description
-	prefix_entry.append('<div id="prefix_description' + prefix.id + '">');
+	prefix_row.append('<div id="prefix_description' + prefix.id + '">');
 	var prefix_description = $('#prefix_description' + prefix.id);
-	prefix_description.addClass("prefix_description");
+	prefix_description.addClass('prefix_column');
+	prefix_description.addClass('prefix_description');
 	if (prefix.description == null || prefix.description == '') {
 		prefix_description.html("&nbsp;");
 	} else {
