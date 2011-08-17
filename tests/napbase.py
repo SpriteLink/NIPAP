@@ -71,6 +71,30 @@ class NapTest(unittest.TestCase):
                 }
         self.prefix_attrs4['id'] = self.nap.add_prefix({'id': self.schema_attrs2['id']}, self.prefix_attrs4)
 
+        self.prefix6_attrs = {
+                'authoritative_source': 'naptest',
+                'prefix': '2001:0db8:3:3::1/128',
+                'description': 'Test prefix numero uno!'
+                }
+        self.prefix6_attrs['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix6_attrs)
+        self.prefix6_attrs2 = {
+                'authoritative_source': 'naptest',
+                'prefix': '2001:0db8:3:3::/64',
+                'description': ''
+                }
+        self.prefix6_attrs2['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix6_attrs2)
+        self.prefix6_attrs3 = {
+                'authoritative_source': 'naptest',
+                'prefix': '2001:0db8:3:0::/48',
+                'description': ''
+                }
+        self.prefix6_attrs3['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix6_attrs3)
+        self.prefix6_attrs4 = {
+                'authoritative_source': 'naptest',
+                'prefix': '2001:0db8:3:0::/56',
+                'description': ''
+                }
+        self.prefix6_attrs4['id'] = self.nap.add_prefix({'id': self.schema_attrs2['id']}, self.prefix6_attrs4)
 
 
     def test_schema_basic(self):
@@ -516,8 +540,8 @@ class NapTest(unittest.TestCase):
 
 
 
-    def test_prefix_indent(self):
-        """ Check that our indentation calculation is working
+    def test_prefix_indent_ipv4(self):
+        """ Check that our indentation calculation is working for IPv4
 
             Prefixes gets an indent value automatically assigned to help in
             displaying prefix information. The indent value is written on
@@ -538,6 +562,31 @@ class NapTest(unittest.TestCase):
         p3 = self.nap.list_prefix(schema, { 'prefix': '1.3.0.0/16' })[0]
         self.assertEqual(p1['indent'], 1, "Indent calc on remove failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on remove failed")
+
+
+
+    def test_prefix_indent_ipv6(self):
+        """ Check that our indentation calculation is working for IPv6
+
+            Prefixes gets an indent value automatically assigned to help in
+            displaying prefix information. The indent value is written on
+            updates to the table and this test is to make sure it is correctly
+            calculated.
+        """
+        schema = {'id': self.schema_attrs['id']}
+        p1 = self.nap.list_prefix(schema, { 'prefix': '2001:0db8:3:3::1/128' })[0]
+        p2 = self.nap.list_prefix(schema, { 'prefix': '2001:0db8:3:3::/64' })[0]
+        p3 = self.nap.list_prefix(schema, { 'prefix': '2001:0db8:3:0::/48' })[0]
+        self.assertEqual(p1['indent'], 2, "Indent calc on add failed")
+        self.assertEqual(p2['indent'], 1, "Indent calc on add failed")
+        self.assertEqual(p3['indent'], 0, "Indent calc on add failed")
+        # remove middle prefix
+        self.nap.remove_prefix(schema, { 'id': self.prefix6_attrs2['id'] })
+        # check that child prefix indent level has decreased
+        p1 = self.nap.list_prefix(schema, { 'prefix': '2001:0db8:3:3::1/128' })[0]
+        p3 = self.nap.list_prefix(schema, { 'prefix': '2001:0db8:3:0::/48' })[0]
+        self.assertEqual(p1['indent'], 1, "Indent calc on remove failed for " + p1['prefix'] + " indent: " + str(p1['indent']))
+        self.assertEqual(p3['indent'], 0, "Indent calc on remove failed for " + p3['prefix'] + " indent: " + str(p3['indent']))
 
 
 
