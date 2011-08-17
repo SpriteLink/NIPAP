@@ -1454,7 +1454,11 @@ class Nap:
         display = '(p1.prefix << p2.display_prefix OR p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (parents_selector, children_selector)
 
         where, opt = self._expand_prefix_query(query)
-        sql = """SELECT DISTINCT ON(p1.prefix) p1.*,
+        sql = """
+    SELECT *,
+        CASE WHEN type = 'host' THEN -2 WHEN type = 'assignment' THEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) - 1 ELSE -2 END AS children
+    FROM (
+        SELECT DISTINCT ON(p1.prefix) p1.*,
             family(p1.prefix) AS family,
             (""" + display + """) AS display,
             CASE WHEN p1.prefix = p2.prefix THEN true ELSE false END AS match
@@ -1475,7 +1479,7 @@ class Nap:
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
                 ORDER BY prefix
                 LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
-            ) ORDER BY p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset'])
+            ) ORDER BY p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a"
         opt.insert(0, schema['id'])
 
         self._execute(sql, opt)
