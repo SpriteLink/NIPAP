@@ -274,7 +274,6 @@ function performPrefixNextPage () {
 
 	query_id += 1;
 
-	log("Getting next page, offset: " + offset);
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixListNextPage);
 
 }
