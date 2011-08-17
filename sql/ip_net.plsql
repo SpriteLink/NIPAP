@@ -116,16 +116,12 @@ BEGIN
 	END IF;
 
 
-	IF family(NEW.prefix) = 4 THEN
-		i_max_pref_len := 32;
-		-- contains the parent prefix
-		SELECT * INTO parent FROM ip_net_plan WHERE schema = NEW.schema AND family(prefix) = 4 AND ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL::cidr END) >> ip4r(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
-	ELSIF family(NEW.prefix) = 6 THEN
+	i_max_pref_len := 32;
+	IF family(NEW.prefix) = 6 THEN
 		i_max_pref_len := 128;
-		-- contains the parent prefix
-		SELECT * INTO parent FROM ip_net_plan WHERE schema = NEW.schema AND family(prefix) = 6 AND prefix >> NEW.prefix ORDER BY masklen(prefix) DESC LIMIT 1;
 	END IF;
-
+	-- contains the parent prefix
+	SELECT * INTO parent FROM ip_net_plan WHERE schema = NEW.schema AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
 
 	-- check that type is correct on insert and update
 	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
