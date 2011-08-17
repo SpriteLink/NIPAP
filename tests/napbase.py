@@ -49,24 +49,35 @@ class NapTest(unittest.TestCase):
         self.prefix_attrs = {
                 'authoritative_source': 'naptest',
                 'prefix': '1.3.3.1/32',
+                'type': 'host',
                 'description': 'Test prefix numero uno!'
                 }
         self.prefix_attrs['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix_attrs)
-        self.prefix_attrs2 = {
+        self.prefix_attrs1 = {
                 'authoritative_source': 'naptest',
                 'prefix': '1.3.3.0/24',
+                'type': 'assignment',
+                'description': ''
+                }
+        self.prefix_attrs1['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix_attrs1)
+        self.prefix_attrs2 = {
+                'authoritative_source': 'naptest',
+                'prefix': '1.3.2.0/23',
+                'type': 'reservation',
                 'description': ''
                 }
         self.prefix_attrs2['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix_attrs2)
         self.prefix_attrs3 = {
                 'authoritative_source': 'naptest',
                 'prefix': '1.3.0.0/16',
+                'type': 'reservation',
                 'description': ''
                 }
         self.prefix_attrs3['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix_attrs3)
         self.prefix_attrs4 = {
                 'authoritative_source': 'naptest',
                 'prefix': '1.3.0.0/17',
+                'type': 'reservation',
                 'description': ''
                 }
         self.prefix_attrs4['id'] = self.nap.add_prefix({'id': self.schema_attrs2['id']}, self.prefix_attrs4)
@@ -74,24 +85,35 @@ class NapTest(unittest.TestCase):
         self.prefix6_attrs = {
                 'authoritative_source': 'naptest',
                 'prefix': '2001:0db8:3:3::1/128',
+                'type': 'host',
                 'description': 'Test prefix numero uno!'
                 }
         self.prefix6_attrs['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix6_attrs)
+        self.prefix6_attrs1 = {
+                'authoritative_source': 'naptest',
+                'prefix': '2001:0db8:3:3::/112',
+                'type': 'assignment',
+                'description': ''
+                }
+        self.prefix6_attrs1['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix6_attrs1)
         self.prefix6_attrs2 = {
                 'authoritative_source': 'naptest',
                 'prefix': '2001:0db8:3:3::/64',
+                'type': 'reservation',
                 'description': ''
                 }
         self.prefix6_attrs2['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix6_attrs2)
         self.prefix6_attrs3 = {
                 'authoritative_source': 'naptest',
                 'prefix': '2001:0db8:3:0::/48',
+                'type': 'reservation',
                 'description': ''
                 }
         self.prefix6_attrs3['id'] = self.nap.add_prefix({'id': self.schema_attrs['id']}, self.prefix6_attrs3)
         self.prefix6_attrs4 = {
                 'authoritative_source': 'naptest',
                 'prefix': '2001:0db8:3:0::/56',
+                'type': 'reservation',
                 'description': ''
                 }
         self.prefix6_attrs4['id'] = self.nap.add_prefix({'id': self.schema_attrs2['id']}, self.prefix6_attrs4)
@@ -393,6 +415,7 @@ class NapTest(unittest.TestCase):
             prefix_attrs = {
                     'authoritative_source': 'nap-test',
                     'prefix': p,
+                    'type': 'host',
                     'description': 'test prefix',
                     'pool_id': self.pool_attrs['id'],
                     'comment': 'test comment, please remove! ;)'
@@ -413,6 +436,7 @@ class NapTest(unittest.TestCase):
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
                 'prefix': '1.3.3.7/32',
+                'type': 'host',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
@@ -446,6 +470,7 @@ class NapTest(unittest.TestCase):
             prefix_attrs = {
                     'authoritative_source': 'nap-test',
                     'prefix': p,
+                    'type': 'reservation',
                     'description': 'test prefix',
                     'pool_id': self.pool_attrs['id'],
                     'comment': 'test comment, please remove! ;)'
@@ -454,11 +479,12 @@ class NapTest(unittest.TestCase):
 
         # get an address based on from-prefix
         prefix_attrs = {
+                'type': 'assignment',
                 'authoritative_source': 'nap-test',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
-        res = self.nap.add_prefix(schema, prefix_attrs, {'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
+        res = self.nap.add_prefix(schema, prefix_attrs, { 'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
         p = self.nap.list_prefix(schema, { 'id': res })
         self.assertEqual(p[0]['prefix'], '10.0.0.0/30', "New prefix differ from what it should be!")
 
@@ -495,6 +521,7 @@ class NapTest(unittest.TestCase):
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
                 'prefix': '1.3.3.77/32',
+                'type': 'host',
                 'description': 'test-ish prefix',
                 'comment': 'Test prefix #77! ;)'
                 }
@@ -552,15 +579,15 @@ class NapTest(unittest.TestCase):
         p1 = self.nap.list_prefix(schema, { 'prefix': '1.3.3.1/32' })[0]
         p2 = self.nap.list_prefix(schema, { 'prefix': '1.3.3.0/24' })[0]
         p3 = self.nap.list_prefix(schema, { 'prefix': '1.3.0.0/16' })[0]
-        self.assertEqual(p1['indent'], 2, "Indent calc on add failed")
-        self.assertEqual(p2['indent'], 1, "Indent calc on add failed")
+        self.assertEqual(p1['indent'], 3, "Indent calc on add failed")
+        self.assertEqual(p2['indent'], 2, "Indent calc on add failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on add failed")
         # remove middle prefix
         self.nap.remove_prefix(schema, { 'id': self.prefix_attrs2['id'] })
         # check that child prefix indent level has decreased
         p1 = self.nap.list_prefix(schema, { 'prefix': '1.3.3.1/32' })[0]
         p3 = self.nap.list_prefix(schema, { 'prefix': '1.3.0.0/16' })[0]
-        self.assertEqual(p1['indent'], 1, "Indent calc on remove failed")
+        self.assertEqual(p1['indent'], 2, "Indent calc on remove failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on remove failed")
 
 
@@ -577,7 +604,7 @@ class NapTest(unittest.TestCase):
         p1 = self.nap.list_prefix(schema, { 'prefix': '2001:0db8:3:3::1/128' })[0]
         p2 = self.nap.list_prefix(schema, { 'prefix': '2001:0db8:3:3::/64' })[0]
         p3 = self.nap.list_prefix(schema, { 'prefix': '2001:0db8:3:0::/48' })[0]
-        self.assertEqual(p1['indent'], 2, "Indent calc on add failed")
+        self.assertEqual(p1['indent'], 3, "Indent calc on add failed")
         self.assertEqual(p2['indent'], 1, "Indent calc on add failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on add failed")
         # remove middle prefix
@@ -585,7 +612,7 @@ class NapTest(unittest.TestCase):
         # check that child prefix indent level has decreased
         p1 = self.nap.list_prefix(schema, { 'prefix': '2001:0db8:3:3::1/128' })[0]
         p3 = self.nap.list_prefix(schema, { 'prefix': '2001:0db8:3:0::/48' })[0]
-        self.assertEqual(p1['indent'], 1, "Indent calc on remove failed for " + p1['prefix'] + " indent: " + str(p1['indent']))
+        self.assertEqual(p1['indent'], 2, "Indent calc on remove failed for " + p1['prefix'] + " indent: " + str(p1['indent']))
         self.assertEqual(p3['indent'], 0, "Indent calc on remove failed for " + p3['prefix'] + " indent: " + str(p3['indent']))
 
 
@@ -600,6 +627,7 @@ class NapTest(unittest.TestCase):
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
                 'prefix': '100.0.0.0/16',
+                'type': 'reservation',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
@@ -653,6 +681,7 @@ class NapTest(unittest.TestCase):
         prefix_attrs = {
                 'authoritative_source': 'nap-test',
                 'prefix': '100.0.0.0/16',
+                'type': 'assignment',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
@@ -690,6 +719,7 @@ class NapTest(unittest.TestCase):
                 ]
         for p in pfxs:
             prefix_attrs = {
+                    'type': 'reservation',
                     'authoritative_source': 'nap-test',
                     'prefix': p,
                     'description': 'test prefix',

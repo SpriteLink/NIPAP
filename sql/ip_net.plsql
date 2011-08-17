@@ -234,14 +234,14 @@ GRANT USAGE ON ip_net_schema_id_seq TO napd;
 -- though you probably always want this
 INSERT INTO ip_net_schema (name, description) VALUES ('global', 'Global address plan, ie the Internet');
 
-INSERT INTO ip_net_pool (name, description, ipv4_default_prefix_length, ipv6_default_prefix_length) VALUES ('tele2-infrastructure', 'Tele2 Infrastructure allocation', 0, 0);
+INSERT INTO ip_net_pool (name, description, default_type, ipv4_default_prefix_length, ipv6_default_prefix_length) VALUES ('tele2-infrastructure', 'Tele2 Infrastructure allocation', 'reservation', 0, 0);
 
-INSERT INTO ip_net_pool (name, description, ipv4_default_prefix_length, ipv6_default_prefix_length) VALUES ('loopback', 'loopback addresses for routers', 32, 128);
+INSERT INTO ip_net_pool (name, description, default_type, ipv4_default_prefix_length, ipv6_default_prefix_length) VALUES ('loopback', 'loopback addresses for routers', 'reservation', 32, 128);
 
-INSERT INTO ip_net_plan(prefix, description, pool, authoritative_source) VALUES ('130.244.0.0/16', 'Tele2s good ol'' /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 'nap');
-INSERT INTO ip_net_plan(prefix, description, pool, authoritative_source) VALUES ('212.151.0.0/16', 'Tele2s middle age /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 'nap');
+INSERT INTO ip_net_plan(prefix, type, description, pool, authoritative_source) VALUES ('130.244.0.0/16', 'reservation', 'Tele2s good ol'' /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 'nap');
+INSERT INTO ip_net_plan(prefix, type, description, pool, authoritative_source) VALUES ('212.151.0.0/16', 'reservation', 'Tele2s middle age /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 'nap');
 
-INSERT INTO ip_net_plan(prefix, description, pool, authoritative_source) VALUES ('2a00:800::/25', 'Tele2s funky new /25', (SELECT id FROM ip_net_pool WHERE name='tele2-block'), 'nap');
+INSERT INTO ip_net_plan(prefix, type, description, pool, authoritative_source) VALUES ('2a00:800::/25', 'reservation', 'Tele2s funky new /25', (SELECT id FROM ip_net_pool WHERE name='tele2-block'), 'nap');
 
 
 
