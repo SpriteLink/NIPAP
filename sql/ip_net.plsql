@@ -207,11 +207,6 @@ DECLARE
 	r RECORD;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
-		-- TODO: this can be optimized! on delete we should be able to just
-		-- decrease indent level with one on all prefixes contained within
-		-- OLD.prefix. Today, when calling calc_indent, we iterate over each
-		-- and every one.. for a /16 or larger (not to think of IPv6) this can
-		-- make a huuuge difference.
 		PERFORM calc_indent(OLD.schema, OLD.prefix, -1);
 	ELSIF TG_OP = 'INSERT' THEN
 		PERFORM calc_indent(NEW.schema, NEW.prefix, 1);
