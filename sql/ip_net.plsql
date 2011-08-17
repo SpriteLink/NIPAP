@@ -36,7 +36,7 @@ CREATE TABLE ip_net_pool (
 	name text UNIQUE,
 	schema integer REFERENCES ip_net_schema (id) ON UPDATE CASCADE ON DELETE CASCADE DEFAULT 1,
 	description text,
-	default_type ip_net_plan_type NOT NULL,
+	default_type ip_net_plan_type,
 	ipv4_default_prefix_length integer,
 	ipv6_default_prefix_length integer
 );
