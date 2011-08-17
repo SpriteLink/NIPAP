@@ -68,31 +68,15 @@ BEGIN
 				CONTINUE;
 			END IF;
 
-			-- We unfortunately need to use the ip4r index as we cannot reach
-			-- any reasonable speeds without it this means we need to split our
-			-- checks based on if we are searching for an IPv4 or IPv6 prefix
-			IF i_family = 4 THEN
-				-- avoid prefixes larger than the current_prefix but inside our search_prefix
-				IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND family(prefix) = 4 AND ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL::cidr END) >>= ip4r(current_prefix::cidr) AND ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL::cidr END) << ip4r(search_prefix::cidr)) THEN
-					SELECT broadcast(current_prefix) + 1 INTO current_prefix;
-					CONTINUE;
-				END IF;
-				-- prefix must not contain any breakouts, that would mean it's not empty, ie not free
-				IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND family(prefix) = 4 AND ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL::cidr END) <<= ip4r(current_prefix::cidr)) THEN
-					SELECT broadcast(current_prefix) + 1 INTO current_prefix;
-					CONTINUE;
-				END IF;
-			ELSE
-				-- avoid prefixes larger than the current_prefix but inside our search_prefix
-				IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND prefix >>= current_prefix AND prefix << search_prefix) THEN
-					SELECT broadcast(current_prefix) + 1 INTO current_prefix;
-					CONTINUE;
-				END IF;
-				-- prefix must not contain any breakouts, that would mean it's not empty, ie not free
-				IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND prefix <<= current_prefix) THEN
-					SELECT broadcast(current_prefix) + 1 INTO current_prefix;
-					CONTINUE;
-				END IF;
+			-- avoid prefixes larger than the current_prefix but inside our search_prefix
+			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND iprange(prefix) >>= iprange(current_prefix::cidr) AND iprange(prefix) << iprange(search_prefix::cidr)) THEN
+				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
+				CONTINUE;
+			END IF;
+			-- prefix must not contain any breakouts, that would mean it's not empty, ie not free
+			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND iprange(prefix) <<= iprange(current_prefix::cidr)) THEN
+				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
+				CONTINUE;
 			END IF;
 
 			-- while the following two tests are family agnostic, they use
