@@ -36,7 +36,7 @@ CREATE TABLE ip_net_pool (
 	name text UNIQUE,
 	schema integer REFERENCES ip_net_schema (id) ON UPDATE CASCADE ON DELETE CASCADE DEFAULT 1,
 	description text,
-	default_type ip_net_plan_type NOT NULL DEFAULT 'reservation',
+	default_type ip_net_plan_type NOT NULL,
 	ipv4_default_prefix_length integer,
 	ipv6_default_prefix_length integer
 );
@@ -62,13 +62,13 @@ CREATE TABLE ip_net_plan (
 	comment text,
 	node text,
 	pool integer REFERENCES ip_net_pool (id) ON UPDATE CASCADE ON DELETE SET NULL,
-	type ip_net_plan_type NOT NULL DEFAULT 'reservation',
+	type ip_net_plan_type NOT NULL,
 	indent integer,
 	country text,
 	span_order integer,
 	authoritative_source text NOT NULL,
-	alarm_priority priority_3step NOT NULL DEFAULT 'high',
-	monitor boolean DEFAULT false
+	alarm_priority priority_3step,
+	monitor boolean
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
