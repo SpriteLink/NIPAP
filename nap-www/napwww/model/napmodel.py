@@ -288,6 +288,7 @@ class Prefix(NapModel):
     monitor = None
     display = True
     match = False
+    children = -2
 
 
     @classmethod
@@ -482,6 +483,8 @@ class Prefix(NapModel):
             p.match = pref['match']
         if 'display' in pref:
             p.display = pref['display']
+        if 'children' in pref:
+            p.children = pref['children']
 
         return p
 

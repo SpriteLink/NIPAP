@@ -359,7 +359,8 @@ class NapJSONEncoder(json.JSONEncoder):
                 'authoritative_source': obj.authoritative_source,
                 'alarm_priority': obj.alarm_priority,
                 'display': obj.display,
-                'match': obj.match
+                'match': obj.match,
+				'children': obj.children
             }
         else:
             return json.JSONEncoder.default(self, obj)
