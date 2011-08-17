@@ -12,14 +12,14 @@ var schema_id = 0;
 /*
  * The prefix_list variable is used to keep a copy of all the prefixes
  * currently in the displayed list. Before adding, they are given a new
- * attribute: has_children. It is used to save information regarding
+ * attribute: children. It is used to save information regarding
  * whether the prefix has children or not. These values are allowed:
  *  -2: We have no clue
  *  -1: At least one, but might be more (used for parent prefixes which
  *	  was received when a prefix further down was requested including
  *	  parents)
  *   0: No children
- *   1: Has children
+ *  >0: Has children
  */
 var prefix_list = Object();
 var indent_head = Object();
@@ -310,7 +310,7 @@ function showPrefix(prefix, parent_container) {
 	prefix_indent.addClass("prefix_indent");
 
 	// If the prefixes has children  (or we do not know), add expand button
-	if (prefix.has_children == 0 || hasMaxPreflen(prefix)) {
+	if (prefix.children == 0 || hasMaxPreflen(prefix)) {
 
 		// the prefix_indent container must contain _something_
 		prefix_indent.html('&nbsp;');
@@ -322,7 +322,7 @@ function showPrefix(prefix, parent_container) {
 
 		// If we are sure that the children has been fetched, the group will
 		// already be fully expanded and a minus sign should be shown
-		if (prefix.has_children == 1) {
+		if (prefix.children == 1) {
 			$("#prefix_exp" + prefix.id).html("&mbsp;-&nbsp;");
 		}
 
@@ -509,12 +509,14 @@ function receivePrefixListUpdate(search_result, link_type) {
 
 		// remove expand button
 		$("#prefix_indent" + pref_list[0].id).html('&nbsp;');
-		prefix_list[pref_list[0].id].has_children = 0;
+		prefix_list[pref_list[0].id].children = 0;
 		return true;
 
 	}
 
-	prefix_list[pref_list[0].id].has_children = 1;
+	if (prefix_list[pref_list[0].id].type == 'reservation') {
+		prefix_list[pref_list[0].id].children = -1;
+	}
 	insertPrefixList(pref_list.slice(1), $("#collapse" + pref_list[0].id), pref_list[0], link_type);
 
 }
@@ -581,13 +583,6 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		prefix = pref_list[key];
 		prefix_list[prefix.id] = prefix;
 
-		// a host has no children, otherwise we do not know
-		if (prefix.type == 'host') {
-			prefix.has_children = 0;
-		} else {
-			prefix.has_children = -2;
-		}
-
 		// if there is no indent container for the current level, set
 		// indent head for current indent level to the top level container
 		if (!(prefix.indent in indent_head)) {
@@ -597,8 +592,21 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 		// Has indent level increased?
 		if (prefix.indent > prev_prefix.indent) {
-			expandGroup(prev_prefix.id);
-			prev_prefix.has_children = -1;
+			// we get the number of children for assignments from the database
+			if (prev_prefix.type == 'assignment') {
+				// if previous assignment was a match, we don't need to expand
+				if (prev_prefix.match != 1) {
+					expandGroup(prev_prefix.id);
+				}
+			} else {
+				if (prev_prefix.children == -2) {
+					// but for reservations we can set it to -1, ie at least
+					// one if we don't already have all the children, in case
+					// we just expand
+					prev_prefix.children = -1;
+				}
+				expandGroup(prev_prefix.id);
+			}
 		}
 
 		prev_prefix = prefix;
@@ -626,7 +634,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 function collapseClick(id) {
 
 	// Determine if we need to fetch data
-	if (prefix_list[id].has_children == -2) {
+	if (prefix_list[id].children == -2) {
 
 		// Yes, ask server for prefix list
 		var data = {
