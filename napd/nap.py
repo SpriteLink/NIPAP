@@ -907,9 +907,9 @@ class Nap:
                     'contains',
                     'contains_equals',
                     'contained_within',
-                    'contained_within_equals') and self._get_afi(query['val2']) == 4:
+                    'contained_within_equals'):
 
-                where = " family(%(col_prefix)sprefix) = 4 AND ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL END) %(operator)s %%s " % {
+                where = " iprange(prefix) %(operator)s %%s " % {
                         'col_prefix': col_prefix,
                         'operator': _operation_map[query['operator']]
                         }
