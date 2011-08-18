@@ -1535,12 +1535,13 @@ class Nap:
             `search_options` argument.
         """
 
-        self._logger.debug("Query string: %s" % query_str)
+        self._logger.debug("Query string: %s %s" % (query_str, type(query_str)))
 
         # find query parts
+        # XXX: notice the ugly workarounds for shlex not supporting Unicode
         query_str_parts = []
-        for part in shlex.split(query_str):
-            query_str_parts.append({ 'string': part })
+        for part in shlex.split(query_str.encode('utf-8')):
+            query_str_parts.append({ 'string': part.decode('utf-8') })
 
         # go through parts and add to query_parts list
         query_parts = list()
