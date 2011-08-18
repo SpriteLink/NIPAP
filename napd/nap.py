@@ -241,7 +241,7 @@ class Nap:
 
         try:
             socket.inet_aton(ip)
-        except socket.error:
+        except:
             return False
         return True
 
@@ -253,7 +253,7 @@ class Nap:
 
         try:
             socket.inet_pton(socket.AF_INET6, ip)
-        except socket.error:
+        except:
             return False
         return True
 
