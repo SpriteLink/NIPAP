@@ -189,7 +189,7 @@ function expandGroup(id) {
 	var exp = $('#prefix_exp' + id);
 
 	col.slideDown();
-	exp.html('&nbsp;-&nbsp;');
+	exp.html('-');
 
 }
 
@@ -202,7 +202,7 @@ function collapseGroup(id) {
 	var exp = $('#prefix_exp' + id);
 
 	col.slideUp();
-	exp.html('&nbsp;+&nbsp;');
+	exp.html('+');
 
 }
 
@@ -320,12 +320,12 @@ function showPrefix(prefix, parent_container) {
 	} else {
 
 		// add expand button
-		prefix_indent.html('<span class="exp_button" id="prefix_exp' + prefix.id + '" onClick="collapseClick(' + prefix.id + ')">&nbsp;+&nbsp;</span>');
+		prefix_indent.html('<span class="prefix_exp" id="prefix_exp' + prefix.id + '" onClick="collapseClick(' + prefix.id + ')">+</span>');
 
 		// If we are sure that the children has been fetched, the group will
 		// already be fully expanded and a minus sign should be shown
 		if (prefix.children == 1) {
-			$("#prefix_exp" + prefix.id).html("&mbsp;-&nbsp;");
+			$("#prefix_exp" + prefix.id).html("-");
 		}
 
 	}
