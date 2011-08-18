@@ -549,11 +549,13 @@ function receivePrefixListNextPage(search_result) {
 
 		// TODO: Display notice dialog?
 		log('Warning: no prefixes returned from list operation.');
+		outstanding_nextpage = 0;
 		return true;
 
 	// less than max_result means we reached the end of the result set
 	} else if (pref_list.length < search_result.search_options.max_result) {
 		end_of_result = 1;
+		outstanding_nextpage = 0;
 		$('#nextpage').hide();
 		return;
 	}
