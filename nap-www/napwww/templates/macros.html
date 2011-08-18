@@ -112,6 +112,10 @@
 {% endmacro %}
 
 {% macro prefix_search_result(id_suffix='') %}
-<div class="prefix_list" id="prefix_list{{ id_suffix }}"></div>
+<div id="search_result_help" style="text-align: center; padding: 30px; color: #777777;">
+	There are no results to display. Please enter a search query!
+</div>
+<div class="prefix_list" id="prefix_list{{ id_suffix }}">
+</div>
 <div id='nextpage' style="display: none; text-align: center; padding: 20px;"><a href="javascript:void(0);" onclick="performPrefixNextPage();">Display more...</a></div>
 {% endmacro %}

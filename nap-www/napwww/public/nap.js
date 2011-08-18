@@ -218,6 +218,8 @@ function performPrefixSearch(explicit) {
 	if (jQuery.trim($('#query_string').val()).length < 1) {
 		$('#prefix_list').empty();
 		$('#search_interpret_container').empty();
+		$('#search_result_help').show();
+		$('#nextpage').hide();
 		return true;
 	}
 	end_of_result = 0;
@@ -252,6 +254,7 @@ function performPrefixSearch(explicit) {
 	offset = 0;
 
 	$('#prefix_list').empty();
+	$('#search_result_help').hide();
 
 	showLoadingIndicator($('#prefix_list'));
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixList);
