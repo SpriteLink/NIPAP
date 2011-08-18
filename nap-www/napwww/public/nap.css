@@ -375,15 +375,17 @@ input[type="submit"] {
 .prefix_list {
     margin-left: auto;
     margin-right: auto;
-    padding-top: 20px;
+    padding: 10px;
+
     max-width: 1200px;
 }
 
 .prefix_entry {
 	display: table;
-	line-height: 20px;
+	line-height: 18px;
 	width: 100%;
 	max-width: 1200px;
+	font-size: 12px;
 }
 
 .prefix_row {
@@ -392,7 +394,7 @@ input[type="submit"] {
 
 .prefix_column {
 	display: table-cell;
-	vertical-align: top;
+	vertical-align: center;
 	padding: 2px;
 }
 
@@ -418,17 +420,27 @@ input[type="submit"] {
     text-align: right;
 }
 
+.prefix_exp {
+    cursor: pointer;
+/*	display: inline-block; */
+	width: 5px;
+	margin-right: 3px;
+	text-align: center;
+}
+
 .prefix_prefix { }
 
 .prefix_type { }
 
 .prefix_type_icon {
-	width: 18px;
-	height: 18px;
-	margin: 2px;
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+	margin: 4px;
+	font-size: 10px;
     font-weight: bold;
     text-align: center;
-	vertical-align: center;
+	vertical-align: middle;
     -moz-border-radius: 2px 2px 2px 2px;
     -webkit-border-radius: 2px;
 }
@@ -486,10 +498,6 @@ input[type="submit"] {
     padding: 5px;
     padding-top: 0px;
     padding-bottom: 0px;
-}
-
-.exp_button {
-    cursor: pointer;
 }
 
 .help-text {
