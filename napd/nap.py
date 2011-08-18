@@ -263,7 +263,7 @@ class Nap:
         """ Return address-family (4 or 6) for IP or None if invalid address
         """
 
-        parts = str(ip).split("/")
+        parts = unicode(ip).split("/")
         if len(parts) == 1:
             # just an address
             if self._is_ipv4(ip):
