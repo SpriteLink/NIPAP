@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding: utf-8
 
 import xmlrpclib
 
@@ -12,10 +13,13 @@ parser.add_option('-p', '--port', dest='port', type='int', default='1337', help=
 
 server_url = 'http://127.0.0.1:%(port)d/XMLRPC' % { 'port': options.port }
 server = xmlrpclib.Server(server_url, allow_none=1);
-time.sleep(5)
 
 t0 = time.time()
-res = server.smart_search_prefix({ 'name': 'global' }, 'avk', { 'max_result': 500 })
+import sys
+ss = u'å'
+print "Type of search string:", type(ss)
+print ss
+res = server.smart_search_prefix({ 'name': 'global' }, ss, { 'max_result': 500 })
 t1 = time.time()
 d1 = t1-t0
 print "Timing:", d1
