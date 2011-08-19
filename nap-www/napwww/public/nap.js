@@ -147,6 +147,68 @@ function removeVerify() {
 
 }
 
+
+/*
+ * Display the search help "pop-up".
+ */
+function displaySearchHelp() {
+
+	var c = '';
+	c += '<div class="dialog_text" style="padding: 15px;">' +
+		"Searching is the primary method of navigating the many thousand of prefixes that NIPAP is built to handle. It's very similar to how popular search engines, such as Google, Yahoo or Bing, are used." +
+		"<h4>Matching text</h4>Just as with any search engine, you can enter a word or multiple words to match the text information associated with a prefix, that is the description or comment field. Each word is treated as a search 'term' and all search terms are joined together by the boolean operator AND. That means that searching for <i>'<b>foo bar</b>'</i> will be interpreted as a search for <i>'<b>foo</b>'</i> and <i>'<b>bar</b>'</i>. Any match must contain both the word <i>'<b>foo</b>'</i> and the word <i>'<b>bar</b>'</i>, though not necessarily in that order. <i>'<b>bar foo</b>'</i> will match, just as <i>'<b>foo</b> test test <b>bar</b>'</i> will match." +
+		   "<h4>IP addresses / prefixes</h4>Searching for IP addresses are specially treated and will only match in the IP address column. Simply enter a complete IPv4 or IPv6 address and it will be automatically interpreted as an IP address.<br/><br/>It is possible to match entire prefixes and all their content by searching for a prefix in CIDR notation (e.g. 192.168.1.0/24). Searching for 192.168.1.x or 192.168.1 (as some would expect to match everything in 192.168.1.0/24) will not work as they will not be interpreted as prefixes but as text." +
+		   "<h3>Examples</h3>" +
+		   "To find what the IP address 192.168.1.1 is used for:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1" +
+		   "<br/><br/>To list all addresses inside 172.16.0.0/24:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;172.16.0.0/24" +
+		   "<br/><br/>To match prefixes with 'TEST-ROUTER-1' in description or comment and that are somewhere in the network 10.0.0.0/8:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.0/8 TEST-ROUTER-1" +
+		   '</div>';
+
+	d = showDialogHelp('search_help', 'Searching', c);
+
+	return false;
+}
+
+/*
+ * Show a help dialog
+ */
+function showDialogHelp(id, title, content) {
+	var c = '<div style="padding: 10px; border-bottom: 1px solid #cccccc; font-weight: bold; font-size: 16px;">' + title + '</div>';
+	c += '<a href="javascript:void(0);" style="position: absolute; top: 10px; right: 10px;" onclick="hideDialog(\'#' + id + '\')">close</a>'
+	c += content;
+	d = showDialog(id, c);
+	return d;
+}
+
+/*
+ * Show general dialog
+ * This dialog is meant to be customized by intermediary functions
+ */
+function showDialog(id, content) {
+	log('creating dialog, id: ' + id)
+	$('body').append('<div class="fade_bg">');
+	$('body').append('<div class="dialog" style="width: 800px; margin-left: -400px; top: 100px;" id="' + id + '">');
+
+	var d = $('#' + id);
+	d.append(content)
+
+	$(".fade_bg").fadeIn(200);
+	$("#search_help").fadeIn(200);
+
+	return $('#' + id);
+}
+
+/*
+ * Hide / remove a dialog / pop-up
+ */
+function hideDialog(dialog) {
+	$(dialog).fadeOut(200);
+	$(".fade_bg").fadeOut(200);
+	window.setTimeout(function() { $(dialog).remove(); }, 200);
+	window.setTimeout(function() { $(".fade_bg").remove(); }, 200);
+}
+
+
 /*
  * Error handler for ajax-errors.
  *

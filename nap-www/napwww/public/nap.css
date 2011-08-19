@@ -70,23 +70,23 @@ a.menu_link:hover {
     z-index: 0;
     position: absolute;
     width: 100%;
-	text-align: center;
+    text-align: center;
 }
 
 .content_inner {
-	width: 70%;
-	max-width: 1000px;
-	display: inline-block;
-	text-align: left;
+    width: 70%;
+    max-width: 1000px;
+    display: inline-block;
+    text-align: left;
 }
 
 .page-title {
     border-radius: 3px;
     -moz-border-radius: 3px 3px 3px 3px;
     -webkit-border-radius: 3px;
-	border-color: #D1D1D1 #D1D1D1 #BBBBBB;
-	border-style: solid;
-	border-width: 1px;
+    border-color: #D1D1D1 #D1D1D1 #BBBBBB;
+    border-style: solid;
+    border-width: 1px;
 
     background-color: #cccccc;
     background-image: -webkit-gradient(linear, left top, left bottom, from(#eeeeee), to(#cccccc));
@@ -96,14 +96,14 @@ a.menu_link:hover {
     background-image: -o-linear-gradient(top, #eeeeee, #cccccc);
     background-image: linear-gradient(top, #eeeeee, #cccccc);
 
-	height: 20px;
-	padding: 5px;
-	padding-bottom: 0px;
-	margin-top: 30px;
-	margin-bottom: 15px;
+    height: 20px;
+    padding: 5px;
+    padding-bottom: 0px;
+    margin-top: 30px;
+    margin-bottom: 15px;
 
-	font-weight: bold;
-	color: #555555;
+    font-weight: bold;
+    color: #555555;
 }
 
 #schema_selector {
@@ -237,7 +237,7 @@ input[name="search_button"] {
     width: 100px;
 }
 input[type="submit"] {
-	line-height: 0;
+    line-height: 0;
 }
 
 .button:hover {
@@ -317,30 +317,30 @@ input[type="submit"] {
 }
 
 .option div,dl,dt,dd {
-	padding: 1px;
-	margin: 0;
+    padding: 1px;
+    margin: 0;
 }
 
 .option dl {
-	display: block;
+    display: block;
 }
 .option dt,dd {
-	padding: 8px;
-	display: inline-block;
+    padding: 8px;
+    display: inline-block;
 }
 .option dt {
-	width: 160px;
-	vertical-align: top;
-	text-align: right;
-	padding-right: 0;
-	font-weight: bold;
+    width: 160px;
+    vertical-align: top;
+    text-align: right;
+    padding-right: 0;
+    font-weight: bold;
 }
 .option dd {
-	width: 70%;
+    width: 70%;
 }
 
 .option input,textarea {
-	border: 1px solid #999999;
+    border: 1px solid #999999;
 }
 
 .option:hover {
@@ -348,28 +348,28 @@ input[type="submit"] {
 }
 
 .rule {
-	border-bottom: 1px solid #DDDDDD;
+    border-bottom: 1px solid #DDDDDD;
 }
 
 .required {
-	color: #ea3333;
-	font-size: 1.5em;
-	font-weight: bold;
-	font-family: arial;
+    color: #ea3333;
+    font-size: 1.5em;
+    font-weight: bold;
+    font-family: arial;
 }
 
 .listing th,td {
-	padding: 5px;
-	padding-left: 10px;
+    padding: 5px;
+    padding-left: 10px;
 }
 
 .listing th {
-	border-bottom: 1px solid #333333;
-	font-size: 1.1em;
+    border-bottom: 1px solid #333333;
+    font-size: 1.1em;
 }
 
 .listing td {
-	padding-right: 30px;
+    padding-right: 30px;
 }
 
 .prefix_list {
@@ -381,21 +381,21 @@ input[type="submit"] {
 }
 
 .prefix_entry {
-	display: table;
-	line-height: 18px;
-	width: 100%;
-	max-width: 1200px;
-	font-size: 12px;
+    display: table;
+    line-height: 18px;
+    width: 100%;
+    max-width: 1200px;
+    font-size: 12px;
 }
 
 .prefix_row {
-	display: table-row;
+    display: table-row;
 }
 
 .prefix_column {
-	display: table-cell;
-	vertical-align: center;
-	padding: 2px;
+    display: table-cell;
+    vertical-align: center;
+    padding: 2px;
 }
 
 .row_match {
@@ -403,7 +403,7 @@ input[type="submit"] {
 }
 
 .row_collateral {
-	color: #aaaaaa;
+    color: #aaaaaa;
 }
 
 .row_hover {
@@ -422,10 +422,10 @@ input[type="submit"] {
 
 .prefix_exp {
     cursor: pointer;
-/*	display: inline-block; */
-	width: 5px;
-	margin-right: 3px;
-	text-align: center;
+/*    display: inline-block; */
+    width: 5px;
+    margin-right: 3px;
+    text-align: center;
 }
 
 .prefix_prefix { }
@@ -433,14 +433,14 @@ input[type="submit"] {
 .prefix_type { }
 
 .prefix_type_icon {
-	width: 16px;
-	height: 16px;
-	line-height: 16px;
-	margin: 4px;
-	font-size: 10px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    margin: 4px;
+    font-size: 10px;
     font-weight: bold;
     text-align: center;
-	vertical-align: middle;
+    vertical-align: middle;
     -moz-border-radius: 2px 2px 2px 2px;
     -webkit-border-radius: 2px;
 }
@@ -528,15 +528,22 @@ input[type="submit"] {
     min-height: 100px;
     width: 300px;
     background: #FFFFFF;
-    border: 2px solid #cecece;
     z-index: 200;
-    top: 260px;
+    top: 160px;
     left: 50%;
     margin-left: -150px;
-    border: 5px solid #cacaca;
+    border: 3px solid #cacaca;
     background-color: #ffffff;
 /*    width: 100%;
     height: 100%; */
+
+    -webkit-box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    -moz-box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+
+    border-radius: 8px;
+    -moz-border-radius: 8px 8px 8px 8px;
+    -webkit-border-radius: 8px;
 }
 
 /*
@@ -579,14 +586,14 @@ input[type="submit"] {
  */
 .fade_bg {
     display: none;
-    opacity: 0.7;
+    opacity: 0.5;
     position: fixed;
     _position: absolute; /* Hack for IE 6 */
     height: 100%;
     width: 100%;
     top: 0;
     left: 0;
-    background: #000000;
+    background: #444444;
     border: 1px solid #cecece;
     z-index: 100;
     text-align: center;

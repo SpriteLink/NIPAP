@@ -17,9 +17,12 @@
                     <td style="padding-bottom: 0px;">
                         <table cellpadding="0" cellspacing="0">
                             <tr>
-                                <td style="padding-right: 20px">
+                                <td style="padding-right: 20px;">
                                     <input id="query_string{{ id_suffix }}" type="text" size="30" autocomplete="off" autofocus="autofocus">
-                                    <div style="font-size: 10px; margin: 0px; padding: 1px 1px 1px 10px;" id="search_stats">&nbsp;</div>
+                                    <div style="font-size: 10px; margin: 0px; padding: 1px 1px 1px 10px; width: 100%; position: relative;">
+                                        <div id="search_stats">&nbsp;</div>
+                                        <div style="padding: 1px 1px 1px 10px; position: absolute; top: 0px; right: 15px"><a href="javascript:void(0);" onclick="displaySearchHelp();">search help?</a></div>
+                                    </div>
                                 </td>
                                 <td style="vertical-align: top;">
                                     <div id="sbd">
@@ -113,7 +116,8 @@
 
 {% macro prefix_search_result(id_suffix='') %}
 <div id="search_result_help" style="text-align: center; padding: 30px; color: #777777;">
-	There are no results to display. Please enter a search query!
+    There are no results to display. Please enter a search query!<br>
+    <a href="javascript:void(0);" onclick="displaySearchHelp();">See the help section on how to perform a search.</a>
 </div>
 <div class="prefix_list" id="prefix_list{{ id_suffix }}">
 </div>
