@@ -559,6 +559,10 @@ input[type="submit"] {
     background-image: -ms-linear-gradient(top, #f6f8f8, #ebeced);
     background-image: -o-linear-gradient(top, #f6f8f8, #ebeced);
     background-image: linear-gradient(top, #f6f8f8, #ebeced);
+
+    border-radius: 8px 8px 0 0;
+    -moz-border-radius: 8px 8px 0 0;
+    -webkit-border-radius: 8px 8px 0 0;
 }
 
 /*
