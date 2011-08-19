@@ -584,6 +584,16 @@ input[type="submit"] {
 }
 
 /*
+ * Used to give an anchor for tooltips
+ */
+.question-mark {
+	font-size: 14px;
+	font-weight: bold;
+	color: #4444cc;
+	text-shadow: 2px 2px 2px rgba(0, 0, 150, 0.6);
+}
+
+/*
  * Div placed on top of everything to fade background
  */
 .fade_bg {

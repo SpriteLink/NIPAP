@@ -40,7 +40,7 @@
 		<div class="option">
 			<dl>
 				<dt>
-					Default type
+					<span class="question-mark tooltip" title="TODO: fill me in">&nbsp;&nbsp;?&nbsp;&nbsp;</span>Default type
 				</dt>
 				<dd>
 					<input id="radio-default-type-reservation" type="radio" name="default_type" value="reservation" {% if c.pool is defined %}{% if c.pool.default_type == 'reservation' %} checked{% endif %}{% endif %}>
@@ -58,7 +58,7 @@
 		<div class="option">
 			<dl>
 				<dt>
-					Default IPv4 prefix length
+					<span class="question-mark tooltip" title="TODO: fill me in">&nbsp;&nbsp;?&nbsp;&nbsp;</span>Default IPv4 prefix length
 				</dt>
 				<dd>
 					<input type="text" name="ipv4_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv4_default_prefix_length or '' }}{% endif %}" class="tooltip" title="The default IPv4 prefix length of prefixes assigned from this pool. Should be an integer value, for example 24 or 31.">
@@ -71,7 +71,7 @@
 		<div class="option">
 			<dl>
 				<dt>
-					Default IPv6 prefix length
+					<span class="question-mark tooltip" title="TODO: fill me in">&nbsp;&nbsp;?&nbsp;&nbsp;</span>Default IPv6 prefix length
 				</dt>
 				<dd>
 					<input type="text" name="ipv6_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv6_default_prefix_length or '' }}{% endif %}" class="tooltip" title="The default IPv6 prefix length of prefixes assigned from this pool. Should be an integer value, for example 64 or 112.">
