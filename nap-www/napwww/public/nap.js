@@ -172,13 +172,31 @@ function displaySearchHelp() {
 }
 
 /*
+ * Show a dialog with an OK button, typically used for simple notifications
+ */
+function showDialogOK(id, title, content) {
+	var c = '<h3 class="dialog_title">' + title + '</h3>';
+	c += '<div class="dialog_text">' + content + '</div>';
+
+	c += '<div class="dialog_options">' +
+		'<div class="button button_green" id="close_dialog_ok_btn">' +
+		'<div style="display: inline-block; vertical-align: middle;">OK</div>' +
+		'</div>';
+
+	d = showDialog(id, c);
+	$('#close_dialog_ok_btn').click(function() { hideDialog(id); });
+
+	return d;
+}
+
+/*
  * Show a help dialog
  */
 function showDialogHelp(id, title, content) {
 	var c = '<div style="padding: 10px; border-bottom: 1px solid #cccccc; font-weight: bold; font-size: 16px;">' + title + '</div>';
-	c += '<a href="javascript:void(0);" style="position: absolute; top: 10px; right: 10px;" onclick="hideDialog(\'#' + id + '\')">close</a>'
+	c += '<a href="javascript:void(0);" style="position: absolute; top: 10px; right: 10px;" onclick="hideDialog(\'' + id + '\')">close</a>'
 	c += content;
-	d = showDialog(id, c);
+	d = showDialog(id, c, 800, 60);
 	return d;
 }
 
@@ -186,16 +204,29 @@ function showDialogHelp(id, title, content) {
  * Show general dialog
  * This dialog is meant to be customized by intermediary functions
  */
-function showDialog(id, content) {
-	log('creating dialog, id: ' + id)
+function showDialog(id, content, width, from_top) {
+	// figure out default width
+	if (width == undefined) {
+		width = 400;
+	} else {
+		width = parseInt(width);
+	}
+
+	// figure out default distance from top of screen
+	if (from_top == undefined) {
+		from_top = 160;
+	} else {
+		from_top = parseInt(from_top);
+	}
+
 	$('body').append('<div class="fade_bg">');
-	$('body').append('<div class="dialog" style="width: 800px; margin-left: -400px; top: 100px;" id="' + id + '">');
+	$('body').append('<div class="dialog" style="width: ' + width + 'px; margin-left: -' + (width / 2) + 'px; top: ' + from_top + 'px;" id="' + id + '">');
 
 	var d = $('#' + id);
 	d.append(content)
 
 	$(".fade_bg").fadeIn(200);
-	$("#search_help").fadeIn(200);
+	$('#' + id).fadeIn(200);
 
 	return $('#' + id);
 }
@@ -204,9 +235,10 @@ function showDialog(id, content) {
  * Hide / remove a dialog / pop-up
  */
 function hideDialog(dialog) {
-	$(dialog).fadeOut(200);
+	log('close called: ' + dialog);
+	$('#' + dialog).fadeOut(200);
 	$(".fade_bg").fadeOut(200);
-	window.setTimeout(function() { $(dialog).remove(); }, 200);
+	window.setTimeout(function() { $('#' + dialog).remove(); }, 200);
 	window.setTimeout(function() { $(".fade_bg").remove(); }, 200);
 }
 
