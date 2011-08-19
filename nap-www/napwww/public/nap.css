@@ -486,12 +486,10 @@ input[type="submit"] {
 }
 
 .opt_left {
-    width: 200px;
     vertical-align: top;
     padding: 5px;
     padding-top: 0px;
     padding-bottom: 0px;
-    padding-right: 50px;
 }
 
 .opt_right {
