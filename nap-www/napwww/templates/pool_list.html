@@ -39,7 +39,7 @@
 			{% for pool in c.pools %}
 			<tr class="pool_row">
 				<td style="padding-left: 30px;">{{ pool.name }}</td>
-				<td>{{ pool.description }}</td>
+				<td>{{ pool.description or '' }}</td>
 				<td>{{ pool.default_type }}</td>
 				<td>{{ pool.ipv4_default_prefix_length }} / {{ pool.ipv6_default_prefix_length }}</td>
 				<td>
