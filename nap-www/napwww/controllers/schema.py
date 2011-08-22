@@ -73,6 +73,11 @@ class SchemaController(BaseController):
                 s = Schema()
                 s.name = request.params['name']
                 s.description = request.params['description']
+                if request.params['vrf'].strip() == '':
+                    s.vrf = None
+                else:
+                    s.vrf = request.params['vrf']
+
                 s.save()
                 redirect(url(controller='schema', action='list'))
 

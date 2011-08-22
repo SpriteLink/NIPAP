@@ -1,7 +1,7 @@
 {% if c.action == 'edit' %}
-<form method="post" action="{{ h.url(controller="schema", action="edit", id=c.edit_schema.id) }}">
+<form method="post" name="schema_form" action="{{ h.url(controller="schema", action="edit", id=c.edit_schema.id) }}">
 {% else %}
-<form method="post" action="{{ h.url(controller="schema", action="add") }}">
+<form method="post" name="schema_form" action="{{ h.url(controller="schema", action="add") }}">
 {% endif %}
 <input type="hidden" name="action" value="{{ c.action }}">
 

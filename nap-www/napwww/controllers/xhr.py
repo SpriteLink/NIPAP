@@ -60,6 +60,27 @@ class XhrController(BaseController):
 
 
 
+    def add_schema(self):
+        """ Add a new schema to Nap and returns its data.
+        """
+
+        s = Schema()
+        if 'name' in request.params:
+            s.name = request.params['name']
+        if 'description' in request.params:
+            s.description = request.params['description']
+        if 'vrf' in request.params:
+            s.vrf = request.params['vrf']
+
+        try:
+            s.save()
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(s, cls=NapJSONEncoder)
+
+
+
     def list_pool(self):
         """ List pools and return JSON encoded result.
         """
@@ -321,7 +342,8 @@ class NapJSONEncoder(json.JSONEncoder):
             return {
                 'id': obj.id,
                 'name': obj.name,
-                'description': obj.description
+                'description': obj.description,
+                'vrf': obj.vrf
             }
 
         elif isinstance(obj, Pool):
@@ -357,6 +379,7 @@ class NapJSONEncoder(json.JSONEncoder):
                 'country': obj.country,
                 'span_order': obj.span_order,
                 'authoritative_source': obj.authoritative_source,
+                'monitor': obj.monitor,
                 'alarm_priority': obj.alarm_priority,
                 'display': obj.display,
                 'match': obj.match,
