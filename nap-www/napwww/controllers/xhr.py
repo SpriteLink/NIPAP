@@ -81,6 +81,31 @@ class XhrController(BaseController):
 
 
 
+    def edit_schema(self, id):
+        """ Edit a schema.
+        """
+
+        try:
+            s = Schema.get(int(id))
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        if 'name' in request.params:
+            s.name = request.params['name']
+        if 'description' in request.params:
+            s.description = request.params['description']
+        if 'vrf' in request.params:
+            s.vrf = request.params['vrf']
+
+        try:
+            s.save()
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(s, cls=NapJSONEncoder)
+
+
+
     def list_pool(self):
         """ List pools and return JSON encoded result.
         """
