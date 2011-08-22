@@ -649,7 +649,6 @@ function optToDepth(opt) {
 
 }
 
-
 /*
  * Insert prefixes into the list
  */
@@ -662,6 +661,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 	indent_head[pref_list[0].indent] = start_container;
 
+	container = start_container;;
 	// go through received prefixes
 	for (key in pref_list) {
 
@@ -692,6 +692,23 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 				}
 				expandGroup(prev_prefix.id);
 			}
+			container = indent_head[prefix.indent];
+		}
+		if (prefix.type == 'host' && prev_prefix.indent < prefix.indent && prefix.match == false) {
+			container.append('<div id="prefix_hidden_container' + prefix.id + '" class="prefix_hidden_container"></div>');
+			container.append('<a id="prefix_hidden_text' + prefix.id + '" class="prefix_hidden_text" href="javascript:void(0);" onclick="unhide(' + prefix.id + ');">(hidden prefixes, click to display)</a>');
+			container = $('#prefix_hidden_container' + prefix.id);
+		}
+		if (prev_prefix.indent == prefix.indent) {
+		   if (prev_prefix.match == false && prefix.match == true) {
+			   // switching into a match from a non-match, so we should display a "expand upwards" arrow
+			   container = indent_head[prefix.indent];
+		   } else if (prev_prefix.match == true && prefix.match == false) {
+				// switching into a non-match from a match, so we should display a "expand downwards" arrow
+				container.append('<div id="prefix_hidden_container' + prefix.id + '" class="prefix_hidden_container"></div>');
+				container.append('<a id="prefix_hidden_text' + prefix.id + '" class="prefix_hidden_text" onclick="unhide(' + prefix.id + ');">(hidden prefixes, click to display)</a>');
+				container = $('#prefix_hidden_container' + prefix.id);
+		   }
 		}
 
 		prev_prefix = prefix;
@@ -701,7 +718,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 			continue;
 		}
 
-		showPrefix(prefix, indent_head[prefix.indent]);
+		showPrefix(prefix, container);
 
 		// add collapse container for current prefix
 		if (!hasMaxPreflen(prefix)) {
@@ -736,6 +753,15 @@ function collapseClick(id) {
 		toggleGroup(id);
 	}
 
+}
+
+/*
+ * Expand a container containing hidden prefixes and remove the "show" link
+ */
+function unhide(id) {
+	log("Unhide called for " + id);
+	$('#prefix_hidden_container' + id).show();
+	$('#prefix_hidden_text' + id).remove();
 }
 
 

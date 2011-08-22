@@ -381,6 +381,16 @@ input[type="submit"] {
     padding-right: 30px;
 }
 
+.prefix_hidden_container {
+	display: none;
+}
+
+.prefix_hidden_text {
+	padding-left: 50px;
+	color: #aaaaaa;
+	font-size: 10px;
+}
+
 .prefix_list {
     margin-left: auto;
     margin-right: auto;
@@ -391,10 +401,11 @@ input[type="submit"] {
 
 .prefix_entry {
     display: table;
-    line-height: 18px;
+    line-height: 10px;
     width: 100%;
     max-width: 1200px;
     font-size: 12px;
+    padding: 0;
 }
 
 .prefix_row {
@@ -404,7 +415,6 @@ input[type="submit"] {
 .prefix_column {
     display: table-cell;
     vertical-align: center;
-    padding: 2px;
 }
 
 .row_match {
