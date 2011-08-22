@@ -99,6 +99,9 @@ class PoolController(BaseController):
             c.pool.save()
             redirect(url(controller = 'pool', action = 'list', schema = c.schema.id))
 
+        c.search_opt_parent = 'all'
+        c.search_opt_child = 'none'
+
         return render("/pool_edit.html")
 
 
