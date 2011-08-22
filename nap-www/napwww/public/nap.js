@@ -506,7 +506,10 @@ function receivePrefixList(search_result) {
 		var interp = search_result.interpretation[key];
 		var text = '<b>' + interp.string + ':</b> ' + interp.interpretation;
 		var tooltip = '';
-		if (interp.attribute == 'prefix' && interp.operator == 'contained_within_equals') {
+		if (interp.interpretation == 'unclosed quote') {
+			text += ', please close quote!';
+			tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';
+		} else if (interp.attribute == 'prefix' && interp.operator == 'contained_within_equals') {
 			text += ' within ';
 
 			if ('strict_prefix' in interp) {

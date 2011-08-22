@@ -1540,8 +1540,11 @@ class Nap:
         # find query parts
         # XXX: notice the ugly workarounds for shlex not supporting Unicode
         query_str_parts = []
-        for part in shlex.split(query_str.encode('utf-8')):
-            query_str_parts.append({ 'string': part.decode('utf-8') })
+        try:
+            for part in shlex.split(query_str.encode('utf-8')):
+                query_str_parts.append({ 'string': part.decode('utf-8') })
+        except:
+            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'prefix_list': [] }
 
         # go through parts and add to query_parts list
         query_parts = list()
