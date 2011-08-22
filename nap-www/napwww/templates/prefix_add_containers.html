@@ -133,6 +133,9 @@
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Prefix allocation options</h3>
+			<div class="options-guide">
+				You have chosen to allocate your new prefix from inside another, already existing, prefix. Please use the search tool to find and select the prefix which you would like to allocate your new prefix from.
+			</div>
 			{{ nap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
 			{{ nap.prefix_search_result() }}
 		</div>

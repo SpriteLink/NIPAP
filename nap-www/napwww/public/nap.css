@@ -325,6 +325,12 @@ input[type="submit"] {
     background-image: linear-gradient(top, #f6f8f8, #ebeced);
 }
 
+.options-guide {
+	padding: 12px;
+	background-color: #ccddff;
+	margin-bottom: 15px;
+}
+
 .option div,dl,dt,dd {
     padding: 1px;
     margin: 0;
