@@ -17,7 +17,7 @@
             performPrefixSearch(true);
             e.preventDefault();
         });
-        $("#query_string").keyup(performPrefixSearch);
+        $("#query_string").keyup(prefixSearchKey);
         $('input[name="search_opt_parent"]').change(performPrefixSearch);
         $('input[name="search_opt_child"]').change(performPrefixSearch);
 

@@ -50,6 +50,8 @@ var offset = 0;
 var outstanding_nextpage = 0;
 var end_of_result = 0;
 
+var search_key_timeout = 0;
+
 /**
  * A general log function
  *
@@ -269,6 +271,16 @@ function collapseGroup(id) {
 }
 
 /*
+ * Wrapper for pacing our searches somewhat
+ *
+ * 200ms works out to be a pretty good delay for a fast typer
+ */
+function prefixSearchKey() {
+	clearTimeout(search_key_timeout);
+	search_key_timeout = setTimeout("performPrefixSearch()", 200);
+}
+
+/*
  * Perform a search operation
  */
 function performPrefixSearch(explicit) {
@@ -282,6 +294,7 @@ function performPrefixSearch(explicit) {
 		$('#search_interpret_container').empty();
 		$('#search_result_help').show();
 		$('#nextpage').hide();
+		query_id += 1;
 		return true;
 	}
 	end_of_result = 0;
