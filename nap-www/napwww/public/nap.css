@@ -525,6 +525,11 @@ input[type="submit"] {
     display: none;
 }
 
+.prefix_added_entry {
+	padding: 5px;
+	background-color: #ccffcc;
+}
+
 /*
  * A dialog box which pops up to confirm things.
  */
