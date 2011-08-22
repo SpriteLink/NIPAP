@@ -506,8 +506,50 @@ input[type="submit"] {
 .prefix_description {
 }
 
+.prefix_button_col {
+    width: 25px;
+}
+
 .prefix_collapse {
     display: none;
+}
+
+.prefix_button {
+    width: 23px;
+    height: 16px;
+}
+
+.prefix_button_icon {
+    background: url('/images/edit.png') no-repeat;
+    width: 18px;
+    height: 12px;
+    margin: 2px;
+}
+
+.minibutton {
+/*    color: #333; */
+/*    text-shadow: 1px 1px 0 white; */
+    cursor: pointer;
+    border: 1px solid #D4D4D4;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    background: #F4F4F4;
+    filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#f4f4f4',endColorstr='#ececec');
+    background: -webkit-gradient(linear,left top,left bottom,from(#F4F4F4),to(#ECECEC));
+    background: -moz-linear-gradient(top,#F4F4F4,#ECECEC);
+}
+
+.minibutton:hover {
+    border: 1px solid #518cc6;
+    background: #589adb;
+    filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#589adb',endColorstr='#3173b4');
+    background: -webkit-gradient(linear,left top,left bottom,from(#589adb),to(#3173b4));
+    background: -moz-linear-gradient(top,#589adb,#3173b4);
+}
+
+.minibutton:hover .prefix_button_icon {
+    background-position: left bottom;
 }
 
 .opt_left {

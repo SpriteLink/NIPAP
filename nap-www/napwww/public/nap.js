@@ -484,6 +484,18 @@ function showPrefix(prefix, parent_container) {
 		prefix_description.html(prefix.description);
 	}
 
+    // add button
+    prefix_row.append('<div id="prefix_button_col' + prefix.id + '">')
+    var prefix_button_col = $('#prefix_button_col' + prefix.id);
+    prefix_button_col.addClass('prefix_column');
+    prefix_button_col.addClass('prefix_button_col');
+    prefix_button_col.append('<div id="prefix_button' + prefix.id + '">');
+
+    var prefix_button = $('#prefix_button' + prefix.id);
+    prefix_button.addClass('minibutton');
+    prefix_button.addClass('prefix_button');
+    prefix_button.html("<div class='prefix_button_icon' class='prefix_button_icon'>&nbsp;</span>");
+
 }
 
 
