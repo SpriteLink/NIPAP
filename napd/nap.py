@@ -890,6 +890,7 @@ class Nap:
             prefix_attr['family'] = 'family'
             prefix_attr['comment'] = 'comment'
             prefix_attr['type'] = 'type'
+            prefix_attr['node'] = 'node'
             prefix_attr['country'] = 'country'
             prefix_attr['span_order'] = 'span_order'
             prefix_attr['authoritative_source'] = 'authoritative_source'
@@ -1627,13 +1628,21 @@ class Nap:
                 query_parts.append({
                     'operator': 'or',
                     'val1': {
-                        'operator': 'regex_match',
-                        'val1': 'comment',
-                        'val2': query_str_part['string']
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'regex_match',
+                            'val1': 'comment',
+                            'val2': query_str_part['string']
+                        },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'description',
+                            'val2': query_str_part['string']
+                        }
                     },
                     'val2': {
                         'operator': 'regex_match',
-                        'val1': 'description',
+                        'val1': 'node',
                         'val2': query_str_part['string']
                     }
                 })
