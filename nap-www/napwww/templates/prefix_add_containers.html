@@ -173,7 +173,7 @@
 						Prefix
 					</dt>
 					<dd>
-						<input type="text" name="prefix_prefix" value="{{ c.prefix }}">
+						<input type="text" name="prefix_prefix" value="{{ c.prefix }}"> <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
 					</dd>
 				</dl>
 			</div>
@@ -191,7 +191,7 @@
 						<input id="radio-prefix-type-assignment" type="radio" name="prefix_type" value="assignment">
 						<label for="radio-prefix-type-assignment">Assignment</label>
 						<input id="radio-prefix-type-host" type="radio" name="prefix_type" value="host">
-						<label id="label-prefix-type-host" for="radio-prefix-type-host">Host</label>
+						<label id="label-prefix-type-host" for="radio-prefix-type-host">Host</label> <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
 					</dd>
 				</dl>
 			</div>
@@ -204,7 +204,7 @@
 						Description
 					</dt>
 					<dd>
-						<input type="text" name="prefix_description" class="tooltip" title="A brief description of the prefix.">
+						<input type="text" name="prefix_description" style="width: 80%;" class="tooltip" title="A brief description of the prefix.">
 					</dd>
 				</dl>
 			</div>
@@ -217,7 +217,7 @@
 						Comment
 					</dt>
 					<dd>
-						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer; display: none;">add comment</span><input type="text" name="prefix_comment">
+						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer; display: none;">add comment</span><input type="text" name="prefix_comment" style="width: 80%;">
 					</dd>
 				</dl>
 			</div>
@@ -243,7 +243,7 @@
 						Country
 					</dt>
 					<dd>
-						<input type="text" name="prefix_country" class="tooltip" title="Two-letter country code according to ISO-3166-1">
+						<input type="text" name="prefix_country" size=3 class="tooltip" title="Two-letter country code according to ISO-3166-1">
 					</dd>
 				</dl>
 			</div>
@@ -256,7 +256,7 @@
 						SPAN order
 					</dt>
 					<dd>
-						<input type="text" name="prefix_span_order">
+						<input type="text" name="prefix_span_order" size=10>
 					</dd>
 				</dl>
 			</div>
@@ -268,16 +268,17 @@
 						Monitor
 					</dt>
 					<dd>
-                        <input type="checkbox" name="prefix_monitor" value="true">
-                        <span id="alarm_priority_container">
-                            Priority:
-                            <input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low" checked>
-                            <label for="radio-prefix-alarm-prio-low">Low</label>
-                            <input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium">
-                            <label for="radio-prefix-alarm-prio-medium">Medium</label>
-                            <input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high">
-                            <label for="radio-prefix-alarm-prio-high">High</label>
-                        </span>
+						<input type="checkbox" name="prefix_monitor" class="tooltip" title="Check to monitor this prefix." value="true"><br/>
+						<span id="alarm_priority_container" style="">
+							<br/>
+							<span style="font-weight: bold; vertical-align: top;">Priority</span>
+							<input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low" checked>
+							<label for="radio-prefix-alarm-prio-low">Low</label>
+							<input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium">
+							<label for="radio-prefix-alarm-prio-medium">Medium</label>
+							<input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high">
+							<label for="radio-prefix-alarm-prio-high">High</label>
+						</span>
 					</dd>
 				</dl>
 			</div>
