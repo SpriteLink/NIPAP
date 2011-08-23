@@ -111,44 +111,6 @@ function removeNotice() {
 
 }
 
-/*
- * Display verification dialog.
- * TODO: remove inline javascript on no-option
- * TODO: add support for passing javascript functions instead of URLs
- */
-function displayVerify(msg, url) {
-
-	$('body').append('<div class="fade_bg">');
-	$('body').append('<div class="dialog" id="verify_dialog">');
-	var d = $('#verify_dialog');
-	d.append('<h3 class="dialog_title">Are you sure?</h3>');
-	d.append('<div class="dialog_text">' + msg + '</div>');
-	d.append('<div class="dialog_options">' +
-	'<a href="' + url + '"><div class="button button_green" style="margin: 10px;">' +
-	'<div style="display: inline-block; vertical-align: middle;">YES</div></div></a>' +
-	'<a href="javascript:void(0);" onclick="removeVerify();">' +
-	'<div class="button button_red" style="margin: 10px;">' +
-	'<div style="display: inline-block; vertical-align: middle;">NO</div></div></a>');
-
-	$(".fade_bg").fadeIn(200);
-	$("#verify_dialog").fadeIn(200);
-
-	return false;
-
-}
-
-/*
- * Remove verification dialog
- */
-function removeVerify() {
-
-	$("#verify_dialog").fadeOut(200);
-	$(".fade_bg").fadeOut(200);
-	window.setTimeout(function() { $("#verify_dialog").remove(); }, 200);
-	window.setTimeout(function() { $(".fade_bg").remove(); }, 200);
-
-}
-
 
 /*
  * Display the search help "pop-up".
@@ -166,42 +128,59 @@ function displaySearchHelp() {
 		   "<br/><br/>To match prefixes with 'TEST-ROUTER-1' in description or comment and that are somewhere in the network 10.0.0.0/8:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.0/8 TEST-ROUTER-1" +
 		   '<br/><br/></div>';
 
-	d = showDialogHelp('search_help', 'Searching', c);
+	d = showDialog('search_help', 'Searching', c, 800);
 
 	return false;
 }
 
 /*
- * Show a dialog with an OK button, typically used for simple notifications
+ * Show general dialog
  */
-function showDialogOK(id, title, content) {
-	var c = '<h3 class="dialog_title">' + title + '</h3>';
-	c += '<div class="dialog_text">' + content + '</div>';
+function showDialogYesNo(title, content, targetUrl) {
 
-	c += '<div class="dialog_options">' +
-		'<div class="button button_green" id="close_dialog_ok_btn">' +
-		'<div style="display: inline-block; vertical-align: middle;">OK</div>' +
-		'</div>';
+	var id = 'verify_dialog';
 
-	d = showDialog(id, c);
-	$('#close_dialog_ok_btn').click(function() { hideDialog(id); });
+	var c = '<div>' + content + '</div>';
 
-	return d;
+	var dialog = $(c)
+		.dialog({
+			autoOpen: false,
+			resizable: false,
+			show: 'fade',
+			hide: 'fade',
+			open: function() {
+				$('.ui-widget-overlay').hide().fadeIn('fast');
+				$(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar").addClass("ui-dialog-question");
+				$(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar-close").remove();
+			},
+			modal: true,
+			title: title,
+			buttons: [
+				{
+					class: "button button_red",
+					style: 'margin: 10px; width: 50px;',
+					text: "Yes",
+					click: function() { window.location.href = targetUrl; },
+				},
+				{
+					class: "button button_green",
+					style: 'margin: 10px; width: 50px;',
+					text: "No",
+					click: function() { $(this).dialog("close"); }
+				}
+			]
+		});
+
+	dialog.dialog('open');
+
+	return false;
 }
 
-/*
- * Show a help dialog
- */
-function showDialogHelp(id, title, content) {
-	d = showDialog(id, content, 800, 60);
-	return d;
-}
 
 /*
  * Show general dialog
- * This dialog is meant to be customized by intermediary functions
  */
-function showDialog(id, content, width, from_top) {
+function showDialog(id, title, content, width) {
 	// figure out default width
 	if (width == undefined) {
 		width = 400;
@@ -222,25 +201,13 @@ function showDialog(id, content, width, from_top) {
 			},
 			modal: true,
 			width: width,
-			title: 'Searching'
+			title: title
 		});
 
 	dialog.dialog('open');
 
 	return dialog;
 }
-
-/*
- * Hide / remove a dialog / pop-up
- */
-function hideDialog(dialog) {
-	log('close called: ' + dialog);
-	$('#' + dialog).fadeOut(200);
-	$(".fade_bg").fadeOut(200);
-	window.setTimeout(function() { $('#' + dialog).remove(); }, 200);
-	window.setTimeout(function() { $(".fade_bg").remove(); }, 200);
-}
-
 
 /*
  * Error handler for ajax-errors.

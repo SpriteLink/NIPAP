@@ -579,10 +579,19 @@ input[type="submit"] {
     font-size: 16px;
 }
 
+.ui-dialog-content {
+	padding: 10px;
+}
+
+.ui-dialog-buttonset {
+	position: relative;
+	text-align: center;
+}
+
 /*
  * Dialog box title
  */
-.dialog_title {
+.ui-dialog-question {
     padding: 7px;
     margin: 0;
     background-color: #ebeced;
