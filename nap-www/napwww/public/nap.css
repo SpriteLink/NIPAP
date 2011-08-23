@@ -526,6 +526,63 @@ input[type="submit"] {
     margin: 2px;
 }
 
+.prefix_menu {
+    position: absolute;
+    z-index: 20;
+    display: none;
+    min-width: 100px;
+    border: 1px solid hsl(0, 0%, 79%);
+    font-size: 10px;
+    box-shadow: 0 0 13px rgba(0,0,0,0.31);
+    -webkit-box-shadow: 0 0 13px rgba(0,0,0,0.31);
+    -moz-box-shadow: 0 0 13px rgba(0,0,0,0.31);
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    background-color: #ffffff;
+    color: hsl(0, 0%, 47%);
+}
+
+.prefix_menu > h3 {
+    font-weight: bold;
+    font-size: 11px;
+    text-align: center;
+    text-shadow: 1px 1px 0 hsla(0, 100%, 100%, 1.0);
+    margin: 0px;
+    padding: 5px;
+    background: -webkit-gradient(linear,left top,left bottom,from(hsl(180, 12%, 97%)),to(hsl(180, 13%, 92%)));
+    background: -moz-linear-gradient(top,hsl(180, 12%, 97%),hsl(180, 13%, 92%));
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+    border-bottom: 1px solid hsl(180, 11%, 95%);
+}
+
+.prefix_menu > a {
+    display: block;
+    padding: 5px;
+    text-decoration: none;
+    color: hsl(0, 0%, 40%);
+    border-top: 1px solid hsl(0, 0%, 93%);
+}
+
+.prefix_menu > a:hover {
+    background-color: hsl(210, 53%, 51%);
+    color: #ffffff;
+    text-shadow: 0 0 2px hsla(0, 0%, 0%, 0.6);
+}
+
+.prefix_menu_overlay {
+    display: none;
+    z-index: 10;
+    opacity: 0.0;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+}
+
 .minibutton {
 /*    color: #333; */
 /*    text-shadow: 1px 1px 0 white; */

@@ -153,6 +153,11 @@
         $('#radio-prefix-type-host').remove();
         $('#label-prefix-type-host').remove();
 
+        // capture click event on overlay placed behind prefix menu
+        $(".prefix_menu_overlay").click(function(e) {
+            $(".prefix_menu").hide();
+            $(".prefix_menu_overlay").hide();
+        });
 
         /*
          * Other stuff

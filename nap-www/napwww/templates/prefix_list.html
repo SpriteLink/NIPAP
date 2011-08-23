@@ -21,6 +21,12 @@
         $('input[name="search_opt_parent"]').change(performPrefixSearch);
         $('input[name="search_opt_child"]').change(performPrefixSearch);
 
+        // capture click event on overlay placed behind prefix menu
+        $(".prefix_menu_overlay").click(function(e) {
+            $(".prefix_menu").hide();
+            $(".prefix_menu_overlay").hide();
+        });
+
         // set focus
         $("#query_string").focus();
 
