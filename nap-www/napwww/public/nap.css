@@ -520,7 +520,7 @@ input[type="submit"] {
 }
 
 .prefix_button_icon {
-    background: url('/images/edit.png') no-repeat;
+    background: url('/images/display_menu.png') no-repeat;
     width: 18px;
     height: 12px;
     margin: 2px;
