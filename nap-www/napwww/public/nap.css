@@ -10,12 +10,12 @@ html, body {
 }
 
 a {
-	color: #3333cc;
-	text-decoration: none;
+    color: #3333cc;
+    text-decoration: none;
 }
 
 a:hover {
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
 .top_menu {
@@ -326,9 +326,9 @@ input[type="submit"] {
 }
 
 .options-guide {
-	padding: 12px;
-	background-color: #ccddff;
-	margin-bottom: 15px;
+    padding: 12px;
+    background-color: #ccddff;
+    margin-bottom: 15px;
 }
 
 .option div,dl,dt,dd {
@@ -388,13 +388,13 @@ input[type="submit"] {
 }
 
 .prefix_hidden_container {
-	display: none;
+    display: none;
 }
 
 .prefix_hidden_text {
-	padding-left: 50px;
-	color: #aaaaaa;
-	font-size: 10px;
+    padding-left: 50px;
+    color: #aaaaaa;
+    font-size: 10px;
 }
 
 .prefix_list {
@@ -542,28 +542,18 @@ input[type="submit"] {
 }
 
 .prefix_added_entry {
-	padding: 8px;
-	background-color: #ccffcc;
+    padding: 8px;
+    background-color: #ccffcc;
 }
 
 /*
  * A dialog box which pops up to confirm things.
  */
-.dialog {
-    display: none;
-    position: fixed;
-    _position: absolute; /* Hack for IE 6 */
-    min-height: 100px;
-    width: 300px;
+.ui-dialog {
+    width: 500px;
     background: #FFFFFF;
-    z-index: 200;
-    top: 160px;
-    left: 50%;
-    margin-left: -150px;
     border: 3px solid #cacaca;
     background-color: #ffffff;
-/*    width: 100%;
-    height: 100%; */
 
     -webkit-box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
     -moz-box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
@@ -572,6 +562,21 @@ input[type="submit"] {
     border-radius: 8px;
     -moz-border-radius: 8px 8px 8px 8px;
     -webkit-border-radius: 8px;
+}
+
+.ui-dialog-titlebar-close {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
+
+.ui-dialog-titlebar {
+    border-bottom: 1px solid #cccccc;
+    padding: 10px;
+}
+.ui-dialog-title {
+    font-weight: bold;
+    font-size: 16px;
 }
 
 /*
@@ -617,17 +622,16 @@ input[type="submit"] {
  * Used to give an anchor for tooltips
  */
 .question-mark {
-	font-size: 14px;
-	font-weight: bold;
-	color: #4444cc;
-	text-shadow: 2px 2px 2px rgba(0, 0, 150, 0.6);
+    font-size: 14px;
+    font-weight: bold;
+    color: #4444cc;
+    text-shadow: 2px 2px 2px rgba(0, 0, 150, 0.6);
 }
 
 /*
  * Div placed on top of everything to fade background
  */
-.fade_bg {
-    display: none;
+.ui-widget-overlay {
     opacity: 0.5;
     position: fixed;
     _position: absolute; /* Hack for IE 6 */
@@ -637,7 +641,6 @@ input[type="submit"] {
     left: 0;
     background: #444444;
     border: 1px solid #cecece;
-    z-index: 100;
     text-align: center;
 }
 

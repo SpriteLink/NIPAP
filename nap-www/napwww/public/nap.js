@@ -193,10 +193,7 @@ function showDialogOK(id, title, content) {
  * Show a help dialog
  */
 function showDialogHelp(id, title, content) {
-	var c = '<div style="padding: 10px; border-bottom: 1px solid #cccccc; font-weight: bold; font-size: 16px;">' + title + '</div>';
-	c += '<a href="javascript:void(0);" style="position: absolute; top: 10px; right: 10px;" onclick="hideDialog(\'' + id + '\')">close</a>'
-	c += content;
-	d = showDialog(id, c, 800, 60);
+	d = showDialog(id, content, 800, 60);
 	return d;
 }
 
@@ -212,23 +209,25 @@ function showDialog(id, content, width, from_top) {
 		width = parseInt(width);
 	}
 
-	// figure out default distance from top of screen
-	if (from_top == undefined) {
-		from_top = 160;
-	} else {
-		from_top = parseInt(from_top);
-	}
+	var c = '<div>' + content + '</div>';
 
-	$('body').append('<div class="fade_bg">');
-	$('body').append('<div class="dialog" style="width: ' + width + 'px; margin-left: -' + (width / 2) + 'px; top: ' + from_top + 'px;" id="' + id + '">');
+	var dialog = $(c)
+		.dialog({
+			autoOpen: false,
+			resizable: false,
+			show: 'fade',
+			hide: 'fade',
+			open: function() {
+				$('.ui-widget-overlay').hide().fadeIn('fast');
+			},
+			modal: true,
+			width: width,
+			title: 'Searching'
+		});
 
-	var d = $('#' + id);
-	d.append(content)
+	dialog.dialog('open');
 
-	$(".fade_bg").fadeIn(200);
-	$('#' + id).fadeIn(200);
-
-	return $('#' + id);
+	return dialog;
 }
 
 /*
