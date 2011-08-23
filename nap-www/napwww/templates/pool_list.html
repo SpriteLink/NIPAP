@@ -43,7 +43,7 @@
 				<td>{{ pool.ipv4_default_prefix_length }} / {{ pool.ipv6_default_prefix_length }}</td>
 				<td>
 					<a href="{{ h.url(controller = 'pool', action = 'edit', id = pool.id, schema = c.schema.id) }}">edit</a> | 
-					<a href="{{ h.url(controller = 'pool', action = 'remove', id = pool.id, schema = c.schema.id) }}">del</a>
+					<a href="{{ h.url(controller = 'pool', action = 'remove', id = pool.id, schema = c.schema.id) }}" onclick="showDialogYesNo('Remove {{ pool.name  }}?', 'Are you sure you want to remove {{ pool.name }}? You cannot undo this.', '{{ h.url(controller="pool", action="remove", id=pool.id, schema = c.schema.id) }}'); return false;">del</a>
 				</td>
 			</tr>
 			{% endfor %}
