@@ -2,7 +2,6 @@
 {% set page = 'prefixes' %}
 
 {% block head %}
-<link rel="stylesheet" href="/jquery-ui-1.8.13.custom.css">
 <script src="/jquery-ui-1.8.13.custom.min.js"></script>
 <script>
 
@@ -18,7 +17,7 @@ var alloc_method = '';
 function prefixAdded(data) {
 
     if ('error' in data) {
-        displayNotice('Operation failed', data.message);
+        showDialogNotice('Operation failed', data.message);
     } else {
         $('#prefix_added_container').show();
         // TODO: don't scroll if result is alreday visible

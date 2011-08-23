@@ -77,72 +77,9 @@ function log(msg) {
  * @param title string Title to display above error message.
  * @param msg Message to display to user.
  */
-function displayNotice(title, msg) {
+function showDialogNotice(title, msg) {
 
-	// Don't display more than one popup
-	if ($("#notice_dialog").length) {
-		return;
-	}
-
-	$("body").append('<div class="fade_bg">');
-	$("body").append('<div id="notice_dialog" class="dialog">');
-	$("#notice_dialog").html('<h3 class="dialog_title">' + title + '</h3>' +
-		'<div class="dialog_text">' + msg + "</div>" +
-		'<div class="dialog_options">' +
-		'<div class="button button_green" id="close_notice_btn">' +
-		'<div style="display: inline-block; vertical-align: middle;">OK</div>' +
-		'</div>');
-	$("#close_notice_btn").click(removeNotice);
-
-	$(".fade_bg").fadeIn(200);
-	$("#notice_dialog").fadeIn(200);
-
-}
-
-/*
- * Remove notice popup.
- */
-function removeNotice() {
-
-	$("#notice_dialog").fadeOut(200);
-	$(".fade_bg").fadeOut(200);
-	window.setTimeout(function() { $("#notice_dialog").remove(); }, 200);
-	window.setTimeout(function() { $(".fade_bg").remove(); }, 200);
-
-}
-
-
-/*
- * Display the search help "pop-up".
- */
-function displaySearchHelp() {
-
-	var c = '';
-	c += '<div class="dialog_text" style="padding: 15px;">' +
-		"Searching is the primary method of navigating the many thousand of prefixes that NIPAP is built to handle. It's very similar to how popular search engines, such as Google, Yahoo or Bing, are used." +
-		"<h4>Matching text</h4>Just as with any search engine, you can enter a word or multiple words to match the text information associated with a prefix, that is the description or comment field. Each word is treated as a search 'term' and all search terms are joined together by the boolean operator AND. That means that searching for <i>'<b>foo bar</b>'</i> will be interpreted as a search for <i>'<b>foo</b>'</i> and <i>'<b>bar</b>'</i>. Any match must contain both the word <i>'<b>foo</b>'</i> and the word <i>'<b>bar</b>'</i>, though not necessarily in that order. <i>'<b>bar foo</b>'</i> will match, just as <i>'<b>foo</b> test test <b>bar</b>'</i> will match." +
-		   "<h4>IP addresses / prefixes</h4>Searching for IP addresses are specially treated and will only match in the IP address column. Simply enter a complete IPv4 or IPv6 address and it will be automatically interpreted as an IP address.<br/><br/>It is possible to match entire prefixes and all their content by searching for a prefix in CIDR notation (e.g. 192.168.1.0/24). Searching for 192.168.1.x or 192.168.1 (as some would expect to match everything in 192.168.1.0/24) will not work as they will not be interpreted as prefixes but as text." +
-		   "<h3>Examples</h3>" +
-		   "To find what the IP address 192.168.1.1 is used for:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1" +
-		   "<br/><br/>To list all addresses inside 172.16.0.0/24:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;172.16.0.0/24" +
-		   "<br/><br/>To match prefixes with 'TEST-ROUTER-1' in description or comment and that are somewhere in the network 10.0.0.0/8:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.0/8 TEST-ROUTER-1" +
-		   '<br/><br/></div>';
-
-	d = showDialog('search_help', 'Searching', c, 800);
-
-	return false;
-}
-
-/*
- * Show general dialog
- */
-function showDialogYesNo(title, content, targetUrl) {
-
-	var id = 'verify_dialog';
-
-	var c = '<div>' + content + '</div>';
-
-	var dialog = $(c)
+	var dialog = $('<div>' + msg + '</div>')
 		.dialog({
 			autoOpen: false,
 			resizable: false,
@@ -152,6 +89,43 @@ function showDialogYesNo(title, content, targetUrl) {
 				$('.ui-widget-overlay').hide().fadeIn('fast');
 				$(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar").addClass("ui-dialog-question");
 				$(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar-close").remove();
+			},
+			modal: true,
+			title: title,
+			buttons: [
+				{
+					class: "button button_green",
+					style: 'margin: 10px; width: 50px;',
+					text: "OK",
+					click: function() { $(this).dialog("close"); }
+				}
+			]
+		});
+
+	dialog.dialog('open');
+
+	return false;
+}
+
+/*
+ * Show general confirm dialog
+ */
+function showDialogYesNo(title, msg, targetUrl) {
+	var dialog = $('<div>' + msg + '</div>')
+		.dialog({
+			autoOpen: false,
+			resizable: false,
+			show: 'fade',
+			hide: 'fade',
+			open: function() {
+				$('.ui-widget-overlay').hide().fadeIn('fast');
+				$(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar").addClass("ui-dialog-question");
+				$(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar-close").remove();
+				// XXX: this is a bloody hack to override the jquery ui CSS
+				//		classes, or rather remove them and have our standard
+				//		button look instead
+				$(this).parents(".ui-dialog:first").find(".button").removeClass("ui-state-default");
+				$(this).parents(".ui-dialog:first").find(".button").removeClass("ui-state-focus");
 			},
 			modal: true,
 			title: title,
@@ -207,6 +181,28 @@ function showDialog(id, title, content, width) {
 	dialog.dialog('open');
 
 	return dialog;
+}
+
+
+/*
+ * Display the search help "pop-up".
+ */
+function displaySearchHelp() {
+
+	var c = '';
+	c += '<div class="dialog_text" style="padding: 15px;">' +
+		"Searching is the primary method of navigating the many thousand of prefixes that NIPAP is built to handle. It's very similar to how popular search engines, such as Google, Yahoo or Bing, are used." +
+		"<h4>Matching text</h4>Just as with any search engine, you can enter a word or multiple words to match the text information associated with a prefix, that is the description or comment field. Each word is treated as a search 'term' and all search terms are joined together by the boolean operator AND. That means that searching for <i>'<b>foo bar</b>'</i> will be interpreted as a search for <i>'<b>foo</b>'</i> and <i>'<b>bar</b>'</i>. Any match must contain both the word <i>'<b>foo</b>'</i> and the word <i>'<b>bar</b>'</i>, though not necessarily in that order. <i>'<b>bar foo</b>'</i> will match, just as <i>'<b>foo</b> test test <b>bar</b>'</i> will match." +
+		   "<h4>IP addresses / prefixes</h4>Searching for IP addresses are specially treated and will only match in the IP address column. Simply enter a complete IPv4 or IPv6 address and it will be automatically interpreted as an IP address.<br/><br/>It is possible to match entire prefixes and all their content by searching for a prefix in CIDR notation (e.g. 192.168.1.0/24). Searching for 192.168.1.x or 192.168.1 (as some would expect to match everything in 192.168.1.0/24) will not work as they will not be interpreted as prefixes but as text." +
+		   "<h3>Examples</h3>" +
+		   "To find what the IP address 192.168.1.1 is used for:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1" +
+		   "<br/><br/>To list all addresses inside 172.16.0.0/24:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;172.16.0.0/24" +
+		   "<br/><br/>To match prefixes with 'TEST-ROUTER-1' in description or comment and that are somewhere in the network 10.0.0.0/8:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.0/8 TEST-ROUTER-1" +
+		   '<br/><br/></div>';
+
+	d = showDialog('search_help', 'Searching', c, 800);
+
+	return false;
 }
 
 /*

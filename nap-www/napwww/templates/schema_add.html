@@ -9,7 +9,7 @@
         function schemaAdded(data) {
 
             if ('error' in data) {
-                displayNotice('Operation failed', data.message);
+                showDialogNotice('Operation failed', data.message);
             } else {
                 $('#schema_success_name').html(data.name);
                 $('#schema_success_container').show();
