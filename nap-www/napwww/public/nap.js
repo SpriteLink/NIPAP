@@ -315,7 +315,7 @@ function performPrefixSearch(explicit) {
 		 search_q.children_depth == current_query.children_depth)
 		 && explicit == false) {
 		return true;
-    }
+	}
 
 
 	current_query = search_q;
@@ -426,8 +426,37 @@ function showPrefix(prefix, parent_container) {
 
 	// Or edit prefix
 	} else {
-		prefix_prefix.html('<a href="/prefix/edit/' + prefix.id + '?schema=' +
-			schema_id + '">' + prefix.display_prefix + '</a>');
+		prefix_prefix.html(prefix.display_prefix);
+	}
+
+	// add button
+	prefix_row.append('<div id="prefix_button_col' + prefix.id + '">')
+	var prefix_button_col = $('#prefix_button_col' + prefix.id);
+	prefix_button_col.addClass('prefix_column');
+	prefix_button_col.addClass('prefix_button_col');
+	prefix_button_col.append('<div id="prefix_button' + prefix.id + '" data-prefix-id="' + prefix.id + '">');
+
+	var prefix_button = $('#prefix_button' + prefix.id);
+	prefix_button.addClass('minibutton');
+	prefix_button.addClass('prefix_button');
+	prefix_button.html("<div class='prefix_button_icon' class='prefix_button_icon'>&nbsp;</span>");
+	prefix_button.click(prefix, function(e) { showPrefixMenu(e.currentTarget.getAttribute('data-prefix-id')); e.preventDefault(); });
+
+	// Add prefix menu
+	prefix_row.append('<div id="prefix_menu' + prefix.id + '">');
+	var prefix_menu = $('#prefix_menu' + prefix.id);
+	prefix_menu.addClass("prefix_menu");
+	prefix_menu.html("<h3>Prefix menu</h3>");
+
+	// Add different manu entries depending on where the prefix list is displayed
+	if (prefix_link_type == 'select') {
+        // select prefix (allocate from prefix function on add prefix page)
+	} else if (prefix_link_type == 'add_to_pool') {
+        // Add to pool (Add prefix to pool on edit pool page)
+	} else {
+		// ordinary prefix list
+		prefix_menu.append('<a href="/prefix/edit/' + prefix.id + '?schema=' + schema_id + '">Edit</a>');
+		prefix_menu.append('<a href="/prefix/remove/' + prefix.id + '?schema=' + schema_id + '">Remove</a>');
 	}
 
 	// Add prefix type
@@ -442,7 +471,7 @@ function showPrefix(prefix, parent_container) {
 
 	// Add tooltip to prefix type icon
 	prefix_type_icon.addClass('tooltip');
-    prefix_type_icon.attr('title', prefix.type[0].toUpperCase() + prefix.type.slice(1));
+	prefix_type_icon.attr('title', prefix.type[0].toUpperCase() + prefix.type.slice(1));
 	prefix_type_icon.html(prefix.type[0].toUpperCase());
 
 	// Add order number
@@ -477,6 +506,25 @@ function showPrefix(prefix, parent_container) {
 	} else {
 		prefix_description.html(prefix.description);
 	}
+
+}
+
+/*
+ * Show the prefix menu
+ */
+function showPrefixMenu(prefix_id) {
+
+	// find menu
+	var menu = $('#prefix_menu' + prefix_id);
+
+	// show overlay
+	$(".prefix_menu_overlay").show();
+
+	// Set menu position
+	var button_pos = $('#prefix_button' + prefix_id).position();
+	menu.css('top', button_pos.top + $('#prefix_button' + prefix_id).height() + 5 + 'px');
+	menu.css('left', button_pos.left + 'px');
+	menu.slideDown('fast');
 
 }
 
