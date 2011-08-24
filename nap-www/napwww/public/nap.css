@@ -450,6 +450,7 @@ input[type="submit"] {
     width: 5px;
     margin-right: 3px;
     text-align: center;
+    font-weight: bold;
 }
 
 .prefix_prefix { }
@@ -678,12 +679,12 @@ input[type="submit"] {
 }
 
 .ui-dialog-content {
-	padding: 10px;
+    padding: 10px;
 }
 
 .ui-dialog-buttonset {
-	position: relative;
-	text-align: center;
+    position: relative;
+    text-align: center;
 }
 
 /*

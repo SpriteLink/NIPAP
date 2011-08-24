@@ -247,7 +247,7 @@ function expandGroup(id) {
 	var exp = $('#prefix_exp' + id);
 
 	col.slideDown();
-	exp.html('-');
+	exp.html('&ndash;');
 
 }
 
