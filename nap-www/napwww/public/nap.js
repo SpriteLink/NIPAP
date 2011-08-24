@@ -1027,11 +1027,11 @@ function selectPrefix(prefix_id) {
 	// handle different type of parent prefixes
 	if (prefix_list[prefix_id].type == 'host') {
 		// host, not possible to assign from
-		showDialogNotice('Choose another..', "It's not possible to allocate a new prefix from a parent prefix of type host (it's a /32).");
+		showDialogNotice('Choose another..', "It's not possible to allocate a new prefix from a prefix of type host (it's a /32).");
 		return;
-	} else if (hasMaxPreflen(prefix_list[prefix_id].prefix)) {
+	} else if (hasMaxPreflen(prefix_list[prefix_id])) {
 		// an assignment or something with /32 or /128 length, not possible to assign from..
-		showDialogNotice('Choose another..', "It's not possible to allocate a new prefix from a parent prefix with a prefix-length of /32.");
+		showDialogNotice('Choose another..', "It's not possible to allocate a new prefix from a prefix with a prefix-length of /32.");
 		return;
 	} else if (prefix_list[prefix_id].type == 'reservation') {
 		$('#length_info_text').html('<input type="text" size=3 name="prefix_length_prefix">');
