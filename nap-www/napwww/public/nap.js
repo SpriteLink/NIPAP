@@ -732,28 +732,26 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 		// Has indent level increased?
 		if (prefix.indent > prev_prefix.indent) {
+
 			// we get the number of children for assignments from the database
 			if (prev_prefix.type == 'assignment') {
 				// if previous assignment was a match, we don't need to expand
 				if (prev_prefix.match != 1) {
 					expandGroup(prev_prefix.id);
 				}
-			} else {
+			} else if (prev_prefix.type == 'reservation') {
+				// if previous prefix is a reservation, we know (since we are
+				// one indent level below previous) that it has at least one
+				// child
 				if (prev_prefix.children == -2) {
-					// but for reservations we can set it to -1, ie at least
-					// one if we don't already have all the children, in case
-					// we just expand
 					prev_prefix.children = -1;
 				}
 				expandGroup(prev_prefix.id);
 			}
 			container = indent_head[prefix.indent];
-		}
-		var indent_px = prefix.indent * 30;
-		if (prefix.type == 'host' && prev_prefix.indent < prefix.indent && prefix.match == false) {
-			container = addHiddenContainer(prefix, container);
-		}
-		if (prev_prefix.indent == prefix.indent) {
+
+		} else if (prev_prefix.indent == prefix.indent) {
+
 		   if (prev_prefix.match == false && prefix.match == true) {
 			   // switching into a match from a non-match, so we should display a "expand upwards" arrow
 			   container = indent_head[prefix.indent];
@@ -761,6 +759,14 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 				// switching into a non-match from a match, so we should display a "expand downwards" arrow
 				container = addHiddenContainer(prefix, container);
 		   }
+
+		} else {
+			container = indent_head[prefix.indent];
+		}
+
+		var indent_px = prefix.indent * 30;
+		if (prefix.type == 'host' && prev_prefix.indent < prefix.indent && prefix.match == false) {
+			container = addHiddenContainer(prefix, container);
 		}
 
 		prev_prefix = prefix;
