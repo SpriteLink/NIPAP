@@ -840,7 +840,7 @@ function showAllocContainer(e) {
 		$("#from-prefix_container").show();
 		$("#from-pool_container").hide();
 		$("#prefix_data_container").hide();
-		$("#prefix_row").hide();
+		$("#prefix-row").hide();
 		$("html,body").animate({ scrollTop: $("#from-prefix_container").offset().top - 50}, 700);
 
 	// from-pool
@@ -851,7 +851,7 @@ function showAllocContainer(e) {
 		$("#from-prefix_container").hide();
 		$("#from-pool_container").show();
 		$("#prefix_data_container").hide();
-		$("#prefix_row").hide();
+		$("#prefix-row").hide();
 		$('#prefix_length_prefix_container').hide();
 		$("html,body").animate({ scrollTop: $("#from-pool_container").offset().top - 50}, 700);
 
