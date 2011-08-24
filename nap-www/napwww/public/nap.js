@@ -821,8 +821,7 @@ function collapseClick(id) {
  * Expand a container containing hidden prefixes and remove the "show" link
  */
 function unhide(id) {
-	log("Unhide called for " + id);
-	$('#prefix_hidden_container' + id).show();
+	$('#prefix_hidden_container' + id).slideDown();
 	$('#prefix_hidden_text' + id).remove();
 }
 
