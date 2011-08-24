@@ -901,10 +901,10 @@ function changeFamily() {
 
 		if ($('input[name="prefix_family"]:checked').val() == '4') {
 			$('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v4);
-			$('#def_length_container').html("Pool's default IPv4 prefix-length is " + cur_opts.pool.length_v4 + ".");
+			$('#def_length_container').html("Use pool's default IPv4 prefix-length of /" + cur_opts.pool.length_v4 + ".");
 		} else {
 			$('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v6);
-			$('#def_length_container').html("Pool's default IPv6 prefix-length is " + cur_opts.pool.length_v6 + ".");
+			$('#def_length_container').html("Use pool's default IPv6 prefix-length of /" + cur_opts.pool.length_v6 + ".");
 		}
 	}
 

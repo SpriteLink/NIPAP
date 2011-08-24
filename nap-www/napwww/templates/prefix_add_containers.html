@@ -106,15 +106,14 @@
 						Prefix-length
 					</dt>
 					<dd id="length_edit_row">
-						<span id="def_length_container"></span><br/>
-
 						<input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
-						<label for="edit_length_default_radio">Use default</label>
+						<label id="def_length_container" for="edit_length_default_radio">Use pools default prefix-length</label>
+						<br/>
 						<input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
-						<label for="edit_length_override_radio">Override</label>
+						<label for="edit_length_override_radio">Override pools defealt prefix-length</label>
 						<br/>
 						<div style="display: none;" id="length_row">
-							<input type="text" name="prefix_length_pool">
+							Use prefix-length: <input type="text" size=3 name="prefix_length_pool">
 						</div>
 					</dd>
 				</dl>
