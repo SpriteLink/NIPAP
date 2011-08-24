@@ -172,10 +172,10 @@
 			<div class="option" style="display: none;" id="prefix-row">
 				<dl>
 					<dt>
-						Prefix
+						Prefix <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
 					</dt>
 					<dd>
-						<input type="text" name="prefix_prefix" value="{{ c.prefix }}"> <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+						<input type="text" name="prefix_prefix" value="{{ c.prefix }}">
 					</dd>
 				</dl>
 			</div>
@@ -185,7 +185,7 @@
 			<div class="option">
 				<dl>
 					<dt>
-						Type
+						Type <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
 					</dt>
 					<dd>
 						<input id="radio-prefix-type-reservation" type="radio" name="prefix_type" value="reservation">
@@ -193,7 +193,7 @@
 						<input id="radio-prefix-type-assignment" type="radio" name="prefix_type" value="assignment">
 						<label for="radio-prefix-type-assignment">Assignment</label>
 						<input id="radio-prefix-type-host" type="radio" name="prefix_type" value="host">
-						<label id="label-prefix-type-host" for="radio-prefix-type-host">Host</label> <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+						<label id="label-prefix-type-host" for="radio-prefix-type-host">Host</label>
 					</dd>
 				</dl>
 			</div>

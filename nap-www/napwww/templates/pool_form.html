@@ -14,10 +14,10 @@
 		<div class="option">
 			<dl>
 				<dt>
-					Name
+					Name <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
 				</dt>
 				<dd>
-					<input type="text" name="name" value="{%- if c.pool is defined -%}{{ c.pool.name }}{%- endif -%}"></td> <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+					<input type="text" name="name" value="{%- if c.pool is defined -%}{{ c.pool.name }}{%- endif -%}"></td>
 				</dd>
 			</dl>
 		</div>
