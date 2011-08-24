@@ -1024,17 +1024,28 @@ function prefixFormSubmit(e) {
  */
 function selectPrefix(prefix_id) {
 
+	// handle different type of parent prefixes
+	if (prefix_list[prefix_id].type == 'host') {
+		// host, not possible to assign from
+		showDialogNotice('Choose another..', "It's not possible to allocate a new prefix from a parent prefix of type host (it's a /32).");
+		return;
+	} else if (hasMaxPreflen(prefix_list[prefix_id].prefix)) {
+		// an assignment or something with /32 or /128 length, not possible to assign from..
+		showDialogNotice('Choose another..', "It's not possible to allocate a new prefix from a parent prefix with a prefix-length of /32.");
+		return;
+	} else if (prefix_list[prefix_id].type == 'reservation') {
+		$('#length_info_text').html('<input type="text" size=3 name="prefix_length_prefix">');
+	} else if (prefix_list[prefix_id].type == 'assignment') {
+		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /32.">/32</span>');
+		$('.tooltip').tipTip({delay: 100});
+	}
+
 	// set prefix's pool attribute in Nap
 	$('#prefix_data_container').show();
 	$('#prefix_length_prefix_container').show();
-	if ('from_prefix' in cur_opts) {
-		cur_str = $('#alloc_from_prefix').html();
-		$('#alloc_from_prefix').html(cur_str + ', ' + prefix_list[prefix_id].prefix);
-		cur_opts.from_prefix.push(prefix_list[prefix_id].prefix);
-	} else {
-		$('#alloc_from_prefix').html(prefix_list[prefix_id].prefix);
-		cur_opts.from_prefix = new Array(prefix_list[prefix_id].prefix);
-	}
+
+	$('#alloc_from_prefix').html(prefix_list[prefix_id].prefix + ' &mdash; ' + prefix_list[prefix_id].description);
+	cur_opts.from_prefix = new Array(prefix_list[prefix_id].prefix);
 
 	$("html,body").animate({ scrollTop: $("#prefix_length_prefix_container").offset().top - 50}, 700);
 	$("#prefix_length_prefix_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
