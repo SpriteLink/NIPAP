@@ -749,10 +749,9 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 			}
 			container = indent_head[prefix.indent];
 		}
+		var indent_px = prefix.indent * 30;
 		if (prefix.type == 'host' && prev_prefix.indent < prefix.indent && prefix.match == false) {
-			container.append('<div id="prefix_hidden_container' + prefix.id + '" class="prefix_hidden_container"></div>');
-			container.append('<a id="prefix_hidden_text' + prefix.id + '" class="prefix_hidden_text" href="javascript:void(0);" onclick="unhide(' + prefix.id + ');">(hidden prefixes, click to display)</a>');
-			container = $('#prefix_hidden_container' + prefix.id);
+			container = addHiddenContainer(prefix, container);
 		}
 		if (prev_prefix.indent == prefix.indent) {
 		   if (prev_prefix.match == false && prefix.match == true) {
@@ -760,9 +759,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 			   container = indent_head[prefix.indent];
 		   } else if (prev_prefix.match == true && prefix.match == false) {
 				// switching into a non-match from a match, so we should display a "expand downwards" arrow
-				container.append('<div id="prefix_hidden_container' + prefix.id + '" class="prefix_hidden_container"></div>');
-				container.append('<a id="prefix_hidden_text' + prefix.id + '" class="prefix_hidden_text" onclick="unhide(' + prefix.id + ');">(hidden prefixes, click to display)</a>');
-				container = $('#prefix_hidden_container' + prefix.id);
+				container = addHiddenContainer(prefix, container);
 		   }
 		}
 
@@ -783,6 +780,16 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 	}
 
+}
+
+/*
+ * Add a container for hidden prefixes
+ */
+function addHiddenContainer(prefix, container) {
+	container.append('<div id="prefix_hidden_container' + prefix.id + '" class="prefix_hidden_container" style=""></div>');
+	container.append('<a id="prefix_hidden_text' + prefix.id + '" class="prefix_hidden_text" style="padding-left: ' + (10 + parseInt(prefix.indent) * 30) + 'px;" href="javascript:void(0);" onclick="unhide(' + prefix.id + ');">(hidden prefixes, click to display)</a>');
+	container = $('#prefix_hidden_container' + prefix.id);
+	return container;
 }
 
 /*
