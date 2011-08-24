@@ -1035,9 +1035,23 @@ function selectPrefix(prefix_id) {
 		return;
 	} else if (prefix_list[prefix_id].type == 'reservation') {
 		$('#length_info_text').html('<input type="text" size=3 name="prefix_length_prefix">');
+
+		// enable / disable types
+		$('#radio-prefix-type-reservation').removeAttr('disabled');
+		$('#radio-prefix-type-assignment').removeAttr('disabled');
+		$('#radio-prefix-type-host').attr('disabled', 'disabled');
+
+		$('#radio-prefix-type-host').removeAttr('checked');
 	} else if (prefix_list[prefix_id].type == 'assignment') {
 		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /32.">/32</span>');
 		$('.tooltip').tipTip({delay: 100});
+
+		// enable / disable types
+		$('#radio-prefix-type-reservation').attr('disabled', 'disabled');
+		$('#radio-prefix-type-assignment').attr('disabled', 'disabled');
+		$('#radio-prefix-type-host').removeAttr('disabled');
+
+		$('#radio-prefix-type-host').attr('checked', 'checked');
 	}
 
 	// set prefix's pool attribute in Nap
