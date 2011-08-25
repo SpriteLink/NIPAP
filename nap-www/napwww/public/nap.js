@@ -456,7 +456,8 @@ function showPrefix(prefix, parent_container) {
 	} else {
 		// ordinary prefix list
 		prefix_menu.append('<a href="/prefix/edit/' + prefix.id + '?schema=' + schema_id + '">Edit</a>');
-		prefix_menu.append('<a href="/prefix/remove/' + prefix.id + '?schema=' + schema_id + '">Remove</a>');
+		prefix_menu.append('<a id="prefix_remove' + prefix.id + '" href="/prefix/remove/' + prefix.id + '?schema=' + schema_id + '">Remove</a>');
+		$('#prefix_remove' + prefix.id).click(function(e) { e.preventDefault(); showDialogYesNo('Really remove prefix?', 'Are you sure you want to remove the prefix ' + prefix.display_prefix + '?', '/prefix/remove/' + prefix.id + '?schema=' + schema_id + '&confirmed=true'); });
 	}
 
 	// Add prefix type

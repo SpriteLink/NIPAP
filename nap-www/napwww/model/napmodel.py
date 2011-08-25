@@ -452,6 +452,19 @@ class Prefix(NapModel):
 
 
 
+    def remove(self):
+        """ Remove the prefix.
+        """
+
+        try:
+            self._xmlrpc.connection.remove_prefix({'id': self.id})
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
+        if self.id in _cache['Prefix']:
+            del(_cache['Prefix'][self.id])
+
+
+
     @classmethod
     def from_dict(cls, pref):
         """ Create a Prefix object from a dict.
