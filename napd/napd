@@ -15,7 +15,6 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
     log_format = "%(levelname)-8s %(message)s"
 
     # do logging to syslog by default
@@ -29,7 +28,7 @@ if __name__ == '__main__':
         log_stream = logging.StreamHandler()
         log_stream.setFormatter(logging.Formatter("%(asctime)s: " + log_format))
         if options.debug:
-            log_stream.setLevel(logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
 
         logger.addHandler(log_stream)
     else:

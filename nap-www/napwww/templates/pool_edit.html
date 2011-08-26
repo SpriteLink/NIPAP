@@ -43,7 +43,7 @@
         $("#pool_prefix_list").append('<tr id="pool_prefix_' + prefix.id + '">');
         $("#pool_prefix_" + prefix.id).append('<td>' + prefix.display_prefix + '</td>');
         $("#pool_prefix_" + prefix.id).append('<td>' + prefix.description + '</td>');
-        $("#pool_prefix_" + prefix.id).append('<td><a href="/pool/remove_prefix/{{ c.pool.id }}?schema=' + schema_id + '&prefix='+ prefix.id +'" onclick="showDialogYesNo(\'Remove ' + prefix.display_prefix + ' from pool?\', \'Are you sure you want to remove ' + prefix.display_prefix + ' from pool? You cannot undo this action.\', \'/pool/remove_prefix/{{ c.pool.id }}?schema=' + schema_id + '&prefix='+ prefix.id +'\'); return false;">del</a></td>');
+        $("#pool_prefix_" + prefix.id).append('<td><a href="/pool/remove_prefix/{{ c.pool.id }}?schema=' + schema_id + '&prefix='+ prefix.id +'" onclick="showDialogYesNo(\'Remove ' + prefix.display_prefix + ' from pool?\', \'Are you sure you want to remove ' + prefix.display_prefix + ' from pool? You cannot undo this action.\', function () { window.location.href = \'/pool/remove_prefix/{{ c.pool.id }}?schema=' + schema_id + '&prefix='+ prefix.id +'\'; }); return false;">del</a></td>');
 
         // Hide all expansion boxes
         $('#prefix-alloc-method_container').hide();
@@ -198,7 +198,7 @@ Pool administration &mdash;&gt; edit pool
                     <td>{{ prefix.display_prefix }}</td>
                     <td>{{ prefix.description }}</td>
                     <td>
-                        <a href="{{ h.url(controller = 'pool', action = 'remove_prefix', id = c.pool.id, prefix = prefix.id, schema = c.schema.id) }}" onclick="showDialogYesNo('Remove {{ prefix.display_prefix }}?', 'Are you sure you want to remove {{ prefix.display_prefix }} from pool? You cannot undo this action.', '{{ h.url(controller = "pool", action = "remove_prefix", id = c.pool.id, prefix = prefix.id, schema = c.schema.id) }}'); return false;">del</a>
+                        <a href="{{ h.url(controller = 'pool', action = 'remove_prefix', id = c.pool.id, prefix = prefix.id, schema = c.schema.id) }}" onclick="showDialogYesNo('Remove {{ prefix.display_prefix }}?', 'Are you sure you want to remove {{ prefix.display_prefix }} from pool? You cannot undo this action.', function () { window.location.href = '{{ h.url(controller = "pool", action = "remove_prefix", id = c.pool.id, prefix = prefix.id, schema = c.schema.id) }}'; }); return false;">del</a>
                     </td>
                 </tr>
                 {% endfor %}

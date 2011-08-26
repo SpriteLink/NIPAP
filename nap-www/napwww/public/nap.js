@@ -113,7 +113,7 @@ function showDialogNotice(title, msg) {
 /*
  * Show general confirm dialog
  */
-function showDialogYesNo(title, msg, targetUrl) {
+function showDialogYesNo(title, msg, target) {
 	var dialog = $('<div>' + msg + '</div>')
 		.dialog({
 			autoOpen: false,
@@ -137,7 +137,7 @@ function showDialogYesNo(title, msg, targetUrl) {
 					class: "button button_red",
 					style: 'margin: 10px; width: 50px;',
 					text: "Yes",
-					click: function() { window.location.href = targetUrl; },
+					click: target,
 				},
 				{
 					class: "button button_green",
@@ -150,7 +150,7 @@ function showDialogYesNo(title, msg, targetUrl) {
 
 	dialog.dialog('open');
 
-	return false;
+	return dialog;
 }
 
 
@@ -215,7 +215,7 @@ function displaySearchHelp() {
  */
 function ajaxErrorHandler(e, jqXHR, ajaxSettings, thrownError) {
 
-	displayNotice('Server error', thrownError);
+	showDialogNotice('Server error', thrownError);
 
 }
 
@@ -453,13 +453,28 @@ function showPrefix(prefix, parent_container) {
 
 	// Add different manu entries depending on where the prefix list is displayed
 	if (prefix_link_type == 'select') {
-        // select prefix (allocate from prefix function on add prefix page)
+		// select prefix (allocate from prefix function on add prefix page)
 	} else if (prefix_link_type == 'add_to_pool') {
-        // Add to pool (Add prefix to pool on edit pool page)
+		// Add to pool (Add prefix to pool on edit pool page)
 	} else {
 		// ordinary prefix list
 		prefix_menu.append('<a href="/prefix/edit/' + prefix.id + '?schema=' + schema_id + '">Edit</a>');
-		prefix_menu.append('<a href="/prefix/remove/' + prefix.id + '?schema=' + schema_id + '">Remove</a>');
+		prefix_menu.append('<a id="prefix_remove' + prefix.id + '" href="/prefix/remove/' + prefix.id + '?schema=' + schema_id + '">Remove</a>');
+		$('#prefix_remove' + prefix.id).click(function(e) {
+			e.preventDefault();
+			var dialog = showDialogYesNo('Really remove prefix?', 'Are you sure you want to remove the prefix ' + prefix.display_prefix + '?',
+				function () {
+					var data = {
+						'schema': schema_id,
+						'id': prefix.id
+					};
+					$.getJSON('/xhr/remove_prefix', data, prefixRemoved);
+
+					// close yes/no dialog
+					dialog.dialog('close');
+				});
+
+		});
 	}
 
 	// Add prefix type
@@ -513,6 +528,21 @@ function showPrefix(prefix, parent_container) {
 }
 
 /*
+ * Function which is ran when a prefix has been removed
+ */
+function prefixRemoved(prefix) {
+
+	if ('error' in prefix) {
+		showDialogNotice("Error", prefix.message);
+		return;
+	}
+
+	// remove prefix from list
+	$('#prefix_entry' + prefix.id).remove();
+
+}
+
+/*
  * Show the prefix menu
  */
 function showPrefixMenu(prefix_id) {
@@ -540,7 +570,7 @@ function receivePrefixList(search_result) {
 	stats.response_received = new Date().getTime();
 
 	if (! ('query_id' in search_result.search_options)) {
-		displayNotice("Error", 'No query_id');
+		showDialogNotice("Error", 'No query_id');
 		return;
 	}
 	if (parseInt(search_result.search_options.query_id) < parseInt(newest_query)) {
@@ -550,7 +580,7 @@ function receivePrefixList(search_result) {
 
 	// Error?
 	if ('error' in search_result) {
-		displayNotice("Error", search_result.message);
+		showDialogNotice("Error", search_result.message);
 		return;
 	}
 

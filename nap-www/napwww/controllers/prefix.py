@@ -106,3 +106,23 @@ class PrefixController(BaseController):
 
 
         return render('/prefix_edit.html')
+
+
+    def remove(self, id):
+        """ Remove a prefix.
+        """
+
+        # make sure we have a schema
+        try:
+            c.schema = Schema.get(int(request.params['schema']))
+        except (KeyError, NapNonExistentError), e:
+            redirect(url(controller = 'schema', action = 'list'))
+
+        # find prefix
+        c.prefix = Prefix.get(c.schema, int(id))
+
+        if 'confirmed' not in request.params:
+            return render('/prefix_remove_confirm.html')
+
+        c.prefix.remove()
+        redirect(url(controller='prefix', action='list', schema=c.schema.id))

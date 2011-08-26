@@ -338,7 +338,6 @@ class XhrController(BaseController):
         """
 
         try:
-
             schema = Schema.get(int(request.params['schema']))
 
             p = Prefix.get(schema, int(request.params['id']))
@@ -355,6 +354,21 @@ class XhrController(BaseController):
 
         return json.dumps(p, cls=NapJSONEncoder)
 
+
+
+    def remove_prefix(self):
+        """ Remove a prefix.
+        """
+
+        try:
+            schema = Schema.get(int(request.params['schema']))
+            p = Prefix.get(schema, int(request.params['id']))
+            p.remove()
+
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(p, cls=NapJSONEncoder)
 
 
 class NapJSONEncoder(json.JSONEncoder):
