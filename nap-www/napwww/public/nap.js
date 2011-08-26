@@ -641,7 +641,7 @@ function receivePrefixList(search_result) {
 	} else {
 
 		// No prefixes received
-		$('#prefix_list').html('No prefixes found.');
+		$('#prefix_list').html('<div style="text-align: center; padding: 30px; color: #777777;">No prefixes found.</div>');
 
 	}
 
