@@ -52,6 +52,9 @@ var end_of_result = 0;
 
 var search_key_timeout = 0;
 
+// store current container for inserting prefixes
+var container = null;
+
 /**
  * A general log function
  *
@@ -716,7 +719,9 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 	indent_head[pref_list[0].indent] = start_container;
 
-	container = start_container;;
+	if (container == null) {
+		container = start_container;
+	}
 	// go through received prefixes
 	for (key in pref_list) {
 
@@ -731,14 +736,22 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		}
 
 		// Has indent level increased?
-		if (prefix.indent > prev_prefix.indent) {
+		if (prev_prefix.indent < prefix.indent) {
 
 			// we get the number of children for assignments from the database
 			if (prev_prefix.type == 'assignment') {
+				container = indent_head[prefix.indent];
+
+				// add hidden container if this isn't a match
+				if (prefix.match != true) {
+					container = addHiddenContainer(prefix, container);
+				}
+
 				// if previous assignment was a match, we don't need to expand
-				if (prev_prefix.match != 1) {
+				if (prev_prefix.match == false) {
 					expandGroup(prev_prefix.id);
 				}
+
 			} else if (prev_prefix.type == 'reservation') {
 				// if previous prefix is a reservation, we know (since we are
 				// one indent level below previous) that it has at least one
@@ -747,26 +760,30 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 					prev_prefix.children = -1;
 				}
 				expandGroup(prev_prefix.id);
+				container = indent_head[prefix.indent];
 			}
-			container = indent_head[prefix.indent];
 
 		} else if (prev_prefix.indent == prefix.indent) {
 
-		   if (prev_prefix.match == false && prefix.match == true) {
-			   // switching into a match from a non-match, so we should display a "expand upwards" arrow
-			   container = indent_head[prefix.indent];
-		   } else if (prev_prefix.match == true && prefix.match == false) {
+			// switching into a match from a non-match, so we should display a "expand upwards" arrow
+			if (prev_prefix.match == false && prefix.match == true) {
+
+				// we don't bother putting three or less prefixes into a hidden container
+				if (parseInt(container.children().length) <= 3) {
+					unhide( container.find('.prefix_button:first').attr('data-prefix-id') );
+				}
+				container = indent_head[prefix.indent];
+			} else if (prev_prefix.match == true && prefix.match == false) {
 				// switching into a non-match from a match, so we should display a "expand downwards" arrow
 				container = addHiddenContainer(prefix, container);
-		   }
+			}
 
 		} else {
+			// if less than 8 children prefixes total, do not hide
+			if (parseInt(container.parent().find('.prefix_entry').length) < 8) {
+				unhide( container.find('.prefix_button:first').attr('data-prefix-id') );
+			}
 			container = indent_head[prefix.indent];
-		}
-
-		var indent_px = prefix.indent * 30;
-		if (prefix.type == 'host' && prev_prefix.indent < prefix.indent && prefix.match == false) {
-			container = addHiddenContainer(prefix, container);
 		}
 
 		prev_prefix = prefix;
