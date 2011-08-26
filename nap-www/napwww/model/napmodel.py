@@ -457,7 +457,7 @@ class Prefix(NapModel):
         """
 
         try:
-            self._xmlrpc.connection.remove_prefix({'id': self.id})
+            self._xmlrpc.connection.remove_prefix({'id': self.schema.id}, {'id': self.id})
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         if self.id in _cache['Prefix']:

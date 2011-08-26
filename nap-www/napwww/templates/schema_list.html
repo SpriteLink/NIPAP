@@ -63,7 +63,7 @@
                 {% else %}
 				<a href="{{ h.url(controller="schema", action="edit", id=schema.id) }}">edit</a> | 
                 {% endif %}
-				<a href="{{ h.url(controller="schema", action="remove", id=schema.id) }}" id="delete_schema_{{ schema.id }}" onclick="showDialogYesNo('Remove {{schema.name}}?', 'By removing {{ schema.name }}, ALL prefixes in the schema will be removed too! You cannot undo this action. Are you sure?', '{{ h.url(controller="schema", action="remove", id=schema.id) }}'); return false;">del</a>
+				<a href="{{ h.url(controller="schema", action="remove", id=schema.id) }}" id="delete_schema_{{ schema.id }}" onclick="showDialogYesNo('Remove {{schema.name}}?', 'By removing {{ schema.name }}, ALL prefixes in the schema will be removed too! You cannot undo this action. Are you sure?', function () { window.location.href = '{{ h.url(controller="schema", action="remove", id=schema.id) }}'; }); return false;">del</a>
 			</td>
 		</tr>
 		{% endfor %}

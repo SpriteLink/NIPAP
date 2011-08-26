@@ -125,3 +125,4 @@ class PrefixController(BaseController):
             return render('/prefix_remove_confirm.html')
 
         c.prefix.remove()
+        redirect(url(controller='prefix', action='list', schema=c.schema.id))
