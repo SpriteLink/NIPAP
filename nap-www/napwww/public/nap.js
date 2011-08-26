@@ -686,7 +686,7 @@ function receivePrefixListNextPage(search_result) {
 		return;
 	}
 
-	insertPrefixList(pref_list.slice(1), indent_head[pref_list[1].indent], pref_list[0]);
+	insertPrefixList(pref_list.slice(1), null, pref_list[0]);
 
 	outstanding_nextpage = 0;
 
@@ -717,9 +717,8 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		return;
 	}
 
-	indent_head[pref_list[0].indent] = start_container;
-
-	if (container == null) {
+	if (start_container != null) {
+		indent_head[pref_list[0].indent] = start_container;
 		container = start_container;
 	}
 	// go through received prefixes
