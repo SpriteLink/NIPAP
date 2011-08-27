@@ -137,7 +137,18 @@ class TextImporter(Importer):
                 return
 
         elif tp['prefix_length'] == 30 or tp['prefix_length'] == 31:   # link network
-            m = re.match('(ETHER_KAP|ETHER_PORT|IP-KAP|IP-PORT|IP-SIPNET|IP-SNIX|IPSUR|L2L|RED-IPPORT|SNIX|SWIP|T2V-@|T2V-DIGTV|T2V-SUR)[0-9]{4,}', tp['span_order'])
+            octets = tp['address'].split('.')
+            prefix_node1 = None
+            prefix_node2 = None
+            if tp['prefix_length'] == 30:
+                prefix_node1 = '.'.join(octets[:3] + [str( int(octets[3]) + 1 )] ) + '/32'
+                prefix_node2 = '.'.join(octets[:3] + [str( int(octets[3]) + 2 )] ) + '/32'
+            else:
+                prefix_node1 = '.'.join(octets) + '/32'
+                prefix_node2 = '.'.join(octets[:3] + [str( int(octets[3]) + 1 )] ) + '/32'
+
+            #m = re.match('(ETHER_KAP|ETHER_PORT|IP-KAP|IP-PORT|IP-SIPNET|IP-SNIX|IPSUR|L2L|RED-IPPORT|SNIX|SWIP|T2V-@|T2V-DIGTV|T2V-SUR)[0-9]{4,}', tp['span_order'])
+            m = re.match('.*[0-9]{6}$', tp['span_order'])
             if m is not None or tp['type'] == 'CUSTOMER':
                 print "Customer link", tp['prefix'], ':', tp['description']
                 p = Prefix()
@@ -147,8 +158,29 @@ class TextImporter(Importer):
                 p.description = tp['description']
                 p.alarm_priority = tp['alarm_priority']
                 p.authoritative_source = 'nw'
+                p.span_order = tp['span_order']
                 p.save({})
+
+                # insert node1 and node2
+                p1 = Prefix()
+                p1.schema = self.schema
+                p1.prefix = prefix_node1
+                p1.type = 'host'
+                p1.description = 'Some PE router'
+                p1.authoritative_source = 'nw'
+                p1.save({})
+
+                p2 = Prefix()
+                p2.schema = self.schema
+                p2.prefix = prefix_node2
+                p2.type = 'host'
+                p2.node = tp['node']
+                p2.description = 'CPE'
+                p2.authoritative_source = 'nw'
+                p2.save({})
+
                 return
+
 
             m = re.match(r'([^\s]+)\s*<->\s*([^\s]+)', tp['description'])
             if m is not None:
@@ -167,16 +199,6 @@ class TextImporter(Importer):
                 p.save({})
 
                 # insert node1 and node2
-                octets = tp['address'].split('.')
-                prefix_node1 = None
-                prefix_node2 = None
-                if tp['prefix_length'] == 30:
-                    prefix_node1 = '.'.join(octets[:3] + [str( int(octets[3]) + 1 )] ) + '/32'
-                    prefix_node2 = '.'.join(octets[:3] + [str( int(octets[3]) + 2 )] ) + '/32'
-                else:
-                    prefix_node1 = '.'.join(octets) + '/32'
-                    prefix_node2 = '.'.join(octets[:3] + [str( int(octets[3]) + 1 )] ) + '/32'
-
                 p1 = Prefix()
                 p1.schema = self.schema
                 p1.prefix = prefix_node1

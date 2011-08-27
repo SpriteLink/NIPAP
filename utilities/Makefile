@@ -23,8 +23,8 @@ genpartial:
 	sed -ne '/$(START)/,$$p' 1 > 2
 	mv 2 1
 
-reread: clean except import
+reread: clean except genpartial import
 
-full:	clean transfer utf8 except import
+full:	clean transfer utf8 except genpartial import
 
 partial:	clean transfer utf8 except genpartial import
