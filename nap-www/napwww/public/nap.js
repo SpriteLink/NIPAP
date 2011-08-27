@@ -1100,8 +1100,9 @@ function selectPrefix(prefix_id) {
 		$('#radio-prefix-type-host').attr('disabled', 'disabled');
 
 		$('#radio-prefix-type-host').removeAttr('checked');
+
 	} else if (prefix_list[prefix_id].type == 'assignment') {
-		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /32.">/32</span>');
+		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /32.">/32</span><input type="hidden" name="prefix_length_prefix" value=32>');
 		$('.tooltip').tipTip({delay: 100});
 
 		// enable / disable types
