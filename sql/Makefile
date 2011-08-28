@@ -1,12 +1,12 @@
 #.PHONY: install
 
+PSQL=psql
+
 DB_NAME=nap
 NAPD_USER=napd
 NAPD_PASS=dpan
 
 #
-# TODO: need to check the database version is of the right version. We required
-# 		8.4 or later
 # TODO: need install thingy for ip4r
 # psql -f /usr/lib/postgresql/8.4/lib/ip4r.so nap
 #
@@ -19,8 +19,21 @@ NAPD_PASS=dpan
 # 		* we know where it's at on debian like systems
 #
 
+
+# test database version
+PG_VER = $(shell pg_config --version | awk '{print $$2}')
+PG_VER_MAJOR = $(shell echo $(PG_VER) | awk -F. '{ print ($$1 + 0) }')
+PG_VER_MINOR = $(shell echo $(PG_VER) | awk -F. '{ print ($$2 + 0) }')
+PG_VER_PATCH = $(shell echo $(PG_VER) | awk -F. '{ print ($$3 + 0) }')
+PG_VER_OK = $(shell if [ $(PG_VER_MAJOR)$(PG_VER_MINOR) -ge 84 ]; then echo 1; else echo 0; fi)
+ifeq (0,$(PG_VER_OK))
+	$(error "You are running PostgreSQL $(PG_VER) and you need at least 8.4")
+endif
+
+
 all:
-	echo "Run this as the postgres user!"
+	@echo "Run this as the postgres user!"
+
 
 
 db:
@@ -29,7 +42,7 @@ db:
 	psql -q -c "ALTER USER napd ENCRYPTED PASSWORD '$(NAPD_PASS)'"
 
 install:
-	psql -q -d $(DB_NAME) -c 'CREATE LANGUAGE plpgsql' || true
+	-createlang -d $(DB_NAME) plpgsql
 	psql -q -d $(DB_NAME) -f find_free_prefix.plsql
 	psql -q -d $(DB_NAME) -f get_prefix.plsql
 	psql -q -d $(DB_NAME) -f calc_indent.plsql
