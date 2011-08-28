@@ -44,7 +44,7 @@ all:
 db:
 	createuser -S -D -R $(DB_USER)
 	createdb -O $(DB_USER) $(DB_NAME)
-	psql -q -c "ALTER USER napd ENCRYPTED PASSWORD '$(NAPD_PASS)'"
+	psql -q -c "ALTER USER napd ENCRYPTED PASSWORD '$(DB_PASS)'"
 
 install:
 	-createlang -d $(DB_NAME) plpgsql
