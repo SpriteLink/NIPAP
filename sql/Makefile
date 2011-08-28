@@ -3,8 +3,13 @@
 PSQL=psql
 
 DB_NAME=nap
-NAPD_USER=napd
-NAPD_PASS=dpan
+DB_USER=nap
+# TODO: enable this! it's a random password generated at install time, but
+# nipapd needs to support a configuration file that we can put it in before we
+# enable it!
+DB_PASS=$(shell </dev/urandom tr -dc [:alpha:] | head -c16)
+# use this supersafe static password until further
+DB_PASS=dpan
 
 #
 # TODO: need install thingy for ip4r
@@ -37,8 +42,8 @@ all:
 
 
 db:
-	createuser -S -D -R $(NAPD_USER)
-	createdb -O $(NAPD_USER) $(DB_NAME)
+	createuser -S -D -R $(DB_USER)
+	createdb -O $(DB_USER) $(DB_NAME)
 	psql -q -c "ALTER USER napd ENCRYPTED PASSWORD '$(NAPD_PASS)'"
 
 install:
