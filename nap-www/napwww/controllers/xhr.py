@@ -151,7 +151,7 @@ class XhrController(BaseController):
 
 
 
-    def edit_pool(self):
+    def edit_pool(self, id):
         """ Edit a pool.
         """
 
@@ -161,7 +161,7 @@ class XhrController(BaseController):
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         # extract attributes
-        p = Pool.get(c.schema, int(request.params.get('id')))
+        p = Pool.get(c.schema, int(id))
         if 'name' in request.params:
             p.name = request.params.get('name')
         if 'description' in request.params:
@@ -398,19 +398,41 @@ class XhrController(BaseController):
 
 
 
-    def edit_prefix(self):
+    def edit_prefix(self, id):
         """ Edit a prefix.
         """
 
         try:
             schema = Schema.get(int(request.params['schema']))
 
-            p = Prefix.get(schema, int(request.params['id']))
+            p = Prefix.get(schema, int(id))
 
-            # TODO: add more attributes!
+            # extract attributes
+            if 'prefix' in request.params:
+                p.prefix = request.params['prefix']
+            if 'description' in request.params:
+                p.description = request.params['description']
+            if 'comment' in request.params:
+                p.comment = request.params['comment']
+            if 'node' in request.params:
+                p.node = request.params['node']
             if 'pool' in request.params:
                 pool = Pool.get(schema, int(request.params['pool']))
                 p.pool = pool
+            if 'alarm_priority' in request.params:
+                p.alarm_priority = request.params['alarm_priority']
+            if 'monitor' in request.params:
+                if request.params['monitor'] == 'true':
+                    p.monitor = True
+                else:
+                    p.monitor = False
+            if 'country' in request.params:
+                p.country = request.params['country']
+            if 'span_order' in request.params:
+                if request.params['span_order'].strip() == '':
+                    p.span_order = None
+                else:
+                    p.span_order = int(request.params['span_order'])
 
             p.save()
 

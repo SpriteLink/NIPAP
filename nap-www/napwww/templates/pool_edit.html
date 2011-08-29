@@ -21,9 +21,8 @@
         // set prefix's pool attribute in Nap
         data = new Object();
         data.schema = schema_id;
-        data.id = prefix_id;
         data.pool = {{ c.pool.id }};
-        $.getJSON('{{ h.url(controller = 'xhr', action = 'edit_prefix') }}', data, prefixAdded);
+        $.getJSON('{{ h.url(controller = 'xhr', action = 'edit_prefix') }}/' + prefix_id, data, prefixAdded);
     
     }
 
@@ -176,11 +175,9 @@
             $(".prefix_menu_overlay").hide();
         });
 
-
        // Capture submit form event
        $('form[name="pool_form"]').submit(function(e) {
            var data = {
-               'id': {{ c.pool.id }},
                'schema': schema_id,
                'name': $('input[name="name"]').val(),
                'description': $('input[name="description"]').val(),
@@ -189,7 +186,7 @@
                'ipv6_default_prefix_length': $('input[name="ipv6_default_prefix_length"]').val()
            };
 
-           $.getJSON('{{ h.url(controller="xhr", action="edit_pool") }}', data, poolEdited);
+           $.getJSON('{{ h.url(controller="xhr", action="edit_pool", id=c.pool.id) }}', data, poolEdited);
 
            // prevent default action ("ordinary" HTTP POST)
            e.preventDefault();

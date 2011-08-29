@@ -4,7 +4,50 @@
 {% block head %}
     <script>
 
+        /*
+         * Run when prefix edit is complete.
+         */
+        function prefixEdited(data) {
+
+            if ('error' in data) {
+                showDialogNotice('Operation failed', data.message);
+            } else {
+                $('#prefix_success_name').html(data.name);
+                $('#prefix_success_container').show();
+                $("html,body").animate({ scrollTop: $("#prefix_success_container").offset().top - 50}, 700);
+                $("#prefix_success_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#3d9400" }, 700).delay(200).animate({ backgroundColor: "#ccffcc" }, 1000);
+            }
+
+        }
+
         $(function() {
+
+            // Capture submit form event
+            $('form[name="prefix_form"]').submit(function(e) {
+                var data = {
+                    'schema': {{ c.schema.id }},
+                    'prefix': $('input[name="prefix_prefix"]').val(),
+                    'description': $('input[name="prefix_description"]').val(),
+                    'node': $('input[name="prefix_node"]').val(),
+                    'country': $('input[name="prefix_country"]').val(),
+                    'span_order': $('input[name="prefix_span_order"]').val(),
+                    'comment': $('input[name="prefix_comment"]').val(),
+                    'alarm_priority': $('input[name="prefix_alarm_priority"]').val()
+                };
+
+                if ($('input[name="prefix_monitor"]').is(':checked')) {
+                    data.monitor = 'true';
+                } else {
+                    data.monitor = 'false';
+                }
+
+                $.getJSON('{{ h.url(controller="xhr", action="edit_prefix", id=c.prefix.id) }}', data, prefixEdited);
+
+                // prevent default action ("ordinary" HTTP POST)
+                e.preventDefault();
+
+            });
+
             $('input[name="prefix_monitor"]').change(prefixMonitorToggled);
             prefixMonitorToggled();
         });
@@ -22,7 +65,7 @@
 
 -->
 <div id="prefix_data_container" style="padding: 15px;">
-<form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="edit", id=c.prefix.id, schema=c.schema.id) }}">
+<form method="post" name="prefix_form" action="{{ h.url(controller="prefix", action="edit", id=c.prefix.id, schema=c.schema.id) }}">
     <div class="options-group">
         <div class="options-content">
             <div class="option">
@@ -135,6 +178,17 @@
     <div>
 </form>
 
+</div>
+
+<div id="prefix_success_container" style="display: none;">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Result</h3>
+			<div id="prefix_success_bg" style="padding: 15px; background-color: #ccffcc;">
+				The prefix <span id="prefix_success_name"></span> was successfully edited.
+			</div>
+		</div>
+	</div>
 </div>
 
 {% endblock %}
