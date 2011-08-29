@@ -38,7 +38,7 @@
             showDialogNotice("Error", prefix.message);
             return;
         }
-        
+
         // display prefix in list
         $("#pool_prefix_list").append('<tr id="pool_prefix_' + prefix.id + '">');
         $("#pool_prefix_" + prefix.id).append('<td>' + prefix.display_prefix + '</td>');
@@ -70,7 +70,7 @@
         if (e.currentTarget.id == 'radio-create-new') {
 
             // fetch data for pool search box
-            $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema_id': schema_id }, enableFromPoolSearch);
+            $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, enableFromPoolSearch);
 
             prefix_link_type = 'select';
             $('#prefix_list').empty();
@@ -96,6 +96,23 @@
             $('#prefix_length_prefix_container').hide();
 
             $("html,body").animate({scrollTop: $("#from-prefix_container").offset().top - 50}, 700);
+        }
+
+    }
+
+
+    /*
+     * Run when pool edit is complete.
+     */
+    function poolEdited(data) {
+
+        if ('error' in data) {
+            showDialogNotice('Operation failed', data.message);
+        } else {
+            $('#pool_success_name').html(data.name);
+            $('#pool_success_container').show();
+            $("html,body").animate({ scrollTop: $("#pool_success_container").offset().top - 50}, 700);
+            $("#pool_success_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#3d9400" }, 700).delay(200).animate({ backgroundColor: "#ccffcc" }, 1000);
         }
 
     }
@@ -159,6 +176,26 @@
             $(".prefix_menu_overlay").hide();
         });
 
+
+       // Capture submit form event
+       $('form[name="pool_form"]').submit(function(e) {
+           var data = {
+               'id': {{ c.pool.id }},
+               'schema': schema_id,
+               'name': $('input[name="name"]').val(),
+               'description': $('input[name="description"]').val(),
+               'default_type': $('input[name="default_type"]').val(),
+               'ipv4_default_prefix_length': $('input[name="ipv4_default_prefix_length"]').val(),
+               'ipv6_default_prefix_length': $('input[name="ipv6_default_prefix_length"]').val()
+           };
+
+           $.getJSON('{{ h.url(controller="xhr", action="edit_pool") }}', data, poolEdited);
+
+           // prevent default action ("ordinary" HTTP POST)
+           e.preventDefault();
+
+       });
+
         /*
          * Other stuff
          */
@@ -179,6 +216,17 @@ Pool administration &mdash;&gt; edit pool
 </div>
 
 {% include 'pool_form.html' %}
+
+<div id="pool_success_container" style="display: none;">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Result</h3>
+			<div id="pool_success_bg" style="padding: 15px; background-color: #ccffcc;">
+				The pool <span id="pool_success_name"></span> was successfully edited.
+			</div>
+		</div>
+	</div>
+</div>
 
 <div class="options-group">
     <div class="options-content" style="position: relative;">

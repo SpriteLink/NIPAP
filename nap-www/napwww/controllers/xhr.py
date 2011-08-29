@@ -111,11 +111,76 @@ class XhrController(BaseController):
         """
 
         try:
-            schema = Schema.get(int(request.params['schema_id']))
+            schema = Schema.get(int(request.params['schema']))
             pools = Pool.list(schema)
         except NapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
         return json.dumps(pools, cls=NapJSONEncoder)
+
+
+
+    def add_pool(self):
+        """ Add a pool.
+        """
+
+        try:
+            c.schema = Schema.get(int(request.params.get('schema')))
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        # extract attributes
+        p = Pool()
+        p.schema = c.schema
+        p.name = request.params.get('name')
+        p.description = request.params.get('description')
+        p.default_type = request.params.get('default_type')
+        if 'ipv4_default_prefix_length' in request.params:
+            if request.params['ipv4_default_prefix_length'].strip() != '':
+                p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+        if 'ipv6_default_prefix_length' in request.params:
+            if request.params['ipv6_default_prefix_length'].strip() != '':
+                p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+
+        try:
+           p.save()
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(p, cls=NapJSONEncoder)
+
+
+
+    def edit_pool(self):
+        """ Edit a pool.
+        """
+
+        try:
+            c.schema = Schema.get(int(request.params.get('schema')))
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        # extract attributes
+        p = Pool.get(c.schema, int(request.params.get('id')))
+        if 'name' in request.params:
+            p.name = request.params.get('name')
+        if 'description' in request.params:
+            p.description = request.params.get('description')
+        if 'default_type' in request.params:
+            p.default_type = request.params.get('default_type')
+        if 'ipv4_default_prefix_length' in request.params:
+            if request.params['ipv4_default_prefix_length'].strip() != '':
+                p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+        if 'ipv6_default_prefix_length' in request.params:
+            if request.params['ipv6_default_prefix_length'].strip() != '':
+                p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+
+        try:
+           p.save()
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(p, cls=NapJSONEncoder)
 
 
 

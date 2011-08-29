@@ -48,21 +48,14 @@ class PoolController(BaseController):
         if request.method == 'POST':
             p = Pool()
             p.schema = c.schema
-            p.name = request.params['name']
-            p.description = request.params['description']
-            if 'default_type' in request.params:
-                p.default_type = request.params['default_type']
-            else:
-                p.default_type = None
+            p.name = request.params.get('name')
+            p.description = request.params.get('description')
+            p.default_type = request.params.get('default_type')
 
-            if request.params['ipv4_default_prefix_length'].strip() == '':
-                p.ipv4_default_prefix_length = None
-            else:
+            if request.params['ipv4_default_prefix_length'].strip() != '':
                 p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
 
-            if request.params['ipv6_default_prefix_length'].strip() == '':
-                p.ipv6_default_prefix_length = None
-            else:
+            if request.params['ipv6_default_prefix_length'].strip() != '':
                 p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
 
             p.save()
