@@ -418,6 +418,7 @@ input[type="submit"] {
 }
 
 .prefix_column {
+    padding-right: 8px;
     display: table-cell;
     vertical-align: center;
 }
@@ -455,7 +456,9 @@ input[type="submit"] {
 
 .prefix_prefix { }
 
-.prefix_type { }
+.prefix_type {
+    padding-right: 0 !important;
+}
 
 .prefix_type_icon {
     width: 16px;
@@ -507,6 +510,7 @@ input[type="submit"] {
 }
 
 .prefix_button_col {
+    padding-right: 0 !important;
     width: 25px;
 }
 
