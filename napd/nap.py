@@ -1493,7 +1493,9 @@ class Nap:
                     OR
                     (iprange(p1.prefix) << iprange(p2.prefix) """ + where_children + """)
                     OR
-                    (iprange(p1.prefix) <<= iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
+                    (iprange(p1.prefix) << iprange(p2.prefix) AND p1.indent = p2.indent + 1)
+                    OR
+                    (iprange(p1.prefix) << iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
                 )
             )
             WHERE p2.schema = %s AND p2.prefix IN (
