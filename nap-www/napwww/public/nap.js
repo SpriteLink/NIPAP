@@ -493,14 +493,14 @@ function showPrefix(prefix, parent_container) {
 	prefix_type_icon.html(prefix.type[0].toUpperCase());
 
 	// Add order number
-	prefix_row.append('<div id="prefix_span_order' + prefix.id + '">');
-	var prefix_span_order = $('#prefix_span_order' + prefix.id);
-	prefix_span_order.addClass('prefix_column');
-	prefix_span_order.addClass('prefix_span_order');
-	if (prefix.span_order == null || prefix.span_order == '') {
-		prefix_span_order.html("&nbsp;");
+	prefix_row.append('<div id="prefix_order_id' + prefix.id + '">');
+	var prefix_order_id = $('#prefix_order_id' + prefix.id);
+	prefix_order_id.addClass('prefix_column');
+	prefix_order_id.addClass('prefix_order_id');
+	if (prefix.order_id == null || prefix.order_id == '') {
+		prefix_order_id.html("&nbsp;");
 	} else {
-		prefix_span_order.html(prefix.span_order);
+		prefix_order_id.html(prefix.order_id);
 	}
 
 	// Add node
@@ -1044,7 +1044,7 @@ function prefixFormSubmit(e) {
 		'node': $('input[name="prefix_node"]').val(),
 		'type': $('input[name="prefix_type"]:checked').val(),
 		'country': $('input[name="prefix_country"]').val(),
-		'span_order': $('input[name="prefix_span_order"]').val(),
+		'order_id': $('input[name="prefix_order_id"]').val(),
 		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
 		'monitor': $('input[name="prefix_monitor"]').val(),
 	};
