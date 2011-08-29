@@ -147,8 +147,8 @@ class TextImporter(Importer):
                 prefix_node1 = '.'.join(octets) + '/32'
                 prefix_node2 = '.'.join(octets[:3] + [str( int(octets[3]) + 1 )] ) + '/32'
 
-            #m = re.match('(ETHER_KAP|ETHER_PORT|IP-KAP|IP-PORT|IP-SIPNET|IP-SNIX|IPSUR|L2L|RED-IPPORT|SNIX|SWIP|T2V-@|T2V-DIGTV|T2V-SUR)[0-9]{4,}', tp['span_order'])
-            m = re.match('.*[0-9]{6}$', tp['span_order'])
+            #m = re.match('(ETHER_KAP|ETHER_PORT|IP-KAP|IP-PORT|IP-SIPNET|IP-SNIX|IPSUR|L2L|RED-IPPORT|SNIX|SWIP|T2V-@|T2V-DIGTV|T2V-SUR)[0-9]{4,}', tp['order_id'])
+            m = re.match('.*[0-9]{6}$', tp['order_id'])
             if m is not None or tp['type'] == 'CUSTOMER':
                 print "Customer link", tp['prefix'], ':', tp['description']
                 p = Prefix()
@@ -158,7 +158,8 @@ class TextImporter(Importer):
                 p.description = tp['description']
                 p.alarm_priority = tp['alarm_priority']
                 p.authoritative_source = 'nw'
-                p.span_order = tp['span_order']
+                if tp['order_id'] != '.':
+                    p.order_id = tp['order_id']
                 p.save({})
 
                 # insert node1 and node2
@@ -219,7 +220,7 @@ class TextImporter(Importer):
 
                 return
 
-            m = re.match('(DN)[0-9]{4,}', tp['span_order'])
+            m = re.match('(DN)[0-9]{4,}', tp['order_id'])
             if m is not None:
                 print "Internal order link network", tp['prefix'], ':', tp['description']
                 p = Prefix()
@@ -283,7 +284,7 @@ class TextImporter(Importer):
 
         params = {}
         params['prefix_type'] = 'assorhost'
-        (prefix, priority, country, type, span_order, node, description) = re.split(r'[\t\s]+', line.rstrip(), 6)
+        (prefix, priority, country, type, order_id, node, description) = re.split(r'[\t\s]+', line.rstrip(), 6)
 
         # one of those silly lines for documenting L2 circuits
         if prefix == '.':
@@ -307,12 +308,12 @@ class TextImporter(Importer):
 
         params['country'] = country
         params['node'] = node
-        #m = re.search(r'([0-9]{4,})', span_order)
+        #m = re.search(r'([0-9]{4,})', order_id)
         #if m is not None:
-        #    params['span_order'] = m.group(1)
+        #    params['order_id'] = m.group(1)
         #else:
-        #    params['span_order'] = None
-        params['span_order'] = span_order
+        #    params['order_id'] = None
+        params['order_id'] = order_id
 
         params['description'] = description.decode('latin1')
         params['description'] = description
