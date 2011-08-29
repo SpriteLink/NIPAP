@@ -374,6 +374,7 @@ function showPrefix(prefix, parent_container) {
 		function() { prefix_row.addClass("row_hover"); },
 		function() { prefix_row.removeClass("row_hover"); }
 	);
+    prefix_row.click(function() { collapseClick(prefix.id); });
 
 	// add indent and prefix container
 	prefix_row.append('<div id="prefix_ind_pref' + prefix.id + '">');
@@ -443,7 +444,7 @@ function showPrefix(prefix, parent_container) {
 	prefix_button.addClass('minibutton');
 	prefix_button.addClass('prefix_button');
 	prefix_button.html("<div class='prefix_button_icon' class='prefix_button_icon'>&nbsp;</span>");
-	prefix_button.click(prefix, function(e) { showPrefixMenu(e.currentTarget.getAttribute('data-prefix-id')); e.preventDefault(); });
+	prefix_button.click(prefix, function(e) { showPrefixMenu(e.currentTarget.getAttribute('data-prefix-id')); e.preventDefault(); e.stopPropagation(); });
 
 	// Add prefix menu
 	prefix_row.append('<div id="prefix_menu' + prefix.id + '">');
@@ -539,6 +540,7 @@ function prefixRemoved(prefix) {
 
 	// remove prefix from list
 	$('#prefix_entry' + prefix.id).remove();
+    $('#collapse' + prefix.id).remove();
 
 }
 
