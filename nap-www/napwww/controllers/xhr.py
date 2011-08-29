@@ -261,7 +261,7 @@ class XhrController(BaseController):
             type            Type of prefix; reservation, assignment, host
             pool            ID of pool
             country         Country where the prefix is used
-            span_order      SPAN order number
+            order_id        Order identifier
             alarm_priority  Alarm priority of prefix
             monitor         If the prefix should be monitored or not
 
@@ -291,9 +291,9 @@ class XhrController(BaseController):
             p.pool = Pool.get(p.schema, int(request.params['pool']))
         if 'country' in request.params:
             p.country = request.params['country']
-        if 'span_order' in request.params:
-            if request.params['span_order'] != '':
-                p.span_order = request.params['span_order']
+        if 'order_id' in request.params:
+            if request.params['order_id'] != '':
+                p.order_id = request.params['order_id']
         if 'alarm_priority' in request.params:
             p.alarm_priority = request.params['alarm_priority']
         if 'monitor' in request.params:
@@ -416,7 +416,7 @@ class NapJSONEncoder(json.JSONEncoder):
                 'type': obj.type,
                 'indent': obj.indent,
                 'country': obj.country,
-                'span_order': obj.span_order,
+                'order_id': obj.order_id,
                 'authoritative_source': obj.authoritative_source,
                 'monitor': obj.monitor,
                 'alarm_priority': obj.alarm_priority,
