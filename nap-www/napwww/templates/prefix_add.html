@@ -33,7 +33,7 @@ function prefixAdded(data) {
 $(function () {
 
     // fetch data for pool search box
-    $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema_id': schema_id }, enableFromPoolSearch);
+    $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, enableFromPoolSearch);
 
     $('#prefix-alloc-method_container').show();
 

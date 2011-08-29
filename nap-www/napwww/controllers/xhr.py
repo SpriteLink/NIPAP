@@ -111,11 +111,76 @@ class XhrController(BaseController):
         """
 
         try:
-            schema = Schema.get(int(request.params['schema_id']))
+            schema = Schema.get(int(request.params['schema']))
             pools = Pool.list(schema)
         except NapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
         return json.dumps(pools, cls=NapJSONEncoder)
+
+
+
+    def add_pool(self):
+        """ Add a pool.
+        """
+
+        try:
+            c.schema = Schema.get(int(request.params.get('schema')))
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        # extract attributes
+        p = Pool()
+        p.schema = c.schema
+        p.name = request.params.get('name')
+        p.description = request.params.get('description')
+        p.default_type = request.params.get('default_type')
+        if 'ipv4_default_prefix_length' in request.params:
+            if request.params['ipv4_default_prefix_length'].strip() != '':
+                p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+        if 'ipv6_default_prefix_length' in request.params:
+            if request.params['ipv6_default_prefix_length'].strip() != '':
+                p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+
+        try:
+           p.save()
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(p, cls=NapJSONEncoder)
+
+
+
+    def edit_pool(self, id):
+        """ Edit a pool.
+        """
+
+        try:
+            c.schema = Schema.get(int(request.params.get('schema')))
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        # extract attributes
+        p = Pool.get(c.schema, int(id))
+        if 'name' in request.params:
+            p.name = request.params.get('name')
+        if 'description' in request.params:
+            p.description = request.params.get('description')
+        if 'default_type' in request.params:
+            p.default_type = request.params.get('default_type')
+        if 'ipv4_default_prefix_length' in request.params:
+            if request.params['ipv4_default_prefix_length'].strip() != '':
+                p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+        if 'ipv6_default_prefix_length' in request.params:
+            if request.params['ipv6_default_prefix_length'].strip() != '':
+                p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+
+        try:
+           p.save()
+        except NapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(p, cls=NapJSONEncoder)
 
 
 
@@ -333,19 +398,41 @@ class XhrController(BaseController):
 
 
 
-    def edit_prefix(self):
+    def edit_prefix(self, id):
         """ Edit a prefix.
         """
 
         try:
             schema = Schema.get(int(request.params['schema']))
 
-            p = Prefix.get(schema, int(request.params['id']))
+            p = Prefix.get(schema, int(id))
 
-            # TODO: add more attributes!
+            # extract attributes
+            if 'prefix' in request.params:
+                p.prefix = request.params['prefix']
+            if 'description' in request.params:
+                p.description = request.params['description']
+            if 'comment' in request.params:
+                p.comment = request.params['comment']
+            if 'node' in request.params:
+                p.node = request.params['node']
             if 'pool' in request.params:
                 pool = Pool.get(schema, int(request.params['pool']))
                 p.pool = pool
+            if 'alarm_priority' in request.params:
+                p.alarm_priority = request.params['alarm_priority']
+            if 'monitor' in request.params:
+                if request.params['monitor'] == 'true':
+                    p.monitor = True
+                else:
+                    p.monitor = False
+            if 'country' in request.params:
+                p.country = request.params['country']
+            if 'span_order' in request.params:
+                if request.params['span_order'].strip() == '':
+                    p.span_order = None
+                else:
+                    p.span_order = int(request.params['span_order'])
 
             p.save()
 

@@ -1,9 +1,9 @@
 {% import 'macros.html' as nap %}
 
 {% if c.pool is defined %}
-<form method="post" action="{{ h.url(controller="pool", action="edit", id=c.pool.id) }}">
+<form method="post" name="pool_form" action="{{ h.url(controller="pool", action="edit", id=c.pool.id) }}">
 {% else %}
-<form method="post" action="{{ h.url(controller="pool", action="add") }}">
+<form method="post" name="pool_form" action="{{ h.url(controller="pool", action="add") }}">
 {% endif %}
 
 <div class="options-group">
