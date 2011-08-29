@@ -282,7 +282,7 @@ class Prefix(NapModel):
     type = None
     indent = None
     country = None
-    span_order = None
+    order_id = None
     authoritative_source = None
     alarm_priority = None
     monitor = None
@@ -391,7 +391,7 @@ class Prefix(NapModel):
             'node': self.node,
             'type': self.type,
             'country': self.country,
-            'span_order': self.span_order,
+            'order_id': self.order_id,
             'authoritative_source': self.authoritative_source,
             'alarm_priority': self.alarm_priority,
             'monitor': self.monitor
@@ -488,7 +488,7 @@ class Prefix(NapModel):
         p.type = pref['type']
         p.indent = pref['indent']
         p.country = pref['country']
-        p.span_order = pref['span_order']
+        p.order_id = pref['order_id']
         p.authoritative_source = pref['authoritative_source']
         p.alarm_priority = pref['alarm_priority']
         p.monitor = pref['monitor']
