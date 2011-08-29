@@ -543,38 +543,6 @@ class Nap:
 
 
 
-    def _translate_pool_spec(self, schema_spec, spec):
-        """ Expand 'pool_name' or 'pool_id'.
-
-            Translates 'pool_name' or 'pool_id' element in spec
-            to a 'pool' element containing the pool ID.
-        """
-
-        if 'pool_id' in spec and 'pool_name' in spec:
-            raise NapExtraneousInputError("specification contain both 'id' and 'name', specify pool id or name")
-
-        if 'pool_id' in spec:
-            pool = self.list_pool(schema_spec, { 'id': spec['pool_id'] })
-            if pool == []:
-                raise NapInputError("non-existing pool specified")
-            spec['pool'] = pool[0]['id']
-            del(spec['pool_id'])
-        elif 'pool_name' in spec:
-            if 'schema' not in spec:
-                raise NapMissingInputError("schema needs to be specified together with 'pool_name'")
-
-            pool = self.list_pool(schema_spec, { 'name': spec['pool_name'] })
-            if pool == []:
-                raise NapInputError("non-existing pool specified")
-            spec['pool'] = pool[0]['id']
-            del(spec['pool_name'])
-        else:
-            raise NapInputError("Missing pool, add pool_id or pool_name to spec!")
-
-        return spec
-
-
-
     def add_schema(self, attr):
         """ Add a new network schema.
 
@@ -943,6 +911,38 @@ class Nap:
         where, params = self._sql_expand_where(spec, 'spec_', 'po.')
 
         return where, params
+
+
+
+    def _translate_pool_spec(self, schema_spec, spec):
+        """ Expand 'pool_name' or 'pool_id'.
+
+            Translates 'pool_name' or 'pool_id' element in spec
+            to a 'pool' element containing the pool ID.
+        """
+
+        if 'pool_id' in spec and 'pool_name' in spec:
+            raise NapExtraneousInputError("specification contain both 'id' and 'name', specify pool id or name")
+
+        if 'pool_id' in spec:
+            pool = self.list_pool(schema_spec, { 'id': spec['pool_id'] })
+            if pool == []:
+                raise NapInputError("non-existing pool specified")
+            spec['pool'] = pool[0]['id']
+            del(spec['pool_id'])
+        elif 'pool_name' in spec:
+            if 'schema' not in spec:
+                raise NapMissingInputError("schema needs to be specified together with 'pool_name'")
+
+            pool = self.list_pool(schema_spec, { 'name': spec['pool_name'] })
+            if pool == []:
+                raise NapInputError("non-existing pool specified")
+            spec['pool'] = pool[0]['id']
+            del(spec['pool_name'])
+        else:
+            raise NapInputError("Missing pool, add pool_id or pool_name to spec!")
+
+        return spec
 
 
 
