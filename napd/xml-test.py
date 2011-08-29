@@ -19,8 +19,8 @@ import sys
 ss = u'ballong'
 print "Type of search string:", type(ss)
 print ss
-res = server.smart_search_pool({ 'name': 'global' }, ss, { 'max_result': 500 })
-#res = server.search_pool({ 'name': 'global' }, { 'operator': 'regex_match', 'val1': 'name', 'val2': 'test' }, { 'max_result': 500 })
+#res = server.search_schema({ 'operator': 'regex_match', 'val1': 'name', 'val2': 'test' }, { 'max_result': 500 })
+res = server.smart_search_schema(ss, { 'max_result': 500 })
 t1 = time.time()
 d1 = t1-t0
 print "Timing:", d1

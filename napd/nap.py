@@ -483,6 +483,66 @@ class Nap:
 
 
 
+    def _expand_schema_query(self, query, table_name = None):
+        """ Expand schema query dict into a WHERE-clause.
+
+            If you need to prefix each column reference with a table
+            name, that can be supplied via the table_name argument.
+        """
+
+        where = str()
+        opt = list()
+
+        # handle table name, can be None
+        if table_name is None:
+            col_prefix = ""
+        else:
+            col_prefix = table_name + "."
+
+
+        if type(query['val1']) == dict and type(query['val2']) == dict:
+            # Sub expression, recurse! This is used for boolean operators: AND OR
+            # add parantheses
+
+            sub_where1, opt1 = self._expand_schema_query(query['val1'], table_name)
+            sub_where2, opt2 = self._expand_schema_query(query['val2'], table_name)
+            try:
+                where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
+            except KeyError:
+                raise NoSuchOperatorError("No such operator %s" % str(query['operator']))
+
+            opt += opt1
+            opt += opt2
+
+        else:
+
+            # TODO: raise exception if someone passes one dict and one "something else"?
+
+            # val1 is variable, val2 is string.
+            schema_attr = dict()
+            schema_attr['id'] = 'id'
+            schema_attr['name'] = 'name'
+            schema_attr['description'] = 'description'
+            schema_attr['vrf'] = 'vrf'
+
+            if query['val1'] not in schema_attr:
+                raise NapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+
+            # build where clause
+            if query['operator'] not in _operation_map:
+                raise NapNoSuchOperatorError("No such operator %s" % query['operator'])
+
+            where = str(" %s%s %s %%s " %
+                ( col_prefix, schema_attr[query['val1']],
+                _operation_map[query['operator']] )
+            )
+
+            opt.append(query['val2'])
+
+        return where, opt
+
+
+
     def _translate_pool_spec(self, schema_spec, spec):
         """ Expand 'pool_name' or 'pool_id'.
 
@@ -632,6 +692,222 @@ class Nap:
         sql += " WHERE " + where
 
         self._execute(sql, params)
+
+
+
+    def search_schema(self, query, search_options = {}):
+        """ Search schema list for schemas matching `query`.
+
+            * `query` [dict_to_sql]
+                How the search should be performed.
+            * `search_options` [options_dict]
+                Search options, see below.
+
+            Returns a list of dicts.
+
+            The `query` argument passed to this function is designed to be
+            able to specify how quite advanced search operations should be
+            performed in a generic format. It is internally expanded to a SQL
+            WHERE-clause.
+
+            The `query` is a dict with three elements, where one specifies the
+            operation to perform and the two other specifies its arguments. The
+            arguments can themselves be `query` dicts, to build more complex
+            queries.
+
+            The :attr:`operator` key specifies what operator should be used for the
+            comparison. Currently the following operators are supported:
+
+            * :data:`and` - Logical AND
+            * :data:`or` - Logical OR
+            * :data:`equals` - Equality; =
+            * :data:`not_equals` - Inequality; !=
+            * :data:`like` - SQL LIKE
+            * :data:`regex_match` - Regular expression match
+            * :data:`regex_not_match` - Regular expression not match
+            * :data:`contains` - IP prefix contains
+            * :data:`contains_equals` - IP prefix contains or is equal to
+            * :data:`contained_within` - IP prefix is contained within
+            * :data:`contained_within_equals` - IP prefix is contained within or equals
+
+            The :attr:`val1` and :attr:`val2` keys specifies the values which are subjected
+            to the comparison. :attr:`val1` can be either any prefix attribute or an
+            entire query dict. :attr:`val2` can be either the value you want to
+            compare the prefix attribute to, or an entire `query` dict.
+
+            Example 1 - Find the schema whose name match 'test'::
+
+                query = {
+                    'operator': 'equals',
+                    'val1': 'name',
+                    'val2': 'test'
+                }
+
+            This will be expanded to the pseudo-SQL query::
+
+                SELECT * FROM schema WHERE name = 'test'
+
+            Example 2 - Find schema whose name or description regex matches 'test'::
+
+                query = {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': 'test'
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'description',
+                        'val2': 'test'
+                    }
+                }
+
+            This will be expanded to the pseudo-SQL query::
+
+                SELECT * FROM schema WHERE name ~* 'test' OR description ~* 'test'
+
+            The search options can also be used to limit the number of rows
+            returned or set an offset for the result.
+
+            The following options are available:
+            * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
+            * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
+        """
+
+        #
+        # sanitize search options and set default if option missing
+        #
+
+        # max_result
+        if 'max_result' not in search_options:
+            search_options['max_result'] = 50
+        else:
+            try:
+                search_options['max_result'] = int(search_options['max_result'])
+            except (ValueError, TypeError), e:
+                raise NapValueError('Invalid value for option' +
+                    ''' 'max_result'. Only integer values allowed.''')
+
+        # offset
+        if 'offset' not in search_options:
+            search_options['offset'] = 0
+        else:
+            try:
+                search_options['offset'] = int(search_options['offset'])
+            except (ValueError, TypeError), e:
+                raise NapValueError('Invalid value for option' +
+                    ''' 'offset'. Only integer values allowed.''')
+
+        self._logger.debug('search_schema search_options: %s' % str(search_options))
+
+        where, opt = self._expand_schema_query(query)
+        sql = """SELECT *
+                FROM ip_net_schema WHERE """ + where + """ ORDER BY name LIMIT """ + str(search_options['max_result'])
+
+        self._execute(sql, opt)
+
+        result = list()
+        for row in self._curs_pg:
+            result.append(dict(row))
+
+        return { 'search_options': search_options, 'result_list': result }
+
+
+
+    def smart_search_schema(self, query_str, search_options = {}):
+        """ Perform a smart search on schema list.
+
+            * `query_str` [string]
+                Search string
+            * `search_options` [options_dict]
+                Search options. See :func:`search_schema`.
+
+            Return a dict with three elements:
+                * :attr:`interpretation` - How the query string was interpreted.
+                * :attr:`search_options` - Various search_options.
+                * :attr:`result_list` - The search result.
+
+                The :attr:`interpretation` is given as a list of dicts, each
+                explaining how a part of the search key was interpreted (ie. what
+                prefix attribute the search operation was performed on).
+
+                The :attr:`result` is a list of dicts containing the search result.
+
+            The smart search function tries to convert the query from a text
+            string to a `query` dict which is passed to the
+            :func:`search_schema` function.  If multiple search keys are
+            detected, they are combined with a logical AND.
+
+            It will basically just take each search term and try to match it
+            against the name or description column with regex match or the VRF
+            column with an exact match.
+
+            See the :func:`search_schema` function for an explanation of the
+            `search_options` argument.
+        """
+
+        self._logger.debug("Query string: %s %s" % (query_str, type(query_str)))
+
+        # find query parts
+        # XXX: notice the ugly workarounds for shlex not supporting Unicode
+        query_str_parts = []
+        try:
+            for part in shlex.split(query_str.encode('utf-8')):
+                query_str_parts.append({ 'string': part.decode('utf-8') })
+        except:
+            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result_list': [] }
+
+        # go through parts and add to query_parts list
+        query_parts = list()
+        for query_str_part in query_str_parts:
+
+                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
+                query_str_part['interpretation'] = 'text'
+                query_str_part['operator'] = 'regex'
+                query_str_part['attribute'] = 'name or description'
+                query_parts.append({
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'regex_match',
+                            'val1': 'name',
+                            'val2': query_str_part['string']
+                        },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'description',
+                            'val2': query_str_part['string']
+                        }
+                    },
+                    'val2': {
+                        'operator': 'equals',
+                        'val1': 'vrf',
+                        'val2': query_str_part['string']
+                    }
+                })
+
+        # Sum all query parts to one query
+        query = {}
+        if len(query_parts) > 0:
+            query = query_parts[0]
+
+        if len(query_parts) > 1:
+            for query_part in query_parts[1:]:
+                query = {
+                    'operator': 'and',
+                    'val1': query_part,
+                    'val2': query
+                }
+
+
+        self._logger.debug("Expanded to: %s" % str(query))
+
+        search_result = self.search_schema(query, search_options)
+        search_result['interpretation'] = query_str_parts
+
+        return search_result
 
 
 

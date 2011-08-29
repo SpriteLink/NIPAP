@@ -130,6 +130,34 @@ class NapProtocol(xmlrpc.XMLRPC):
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
+
+    def xmlrpc_search_schema(self, query, search_options = {}):
+        """ Search for schemas.
+
+            The 'query' input is a specially crafted dict/struct which
+            permits quite flexible searches.
+        """
+
+        try:
+            return self.nap.search_schema(query, search_options)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+    def xmlrpc_smart_search_schema(self, query_string, search_options = {}):
+        """ Perform a smart search.
+
+            The smart search function tries to extract a query from a text
+            string. This query is then passed to the search_prefix function,
+            which performs the actual search.
+        """
+
+        try:
+            return self.nap.smart_search_schema(query_string, search_options)
+        except nap.NapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
     #
     # POOL FUNCTIONS
     #
