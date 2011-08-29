@@ -16,14 +16,15 @@ server = xmlrpclib.Server(server_url, allow_none=1);
 
 t0 = time.time()
 import sys
-ss = u'å'
+ss = u'ballong'
 print "Type of search string:", type(ss)
 print ss
-res = server.smart_search_prefix({ 'name': 'global' }, ss, { 'max_result': 500 })
+res = server.smart_search_pool({ 'name': 'global' }, ss, { 'max_result': 500 })
+#res = server.search_pool({ 'name': 'global' }, { 'operator': 'regex_match', 'val1': 'name', 'val2': 'test' }, { 'max_result': 500 })
 t1 = time.time()
 d1 = t1-t0
 print "Timing:", d1
-#print res
+print res
 
 #
 # echo test
