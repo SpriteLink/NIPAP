@@ -1646,25 +1646,33 @@ class Nap:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as desc/comment")
                 query_str_part['interpretation'] = 'text'
                 query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'description or comment'
+                query_str_part['attribute'] = 'description or comment or node or order id'
                 query_parts.append({
                     'operator': 'or',
                     'val1': {
                         'operator': 'or',
                         'val1': {
-                            'operator': 'regex_match',
-                            'val1': 'comment',
-                            'val2': query_str_part['string']
+                            'operator': 'or',
+                            'val1': {
+                                'operator': 'regex_match',
+                                'val1': 'comment',
+                                'val2': query_str_part['string']
+                            },
+                            'val2': {
+                                'operator': 'regex_match',
+                                'val1': 'description',
+                                'val2': query_str_part['string']
+                            }
                         },
                         'val2': {
                             'operator': 'regex_match',
-                            'val1': 'description',
+                            'val1': 'node',
                             'val2': query_str_part['string']
                         }
                     },
                     'val2': {
                         'operator': 'regex_match',
-                        'val1': 'node',
+                        'val1': 'order_id',
                         'val2': query_str_part['string']
                     }
                 })

@@ -617,7 +617,7 @@ function receivePrefixList(search_result) {
 			tooltip = "The " + interp.interpretation + " must equal " + interp.string;
 		} else {
 			text += " matching '<b>" + interp.string + "</b>'";
-			tooltip = "The description OR node OR the comment should regexp match '" + interp.string + "'";
+			tooltip = "The description OR node OR order id OR the comment should regexp match '" + interp.string + "'";
 		}
 
 		intp_cont.append('<div class="search_interpretation tooltip" id="intp' + key + '" title="' + tooltip + '">');
