@@ -428,11 +428,8 @@ class XhrController(BaseController):
                     p.monitor = False
             if 'country' in request.params:
                 p.country = request.params['country']
-            if 'span_order' in request.params:
-                if request.params['span_order'].strip() == '':
-                    p.span_order = None
-                else:
-                    p.span_order = int(request.params['span_order'])
+            if 'order_id' in request.params:
+                p.order_id = request.params['order_id']
 
             p.save()
 

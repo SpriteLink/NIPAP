@@ -747,7 +747,7 @@ def test_edit_prefix(self):
         'prefix': '192.0.2.0/24', 
         'description': 'foo',
         'comment': 'bar',
-        'span_order': 0xBEEF,
+        'order_id': '0xBEEF',
         'alarm_priority': 'low',
         'type': 'assignment',
         'node': 'TOK-CORE-1',

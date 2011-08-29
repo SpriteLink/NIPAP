@@ -93,10 +93,7 @@ class PrefixController(BaseController):
             c.prefix.country = request.params['prefix_country']
             c.prefix.alarm_priority = request.params['prefix_alarm_priority']
             c.prefix.comment = request.params['prefix_comment']
-            if request.params['prefix_order_id'] == '':
-                c.prefix.order_id = None
-            else:
-                c.prefix.order_id = int(request.params['prefix_order_id'])
+            c.prefix.order_id = request.params['prefix_order_id']
             if request.params.get('prefix_monitor') != None:
                 c.prefix.monitor = True
             else:
