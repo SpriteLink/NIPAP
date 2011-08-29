@@ -56,7 +56,7 @@
     * :attr:`type` - Prefix type, string 'reservation', 'assignment' or 'host'.
     * :attr:`indent` - Depth in prefix tree. Set by Nap.
     * :attr:`country` - Country where the prefix resides (two-letter country code).
-    * :attr:`span_order` - SPAN order number (integer).
+    * :attr:`order_id` - Order identifier.
     * :attr:`authoritative_source` - String identifying which system added the prefix.
     * :attr:`alarm_priority` - String 'low', 'medium' or 'high'. Used by netwatch.
     * :attr:`monitor` - A boolean specifying whether the prefix should be
@@ -892,7 +892,7 @@ class Nap:
             prefix_attr['type'] = 'type'
             prefix_attr['node'] = 'node'
             prefix_attr['country'] = 'country'
-            prefix_attr['span_order'] = 'span_order'
+            prefix_attr['order_id'] = 'order_id'
             prefix_attr['authoritative_source'] = 'authoritative_source'
             prefix_attr['alarm_priority'] = 'alarm_priority'
             prefix_attr['monitor'] = 'monitor'
@@ -988,7 +988,7 @@ class Nap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'schema', 'description',
             'comment', 'pool', 'node', 'type', 'country',
-            'span_order', 'alarm_priority', 'monitor']
+            'order_id', 'alarm_priority', 'monitor']
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('host' not in attr):
             raise NapMissingInputError('Either description or host must be specified.')
@@ -1022,7 +1022,7 @@ class Nap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool', 'node', 'type', 'country',
-            'span_order', 'alarm_priority', 'monitor' ]
+            'order_id', 'alarm_priority', 'monitor' ]
 
         self._check_attr(attr, [], allowed_attr)
 
@@ -1472,7 +1472,7 @@ class Nap:
         type,
         indent,
         country,
-        span_order,
+        order_id,
         authoritative_source,
         alarm_priority,
         monitor,
