@@ -841,6 +841,11 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		}
 
 	}
+	// this last clause is to prevent the last prefixes in a list to be hidden
+	// we don't bother putting three or less prefixes into a hidden container
+	if (parseInt(container.children().length) <= 3) {
+		unhide( container.find('.prefix_button:first').attr('data-prefix-id') );
+	}
 
 }
 
