@@ -528,7 +528,7 @@ class NapTest(unittest.TestCase):
 
         self.nap.add_prefix(schema, prefix_attrs)
         res = self.nap.smart_search_prefix(schema, r"""1.3.3.77 "-ish" """)
-        self.assertEqual(res['prefix_list'][-1]['prefix'], '1.3.3.77/32', 'Prefix not found')
+        self.assertEqual(res['result'][-1]['prefix'], '1.3.3.77/32', 'Prefix not found')
 
 
 

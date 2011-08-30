@@ -81,14 +81,25 @@ class Schema(NapModel):
 
         res = list()
         for schema in schema_list:
-            s = Schema()
-            s.id = schema['id']
-            s.name = schema['name']
-            s.description = schema['description']
-            s.vrf = schema['vrf']
-            res.append(s)
+            res.append(Schema.from_dict(schema))
 
         return res
+
+
+    @classmethod
+    def from_dict(cls, parm):
+        """ Create new Schema-object from dict.
+
+            Suitable for creating objects from XML-RPC data.
+            All available keys must exist.
+        """
+
+        s = Schema()
+        s.id = parm['id']
+        s.name = parm['name']
+        s.description = parm['description']
+        s.vrf = parm['vrf']
+        return s
 
 
 
@@ -110,6 +121,50 @@ class Schema(NapModel):
 
         _cache['Schema'][id] = schema
         return schema
+
+
+
+    @classmethod
+    def search(cls, query, search_opts={}):
+        """ Search schemas.
+        """
+
+        xmlrpc = XMLRPCConnection()
+        try:
+            search_result = xmlrpc.connection.search_schema(query, search_opts)
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
+        result = dict()
+        result['result'] = []
+        result['search_options'] = search_result['search_options']
+        for schema in search_result['result']:
+            s = Schema.from_dict(schema)
+            result['result'].append(s)
+
+        return result
+
+
+
+    @classmethod
+    def smart_search(cls, query_string, search_options={}):
+        """ Perform a smart schema search.
+        """
+
+        xmlrpc = XMLRPCConnection()
+        try:
+            smart_result = xmlrpc.connection.smart_search_schema(query_string,
+                search_options)
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
+        result = dict()
+        result['interpretation'] = smart_result['interpretation']
+        result['search_options'] = smart_result['search_options']
+        result['result'] = list()
+        for schema in smart_result['result']:
+            p = Schema.from_dict(schema)
+            result['result'].append(p)
+
+        return result
 
 
 
@@ -232,6 +287,50 @@ class Pool(NapModel):
 
 
     @classmethod
+    def search(cls, schema, query, search_opts={}):
+        """ Search pools.
+        """
+
+        xmlrpc = XMLRPCConnection()
+        try:
+            search_result = xmlrpc.connection.search_pool({ 'id': schema.id }, query, search_opts)
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
+        result = dict()
+        result['result'] = []
+        result['search_options'] = search_result['search_options']
+        for pool in search_result['result']:
+            p = Pool.from_dict(schema)
+            result['result'].append(p)
+
+        return result
+
+
+
+    @classmethod
+    def smart_search(cls, schema, query_string, search_options={}):
+        """ Perform a smart pool search.
+        """
+
+        xmlrpc = XMLRPCConnection()
+        try:
+            smart_result = xmlrpc.connection.smart_search_pool({ 'id': schema.id },
+                query_string, search_options)
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
+        result = dict()
+        result['interpretation'] = smart_result['interpretation']
+        result['search_options'] = smart_result['search_options']
+        result['result'] = list()
+        for pool in smart_result['result']:
+            p = Pool.from_dict(pool)
+            result['result'].append(p)
+
+        return result
+
+
+
+    @classmethod
     def from_dict(cls, parm):
         """ Create new Pool-object from dict.
 
@@ -326,13 +425,16 @@ class Prefix(NapModel):
         """
 
         xmlrpc = XMLRPCConnection()
-        search_result = xmlrpc.connection.search_prefix({'id': schema.id}, query, search_opts)
+        try:
+            search_result = xmlrpc.connection.search_prefix({'id': schema.id}, query, search_opts)
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
         result = dict()
-        result['prefix_list'] = []
+        result['result'] = []
         result['search_options'] = search_result['search_options']
-        for prefix in search_result['prefix_list']:
+        for prefix in search_result['result']:
             p = Prefix.from_dict(prefix)
-            result['prefix_list'].append(p)
+            result['result'].append(p)
 
         return result
 
@@ -352,10 +454,10 @@ class Prefix(NapModel):
         result = dict()
         result['interpretation'] = smart_result['interpretation']
         result['search_options'] = smart_result['search_options']
-        result['prefix_list'] = list()
-        for prefix in smart_result['prefix_list']:
+        result['result'] = list()
+        for prefix in smart_result['result']:
             p = Prefix.from_dict(prefix)
-            result['prefix_list'].append(p)
+            result['result'].append(p)
 
         return result
 

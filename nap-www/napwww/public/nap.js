@@ -635,10 +635,10 @@ function receivePrefixList(search_result) {
 	prefix_list = new Object();
 	indent_head = new Object();
 
-	if (search_result.prefix_list.length > 0) {
+	if (search_result.result.length > 0) {
 
 		// insert prefix list
-		insertPrefixList(search_result.prefix_list, $("#prefix_list"), search_result.prefix_list[0]);
+		insertPrefixList(search_result.result, $("#prefix_list"), search_result.result[0]);
 
 	} else {
 
@@ -654,7 +654,7 @@ function receivePrefixList(search_result) {
 	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
 
 	// less than max_result means we reached the end of the result set
-	if (search_result.prefix_list.length < search_result.search_options.max_result) {
+	if (search_result.result.length < search_result.search_options.max_result) {
 		end_of_result = 1;
 		$('#nextpage').hide();
 	} else {
@@ -667,7 +667,7 @@ function receivePrefixList(search_result) {
  * Receive an updated prefix list
  */
 function receivePrefixListUpdate(search_result, link_type) {
-	pref_list = search_result.prefix_list;
+	pref_list = search_result.result;
 
 	// Zero result elements. Should not happen as we at least always should
 	// get the prefix we select to list, even if it has no children.
@@ -699,7 +699,7 @@ function receivePrefixListUpdate(search_result, link_type) {
  * Receive the "next page" of a prefix list
  */
 function receivePrefixListNextPage(search_result) {
-	pref_list = search_result.prefix_list;
+	pref_list = search_result.result;
 
 	// Zero result elements. Should not happen as we at least always should
 	// get the last prefix currently listed
