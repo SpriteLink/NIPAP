@@ -89,7 +89,6 @@ COMMENT ON COLUMN ip_net_plan.alarm_priority IS 'Priority of alarms sent for thi
 COMMENT ON COLUMN ip_net_plan.monitor IS 'Whether the prefix should be monitored or not.';
 
 CREATE UNIQUE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, prefix);
-CREATE INDEX ip_net_plan__prefix__ip4r_index ON ip_net_plan USING gist (ip4r(CASE WHEN family(prefix) = 4 THEN prefix ELSE NULL::cidr END));
 CREATE INDEX ip_net_plan__schema__index ON ip_net_plan (schema);
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 CREATE INDEX ip_net_plan__family__index ON ip_net_plan (family(prefix));
