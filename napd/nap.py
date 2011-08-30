@@ -785,7 +785,7 @@ class Nap:
         for row in self._curs_pg:
             result.append(dict(row))
 
-        return { 'search_options': search_options, 'result_list': result }
+        return { 'search_options': search_options, 'result': result }
 
 
 
@@ -800,7 +800,7 @@ class Nap:
             Return a dict with three elements:
                 * :attr:`interpretation` - How the query string was interpreted.
                 * :attr:`search_options` - Various search_options.
-                * :attr:`result_list` - The search result.
+                * :attr:`result` - The search result.
 
                 The :attr:`interpretation` is given as a list of dicts, each
                 explaining how a part of the search key was interpreted (ie. what
@@ -830,7 +830,7 @@ class Nap:
             for part in shlex.split(query_str.encode('utf-8')):
                 query_str_parts.append({ 'string': part.decode('utf-8') })
         except:
-            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result_list': [] }
+            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result': [] }
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -1292,7 +1292,7 @@ class Nap:
         for row in self._curs_pg:
             result.append(dict(row))
 
-        return { 'search_options': search_options, 'result_list': result }
+        return { 'search_options': search_options, 'result': result }
 
 
 
@@ -1309,7 +1309,7 @@ class Nap:
             Return a dict with three elements:
                 * :attr:`interpretation` - How the query string was interpreted.
                 * :attr:`search_options` - Various search_options.
-                * :attr:`result_list` - The search result.
+                * :attr:`result` - The search result.
 
                 The :attr:`interpretation` is given as a list of dicts, each
                 explaining how a part of the search key was interpreted (ie. what
@@ -1338,7 +1338,7 @@ class Nap:
             for part in shlex.split(query_str.encode('utf-8')):
                 query_str_parts.append({ 'string': part.decode('utf-8') })
         except:
-            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result_list': [] }
+            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result': [] }
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -2096,7 +2096,7 @@ class Nap:
             if len(result) >= int(search_options['max_result']):
                 break
 
-        return { 'search_options': search_options, 'prefix_list': result }
+        return { 'search_options': search_options, 'result': result }
 
 
 
@@ -2110,7 +2110,7 @@ class Nap:
             * `search_options` [options_dict]
                 Search options. See :func:`search_prefix`.
 
-            Return a dict with two elements:
+            Return a dict with three elements:
                 * :attr:`interpretation` - How the query string was interpreted.
                 * :attr:`search_options` - Various search_options.
                 * :attr:`result` - The search result.
@@ -2143,7 +2143,7 @@ class Nap:
             for part in shlex.split(query_str.encode('utf-8')):
                 query_str_parts.append({ 'string': part.decode('utf-8') })
         except:
-            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'prefix_list': [] }
+            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result': [] }
 
         # go through parts and add to query_parts list
         query_parts = list()
