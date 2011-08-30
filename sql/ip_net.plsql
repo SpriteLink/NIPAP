@@ -26,8 +26,8 @@ CREATE UNIQUE INDEX ip_net_schema__name__index ON ip_net_schema (name);
 CREATE UNIQUE INDEX ip_net_schema__vrf__index ON ip_net_schema (vrf);
 
 COMMENT ON TABLE ip_net_schema IS 'IP Address schemas, something like namespaces for our address plan';
-COMMENT ON INDEX ip_net_schema__name__index IS 'Schema name';
-COMMENT ON INDEX ip_net_schema__vrf__index IS 'Schema VRF-id';
+COMMENT ON INDEX ip_net_schema__name__index IS 'schema name';
+COMMENT ON INDEX ip_net_schema__vrf__index IS 'schema VRF-id';
 
 
 --
@@ -49,7 +49,7 @@ CREATE TABLE ip_net_pool (
 CREATE UNIQUE INDEX ip_net_pool__schema_name__index ON ip_net_pool (schema, name);
 
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
-COMMENT ON INDEX ip_net_pool__schema_name__index IS 'pool schema & name';
+COMMENT ON INDEX ip_net_pool__schema_name__index IS 'pool name';
 
 
 --
@@ -96,7 +96,7 @@ COMMENT ON COLUMN ip_net_plan.monitor IS 'Whether the prefix should be monitored
 
 CREATE UNIQUE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, prefix);
 
-COMMENT ON ip_net_plan__schema_prefix__index IS 'Schema / Prefix';
+COMMENT ON INDEX ip_net_plan__schema_prefix__index IS 'prefix';
 CREATE INDEX ip_net_plan__schema__index ON ip_net_plan (schema);
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 CREATE INDEX ip_net_plan__family__index ON ip_net_plan (family(prefix));
