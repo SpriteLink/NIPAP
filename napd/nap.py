@@ -353,7 +353,13 @@ class Nap:
 
             # this is a duplicate key error
             if e.pgcode == "23505":
-                raise NapDuplicateError("Objects primary keys already exist")
+                m = re.match(r'.*"([^"]+)"', e.pgerror)
+                if m is None:
+                    raise NapDuplicateError("Objects primary keys already exist")
+                cursor = self._con_pg.cursor()
+                cursor.execute("SELECT obj_description(oid) FROM pg_class WHERE relname = %(relname)s", { 'relname': m.group(1) })
+                for desc in cursor:
+                    raise NapDuplicateError("Duplicate value for '" + desc[0] + "', the value you have inputted is already in use.")
 
             raise NapError(str(e))
 
