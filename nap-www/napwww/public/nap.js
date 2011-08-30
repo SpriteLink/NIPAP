@@ -772,6 +772,10 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 		// Has indent level increased?
 		if (prev_prefix.indent < prefix.indent) {
+			// if prefix has childs, do not hide it!  since we are one indent
+			// level under last, the previous prefix is our parent and clearly
+			// has childs, thus unhide!
+			unhide( container.find('.prefix_button:first').attr('data-prefix-id') );
 
 			// we get the number of children for assignments from the database
 			if (prev_prefix.type == 'assignment') {
