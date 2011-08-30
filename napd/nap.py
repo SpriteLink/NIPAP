@@ -2045,7 +2045,7 @@ class Nap:
         authoritative_source,
         alarm_priority,
         monitor,
-        CASE WHEN type = 'host' THEN -2 WHEN type = 'assignment' THEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) - 1 ELSE -2 END AS children
+        CASE WHEN type = 'host' THEN 0 WHEN type = 'assignment' THEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) - 1 ELSE -2 END AS children
     FROM (
         SELECT DISTINCT ON(p1.prefix) p1.*,
             masklen(p1.prefix) AS prefix_length,

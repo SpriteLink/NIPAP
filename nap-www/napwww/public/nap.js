@@ -374,7 +374,7 @@ function showPrefix(prefix, parent_container) {
 		function() { prefix_row.addClass("row_hover"); },
 		function() { prefix_row.removeClass("row_hover"); }
 	);
-    prefix_row.click(function() { collapseClick(prefix.id); });
+	prefix_row.click(function() { collapseClick(prefix.id); });
 
 	// add indent and prefix container
 	prefix_row.append('<div id="prefix_ind_pref' + prefix.id + '">');
@@ -396,7 +396,11 @@ function showPrefix(prefix, parent_container) {
 	} else {
 
 		// add expand button
-		prefix_indent.html('<span class="prefix_exp" id="prefix_exp' + prefix.id + '" onClick="collapseClick(' + prefix.id + ')">+</span>');
+		prefix_indent.html('<span class="prefix_exp" id="prefix_exp' + prefix.id + '">+</span>');
+		$('#prefix_exp' + prefix.id).click(function (e) {
+			collapseClick(prefix.id);
+			e.stopPropagation();
+		});
 
 		// If we are sure that the children has been fetched, the group will
 		// already be fully expanded and a minus sign should be shown
@@ -540,7 +544,7 @@ function prefixRemoved(prefix) {
 
 	// remove prefix from list
 	$('#prefix_entry' + prefix.id).remove();
-    $('#collapse' + prefix.id).remove();
+	$('#collapse' + prefix.id).remove();
 
 }
 
