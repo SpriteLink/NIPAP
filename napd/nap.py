@@ -1284,7 +1284,8 @@ class Nap:
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
                         (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool=po.id ORDER BY prefix) AS a) AS prefixes
-                FROM ip_net_pool AS po WHERE """ + where + """ ORDER BY name LIMIT """ + str(search_options['max_result'])
+                FROM ip_net_pool AS po WHERE """ + where + """ ORDER BY name
+                LIMIT """ + str(search_options['max_result']) + """ OFFSET """ + str(search_options['offset'])
 
         self._execute(sql, opt)
 
