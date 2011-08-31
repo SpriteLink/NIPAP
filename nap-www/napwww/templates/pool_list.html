@@ -2,12 +2,41 @@
 {% set page = 'pools' %}
 
 {% block head %}
+    <link rel="stylesheet" href="/datatable.css">
+    <script src="/jquery.dataTables.js"></script>
     <script>
         $(function () {
             $(".pool_row").hover(
                 function() { $(this).addClass("row_hover"); },
                 function() { $(this).removeClass("row_hover"); }
             );
+
+            $('#pool_table').dataTable({
+                'bServerSide': true,
+                'sAjaxSource': '{{ h.url(controller='xhr', action='smart_search_pool_mod', id=c.schema.id) }}',
+                'bPaginate': false,
+                'bSortClasses': false,
+                'aoColumns': [
+                    null, // name
+                    // id
+                    {
+                        'bVisible': false,
+                        'bSearchable': false,
+                        'bSortable': false
+                    },
+                    null, // description,
+                    null, // default type
+                    null, // default prefix length
+                    // links
+                    {
+                        'bSearchable': false,
+                        'bSortable': false,
+                        'fnRender': function(oObj) {
+                            return '<a href="/pool/edit/' + oObj.aData[1] + '?schema=' + schema_id + '">edit</a>';
+                        }
+                    }
+                ]
+            });
             
         });
     </script>
@@ -28,10 +57,10 @@
 		{{ nap.button('Add pool', color='red', url=h.url(controller = 'pool', action = 'add', schema = c.schema.id)) }}
 	</div>
 
-	<table style="border-spacing: 0px; width: 100%;" border=0>
+	<table id="pool_table" style="border-spacing: 0px; width: 100%;" border=0>
 		<thead class="listing">
 			<tr>
-				<th style="padding-left: 30px;">Name</th><th>Description</th><th>Default type</th><th>Def. pref. length (4/6)</th><th></th>
+				<th style="padding-left: 30px;">Name</th><th>ID</th><th>Description</th><th>Default type</th><th>4 / 6</th><th></th>
 			</tr>
 		</thead>
 		<tbody class="listing">
@@ -40,7 +69,7 @@
 				<td style="padding-left: 30px;">{{ pool.name }}</td>
 				<td>{{ pool.description or '' }}</td>
 				<td>{{ pool.default_type }}</td>
-				<td>{{ pool.ipv4_default_prefix_length }} / {{ pool.ipv6_default_prefix_length }}</td>
+				<td>{{ pool.ipv4_default_prefix_length or '-' }} / {{ pool.ipv6_default_prefix_length or '-' }}</td>
 				<td>
 					<a href="{{ h.url(controller = 'pool', action = 'edit', id = pool.id, schema = c.schema.id) }}">edit</a> | 
 					<a href="{{ h.url(controller = 'pool', action = 'remove', id = pool.id, schema = c.schema.id) }}" onclick="showDialogYesNo('Remove {{ pool.name  }}?', 'Are you sure you want to remove {{ pool.name }}? You cannot undo this.', function () { window.location.href = '{{ h.url(controller="pool", action="remove", id=pool.id, schema = c.schema.id) }}'; }); return false;">del</a>
