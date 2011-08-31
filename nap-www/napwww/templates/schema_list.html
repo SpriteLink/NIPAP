@@ -4,11 +4,6 @@
     <script>
 
         $(function () {
-            $(".schema_row").hover(
-                function() { $(this).addClass("row_hover"); },
-                function() { $(this).removeClass("row_hover"); }
-            );
-
             /*
              * blagh, this was a bit more bulky then I wanted just right now...
              * TODO: change from onclick to unobtrusive JavaScript.
@@ -53,7 +48,7 @@
 	</thead>
 	<tbody class="listing">
 		{% for schema in c.schemas %}
-		<tr class="schema_row" id="schema_row{{ schema.id }}">
+		<trid="schema_row{{ schema.id }}">
 			<td style="padding-left: 30px;"><a href="{{ h.url(controller='prefix', action='index', schema=schema.id) }}">{{ schema.name }}</a></td>
 			<td>{{ schema.description }}</td>
 			<td>{{ schema.vrf }}</td>

@@ -387,6 +387,14 @@ input[type="submit"] {
     padding-right: 30px;
 }
 
+table.listing {
+    border-spacing: 0px;
+}
+
+tbody.listing > tr:hover {
+    background-color: #ebf2fc;
+}
+
 .prefix_hidden_container {
     display: none;
 }
@@ -429,10 +437,6 @@ input[type="submit"] {
 
 .row_collateral {
     color: #aaaaaa;
-}
-
-.row_hover {
-    background-color: #ebf2fc;
 }
 
 .prefix_ind_pref {

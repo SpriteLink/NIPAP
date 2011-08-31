@@ -3,15 +3,14 @@
 
 {% block head %}
 
-    <link rel="stylesheet" href="/jquery-ui-1.8.13.custom.css">
-    <script src="/jquery-ui-1.8.13.custom.min.js"></script>
+    <link rel="stylesheet" href="/datatable.css">
+    <script src="/jquery.dataTables.min.js"></script>
 
    <script>
 
     var indent_head = Array();
     prefix_link_type = 'add_too_pool';
     var pool_id = {{ c.pool.id }};
-    var cur_opts = new Object();
 
     /*
      * Is run when a prefix is selected in the list.
@@ -22,7 +21,7 @@
         data = new Object();
         data.schema = schema_id;
         data.pool = {{ c.pool.id }};
-        $.getJSON('{{ h.url(controller = 'xhr', action = 'edit_prefix') }}/' + prefix_id, data, prefixAdded);
+        $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, prefixAdded);
     
     }
 
@@ -69,7 +68,7 @@
         if (e.currentTarget.id == 'radio-create-new') {
 
             // fetch data for pool search box
-            $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, enableFromPoolSearch);
+            $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, populatePoolTable);
 
             prefix_link_type = 'select';
             $('#prefix_list').empty();

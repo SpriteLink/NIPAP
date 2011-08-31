@@ -56,6 +56,7 @@ class PrefixController(BaseController):
         # make sure we have a schema
         try:
             c.schema = Schema.get(int(request.params['schema']))
+            c.pools = Pool.list(c.schema)
         except (KeyError, NapNonExistentError), e:
             redirect(url(controller = 'schema', action = 'list'))
 

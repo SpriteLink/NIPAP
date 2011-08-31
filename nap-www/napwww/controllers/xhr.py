@@ -159,41 +159,6 @@ class XhrController(BaseController):
 
 
 
-    def smart_search_pool_mod(self, id):
-        """ Smart pool search crafted for DataTable
-        """
-
-        log.debug(str(request.params))
-
-        # search options
-        search_opts = {
-            'offset': request.params['iDisplayStart']
-        }
-        if int(request.params['iDisplayLength']) > 0:
-            search_opts['max_result'] = request.params['iDisplayLength']
-
-        query_string = request.params['sSearch']
-
-        try:
-            schema = Schema.get(int(id))
-            res = Pool.smart_search(schema, query_string, search_opts)
-        except NapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
-
-        ret = {
-            'iTotalRecords': 1000,
-            'iTotalDisplayRecords': 100,
-            'sEcho': request.params['sEcho'],
-            'aaData': []
-        }
-
-        for p in res['result']:
-            ret['aaData'].append( [ p.name, p.id, p.description, p.default_type, '%s / %s' % (str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length)), 'tjong' ] )
-
-        return json.dumps(ret)
-
-
-
     def add_pool(self):
         """ Add a pool.
         """

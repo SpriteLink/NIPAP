@@ -2,12 +2,12 @@
 {% set page = 'prefixes' %}
 
 {% block head %}
-<script src="/jquery-ui-1.8.13.custom.min.js"></script>
+<link rel="stylesheet" href="/datatable.css">
+<script src="/jquery.dataTables.min.js"></script>
 <script>
 
 prefix_link_type = 'select';
 
-var cur_opts = new Object();
 var alloc_method = '';
 
 
@@ -32,9 +32,7 @@ function prefixAdded(data) {
 
 $(function () {
 
-    // fetch data for pool search box
-    $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, enableFromPoolSearch);
-
+    $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, populatePoolTable);
     $('#prefix-alloc-method_container').show();
 
     // Enable actions on radio buttons
@@ -42,7 +40,7 @@ $(function () {
     $('input[name="edit_length"]').change(toggleLengthEdit);
 
     // Enable action on the adress family select box
-    $('input[name="family"]').change(changeFamily);
+    $('input[name="prefix_family"]').change(changeFamily);
 
     $('input[name="prefix_monitor"]').change(prefixMonitorToggled);
     prefixMonitorToggled();

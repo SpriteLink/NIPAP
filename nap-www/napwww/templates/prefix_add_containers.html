@@ -93,7 +93,13 @@
 						Pool
 					</dt>
 					<dd>
-						<input id="from-pool" type="text" name="from-pool">
+                        <table id="pool_table" class="listing" style="width: 100%;">
+                            <thead class="listing">
+                                <tr><th>Name</th><th>Description</th><th style="width: 110px;">Default type</th><th style="width: 90px;">4 / 6</th></tr>
+                            </thead>
+                            <tbody class="listing">
+                            </tbody>
+                        </table>
 					</dd>
 				</dl>
 			</div>
@@ -110,7 +116,7 @@
 						<label id="def_length_container" for="edit_length_default_radio">Use pools default prefix-length</label>
 						<br/>
 						<input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
-						<label for="edit_length_override_radio">Override pools defealt prefix-length</label>
+						<label for="edit_length_override_radio">Override pools default prefix-length</label>
 						<br/>
 						<div style="display: none;" id="length_row">
 							Use prefix-length: <input type="text" size=3 name="prefix_length_pool">

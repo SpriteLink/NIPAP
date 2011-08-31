@@ -22,10 +22,15 @@ var schema_id = 0;
  *  >0: Has children
  */
 var prefix_list = Object();
+var pool_list = new Object();
 var indent_head = Object();
 
 // Object for storing statistics
 var stats = Object();
+
+// current options - mostly used for prefix addition on
+// the prefix add and pool edit pages.
+var cur_opts = new Object();
 
 /*
  * Holy shit, this is an ugly hack...
@@ -970,14 +975,14 @@ function changeFamily() {
 	// set prefix length in pool length input
 	if (alloc_method == 'from-pool') {
 
-		$('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v4);
+		// TODO: handle prefix length 'null'
 
 		if ($('input[name="prefix_family"]:checked').val() == '4') {
-			$('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v4);
-			$('#def_length_container').html("Use pool's default IPv4 prefix-length of /" + cur_opts.pool.length_v4 + ".");
+			$('input[name="prefix_length_pool"]').val(cur_opts.pool.ipv4_default_prefix_length);
+			$('#def_length_container').html("Use pool's default IPv4 prefix-length of /" + cur_opts.pool.ipv4_default_prefix_length + ".");
 		} else {
-			$('input[name="prefix_length_pool"]').val(cur_opts.pool.length_v6);
-			$('#def_length_container').html("Use pool's default IPv6 prefix-length of /" + cur_opts.pool.length_v6 + ".");
+			$('input[name="prefix_length_pool"]').val(cur_opts.pool.ipv6_default_prefix_length);
+			$('#def_length_container').html("Use pool's default IPv6 prefix-length of /" + cur_opts.pool.ipv6_default_prefix_length + ".");
 		}
 	}
 
@@ -987,12 +992,60 @@ function changeFamily() {
 
 
 /*
+ * Populate the pool table with JSON data
+ */
+function populatePoolTable(data) {
+
+	var pool_table_data = [];
+
+	for (key in data) {
+
+		// Save pool object to pool list
+		pool_list[data[key].id] = data[key];
+
+		if (data[key].ipv4_default_prefix_length == null) {
+			var v4 = '-';
+		} else {
+			var v4 = data[key].ipv4_default_prefix_length;
+		}
+		if (data[key].ipv6_default_prefix_length == null) {
+			var v6 = '-';
+		} else {
+			var v6 = data[key].ipv6_default_prefix_length;
+		}
+
+		var link = '<a href="javascript:void(0);" onClick="selectPool(' + data[key].id + ');">' + data[key].name + '</a>';
+
+		var pool = [ link, data[key].description, data[key].default_type, v4 + ' / ' + v6 ];
+
+		pool_table_data.push(pool);
+
+	}
+
+	// Enable pool dataTable
+	$('#pool_table').dataTable({
+		'bAutoWidth': false,
+		'bPaginate': false,
+		'bSortClasses': false,
+		'aaData': pool_table_data,
+		'aoColumns': [
+			null, // name
+			null, // description,
+			{ 'sWidth': '110px' }, // default type
+			{ 'sWidth': '80px' } // default prefix length
+		]
+	});
+
+}
+
+
+/*
  * Run when a pool is selected from the pool list.
  */
-function selectPool(e, ui) {
+function selectPool(id) {
 
 	// Save the pool
-	cur_opts.pool = ui.item;
+	cur_opts.pool = pool_list[id];
 
 	// display data form
 	$("#prefix_data_container").css('display', 'block');
@@ -1001,30 +1054,6 @@ function selectPool(e, ui) {
 	changeFamily();
 	$('#length_info_row').css('display', 'block');
 	$('#length_edit_row').css('display', 'inline-block');
-
-}
-
-
-/*
- * Enable from-pool autocompleting search box.
- */
-function enableFromPoolSearch(data) {
-
-	var pools = new Array();
-
-	for (p in data) {
-		pools.push({
-			'value': data[p].name,
-			'id': data[p].id,
-			'length_v4': data[p].ipv4_default_prefix_length,
-			'length_v6': data[p].ipv6_default_prefix_length
-			});
-	}
-
-	$("#from-pool").autocomplete({
-		'source': pools,
-		'select': selectPool
-	});
 
 }
 
