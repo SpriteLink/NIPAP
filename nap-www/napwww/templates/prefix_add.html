@@ -20,8 +20,6 @@ function prefixAdded(data) {
         showDialogNotice('Operation failed', data.message);
     } else {
         $('#prefix_added_container').show();
-        // TODO: don't scroll if result is alreday visible
-        $("html,body").animate({ scrollTop: $("#prefix_added_container").offset().top - 500}, 700);
 
         $('#prefix_added_list').prepend('<div id="prefix_added_entry' + data.id + '" class="prefix_added_entry">Added prefix: ' + data.prefix + ' - ' + data.description + '</div>');
         $("#prefix_added_entry" + data.id).animate({ backgroundColor: "#ccffcc" }, 1).delay(200).animate({ backgroundColor: "#3d9400" }, 700).delay(200).animate({ backgroundColor: "#ccffcc" }, 1000);
