@@ -848,15 +848,15 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 				dist_prefix_container = dist_prefix_container.next().next();
 			}
 
-			if (dist_prefix_container == null) {
-				log('No disturbing prefix found.');
-				dist_prefix_id == null;
-				placement_method = 'parent_container';
-			} else {
+			if (dist_prefix_container.length > 0) {
 				log('Next disturbing prefix in container has ID ' +
 				dist_prefix_container.attr('id'));
 				dist_prefix_id = dist_prefix_container.data('prefix_id');
 				placement_method = 'before';
+			} else {
+				log('No disturbing prefix found.');
+				dist_prefix_id == null;
+				placement_method = 'parent_container';
 			}
 
 			continue;
@@ -974,6 +974,7 @@ function addHiddenContainer(prefix, container) {
 	container = $('#prefix_hidden_container' + prefix.id);
 	return container;
 }
+
 
 /*
  * Function which is run when a collapse +/- sign is clicked.
