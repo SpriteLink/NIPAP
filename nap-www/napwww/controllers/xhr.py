@@ -28,6 +28,8 @@ class XhrController(BaseController):
         attr = {}
         if 'id' in request.params:
             attr['id'] = request.params['id']
+        if 'prefix' in request.params:
+            attr['prefix'] = request.params['prefix']
         if 'pool' in request.params:
             attr['pool'] = { 'id': request.params['pool'] }
         if 'node' in request.params:
@@ -246,20 +248,30 @@ class XhrController(BaseController):
             a complete 'dict-to-sql' encoded data structure.
 
             Instead, a list of prefix attributes can be given which will be
-            matched with the 'equals' operator. If multiple attributes are
-            given, they will be combined with the 'and' operator.
+            matched with the 'equals' operator if notheing else is specified. If
+            multiple attributes are given, they will be combined with the 'and'
+            operator. Currently, it is not possible to specify different
+            operators for different attributes.
         """
+
+        # extract operator
+        if 'operator' in request.params:
+            operator = request.params['operator']
+        else:
+            operator = 'equals'
 
         # fetch attributes from request.params
         attr = XhrController.extract_prefix_attr(request.params)
 
+        log.debug("Got %d attributes" % len(attr))
+
         # build query dict
-        # TODO: make prettier...
         n = 0
+        q = {}
         for key, val in attr.items():
             if n == 0:
                 q = {
-                    'operator': 'equals',
+                    'operator': operator,
                     'val1': key,
                     'val2': val
                 }
@@ -267,7 +279,7 @@ class XhrController(BaseController):
                 q = {
                     'operator': 'and',
                     'val1': {
-                        'operator': 'equals',
+                        'operator': operator,
                         'val1': key,
                         'val2': val
                     },
@@ -281,10 +293,10 @@ class XhrController(BaseController):
             search_opts['children_depth'] = request.params['children_depth']
         if 'parents_depth' in request.params:
             search_opts['parents_depth'] = request.params['parents_depth']
-        if 'display_children' in request.params:
-            search_opts['display_children'] = request.params['display_children']
-        if 'display_parents' in request.params:
-            search_opts['display_parents'] = request.params['display_parents']
+        if 'max_result' in request.params:
+            search_opts['max_result'] = request.params['max_result']
+        if 'offset' in request.params:
+            search_opts['offset'] = request.params['offset']
 
         try:
             schema = Schema.get(int(request.params['schema']))
@@ -330,11 +342,9 @@ class XhrController(BaseController):
         if 'offset' in request.params:
             search_options['offset'] = request.params['offset']
 
-        log.debug("params: %s" % str(request.params))
-
-        log.debug("Smart search query: schema=%d q=%s search_options=%s" %
-            (int(request.params['schema']),
-            request.params['query_string'],
+        log.debug("Smart search query: schema=%s q=%s search_options=%s" %
+            (str(request.params.get('schema')),
+            request.params.get('query_string'),
             str(search_options)
         ))
 
