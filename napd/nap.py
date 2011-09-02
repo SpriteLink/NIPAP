@@ -2052,7 +2052,7 @@ class Nap:
         authoritative_source,
         alarm_priority,
         monitor,
-        CASE WHEN type = 'host' THEN 0 WHEN type = 'assignment' THEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) - 1 ELSE -2 END AS children
+        CASE WHEN type = 'host' THEN 0 WHEN type = 'assignment' AND match = true THEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) - 1 ELSE -2 END AS children
     FROM (
         SELECT DISTINCT ON(p1.prefix) p1.*,
             masklen(p1.prefix) AS prefix_length,
@@ -2065,10 +2065,13 @@ class Nap:
                 (p1.schema = p2.schema)
                 AND
                 (
+                    -- Join in the parents which were requested
                     (iprange(p1.prefix) >>= iprange(p2.prefix) """ + where_parents + """)
                     OR
+                    -- Join in the children which were requested
                     (iprange(p1.prefix) << iprange(p2.prefix) """ + where_children + """)
                     OR
+                    -- Join in all children one level lower in the hierarchy
                     (iprange(p1.prefix) << iprange(p2.prefix) AND p1.indent = p2.indent + 1)
                     OR
                     (iprange(p1.prefix) << iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
