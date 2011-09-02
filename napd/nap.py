@@ -359,7 +359,7 @@ class Nap:
                 cursor = self._con_pg.cursor()
                 cursor.execute("SELECT obj_description(oid) FROM pg_class WHERE relname = %(relname)s", { 'relname': m.group(1) })
                 for desc in cursor:
-                    raise NapDuplicateError("Duplicate value for '" + desc[0] + "', the value you have inputted is already in use.")
+                    raise NapDuplicateError("Duplicate value for '" + str(desc[0]) + "', the value you have inputted is already in use.")
 
             raise NapError(str(e))
 
