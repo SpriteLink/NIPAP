@@ -799,29 +799,33 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 	 * 'after'.
 	 */
 	var placement_method = 'parent_container';
+	var dist_prefix_id = null;
+	var dist_prefix_container = null;
 
-	// Fetch first prefix in container, if any
-	var dist_prefix_container = start_container.children(':first');
-	if (dist_prefix_container.length > 0) {
-
-		log('First disturbing prefix in container has ID ' + dist_prefix_container.attr('id'));
-		var dist_prefix_id = dist_prefix_container.data('prefix_id');
-
-		placement_method = 'before';
-
-	} else {
-
-		log('No disturbing prefix found.');
-		dist_prefix_container = null;
-		var dist_prefix_id = null;
-
-		placement_method = 'parent_container';
-
-	}
-
+	// If we have a start container, try to fetch its first child
 	if (start_container != null) {
+
 		indent_head[pref_list[0].indent] = start_container;
 		container = start_container;
+
+		// Fetch first prefix in container, if any
+		dist_prefix_container = start_container.children(':first');
+		if (dist_prefix_container.length > 0) {
+
+			log('First disturbing prefix in container has ID ' + dist_prefix_container.attr('id'));
+			dist_prefix_id = dist_prefix_container.data('prefix_id');
+
+			placement_method = 'before';
+
+		} else {
+
+			log('No disturbing prefix found.');
+			dist_prefix_container = null;
+
+			placement_method = 'parent_container';
+
+		}
+
 	}
 
 	// go through received prefixes
@@ -832,14 +836,15 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 			prefix_list[prefix.id] = prefix;
 		}
 
-		// compare IDs to see if the prefix we want to place already exists
-		// This check implicitly also handles the case that there is no
-		// disturbing prefixes, as none of the received prefixes should have ID null
+		/*
+		 * Compare IDs to see if the prefix we want to place already exists.
+		 * This check implicitly also handles the case when we have no
+		 * disturbing prefixes, as none of the received prefixes should have ID
+		 * null and thus the expression below never be true.
+		 */
 		if (dist_prefix_id == prefix.id) {
 
-			// same id - fetch next disturbing prefix and skip adding
-			// current prefix
-
+			// Try to fetch the container after the current prefix
 			if (prefix_list[dist_prefix_id].type == 'host') {
 				// Hosts have no collapse container after them...
 				dist_prefix_container = dist_prefix_container.next();
@@ -848,13 +853,11 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 				dist_prefix_container = dist_prefix_container.next().next();
 			}
 
+			// Did we find any containers?
 			if (dist_prefix_container.length > 0) {
-				log('Next disturbing prefix in container has ID ' +
-				dist_prefix_container.attr('id'));
 				dist_prefix_id = dist_prefix_container.data('prefix_id');
 				placement_method = 'before';
 			} else {
-				log('No disturbing prefix found.');
 				dist_prefix_id == null;
 				placement_method = 'parent_container';
 			}
@@ -863,8 +866,8 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 		}
 
-		// if there is no indent container for the current level, set
-		// indent head for current indent level to the top level container
+		// If there is no indent container for the current level, set
+		// indent head for current indent level to the top level container.
 		if (!(prefix.indent in indent_head)) {
 			indent_head[prefix.indent] = $('#prefix_list');
 			log("Adding element to top level group");
@@ -887,9 +890,9 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 				}
 
 			} else if (prev_prefix.type == 'reservation') {
-				// if previous prefix is a reservation, we know (since we are
+				// If the previous prefix is a reservation, we know (since we are
 				// one indent level below previous) that it has at least one
-				// child
+				// child.
 				if (prev_prefix.children == -2) {
 					prev_prefix.children = -1;
 				}
