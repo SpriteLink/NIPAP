@@ -421,6 +421,10 @@ tbody.listing > tr:hover {
     padding: 0;
 }
 
+.prefix_entry:hover {
+    background-color: #ebf2fc;
+}
+
 .prefix_row {
     display: table-row;
 }
