@@ -990,7 +990,7 @@ function collapseClick(id) {
 			'include_children': false,
 			'parents_depth': 0,
 			'children_depth': 1,
-			'max_result': 500
+			'max_result': 1000
 		};
 		$.getJSON("/xhr/search_prefix", data, receivePrefixListUpdate);
 
