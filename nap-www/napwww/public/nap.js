@@ -700,6 +700,7 @@ function receivePrefixList(search_result) {
  * contains a prefix which already is displayed in the prefix list.
  */
 function receivePrefixListUpdate(search_result, link_type) {
+
 	pref_list = search_result.result;
 
 	// Zero result elements. Should not happen as we at least always should
@@ -728,13 +729,7 @@ function receivePrefixListUpdate(search_result, link_type) {
 
 	}
 
-	// TODO: What is this? Needed?!
-/*	if (prefix_list[pref_list[0].id].type == 'reservation') {
-		prefix_list[pref_list[0].id].children = -1;
-	}
-	*/
 	insertPrefixList(pref_list.slice(1), $("#collapse" + pref_list[0].id), pref_list[0]);
-	//insertOneLevelPrefixList(pref_list.slice(1), $("#collapse" + pref_list[0].id));
 
 }
 
