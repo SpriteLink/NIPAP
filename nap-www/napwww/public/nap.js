@@ -1058,12 +1058,17 @@ function showAllocContainer(e) {
 
 	}
 
-		$('#radio-prefix-type-reservation').removeAttr('disabled');
-		$('#radio-prefix-type-assignment').removeAttr('disabled');
-		$('#radio-prefix-type-host').removeAttr('disabled');
-		$('#radio-prefix-type-reservation').removeAttr('checked');
-		$('#radio-prefix-type-assignment').removeAttr('checked');
-		$('#radio-prefix-type-host').removeAttr('checked');
+	$('#radio-prefix-type-reservation').removeAttr('disabled');
+	$('#radio-prefix-type-assignment').removeAttr('disabled');
+	$('#radio-prefix-type-host').removeAttr('disabled');
+	$('#radio-prefix-type-reservation').removeAttr('checked');
+	$('#radio-prefix-type-assignment').removeAttr('checked');
+	$('#radio-prefix-type-host').removeAttr('checked');
+
+    // Re-evaluate node FQDN field when prefix length is changed.  The same
+    // thing for the prefix_length_prefix field is done in the selectPrefix
+    // function. From some reason it can not be done here...
+	$('input[name="prefix_length_pool"]').keyup(enableNodeFQDN);
 
 }
 
@@ -1098,8 +1103,99 @@ function prefixTypeToggled(e) {
 		$('input[name="prefix_alarm_priority"]').removeAttr('disabled');
 	}
 
+	enableNodeFQDN();
+
 }
 
+
+/*
+ * Function which determines whether the Node FQDN input element should
+ * be enabled or not.
+ */
+function enableNodeFQDN() {
+
+	/*
+	 * Generally, the node fqdn option should only be available for host
+	 * prefixes. However, there is one exception: loopbacks, which are defined
+	 * as assignments with max prefix length.
+	 */
+
+	 // See if prefix type is set
+	 var type = $('input[name="prefix_type"]:checked').val();
+	 if (type == 'reservation') {
+
+		// reservation - disable no matter what
+		$('input[name="prefix_node"]').attr('disabled', true);
+
+	 } else if (type == 'host') {
+
+		// host - enable no matter what
+		$('input[name="prefix_node"]').removeAttr('disabled');
+
+	 } else if (type == 'assignment') {
+
+		/*
+		 * Assignment - more tricky case!
+		 *
+		 * Enable if prefix length is max prefix length - not very easy to
+		 * find!
+		 *
+		 * If we add a prefix from a pool, we have the length in an input
+		 * field. Also the family can be fetched from an input field.
+		 *
+		 * If we add a prefix from another prefix, we can find the prefix
+		 * length from the prefix length field and the family from the selected
+		 * prefix
+		 *
+		 * If we add manually, we can extract the prefix from the prefix the
+		 * user has typed in. But the family? Look for : in the prefix? :S
+		 */
+
+		if (alloc_method == 'from-pool') {
+
+			// fetch prefix length & family
+			var len = $('input[name="prefix_length_pool"]').val();
+			var family = $('input[name="prefix_family"]:checked').val();
+
+			if (hasMaxPreflen({ 'family': family, 'prefix': '/' + len })) {
+				$('input[name="prefix_node"]').removeAttr('disabled');
+			} else {
+				$('input[name="prefix_node"]').attr('disabled', true);
+			}
+
+		} else if (alloc_method == 'from-prefix') {
+
+			// fetch prefix length & family
+			var len = $('input[name="prefix_length_prefix"]').val();
+			var family = cur_opts.from_prefix[0].family;
+
+			if (hasMaxPreflen({ 'family': family, 'prefix': '/' + len })) {
+				$('input[name="prefix_node"]').removeAttr('disabled');
+			} else {
+				$('input[name="prefix_node"]').attr('disabled', true);
+			}
+
+		} else if (alloc_method == 'manual') {
+
+			// tricky case - enable
+			$('input[name="prefix_node"]').removeAttr('disabled');
+
+		} else {
+
+			// not set - enable
+			$('input[name="prefix_node"]').removeAttr('disabled');
+
+		}
+
+	 } else {
+
+		// not set - enable
+		$('input[name="prefix_node"]').removeAttr('disabled');
+
+	 }
+
+
+}
 
 /*
  * Is run when the adress family is changed
@@ -1119,6 +1215,8 @@ function changeFamily() {
 			$('#def_length_container').html("Use pool's default IPv6 prefix-length of /" + cur_opts.pool.ipv6_default_prefix_length + ".");
 		}
 	}
+
+	enableNodeFQDN();
 
 	// TODO: set prefix length in prefix input
 
@@ -1247,7 +1345,7 @@ function prefixFormSubmit(e) {
 
 	} else if (alloc_method == 'from-prefix') {
 
-		prefix_data.from_prefix = cur_opts.from_prefix;
+		prefix_data.from_prefix = cur_opts.from_prefix.prefix;
 		prefix_data.prefix_length = $('input[name="prefix_length_prefix"]').val();
 
 	} else {
@@ -1302,10 +1400,15 @@ function selectPrefix(prefix_id) {
 	$('#prefix_length_prefix_container').show();
 
 	$('#alloc_from_prefix').html(prefix_list[prefix_id].prefix + ' &mdash; ' + prefix_list[prefix_id].description);
-	cur_opts.from_prefix = new Array(prefix_list[prefix_id].prefix);
+	cur_opts.from_prefix = new Array(prefix_list[prefix_id]);
 
 	$("html,body").animate({ scrollTop: $("#prefix_length_prefix_container").offset().top - 50}, 700);
 	$("#prefix_length_prefix_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
+
+	// Enable keyup action on prefix length input field.
+	// From some reason needs to be done here and not when the page is loaded,
+	// where it is done for the prefix length field for pools.
+	$('input[name="prefix_length_prefix"]').keyup(enableNodeFQDN);
 
 }
 
@@ -1314,10 +1417,10 @@ function selectPrefix(prefix_id) {
 
 
 /**********************************************************************
-*
-* Misc convenience functions
-*
-**********************************************************************/
+ *
+ * Misc convenience functions
+ *
+ **********************************************************************/
 
 /*
  * Returns true if prefix has max prefix length.
