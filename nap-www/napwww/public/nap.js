@@ -1065,9 +1065,9 @@ function showAllocContainer(e) {
 	$('#radio-prefix-type-assignment').removeAttr('checked');
 	$('#radio-prefix-type-host').removeAttr('checked');
 
-    // Re-evaluate node FQDN field when prefix length is changed.  The same
-    // thing for the prefix_length_prefix field is done in the selectPrefix
-    // function. From some reason it can not be done here...
+	// Re-evaluate node FQDN field when prefix length is changed.  The same
+	// thing for the prefix_length_prefix field is done in the selectPrefix
+	// function. From some reason it can not be done here...
 	$('input[name="prefix_length_pool"]').keyup(enableNodeFQDN);
 
 }
@@ -1094,6 +1094,17 @@ function prefixMonitorToggled() {
  */
 function prefixTypeToggled(e) {
 
+	// enables/disables monitor and node FQDN options
+	enableMonitor();
+	enableNodeFQDN();
+
+}
+
+/*
+ * Enables/disables monitor options
+ */
+function enableMonitor() {
+
 	// gray out monitor options when prefix type is host
 	if ($('input[name="prefix_type"]:checked').val() == 'host') {
 		$('input[name="prefix_monitor"]').attr('disabled', true);
@@ -1102,8 +1113,6 @@ function prefixTypeToggled(e) {
 		$('input[name="prefix_monitor"]').removeAttr('disabled');
 		$('input[name="prefix_alarm_priority"]').removeAttr('disabled');
 	}
-
-	enableNodeFQDN();
 
 }
 
@@ -1409,6 +1418,7 @@ function selectPrefix(prefix_id) {
 	// From some reason needs to be done here and not when the page is loaded,
 	// where it is done for the prefix length field for pools.
 	$('input[name="prefix_length_prefix"]').keyup(enableNodeFQDN);
+	enableMonitor();
 
 }
 
