@@ -1084,6 +1084,22 @@ function prefixMonitorToggled() {
 
 }
 
+/*
+ * Run whenever the prefix type checkbox is toggled.
+ */
+function prefixTypeToggled(e) {
+
+	// gray out monitor options when prefix type is host
+	if ($('input[name="prefix_type"]:checked').val() == 'host') {
+		$('input[name="prefix_monitor"]').attr('disabled', true);
+		$('input[name="prefix_alarm_priority"]').attr('disabled', true);
+	} else {
+		$('input[name="prefix_monitor"]').removeAttr('disabled');
+		$('input[name="prefix_alarm_priority"]').removeAttr('disabled');
+	}
+
+}
+
 
 /*
  * Is run when the adress family is changed
@@ -1208,8 +1224,14 @@ function prefixFormSubmit(e) {
 		'country': $('input[name="prefix_country"]').val(),
 		'order_id': $('input[name="prefix_order_id"]').val(),
 		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
-		'monitor': $('input[name="prefix_monitor"]').val(),
 	};
+
+	// make sure monitor is disabled for host prefixes
+	if (prefix_data.type == 'host') {
+		prefix_data.monitor = false;
+	} else {
+		prefix_data.monitor =  $('input[name="prefix_monitor"]').val();
+	}
 
 	// Add pool to prefix data if it is available
 	if (typeof pool_id != "undefined") {

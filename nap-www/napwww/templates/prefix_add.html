@@ -40,6 +40,7 @@ $(function () {
     // Enable action on the adress family select box
     $('input[name="prefix_family"]').change(changeFamily);
 
+    $('input[name="prefix_type"]').change(prefixTypeToggled);
     $('input[name="prefix_monitor"]').change(prefixMonitorToggled);
     prefixMonitorToggled();
 
