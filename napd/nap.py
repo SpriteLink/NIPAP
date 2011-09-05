@@ -2061,6 +2061,7 @@ class Nap:
                         THEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) - 1
                     WHEN match = true
                         THEN 0
+                    ELSE -2
                 END
             ELSE -2
         END AS children
