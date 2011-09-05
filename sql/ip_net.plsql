@@ -136,7 +136,10 @@ BEGIN
 			IF masklen(NEW.prefix) != i_max_pref_len THEN
 				RAISE EXCEPTION '1200:Prefix of type host must have all bits set in netmask';
 			END IF;
-			IF parent.type IS NULL OR parent.type != 'assignment' THEN
+			IF parent.prefix IS NULL THEN
+				RAISE EXCEPTION '1200:Prefix of type host must have a parent (covering) prefix of type assignment';
+			END IF;
+			IF parent.type != 'assignment' THEN
 				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''assignment''', parent.prefix, parent.type;
 			END IF;
 			NEW.display_prefix := set_masklen(NEW.prefix::inet, masklen(parent.prefix));
