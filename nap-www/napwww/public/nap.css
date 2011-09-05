@@ -448,16 +448,15 @@ tbody.listing > tr:hover {
 }
 
 .prefix_indent {
-    width: 10px;
+    width: 20px;
     float: left;
-    text-align: right;
 }
 
 .prefix_exp {
+    float: right;
     cursor: pointer;
-/*    display: inline-block; */
-    width: 5px;
-    margin-right: 3px;
+    width: 20px;
+    height: 16px;
     text-align: center;
     font-weight: bold;
 }

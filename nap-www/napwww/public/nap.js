@@ -400,7 +400,8 @@ function showPrefix(prefix, parent_container, relative) {
 	} else {
 		prefix_row.addClass("row_collateral");
 	}
-	prefix_row.click(function() { collapseClick(prefix.id); });
+	// disable this until we know if we really want it - see issue #96
+	//prefix_row.click(function() { collapseClick(prefix.id); });
 
 	// add indent and prefix container
 	prefix_row.append('<div id="prefix_ind_pref' + prefix.id + '">');
@@ -412,17 +413,20 @@ function showPrefix(prefix, parent_container, relative) {
 	prefix_ind_pref.append('<div id="prefix_indent' + prefix.id + '">');
 	var prefix_indent = $('#prefix_indent' + prefix.id);
 	prefix_indent.addClass("prefix_indent");
+	prefix_indent.html('<div id="prefix_exp' + prefix.id + '"></div>');
+	var prefix_exp = $('#prefix_exp' + prefix.id);
+	prefix_exp.addClass("prefix_exp");
 
 	// If the prefixes has children  (or we do not know), add expand button
 	if (prefix.children == 0 || hasMaxPreflen(prefix)) {
 
 		// the prefix_indent container must contain _something_
-		prefix_indent.html('&nbsp;');
+		prefix_exp.html('&nbsp;');
 
 	} else {
 
 		// add expand button
-		prefix_indent.html('<span class="prefix_exp" id="prefix_exp' + prefix.id + '">+</span>');
+		prefix_exp.html('+');
 		$('#prefix_exp' + prefix.id).click(function (e) {
 			collapseClick(prefix.id);
 			e.stopPropagation();
@@ -431,7 +435,7 @@ function showPrefix(prefix, parent_container, relative) {
 		// If we are sure that the children has been fetched, the group will
 		// already be fully expanded and a minus sign should be shown
 		if (prefix.children == 1) {
-			$("#prefix_exp" + prefix.id).html("-");
+			prefix_exp.html("-");
 		}
 
 	}
