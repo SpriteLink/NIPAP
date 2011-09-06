@@ -21,8 +21,8 @@
         data = new Object();
         data.schema = schema_id;
         data.pool = {{ c.pool.id }};
-        $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, prefixAdded);
-    
+        $.getJSON('/xhr/edit_prefix/' + prefix_id, data, prefixAdded);
+
     }
 
 
@@ -215,14 +215,14 @@ Pool administration &mdash;&gt; edit pool
 {% include 'pool_form.html' %}
 
 <div id="pool_success_container" style="display: none;">
-	<div class="options-group">
-		<div class="options-content">
-			<h3 class="options-group-heading">Result</h3>
-			<div id="pool_success_bg" style="padding: 15px; background-color: #ccffcc;">
-				The pool <span id="pool_success_name"></span> was successfully edited.
-			</div>
-		</div>
-	</div>
+    <div class="options-group">
+        <div class="options-content">
+            <h3 class="options-group-heading">Result</h3>
+            <div id="pool_success_bg" style="padding: 15px; background-color: #ccffcc;">
+                The pool <span id="pool_success_name"></span> was successfully edited.
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="options-group">
@@ -293,14 +293,14 @@ Pool administration &mdash;&gt; edit pool
 {% include 'prefix_add_containers.html' %}
 
 <div id="prefix_added_container" style="display: none;">
-	<div class="options-group">
-		<div class="options-content">
-			<h3 class="options-group-heading">Result</h3>
-			<div id="prefix_added_bg" style="padding: 15px; background-color: #ccffcc;">
-				The pool was successfully expanded with the prefix <span id="prefix_added"></span>.
-			</div>
-		</div>
-	</div>
+    <div class="options-group">
+        <div class="options-content">
+            <h3 class="options-group-heading">Result</h3>
+            <div id="prefix_added_bg" style="padding: 15px; background-color: #ccffcc;">
+                The pool was successfully expanded with the prefix <span id="prefix_added"></span>.
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endblock %}
