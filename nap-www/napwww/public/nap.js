@@ -381,7 +381,7 @@ function showPrefix(prefix, parent_container, relative) {
 
 	// add main prefix container
 	if (relative == null) {
-		parent_container.append('<div id="prefix_entry' + prefix.id + '">');
+		parent_container.append('<div id="prefix_entry' + prefix.id + '" data-prefix-id="' + prefix.id + '">');
 	} else {
 		if (relative.orientation == 'before') {
 			relative.reference.before('<div id="prefix_entry' + prefix.id + '">');
@@ -856,21 +856,20 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		if (dist_prefix_id == prefix.id) {
 
 			// Try to fetch the container after the current prefix
-			if (prefix_list[dist_prefix_id].type == 'host') {
-				// Hosts have no collapse container after them...
+			while (true) {
 				dist_prefix_container = dist_prefix_container.next();
-			} else {
-				// ...but other types does.
-				dist_prefix_container = dist_prefix_container.next().next();
-			}
 
-			// Did we find any containers?
-			if (dist_prefix_container.length > 0) {
-				dist_prefix_id = dist_prefix_container.data('prefix_id');
-				placement_method = 'before';
-			} else {
-				dist_prefix_id == null;
-				placement_method = 'parent_container';
+				if (dist_prefix_container.length == 0) {
+					// reached end of list, what to do? go parent?
+					dist_prefix_id == null;
+					placement_method = 'parent_container';
+					break;
+				}
+				if (dist_prefix_container.attr('data-prefix-id')) {
+					dist_prefix_id = dist_prefix_container.data('prefix_id');
+					placement_method = 'before';
+					break;
+				}
 			}
 
 			continue;
