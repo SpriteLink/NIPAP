@@ -869,6 +869,22 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 					dist_prefix_id = dist_prefix_container.data('prefix_id');
 					placement_method = 'before';
 					break;
+				} else { // some form of container
+					// skip over collapse containers
+					if (dist_prefix_container.hasClass('prefix_collapse')) {
+
+					}
+					// enter into hidden containers and continue traversing
+					if (dist_prefix_container.hasClass('prefix_hidden_container')) {
+						dist_prefix_container = dist_prefix_container.children(':first');
+
+						if (dist_prefix_container.attr('data-prefix-id')) {
+							dist_prefix_id = dist_prefix_container.data('prefix_id');
+							placement_method = 'before';
+							break;
+						}
+
+					}
 				}
 			}
 
