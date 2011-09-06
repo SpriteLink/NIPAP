@@ -478,7 +478,11 @@ function showPrefix(prefix, parent_container, relative) {
 	prefix_button.addClass('minibutton');
 	prefix_button.addClass('prefix_button');
 	prefix_button.html("<div class='prefix_button_icon' class='prefix_button_icon'>&nbsp;</span>");
-	prefix_button.click(prefix, function(e) { showPrefixMenu(e.currentTarget.getAttribute('data-prefix-id')); e.preventDefault(); e.stopPropagation(); });
+	prefix_button.click(prefix, function(e) {
+		showPrefixMenu(e.currentTarget.getAttribute('data-prefix-id'));
+		e.preventDefault();
+		e.stopPropagation();
+	});
 
 	// Add prefix type
 	prefix_row.append('<div id="prefix_type' + prefix.id + '">');
@@ -1299,6 +1303,15 @@ function selectPool(id) {
 
 	// Save the pool
 	cur_opts.pool = pool_list[id];
+
+	// Set default type
+	if (cur_opts.pool.default_type == 'reservation') {
+		$('#radio-prefix-type-reservation').attr('checked', true);
+	} else if (cur_opts.pool.default_type == 'assignment') {
+		$('#radio-prefix-type-assignment').attr('checked', true);
+	} else if (cur_opts.pool.default_type == 'host') {
+		$('#radio-prefix-type-host').attr('checked', true);
+	}
 
 	// display data form
 	$("#prefix_data_container").css('display', 'block');
