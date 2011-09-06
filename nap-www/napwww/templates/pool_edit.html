@@ -21,8 +21,8 @@
         data = new Object();
         data.schema = schema_id;
         data.pool = {{ c.pool.id }};
-        $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, prefixAdded);
-    
+        $.getJSON('/xhr/edit_prefix/' + prefix_id, data, prefixAdded);
+
     }
 
 
