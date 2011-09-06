@@ -1313,6 +1313,9 @@ function selectPool(id) {
 		$('#radio-prefix-type-host').attr('checked', true);
 	}
 
+	// show pool name and description
+	$('#selected_pool_desc').html(pool_list[id].name + ' &mdash; ' + pool_list[id].description);
+
 	// display data form
 	$("#prefix_data_container").css('display', 'block');
 
@@ -1320,6 +1323,9 @@ function selectPool(id) {
 	changeFamily();
 	$('#length_info_row').css('display', 'block');
 	$('#length_edit_row').css('display', 'inline-block');
+
+	$("html,body").animate({ scrollTop: $("#length_info_row").offset().top - 50}, 700);
+	$("#length_info_row").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
 
 }
 
@@ -1437,7 +1443,7 @@ function selectPrefix(prefix_id) {
 	cur_opts.from_prefix = new Array(prefix_list[prefix_id]);
 
 	$("html,body").animate({ scrollTop: $("#prefix_length_prefix_container").offset().top - 50}, 700);
-	$("#prefix_length_prefix_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
+	$("#prefix_length_prefix_container").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
 
 	// Enable keyup action on prefix length input field.
 	// From some reason needs to be done here and not when the page is loaded,

@@ -87,27 +87,25 @@
 
 			<div class="rule"></div>
 
-			<div class="option">
-				<dl>
-					<dt style="text-align: left;">
-						Pool
-					</dt>
-					<dd>
-                        <table id="pool_table" class="listing" style="width: 100%;">
-                            <thead class="listing">
-                                <tr><th>Name</th><th>Description</th><th style="width: 110px;">Default type</th><th style="width: 90px;">4 / 6</th></tr>
-                            </thead>
-                            <tbody class="listing">
-                            </tbody>
-                        </table>
-					</dd>
-				</dl>
+			<div style="padding: 20px;">
+                <table id="pool_table" class="listing" style="width: 100%;">
+                    <thead class="listing">
+                        <tr><th>Name</th><th>Description</th><th style="width: 110px;">Default type</th><th style="width: 90px;">4 / 6</th></tr>
+                    </thead>
+                    <tbody class="listing">
+                    </tbody>
+                </table>
 			</div>
 
 			<div class="rule"></div>
 
 			<div class="option" id="length_info_row" style="display: none;">
 				<dl>
+                    <dt style="text-align: left;">
+                        Allocating from pool
+                    </dt>
+                    <dd id="selected_pool_desc">
+                    </dd>
 					<dt style="text-align: left;" id="length_edit_row">
 						Prefix-length
 					</dt>
@@ -143,23 +141,21 @@
 			</div>
 			{{ nap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
 			{{ nap.prefix_search_result() }}
-		</div>
-
-		<div id="prefix_length_prefix_container" style="display: none;">
-			<div id="prefix_length_prefix_bg" class="options-content">
-				<table>
-					<tr>
-						<td>Allocating from parent prefix:</td>
-						<td><span id="alloc_from_prefix"></span></td>
-					</tr>
-					<tr id="length_info_row">
-						<td style="padding-right: 20px;">Prefix-length of new prefix:</td>
-						<td id="length_info_text">
-							<input type="text" name="prefix_length_prefix">
-						</td>
-					</tr>
-				</table>
-			</div>
+        <div class="rule"></div>
+		<div class="option" id="prefix_length_prefix_container" style="display: none;">
+            <dl>
+                <dt>
+                    Allocating from parent prefix
+                </dt>
+                <dd id="alloc_from_prefix">
+                </dd>
+                <dt id="length_info_row">
+				    Prefix-length of new prefix
+                </dt>
+				<dd id="length_info_text">
+					<input type="text" name="prefix_length_prefix">
+				</dd>
+			</dl>
 		</div>
 	</div>
 </div>
