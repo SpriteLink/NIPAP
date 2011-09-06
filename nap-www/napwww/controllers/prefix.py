@@ -17,15 +17,10 @@ class PrefixController(BaseController):
             Otherwise, redirect to schema selection page.
         """
 
-        if 'view' in request.params:
-            view = request.params['view']
-        else:
-            view = 'prefix'
-
         if 'schema' not in request.params:
             redirect(url(controller = 'schema', action = 'list'))
 
-        redirect(url(controller = 'prefix', action = 'list', schema = request.params['schema'], view = view))
+        redirect(url(controller = 'prefix', action = 'list', schema = request.params['schema']))
 
 
 
