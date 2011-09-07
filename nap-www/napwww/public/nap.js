@@ -278,6 +278,23 @@ function collapseGroup(id) {
 }
 
 /*
+ * Clear all state related to prefix search
+ */
+function clearPrefixSearch() {
+	$('#prefix_list').empty();
+	$('#search_interpret_container').empty();
+	$('#search_result_help').show();
+	$('#nextpage').hide();
+	query_id += 1;
+
+	current_query = {
+		'query_string': '',
+		'parents_depth': 0,
+		'children_depth': 0
+	};
+}
+
+/*
  * Wrapper for pacing our searches somewhat
  *
  * 200ms works out to be a pretty good delay for a fast typer
@@ -297,11 +314,7 @@ function performPrefixSearch(explicit) {
 
 	// Skip search if query string empty
 	if (jQuery.trim($('#query_string').val()).length < 1) {
-		$('#prefix_list').empty();
-		$('#search_interpret_container').empty();
-		$('#search_result_help').show();
-		$('#nextpage').hide();
-		query_id += 1;
+		clearPrefixSearch();
 		return true;
 	}
 	end_of_result = 0;

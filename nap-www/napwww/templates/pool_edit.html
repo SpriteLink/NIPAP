@@ -23,6 +23,9 @@
         data.pool = {{ c.pool.id }};
         $.getJSON('/xhr/edit_prefix/' + prefix_id, data, prefixAdded);
 
+        $('input[name="pool_exp_method_1"]').removeAttr('checked');
+        clearPrefixSearch();
+
     }
 
 
