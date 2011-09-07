@@ -1230,15 +1230,31 @@ function changeFamily() {
 	// set prefix length in pool length input
 	if (alloc_method == 'from-pool') {
 
-		// TODO: handle prefix length 'null'
+		var len = null;
+		var family = null;
 
 		if ($('input[name="prefix_family"]:checked').val() == '4') {
-			$('input[name="prefix_length_pool"]').val(cur_opts.pool.ipv4_default_prefix_length);
-			$('#def_length_container').html("Use pool's default IPv4 prefix-length of /" + cur_opts.pool.ipv4_default_prefix_length + ".");
+			len = cur_opts.pool.ipv4_default_prefix_length;
 		} else {
-			$('input[name="prefix_length_pool"]').val(cur_opts.pool.ipv6_default_prefix_length);
-			$('#def_length_container').html("Use pool's default IPv6 prefix-length of /" + cur_opts.pool.ipv6_default_prefix_length + ".");
+			len = cur_opts.pool.ipv6_default_prefix_length;
 		}
+
+        // The default length can be null. Handle!
+		if (len == null) {
+            // TODO: This never happens. I guess the JSON conversion removes the null values.
+            $('#edit_length_default_radio').hide();
+            $('#def_length_container').hide();
+			$("#edit_length_override_radio").click();
+		} else {
+            $('#edit_length_default_radio').show();
+			$("#edit_length_default_radio").click();
+            $('#def_length_container').show();
+			$('input[name="prefix_length_pool"]').val(len);
+			$('#def_length_container').html("Use pool's default IPv" +
+				$('input[name="prefix_family"]:checked').val() + " prefix-length of /" +
+				len + ".");
+		}
+
 	}
 
 	enableNodeFQDN();
@@ -1315,6 +1331,11 @@ function selectPool(id) {
 
 	// show pool name and description
 	$('#selected_pool_desc').html(pool_list[id].name + ' &mdash; ' + pool_list[id].description);
+	if (pool_list[id].default_type != null) {
+		$('#pool_prefix_type').html(pool_list[id].default_type);
+		$('#default_prefix_type').show();
+		$('#prefix_type_selection').hide();
+	}
 
 	// display data form
 	$("#prefix_data_container").css('display', 'block');

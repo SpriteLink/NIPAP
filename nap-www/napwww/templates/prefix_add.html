@@ -58,6 +58,12 @@ $(function () {
         $(".prefix_menu_overlay").hide();
     });
 
+    // Capture click events on default prefix type display.
+    $('#default_prefix_type').click(function () {
+        $('#default_prefix_type').hide();
+        $('#prefix_type_selection').slideDown();
+    });
+
     // catch submit actions
     $('#prefix_data_form').submit(prefixFormSubmit);
 

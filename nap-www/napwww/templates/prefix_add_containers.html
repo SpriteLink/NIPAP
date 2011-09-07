@@ -141,6 +141,7 @@
 			</div>
 			{{ nap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
 			{{ nap.prefix_search_result() }}
+        </div>
         <div class="rule"></div>
 		<div class="option" id="prefix_length_prefix_container" style="display: none;">
             <dl>
@@ -190,12 +191,15 @@
 						Type <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
 					</dt>
 					<dd>
-						<input id="radio-prefix-type-reservation" type="radio" name="prefix_type" value="reservation">
-						<label for="radio-prefix-type-reservation">Reservation</label>
-						<input id="radio-prefix-type-assignment" type="radio" name="prefix_type" value="assignment">
-						<label for="radio-prefix-type-assignment">Assignment</label>
-						<input id="radio-prefix-type-host" type="radio" name="prefix_type" value="host">
-						<label id="label-prefix-type-host" for="radio-prefix-type-host">Host</label>
+						<span id="default_prefix_type" style="display: none; cursor: pointer;">Default prefix type for pool is <b><span id="pool_prefix_type"></span></b>. Click to change.</span>
+						<span id="prefix_type_selection">
+							<input id="radio-prefix-type-reservation" type="radio" name="prefix_type" value="reservation">
+							<label for="radio-prefix-type-reservation">Reservation</label>
+							<input id="radio-prefix-type-assignment" type="radio" name="prefix_type" value="assignment">
+							<label for="radio-prefix-type-assignment">Assignment</label>
+							<input id="radio-prefix-type-host" type="radio" name="prefix_type" value="host">
+							<label id="label-prefix-type-host" for="radio-prefix-type-host">Host</label>
+						</span>
 					</dd>
 				</dl>
 			</div>
