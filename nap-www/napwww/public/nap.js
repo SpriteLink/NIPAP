@@ -400,8 +400,6 @@ function showPrefix(prefix, parent_container, relative) {
 	} else {
 		prefix_row.addClass("row_collateral");
 	}
-	// disable this until we know if we really want it - see issue #96
-	//prefix_row.click(function() { collapseClick(prefix.id); });
 
 	// add indent and prefix container
 	prefix_row.append('<div id="prefix_ind_pref' + prefix.id + '">');
