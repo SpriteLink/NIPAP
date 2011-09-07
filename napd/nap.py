@@ -2058,9 +2058,8 @@ class Nap:
             WHEN type = 'assignment'
                 THEN CASE
                     WHEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) > 1
+                        -- do not include the parent prefix in count
                         THEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) - 1
-                    WHEN match = true
-                        THEN 0
                     ELSE -2
                 END
             ELSE -2
@@ -2083,9 +2082,7 @@ class Nap:
                     -- Join in the children which were requested
                     (iprange(p1.prefix) << iprange(p2.prefix) """ + where_children + """)
                     OR
-                    -- Join in all children one level lower in the hierarchy
-                    (iprange(p1.prefix) << iprange(p2.prefix) AND p1.indent = p2.indent + 1)
-                    OR
+                    -- Join in all neighbors to the matched prefix
                     (iprange(p1.prefix) << iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
                 )
             )
