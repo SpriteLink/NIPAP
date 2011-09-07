@@ -864,16 +864,16 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 					dist_prefix_id == null;
 					placement_method = 'parent_container';
 					break;
-				} else if (dist_prefix_container.attr('data-prefix-id') && parseInt(dist_prefix_container.attr('data-prefix-id')) != dist_prefix_id) {
-					dist_prefix_id = parseInt(dist_prefix_container.attr('data-prefix-id'));
-					placement_method = 'before';
-					break;
 				} else if (dist_prefix_container.hasClass('prefix_collapse')) {
 					// skip over collapse containers
 					dist_prefix_container = dist_prefix_container.next();
 				} else if (dist_prefix_container.hasClass('prefix_hidden_container')) {
 					// enter into hidden containers and continue traversing
 					dist_prefix_container = dist_prefix_container.children(':first');
+				} else if (dist_prefix_container.attr('data-prefix-id') && parseInt(dist_prefix_container.attr('data-prefix-id')) != dist_prefix_id) {
+					dist_prefix_id = parseInt(dist_prefix_container.attr('data-prefix-id'));
+					placement_method = 'before';
+					break;
 				} else {
 					dist_prefix_container = dist_prefix_container.next();
 				}
