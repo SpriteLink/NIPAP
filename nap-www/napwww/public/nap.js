@@ -746,6 +746,7 @@ function receivePrefixListUpdate(search_result, link_type) {
 	}
 
 	insertPrefixList(pref_list.slice(1), $("#collapse" + pref_list[0].id), pref_list[0]);
+	expandGroup(pref_list[0].id);
 
 }
 
@@ -857,35 +858,26 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 			// Try to fetch the container after the current prefix
 			while (true) {
-				dist_prefix_container = dist_prefix_container.next();
 
 				if (dist_prefix_container.length == 0) {
 					// reached end of list, what to do? go parent?
 					dist_prefix_id == null;
 					placement_method = 'parent_container';
 					break;
-				}
-				if (dist_prefix_container.attr('data-prefix-id')) {
-					dist_prefix_id = dist_prefix_container.data('prefix_id');
+				} else if (dist_prefix_container.attr('data-prefix-id') && parseInt(dist_prefix_container.attr('data-prefix-id')) != dist_prefix_id) {
+					dist_prefix_id = parseInt(dist_prefix_container.attr('data-prefix-id'));
 					placement_method = 'before';
 					break;
-				} else { // some form of container
+				} else if (dist_prefix_container.hasClass('prefix_collapse')) {
 					// skip over collapse containers
-					if (dist_prefix_container.hasClass('prefix_collapse')) {
-
-					}
+					dist_prefix_container = dist_prefix_container.next();
+				} else if (dist_prefix_container.hasClass('prefix_hidden_container')) {
 					// enter into hidden containers and continue traversing
-					if (dist_prefix_container.hasClass('prefix_hidden_container')) {
-						dist_prefix_container = dist_prefix_container.children(':first');
-
-						if (dist_prefix_container.attr('data-prefix-id')) {
-							dist_prefix_id = dist_prefix_container.data('prefix_id');
-							placement_method = 'before';
-							break;
-						}
-
-					}
+					dist_prefix_container = dist_prefix_container.children(':first');
+				} else {
+					dist_prefix_container = dist_prefix_container.next();
 				}
+
 			}
 
 			continue;
