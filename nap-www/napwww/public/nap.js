@@ -928,10 +928,10 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 				container = indent_head[prefix.indent];
 			}
 
-			// Expand the group, as we might have added the rest of the
-			// prefixes to a container which previously only had one. The
-			// +/--sign needs to be changed! :)
-			expandGroup(prev_prefix.id);
+			// prev_prefix is parent prefix - if it's a match, we don't need to expand it
+			if (prev_prefix.match == false) {
+				expandGroup(prev_prefix.id);
+			}
 
 		} else if (prev_prefix.indent == prefix.indent) {
 
