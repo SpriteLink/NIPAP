@@ -1249,7 +1249,7 @@ function enableNodeFQDN() {
 
 			// fetch prefix length & family
 			var len = $('input[name="prefix_length_prefix"]').val();
-			var family = cur_opts.from_prefix[0].family;
+			var family = cur_opts.from_prefix.family;
 
 			if (hasMaxPreflen({ 'family': family, 'prefix': '/' + len })) {
 				$('input[name="prefix_node"]').removeAttr('disabled');
@@ -1463,7 +1463,7 @@ function prefixFormSubmit(e) {
 
 	} else if (alloc_method == 'from-prefix') {
 
-		prefix_data.from_prefix = cur_opts.from_prefix.prefix;
+		prefix_data.from_prefix = new Array(cur_opts.from_prefix.prefix);
 		prefix_data.prefix_length = $('input[name="prefix_length_prefix"]').val();
 
 	} else {
@@ -1518,7 +1518,7 @@ function selectPrefix(prefix_id) {
 	$('#prefix_length_prefix_container').show();
 
 	$('#alloc_from_prefix').html(prefix_list[prefix_id].prefix + ' &mdash; ' + prefix_list[prefix_id].description);
-	cur_opts.from_prefix = new Array(prefix_list[prefix_id]);
+	cur_opts.from_prefix = prefix_list[prefix_id];
 
 	$("html,body").animate({ scrollTop: $("#prefix_length_prefix_container").offset().top - 50}, 700);
 	$("#prefix_length_prefix_container").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
