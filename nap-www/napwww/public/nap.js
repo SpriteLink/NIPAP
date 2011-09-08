@@ -354,7 +354,46 @@ function performPrefixSearch(explicit) {
 	showLoadingIndicator($('#prefix_list'));
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixList);
 
+	// add search options to URL
+	setSearchPrefixURI(explicit);
+
 }
+
+
+/*
+ * Extract search options and add to URI
+ */
+function setSearchPrefixURI(explicit) {
+
+	var url = $.url();
+	var url_str = "";
+
+	url_str = url.attr('protocol') + '://' + url.attr('host');
+
+	if (url.attr('port') != null) {
+		url_str += ":"+url.attr('port');
+	}
+
+	url_str += url.attr('path');
+
+	if (url.attr('query') != null) {
+		url_str += '?' + url.attr('query');
+	}
+
+	url_str += '#query_string=' +
+		encodeURIComponent($('#query_string').val()) +
+		'&search_opt_parent=' +
+		encodeURIComponent($('input[name="search_opt_parent"]:checked').val()) +
+		'&search_opt_child=' +
+		encodeURIComponent($('input[name="search_opt_child"]:checked').val()) +
+		'&explicit=' + encodeURIComponent(explicit);
+
+    log(url_str);
+
+	window.location.href = url_str;
+
+}
+
 
 /*
  * Called when next page of results is requested by the user.
@@ -1257,16 +1296,16 @@ function changeFamily() {
 			len = cur_opts.pool.ipv6_default_prefix_length;
 		}
 
-        // The default length can be null. Handle!
+		// The default length can be null. Handle!
 		if (len == null) {
-            // TODO: This never happens. I guess the JSON conversion removes the null values.
-            $('#edit_length_default_radio').hide();
-            $('#def_length_container').hide();
+			// TODO: This never happens. I guess the JSON conversion removes the null values.
+			$('#edit_length_default_radio').hide();
+			$('#def_length_container').hide();
 			$("#edit_length_override_radio").click();
 		} else {
-            $('#edit_length_default_radio').show();
+			$('#edit_length_default_radio').show();
 			$("#edit_length_default_radio").click();
-            $('#def_length_container').show();
+			$('#def_length_container').show();
 			$('input[name="prefix_length_pool"]').val(len);
 			$('#def_length_container').html("Use pool's default IPv" +
 				$('input[name="prefix_family"]:checked').val() + " prefix-length of /" +
