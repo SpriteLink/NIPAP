@@ -1105,6 +1105,9 @@ function showAllocContainer(e) {
 		$("#prefix-row").hide();
 		$("html,body").animate({ scrollTop: $("#from-prefix_container").offset().top - 50}, 700);
 
+		$('#default_prefix_type').hide();
+		$('#prefix_type_selection').show();
+
 	// from-pool
 	} else if (e.currentTarget.id == 'radio-from-pool') {
 
@@ -1128,6 +1131,9 @@ function showAllocContainer(e) {
 		$("#prefix_data_container").show();
 		$('#prefix_length_prefix_container').hide();
 		$("html,body").animate({ scrollTop: $("#prefix_data_container").offset().top - 50}, 700);
+
+		$('#default_prefix_type').hide();
+		$('#prefix_type_selection').show();
 
 	}
 
