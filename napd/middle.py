@@ -95,7 +95,7 @@ class Middle:
         """ List pools.
         """
 
-        return self.nap.list_pool(args.get('schema'), args.get('spec'))
+        return self.nap.list_pool(args.get('schema'), args.get('pool'))
 
 
     def edit_pool(self, args):
