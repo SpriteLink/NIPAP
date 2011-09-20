@@ -12,7 +12,6 @@ import logging
 import xmlrpclib
 
 import nap
-import middle
 
 
 class NapXMLRPC:
@@ -40,7 +39,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Initialising NAP Protocol")
 
-        self.middle = middle.Middle(nap.Nap())
+        self.nap = nap.Nap()
 
 
     def render(self, request):
@@ -97,7 +96,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.add_schema(args)
+            return self.nap.add_schema(args.get('attr'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -107,7 +106,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            self.middle.remove_schema(args)
+            self.nap.remove_schema(args.get('schema'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -117,7 +116,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.list_schema(args)
+            return self.nap.list_schema(args.get('schema'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -127,7 +126,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            self.middle.edit_schema(args)
+            self.nap.edit_schema(args.get('schema'), args.get('attr'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -140,7 +139,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.search_schema(args)
+            return self.nap.search_schema(args.get('query'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -154,7 +153,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.smart_search_schema(args)
+            return self.nap.smart_search_schema(args.get('query_string'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -167,7 +166,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.add_pool(args)
+            return self.nap.add_pool(args.get('schema'), args.get('attr'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -177,7 +176,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            self.middle.remove_pool(args)
+            self.nap.remove_pool(args.get('schema'), args.get('pool'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -187,7 +186,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.list_pool(args)
+            return self.nap.list_pool(args.get('schema'), args.get('pool'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -197,7 +196,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.edit_pool(args)
+            return self.nap.edit_pool(args.get('schema'), args.get('pool'), args.get('attr'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -210,7 +209,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.search_pool(args)
+            return self.nap.search_pool(args.get('schema'), args.get('query'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -224,7 +223,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.smart_search_pool(args)
+            return self.nap.smart_search_pool(args.get('schema'), args.get('query_string'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -239,7 +238,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.add_prefix(args)
+            return self.nap.add_prefix(args.get('schema'), args.get('attr'), args.get('args'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -250,7 +249,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.list_prefix(args)
+            return self.nap.list_prefix(args.get('schema'), args.get('prefix'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -261,7 +260,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.edit_prefix(args)
+            return self.nap.edit_prefix(args.get('schema'), args.get('prefix'), args.get('attr'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -272,7 +271,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.remove_prefix(args)
+            return self.nap.remove_prefix(args.get('schema'), args.get('prefix'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -286,7 +285,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.search_prefix(args)
+            return self.nap.search_prefix(args.get('schema'), args.get('query'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -301,7 +300,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.smart_search_prefix(args)
+            return self.nap.smart_search_prefix(args.get('schema'), args.get('query_string'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -312,6 +311,6 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.middle.find_free_prefix(spec, args)
+            return self.nap.find_free_prefix(args.get('schema'), args.get('args'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
