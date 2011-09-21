@@ -56,6 +56,9 @@
                 {% endif %}
                 </ol>
             </div>
+            <div class="menu_entry" style="position: absolute; right: 10%;">
+                <a href="{{ url(controller='auth', action='logout') }}" class="schema_title">Log out</a>
+            </div>
         </div>
         {% block menu %}
         {% endblock %}

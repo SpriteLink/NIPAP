@@ -5,7 +5,7 @@
 
 import logging
 
-# For LocalAuth
+# User by LocalAuth
 import sqlite3
 import string
 import hashlib
@@ -79,11 +79,11 @@ class LocalAuth(BaseAuth):
 
         BaseAuth.__init__(self, username, password, 'local', auth_options)
 
-        self._logger.debug('Creating instance')
+        self._logger.debug('creating instance')
 
         # make sure that user table exists
         sql_verify_table = '''SELECT * FROM sqlite_master
-            WHERE type = 'master' AND name = 'user' '''
+            WHERE type = 'table' AND name = 'user' '''
 
         # connect to database
         try:
@@ -154,6 +154,7 @@ class LocalAuth(BaseAuth):
         self.authenticated_as = self.username
         self._authenticated = True
         self.trusted = bool(user['trusted'])
+        self.authoritative_source = 'nipap'
 
         if self.trusted:
             # user can impersonate other users
@@ -169,7 +170,6 @@ class LocalAuth(BaseAuth):
                 self.authoritative_source = self._auth_options['authoritative_source']
 
         else:
-            self.system = 'NIPAP'
             self.full_name = user['full_name']
 
         self._logger.debug('successfully authenticated as %s, username %s' % (self.authenticated_as, self.username))

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{{ h.form(url(controller='auth', action='login'), method='post') }}
+<div class="options-group" style="passing: 30px;">
+    <div class="options-content">
+        <div class="options-group-heading">
+            Logga in
+        </div>
+        <div class="rule"></div>
+        <div class="option">
+            <dl>
+                <dt>Username</dt>
+                <dd>{{ h.text('username') }}</dd>
+            </dl>
+        </div>
+        <div class="rule"></div>
+        <div class="option">
+            <dl>
+                <dt>Password</dt>
+                <dd>{{ h.password('password') }}</dd>
+            </dl>
+        </div>
+        <div class="rule"></div>
+        <div class="option">
+            <dl>
+                <dt></dt>
+                <dd>{{ h.submit('send', 'Log in') }}</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+{{ h.end_form() }}
+
+{% endblock %}

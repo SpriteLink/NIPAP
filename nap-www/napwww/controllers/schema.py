@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 
 class SchemaController(BaseController):
 
+
     def index(self):
         """ Index page - redirect to list.
         """

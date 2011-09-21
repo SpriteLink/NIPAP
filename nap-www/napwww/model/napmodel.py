@@ -1,6 +1,28 @@
 import xmlrpclib
 import logging
 
+
+class AuthOptions:
+    """ A global-ish authentication option container.
+
+        WHAT ARE THE IMPLICATIONS OF THIS CLASS?! IS ISOLATION GUARANTEED?!
+        I guess not. Sigh. TODO: find out.
+    """
+
+    __shared_state = {}
+    options = None
+
+    def __init__(self, options = None):
+        """ Create a shared option container.
+        """
+
+        self.__dict__ = self.__shared_state
+
+        if options is not None:
+            self.options = options
+
+
+
 class XMLRPCConnection:
     """ Handles a shared XML-RPC connection.
     """
@@ -11,7 +33,7 @@ class XMLRPCConnection:
     _logger = None
 
 
-    def __init__(self, url = "http://127.0.0.1:1337"):
+    def __init__(self, url = "http://web_ui:PngeOJctzUyM@127.0.0.1:1337"):
         """ Create XML-RPC connection to url.
 
             If an earlier created instance exists, url
@@ -58,6 +80,7 @@ class NapModel:
 
         self._logger = logging.getLogger(self.__class__.__name__)
         self._xmlrpc = XMLRPCConnection()
+        self._auth_opts = AuthOptions()
         self.id = id
 
 
@@ -77,7 +100,11 @@ class Schema(NapModel):
         """
 
         xmlrpc = XMLRPCConnection()
-        schema_list = xmlrpc.connection.list_schema({ 'schema': spec })
+        schema_list = xmlrpc.connection.list_schema(
+            {
+                'schema': spec,
+                'auth': AuthOptions().options
+            })
 
         res = list()
         for schema in schema_list:
@@ -134,7 +161,8 @@ class Schema(NapModel):
             search_result = xmlrpc.connection.search_schema(
                 {
                     'query': query,
-                    'search_options': search_opts
+                    'search_options': search_opts,
+                    'auth': AuthOptions().options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
@@ -159,7 +187,8 @@ class Schema(NapModel):
             smart_result = xmlrpc.connection.smart_search_schema(
                 {
                     'query_string': query_string,
-                    'search_options': search_options
+                    'search_options': search_options,
+                    'auth': AuthOptions().options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
@@ -188,7 +217,11 @@ class Schema(NapModel):
         if self.id is None:
             # New object, create
             try:
-                self.id = self._xmlrpc.connection.add_schema({ 'attr': data })
+                self.id = self._xmlrpc.connection.add_schema(
+                    {
+                        'attr': data,
+                        'auth': self._auth_opts.options
+                    })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
 
@@ -198,7 +231,8 @@ class Schema(NapModel):
                 self._xmlrpc.connection.edit_schema(
                     {
                         'schema': { 'id': self.id },
-                        'attr': data
+                        'attr': data,
+                        'auth': self._auth_opts.options
                     })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
@@ -212,7 +246,11 @@ class Schema(NapModel):
         """
 
         try:
-            self._xmlrpc.connection.remove_schema({ 'schema': { 'id': self.id } })
+            self._xmlrpc.connection.remove_schema(
+                {
+                    'schema': { 'id': self.id },
+                    'auth': self._auth_opts.options
+                })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         if self.id in _cache['Schema']:
@@ -251,7 +289,8 @@ class Pool(NapModel):
                 self.id = self._xmlrpc.connection.add_pool(
                     {
                         'schema': { 'id': self.schema.id },
-                        'attr': data
+                        'attr': data,
+                        'auth': self._auth_opts.options
                     })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
@@ -263,7 +302,8 @@ class Pool(NapModel):
                     {
                         'schema': { 'id': self.schema.id },
                         'pool': { 'id': self.id },
-                        'attr': data
+                        'attr': data,
+                        'auth': self._auth_opts.options
                     })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
@@ -280,7 +320,8 @@ class Pool(NapModel):
             self._xmlrpc.connection.remove_pool(
                 {
                     'schema': { 'id': self.schema.id },
-                    'pool': { 'id': self.id }
+                    'pool': { 'id': self.id },
+                    'auth': self._auth_opts.options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
@@ -321,7 +362,8 @@ class Pool(NapModel):
                 {
                     'schema': { 'id': schema.id },
                     'query': query,
-                    'search_options': search_opts
+                    'search_options': search_opts,
+                    'auth': AuthOptions().options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
@@ -347,7 +389,8 @@ class Pool(NapModel):
                 {
                     'schema': { 'id': schema.id },
                     'query_string': query_string,
-                    'search_options': search_options
+                    'search_options': search_options,
+                    'auth': AuthOptions().options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
@@ -392,7 +435,8 @@ class Pool(NapModel):
         pool_list = xmlrpc.connection.list_pool(
             {
                 'schema': { 'id': schema.id },
-                'pool': spec
+                'pool': spec,
+                'auth': AuthOptions().options
             })
         res = list()
         for pool in pool_list:
@@ -467,7 +511,8 @@ class Prefix(NapModel):
                 {
                     'schema': { 'id': schema.id },
                     'query': query,
-                    'search_options': search_opts
+                    'search_options': search_opts,
+                    'auth': AuthOptions().options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
@@ -493,7 +538,8 @@ class Prefix(NapModel):
                 {
                     'schema': { 'id': schema.id },
                     'query_string': query_string,
-                    'search_options': search_options
+                    'search_options': search_options,
+                    'auth': AuthOptions().options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
@@ -519,7 +565,8 @@ class Prefix(NapModel):
             pref_list = xmlrpc.connection.list_prefix(
                 {
                     'schema': { 'id': schema.id },
-                    'prefix': spec
+                    'prefix': spec,
+                    'auth': AuthOptions().options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
@@ -544,7 +591,6 @@ class Prefix(NapModel):
             'type': self.type,
             'country': self.country,
             'order_id': self.order_id,
-            'authoritative_source': self.authoritative_source,
             'alarm_priority': self.alarm_priority,
             'monitor': self.monitor
         }
@@ -579,7 +625,8 @@ class Prefix(NapModel):
                     {
                         'schema': { 'id': self.schema.id },
                         'attr': data,
-                        'args': x_args
+                        'args': x_args,
+                        'auth': self._auth_opts.options
                     })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
@@ -589,7 +636,8 @@ class Prefix(NapModel):
                 p = self._xmlrpc.connection.list_prefix(
                     {
                         'schema': { 'id': self.schema.id },
-                        'prefix': { 'id': self.id }
+                        'prefix': { 'id': self.id },
+                        'auth': self._auth_opts.options
                     })[0]
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
@@ -611,7 +659,8 @@ class Prefix(NapModel):
                     {
                         'schema': { 'id': self.schema.id },
                         'prefix': { 'id': self.id },
-                        'attr': data
+                        'attr': data,
+                        'auth': self._auth_opts.options
                     })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
@@ -626,7 +675,8 @@ class Prefix(NapModel):
             self._xmlrpc.connection.remove_prefix(
                 {
                     'schema': { 'id': self.schema.id },
-                    'prefix': { 'id': self.id }
+                    'prefix': { 'id': self.id },
+                    'auth': self._auth_opts.options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)

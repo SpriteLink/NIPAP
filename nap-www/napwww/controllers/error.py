@@ -21,6 +21,9 @@ class ErrorController(BaseController):
     ErrorDocuments middleware in your config/middleware.py file.
 
     """
+
+    requires_auth = False
+
     def document(self):
         """Render the error document"""
         request = self._py_object.request
