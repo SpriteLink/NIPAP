@@ -12,6 +12,7 @@ import logging
 import xmlrpclib
 
 import nap
+from authfactory import AuthFactory
 
 
 class NapXMLRPC:
@@ -45,10 +46,25 @@ class NapProtocol(xmlrpc.XMLRPC):
     def render(self, request):
         self.request = request
 
-        # TODO: add authentication! how should we do auth?
-
         request.content.seek(0, 0)
         args, functionPath = xmlrpclib.loads(request.content.read())
+
+        # Authentocation & authorization
+        #
+        # Fetch auth options from args
+        auth_options = {}
+        if len(args) > 0:
+            nap_args = args[0]
+        try:
+            auth_options = args[0]['auth']
+        except KeyError, IndexError:
+            pass
+
+        auth = AuthFactory.get_auth(request.getUser(), request.getPassword(), auth_options)
+        if not auth.authenticated():
+            request.setResponseCode(http.UNAUTHORIZED)
+            return "Authentication failed."
+        args[0]['auth'] = auth
 
         try:
             function = self._getFunction(functionPath)
@@ -114,6 +130,8 @@ class NapProtocol(xmlrpc.XMLRPC):
     def xmlrpc_list_schema(self, args = {}):
         """ List schemas.
         """
+
+        self.logger.error(str(args.keys()))
 
         try:
             return self.nap.list_schema(args.get('schema'))
