@@ -49,23 +49,25 @@ class NapProtocol(xmlrpc.XMLRPC):
         request.content.seek(0, 0)
         args, functionPath = xmlrpclib.loads(request.content.read())
 
-        # Authentocation & authorization
+        # Authentication
         #
         # Fetch auth options from args
         auth_options = {}
+        nap_args = {}
+
         if len(args) > 0:
             nap_args = args[0]
-        try:
-            auth_options = args[0]['auth']
-        except KeyError, IndexError:
-            pass
+        if type(nap_args) == dict:
+            auth_options = nap_args.get('auth')
 
-        auth = AuthFactory.get_auth(request.getUser(), request.getPassword(), auth_options)
-        if not auth.authenticated():
+        auth = AuthFactory.get_auth(request.getUser(), request.getPassword(), auth_options or {})
+
+        if not auth.authenticate():
             request.setResponseCode(http.UNAUTHORIZED)
             return "Authentication failed."
         args[0]['auth'] = auth
 
+        # Authentication done
         try:
             function = self._getFunction(functionPath)
         except xmlrpclib.Fault, f:
@@ -130,8 +132,6 @@ class NapProtocol(xmlrpc.XMLRPC):
     def xmlrpc_list_schema(self, args = {}):
         """ List schemas.
         """
-
-        self.logger.error(str(args.keys()))
 
         try:
             return self.nap.list_schema(args.get('schema'))

@@ -3,7 +3,7 @@
 
 # How do we perform this dymanically, depending on what auth modules are
 # configured?
-from auth import LocalAuth
+from auth import LocalAuth, AuthError
 
 class AuthFactory:
     
@@ -11,8 +11,8 @@ class AuthFactory:
     def get_auth(cls, username, password, auth_options):
         """ Returns an authentication object.
     
-            Depending on what is placed after @ in the username, returns a subclass
-            of the BaseAuth class.
+            Examines the auth backend given after the '@' in the username and
+            returns a suitable instance of a subclass of the BaseAuth class.
         """
     
         user_authbackend = username.rsplit('@', 1);
@@ -22,5 +22,8 @@ class AuthFactory:
             return LocalAuth(user_authbackend[0], password, auth_options)
     
         # static => LocalAuth
-        if user_authbackend[1] == 'static':
+        if user_authbackend[1] == 'local':
             return LocalAuth(user_authbackend[0], password, auth_options)
+        else:
+            raise AuthError('Invalid auth backend %s specified' %
+                str(user_authbackend[1]))
