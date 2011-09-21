@@ -77,7 +77,7 @@ class Schema(NapModel):
         """
 
         xmlrpc = XMLRPCConnection()
-        schema_list = xmlrpc.connection.list_schema(spec)
+        schema_list = xmlrpc.connection.list_schema({ 'schema': spec })
 
         res = list()
         for schema in schema_list:
@@ -131,7 +131,11 @@ class Schema(NapModel):
 
         xmlrpc = XMLRPCConnection()
         try:
-            search_result = xmlrpc.connection.search_schema(query, search_opts)
+            search_result = xmlrpc.connection.search_schema(
+                {
+                    'query': query,
+                    'search_options': search_opts
+                })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         result = dict()
@@ -152,8 +156,11 @@ class Schema(NapModel):
 
         xmlrpc = XMLRPCConnection()
         try:
-            smart_result = xmlrpc.connection.smart_search_schema(query_string,
-                search_options)
+            smart_result = xmlrpc.connection.smart_search_schema(
+                {
+                    'query_string': query_string,
+                    'search_options': search_options
+                })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         result = dict()
@@ -181,14 +188,18 @@ class Schema(NapModel):
         if self.id is None:
             # New object, create
             try:
-                self.id = self._xmlrpc.connection.add_schema(data)
+                self.id = self._xmlrpc.connection.add_schema({ 'attr': data })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
 
         else:
             # Old object, edit
             try:
-                self._xmlrpc.connection.edit_schema({'id': self.id}, data)
+                self._xmlrpc.connection.edit_schema(
+                    {
+                        'schema': { 'id': self.id },
+                        'attr': data
+                    })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
 
@@ -201,7 +212,7 @@ class Schema(NapModel):
         """
 
         try:
-            self._xmlrpc.connection.remove_schema({'id': self.id})
+            self._xmlrpc.connection.remove_schema({ 'schema': { 'id': self.id } })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         if self.id in _cache['Schema']:
@@ -237,14 +248,23 @@ class Pool(NapModel):
             # New object, create
             data['schema'] = self.schema.id,
             try:
-                self.id = self._xmlrpc.connection.add_pool({'id': self.schema.id}, data)
+                self.id = self._xmlrpc.connection.add_pool(
+                    {
+                        'schema': { 'id': self.schema.id },
+                        'attr': data
+                    })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
 
         else:
             # Old object, edit
             try:
-                self._xmlrpc.connection.edit_pool({'id': self.schema.id}, {'id': self.id}, data)
+                self._xmlrpc.connection.edit_pool(
+                    {
+                        'schema': { 'id': self.schema.id },
+                        'pool': { 'id': self.id },
+                        'attr': data
+                    })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
 
@@ -257,7 +277,11 @@ class Pool(NapModel):
         """
 
         try:
-            self._xmlrpc.connection.remove_pool({'id': self.schema.id}, {'id': self.id})
+            self._xmlrpc.connection.remove_pool(
+                {
+                    'schema': { 'id': self.schema.id },
+                    'pool': { 'id': self.id }
+                })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         if self.id in _cache['Pool']:
@@ -293,7 +317,12 @@ class Pool(NapModel):
 
         xmlrpc = XMLRPCConnection()
         try:
-            search_result = xmlrpc.connection.search_pool({ 'id': schema.id }, query, search_opts)
+            search_result = xmlrpc.connection.search_pool(
+                {
+                    'schema': { 'id': schema.id },
+                    'query': query,
+                    'search_options': search_opts
+                })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         result = dict()
@@ -314,8 +343,12 @@ class Pool(NapModel):
 
         xmlrpc = XMLRPCConnection()
         try:
-            smart_result = xmlrpc.connection.smart_search_pool({ 'id': schema.id },
-                query_string, search_options)
+            smart_result = xmlrpc.connection.smart_search_pool(
+                {
+                    'schema': { 'id': schema.id },
+                    'query_string': query_string,
+                    'search_options': search_options
+                })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         result = dict()
@@ -356,7 +389,11 @@ class Pool(NapModel):
         """
 
         xmlrpc = XMLRPCConnection()
-        pool_list = xmlrpc.connection.list_pool({ 'id': schema.id }, spec)
+        pool_list = xmlrpc.connection.list_pool(
+            {
+                'schema': { 'id': schema.id },
+                'pool': spec
+            })
         res = list()
         for pool in pool_list:
             p = Pool.from_dict(pool)
@@ -426,7 +463,12 @@ class Prefix(NapModel):
 
         xmlrpc = XMLRPCConnection()
         try:
-            search_result = xmlrpc.connection.search_prefix({'id': schema.id}, query, search_opts)
+            search_result = xmlrpc.connection.search_prefix(
+                {
+                    'schema': { 'id': schema.id },
+                    'query': query,
+                    'search_options': search_opts
+                })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         result = dict()
@@ -447,8 +489,12 @@ class Prefix(NapModel):
 
         xmlrpc = XMLRPCConnection()
         try:
-            smart_result = xmlrpc.connection.smart_search_prefix({ 'id': schema.id },
-                query_string, search_options)
+            smart_result = xmlrpc.connection.smart_search_prefix(
+                {
+                    'schema': { 'id': schema.id },
+                    'query_string': query_string,
+                    'search_options': search_options
+                })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         result = dict()
@@ -470,7 +516,11 @@ class Prefix(NapModel):
 
         xmlrpc = XMLRPCConnection()
         try:
-            pref_list = xmlrpc.connection.list_prefix({ 'id': schema.id }, spec)
+            pref_list = xmlrpc.connection.list_prefix(
+                {
+                    'schema': { 'id': schema.id },
+                    'prefix': spec
+                })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         res = list()
@@ -525,13 +575,22 @@ class Prefix(NapModel):
                 x_args['prefix_length'] = args['prefix_length']
 
             try:
-                self.id = self._xmlrpc.connection.add_prefix({'id': self.schema.id}, data, x_args)
+                self.id = self._xmlrpc.connection.add_prefix(
+                    {
+                        'schema': { 'id': self.schema.id },
+                        'attr': data,
+                        'args': x_args
+                    })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
 
             # fetch data which is set by Nap
             try:
-                p = self._xmlrpc.connection.list_prefix({'id': self.schema.id}, {'id': self.id})[0]
+                p = self._xmlrpc.connection.list_prefix(
+                    {
+                        'schema': { 'id': self.schema.id },
+                        'prefix': { 'id': self.id }
+                    })[0]
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
             except IndexError:
@@ -548,7 +607,12 @@ class Prefix(NapModel):
             del(data['type'])
 
             try:
-                self._xmlrpc.connection.edit_prefix({'id': self.schema.id}, {'id': self.id}, data)
+                self._xmlrpc.connection.edit_prefix(
+                    {
+                        'schema': { 'id': self.schema.id },
+                        'prefix': { 'id': self.id },
+                        'attr': data
+                    })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
 
@@ -559,7 +623,11 @@ class Prefix(NapModel):
         """
 
         try:
-            self._xmlrpc.connection.remove_prefix({'id': self.schema.id}, {'id': self.id})
+            self._xmlrpc.connection.remove_prefix(
+                {
+                    'schema': { 'id': self.schema.id },
+                    'prefix': { 'id': self.id }
+                })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         if self.id in _cache['Prefix']:

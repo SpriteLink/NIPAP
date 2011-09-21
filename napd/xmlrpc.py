@@ -81,57 +81,57 @@ class NapProtocol(xmlrpc.XMLRPC):
             return { 'result': 'failure', 'message': 'Authorization Failed!' }
 
 
-    def xmlrpc_echo(self, args = []):
-        if 'message' in args:
-            return { 'result': 'success', 'message': 'Echo from NAPD: ' + args['message'] }
+    def xmlrpc_echo(self, message=None):
+        if 'message' is not None:
+            return message
 
-        return { 'result': 'success', 'message': "This is an echo function, if you pass me a string in the argument named 'message', I will return it to you" }
+        return "This is an echo function, if you pass me a string, I will return it to you"
 
 
     #
     # SCHEMA FUNCTIONS
     #
-    def xmlrpc_add_schema(self, attr):
+    def xmlrpc_add_schema(self, args):
         """ Add a new network schema.
         """
 
         try:
-            return self.nap.add_schema(attr)
+            return self.nap.add_schema(args.get('attr'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_remove_schema(self, spec):
+    def xmlrpc_remove_schema(self, args):
         """ Removes a schema.
         """
 
         try:
-            self.nap.remove_schema(spec)
+            self.nap.remove_schema(args.get('schema'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_list_schema(self, spec = None):
+    def xmlrpc_list_schema(self, args = {}):
         """ List schemas.
         """
 
         try:
-            return self.nap.list_schema(spec)
+            return self.nap.list_schema(args.get('schema'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_edit_schema(self, spec, attr):
+    def xmlrpc_edit_schema(self, args):
         """ Edit a schema.
         """
 
         try:
-            self.nap.edit_schema(spec, attr)
+            self.nap.edit_schema(args.get('schema'), args.get('attr'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_search_schema(self, query, search_options = {}):
+    def xmlrpc_search_schema(self, args):
         """ Search for schemas.
 
             The 'query' input is a specially crafted dict/struct which
@@ -139,12 +139,12 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.search_schema(query, search_options)
+            return self.nap.search_schema(args.get('query'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_smart_search_schema(self, query_string, search_options = {}):
+    def xmlrpc_smart_search_schema(self, args):
         """ Perform a smart search.
 
             The smart search function tries to extract a query from a text
@@ -153,7 +153,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.smart_search_schema(query_string, search_options)
+            return self.nap.smart_search_schema(args.get('query_string'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -161,47 +161,47 @@ class NapProtocol(xmlrpc.XMLRPC):
     #
     # POOL FUNCTIONS
     #
-    def xmlrpc_add_pool(self, schema_spec, attr):
+    def xmlrpc_add_pool(self, args):
         """ Add a pool.
         """
 
         try:
-            return self.nap.add_pool(schema_spec, attr)
+            return self.nap.add_pool(args.get('schema'), args.get('attr'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_remove_pool(self, schema_spec, spec):
+    def xmlrpc_remove_pool(self, args):
         """ Remove a pool.
         """
 
         try:
-            self.nap.remove_pool(schema_spec, spec)
+            self.nap.remove_pool(args.get('schema'), args.get('pool'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_list_pool(self, schema_spec, spec = {}):
+    def xmlrpc_list_pool(self, args):
         """ List pools.
         """
 
         try:
-            return self.nap.list_pool(schema_spec, spec)
+            return self.nap.list_pool(args.get('schema'), args.get('pool'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_edit_pool(self, schema_spec, spec, attr):
+    def xmlrpc_edit_pool(self, args):
         """ Edit pool.
         """
 
         try:
-            return self.nap.edit_pool(schema_spec, spec, attr)
+            return self.nap.edit_pool(args.get('schema'), args.get('pool'), args.get('attr'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_search_pool(self, schema_spec, query, search_options = {}):
+    def xmlrpc_search_pool(self, args):
         """ Search for pools.
 
             The 'query' input is a specially crafted dict/struct which
@@ -209,12 +209,12 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.search_pool(schema_spec, query, search_options)
+            return self.nap.search_pool(args.get('schema'), args.get('query'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_smart_search_pool(self, schema_spec, query_string, search_options = {}):
+    def xmlrpc_smart_search_pool(self, args):
         """ Perform a smart search.
 
             The smart search function tries to extract a query from a text
@@ -223,7 +223,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.smart_search_pool(schema_spec, query_string, search_options)
+            return self.nap.smart_search_pool(args.get('schema'), args.get('query_string'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -233,51 +233,51 @@ class NapProtocol(xmlrpc.XMLRPC):
     #
 
 
-    def xmlrpc_add_prefix(self, schema_spec, attr, args = {}):
+    def xmlrpc_add_prefix(self, args):
         """ Add a prefix.
         """
 
         try:
-            return self.nap.add_prefix(schema_spec, attr, args)
+            return self.nap.add_prefix(args.get('schema'), args.get('attr'), args.get('args'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
-    def xmlrpc_list_prefix(self, schema_spec, spec = None):
+    def xmlrpc_list_prefix(self, args):
         """ List prefixes.
         """
 
         try:
-            return self.nap.list_prefix(schema_spec, spec)
+            return self.nap.list_prefix(args.get('schema'), args.get('prefix'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
-    def xmlrpc_edit_prefix(self, schema_spec, spec, attr):
+    def xmlrpc_edit_prefix(self, args):
         """ Edit prefix.
         """
 
         try:
-            return self.nap.edit_prefix(schema_spec, spec, attr)
+            return self.nap.edit_prefix(args.get('schema'), args.get('prefix'), args.get('attr'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
-    def xmlrpc_remove_prefix(self, schema_spec, spec):
+    def xmlrpc_remove_prefix(self, args):
         """ Remove a prefix.
         """
 
         try:
-            return self.nap.remove_prefix(schema_spec, spec)
+            return self.nap.remove_prefix(args.get('schema'), args.get('prefix'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
-    def xmlrpc_search_prefix(self, schema_spec, query, search_options = {}):
+    def xmlrpc_search_prefix(self, args):
         """ Search for prefixes.
 
             The 'query' input is a specially crafted dict/struct which
@@ -285,13 +285,13 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.search_prefix(schema_spec, query, search_options)
+            return self.nap.search_prefix(args.get('schema'), args.get('query'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
-    def xmlrpc_smart_search_prefix(self, schema_spec, query_string, search_options = {}):
+    def xmlrpc_smart_search_prefix(self, args):
         """ Perform a smart search.
 
             The smart search function tries to extract a query from a text
@@ -300,17 +300,17 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.smart_search_prefix(schema_spec, query_string, search_options)
+            return self.nap.smart_search_prefix(args.get('schema'), args.get('query_string'), args.get('search_options'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
 
-    def xmlrpc_find_free_prefix(self, schema_spec, spec, wanted_length, num = 1):
+    def xmlrpc_find_free_prefix(self, args):
         """ Find a free prefix.
         """
 
         try:
-            return self.nap.find_free_prefix(spec, schema_spec, wantd_length, num)
+            return self.nap.find_free_prefix(args.get('schema'), args.get('args'))
         except nap.NapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
