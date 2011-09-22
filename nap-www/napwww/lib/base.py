@@ -17,25 +17,19 @@ class BaseController(WSGIController):
 
     requires_auth = True
 
-    def __init__(self):
-        """ Constructor
-            
-            Currently only deals with the authentication options.
+
+    def __before__(self):
+        """ Perform actions before action method is invoked.
+            Deals with authentication.
         """
 
         # set authentication options
         o = AuthOptions(
             {
                 'username': session.get('user'),
-                'authoritative_source': 'nipap_www'
+                'authoritative_source': 'nipap'
             })
 
-
-
-    def __before__(self):
-        """ Perform actions before action method is invoked.
-            Deals with authentication.
-        """
 
         # verify that user is logged in
         if self.requires_auth and 'user' not in session:
