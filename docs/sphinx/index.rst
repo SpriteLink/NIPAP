@@ -27,7 +27,6 @@ Contents:
    design
    nap
    xmlrpc
-   todo
 
 
 Indices and tables
