@@ -549,7 +549,7 @@ class Nap:
 
 
 
-    def add_schema(self, attr):
+    def add_schema(self, auth, attr):
         """ Add a new network schema.
 
             * `attr` [schema_attr]
@@ -571,11 +571,12 @@ class Nap:
         sql = "INSERT INTO ip_net_schema " + insert
 
         self._execute(sql, params)
-        return self._lastrowid()
+        schema_id  = self._lastrowid()
+
+        return schema_id
 
 
-
-    def remove_schema(self, spec):
+    def remove_schema(self, auth, spec):
         """ Remove a schema.
 
             * `spec` [schema_spec]
@@ -593,7 +594,7 @@ class Nap:
 
 
 
-    def list_schema(self, spec=None):
+    def list_schema(self, auth, spec=None):
         """ Return a list of schemas matching `spec`.
 
             * `spec` [schema_spec]
@@ -641,7 +642,7 @@ class Nap:
 
 
 
-    def edit_schema(self, spec, attr):
+    def edit_schema(self, auth, spec, attr):
         """ Updata schema matching `spec` with attributes `attr`.
 
             * `spec` [schema_spec]
@@ -669,7 +670,7 @@ class Nap:
 
 
 
-    def search_schema(self, query, search_options = {}):
+    def search_schema(self, auth, query, search_options = {}):
         """ Search schema list for schemas matching `query`.
 
             * `query` [dict_to_sql]
@@ -789,7 +790,7 @@ class Nap:
 
 
 
-    def smart_search_schema(self, query_str, search_options = {}):
+    def smart_search_schema(self, auth, query_str, search_options = {}):
         """ Perform a smart search on schema list.
 
             * `query_str` [string]
@@ -1012,7 +1013,7 @@ class Nap:
 
 
 
-    def add_pool(self, schema_spec, attr):
+    def add_pool(self, auth, schema_spec, attr):
         """ Create a pool according to `attr`.
 
             * `schema_spec` [schema_spec]
@@ -1038,11 +1039,12 @@ class Nap:
         sql = "INSERT INTO ip_net_pool " + insert
 
         self._execute(sql, params)
-        return self._lastrowid()
+        pool_id = self._lastrowid()
+        return pool_id
 
 
 
-    def remove_pool(self, schema_spec, spec):
+    def remove_pool(self, auth, schema_spec, spec):
         """ Remove a pool.
 
             * `schema_spec` [schema_spec]
@@ -1063,7 +1065,7 @@ class Nap:
 
 
 
-    def list_pool(self, schema_spec, spec = {}):
+    def list_pool(self, auth, schema_spec, spec = {}):
         """ Return a list of pools.
 
             * `schema_spec` [schema_spec]
@@ -1112,7 +1114,7 @@ class Nap:
 
 
 
-    def edit_pool(self, schema_spec, spec, attr):
+    def edit_pool(self, auth, schema_spec, spec, attr):
         """ Update pool given by `spec` with attributes `attr`.
 
             * `schema_spec` [schema_spec]
@@ -1152,7 +1154,7 @@ class Nap:
 
 
 
-    def search_pool(self, schema_spec, query, search_options = {}):
+    def search_pool(self, auth, schema_spec, query, search_options = {}):
         """ Search pool list for pools matching `query`.
 
             * `schema_spec` [schema_spec]
@@ -1297,7 +1299,7 @@ class Nap:
 
 
 
-    def smart_search_pool(self, schema_spec, query_str, search_options = {}):
+    def smart_search_pool(self, auth, schema_spec, query_str, search_options = {}):
         """ Perform a smart search on pool list.
 
             * `schema_spec` [schema_spec]
@@ -1502,7 +1504,7 @@ class Nap:
 
 
 
-    def add_prefix(self, schema_spec, attr, args = {}):
+    def add_prefix(self, auth, schema_spec, attr, args = {}):
         """ Add a prefix and return its ID.
 
             * `schema_spec` [schema_spec]
@@ -1579,7 +1581,7 @@ class Nap:
 
 
 
-    def edit_prefix(self, schema_spec, spec, attr):
+    def edit_prefix(self, auth, schema_spec, spec, attr):
         """ Update prefix matching `spec` with attributes `attr`.
 
             * `schema_spec` [schema_spec]
@@ -1614,7 +1616,7 @@ class Nap:
 
 
 
-    def find_free_prefix(self, schema_spec, args):
+    def find_free_prefix(self, auth, schema_spec, args):
         """ Finds free prefixes in the sources given in `args`.
 
             `schema_spec` [schema_spec]
@@ -1768,7 +1770,7 @@ class Nap:
 
 
 
-    def list_prefix(self, schema_spec, spec = None):
+    def list_prefix(self, auth, schema_spec, spec = None):
         """ List prefixes matching the `spec`.
 
             * `schema_spec` [schema_spec]
@@ -1806,7 +1808,7 @@ class Nap:
 
 
 
-    def remove_prefix(self, schema_spec, spec):
+    def remove_prefix(self, auth, schema_spec, spec):
         """ Remove prefix matching `spec`.
 
             * `schema_spec` [schema_spec]
@@ -1824,7 +1826,7 @@ class Nap:
 
 
 
-    def search_prefix(self, schema_spec, query, search_options = {}):
+    def search_prefix(self, auth, schema_spec, query, search_options = {}):
         """ Search prefix list for prefixes matching `query`.
 
             * `schema_spec` [schema_spec]
@@ -2113,7 +2115,7 @@ class Nap:
 
 
 
-    def smart_search_prefix(self, schema_spec, query_str, search_options = {}):
+    def smart_search_prefix(self, auth, schema_spec, query_str, search_options = {}):
         """ Perform a smart search on prefix list.
 
             * `schema_spec` [schema_spec]
