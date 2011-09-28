@@ -29,13 +29,14 @@ class BaseAuth:
     _auth_options = None
 
 
-    def __init__(self, username, password, auth_backend, auth_options={}):
+    def __init__(self, username, password, authoritative_source, auth_backend, auth_options={}):
         """ Constructor.
         """
 
         self.username = username
         self.password = password
         self.auth_backend = auth_backend
+        self.authoritative_source = authoritative_source
 
         self._auth_options = auth_options
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -71,13 +72,13 @@ class LocalAuth(BaseAuth):
     _db_curs = None
     _authenticated = None
 
-    def __init__(self, username, password, auth_options={}):
+    def __init__(self, username, password, authoritative_source, auth_options={}):
         """ Constructor.
 
             Verifies that the auth database exists.
         """
 
-        BaseAuth.__init__(self, username, password, 'local', auth_options)
+        BaseAuth.__init__(self, username, password, authoritative_source, 'local', auth_options)
 
         self._logger.debug('creating instance')
 
@@ -154,7 +155,6 @@ class LocalAuth(BaseAuth):
         self.authenticated_as = self.username
         self._authenticated = True
         self.trusted = bool(user['trusted'])
-        self.authoritative_source = 'nipap'
 
         if self.trusted:
             # user can impersonate other users
@@ -193,6 +193,17 @@ class LocalAuth(BaseAuth):
         self._db_curs.execute(sql, (username, salt,
                 self._gen_hash(password, salt), full_name, trusted))
         self._db_conn.commit()
+
+
+
+    def remove_user(self, username):
+        """ Remove user from the LocalAuth database.
+        """
+
+        sql = '''DELETE FROM user WHERE username = ?'''
+        self._db_curs.execute(sql, (username, ))
+        self._db_conn.commit()
+        return self._db_curs.rowcount
 
 
 
