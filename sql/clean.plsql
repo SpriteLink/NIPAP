@@ -1,4 +1,5 @@
 
+DROP TABLE ip_net_log;
 DROP TABLE ip_net_plan;
 DROP TABLE ip_net_pool;
 DROP TABLE ip_net_schema;

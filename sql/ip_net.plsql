@@ -102,6 +102,44 @@ CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 CREATE INDEX ip_net_plan__family__index ON ip_net_plan (family(prefix));
 CREATE INDEX ip_net_plan__prefix_iprange_index ON ip_net_plan USING gist(iprange(prefix));
 
+--
+-- Audit log table
+--
+CREATE TABLE ip_net_log (
+	id serial PRIMARY KEY,
+	schema_name TEXT,
+	schema INTEGER,
+	prefix_prefix cidr,
+	prefix INTEGER,
+	pool_name TEXT,
+	pool INTEGER,
+	timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+	username TEXT NOT NULL,
+	authenticated_as TEXT NOT NULL,
+	authoritative_source TEXT NOT NULL,
+	full_name TEXT,
+	description TEXT NOT NULL
+);
+
+COMMENT ON TABLE ip_net_log IS 'Log of changes made to tables';
+
+COMMENT ON COLUMN ip_net_log.schema_name IS 'Name of affected schema, or schema of affected prefix';
+COMMENT ON COLUMN ip_net_log.schema IS 'ID of affected schema, or schema of affected prefix';
+COMMENT ON COLUMN ip_net_log.prefix_prefix IS 'Prefix which was affected of the action';
+COMMENT ON COLUMN ip_net_log.prefix IS 'ID of affected prefix';
+COMMENT ON COLUMN ip_net_log.pool_name IS 'Name of affected pool';
+COMMENT ON COLUMN ip_net_log.pool IS 'ID of affected pool';
+COMMENT ON COLUMN ip_net_log.timestamp IS 'Time when the change was made';
+COMMENT ON COLUMN ip_net_log.username IS 'Username of the user who made the change';
+COMMENT ON COLUMN ip_net_log.authenticated_as IS 'Username of user who authenticated the change. This can be a real person or a system which is trusted to perform operations in another users name.';
+COMMENT ON COLUMN ip_net_log.authoritative_source IS 'System from which the action was made';
+COMMENT ON COLUMN ip_net_log.full_name IS 'Full name of the user who is responsible for the action';
+COMMENT ON COLUMN ip_net_log.description IS 'Text describing the action';
+
+CREATE INDEX ip_net_log__schema__index ON ip_net_log(schema);
+CREATE INDEX ip_net_log__prefix__index ON ip_net_log(prefix);
+CREATE INDEX ip_net_log__pool__index ON ip_net_log(pool);
+
 
 CREATE OR REPLACE FUNCTION tf_ip_net_prefix_iu_before() RETURNS trigger AS $_$
 DECLARE
@@ -236,6 +274,8 @@ GRANT ALL ON ip_net_pool TO napd;
 GRANT USAGE ON ip_net_pool_id_seq TO napd;
 GRANT ALL ON ip_net_schema TO napd;
 GRANT USAGE ON ip_net_schema_id_seq TO napd;
+GRANT ALL ON ip_net_log TO napd;
+GRANT USAGE ON ip_net_log_id_seq TO napd;
 
 --
 -- example data

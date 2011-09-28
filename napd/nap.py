@@ -573,6 +573,20 @@ class Nap:
         self._execute(sql, params)
         schema_id  = self._lastrowid()
 
+        # write to audit table
+        audit_params = {
+            'schema': schema_id,
+            'schema_name': attr['name'],
+            'username': auth.username,
+            'authenticated_as': auth.authenticated_as,
+            'full_name': auth.full_name,
+            'authoritative_source': auth.authoritative_source,
+            'description': 'Added schema %s' % attr['name']
+        }
+
+        sql, params = self._sql_expand_insert(audit_params)
+        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
         return schema_id
 
 
@@ -587,10 +601,23 @@ class Nap:
 
         self._logger.debug("remove_schema called; spec: %s" % str(spec))
 
-        where, params = self._expand_schema_spec(spec)
+        schema = self._get_schema(spec)
 
-        sql = "DELETE FROM ip_net_schema WHERE %s" % where
-        self._execute(sql, params)
+        sql = "DELETE FROM ip_net_schema WHERE id = %(id)s"
+        self._execute(sql, schema)
+
+        # write to audit table
+        audit_params = {
+            'schema': schema['id'],
+            'schema_name': schema['name'],
+            'username': auth.username,
+            'authenticated_as': auth.authenticated_as,
+            'full_name': auth.full_name,
+            'authoritative_source': auth.authoritative_source,
+            'description': 'Rmoved schema %s' % str(spec)
+        }
+        sql, params = self._sql_expand_insert(audit_params)
+        self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
@@ -631,8 +658,8 @@ class Nap:
             more or less all of them needs to perform the actions that are
             specified here.
 
-            The major difference is that an exception is raised if no schema
-            matching the spec is found.
+            The major difference to :func:`list_schema` is that an exception
+            is raised if no schema matching the spec is found.
         """
 
         schema = self.list_schema(spec)
@@ -659,14 +686,28 @@ class Nap:
         allowed_attr = [ 'name', 'description', 'vrf' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
-        where, params1 = self._expand_schema_spec(spec)
-        update, params2 = self._sql_expand_update(attr)
-        params = dict(params2.items() + params1.items())
+        schema = self._get_schema(spec)
+
+        update, params = self._sql_expand_update(attr)
+        params['id'] = schema['id']
 
         sql = "UPDATE ip_net_schema SET " + update
-        sql += " WHERE " + where
+        sql += " WHERE id = %(id)s"
 
         self._execute(sql, params)
+
+        # write to audit table
+        audit_params = {
+            'schema': schema['id'],
+            'schema_name': schema['name'],
+            'username': auth.username,
+            'authenticated_as': auth.authenticated_as,
+            'full_name': auth.full_name,
+            'authoritative_source': auth.authoritative_source,
+            'description': 'Edited schema %s. attr: %s' % (str(spec), str(attr))
+        }
+        sql, params = self._sql_expand_insert(audit_params)
+        self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
@@ -1028,7 +1069,8 @@ class Nap:
         self._logger.debug("add_pool called; spec: %s" % str(attr))
 
         # populate 'schema' with correct id
-        attr['schema'] = self._get_schema(schema_spec)['id']
+        schema = self._get_schema(schema_spec)
+        attr['schema'] = schema['id']
 
         # sanity check - do we have all attributes?
         req_attr = ['name', 'schema', 'description', 'default_type']
@@ -1040,6 +1082,21 @@ class Nap:
 
         self._execute(sql, params)
         pool_id = self._lastrowid()
+
+        # write to audit table
+        audit_params = {
+            'schema': schema['id'],
+            'schema_name': schema['name'],
+            'pool': pool_id,
+            'pool_name': attr['name'],
+            'username': auth.username,
+            'authenticated_as': auth.authenticated_as,
+            'full_name': auth.full_name,
+            'authoritative_source': auth.authoritative_source,
+            'description': 'Added pool %s with attr: %s.' % (attr['name'], str(attr))
+        }
+        sql, params = self._sql_expand_insert(audit_params)
+        self._execute('INSERT INTO ip_net_log %s' % sql, params)
         return pool_id
 
 
@@ -1056,12 +1113,28 @@ class Nap:
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
 
         # populate 'schema' with correct id
-        spec['schema'] = self._get_schema(schema_spec)['id']
+        schema = self._get_schema(schema_spec)
 
-        where, params = self._expand_pool_spec(spec)
+        pool = self._get_pool(schema, spec)
 
-        sql = "DELETE FROM ip_net_pool AS po WHERE %s" % where
-        self._execute(sql, params)
+        sql = "DELETE FROM ip_net_pool WHERE id = %(id)s"
+        self._execute(sql, pool)
+
+        # write to audit table
+        audit_params = {
+            'schema': schema['id'],
+            'schema_name': schema['name'],
+            'pool': pool['id'],
+            'pool_name': pool['name'],
+            'username': auth.username,
+            'authenticated_as': auth.authenticated_as,
+            'full_name': auth.full_name,
+            'authoritative_source': auth.authoritative_source,
+            'description': 'Removed pool %s.' % pool['name']
+        }
+        sql, params = self._sql_expand_insert(audit_params)
+        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
 
 
 
@@ -1114,6 +1187,24 @@ class Nap:
 
 
 
+    def _get_pool(self, schema_spec, spec):
+        """ Get a pool.
+
+            Shorthand function to reduce code in the functions below, since
+            more or less all of them needs to perform the actions that are
+            specified here.
+
+            The major difference to :func:`list_pool` is that an exception
+            is raised if no schema matching the spec is found.
+        """
+
+        pool = self.list_pool(schema_spec, spec)
+        if len(pool) == 0:
+            raise NapInputError("non-existing pool specified")
+        return pool[0]
+
+
+
     def edit_pool(self, auth, schema_spec, spec, attr):
         """ Update pool given by `spec` with attributes `attr`.
 
@@ -1141,16 +1232,33 @@ class Nap:
         self._check_attr(attr, [], allowed_attr)
 
         # populate 'schema' with correct id
-        spec['schema'] = self._get_schema(schema_spec)['id']
+        schema = self._get_schema(schema_spec)
+        spec['schema'] = schema['id']
 
-        where, params1 = self._expand_pool_spec(spec)
-        update, params2 = self._sql_expand_update(attr)
-        params = dict(params2.items() + params1.items())
+        pool = self._get_pool(schema, spec)
+
+        update, params = self._sql_expand_update(attr)
+        params['id'] = pool['id']
 
         sql = "UPDATE ip_net_pool SET " + update
-        sql += " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND " + where
+        sql += " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND po.id = %(id)s"
 
         self._execute(sql, params)
+
+        # write to audit table
+        audit_params = {
+            'schema': schema['id'],
+            'schema_name': schema['name'],
+            'pool': pool['id'],
+            'pool_name': pool['name'],
+            'username': auth.username,
+            'authenticated_as': auth.authenticated_as,
+            'full_name': auth.full_name,
+            'authoritative_source': auth.authoritative_source,
+            'description': 'Edited pool %s. attr: %s' % (pool['name'], str(attr))
+        }
+        sql, params = self._sql_expand_insert(audit_params)
+        self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
@@ -1551,7 +1659,7 @@ class Nap:
         else:
             if ('from-pool' not in args and 'from-prefix' not in args) or ('from-pool' in args and 'from-prefix' in args):
                 raise NapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
-            res = self.find_free_prefix(schema_spec, args)
+            res = self.find_free_prefix(auth, schema_spec, args)
             if res != []:
                 attr['prefix'] = res[0]
             else:
