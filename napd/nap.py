@@ -581,7 +581,7 @@ class Nap:
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added schema %s' % attr['name']
+            'description': 'Added schema %s with attr: %s' % (attr['name'], str(attr))
         }
 
         sql, params = self._sql_expand_insert(audit_params)
@@ -601,23 +601,24 @@ class Nap:
 
         self._logger.debug("remove_schema called; spec: %s" % str(spec))
 
-        schema = self._get_schema(spec)
-
-        sql = "DELETE FROM ip_net_schema WHERE id = %(id)s"
-        self._execute(sql, schema)
+        schemas = self.list_schema(spec)
+        where, params = self._expand_schema_spec(spec)
+        sql = "DELETE FROM ip_net_schema WHERE %s" % where
+        self._execute(sql, params)
 
         # write to audit table
-        audit_params = {
-            'schema': schema['id'],
-            'schema_name': schema['name'],
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'description': 'Rmoved schema %s' % str(spec)
-        }
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+        for s in schemas:
+            audit_params = {
+                'schema': s['id'],
+                'schema_name': s['name'],
+                'username': auth.username,
+                'authenticated_as': auth.authenticated_as,
+                'full_name': auth.full_name,
+                'authoritative_source': auth.authoritative_source,
+                'description': 'Removed schema %s' % s['name']
+            }
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
@@ -686,28 +687,32 @@ class Nap:
         allowed_attr = [ 'name', 'description', 'vrf' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
-        schema = self._get_schema(spec)
+        schemas = self.list_schema(spec)
 
-        update, params = self._sql_expand_update(attr)
-        params['id'] = schema['id']
+        where, params1 = self._expand_schema_spec(spec)
+        update, params2 = self._sql_expand_update(attr)
+        params = dict(params2.items() + params1.items())
 
         sql = "UPDATE ip_net_schema SET " + update
-        sql += " WHERE id = %(id)s"
+        sql += " WHERE " + where
+
+        self._logger.debug("ASDF :: %s :: %s" % (sql, str(params)))
 
         self._execute(sql, params)
 
         # write to audit table
-        audit_params = {
-            'schema': schema['id'],
-            'schema_name': schema['name'],
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'description': 'Edited schema %s. attr: %s' % (str(spec), str(attr))
-        }
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+        for s in schemas:
+            audit_params = {
+                'schema': s['id'],
+                'schema_name': s['name'],
+                'username': auth.username,
+                'authenticated_as': auth.authenticated_as,
+                'full_name': auth.full_name,
+                'authoritative_source': auth.authoritative_source,
+                'description': 'Edited schema %s attr: %s' % (s['name'], str(attr))
+            }
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
@@ -1093,7 +1098,7 @@ class Nap:
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added pool %s with attr: %s.' % (attr['name'], str(attr))
+            'description': 'Added pool %s with attr: %s' % (attr['name'], str(attr))
         }
         sql, params = self._sql_expand_insert(audit_params)
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -1115,26 +1120,28 @@ class Nap:
         # populate 'schema' with correct id
         schema = self._get_schema(schema_spec)
 
-        pool = self._get_pool(schema, spec)
+        pools = self.list_pool(auth, schema, spec)
 
-        sql = "DELETE FROM ip_net_pool WHERE id = %(id)s"
-        self._execute(sql, pool)
+        where, params = self._expand_pool_spec(spec)
+        sql = "DELETE FROM ip_net_pool AS po WHERE %s" % where
+        self._execute(sql, params)
 
         # write to audit table
         audit_params = {
             'schema': schema['id'],
             'schema_name': schema['name'],
-            'pool': pool['id'],
-            'pool_name': pool['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Removed pool %s.' % pool['name']
         }
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+        for p in pools:
+            audit_params['pool'] = p['id'],
+            audit_params['pool_name'] = p['name'],
+            audit_params['description'] = 'Removed pool %s' % p['name']
 
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
@@ -1233,15 +1240,15 @@ class Nap:
 
         # populate 'schema' with correct id
         schema = self._get_schema(schema_spec)
+        pools = self.list_pool(schema, spec)
+
         spec['schema'] = schema['id']
-
-        pool = self._get_pool(schema, spec)
-
-        update, params = self._sql_expand_update(attr)
-        params['id'] = pool['id']
+        where, params1 = self._expand_pool_spec(spec)
+        update, params2 = self._sql_expand_update(attr)
+        params = dict(params2.items() + params1.items())
 
         sql = "UPDATE ip_net_pool SET " + update
-        sql += " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND po.id = %(id)s"
+        sql += " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND " + where
 
         self._execute(sql, params)
 
@@ -1249,16 +1256,18 @@ class Nap:
         audit_params = {
             'schema': schema['id'],
             'schema_name': schema['name'],
-            'pool': pool['id'],
-            'pool_name': pool['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'description': 'Edited pool %s. attr: %s' % (pool['name'], str(attr))
+            'authoritative_source': auth.authoritative_source
         }
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+        for p in pools:
+            audit_params['pool'] = p['id']
+            audit_params['pool_name'] = p['name']
+            audit_params['description'] = 'Edited pool %s attr: %s' % (p['name'], str(attr))
+
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
@@ -1650,7 +1659,9 @@ class Nap:
         self._logger.debug("add_prefix called; attr: %s; args: %s" % (str(attr), str(args)))
 
         # populate 'schema' with correct id
-        attr['schema'] = self._get_schema(schema_spec)['id']
+        schema = self._get_schema(schema_spec)
+        attr['schema'] = schema['id']
+        attr['authoritative_source'] = auth.authoritative_source
 
         # sanity checks
         if 'prefix' in attr:
@@ -1666,8 +1677,16 @@ class Nap:
                 # TODO: Raise other exception?
                 raise NapNonExistentError("no free prefix found")
 
+        pool = None
         if 'pool_id' in attr or 'pool_name' in attr:
-            attr = self._translate_pool_spec(schema_spec, attr)
+            if 'pool_id' in attr:
+                pool = self._get_pool(schema, { 'id': attr['pool_id'] })
+                del(attr['pool_id'])
+            else:
+                pool = self._get_pool(schema, { 'name': attr['pool_name'] })
+                del(attr['pool_name'])
+
+            attr['pool'] = pool['id']
 
         # do we have all attributes?
         req_attr = [ 'prefix', 'schema', 'authoritative_source' ]
@@ -1684,6 +1703,36 @@ class Nap:
 
         self._execute(sql, params)
         prefix_id = self._lastrowid()
+
+        # write to audit table
+        audit_params = {
+            'schema': schema['id'],
+            'schema_name': schema['name'],
+            'prefix': prefix_id,
+            'prefix_prefix': attr['prefix'],
+            'username': auth.username,
+            'authenticated_as': auth.authenticated_as,
+            'full_name': auth.full_name,
+            'authoritative_source': auth.authoritative_source,
+            'description': 'Added prefix %s with attr: %s' % (attr['prefix'], str(attr))
+        }
+        sql, params = self._sql_expand_insert(audit_params)
+        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
+        if pool is not None:
+            audit_params = {
+                'schema': schema['id'],
+                'schema_name': schema['name'],
+                'pool': pool['id'],
+                'pool_name': pool['name'],
+                'prefix': prefix_id,
+                'prefix_prefix': attr['prefix'],
+                'username': auth.username,
+                'authenticated_as': auth.authenticated_as,
+                'full_name': auth.full_name,
+                'authoritative_source': auth.authoritative_source,
+                'description': 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
+            }
 
         return prefix_id
 
@@ -1705,6 +1754,8 @@ class Nap:
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
 
+        attr['authoritative_source'] = auth.authoritative_source
+
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool', 'node', 'type', 'country',
@@ -1712,8 +1763,10 @@ class Nap:
 
         self._check_attr(attr, [], allowed_attr)
 
-        spec['schema'] = self._get_schema(schema_spec)['id']
+        schema = self._get_schema(schema_spec)
+        spec['schema'] = schema['id']
 
+        prefixes = self.list_prefix(auth, schema_spec, spec)
         where, params1 = self._expand_prefix_spec(spec)
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())
@@ -1721,6 +1774,55 @@ class Nap:
         sql = "UPDATE ip_net_plan SET " + update + " WHERE " + where
 
         self._execute(sql, params)
+
+        # write to audit table
+        audit_params = {
+            'schema': schema['id'],
+            'schema_name': schema['name'],
+            'username': auth.username,
+            'authenticated_as': auth.authenticated_as,
+            'full_name': auth.full_name,
+            'authoritative_source': auth.authoritative_source
+        }
+
+        pool_id = attr.get('pool')
+        if pool_id is not None:
+            pool = self._get_pool(schema_spec, { 'id': pool_id })
+        else:
+            pool = {
+                'id': None,
+                'name': None
+            }
+
+        for p in prefixes:
+            audit_params['prefix'] = p['id']
+            audit_params['prefix_prefix'] = p['prefix']
+            audit_params['description'] = 'Edited prefix %s attr: %s' % (p['prefix'], str(attr))
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
+            # If pool is set, we might need to add log entry regarding the pool expansion also.
+            if 'pool' in attr:
+
+                # Only add to log if something was changed
+                if p['pool'] == pool['id']:
+                    continue
+
+                audit_params2 = {
+                    'schema': schema['id'],
+                    'schema_name': schema['name'],
+                    'prefix': p['id'],
+                    'prefix_prefix': p['prefix'],
+                    'pool': pool['id'],
+                    'pool_name': pool['name'],
+                    'username': auth.username,
+                    'authenticated_as': auth.authenticated_as,
+                    'full_name': auth.full_name,
+                    'authoritative_source': auth.authoritative_source,
+                    'description': 'Expanded pool %s with prefix %s' % (pool['name'], p['prefix'])
+                }
+                sql, params = self._sql_expand_insert(audit_params2)
+                self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
@@ -1927,10 +2029,45 @@ class Nap:
 
         self._logger.debug("remove_prefix called; spec: %s" % str(spec))
 
-        spec['schema'] = self._get_schema(schema_spec)['id']
+        schema = self._get_schema(schema_spec)
+        spec['schema'] = schema['id']
+        prefixes = self.list_prefix(auth, schema_spec, spec)
         where, params = self._expand_prefix_spec(spec)
         sql = "DELETE FROM ip_net_plan AS p WHERE %s" % where
         self._execute(sql, params)
+
+        # write to audit table
+        audit_params = {
+            'schema': schema['id'],
+            'schema_name': schema['name'],
+            'username': auth.username,
+            'authenticated_as': auth.authenticated_as,
+            'full_name': auth.full_name,
+            'authoritative_source': auth.authoritative_source
+        }
+        for p in prefixes:
+            audit_params['prefix'] = p['id']
+            audit_params['prefix_prefix'] = p['prefix']
+            audit_params['description'] = 'Removed prefix %s' % p['prefix']
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
+            if p['pool'] is not None:
+                pool = self._get_pool(schema_spec, { 'id': p['pool'] })
+                audit_params2 = {
+                    'schema': schema['id'],
+                    'schema_name': schema['name'],
+                    'pool': pool['id'],
+                    'pool_name': pool['name'],
+                    'prefix': p['id'],
+                    'prefix_prefix': p['prefix'],
+                    'username': auth.username,
+                    'authenticated_as': auth.authenticated_as,
+                    'full_name': auth.full_name,
+                    'authoritative_source': auth.authoritative_source
+                }
+                sql, params = self._sql_expand_insert(audit_params2)
+                self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
@@ -2392,7 +2529,7 @@ class Nap:
 
         self._logger.debug("Expanded to: %s" % str(query))
 
-        search_result = self.search_prefix(schema_spec, query, search_options)
+        search_result = self.search_prefix(auth, schema_spec, query, search_options)
         search_result['interpretation'] = query_str_parts
 
         return search_result
