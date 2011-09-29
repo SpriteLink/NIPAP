@@ -5,9 +5,13 @@ import re
 
 import sys
 sys.path.append('../nap-www')
-from napwww.model.napmodel import Schema, Pool, Prefix, NapNonExistentError, NapDuplicateError, NapValueError
+from napwww.model.napmodel import AuthOptions, Schema, Pool, Prefix, NapNonExistentError, NapDuplicateError, NapValueError
 
 import logging
+
+o = AuthOptions({
+    'authoritative_source': 'nipap'
+})
 
 
 class CommentLine(Exception):
