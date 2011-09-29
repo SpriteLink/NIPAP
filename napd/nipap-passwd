@@ -1,0 +1,45 @@
+#! /usr/bin/python
+#
+# Manages NIPAP LocalAuth authentication database
+#
+
+import sys
+import auth
+import optparse
+
+if __name__ == '__main__':
+
+    # parse options
+    parser = optparse.OptionParser()
+    parser.add_option('-a', '--add', dest='add_user', type='string')
+    parser.add_option('-d', '--delete', dest='delete_user', type='string')
+#    parser.add_option('-m', '--modify', dest='modify_user', type='string')
+    parser.add_option('-p', '--password', dest='password', type='string')
+    parser.add_option('-l', '--list', action='store_true', dest='list')
+    parser.add_option('-t', '--trusted', action='store_true', dest='trusted', default=False)
+    parser.add_option('-n', '--name', dest='name', type='string')
+    options, args = parser.parse_args()
+
+    a = auth.LocalAuth('a', 'b', 'c')
+
+    if options.list:
+        # print a nicely formatted list of users
+        header =  " %-20s %-25s %-7s" % ('username', 'real name', 'trusted')
+        print "%s\n%s" % (header,''.join('-' for x in range(len(header))))
+        for u in a.list_users():
+            print "%-20s %-25s %-7d" % (u['username'], u['full_name'], int(u['trusted']))
+
+    if options.add_user:
+        if not options.password:
+            print "Please specify password with --password"
+            sys.exit(1)
+        if not options.name:
+            print "Please specify name with --name"
+            sys.exit(1)
+
+        a.add_user(options.add_user, options.password, options.name, options.trusted)
+        print "Added user %s" % options.add_user
+
+    if options.delete_user:
+        a.remove_user(options.delete_user)
+        print "User %s deleted" % options.delete_user
