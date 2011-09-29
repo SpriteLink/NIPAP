@@ -60,7 +60,7 @@ class NapProtocol(xmlrpc.XMLRPC):
         if type(nap_args) == dict:
             auth_options = nap_args.get('auth')
 
-        auth = AuthFactory.get_auth(request.getUser(), request.getPassword(), auth_options or {})
+        auth = AuthFactory.get_auth(request.getUser(), request.getPassword(), auth_options.get('authoritative_source'), auth_options or {})
 
         if not auth.authenticate():
             request.setResponseCode(http.UNAUTHORIZED)

@@ -8,7 +8,7 @@ from auth import LocalAuth, AuthError
 class AuthFactory:
     
     @classmethod
-    def get_auth(cls, username, password, auth_options):
+    def get_auth(cls, username, password, authoritative_source, auth_options):
         """ Returns an authentication object.
     
             Examines the auth backend given after the '@' in the username and
@@ -19,11 +19,11 @@ class AuthFactory:
     
         # If no auth backend was specified, use default
         if len(user_authbackend) == 1:
-            return LocalAuth(user_authbackend[0], password, auth_options)
+            return LocalAuth(user_authbackend[0], password, authoritative_source, auth_options)
     
         # static => LocalAuth
         if user_authbackend[1] == 'local':
-            return LocalAuth(user_authbackend[0], password, auth_options)
+            return LocalAuth(user_authbackend[0], password, authoritative_source, auth_options)
         else:
             raise AuthError('Invalid auth backend %s specified' %
                 str(user_authbackend[1]))
