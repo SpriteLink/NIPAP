@@ -47,7 +47,7 @@
             <div class="menu_entry" style="position: absolute; left: 43%; padding-top: 0px;">
                 <ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
                 {% if c['schema'] is defined %}
-                <li style="display: inline-block; padding: 0; margin: 0;" >
+                <li style="display: inline-block; padding: 0; margin: 0;">
                 <a href="{{ h.url(controller = 'prefix', action = 'list', schema = c.schema.id) }}" class="menu_link {% if page == 'prefixes' -%}menu_link_active{%- endif -%}">prefixes</a>
                     </li>
                     <li style="display: inline-block;">
@@ -56,8 +56,12 @@
                 {% endif %}
                 </ol>
             </div>
-            <div class="menu_entry" style="position: absolute; right: 10%;">
-                <a href="{{ url(controller='auth', action='logout') }}" class="schema_title">Log out</a>
+            <div class="menu_entry" style="position: absolute; right: 30px; padding-top: 0px;">
+                <ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
+                    <li style="display: inline-block; padding: 0; margin: 0;">
+                        <a href="{{ url(controller='auth', action='logout') }}" class="menu_link">Log out</a>
+                    </li>
+                </ol>
             </div>
         </div>
         {% block menu %}

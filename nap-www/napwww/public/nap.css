@@ -247,6 +247,7 @@ input[name="search_button"] {
 }
 input[type="submit"] {
     line-height: 0;
+    border: none;
 }
 
 .button:hover {
@@ -354,7 +355,7 @@ input[type="submit"] {
     width: 70%;
 }
 
-.option input,textarea {
+.option input[type="text"],input[type="password"],textarea {
     border: 1px solid #999999;
 }
 
