@@ -28,7 +28,6 @@ class AuthController(BaseController):
             return render('login.html')
 
         # Verify username and password.
-        log.error(dir(AuthFactory))
         a = AuthFactory.get_auth(request.params.get('username'), request.params.get('password'), 'nipap')
         if not a.authenticate():
             c.error = 'Invalid username or password'

@@ -34,7 +34,6 @@ class BaseController(WSGIController):
 
         # verify that user is logged in
         if self.requires_auth and 'user' not in session:
-            log.error(self.requires_auth)
             # save path
             session['path_before_login'] = request.path_info
             session.save()

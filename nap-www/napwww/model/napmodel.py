@@ -33,7 +33,7 @@ class XMLRPCConnection:
     _logger = None
 
 
-    def __init__(self, url = "http://web_ui:PngeOJctzUyM@127.0.0.1:1337"):
+    def __init__(self, url = "http://web_ui@local:PngeOJctzUyM@127.0.0.1:1337"):
         """ Create XML-RPC connection to url.
 
             If an earlier created instance exists, url
