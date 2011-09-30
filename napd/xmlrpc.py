@@ -12,7 +12,7 @@ import logging
 import xmlrpclib
 
 import nap
-from auth import AuthFactory
+from authlib import AuthFactory
 
 
 class NapXMLRPC:

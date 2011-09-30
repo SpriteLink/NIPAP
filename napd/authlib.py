@@ -149,11 +149,9 @@ class LdapAuth(BaseAuth):
 
         try:
             res = self.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, 'uid=' + self.username, ['cn']);
+            self.full_name = res[0][1]['cn'][0]
         except:
             self.full_name = ''
-        else:
-            # TODO: fix this!
-            self.full_name = 'fixme'
 
         self._logger.debug('successfully authenticated as %s, username %s' % (self.authenticated_as, self.username))
         return self._authenticated

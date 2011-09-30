@@ -2,14 +2,14 @@ import logging
 import sys
 import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) + '/napd')
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from napwww.lib.base import BaseController, render
 
-from napd.auth import AuthFactory, AuthError
+from authlib import AuthFactory, AuthError
 
 log = logging.getLogger(__name__)
 
