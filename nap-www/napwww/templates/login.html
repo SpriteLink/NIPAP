@@ -33,4 +33,17 @@
 </div>
 {{ h.end_form() }}
 
+{% if c.error %}
+<div id="login_failure_container">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Result</h3>
+			<div id="schema_success_bg" style="padding: 15px; background-color: #ffcccc;">
+				{{ c.error }}
+			</div>
+		</div>
+	</div>
+</div>
+{% endif %}
+
 {% endblock %}

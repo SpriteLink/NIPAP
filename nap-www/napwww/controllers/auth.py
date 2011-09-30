@@ -1,9 +1,15 @@
 import logging
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from napwww.lib.base import BaseController, render
+
+from napd.auth import AuthFactory, AuthError
 
 log = logging.getLogger(__name__)
 
@@ -22,12 +28,15 @@ class AuthController(BaseController):
             return render('login.html')
 
         # Verify username and password.
-        if not (request.params.get('username') == 'test' and request.params.get('password') == 'test'):
+        log.error(dir(AuthFactory))
+        a = AuthFactory.get_auth(request.params.get('username'), request.params.get('password'), 'nipap')
+        if not a.authenticate():
             c.error = 'Invalid username or password'
             return render('login.html')
 
         # Mark user as logged in
-        session['user'] = request.params.get('username')
+        session['user'] = a.username
+        session['full_name'] = a.full_name
         session.save()
 
         # Send user back to the page he originally wanted to get to
