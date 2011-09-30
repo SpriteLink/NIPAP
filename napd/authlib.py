@@ -148,7 +148,7 @@ class LdapAuth(BaseAuth):
         self.trusted = False
 
         try:
-            res = self.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, 'uid=' + self.username, ['cn']);
+            res = self._ldap_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, 'uid=' + self.username, ['cn']);
             self.full_name = res[0][1]['cn'][0]
         except:
             self.full_name = ''
