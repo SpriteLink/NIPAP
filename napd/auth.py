@@ -11,6 +11,35 @@ import string
 import hashlib
 import random
 
+
+
+class AuthFactory:
+    """ An factory for authentication backends.
+    """
+    
+    @classmethod
+    def get_auth(cls, username, password, authoritative_source, auth_options):
+        """ Returns an authentication object.
+    
+            Examines the auth backend given after the '@' in the username and
+            returns a suitable instance of a subclass of the BaseAuth class.
+        """
+    
+        user_authbackend = username.rsplit('@', 1);
+    
+        # If no auth backend was specified, use default
+        if len(user_authbackend) == 1:
+            return LocalAuth(user_authbackend[0], password, authoritative_source, auth_options)
+    
+        # local => LocalAuth
+        if user_authbackend[1] == 'local':
+            return LocalAuth(user_authbackend[0], password, authoritative_source, auth_options)
+        else:
+            raise AuthError('Invalid auth backend %s specified' %
+                str(user_authbackend[1]))
+
+
+
 class BaseAuth:
     """ A base authentication class.
         
