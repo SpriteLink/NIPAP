@@ -3,31 +3,33 @@
 {% block content %}
 
 {{ h.form(url(controller='auth', action='login'), method='post') }}
-<div class="options-group" style="passing: 30px;">
-    <div class="options-content">
-        <div class="options-group-heading">
-            Log in
-        </div>
-        <div class="rule"></div>
-        <div class="option">
-            <dl>
-                <dt>Username</dt>
-                <dd>{{ h.text('username') }}</dd>
-            </dl>
-        </div>
-        <div class="rule"></div>
-        <div class="option">
-            <dl>
-                <dt>Password</dt>
-                <dd>{{ h.password('password') }}</dd>
-            </dl>
-        </div>
-        <div class="rule"></div>
-        <div class="option">
-            <dl>
-                <dt></dt>
-                <dd>{{ h.submit('send', 'Log in', class='button button_red') }}</dd>
-            </dl>
+<div style="padding-top: 30px;">
+    <div class="options-group">
+        <div class="options-content">
+            <div class="options-group-heading">
+                Log in
+            </div>
+            <div class="rule"></div>
+            <div class="option">
+                <dl>
+                    <dt>Username</dt>
+                    <dd>{{ h.text('username') }}</dd>
+                </dl>
+            </div>
+            <div class="rule"></div>
+            <div class="option">
+                <dl>
+                    <dt>Password</dt>
+                    <dd>{{ h.password('password') }}</dd>
+                </dl>
+            </div>
+            <div class="rule"></div>
+            <div class="option">
+                <dl>
+                    <dt></dt>
+                    <dd>{{ h.submit('send', 'Log in', class='button button_red') }}</dd>
+                </dl>
+            </div>
         </div>
     </div>
 </div>
