@@ -12,7 +12,7 @@ import logging
 import xmlrpclib
 
 import nap
-from authfactory import AuthFactory
+from auth import AuthFactory
 
 
 class NapXMLRPC:
@@ -65,7 +65,13 @@ class NapProtocol(xmlrpc.XMLRPC):
         if not auth.authenticate():
             request.setResponseCode(http.UNAUTHORIZED)
             return "Authentication failed."
-        args[0]['auth'] = auth
+        # this will throw an error later on - don't worry
+        try:
+            args[0]['auth'] = auth
+        except:
+            pass
+
+        # TODO: handle wrong number of arguments - should just be one
 
         # Authentication done
         try:

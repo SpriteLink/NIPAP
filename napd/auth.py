@@ -5,8 +5,9 @@
 
 import logging
 
-# User by LocalAuth
+# Used by SqliteAuth
 import sqlite3
+import ldap
 import string
 import hashlib
 import random
@@ -27,13 +28,14 @@ class AuthFactory:
     
         user_authbackend = username.rsplit('@', 1);
     
+        # TODO: make default backend and mapping of suffix to backend configurable
         # If no auth backend was specified, use default
         if len(user_authbackend) == 1:
-            return LocalAuth(user_authbackend[0], password, authoritative_source, auth_options)
+            return LdapAuth(user_authbackend[0], password, authoritative_source, auth_options)
     
-        # local => LocalAuth
+        # local => SqliteAuth
         if user_authbackend[1] == 'local':
-            return LocalAuth(user_authbackend[0], password, authoritative_source, auth_options)
+            return SqliteAuth(user_authbackend[0], password, authoritative_source, auth_options)
         else:
             raise AuthError('Invalid auth backend %s specified' %
                 str(user_authbackend[1]))
@@ -92,7 +94,73 @@ class BaseAuth:
 
 
 
-class LocalAuth(BaseAuth):
+class LdapAuth(BaseAuth):
+    """ An authentication and authorization class for LDAP auth.
+    """
+
+    # TODO: clean away fuxxhaxx
+    import temphaxx
+
+    _ldap_uri = temphaxx.uri
+    _ldap_basedn = temphaxx.basedn
+    _ldap_conn = None
+    _authenticated = None
+
+    def __init__(self, username, password, authoritative_source, auth_options={}):
+        """ Constructor.
+        """
+
+        BaseAuth.__init__(self, username, password, authoritative_source, 'ldap', auth_options)
+
+        self._logger.debug('creating instance')
+
+        self._logger.debug('LDAP URI: ' + self._ldap_uri)
+        self._ldap_conn = ldap.initialize(self._ldap_uri)
+
+        # run authentication method to populate instance variables
+        self.authenticate()
+
+
+
+    def authenticate(self):
+        """ Verify authentication.
+        """
+
+        # if authentication has been performed, return last result
+        if self._authenticated is not None:
+            return self._authenticated
+
+        try:
+            self._ldap_conn.simple_bind_s('uid=' + self.username + ',' + self._ldap_basedn, self.password)
+        except ldap.SERVER_DOWN, exc:
+            self._logger.error('Could not connect to LDAP server: %s' % str(exc[0]['info']))
+            raise AuthError(str(exc[0]['info']))
+        except ldap.INVALID_CREDENTIALS, exc:
+            # Auth failed
+            self._logger.debug('erroneous password for user %s' % self.username)
+            self._authenticated = False
+            return self._authenticated
+
+
+        # auth succeeded
+        self.authenticated_as = self.username
+        self._authenticated = True
+        self.trusted = False
+
+        try:
+            res = self.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, 'uid=' + self.username, ['cn']);
+        except:
+            self.full_name = ''
+        else:
+            # TODO: fix this!
+            self.full_name = 'fixme'
+
+        self._logger.debug('successfully authenticated as %s, username %s' % (self.authenticated_as, self.username))
+        return self._authenticated
+
+
+
+class SqliteAuth(BaseAuth):
     """ An authentication and authorization class for local auth.
     """
 
@@ -207,7 +275,7 @@ class LocalAuth(BaseAuth):
 
 
     def add_user(self, username, password, full_name=None, trusted=False):
-        """ Add user to LocalAuth database.
+        """ Add user to SQLite database.
         """
 
         # generate salt
@@ -226,7 +294,7 @@ class LocalAuth(BaseAuth):
 
 
     def remove_user(self, username):
-        """ Remove user from the LocalAuth database.
+        """ Remove user from the SQLite database.
         """
 
         sql = '''DELETE FROM user WHERE username = ?'''
