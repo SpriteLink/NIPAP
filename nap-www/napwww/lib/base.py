@@ -27,6 +27,7 @@ class BaseController(WSGIController):
         o = AuthOptions(
             {
                 'username': session.get('user'),
+                'full_name': session.get('full_name'),
                 'authoritative_source': 'nipap'
             })
 

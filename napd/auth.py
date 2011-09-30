@@ -19,7 +19,7 @@ class AuthFactory:
     """
     
     @classmethod
-    def get_auth(cls, username, password, authoritative_source, auth_options):
+    def get_auth(cls, username, password, authoritative_source, auth_options={}):
         """ Returns an authentication object.
     
             Examines the auth backend given after the '@' in the username and
@@ -269,7 +269,7 @@ class SqliteAuth(BaseAuth):
         else:
             self.full_name = user['full_name']
 
-        self._logger.debug('successfully authenticated as %s, username %s' % (self.authenticated_as, self.username))
+        self._logger.debug('successfully authenticated as %s, username %s, full_name %s' % (self.authenticated_as, self.username, self.full_name))
         return self._authenticated
 
 
