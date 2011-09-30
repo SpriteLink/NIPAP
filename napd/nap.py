@@ -652,7 +652,7 @@ class Nap:
 
 
 
-    def _get_schema(self, spec):
+    def _get_schema(self, auth, spec):
         """ Get a schema.
 
             Shorthand function to reduce code in the functions below, since
@@ -663,7 +663,7 @@ class Nap:
             is raised if no schema matching the spec is found.
         """
 
-        schema = self.list_schema(spec)
+        schema = self.list_schema(auth, spec)
         if len(schema) == 0:
             raise NapInputError("non-existing schema specified")
         return schema[0]
@@ -687,7 +687,7 @@ class Nap:
         allowed_attr = [ 'name', 'description', 'vrf' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
-        schemas = self.list_schema(spec)
+        schemas = self.list_schema(auth, spec)
 
         where, params1 = self._expand_schema_spec(spec)
         update, params2 = self._sql_expand_update(attr)
@@ -967,38 +967,6 @@ class Nap:
 
 
 
-    def _translate_pool_spec(self, schema_spec, spec):
-        """ Expand 'pool_name' or 'pool_id'.
-
-            Translates 'pool_name' or 'pool_id' element in spec
-            to a 'pool' element containing the pool ID.
-        """
-
-        if 'pool_id' in spec and 'pool_name' in spec:
-            raise NapExtraneousInputError("specification contain both 'id' and 'name', specify pool id or name")
-
-        if 'pool_id' in spec:
-            pool = self.list_pool(schema_spec, { 'id': spec['pool_id'] })
-            if pool == []:
-                raise NapInputError("non-existing pool specified")
-            spec['pool'] = pool[0]['id']
-            del(spec['pool_id'])
-        elif 'pool_name' in spec:
-            if 'schema' not in spec:
-                raise NapMissingInputError("schema needs to be specified together with 'pool_name'")
-
-            pool = self.list_pool(schema_spec, { 'name': spec['pool_name'] })
-            if pool == []:
-                raise NapInputError("non-existing pool specified")
-            spec['pool'] = pool[0]['id']
-            del(spec['pool_name'])
-        else:
-            raise NapInputError("Missing pool, add pool_id or pool_name to spec!")
-
-        return spec
-
-
-
     def _expand_pool_query(self, query, table_name = None):
         """ Expand pool query dict into a WHERE-clause.
 
@@ -1074,7 +1042,7 @@ class Nap:
         self._logger.debug("add_pool called; spec: %s" % str(attr))
 
         # populate 'schema' with correct id
-        schema = self._get_schema(schema_spec)
+        schema = self._get_schema(auth, schema_spec)
         attr['schema'] = schema['id']
 
         # sanity check - do we have all attributes?
@@ -1118,9 +1086,9 @@ class Nap:
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
 
         # populate 'schema' with correct id
-        schema = self._get_schema(schema_spec)
+        schema = self._get_schema(auth, schema_spec)
 
-        pools = self.list_pool(auth, schema, spec)
+        pools = self.list_pool(auth, schema_spec, spec)
 
         where, params = self._expand_pool_spec(spec)
         sql = "DELETE FROM ip_net_pool AS po WHERE %s" % where
@@ -1170,7 +1138,7 @@ class Nap:
         params = list()
 
         # populate 'schema' with correct id
-        spec['schema'] = self._get_schema(schema_spec)['id']
+        spec['schema'] = self._get_schema(auth, schema_spec)['id']
 
         # expand spec
         where, params = self._expand_pool_spec(spec)
@@ -1194,7 +1162,7 @@ class Nap:
 
 
 
-    def _get_pool(self, schema_spec, spec):
+    def _get_pool(self, auth, schema_spec, spec):
         """ Get a pool.
 
             Shorthand function to reduce code in the functions below, since
@@ -1205,7 +1173,7 @@ class Nap:
             is raised if no schema matching the spec is found.
         """
 
-        pool = self.list_pool(schema_spec, spec)
+        pool = self.list_pool(auth, schema_spec, spec)
         if len(pool) == 0:
             raise NapInputError("non-existing pool specified")
         return pool[0]
@@ -1239,8 +1207,8 @@ class Nap:
         self._check_attr(attr, [], allowed_attr)
 
         # populate 'schema' with correct id
-        schema = self._get_schema(schema_spec)
-        pools = self.list_pool(schema, spec)
+        schema = self._get_schema(auth, schema_spec)
+        pools = self.list_pool(auth, schema_spec, spec)
 
         spec['schema'] = schema['id']
         where, params1 = self._expand_pool_spec(spec)
@@ -1354,7 +1322,7 @@ class Nap:
         """
 
         # Add schema to query part list
-        schema = self._get_schema(schema_spec)
+        schema = self._get_schema(auth, schema_spec)
         schema_q = {
             'operator': 'equals',
             'val1': 'schema',
@@ -1498,7 +1466,7 @@ class Nap:
 
         self._logger.debug("Expanded to: %s" % str(query))
 
-        search_result = self.search_pool(schema_spec, query, search_options)
+        search_result = self.search_pool(auth, schema_spec, query, search_options)
         search_result['interpretation'] = query_str_parts
 
         return search_result
@@ -1659,7 +1627,7 @@ class Nap:
         self._logger.debug("add_prefix called; attr: %s; args: %s" % (str(attr), str(args)))
 
         # populate 'schema' with correct id
-        schema = self._get_schema(schema_spec)
+        schema = self._get_schema(auth, schema_spec)
         attr['schema'] = schema['id']
         attr['authoritative_source'] = auth.authoritative_source
 
@@ -1680,10 +1648,10 @@ class Nap:
         pool = None
         if 'pool_id' in attr or 'pool_name' in attr:
             if 'pool_id' in attr:
-                pool = self._get_pool(schema, { 'id': attr['pool_id'] })
+                pool = self._get_pool(auth, schema_spec, { 'id': attr['pool_id'] })
                 del(attr['pool_id'])
             else:
-                pool = self._get_pool(schema, { 'name': attr['pool_name'] })
+                pool = self._get_pool(auth, schema_spec, { 'name': attr['pool_name'] })
                 del(attr['pool_name'])
 
             attr['pool'] = pool['id']
@@ -1763,7 +1731,7 @@ class Nap:
 
         self._check_attr(attr, [], allowed_attr)
 
-        schema = self._get_schema(schema_spec)
+        schema = self._get_schema(auth, schema_spec)
         spec['schema'] = schema['id']
 
         prefixes = self.list_prefix(auth, schema_spec, spec)
@@ -1787,7 +1755,7 @@ class Nap:
 
         pool_id = attr.get('pool')
         if pool_id is not None:
-            pool = self._get_pool(schema_spec, { 'id': pool_id })
+            pool = self._get_pool(auth, schema_spec, { 'id': pool_id })
         else:
             pool = {
                 'id': None,
@@ -1881,7 +1849,7 @@ class Nap:
         if type(args) is not dict:
             raise NapInputError("invalid input, please provide dict as args")
 
-        args['schema'] = self._get_schema(schema_spec)['id']
+        args['schema'] = self._get_schema(auth, schema_spec)['id']
 
         # TODO: find good default value for max_num
         # TODO: let max_num be configurable from configuration file
@@ -1915,7 +1883,7 @@ class Nap:
         wpl = 0
         if 'from-pool' in args:
             # extract prefixes from
-            pool_result = self.list_pool(schema_spec, args['from-pool'])
+            pool_result = self.list_pool(auth, schema_spec, args['from-pool'])
             self._logger.debug(args)
             if pool_result == []:
                 raise NapNonExistentError("Non-existent pool specified")
@@ -1999,7 +1967,7 @@ class Nap:
 
         if type(spec) is dict:
 
-            spec['schema'] = self._get_schema(schema_spec)['id']
+            spec['schema'] = self._get_schema(auth, schema_spec)['id']
 
             where, params = self._expand_prefix_spec(spec)
 
@@ -2029,7 +1997,7 @@ class Nap:
 
         self._logger.debug("remove_prefix called; spec: %s" % str(spec))
 
-        schema = self._get_schema(schema_spec)
+        schema = self._get_schema(auth, schema_spec)
         spec['schema'] = schema['id']
         prefixes = self.list_prefix(auth, schema_spec, spec)
         where, params = self._expand_prefix_spec(spec)
@@ -2053,7 +2021,7 @@ class Nap:
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
             if p['pool'] is not None:
-                pool = self._get_pool(schema_spec, { 'id': p['pool'] })
+                pool = self._get_pool(auth, schema_spec, { 'id': p['pool'] })
                 audit_params2 = {
                     'schema': schema['id'],
                     'schema_name': schema['name'],
@@ -2178,7 +2146,7 @@ class Nap:
         """
 
         # Add schema to query part list
-        schema = self._get_schema(schema_spec)
+        schema = self._get_schema(auth, schema_spec)
         schema_q = {
             'operator': 'equals',
             'val1': 'schema',

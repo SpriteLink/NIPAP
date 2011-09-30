@@ -20,8 +20,6 @@ class NapTest(unittest.TestCase):
 
     logger = logging.getLogger()
     nap = nap.Nap()
-    auth_username = 'unittest'
-    auth_password = 'unittest'
 
 
 
@@ -29,12 +27,12 @@ class NapTest(unittest.TestCase):
         """ Better start from a clean slate!
         """
 
-        # create user for authentication
-        # when we are sure the user exists, create new auth object
-        self.auth = auth.LocalAuth(self.auth_username, self.auth_password, 'unittest')
-        self.auth.remove_user(self.auth_username)
-        self.auth.add_user(self.auth_username, self.auth_password, full_name='NIPAP unit test', trusted=True)
-        self.auth = auth.LocalAuth(self.auth_username, self.auth_password, 'unittest')
+        # create dummy auth object
+        # As the authentication is performed before the query hits the Nap
+        # class, it does not matter what user we use here
+        self.auth = auth.SqliteAuth('unittest', 'unittest', 'unittest')
+        self.auth.authenticated_as = 'unittest'
+        self.auth.full_name = 'Unit test'
 
         self.nap._execute("TRUNCATE ip_net_plan, ip_net_pool, ip_net_schema, ip_net_log")
 
