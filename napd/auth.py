@@ -83,10 +83,10 @@ class BaseAuth:
 
 
 
-    def authorized(self):
+    def authorize(self):
         """ Verify authorization.
 
-            Check if a user is auhtorized to perform a specific operation.
+            Check if a user is authorized to perform a specific operation.
         """
         return False
 
@@ -257,6 +257,7 @@ class LocalAuth(BaseAuth):
         h.update(salt)
         h.update(password)
         return h.hexdigest()
+
 
 
 class AuthError(Exception):
