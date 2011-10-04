@@ -10,6 +10,7 @@ from twisted.web import http, xmlrpc, server
 from twisted.internet import defer, protocol, reactor
 import logging
 import xmlrpclib
+from nipapconfig import NipapConfig
 
 import nap
 from authlib import AuthFactory
@@ -17,15 +18,16 @@ from authlib import AuthFactory
 
 class NapXMLRPC:
     stop = None
+    _cfg = None
 
-    def __init__(self, port = 1337):
-        self.port = port
+    def __init__(self):
+        self._cfg = NipapConfig()
 
 
     def run(self):
         from twisted.internet import reactor
         protocol = NapProtocol()
-        reactor.listenTCP(self.port, server.Site(protocol))
+        reactor.listenTCP(self._cfg.getint('nipapd', 'port'), server.Site(protocol))
         reactor.run()
 
 

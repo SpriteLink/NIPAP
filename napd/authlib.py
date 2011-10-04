@@ -4,6 +4,7 @@
 """
 
 import logging
+from nipapconfig import NipapConfig
 
 # Used by SqliteAuth
 import sqlite3
@@ -58,6 +59,7 @@ class BaseAuth:
 
     _logger = None
     _auth_options = None
+    _cfg = None
 
 
     def __init__(self, username, password, authoritative_source, auth_backend, auth_options={}):
