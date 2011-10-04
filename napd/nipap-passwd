@@ -4,7 +4,7 @@
 #
 
 import sys
-import auth
+import authlib
 import optparse
 
 if __name__ == '__main__':
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     parser.add_option('-n', '--name', dest='name', type='string')
     options, args = parser.parse_args()
 
-    a = auth.SqliteAuth('a', 'b', 'c')
+    a = authlib.SqliteAuth('a', 'b', 'c')
 
     if options.list:
         # print a nicely formatted list of users
