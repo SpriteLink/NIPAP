@@ -1,6 +1,13 @@
 import xmlrpclib
 import logging
 
+__version__		= "0.5.0"
+__author__		= "Kristian Larsson, Lukas Garberg"
+__copyright__	= "Copyright 2011, Kristian Larsson, Lukas Garberg"
+__license__		= "MIT"
+__status__		= "Development"
+__url__			= "http://github.com/plajjan/NIPAP"
+
 
 class AuthOptions:
     """ A global-ish authentication option container.
