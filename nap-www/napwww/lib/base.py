@@ -9,7 +9,7 @@ from pylons.controllers import WSGIController
 from pylons.controllers.util import redirect
 from pylons.templating import render_jinja2 as render
 
-from napwww.model.napmodel import AuthOptions
+from pynipap import AuthOptions
 
 log = logging.getLogger(__name__)
 

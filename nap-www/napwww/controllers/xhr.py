@@ -8,7 +8,7 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from napwww.lib.base import BaseController, render
-from napwww.model.napmodel import Schema, Prefix, Pool, NapError
+from pynipap import Schema, Prefix, Pool, NapError
 
 log = logging.getLogger(__name__)
 
