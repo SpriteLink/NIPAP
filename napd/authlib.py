@@ -66,13 +66,15 @@ class BaseAuth:
         """ Constructor.
         """
 
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._cfg = NipapConfig()
+
         self.username = username
         self.password = password
         self.auth_backend = auth_backend
         self.authoritative_source = authoritative_source
 
         self._auth_options = auth_options
-        self._logger = logging.getLogger(self.__class__.__name__)
 
 
 
@@ -100,11 +102,8 @@ class LdapAuth(BaseAuth):
     """ An authentication and authorization class for LDAP auth.
     """
 
-    # TODO: clean away fuxxhaxx
-    import temphaxx
-
-    _ldap_uri = temphaxx.uri
-    _ldap_basedn = temphaxx.basedn
+    _ldap_uri = None
+    _ldap_basedn = None
     _ldap_conn = None
     _authenticated = None
 
@@ -113,6 +112,8 @@ class LdapAuth(BaseAuth):
         """
 
         BaseAuth.__init__(self, username, password, authoritative_source, 'ldap', auth_options)
+        self._ldap_uri = self._cfg.get('auth', 'ldapauth_uri')
+        self._ldap_basedn = self._cfg.get('auth', 'ldapauth_basedn')
 
         self._logger.debug('creating instance')
 
@@ -164,7 +165,6 @@ class SqliteAuth(BaseAuth):
     """ An authentication and authorization class for local auth.
     """
 
-    _db_path = '/tmp/nap_auth.db'
     _db_conn = None
     _db_curs = None
     _authenticated = None
@@ -185,7 +185,7 @@ class SqliteAuth(BaseAuth):
 
         # connect to database
         try:
-            self._db_conn = sqlite3.connect(self._db_path, check_same_thread = False)
+            self._db_conn = sqlite3.connect(self._cfg.get('auth', 'sqliteauth_db_path'), check_same_thread = False)
             self._db_conn.row_factory = sqlite3.Row
             self._db_curs = self._db_conn.cursor()
             self._db_curs.execute(sql_verify_table)
