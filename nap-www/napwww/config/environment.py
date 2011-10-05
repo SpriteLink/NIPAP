@@ -9,6 +9,7 @@ import napwww.lib.app_globals as app_globals
 import napwww.lib.helpers
 from napwww.config.routing import make_map
 
+import pynipap
 from nipapconfig import NipapConfig
 
 def load_environment(global_conf, app_conf):
@@ -46,5 +47,8 @@ def load_environment(global_conf, app_conf):
 
     # Make sure that there is a configuration object
     cfg = NipapConfig(config['nipap_config_path'])
+
+    # set XML-RPC URI in pynipap module
+    pynipap.xmlrpc_uri = cfg.get('www', 'xmlrpc_uri')
 
     return config

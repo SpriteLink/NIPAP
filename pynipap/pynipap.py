@@ -3,14 +3,17 @@ import logging
 import sys
 import os
 
-from nipapconfig import NipapConfig
-
 __version__		= "0.5.0"
 __author__		= "Kristian Larsson, Lukas Garberg"
 __copyright__	= "Copyright 2011, Kristian Larsson, Lukas Garberg"
 __license__		= "MIT"
 __status__		= "Development"
 __url__			= "http://github.com/plajjan/NIPAP"
+
+
+# This variable holds the URI to the nipap XML-RPC service which will be used.
+# It must be set before the NapModel can be used!
+xmlrpc_uri = None
 
 class AuthOptions:
     """ A global-ish authentication option container.
@@ -46,16 +49,15 @@ class XMLRPCConnection:
     _logger = None
 
 
-    def __init__(self, url = None):
+    def __init__(self):
         """ Create XML-RPC connection to url.
 
             If an earlier created instance exists, url
             does not need to be passed.
         """
 
-        if url is None:
-            cfg = NipapConfig()
-            url = cfg.get('www', 'xmlrpc_uri')
+        if xmlrpc_uri is None:
+            raise NapError('XML-RPC uri not spcified')
 
 
         # Currently not used due to threading safety issues
@@ -69,7 +71,7 @@ class XMLRPCConnection:
         #if len(self.__shared_state) == 0:
 
         # creating new instance
-        self.connection = xmlrpclib.ServerProxy(url, allow_none=True)
+        self.connection = xmlrpclib.ServerProxy(xmlrpc_uri, allow_none=True)
         self._logger = logging.getLogger(self.__class__.__name__)
 
 
