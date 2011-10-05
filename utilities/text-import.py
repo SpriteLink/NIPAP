@@ -4,10 +4,12 @@
 import re
 
 import sys
-sys.path.append('../nap-www')
-from napwww.model.napmodel import AuthOptions, Schema, Pool, Prefix, NapNonExistentError, NapDuplicateError, NapValueError
+import pynipap
+from pynipap import AuthOptions, Schema, Pool, Prefix, NapNonExistentError, NapDuplicateError, NapValueError
 
 import logging
+
+pynipap.xmlrpc_uri = 'http://web_ui@local:PngeOJctzUyM@127.0.0.1:1337'
 
 o = AuthOptions({
     'authoritative_source': 'nipap'
