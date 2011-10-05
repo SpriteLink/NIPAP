@@ -1,5 +1,6 @@
 """Pylons environment configuration"""
 import os
+import sys
 
 from jinja2 import Environment, FileSystemLoader
 from pylons.configuration import PylonsConfig
@@ -7,6 +8,8 @@ from pylons.configuration import PylonsConfig
 import napwww.lib.app_globals as app_globals
 import napwww.lib.helpers
 from napwww.config.routing import make_map
+
+from nipapconfig import NipapConfig
 
 def load_environment(global_conf, app_conf):
     """Configure the Pylons environment via the ``pylons.config``
@@ -40,5 +43,8 @@ def load_environment(global_conf, app_conf):
     # CONFIGURATION OPTIONS HERE (note: all config options will override
     # any Pylons config options)
     config['pylons.strict_c'] = False
-    
+
+    # Make sure that there is a configuration object
+    cfg = NipapConfig(config['nipap_config_path'])
+
     return config

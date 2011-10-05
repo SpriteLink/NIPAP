@@ -10,9 +10,6 @@ from pylons.controllers.util import abort, redirect
 from napwww.lib.base import BaseController, render
 
 from authlib import AuthFactory, AuthError
-from nipapconfig import NipapConfig
-
-cfg = NipapConfig('/etc/nipap/nipap.conf')
 
 log = logging.getLogger(__name__)
 

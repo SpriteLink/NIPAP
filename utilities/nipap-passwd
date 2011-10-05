@@ -8,8 +8,6 @@ import os
 import optparse
 import logging
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/napd')
-
 import authlib
 from nipapconfig import NipapConfig
 

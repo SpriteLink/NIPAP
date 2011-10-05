@@ -1,5 +1,9 @@
 import xmlrpclib
 import logging
+import sys
+import os
+
+from nipapconfig import NipapConfig
 
 __version__		= "0.5.0"
 __author__		= "Kristian Larsson, Lukas Garberg"
@@ -8,12 +12,14 @@ __license__		= "MIT"
 __status__		= "Development"
 __url__			= "http://github.com/plajjan/NIPAP"
 
-
 class AuthOptions:
     """ A global-ish authentication option container.
 
         WHAT ARE THE IMPLICATIONS OF THIS CLASS?! IS ISOLATION GUARANTEED?!
-        I guess not. Sigh. TODO: find out.
+        NO.
+
+        VERY SEVERE ISSUE.
+        TODO: fix.
     """
 
     __shared_state = {}
@@ -40,14 +46,21 @@ class XMLRPCConnection:
     _logger = None
 
 
-    def __init__(self, url = "http://web_ui@local:PngeOJctzUyM@127.0.0.1:1337"):
+    def __init__(self, url = None):
         """ Create XML-RPC connection to url.
 
             If an earlier created instance exists, url
             does not need to be passed.
         """
 
+        if url is None:
+            cfg = NipapConfig()
+            url = cfg.get('www', 'xmlrpc_uri')
+
+
         # Currently not used due to threading safety issues
+        # after the introduction of the config object above, the code below
+        # does not work at all anymore ;)
         #self.__dict__ = self.__shared_state
 
         #if len(self.__shared_state) == 0 and url is None:
@@ -822,8 +835,6 @@ _fault_to_exception_map = {
     1400: NapDuplicateError
 }
 
-# Create global XML-RPC connection and logger for static methods...
-xmlrpc = XMLRPCConnection()
 log = logging.getLogger("NapModel")
 
 
