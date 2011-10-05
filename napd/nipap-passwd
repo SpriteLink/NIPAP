@@ -4,21 +4,34 @@
 #
 
 import sys
-import authlib
 import optparse
+import logging
+
+import authlib
+from nipapconfig import NipapConfig
 
 if __name__ == '__main__':
 
     # parse options
     parser = optparse.OptionParser()
-    parser.add_option('-a', '--add', dest='add_user', type='string')
-    parser.add_option('-d', '--delete', dest='delete_user', type='string')
+    parser.add_option('-a', '--add', dest='add_user', type='string', help='add user ADD_USER')
+    parser.add_option('-d', '--delete', dest='delete_user', type='string', help="delete user DELETE_USER")
 #    parser.add_option('-m', '--modify', dest='modify_user', type='string')
-    parser.add_option('-p', '--password', dest='password', type='string')
-    parser.add_option('-l', '--list', action='store_true', dest='list')
-    parser.add_option('-t', '--trusted', action='store_true', dest='trusted', default=False)
-    parser.add_option('-n', '--name', dest='name', type='string')
+    parser.add_option('-p', '--password', dest='password', type='string', help='set user\'s password to PASSWORD')
+    parser.add_option('-l', '--list', action='store_true', dest='list', help='list users')
+    parser.add_option('-t', '--trusted', action='store_true', dest='trusted', default=False, help='mark user as trusted')
+    parser.add_option('-n', '--name', dest='name', type='string', help='set user\'s name to NAME')
+    parser.add_option('-c', '--config', dest='config', default='/etc/nipap/nipap.conf', type='string', help='read configuration from CONFIG')
     options, args = parser.parse_args()
+
+    logger = logging.getLogger()
+    log_format = "%(levelname)-8s %(message)s"
+    log_stream = logging.StreamHandler()
+    log_stream.setFormatter(logging.Formatter("%(asctime)s: " + log_format))
+    logger.setLevel(logging.WARNING)
+    logger.addHandler(log_stream)
+
+    cfg = NipapConfig(options.config)
 
     a = authlib.SqliteAuth('a', 'b', 'c')
 
