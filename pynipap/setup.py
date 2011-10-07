@@ -13,6 +13,7 @@ setup(
 	description = short_desc,
 	long_description = long_desc,
 	author = pynipap.__author__,
+    author_email = pynipap.__author_email__,
 	license = pynipap.__license__,
 	url = pynipap.__url__,
 	py_modules = ['pynipap'],

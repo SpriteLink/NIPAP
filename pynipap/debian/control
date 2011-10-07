@@ -1,0 +1,17 @@
+Source: python-pynipap
+Section: python
+Priority: optional
+Maintainer: Kristian Larsson <kll@tele2.net>, Lukas Garberg <lukas@spritelink.net>
+Build-Depends: debhelper (>= 7.0)
+Standards-Version: 3.9.1.0
+XS-Python-Version: >=2.4
+
+Package: python-pynipap
+Architecture: all
+Homepage: https://github.com/plajjan/NIPAP
+XB-Python-Version: >=2.4
+Depends: python (>= 2.4), ${python:Depends}
+Description: Python module for accessing NIPAP
+ This package contains a client library for NIPAP. It's function is similar to
+ a simple ORM, which hides all the complexity of working directly against the
+ XML-RPC interface.
