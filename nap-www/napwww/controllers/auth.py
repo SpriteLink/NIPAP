@@ -9,7 +9,7 @@ from pylons.controllers.util import abort, redirect
 
 from napwww.lib.base import BaseController, render
 
-from authlib import AuthFactory, AuthError
+from nipap.authlib import AuthFactory, AuthError
 
 log = logging.getLogger(__name__)
 

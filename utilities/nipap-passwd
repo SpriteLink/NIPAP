@@ -8,8 +8,8 @@ import os
 import optparse
 import logging
 
-import authlib
-from nipapconfig import NipapConfig
+import nipap.authlib
+from nipap.nipapconfig import NipapConfig
 
 if __name__ == '__main__':
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     cfg = NipapConfig(options.config)
 
-    a = authlib.SqliteAuth('a', 'b', 'c')
+    a = nipap.authlib.SqliteAuth('a', 'b', 'c')
 
     if options.list:
         # print a nicely formatted list of users

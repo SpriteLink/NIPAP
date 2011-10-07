@@ -6,14 +6,12 @@
 import logging
 from nipapconfig import NipapConfig
 
-# Used by SqliteAuth
+# Used by auth modules
 import sqlite3
 import ldap
 import string
 import hashlib
 import random
-
-
 
 class AuthFactory:
     """ An factory for authentication backends.

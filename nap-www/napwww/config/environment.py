@@ -10,7 +10,7 @@ import napwww.lib.helpers
 from napwww.config.routing import make_map
 
 import pynipap
-from nipapconfig import NipapConfig
+from nipap.nipapconfig import NipapConfig
 
 def load_environment(global_conf, app_conf):
     """Configure the Pylons environment via the ``pylons.config``

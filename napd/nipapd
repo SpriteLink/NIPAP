@@ -4,8 +4,8 @@
 import logging
 import logging.handlers
 import optparse
-import xmlrpc
-from nipapconfig import NipapConfig
+import nipap.xmlrpc
+from nipap.nipapconfig import NipapConfig
 
 if __name__ == '__main__':
     parser = optparse.OptionParser()
@@ -62,5 +62,5 @@ if __name__ == '__main__':
         import daemon
         ret = daemon.createDaemon()
 
-    napxml = xmlrpc.NapXMLRPC()
+    napxml = nipap.xmlrpc.NapXMLRPC()
     napxml.run()
