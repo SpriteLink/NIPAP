@@ -1519,7 +1519,7 @@ function selectPrefix(prefix_id) {
 		$('#radio-prefix-type-host').attr('checked', 'checked');
 	}
 
-	// set prefix's pool attribute in Nap
+	// set prefix's pool attribute in NIPAP
 	$('#prefix_data_container').show();
 	$('#prefix_length_prefix_container').show();
 

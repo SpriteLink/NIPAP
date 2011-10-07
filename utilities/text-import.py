@@ -5,7 +5,7 @@ import re
 
 import sys
 import pynipap
-from pynipap import AuthOptions, Schema, Pool, Prefix, NapNonExistentError, NapDuplicateError, NapValueError
+from pynipap import AuthOptions, Schema, Pool, Prefix, NipapNonExistentError, NipapDuplicateError, NipapValueError
 
 import logging
 
@@ -70,7 +70,7 @@ class TextImporter(Importer):
         for line in f.readlines():
             try:
                 params = self.parse_line(line)
-            except NapDuplicateError:
+            except NipapDuplicateError:
                 pass
             except TypeError:
                 pass
@@ -264,7 +264,7 @@ class TextImporter(Importer):
                 p.authoritative_source = 'nw'
                 p.save({})
                 print "Other:", tp['prefix']
-            except NapValueError, e:
+            except NipapValueError, e:
                 print tp['prefix'], ':', e
                 sys.exit(1)
 

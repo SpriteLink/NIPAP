@@ -27,7 +27,7 @@ polish, chrome and shine
 
 Web UI
 ------
- - Add a cache timeout to the NapModel object cache
+ - Add a cache timeout to the Pynipap object cache
 
 
 .. todolist::

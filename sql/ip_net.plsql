@@ -288,10 +288,10 @@ INSERT INTO ip_net_pool (name, description, default_type, ipv4_default_prefix_le
 
 INSERT INTO ip_net_pool (name, description, default_type, ipv4_default_prefix_length, ipv6_default_prefix_length) VALUES ('loopback', 'loopback addresses for routers', 'reservation', 32, 128);
 
-INSERT INTO ip_net_plan(prefix, type, description, pool, authoritative_source) VALUES ('130.244.0.0/16', 'reservation', 'Tele2s good ol'' /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 'nap');
-INSERT INTO ip_net_plan(prefix, type, description, pool, authoritative_source) VALUES ('212.151.0.0/16', 'reservation', 'Tele2s middle age /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 'nap');
+INSERT INTO ip_net_plan(prefix, type, description, pool, authoritative_source) VALUES ('130.244.0.0/16', 'reservation', 'Tele2s good ol'' /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 'nipap');
+INSERT INTO ip_net_plan(prefix, type, description, pool, authoritative_source) VALUES ('212.151.0.0/16', 'reservation', 'Tele2s middle age /16', (SELECT id FROM ip_net_pool WHERE name='tele2-infrastructure'), 'nipap');
 
-INSERT INTO ip_net_plan(prefix, type, description, pool, authoritative_source) VALUES ('2a00:800::/25', 'reservation', 'Tele2s funky new /25', (SELECT id FROM ip_net_pool WHERE name='tele2-block'), 'nap');
+INSERT INTO ip_net_plan(prefix, type, description, pool, authoritative_source) VALUES ('2a00:800::/25', 'reservation', 'Tele2s funky new /25', (SELECT id FROM ip_net_pool WHERE name='tele2-block'), 'nipap');
 
 
 

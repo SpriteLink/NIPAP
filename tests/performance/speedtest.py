@@ -17,11 +17,11 @@ log_stream.setLevel(logging.WARNING)
 logger.addHandler(log_stream)
 
 
-import nap
+import nipap.nipap
 
 class bonk:
     def __init__(self):
-        self.n = nap.Nap()
+        self.n = nipap.nipap.Nipap()
 
         #self.n.remove_prefix({ 'name': 'test-schema' }, { 'prefix': '2.0.0.0/8' })
         #self.n.add_prefix({'name': 'test-schema' }, { 'authoritative_source': 'nap', 'prefix': '2.0.0.0/8', 'description': 'test' })

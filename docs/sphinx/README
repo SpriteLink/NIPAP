@@ -1,7 +1,7 @@
-Nap documentation
------------------
+NIPAP documentation
+-------------------
 
-The main Nap documentation is generated using the Sphinx
+The main NIPAP documentation is generated using the Sphinx
 (http://sphinx.pocoo.org) document generator. To build everything, make sure
 you have sphinx installed and run:
 
