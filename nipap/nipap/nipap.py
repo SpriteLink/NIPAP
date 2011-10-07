@@ -1,12 +1,12 @@
 # vim: et ts=4 :
 
-""" Nap API
+""" NIPAP API
     ===============
 
-    This module contains the Nap class which provides most of the logic in Nap
+    This module contains the Nipap class which provides most of the logic in NIPAP
     apart from that contained within the PostgreSQL database.
 
-    Nap contains three types of objects: schemas, prefixes and pools.
+    NIPAP contains three types of objects: schemas, prefixes and pools.
 
 
     Schema
@@ -28,10 +28,10 @@
 
     Schema functions
     ^^^^^^^^^^^^^^^^
-    * :func:`~Nap.list_schema` - Return a list of schemas.
-    * :func:`~Nap.add_schema` - Create a new schema.
-    * :func:`~Nap.edit_schema` - Edit a schema.
-    * :func:`~Nap.remove_schema` - Remove a schema.
+    * :func:`~Nipap.list_schema` - Return a list of schemas.
+    * :func:`~Nipap.add_schema` - Create a new schema.
+    * :func:`~Nipap.edit_schema` - Edit a schema.
+    * :func:`~Nipap.remove_schema` - Remove a schema.
 
 
     Prefix
@@ -47,14 +47,14 @@
     * :attr:`id` - ID number of the prefix.
     * :attr:`prefix` - The IP prefix itself.
     * :attr:`display_prefix` - A more user-friendly version of the prefix.
-    * :attr:`family` - Address family (integer 4 or 6). Set by Nap.
+    * :attr:`family` - Address family (integer 4 or 6). Set by NIPAP.
     * :attr:`schema` - ID number of the schema the prefix belongs to.
     * :attr:`description` - A short description of the prefix.
     * :attr:`comment` - A longer text describing the prefix and its use.
     * :attr:`node` - FQDN of node the prefix is assigned to, if type is host.
     * :attr:`pool` - ID of pool, if the prefix belongs to a pool.
     * :attr:`type` - Prefix type, string 'reservation', 'assignment' or 'host'.
-    * :attr:`indent` - Depth in prefix tree. Set by Nap.
+    * :attr:`indent` - Depth in prefix tree. Set by NIPAP.
     * :attr:`country` - Country where the prefix resides (two-letter country code).
     * :attr:`order_id` - Order identifier.
     * :attr:`authoritative_source` - String identifying which system added the prefix.
@@ -67,12 +67,12 @@
 
     Prefix functions
     ^^^^^^^^^^^^^^^^
-    * :func:`~Nap.list_prefix` - Return a list of prefixes.
-    * :func:`~Nap.add_prefix` - Add a prefix. The prefix itself can be selected by Nap.
-    * :func:`~Nap.edit_prefix` - Edit a prefix.
-    * :func:`~Nap.remove_prefix` - Remove a prefix.
-    * :func:`~Nap.search_prefix` - Search prefixes from a specifically formatted dict.
-    * :func:`~Nap.smart_search_prefix` - Search prefixes from arbitarly formatted string.
+    * :func:`~Nipap.list_prefix` - Return a list of prefixes.
+    * :func:`~Nipap.add_prefix` - Add a prefix. The prefix itself can be selected by Nipap.
+    * :func:`~Nipap.edit_prefix` - Edit a prefix.
+    * :func:`~Nipap.remove_prefix` - Remove a prefix.
+    * :func:`~Nipap.search_prefix` - Search prefixes from a specifically formatted dict.
+    * :func:`~Nipap.smart_search_prefix` - Search prefixes from arbitarly formatted string.
 
 
     Pool
@@ -95,15 +95,15 @@
 
     Pool functions
     ^^^^^^^^^^^^^^
-    * :func:`~Nap.list_pool` - Return a list of pools.
-    * :func:`~Nap.add_pool` - Add a pool.
-    * :func:`~Nap.edit_pool` - Edit a pool.
-    * :func:`~Nap.remove_pool` - Remove a pool.
+    * :func:`~Nipap.list_pool` - Return a list of pools.
+    * :func:`~Nipap.add_pool` - Add a pool.
+    * :func:`~Nipap.edit_pool` - Edit a pool.
+    * :func:`~Nipap.remove_pool` - Remove a pool.
 
 
     The 'spec'
     ----------
-    Central to the use of the Nap API is the spec -- the specifier. It is used
+    Central to the use of the NIPAP API is the spec -- the specifier. It is used
     by many functions to in a more dynamic way specify what element(s) you want
     to select. Mainly it came to be due to the use of two attributes which can
     be thought of as primary keys for an object, such as a pool's :attr:`id` and
@@ -185,10 +185,10 @@ class Inet(object):
 
 
 
-class Nap:
-    """ Main Nap class.
+class Nipap:
+    """ Main NIPAP class.
 
-        The main Nap class containing all API methods. When creating an
+        The main NIPAP class containing all API methods. When creating an
         instance, a database connection object is created which is used during
         the instance's lifetime.
     """
@@ -215,7 +215,7 @@ class Nap:
         except psycopg2.Error, e:
             estr = str(e)
             self._logger.error(estr)
-            raise NapError(estr)
+            raise NipapError(estr)
         except psycopg2.Warning, w:
             self._logger.warning(str(w))
 
@@ -334,19 +334,19 @@ class Nap:
 
             # determine if it's "one of our" exceptions or something else
             if len(str(e).split(":")) < 2:
-                raise NapError(e)
+                raise NipapError(e)
             code = str(e).split(":", 1)[0]
             try:
                 int(code)
             except:
-                raise NapError(e)
+                raise NipapError(e)
 
             text = str(e).split(":", 1)[1]
 
             if code == '1200':
-                raise NapValueError(text)
+                raise NipapValueError(text)
 
-            raise NapError(str(e))
+            raise NipapError(str(e))
 
         except psycopg2.IntegrityError, e:
             self._con_pg.rollback()
@@ -355,19 +355,19 @@ class Nap:
             if e.pgcode == "23505":
                 m = re.match(r'.*"([^"]+)"', e.pgerror)
                 if m is None:
-                    raise NapDuplicateError("Objects primary keys already exist")
+                    raise NipapDuplicateError("Objects primary keys already exist")
                 cursor = self._con_pg.cursor()
                 cursor.execute("SELECT obj_description(oid) FROM pg_class WHERE relname = %(relname)s", { 'relname': m.group(1) })
                 for desc in cursor:
-                    raise NapDuplicateError("Duplicate value for '" + str(desc[0]) + "', the value you have inputted is already in use.")
+                    raise NipapDuplicateError("Duplicate value for '" + str(desc[0]) + "', the value you have inputted is already in use.")
 
-            raise NapError(str(e))
+            raise NipapError(str(e))
 
         except psycopg2.Error, e:
             self._con_pg.rollback()
             estr = "Unable to execute query: %s" % e
             self._logger.error(estr)
-            raise NapError(estr)
+            raise NipapError(estr)
         except psycopg2.Warning, w:
             self._logger.warning(str(w))
 
@@ -433,14 +433,14 @@ class Nap:
         """
         """
         if type(attr) is not dict:
-            raise NapInputError("invalid input type, must be dict")
+            raise NipapInputError("invalid input type, must be dict")
 
         for a in req_attr:
             if not a in attr:
-                raise NapMissingInputError("missing attribute %s" % a)
+                raise NipapMissingInputError("missing attribute %s" % a)
         for a in attr:
             if a not in allowed_attr:
-                raise NapExtraneousInputError("extraneous attribute %s" % a)
+                raise NipapExtraneousInputError("extraneous attribute %s" % a)
 
 
 
@@ -463,25 +463,25 @@ class Nap:
         """
 
         if type(spec) is not dict:
-            raise NapInputError("schema specification must be a dict")
+            raise NipapInputError("schema specification must be a dict")
 
         allowed_values = ['id', 'name', 'vrf']
         for a in spec:
             if a not in allowed_values:
-                raise NapExtraneousInputError("extraneous specification key %s" % a)
+                raise NipapExtraneousInputError("extraneous specification key %s" % a)
 
         if 'id' in spec:
             if type(spec['id']) not in (int, long):
-                raise NapValueError("schema specification key 'id' must be an integer")
+                raise NipapValueError("schema specification key 'id' must be an integer")
             if 'name' in spec:
-                raise NapExtraneousInputError("schema specification contain both 'id' and 'key', specify schema id or name")
+                raise NipapExtraneousInputError("schema specification contain both 'id' and 'key', specify schema id or name")
         elif 'name' in spec:
             if type(spec['name']) != type(''):
-                raise NapValueError("schema specification key 'name' must be a string")
+                raise NipapValueError("schema specification key 'name' must be a string")
             if 'id' in spec:
-                raise NapExtraneousInputError("schema specification contain both 'id' and 'key', specify schema id or name")
+                raise NipapExtraneousInputError("schema specification contain both 'id' and 'key', specify schema id or name")
         else:
-            raise NapMissingInputError('missing both id and name in schema spec')
+            raise NipapMissingInputError('missing both id and name in schema spec')
 
         where, params = self._sql_expand_where(spec, 'spec_')
 
@@ -532,11 +532,11 @@ class Nap:
             schema_attr['vrf'] = 'vrf'
 
             if query['val1'] not in schema_attr:
-                raise NapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+                raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
             # build where clause
             if query['operator'] not in _operation_map:
-                raise NapNoSuchOperatorError("No such operator %s" % query['operator'])
+                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
 
             where = str(" %s%s %s %%s " %
                 ( col_prefix, schema_attr[query['val1']],
@@ -665,7 +665,7 @@ class Nap:
 
         schema = self.list_schema(auth, spec)
         if len(schema) == 0:
-            raise NapInputError("non-existing schema specified")
+            raise NipapInputError("non-existing schema specified")
         return schema[0]
 
 
@@ -807,7 +807,7 @@ class Nap:
             try:
                 search_options['max_result'] = int(search_options['max_result'])
             except (ValueError, TypeError), e:
-                raise NapValueError('Invalid value for option' +
+                raise NipapValueError('Invalid value for option' +
                     ''' 'max_result'. Only integer values allowed.''')
 
         # offset
@@ -817,7 +817,7 @@ class Nap:
             try:
                 search_options['offset'] = int(search_options['offset'])
             except (ValueError, TypeError), e:
-                raise NapValueError('Invalid value for option' +
+                raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
         self._logger.debug('search_schema search_options: %s' % str(search_options))
@@ -940,26 +940,26 @@ class Nap:
         """
 
         if type(spec) is not dict:
-            raise NapInputError("pool specification must be a dict")
+            raise NipapInputError("pool specification must be a dict")
 
         allowed_values = ['id', 'name', 'schema']
         for a in spec:
             if a not in allowed_values:
-                raise NapExtraneousInputError("extraneous specification key %s" % a)
+                raise NipapExtraneousInputError("extraneous specification key %s" % a)
 
         if 'schema' not in spec:
-            raise NapMissingInputError('missing schema')
+            raise NipapMissingInputError('missing schema')
 
         if 'id' in spec:
             if type(spec['id']) not in (long, int):
-                raise NapValueError("pool specification key 'id' must be an integer")
+                raise NipapValueError("pool specification key 'id' must be an integer")
             if spec != { 'id': spec['id'], 'schema': spec['schema'] }:
-                raise NapExtraneousInputError("pool specification with 'id' should not contain anything else")
+                raise NipapExtraneousInputError("pool specification with 'id' should not contain anything else")
         elif 'name' in spec:
             if type(spec['name']) != type(''):
-                raise NapValueError("pool specification key 'name' must be a string")
+                raise NipapValueError("pool specification key 'name' must be a string")
             if 'id' in spec:
-                raise NapExtraneousInputError("pool specification contain both 'id' and 'name', specify pool id or name")
+                raise NipapExtraneousInputError("pool specification contain both 'id' and 'name', specify pool id or name")
 
         where, params = self._sql_expand_where(spec, 'spec_', 'po.')
 
@@ -1010,11 +1010,11 @@ class Nap:
             pool_attr['description'] = 'description'
 
             if query['val1'] not in pool_attr:
-                raise NapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+                raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
             # build where clause
             if query['operator'] not in _operation_map:
-                raise NapNoSuchOperatorError("No such operator %s" % query['operator'])
+                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
 
             where = str(" %s%s %s %%s " %
                 ( col_prefix, pool_attr[query['val1']],
@@ -1175,7 +1175,7 @@ class Nap:
 
         pool = self.list_pool(auth, schema_spec, spec)
         if len(pool) == 0:
-            raise NapInputError("non-existing pool specified")
+            raise NipapInputError("non-existing pool specified")
         return pool[0]
 
 
@@ -1195,7 +1195,7 @@ class Nap:
                 (str(spec), str(attr)))
 
         if ('id' not in spec and 'name' not in spec) or ( 'id' in spec and 'name' in spec ):
-            raise NapMissingInputError('''pool spec must contain either 'id' or 'name' ''')
+            raise NipapMissingInputError('''pool spec must contain either 'id' or 'name' ''')
 
         allowed_attr = [
                 'name',
@@ -1347,7 +1347,7 @@ class Nap:
             try:
                 search_options['max_result'] = int(search_options['max_result'])
             except (ValueError, TypeError), e:
-                raise NapValueError('Invalid value for option' +
+                raise NipapValueError('Invalid value for option' +
                     ''' 'max_result'. Only integer values allowed.''')
 
         # offset
@@ -1357,7 +1357,7 @@ class Nap:
             try:
                 search_options['offset'] = int(search_options['offset'])
             except (ValueError, TypeError), e:
-                raise NapValueError('Invalid value for option' +
+                raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
         self._logger.debug('search_pool search_options: %s' % str(search_options))
@@ -1482,16 +1482,16 @@ class Nap:
 
         # sanity checks
         if type(spec) is not dict:
-            raise NapInputError('invalid prefix specification')
+            raise NipapInputError('invalid prefix specification')
 
         if 'schema' not in spec:
-            raise NapMissingInputError('missing schema')
+            raise NipapMissingInputError('missing schema')
 
         allowed_keys = ['id', 'family', 'schema',
             'type', 'pool_name', 'pool_id', 'prefix', 'pool', 'monitor']
         for key in spec.keys():
             if key not in allowed_keys:
-                raise NapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
+                raise NipapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
 
         where = ""
         params = {}
@@ -1499,7 +1499,7 @@ class Nap:
         # if we have id, no other input is needed
         if 'id' in spec:
             if spec != {'id': spec['id'], 'schema': spec['schema']}:
-                raise NapExtraneousInputError("If id specified, no other keys are allowed.")
+                raise NipapExtraneousInputError("If id specified, no other keys are allowed.")
 
         where, params = self._sql_expand_where(spec)
 
@@ -1561,11 +1561,11 @@ class Nap:
             prefix_attr['monitor'] = 'monitor'
 
             if query['val1'] not in prefix_attr:
-                raise NapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+                raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
             # build where clause
             if query['operator'] not in _operation_map:
-                raise NapNoSuchOperatorError("No such operator %s" % query['operator'])
+                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
 
             if query['operator'] in (
                     'contains',
@@ -1634,16 +1634,16 @@ class Nap:
         # sanity checks
         if 'prefix' in attr:
             if 'from-pool' in args or 'from-prefix' in args:
-                raise NapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
+                raise NipapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
         else:
             if ('from-pool' not in args and 'from-prefix' not in args) or ('from-pool' in args and 'from-prefix' in args):
-                raise NapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
+                raise NipapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
             res = self.find_free_prefix(auth, schema_spec, args)
             if res != []:
                 attr['prefix'] = res[0]
             else:
                 # TODO: Raise other exception?
-                raise NapNonExistentError("no free prefix found")
+                raise NipapNonExistentError("no free prefix found")
 
         pool = None
         if 'pool_id' in attr or 'pool_name' in attr:
@@ -1664,7 +1664,7 @@ class Nap:
             'order_id', 'alarm_priority', 'monitor']
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('host' not in attr):
-            raise NapMissingInputError('Either description or host must be specified.')
+            raise NipapMissingInputError('Either description or host must be specified.')
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_plan " + insert
@@ -1847,7 +1847,7 @@ class Nap:
 
         # input sanity
         if type(args) is not dict:
-            raise NapInputError("invalid input, please provide dict as args")
+            raise NipapInputError("invalid input, please provide dict as args")
 
         args['schema'] = self._get_schema(auth, schema_spec)['id']
 
@@ -1856,27 +1856,27 @@ class Nap:
         max_count = 1000
         if 'count' in args:
             if int(args['count']) > max_count:
-                raise NapValueError("count over the maximum result size")
+                raise NipapValueError("count over the maximum result size")
         else:
             args['count'] = 1
 
         if 'from-pool' in args:
             if 'from-prefix' in args:
-                raise NapInputError("specify 'from-pool' OR 'from-prefix'")
+                raise NipapInputError("specify 'from-pool' OR 'from-prefix'")
             if 'family' not in args:
-                raise NapMissingInputError("'family' must be specified with 'from-pool' mode")
+                raise NipapMissingInputError("'family' must be specified with 'from-pool' mode")
             if int(args['family']) != 4 and int(args['family']) != 6:
-                raise NapValueError("incorrect family specified, must be 4 or 6")
+                raise NipapValueError("incorrect family specified, must be 4 or 6")
 
         elif 'from-prefix' in args:
             if type(args['from-prefix']) is not list:
-                raise NapInputError("from-prefix should be a list")
+                raise NipapInputError("from-prefix should be a list")
             if 'from-pool' in args:
-                raise NapInputError("specify 'from-pool' OR 'from-prefix'")
+                raise NipapInputError("specify 'from-pool' OR 'from-prefix'")
             if 'prefix_length' not in args:
-                raise NapMissingInputError("'prefix_length' must be specified with 'from-prefix'")
+                raise NipapMissingInputError("'prefix_length' must be specified with 'from-prefix'")
             if 'family' in args:
-                raise NapExtraneousInputError("'family' is superfluous when in 'from-prefix' mode")
+                raise NipapExtraneousInputError("'family' is superfluous when in 'from-prefix' mode")
 
         # determine prefixes
         prefixes = []
@@ -1886,12 +1886,12 @@ class Nap:
             pool_result = self.list_pool(auth, schema_spec, args['from-pool'])
             self._logger.debug(args)
             if pool_result == []:
-                raise NapNonExistentError("Non-existent pool specified")
+                raise NipapNonExistentError("Non-existent pool specified")
             for p in pool_result[0]['prefixes']:
                 if self._get_afi(p) == args['family']:
                     prefixes.append(p)
             if len(prefixes) == 0:
-                raise NapInputError('No prefixes of family %d in pool' % args['family'])
+                raise NipapInputError('No prefixes of family %d in pool' % args['family'])
             if 'prefix_length' not in args:
                 if args['family'] == 4:
                     wpl = pool_result[0]['ipv4_default_prefix_length']
@@ -1905,7 +1905,7 @@ class Nap:
                 if afi is None:
                     afi = prefix_afi
                 elif afi != prefix_afi:
-                    raise NapInputError("mixing of address-family is not allowed for 'from-prefix' arg")
+                    raise NipapInputError("mixing of address-family is not allowed for 'from-prefix' arg")
                 prefixes.append(prefix)
 
         if 'prefix_length' in args:
@@ -1914,10 +1914,10 @@ class Nap:
         # sanity check the wanted prefix length
         if afi == 4:
             if wpl < 0 or wpl > 32:
-                raise NapValueError("the specified wanted prefix length argument must be between 0 and 32 for ipv4")
+                raise NipapValueError("the specified wanted prefix length argument must be between 0 and 32 for ipv4")
         elif afi == 6:
             if wpl < 0 or wpl > 128:
-                raise NapValueError("the specified wanted prefix length argument must be between 0 and 128 for ipv6")
+                raise NipapValueError("the specified wanted prefix length argument must be between 0 and 128 for ipv6")
 
         # build SQL
         params = {}
@@ -1972,7 +1972,7 @@ class Nap:
             where, params = self._expand_prefix_spec(spec)
 
         else:
-            raise NapError("invalid prefix specification")
+            raise NipapError("invalid prefix specification")
 
         sql = """SELECT *, family(prefix) AS family FROM ip_net_plan WHERE %s ORDER BY prefix""" % where
 
@@ -2169,7 +2169,7 @@ class Nap:
             search_options['include_all_parents'] = False
         else:
             if search_options['include_all_parents'] not in (True, False):
-                raise NapValueError('Invalid value for option ' +
+                raise NipapValueError('Invalid value for option ' +
                     "'include_all_parents'. Only true and false valid. Supplied value :'%s'" % str(search_options['include_all_parents']))
 
         # include_children
@@ -2177,7 +2177,7 @@ class Nap:
             search_options['include_all_children'] = False
         else:
             if search_options['include_all_children'] not in (True, False):
-                raise NapValueError('Invalid value for option ' +
+                raise NipapValueError('Invalid value for option ' +
                     "'include_all_children'. Only true and false valid. Supplied value: '%s'" % str(search_options['include_all_children']))
 
         # parents_depth
@@ -2187,7 +2187,7 @@ class Nap:
             try:
                 search_options['parents_depth'] = int(search_options['parents_depth'])
             except (ValueError, TypeError), e:
-                raise NapValueError('Invalid value for option' +
+                raise NipapValueError('Invalid value for option' +
                     ''' 'parent_depth'. Only integer values allowed.''')
 
         # children_depth
@@ -2197,7 +2197,7 @@ class Nap:
             try:
                 search_options['children_depth'] = int(search_options['children_depth'])
             except (ValueError, TypeError), e:
-                raise NapValueError('Invalid value for option' +
+                raise NipapValueError('Invalid value for option' +
                     ''' 'children_depth'. Only integer values allowed.''')
 
         # max_result
@@ -2207,7 +2207,7 @@ class Nap:
             try:
                 search_options['max_result'] = int(search_options['max_result'])
             except (ValueError, TypeError), e:
-                raise NapValueError('Invalid value for option' +
+                raise NipapValueError('Invalid value for option' +
                     ''' 'max_result'. Only integer values allowed.''')
 
         # offset
@@ -2217,7 +2217,7 @@ class Nap:
             try:
                 search_options['offset'] = int(search_options['offset'])
             except (ValueError, TypeError), e:
-                raise NapValueError('Invalid value for option' +
+                raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
         self._logger.debug('search_prefix search_options: %s' % str(search_options))
@@ -2504,14 +2504,14 @@ class Nap:
 
 
 
-class NapError(Exception):
-    """ Nap base error class.
+class NipapError(Exception):
+    """ NIPAP base error class.
     """
 
     error_code = 1000
 
 
-class NapInputError(NapError):
+class NipapInputError(NipapError):
     """ Erroneous input.
 
         A general input error.
@@ -2520,7 +2520,7 @@ class NapInputError(NapError):
     error_code = 1100
 
 
-class NapMissingInputError(NapInputError):
+class NipapMissingInputError(NipapInputError):
     """ Missing input.
 
         Most input is passed in dicts, this could mean a missing key in a dict.
@@ -2529,7 +2529,7 @@ class NapMissingInputError(NapInputError):
     error_code = 1110
 
 
-class NapExtraneousInputError(NapInputError):
+class NipapExtraneousInputError(NipapInputError):
     """ Extraneous input.
 
         Most input is passed in dicts, this could mean an unknown key in a dict.
@@ -2538,14 +2538,14 @@ class NapExtraneousInputError(NapInputError):
     error_code = 1120
 
 
-class NapNoSuchOperatorError(NapInputError):
+class NipapNoSuchOperatorError(NipapInputError):
     """ A non existent operator was specified.
     """
 
     error_code = 1130
 
 
-class NapValueError(NapError):
+class NipapValueError(NipapError):
     """ Something wrong with a value
 
         For example, trying to send an integer when an IP address is expected.
@@ -2554,7 +2554,7 @@ class NapValueError(NapError):
     error_code = 1200
 
 
-class NapNonExistentError(NapError):
+class NipapNonExistentError(NipapError):
     """ A non existent object was specified
 
         For example, try to get a prefix from a pool which doesn't exist.
@@ -2563,7 +2563,7 @@ class NapNonExistentError(NapError):
     error_code = 1300
 
 
-class NapDuplicateError(NapError):
+class NipapDuplicateError(NipapError):
     """ The passed object violates unique constraints
 
         For example, create a schema with a name of an already existing one.

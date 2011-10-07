@@ -44,7 +44,7 @@ class PoolController(BaseController):
             redirect(url(controller = 'schema', action = 'list'))
         c.schema = Schema.get(int(request.params['schema']))
 
-        # Adding to Nap
+        # Adding to NIPAP
         if request.method == 'POST':
             p = Pool()
             p.schema = c.schema
@@ -76,7 +76,7 @@ class PoolController(BaseController):
         c.pool = Pool.get(c.schema, int(id))
         c.prefix_list = Prefix.list(c.schema, {'pool': c.pool.id})
 
-        # save changes to Nap
+        # save changes to NIPAP
         if request.method == 'POST':
             c.pool.name = request.params['name']
             c.pool.description = request.params['description']

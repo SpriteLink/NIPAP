@@ -4,22 +4,22 @@
 import logging
 import unittest
 import sys
-sys.path.append('../napd/')
+sys.path.append('../nipapd/')
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 log_format = "%(levelname)-8s %(message)s"
 
-import nap
-import auth
+import nipap.nipap
+from nipap.authlib import SqliteAuth
+from nipap.nipapconfig import NipapConfig
 
-
-class NapTest(unittest.TestCase):
+class NipapTest(unittest.TestCase):
     """ Tests the NAP class
     """
 
     logger = logging.getLogger()
-    nap = nap.Nap()
+    nipap = nipap.nipap.Nipap()
 
 
 
@@ -28,24 +28,25 @@ class NapTest(unittest.TestCase):
         """
 
         # create dummy auth object
-        # As the authentication is performed before the query hits the Nap
+        # As the authentication is performed before the query hits the Nipap
         # class, it does not matter what user we use here
-        self.auth = auth.SqliteAuth('unittest', 'unittest', 'unittest')
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        self.auth = SqliteAuth('unittest', 'unittest', 'unittest')
         self.auth.authenticated_as = 'unittest'
         self.auth.full_name = 'Unit test'
 
-        self.nap._execute("TRUNCATE ip_net_plan, ip_net_pool, ip_net_schema, ip_net_log")
+        self.nipap._execute("TRUNCATE ip_net_plan, ip_net_pool, ip_net_schema, ip_net_log")
 
         self.schema_attrs = {
                 'name': 'test-schema1',
                 'description': 'Test schema numero uno!'
                 }
-        self.schema_attrs['id'] = self.nap.add_schema(self.auth, self.schema_attrs)
+        self.schema_attrs['id'] = self.nipap.add_schema(self.auth, self.schema_attrs)
         self.schema_attrs2 = {
                 'name': 'test-schema2',
                 'description': 'Test schema numero dos!'
                 }
-        self.schema_attrs2['id'] = self.nap.add_schema(self.auth, self.schema_attrs2)
+        self.schema_attrs2['id'] = self.nipap.add_schema(self.auth, self.schema_attrs2)
         self.pool_attrs = {
                 'name': 'test-pool1',
                 'description': 'Test pool numero uno!',
@@ -53,78 +54,78 @@ class NapTest(unittest.TestCase):
                 'ipv4_default_prefix_length': 30,
                 'ipv6_default_prefix_length': 112
                 }
-        self.pool_attrs['id'] = self.nap.add_pool(self.auth, {'id': self.schema_attrs['id']}, self.pool_attrs)
+        self.pool_attrs['id'] = self.nipap.add_pool(self.auth, {'id': self.schema_attrs['id']}, self.pool_attrs)
         self.prefix_attrs1 = {
-                'authoritative_source': 'naptest',
+                'authoritative_source': 'nipaptest',
                 'prefix': '1.3.3.0/24',
                 'type': 'assignment',
                 'description': ''
                 }
-        self.prefix_attrs1['id'] = self.nap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix_attrs1)
+        self.prefix_attrs1['id'] = self.nipap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix_attrs1)
         self.prefix_attrs = {
-                'authoritative_source': 'naptest',
+                'authoritative_source': 'nipaptest',
                 'prefix': '1.3.3.1/32',
                 'type': 'host',
                 'description': 'Test prefix numero uno!'
                 }
-        self.prefix_attrs['id'] = self.nap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix_attrs)
+        self.prefix_attrs['id'] = self.nipap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix_attrs)
         self.prefix_attrs2 = {
-                'authoritative_source': 'naptest',
+                'authoritative_source': 'nipaptest',
                 'prefix': '1.3.2.0/23',
                 'type': 'reservation',
                 'description': ''
                 }
-        self.prefix_attrs2['id'] = self.nap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix_attrs2)
+        self.prefix_attrs2['id'] = self.nipap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix_attrs2)
         self.prefix_attrs3 = {
-                'authoritative_source': 'naptest',
+                'authoritative_source': 'nipaptest',
                 'prefix': '1.3.0.0/16',
                 'type': 'reservation',
                 'description': ''
                 }
-        self.prefix_attrs3['id'] = self.nap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix_attrs3)
+        self.prefix_attrs3['id'] = self.nipap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix_attrs3)
         self.prefix_attrs4 = {
-                'authoritative_source': 'naptest',
+                'authoritative_source': 'nipaptest',
                 'prefix': '1.3.0.0/17',
                 'type': 'reservation',
                 'description': ''
                 }
-        self.prefix_attrs4['id'] = self.nap.add_prefix(self.auth, {'id': self.schema_attrs2['id']}, self.prefix_attrs4)
+        self.prefix_attrs4['id'] = self.nipap.add_prefix(self.auth, {'id': self.schema_attrs2['id']}, self.prefix_attrs4)
 
         self.prefix6_attrs1 = {
-                'authoritative_source': 'naptest',
+                'authoritative_source': 'nipaptest',
                 'prefix': '2001:0db8:3:3::/112',
                 'type': 'assignment',
                 'description': ''
                 }
-        self.prefix6_attrs1['id'] = self.nap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix6_attrs1)
+        self.prefix6_attrs1['id'] = self.nipap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix6_attrs1)
         self.prefix6_attrs = {
-                'authoritative_source': 'naptest',
+                'authoritative_source': 'nipaptest',
                 'prefix': '2001:0db8:3:3::1/128',
                 'type': 'host',
                 'description': 'Test prefix numero uno!'
                 }
-        self.prefix6_attrs['id'] = self.nap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix6_attrs)
+        self.prefix6_attrs['id'] = self.nipap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix6_attrs)
         self.prefix6_attrs2 = {
-                'authoritative_source': 'naptest',
+                'authoritative_source': 'nipaptest',
                 'prefix': '2001:0db8:3:3::/64',
                 'type': 'reservation',
                 'description': ''
                 }
-        self.prefix6_attrs2['id'] = self.nap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix6_attrs2)
+        self.prefix6_attrs2['id'] = self.nipap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix6_attrs2)
         self.prefix6_attrs3 = {
-                'authoritative_source': 'naptest',
+                'authoritative_source': 'nipaptest',
                 'prefix': '2001:0db8:3:0::/48',
                 'type': 'reservation',
                 'description': ''
                 }
-        self.prefix6_attrs3['id'] = self.nap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix6_attrs3)
+        self.prefix6_attrs3['id'] = self.nipap.add_prefix(self.auth, {'id': self.schema_attrs['id']}, self.prefix6_attrs3)
         self.prefix6_attrs4 = {
-                'authoritative_source': 'naptest',
+                'authoritative_source': 'nipaptest',
                 'prefix': '2001:0db8:3:0::/56',
                 'type': 'reservation',
                 'description': ''
                 }
-        self.prefix6_attrs4['id'] = self.nap.add_prefix(self.auth, {'id': self.schema_attrs2['id']}, self.prefix6_attrs4)
+        self.prefix6_attrs4['id'] = self.nipap.add_prefix(self.auth, {'id': self.schema_attrs2['id']}, self.prefix6_attrs4)
 
 
     def test_schema_basic(self):
@@ -139,8 +140,8 @@ class NapTest(unittest.TestCase):
                 'name': 'test-schema-wrong',
                 'description': 'A simple test schema with incorrect name!'
                 }
-        attrs['id'] = self.nap.add_schema(self.auth, attrs)
-        schema = self.nap.list_schema(self.auth, { 'id': attrs['id'] })
+        attrs['id'] = self.nipap.add_schema(self.auth, attrs)
+        schema = self.nipap.list_schema(self.auth, { 'id': attrs['id'] })
         for a in attrs:
             self.assertEqual(schema[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
 
@@ -156,11 +157,11 @@ class NapTest(unittest.TestCase):
                 'crap': 'this is just some crap'
                 }
         # missing everything
-        self.assertRaises(nap.NapMissingInputError, self.nap.add_schema, self.auth, { })
+        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap.add_schema, self.auth, { })
         # missing description
-        self.assertRaises(nap.NapMissingInputError, self.nap.add_schema, self.auth, { 'name': 'crapson' })
+        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap.add_schema, self.auth, { 'name': 'crapson' })
         # have required and extra crap
-        self.assertRaises(nap.NapExtraneousInputError, self.nap.add_schema, self.auth, attrs)
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap.add_schema, self.auth, attrs)
 
 
 
@@ -172,29 +173,29 @@ class NapTest(unittest.TestCase):
             the separately.
         """
         # wrong type
-        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, 'string')
+        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_schema_spec, 'string')
         # wrong type
-        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, 1)
+        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_schema_spec, 1)
         # wrong type
-        self.assertRaises(nap.NapInputError, self.nap._expand_schema_spec, [])
+        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_schema_spec, [])
         # missing keys
-        self.assertRaises(nap.NapMissingInputError, self.nap._expand_schema_spec, { })
+        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap._expand_schema_spec, { })
         # crap key
-        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_schema_spec, { 'crap': self.schema_attrs['name'] })
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_schema_spec, { 'crap': self.schema_attrs['name'] })
         # required keys and extra crap
-        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_schema_spec, { 'name': self.schema_attrs['name'], 'crap': 'crap' })
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_schema_spec, { 'name': self.schema_attrs['name'], 'crap': 'crap' })
         # proper key but incorrect value (int vs string)
-        self.assertRaises(nap.NapValueError, self.nap._expand_schema_spec, { 'id': '3' })
+        self.assertRaises(nipap.nipap.NipapValueError, self.nipap._expand_schema_spec, { 'id': '3' })
         # proper key but incorrect value (int vs string)
-        self.assertRaises(nap.NapValueError, self.nap._expand_schema_spec, { 'name': 3 })
+        self.assertRaises(nipap.nipap.NipapValueError, self.nipap._expand_schema_spec, { 'name': 3 })
         # both id and name
-        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_schema_spec, { 'id': 3, 'name': '3' })
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_schema_spec, { 'id': 3, 'name': '3' })
         # proper key - id
-        where, params = self.nap._expand_schema_spec({ 'id': 3 })
+        where, params = self.nipap._expand_schema_spec({ 'id': 3 })
         self.assertEqual(where, 'id = %(spec_id)s', "Improperly expanded WHERE clause")
         self.assertEqual(params, {'spec_id': 3}, "Improperly expanded params dict")
         # proper spec - name
-        where, params = self.nap._expand_schema_spec({ 'name': 'test' })
+        where, params = self.nipap._expand_schema_spec({ 'name': 'test' })
 
 
 
@@ -212,7 +213,7 @@ class NapTest(unittest.TestCase):
                 'crap': 'this is just some crap'
                 }
         # spec is tested elsewhere, just test attrs part
-        self.assertRaises(nap.NapExtraneousInputError, self.nap.edit_schema, self.auth, { 'name': self.schema_attrs['name'] }, crap_attrs)
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap.edit_schema, self.auth, { 'name': self.schema_attrs['name'] }, crap_attrs)
 
 
 
@@ -221,7 +222,7 @@ class NapTest(unittest.TestCase):
 
         """
         # TODO: what do we really expect?
-        self.assertRaises(nap.NapExtraneousInputError, self.nap.list_schema, self.auth, { 'crap': 'crap crap' })
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap.list_schema, self.auth, { 'crap': 'crap crap' })
 
 
 
@@ -235,8 +236,8 @@ class NapTest(unittest.TestCase):
                 'name': 'test-schema-dupe',
                 'description': 'Testing dupe'
                 }
-        self.nap.add_schema(self.auth, schema_attrs)
-        self.assertRaises(nap.NapDuplicateError, self.nap.add_schema, self.auth, schema_attrs)
+        self.nipap.add_schema(self.auth, schema_attrs)
+        self.assertRaises(nipap.nipap.NipapDuplicateError, self.nipap.add_schema, self.auth, schema_attrs)
 
 
 
@@ -253,11 +254,11 @@ class NapTest(unittest.TestCase):
                 'name': 'test-schema',
                 'description': 'A simple test schema with correct name!'
                 }
-        self.nap.edit_schema(self.auth, spec, attrs)
+        self.nipap.edit_schema(self.auth, spec, attrs)
         # check that search for old record doesn't return anything
-        schema = self.nap.list_schema(self.auth, spec)
+        schema = self.nipap.list_schema(self.auth, spec)
         self.assertEqual(schema, [], 'Old entry still exists')
-        schema = self.nap.list_schema(self.auth, { 'name': 'test-schema' })
+        schema = self.nipap.list_schema(self.auth, { 'name': 'test-schema' })
         for a in attrs:
             self.assertEqual(schema[0][a], attrs[a], 'Modified schema differ from listed on attribute: ' + a)
 
@@ -269,9 +270,9 @@ class NapTest(unittest.TestCase):
             Remove the schema previously modified and make sure it's not there.
         """
         spec = { 'name': 'test-schema' }
-        self.nap.remove_schema(self.auth, spec)
+        self.nipap.remove_schema(self.auth, spec)
         # check that search for old record doesn't return anything
-        schema = self.nap.list_schema(self.auth, spec)
+        schema = self.nipap.list_schema(self.auth, spec)
         self.assertEqual(schema, [], 'Old entry still exists')
 
 
@@ -283,29 +284,29 @@ class NapTest(unittest.TestCase):
         schema = {'id': self.schema_attrs['id']}
 
         # wrong type
-        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, 'string')
+        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_pool_spec, 'string')
         # wrong type
-        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, 1)
+        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_pool_spec, 1)
         # wrong type
-        self.assertRaises(nap.NapInputError, self.nap._expand_pool_spec, [])
+        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_pool_spec, [])
         # missing keys
-        self.assertRaises(nap.NapMissingInputError, self.nap._expand_pool_spec, { })
+        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap._expand_pool_spec, { })
         # crap key
-        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'crap': self.pool_attrs['name'] })
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_pool_spec, { 'crap': self.pool_attrs['name'] })
         # required keys and extra crap
-        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'id': self.pool_attrs['id'], 'schema': self.schema_attrs['id'], 'crap': 'crap' })
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_pool_spec, { 'id': self.pool_attrs['id'], 'schema': self.schema_attrs['id'], 'crap': 'crap' })
         # proper key but incorrect value (int vs string)
-        self.assertRaises(nap.NapValueError, self.nap._expand_pool_spec, { 'id': '3', 'schema': self.schema_attrs['id'] })
+        self.assertRaises(nipap.nipap.NipapValueError, self.nipap._expand_pool_spec, { 'id': '3', 'schema': self.schema_attrs['id'] })
         # proper key but incorrect value (int vs string)
-        self.assertRaises(nap.NapValueError, self.nap._expand_pool_spec, { 'name': 3, 'schema': self.schema_attrs['id'] })
+        self.assertRaises(nipap.nipap.NipapValueError, self.nipap._expand_pool_spec, { 'name': 3, 'schema': self.schema_attrs['id'] })
         # both id and name
-        self.assertRaises(nap.NapExtraneousInputError, self.nap._expand_pool_spec, { 'id': 3, 'name': '3', 'schema': self.schema_attrs['id'] })
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_pool_spec, { 'id': 3, 'name': '3', 'schema': self.schema_attrs['id'] })
         # proper key - id
-        where, params = self.nap._expand_pool_spec({ 'id': 3, 'schema': self.schema_attrs['id'] })
+        where, params = self.nipap._expand_pool_spec({ 'id': 3, 'schema': self.schema_attrs['id'] })
         self.assertEqual(where, 'po.id = %(spec_id)s AND po.schema = %(spec_schema)s', "Improperly expanded WHERE clause")
         self.assertEqual(params, {'spec_id': 3, 'spec_schema': self.schema_attrs['id']}, "Improperly expanded params dict")
         # proper spec - name
-        where, params = self.nap._expand_pool_spec({ 'name': 'test', 'schema': self.schema_attrs['id'] })
+        where, params = self.nipap._expand_pool_spec({ 'name': 'test', 'schema': self.schema_attrs['id'] })
         self.assertEqual(where, 'po.name = %(spec_name)s AND po.schema = %(spec_schema)s', "Improperly expanded WHERE clause")
         self.assertEqual(params, {'spec_name': 'test', 'spec_schema': self.schema_attrs['id'] }, "Improperly expanded params dict")
 
@@ -324,8 +325,8 @@ class NapTest(unittest.TestCase):
                 'ipv6_default_prefix_length': 112
                 }
         schema = {'id': self.schema_attrs['id']}
-        pool_id = self.nap.add_pool(self.auth, schema, attrs)
-        pool = self.nap.list_pool(self.auth, schema, { 'id': pool_id })
+        pool_id = self.nipap.add_pool(self.auth, schema, attrs)
+        pool = self.nipap.list_pool(self.auth, schema, { 'id': pool_id })
         for a in attrs:
             self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: %s  %s!=%s' % (a, attrs[a], pool[0][a]))
 
@@ -342,8 +343,8 @@ class NapTest(unittest.TestCase):
                 'default_type': 'reservation',
                 'description': 'A simple test pool with incorrect name!'
                 }
-        pool_id = self.nap.add_pool(self.auth, schema, attrs)
-        pool = self.nap.list_pool(self.auth, schema, { 'id': pool_id })
+        pool_id = self.nipap.add_pool(self.auth, schema, attrs)
+        pool = self.nipap.list_pool(self.auth, schema, { 'id': pool_id })
         for a in attrs:
             self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
 
@@ -361,7 +362,7 @@ class NapTest(unittest.TestCase):
                 'default_type': 'assignment',
                 'description': 'A simple test pool with correct name!'
                 }
-        self.assertRaises(nap.NapInputError, self.nap.edit_pool, self.auth, schema, spec, attrs)
+        self.assertRaises(nipap.nipap.NipapInputError, self.nipap.edit_pool, self.auth, schema, spec, attrs)
 
 
 
@@ -377,11 +378,11 @@ class NapTest(unittest.TestCase):
                 'ipv4_default_prefix_length': 32,
                 'ipv6_default_prefix_length': 128
                 }
-        self.nap.edit_pool(self.auth, schema, spec, attrs)
+        self.nipap.edit_pool(self.auth, schema, spec, attrs)
         # check that search for old record doesn't return anything
-        pool = self.nap.list_pool(self.auth, schema, { 'name': self.pool_attrs['name'] })
+        pool = self.nipap.list_pool(self.auth, schema, { 'name': self.pool_attrs['name'] })
         self.assertEqual(pool, [], 'Old entry still exists')
-        pool = self.nap.list_pool(self.auth, schema, { 'name': attrs['name'] })
+        pool = self.nipap.list_pool(self.auth, schema, { 'name': attrs['name'] })
         for a in attrs:
             self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: ' + a)
 
@@ -391,15 +392,15 @@ class NapTest(unittest.TestCase):
         """ Remove a pool by id
         """
         schema = {'id': self.schema_attrs['id']}
-        pool = self.nap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
+        pool = self.nipap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
         # first make sure our pool exists
         self.assertNotEqual(pool[0], [], 'Record must exist before we can delete it')
         for a in self.pool_attrs:
             self.assertEqual(pool[0][a], self.pool_attrs[a], 'Listed attribute differ from original')
         # remove the pool
-        self.nap.remove_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
+        self.nipap.remove_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
         # check that search for old record doesn't return anything
-        pool = self.nap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
+        pool = self.nipap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
         self.assertEqual(pool, [], 'Old entry still exists')
 
 
@@ -408,7 +409,7 @@ class NapTest(unittest.TestCase):
         """ Add prefixes to a poll and list!
         """
         schema = {'id': self.schema_attrs['id']}
-        pool = self.nap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
+        pool = self.nipap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
         # first make sure our pool exists
         self.assertNotEqual(pool[0], [], 'Pool must exist!')
         pfxs = [
@@ -421,17 +422,17 @@ class NapTest(unittest.TestCase):
                 ]
         for p in pfxs:
             prefix_attrs = {
-                    'authoritative_source': 'nap-test',
+                    'authoritative_source': 'nipap-test',
                     'prefix': p,
                     'type': 'host',
                     'description': 'test prefix',
                     'pool_id': self.pool_attrs['id'],
                     'comment': 'test comment, please remove! ;)'
                     }
-            self.nap.add_prefix(self.auth, schema, prefix_attrs)
+            self.nipap.add_prefix(self.auth, schema, prefix_attrs)
 
         # list again
-        pool = self.nap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
+        pool = self.nipap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
         self.assertNotEqual(pool[0], [], 'Pool must exist!')
         self.assertEqual(set(pfxs), set(pool[0]['prefixes']), 'Returned prefixes do not match added ones')
 
@@ -442,19 +443,19 @@ class NapTest(unittest.TestCase):
         """
         schema = {'id': self.schema_attrs['id']}
         prefix_attrs = {
-                'authoritative_source': 'nap-test',
+                'authoritative_source': 'nipap-test',
                 'prefix': '1.3.3.7/32',
                 'type': 'host',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
-        self.nap.add_prefix(self.auth, schema, prefix_attrs)
-        prefix = self.nap.list_prefix(self.auth, schema, { 'prefix': prefix_attrs['prefix'] })
+        self.nipap.add_prefix(self.auth, schema, prefix_attrs)
+        prefix = self.nipap.list_prefix(self.auth, schema, { 'prefix': prefix_attrs['prefix'] })
         for a in prefix_attrs:
             self.assertEqual(prefix[0][a], prefix_attrs[a], 'Added object differ from listed on attribute: ' + a)
 
         # fetch many prefixes - all in a schema
-        prefix = self.nap.list_prefix(self.auth, schema, {})
+        prefix = self.nipap.list_prefix(self.auth, schema, {})
         self.assertNotEqual(len(prefix), 0, 'Found 0 prefixes in schema ' + self.schema_attrs['name'])
 
 
@@ -464,7 +465,7 @@ class NapTest(unittest.TestCase):
         """
         schema = {'id': self.schema_attrs['id']}
         # we need a bloody pool first!
-        pool = self.nap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
+        pool = self.nipap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
         # first make sure our pool exists
         self.assertNotEqual(pool[0], [], 'Pool must exist!')
         pfxs = [
@@ -476,30 +477,30 @@ class NapTest(unittest.TestCase):
                 ]
         for p in pfxs:
             prefix_attrs = {
-                    'authoritative_source': 'nap-test',
+                    'authoritative_source': 'nipap-test',
                     'prefix': p,
                     'type': 'reservation',
                     'description': 'test prefix',
                     'pool_id': self.pool_attrs['id'],
                     'comment': 'test comment, please remove! ;)'
                     }
-            self.nap.add_prefix(self.auth, schema, prefix_attrs)
+            self.nipap.add_prefix(self.auth, schema, prefix_attrs)
 
         # get an address based on from-prefix
         prefix_attrs = {
                 'type': 'assignment',
-                'authoritative_source': 'nap-test',
+                'authoritative_source': 'nipap-test',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
-        res = self.nap.add_prefix(self.auth, schema, prefix_attrs, { 'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
-        p = self.nap.list_prefix(self.auth, schema, { 'id': res })
+        res = self.nipap.add_prefix(self.auth, schema, prefix_attrs, { 'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
+        p = self.nipap.list_prefix(self.auth, schema, { 'id': res })
         self.assertEqual(p[0]['prefix'], '10.0.0.0/30', "New prefix differ from what it should be!")
 
-        self.nap.add_schema(self.auth, { 'name': 'testtest', 'description': 'another test schema!' })
+        self.nipap.add_schema(self.auth, { 'name': 'testtest', 'description': 'another test schema!' })
         # pass different schemas in attr and args
         # TODO: Find something similar?
-        #self.assertRaises(nap.NapInputError, self.nap.add_prefix, schema, { 'authoritative_source': 'nap-test', 'description': 'tjong' }, { 'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
+        #self.assertRaises(nipap.nipap.NipapInputError, self.nipap.add_prefix, schema, { 'authoritative_source': 'nipap-test', 'description': 'tjong' }, { 'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
 
 
 
@@ -522,20 +523,20 @@ class NapTest(unittest.TestCase):
             else:
                 query_str += "%s " % key
 
-        res = self.nap.smart_search_prefix(self.auth, schema, query_str)
+        res = self.nipap.smart_search_prefix(self.auth, schema, query_str)
         for interp in res['interpretation']:
             self.assertEqual(interp['string'] in query_keys, True, "Function returned unknown interpreted string %s" % interp['string'])
 
         prefix_attrs = {
-                'authoritative_source': 'nap-test',
+                'authoritative_source': 'nipap-test',
                 'prefix': '1.3.3.77/32',
                 'type': 'host',
                 'description': 'test-ish prefix',
                 'comment': 'Test prefix #77! ;)'
                 }
 
-        self.nap.add_prefix(self.auth, schema, prefix_attrs)
-        res = self.nap.smart_search_prefix(self.auth, schema, r"""1.3.3.77 "-ish" """)
+        self.nipap.add_prefix(self.auth, schema, prefix_attrs)
+        res = self.nipap.smart_search_prefix(self.auth, schema, r"""1.3.3.77 "-ish" """)
         self.assertEqual(res['result'][-1]['prefix'], '1.3.3.77/32', 'Prefix not found')
 
 
@@ -546,16 +547,16 @@ class NapTest(unittest.TestCase):
         schema = {'id': self.schema_attrs['id']}
 
         # test full ipv4 address
-        res = self.nap.smart_search_prefix(self.auth, schema, '1.3.3.7')
+        res = self.nipap.smart_search_prefix(self.auth, schema, '1.3.3.7')
         self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 address')
 
-        res = self.nap.smart_search_prefix(self.auth, schema, '1.1')
+        res = self.nipap.smart_search_prefix(self.auth, schema, '1.1')
         self.assertEqual(res['interpretation'][0]['interpretation'], 'text', "Incorrectly interpreted '1.1' as : " + res['interpretation'][0]['interpretation'])
 
-        res = self.nap.smart_search_prefix(self.auth, schema, '10/8')
+        res = self.nipap.smart_search_prefix(self.auth, schema, '10/8')
         self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv4 prefix')
 
-        res = self.nap.smart_search_prefix(self.auth, schema, '2000:0::01')
+        res = self.nipap.smart_search_prefix(self.auth, schema, '2000:0::01')
         self.assertEqual(res['interpretation'][0]['interpretation'], 'IPv6 address')
 
 
@@ -564,13 +565,13 @@ class NapTest(unittest.TestCase):
         """ Remove a prefix
         """
         schema = {'id': self.schema_attrs['id']}
-        prefix = self.nap.list_prefix(self.auth, schema, { 'id': self.prefix_attrs['id'] })
+        prefix = self.nipap.list_prefix(self.auth, schema, { 'id': self.prefix_attrs['id'] })
         # first make sure our prefix exists
         self.assertEqual(prefix[0]['id'], self.prefix_attrs['id'], 'Record must exist before we can delete it')
         # remove the prefix, by id
-        self.nap.remove_prefix(self.auth, schema, { 'id': self.prefix_attrs['id'] })
+        self.nipap.remove_prefix(self.auth, schema, { 'id': self.prefix_attrs['id'] })
         # check that search for old record doesn't return anything
-        prefix = self.nap.list_prefix(self.auth, schema, { 'id': self.prefix_attrs['id'] })
+        prefix = self.nipap.list_prefix(self.auth, schema, { 'id': self.prefix_attrs['id'] })
         self.assertEqual(prefix, [], 'Old entry still exists')
 
 
@@ -584,17 +585,17 @@ class NapTest(unittest.TestCase):
             calculated.
         """
         schema = {'id': self.schema_attrs['id']}
-        p1 = self.nap.list_prefix(self.auth, schema, { 'prefix': '1.3.3.1/32' })[0]
-        p2 = self.nap.list_prefix(self.auth, schema, { 'prefix': '1.3.3.0/24' })[0]
-        p3 = self.nap.list_prefix(self.auth, schema, { 'prefix': '1.3.0.0/16' })[0]
+        p1 = self.nipap.list_prefix(self.auth, schema, { 'prefix': '1.3.3.1/32' })[0]
+        p2 = self.nipap.list_prefix(self.auth, schema, { 'prefix': '1.3.3.0/24' })[0]
+        p3 = self.nipap.list_prefix(self.auth, schema, { 'prefix': '1.3.0.0/16' })[0]
         self.assertEqual(p1['indent'], 4, "Indent calc on add failed")
         self.assertEqual(p2['indent'], 3, "Indent calc on add failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on add failed")
         # remove middle prefix
-        self.nap.remove_prefix(self.auth, schema, { 'id': self.prefix_attrs2['id'] })
+        self.nipap.remove_prefix(self.auth, schema, { 'id': self.prefix_attrs2['id'] })
         # check that child prefix indent level has decreased
-        p1 = self.nap.list_prefix(self.auth, schema, { 'prefix': '1.3.3.1/32' })[0]
-        p3 = self.nap.list_prefix(self.auth, schema, { 'prefix': '1.3.0.0/16' })[0]
+        p1 = self.nipap.list_prefix(self.auth, schema, { 'prefix': '1.3.3.1/32' })[0]
+        p3 = self.nipap.list_prefix(self.auth, schema, { 'prefix': '1.3.0.0/16' })[0]
         self.assertEqual(p1['indent'], 3, "Indent calc on remove failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on remove failed")
 
@@ -609,17 +610,17 @@ class NapTest(unittest.TestCase):
             calculated.
         """
         schema = {'id': self.schema_attrs['id']}
-        p1 = self.nap.list_prefix(self.auth, schema, { 'prefix': '2001:0db8:3:3::1/128' })[0]
-        p2 = self.nap.list_prefix(self.auth, schema, { 'prefix': '2001:0db8:3:3::/64' })[0]
-        p3 = self.nap.list_prefix(self.auth, schema, { 'prefix': '2001:0db8:3:0::/48' })[0]
+        p1 = self.nipap.list_prefix(self.auth, schema, { 'prefix': '2001:0db8:3:3::1/128' })[0]
+        p2 = self.nipap.list_prefix(self.auth, schema, { 'prefix': '2001:0db8:3:3::/64' })[0]
+        p3 = self.nipap.list_prefix(self.auth, schema, { 'prefix': '2001:0db8:3:0::/48' })[0]
         self.assertEqual(p1['indent'], 4, "Indent calc on add failed")
         self.assertEqual(p2['indent'], 2, "Indent calc on add failed")
         self.assertEqual(p3['indent'], 0, "Indent calc on add failed")
         # remove middle prefix
-        self.nap.remove_prefix(self.auth, schema, { 'id': self.prefix6_attrs2['id'] })
+        self.nipap.remove_prefix(self.auth, schema, { 'id': self.prefix6_attrs2['id'] })
         # check that child prefix indent level has decreased
-        p1 = self.nap.list_prefix(self.auth, schema, { 'prefix': '2001:0db8:3:3::1/128' })[0]
-        p3 = self.nap.list_prefix(self.auth, schema, { 'prefix': '2001:0db8:3:0::/48' })[0]
+        p1 = self.nipap.list_prefix(self.auth, schema, { 'prefix': '2001:0db8:3:3::1/128' })[0]
+        p3 = self.nipap.list_prefix(self.auth, schema, { 'prefix': '2001:0db8:3:0::/48' })[0]
         self.assertEqual(p1['indent'], 3, "Indent calc on remove failed for " + p1['prefix'] + " indent: " + str(p1['indent']))
         self.assertEqual(p3['indent'], 0, "Indent calc on remove failed for " + p3['prefix'] + " indent: " + str(p3['indent']))
 
@@ -633,49 +634,49 @@ class NapTest(unittest.TestCase):
         schema = {'id': self.schema_attrs['id']}
         # set up a prefix not used elsewhere so we have a known good state
         prefix_attrs = {
-                'authoritative_source': 'nap-test',
+                'authoritative_source': 'nipap-test',
                 'prefix': '100.0.0.0/16',
                 'type': 'reservation',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
-        self.nap.add_prefix(self.auth, schema, prefix_attrs)
+        self.nipap.add_prefix(self.auth, schema, prefix_attrs)
 
         # no schema, should raise error!
-        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, self.auth, schema, { 'from-prefix': ['100.0.0.0/16'] })
+        self.assertRaises(nipap.nipap.NipapInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': ['100.0.0.0/16'] })
 
         # incorrect from-prefix type, string instead of list of strings (looking like an IP address)
-        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, self.auth, schema, { 'from-prefix': '100.0.0.0/16' })
+        self.assertRaises(nipap.nipap.NipapInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': '100.0.0.0/16' })
 
         # missing prefix_length
-        self.assertRaises(nap.NapMissingInputError, self.nap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16' ], 'count': 1 })
+        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16' ], 'count': 1 })
 
         # try giving both IPv4 and IPv6 in from-prefix which shouldn't work
-        self.assertRaises(nap.NapInputError, self.nap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16', '2a00:800::0/25' ], 'prefix_length': 24, 'count': 1 })
+        self.assertRaises(nipap.nipap.NipapInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16', '2a00:800::0/25' ], 'prefix_length': 24, 'count': 1 })
 
         # try giving non-integer as wanted prefix length
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': '24', 'count': 1 })
+        self.assertRaises(nipap.nipap.NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': '24', 'count': 1 })
 
         # try giving to high a number as wanted prefix length for IPv4
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 35, 'count': 1 })
+        self.assertRaises(nipap.nipap.NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 35, 'count': 1 })
 
         # try giving to high a number as wanted prefix length for IPv6
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '2a00:800::1/25'], 'prefix_length': 150, 'count': 1 })
+        self.assertRaises(nipap.nipap.NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '2a00:800::1/25'], 'prefix_length': 150, 'count': 1 })
 
         # try giving a high number for result count (max is 1000)
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 30, 'count': 55555 })
+        self.assertRaises(nipap.nipap.NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 30, 'count': 55555 })
 
         # don't pass 'family', which is required when specifying 'from-pool'
-        self.assertRaises(nap.NapMissingInputError, self.nap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1 })
+        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1 })
 
         # pass crap as family, wrong type even
-        self.assertRaises(ValueError, self.nap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1, 'family': 'crap' })
+        self.assertRaises(ValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1, 'family': 'crap' })
 
         # pass 7 as family
-        self.assertRaises(nap.NapValueError, self.nap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1, 'family': 7 })
+        self.assertRaises(nipap.nipap.NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1, 'family': 7 })
 
         # pass non existent pool
-        self.assertRaises(nap.NapNonExistentError, self.nap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': 'crap' }, 'prefix_length': 24, 'count': 1, 'family': 4 })
+        self.assertRaises(nipap.nipap.NipapNonExistentError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': 'crap' }, 'prefix_length': 24, 'count': 1, 'family': 4 })
 
 
 
@@ -687,23 +688,23 @@ class NapTest(unittest.TestCase):
         schema = { 'id': self.schema_attrs['id'] }
         # set up a prefix not used elsewhere so we have a known good state
         prefix_attrs = {
-                'authoritative_source': 'nap-test',
+                'authoritative_source': 'nipap-test',
                 'prefix': '100.0.0.0/16',
                 'type': 'assignment',
                 'description': 'test prefix',
                 'comment': 'test comment, please remove! ;)'
                 }
-        self.nap.add_prefix(self.auth, schema, prefix_attrs)
+        self.nipap.add_prefix(self.auth, schema, prefix_attrs)
 
         # simple test
-        res = self.nap.find_free_prefix(self.auth, schema, { 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'prefix_length': 24, 'count': 1 })
+        res = self.nipap.find_free_prefix(self.auth, schema, { 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'prefix_length': 24, 'count': 1 })
         self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
         # simple test - only one input prefix (which did cause a bug, thus keeping it)
-        res = self.nap.find_free_prefix(self.auth, schema, { 'from-prefix': [ '100.0.0.0/16' ], 'prefix_length': 24, 'count': 1 })
+        res = self.nipap.find_free_prefix(self.auth, schema, { 'from-prefix': [ '100.0.0.0/16' ], 'prefix_length': 24, 'count': 1 })
         self.assertEqual(res, ['100.0.0.0/24'], "Incorrect prefix set returned")
 
-        res = self.nap.find_free_prefix(self.auth, schema, { 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'prefix_length': 24, 'count': 999 })
+        res = self.nipap.find_free_prefix(self.auth, schema, { 'from-prefix': [ '100.0.0.0/16', '1.3.3.0/24' ], 'prefix_length': 24, 'count': 999 })
         self.assertEqual(len(res), 256, "Incorrect prefix set returned")
 
 
@@ -715,7 +716,7 @@ class NapTest(unittest.TestCase):
         """
         schema = { 'id': self.schema_attrs['id'] }
         # we need a bloody pool first!
-        pool = self.nap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
+        pool = self.nipap.list_pool(self.auth, schema, { 'id': self.pool_attrs['id'] })
         # first make sure our pool exists
         self.assertNotEqual(pool[0], [], 'Pool must exist!')
         pfxs = [
@@ -728,20 +729,20 @@ class NapTest(unittest.TestCase):
         for p in pfxs:
             prefix_attrs = {
                     'type': 'reservation',
-                    'authoritative_source': 'nap-test',
+                    'authoritative_source': 'nipap-test',
                     'prefix': p,
                     'description': 'test prefix',
                     'pool_id': self.pool_attrs['id'],
                     'comment': 'test comment, please remove! ;)'
                     }
-            self.nap.add_prefix(self.auth, schema, prefix_attrs)
+            self.nipap.add_prefix(self.auth, schema, prefix_attrs)
 
         # from-pool test
-        res = self.nap.find_free_prefix(self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'count': 1, 'family': 4})
+        res = self.nipap.find_free_prefix(self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'count': 1, 'family': 4})
         self.assertEqual(res, ['10.0.1.0/30'], "Incorrect prefix set returned when requesting default prefix-length")
 
         # from-pool test, specify wanted prefix length
-        res = self.nap.find_free_prefix(self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'count': 1, 'family': 4, 'prefix_length': 31})
+        res = self.nipap.find_free_prefix(self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'count': 1, 'family': 4, 'prefix_length': 31})
         self.assertEqual(res, ['10.0.1.0/31'], "Incorrect prefix set returned with explicit prefix-length")
 
 
@@ -765,8 +766,8 @@ def test_edit_prefix(self):
         }
 
     # basic edit
-    self.nap.edit_prefix(self.auth, schema, { 'id': self.prefix_attrs['id'] }, data)
-    p = self.nap.list_prefix(self.auth, schema, {'id': self.prefix_attrs['id']})[0]
+    self.nipap.edit_prefix(self.auth, schema, { 'id': self.prefix_attrs['id'] }, data)
+    p = self.nipap.list_prefix(self.auth, schema, {'id': self.prefix_attrs['id']})[0]
     # remove what we did not touch
     for k, v in data.keys():
         if k not in p:
@@ -774,10 +775,10 @@ def test_edit_prefix(self):
     self.assertEqual(data, p, "Prefix data incorrect after edit.")
 
     # create a collision
-    self.assertRaises(nap.NapError, self.nap.edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'prefix': data['prefix']})
+    self.assertRaises(nipap.nipap.NipapError, self.nipap.edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'prefix': data['prefix']})
 
     # try to change schema - disallowed
-    self.assertRaises(nap.NapExtraneousInputError, self.nap_edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'schema': self.schema_attrs2['id']})
+    self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap_edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'schema': self.schema_attrs2['id']})
 
 
 

@@ -12,7 +12,7 @@ __url__			= "http://github.com/plajjan/NIPAP"
 
 
 # This variable holds the URI to the nipap XML-RPC service which will be used.
-# It must be set before the NapModel can be used!
+# It must be set before the Pynipap can be used!
 xmlrpc_uri = None
 
 class AuthOptions:
@@ -57,7 +57,7 @@ class XMLRPCConnection:
         """
 
         if xmlrpc_uri is None:
-            raise NapError('XML-RPC uri not spcified')
+            raise NipapError('XML-RPC uri not spcified')
 
 
         # Currently not used due to threading safety issues
@@ -76,8 +76,8 @@ class XMLRPCConnection:
 
 
 
-class NapModel:
-    """ A base class for NAP model.
+class Pynipap:
+    """ A base class for the pynipap model classes.
     """
 
     _xmlrpc = None
@@ -107,7 +107,7 @@ class NapModel:
 
 
 
-class Schema(NapModel):
+class Schema(Pynipap):
     """ A schema.
     """
 
@@ -166,7 +166,7 @@ class Schema(NapModel):
         try:
             schema = Schema.list({ 'id': id })[0]
         except IndexError, e:
-            raise NapNonExistentError('no schema with ID ' + str(id) + ' found')
+            raise NipapNonExistentError('no schema with ID ' + str(id) + ' found')
 
         _cache['Schema'][id] = schema
         return schema
@@ -227,7 +227,7 @@ class Schema(NapModel):
 
 
     def save(self):
-        """ Save changes made to object to Nap.
+        """ Save changes made to object to NIPAP.
         """
 
         data = {
@@ -280,7 +280,7 @@ class Schema(NapModel):
 
 
 
-class Pool(NapModel):
+class Pool(Pynipap):
     """ An address pool.
     """
 
@@ -293,7 +293,7 @@ class Pool(NapModel):
 
 
     def save(self):
-        """ Save changes made to pool to Nap.
+        """ Save changes made to pool to NIPAP.
         """
 
         data = {
@@ -366,7 +366,7 @@ class Pool(NapModel):
         try:
             pool = Pool.list(schema, {'id': id})[0]
         except KeyError, e:
-            raise NapNonExistentError('no pool with ID ' + str(id) + ' found')
+            raise NipapNonExistentError('no pool with ID ' + str(id) + ' found')
 
         _cache['Pool'][id] = pool
         return pool
@@ -469,7 +469,7 @@ class Pool(NapModel):
 
 
 
-class Prefix(NapModel):
+class Prefix(Pynipap):
     """ A prefix.
     """
 
@@ -507,7 +507,7 @@ class Prefix(NapModel):
         try:
             prefix = Prefix.list(schema, {'id': id})[0]
         except KeyError, e:
-            raise NapNonExistentError('no prefix with ID ' + str(id) + ' found')
+            raise NipapNonExistentError('no prefix with ID ' + str(id) + ' found')
 
         _cache['Prefix'][id] = prefix
         return prefix
@@ -602,7 +602,7 @@ class Prefix(NapModel):
 
 
     def save(self, args = {}):
-        """ Save prefix to Nap.
+        """ Save prefix to PYNIPAP.
         """
 
         data = {
@@ -653,7 +653,7 @@ class Prefix(NapModel):
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
 
-            # fetch data which is set by Nap
+            # fetch data which is set by NIPAP
             try:
                 p = self._xmlrpc.connection.list_prefix(
                     {
@@ -664,7 +664,7 @@ class Prefix(NapModel):
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
             except IndexError:
-                raise NapNonExistantError('Added prefix not found.')
+                raise NipapNonExistantError('Added prefix not found.')
             self.prefix = p['prefix']
             self.indent = p['indent']
             self.family = p['family']
@@ -749,7 +749,7 @@ class Prefix(NapModel):
 # Define exceptions
 #
 
-class NapError(Exception):
+class NipapError(Exception):
     """ A generic NAP model exception.
 
         All errors thrown from the NAP model extends this exception.
@@ -758,14 +758,14 @@ class NapError(Exception):
 
 
 
-class NapNonExistentError(NapError):
+class NipapNonExistentError(NipapError):
     """ Thrown when something can not be found.
 
         For example when a given ID can not be found in the NAP database.
     """
 
 
-class NapInputError(NapError):
+class NipapInputError(NipapError):
     """ Something wrong with the input we received
 
         A general case.
@@ -774,7 +774,7 @@ class NapInputError(NapError):
 
 
 
-class NapMissingInputError(NapInputError):
+class NipapMissingInputError(NipapInputError):
     """ Missing input
 
         Most input is passed in dicts, this could mean a missing key in a dict.
@@ -783,7 +783,7 @@ class NapMissingInputError(NapInputError):
 
 
 
-class NapExtraneousInputError(NapInputError):
+class NipapExtraneousInputError(NipapInputError):
     """ Extraneous input
 
         Most input is passed in dicts, this could mean an unknown key in a dict.
@@ -792,14 +792,14 @@ class NapExtraneousInputError(NapInputError):
 
 
 
-class NapNoSuchOperatorError(NapInputError):
+class NipapNoSuchOperatorError(NipapInputError):
     """ A non existent operator was specified.
     """
     pass
 
 
 
-class NapValueError(NapError):
+class NipapValueError(NipapError):
     """ Something wrong with a value we have
 
         For example, trying to send an integer when an IP address is expected.
@@ -808,7 +808,7 @@ class NapValueError(NapError):
 
 
 
-class NapDuplicateError(NapError):
+class NipapDuplicateError(NipapError):
     """ A duplicate entry was encountered
     """
     pass
@@ -828,26 +828,26 @@ _cache = {
 
 # Map from XML-RPC Fault codes to Exception classes
 _fault_to_exception_map = {
-    1000: NapError,
-    1100: NapInputError,
-    1110: NapMissingInputError,
-    1120: NapExtraneousInputError,
-    1200: NapValueError,
-    1300: NapNonExistentError,
-    1400: NapDuplicateError
+    1000: NipapError,
+    1100: NipapInputError,
+    1110: NipapMissingInputError,
+    1120: NipapExtraneousInputError,
+    1200: NipapValueError,
+    1300: NipapNonExistentError,
+    1400: NipapDuplicateError
 }
 
-log = logging.getLogger("NapModel")
+log = logging.getLogger("Pynipap")
 
 
 
 def _fault_to_exception(f):
-    """ Converts XML-RPC Fault objects to NapModel-exceptions.
+    """ Converts XML-RPC Fault objects to Pynipap-exceptions.
 
         TODO: Is this one neccesary? Can be done inline...
     """
 
     e = _fault_to_exception_map.get(f.faultCode)
     if e is None:
-        e = NapError
+        e = NipapError
     return e(f.faultString)

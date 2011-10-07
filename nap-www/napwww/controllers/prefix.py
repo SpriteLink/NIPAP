@@ -4,7 +4,7 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from napwww.lib.base import BaseController, render
-from pynipap import Schema, Pool, Prefix, NapNonExistentError
+from pynipap import Schema, Pool, Prefix, NipapNonExistentError
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class PrefixController(BaseController):
         if 'schema' in request.params:
             try:
                 c.schema = Schema.get(int(request.params['schema']))
-            except NapNonExistentError, e:
+            except NipapNonExistentError, e:
                 redirect(url(controller = 'schema', action = 'list'))
         else:
             redirect(url(controller = 'schema', action = 'list'))
@@ -52,7 +52,7 @@ class PrefixController(BaseController):
         try:
             c.schema = Schema.get(int(request.params['schema']))
             c.pools = Pool.list(c.schema)
-        except (KeyError, NapNonExistentError), e:
+        except (KeyError, NipapNonExistentError), e:
             redirect(url(controller = 'schema', action = 'list'))
 
         # pass prefix to template - if we have any
@@ -75,7 +75,7 @@ class PrefixController(BaseController):
         # make sure we have a schema
         try:
             c.schema = Schema.get(int(request.params['schema']))
-        except (KeyError, NapNonExistentError), e:
+        except (KeyError, NipapNonExistentError), e:
             redirect(url(controller = 'schema', action = 'list'))
 
         # find prefix
@@ -108,7 +108,7 @@ class PrefixController(BaseController):
         # make sure we have a schema
         try:
             c.schema = Schema.get(int(request.params['schema']))
-        except (KeyError, NapNonExistentError), e:
+        except (KeyError, NipapNonExistentError), e:
             redirect(url(controller = 'schema', action = 'list'))
 
         # find prefix

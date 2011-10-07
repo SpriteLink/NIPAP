@@ -2,9 +2,9 @@
 """ XML-RPC glue class
     ==================
 
-    This module contains a "glue class" used by Twisted to export the Nap API functions over XML-RPC.
+    This module contains a "glue class" used by Twisted to export the NIPAP API functions over XML-RPC.
 
-    For a detailed description of the API, see :doc:`nap`.
+    For a detailed description of the API, see :doc:`nipap`.
 """
 from twisted.web import http, xmlrpc, server
 from twisted.internet import defer, protocol, reactor
@@ -12,11 +12,11 @@ import logging
 import xmlrpclib
 from nipapconfig import NipapConfig
 
-import nap
+import nipap
 from authlib import AuthFactory
 
 
-class NapXMLRPC:
+class NipapXMLRPC:
     stop = None
     _cfg = None
 
@@ -26,13 +26,13 @@ class NapXMLRPC:
 
     def run(self):
         from twisted.internet import reactor
-        protocol = NapProtocol()
+        protocol = NipapProtocol()
         reactor.listenTCP(self._cfg.getint('nipapd', 'port'), server.Site(protocol))
         reactor.run()
 
 
-class NapProtocol(xmlrpc.XMLRPC):
-    """ Class to allow XML-RPC access to the lovely NAP system.
+class NipapProtocol(xmlrpc.XMLRPC):
+    """ Class to allow XML-RPC access to the lovely NIPAP system.
     """
 
     def __init__(self):
@@ -40,9 +40,9 @@ class NapProtocol(xmlrpc.XMLRPC):
         self.allowNone = True
         self.request = None
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info("Initialising NAP Protocol")
+        self.logger.info("Initialising NIPAP Protocol")
 
-        self.nap = nap.Nap()
+        self.nipap = nipap.Nipap()
 
 
     def render(self, request):
@@ -55,12 +55,12 @@ class NapProtocol(xmlrpc.XMLRPC):
         #
         # Fetch auth options from args
         auth_options = {}
-        nap_args = {}
+        nipap_args = {}
 
         if len(args) > 0:
-            nap_args = args[0]
-        if type(nap_args) == dict:
-            auth_options = nap_args.get('auth')
+            nipap_args = args[0]
+        if type(nipap_args) == dict:
+            auth_options = nipap_args.get('auth')
 
         auth = AuthFactory.get_auth(request.getUser(), request.getPassword(), auth_options.get('authoritative_source'), auth_options or {})
 
@@ -122,8 +122,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.add_schema(args.get('auth'), args.get('attr'))
-        except nap.NapError, e:
+            return self.nipap.add_schema(args.get('auth'), args.get('attr'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -132,8 +132,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            self.nap.remove_schema(args.get('auth'), args.get('schema'))
-        except nap.NapError, e:
+            self.nipap.remove_schema(args.get('auth'), args.get('schema'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -142,8 +142,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.list_schema(args.get('auth'), args.get('schema'))
-        except nap.NapError, e:
+            return self.nipap.list_schema(args.get('auth'), args.get('schema'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -152,8 +152,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            self.nap.edit_schema(args.get('auth'), args.get('schema'), args.get('attr'))
-        except nap.NapError, e:
+            self.nipap.edit_schema(args.get('auth'), args.get('schema'), args.get('attr'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -165,8 +165,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.search_schema(args.get('auth'), args.get('query'), args.get('search_options'))
-        except nap.NapError, e:
+            return self.nipap.search_schema(args.get('auth'), args.get('query'), args.get('search_options'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -179,8 +179,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.smart_search_schema(args.get('auth'), args.get('query_string'), args.get('search_options'))
-        except nap.NapError, e:
+            return self.nipap.smart_search_schema(args.get('auth'), args.get('query_string'), args.get('search_options'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -192,8 +192,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.add_pool(args.get('auth'), args.get('schema'), args.get('attr'))
-        except nap.NapError, e:
+            return self.nipap.add_pool(args.get('auth'), args.get('schema'), args.get('attr'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -202,8 +202,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            self.nap.remove_pool(args.get('auth'), args.get('schema'), args.get('pool'))
-        except nap.NapError, e:
+            self.nipap.remove_pool(args.get('auth'), args.get('schema'), args.get('pool'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -212,8 +212,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.list_pool(args.get('auth'), args.get('schema'), args.get('pool'))
-        except nap.NapError, e:
+            return self.nipap.list_pool(args.get('auth'), args.get('schema'), args.get('pool'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -222,8 +222,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.edit_pool(args.get('auth'), args.get('schema'), args.get('pool'), args.get('attr'))
-        except nap.NapError, e:
+            return self.nipap.edit_pool(args.get('auth'), args.get('schema'), args.get('pool'), args.get('attr'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -235,8 +235,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.search_pool(args.get('auth'), args.get('schema'), args.get('query'), args.get('search_options'))
-        except nap.NapError, e:
+            return self.nipap.search_pool(args.get('auth'), args.get('schema'), args.get('query'), args.get('search_options'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -249,8 +249,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.smart_search_pool(args.get('auth'), args.get('schema'), args.get('query_string'), args.get('search_options'))
-        except nap.NapError, e:
+            return self.nipap.smart_search_pool(args.get('auth'), args.get('schema'), args.get('query_string'), args.get('search_options'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -264,8 +264,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.add_prefix(args.get('auth'), args.get('schema'), args.get('attr'), args.get('args'))
-        except nap.NapError, e:
+            return self.nipap.add_prefix(args.get('auth'), args.get('schema'), args.get('attr'), args.get('args'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -275,8 +275,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.list_prefix(args.get('auth'), args.get('schema'), args.get('prefix'))
-        except nap.NapError, e:
+            return self.nipap.list_prefix(args.get('auth'), args.get('schema'), args.get('prefix'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -286,8 +286,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.edit_prefix(args.get('auth'), args.get('schema'), args.get('prefix'), args.get('attr'))
-        except nap.NapError, e:
+            return self.nipap.edit_prefix(args.get('auth'), args.get('schema'), args.get('prefix'), args.get('attr'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -297,8 +297,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.remove_prefix(args.get('auth'), args.get('schema'), args.get('prefix'))
-        except nap.NapError, e:
+            return self.nipap.remove_prefix(args.get('auth'), args.get('schema'), args.get('prefix'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -311,8 +311,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.search_prefix(args.get('auth'), args.get('schema'), args.get('query'), args.get('search_options'))
-        except nap.NapError, e:
+            return self.nipap.search_prefix(args.get('auth'), args.get('schema'), args.get('query'), args.get('search_options'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -326,8 +326,8 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.smart_search_prefix(args.get('auth'), args.get('schema'), args.get('query_string'), args.get('search_options'))
-        except nap.NapError, e:
+            return self.nipap.smart_search_prefix(args.get('auth'), args.get('schema'), args.get('query_string'), args.get('search_options'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -337,6 +337,6 @@ class NapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nap.find_free_prefix(args.get('auth'), args.get('schema'), args.get('args'))
-        except nap.NapError, e:
+            return self.nipap.find_free_prefix(args.get('auth'), args.get('schema'), args.get('args'))
+        except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))

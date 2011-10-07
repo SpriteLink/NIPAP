@@ -18,7 +18,7 @@ setup(
 	packages = ['nipap'],
 	keywords = ['nipap'],
 	requires = ['twisted', 'ldap', 'sqlite3', 'IPy', 'psycopg2'],
-    scripts = ['napd'],
+    scripts = ['nipapd'],
     data_files = [ ('/etc/nipap/', ['nipap.conf']) ],
 	classifiers = [
         'Development Status :: 4 - Beta',

@@ -8,12 +8,12 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from napwww.lib.base import BaseController, render
-from pynipap import Schema, Prefix, Pool, NapError
+from pynipap import Schema, Prefix, Pool, NipapError
 
 log = logging.getLogger(__name__)
 
 class XhrController(BaseController):
-    """ Interface to a few of the Nap API functions.
+    """ Interface to a few of the NIPAP API functions.
 
         TODO: verify that we have a schema id or name specified and
         fail gracefully if not.
@@ -55,15 +55,15 @@ class XhrController(BaseController):
 
         try:
             schemas = Schema.list()
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(schemas, cls=NapJSONEncoder)
+        return json.dumps(schemas, cls=NipapJSONEncoder)
 
 
 
     def add_schema(self):
-        """ Add a new schema to Nap and returns its data.
+        """ Add a new schema to NIPAP and returns its data.
         """
 
         s = Schema()
@@ -76,10 +76,10 @@ class XhrController(BaseController):
 
         try:
             s.save()
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(s, cls=NapJSONEncoder)
+        return json.dumps(s, cls=NipapJSONEncoder)
 
 
 
@@ -89,7 +89,7 @@ class XhrController(BaseController):
 
         try:
             s = Schema.get(int(id))
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         if 'name' in request.params:
@@ -101,10 +101,10 @@ class XhrController(BaseController):
 
         try:
             s.save()
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(s, cls=NapJSONEncoder)
+        return json.dumps(s, cls=NipapJSONEncoder)
 
 
 
@@ -115,10 +115,10 @@ class XhrController(BaseController):
         try:
             schema = Schema.get(int(request.params['schema']))
             pools = Pool.list(schema)
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(pools, cls=NapJSONEncoder)
+        return json.dumps(pools, cls=NipapJSONEncoder)
 
 
 
@@ -154,10 +154,10 @@ class XhrController(BaseController):
                 request.params['query_string'],
                 search_options
                 )
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(result, cls=NapJSONEncoder)
+        return json.dumps(result, cls=NipapJSONEncoder)
 
 
 
@@ -167,7 +167,7 @@ class XhrController(BaseController):
 
         try:
             c.schema = Schema.get(int(request.params.get('schema')))
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         # extract attributes
@@ -185,10 +185,10 @@ class XhrController(BaseController):
 
         try:
            p.save()
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(p, cls=NapJSONEncoder)
+        return json.dumps(p, cls=NipapJSONEncoder)
 
 
 
@@ -198,7 +198,7 @@ class XhrController(BaseController):
 
         try:
             c.schema = Schema.get(int(request.params.get('schema')))
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         # extract attributes
@@ -218,10 +218,10 @@ class XhrController(BaseController):
 
         try:
            p.save()
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(p, cls=NapJSONEncoder)
+        return json.dumps(p, cls=NipapJSONEncoder)
 
 
 
@@ -235,10 +235,10 @@ class XhrController(BaseController):
         try:
             schema = Schema.get(int(request.params['schema']))
             prefixes = Prefix.list(schema, attr)
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(prefixes, cls=NapJSONEncoder)
+        return json.dumps(prefixes, cls=NipapJSONEncoder)
 
 
 
@@ -301,10 +301,10 @@ class XhrController(BaseController):
         try:
             schema = Schema.get(int(request.params['schema']))
             result = Prefix.search(schema, q, search_opts)
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(result, cls=NapJSONEncoder)
+        return json.dumps(result, cls=NipapJSONEncoder)
 
 
 
@@ -354,10 +354,10 @@ class XhrController(BaseController):
                 request.params['query_string'],
                 search_options
                 )
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(result, cls=NapJSONEncoder)
+        return json.dumps(result, cls=NipapJSONEncoder)
 
 
 
@@ -389,7 +389,7 @@ class XhrController(BaseController):
         # parameters which are "special cases"
         try:
             p.schema = Schema.get(int(request.params['schema']))
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         # standard parameters
@@ -426,7 +426,7 @@ class XhrController(BaseController):
         if 'from_pool' in request.params:
             try:
                 args['from-pool'] = Pool.get(p.schema, int(request.params['from_pool']))
-            except NapError, e:
+            except NipapError, e:
                 return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
         if 'family' in request.params:
             args['family'] = int(request.params['family'])
@@ -440,10 +440,10 @@ class XhrController(BaseController):
 
         try:
             p.save(args)
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(p, cls=NapJSONEncoder)
+        return json.dumps(p, cls=NipapJSONEncoder)
 
 
 
@@ -482,10 +482,10 @@ class XhrController(BaseController):
 
             p.save()
 
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(p, cls=NapJSONEncoder)
+        return json.dumps(p, cls=NipapJSONEncoder)
 
 
 
@@ -498,14 +498,14 @@ class XhrController(BaseController):
             p = Prefix.get(schema, int(request.params['id']))
             p.remove()
 
-        except NapError, e:
+        except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(p, cls=NapJSONEncoder)
+        return json.dumps(p, cls=NipapJSONEncoder)
 
 
-class NapJSONEncoder(json.JSONEncoder):
-    """ A class used to encode Nap objects to JSON.
+class NipapJSONEncoder(json.JSONEncoder):
+    """ A class used to encode NIPAP objects to JSON.
     """
 
     def default(self, obj):
