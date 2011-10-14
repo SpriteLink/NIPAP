@@ -1,9 +1,13 @@
 #!/usr/bin/python
 # vim: et sw=4 sts=4 :
 
+import fcntl
 import logging
 import logging.handlers
 import optparse
+import os
+import sys
+
 import nipap.xmlrpc
 from nipap.nipapconfig import NipapConfig
 
@@ -13,6 +17,7 @@ if __name__ == '__main__':
     parser.add_option("-f", "--foreground", action="store_true", dest="foreground", help="run in foreground and log to stdout")
     parser.add_option("-p", "--port", dest="port", type="int", help="listen to TCP port PORT")
     parser.add_option("-c", "--config", dest="config_file", type="string", default="/etc/nipap/nipap.conf", help="read configuration from file CONFIG_FILE")
+    parser.add_option("-P", "--pid-file", type="string", help="write a PID file")
 
     (options, args) = parser.parse_args()
 
@@ -49,7 +54,6 @@ if __name__ == '__main__':
 
         cfg.set('nipapd', val.dest, str(eval("options." + val.dest)))
 
-
     if cfg.getboolean('nipapd', 'debug') or cfg.getboolean('nipapd', 'foreground'):
         # log to stdout
         log_stream = logging.StreamHandler()
@@ -62,5 +66,21 @@ if __name__ == '__main__':
         import daemon
         ret = daemon.createDaemon()
 
+    # pid file handling
+    logger.debug('Writing PID to file: ' + options.pid_file)
+    if cfg.get('nipapd', 'pid_file'):
+        # need a+ to be able to read PID from file
+        lf = open(options.pid_file, 'a+', 0)
+        try:
+            fcntl.lockf(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except IOError:
+            logger.error('NIPAPd already running (pid: ' + lf.read().strip() + ')')
+            sys.exit(1)
+        logger.debug('Writing PID to file: ' + options.pid_file)
+        lf.truncate()
+        lf.write('%d\n' % os.getpid())
+        lf.flush()
+
     napxml = nipap.xmlrpc.NipapXMLRPC()
     napxml.run()
+
