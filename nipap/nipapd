@@ -37,7 +37,14 @@ if __name__ == '__main__':
         'port': 1337
     }
 
-    cfg = NipapConfig(options.config_file, default)
+    try:
+        cfg = NipapConfig(options.config_file, default)
+    except nipap.nipapconfig.NipapConfigError, exc:
+        if options.config_file:
+            print >> sys.stderr, "The specified configuration file ('" + options.config_file + "') does not exist"
+            sys.exit(1)
+        # if no config file is specified, we'll live with our defaults
+
 
     # Go through list of optparse options and set the config object to
     # their values.
@@ -55,6 +62,7 @@ if __name__ == '__main__':
 
         cfg.set('nipapd', val.dest, str(eval("options." + val.dest)))
 
+
     if cfg.getboolean('nipapd', 'debug') or cfg.getboolean('nipapd', 'foreground'):
         # log to stdout
         log_stream = logging.StreamHandler()
@@ -66,6 +74,7 @@ if __name__ == '__main__':
     else:
         import daemon
         ret = daemon.createDaemon()
+
 
     # pid file handling
     if cfg.get('nipapd', 'pid_file'):
@@ -80,6 +89,7 @@ if __name__ == '__main__':
         lf.truncate()
         lf.write('%d\n' % os.getpid())
         lf.flush()
+
 
     import twisted
     try:
