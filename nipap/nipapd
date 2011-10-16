@@ -69,13 +69,13 @@ if __name__ == '__main__':
     # pid file handling
     if cfg.get('nipapd', 'pid_file'):
         # need a+ to be able to read PID from file
-        lf = open(options.pid_file, 'a+', 0)
+        lf = open(cfg.get('nipapd', 'pid_file'), 'a+', 0)
         try:
             fcntl.lockf(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
             logger.error('NIPAPd already running (pid: ' + lf.read().strip() + ')')
             sys.exit(1)
-        logger.debug('Writing PID to file: ' + options.pid_file)
+        logger.debug('Writing PID to file: ' + cfg.get('nipapd', 'pid_file'))
         lf.truncate()
         lf.write('%d\n' % os.getpid())
         lf.flush()
