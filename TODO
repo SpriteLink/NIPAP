@@ -9,9 +9,7 @@ Core
    searching for new candidate prefixes. prolly useful for paginating output in
    a potential web gui
  - add test suite for the XML-RPC API
- - authentication in XML-RPC framework
  - authorization in XML-RPC framework
- - accounting in NIPAP
  - write test cases for the search_prefix function
 
 
