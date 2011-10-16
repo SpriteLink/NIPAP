@@ -15,7 +15,7 @@ from nipap.authlib import SqliteAuth
 from nipap.nipapconfig import NipapConfig
 
 class NipapTest(unittest.TestCase):
-    """ Tests the NAP class
+    """ Tests the NIPAP class
     """
 
     logger = logging.getLogger()

@@ -751,9 +751,9 @@ class Prefix(Pynipap):
 #
 
 class NipapError(Exception):
-    """ A generic NAP model exception.
+    """ A generic NIPAP model exception.
 
-        All errors thrown from the NAP model extends this exception.
+        All errors thrown from the NIPAP model extends this exception.
     """
     pass
 
@@ -762,7 +762,7 @@ class NipapError(Exception):
 class NipapNonExistentError(NipapError):
     """ Thrown when something can not be found.
 
-        For example when a given ID can not be found in the NAP database.
+        For example when a given ID can not be found in the NIPAP database.
     """
 
 

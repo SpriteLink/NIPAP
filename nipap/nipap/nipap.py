@@ -204,7 +204,7 @@ class Nipap:
         """
 
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._logger.debug("Initialising NAP")
+        self._logger.debug("Initialising NIPAP")
 
         # Create database connection
         try:
