@@ -80,6 +80,11 @@ if __name__ == '__main__':
         lf.write('%d\n' % os.getpid())
         lf.flush()
 
-    napxml = nipap.xmlrpc.NipapXMLRPC()
-    napxml.run()
+    import twisted
+    try:
+        napxml = nipap.xmlrpc.NipapXMLRPC()
+        napxml.run()
+    except twisted.internet.error.CannotListenError, exc:
+        logger.error(exc)
+        sys.exit(1)
 
