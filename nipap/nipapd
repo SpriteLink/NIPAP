@@ -67,7 +67,6 @@ if __name__ == '__main__':
         ret = daemon.createDaemon()
 
     # pid file handling
-    logger.debug('Writing PID to file: ' + options.pid_file)
     if cfg.get('nipapd', 'pid_file'):
         # need a+ to be able to read PID from file
         lf = open(options.pid_file, 'a+', 0)
