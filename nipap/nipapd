@@ -33,6 +33,7 @@ if __name__ == '__main__':
     default = {
         'debug': False,
         'foreground': False,
+        'pid_file': None,
         'port': 1337
     }
 
