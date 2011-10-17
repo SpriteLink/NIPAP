@@ -19,12 +19,44 @@ from authlib import AuthFactory
 class NipapXMLRPC:
     stop = None
     _cfg = None
+    root_logger = None
 
-    def __init__(self):
+    def __init__(self, root_logger = None):
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.root_logger = root_logger
 
         self._cfg = NipapConfig()
         self.cfg_file = None
+
+        self.init()
+
+
+    def init(self):
+        """ Non Python init
+
+            This init function should be called after the configuration has
+            been read. It is a separate function from __init__ so that it may
+            be called if the configuration file is reread when the daemon is
+            running.
+        """
+        # we cannot switch between foreground and background here, so ignoring
+        # 'foreground' option
+
+        # syslog
+        if self._cfg.getboolean('nipapd', 'syslog'):
+            log_syslog = logging.handlers.SysLogHandler(address = '/dev/log')
+            log_syslog.setFormatter(logging.Formatter("%(levelname)-8s %(message)s"))
+            self.root_logger.addHandler(log_syslog)
+
+        if self._cfg.getboolean('nipapd', 'foreground'):
+            # log to stdout
+            log_stream = logging.StreamHandler()
+            log_stream.setFormatter(logging.Formatter("%(asctime)s: %(levelname)-8s %(message)s"))
+            self.root_logger.addHandler(log_stream)
+            self.root_logger.setLevel(logging.DEBUG)
+
+        if self._cfg.getboolean('nipapd', 'debug'):
+            self.root_logger.setLevel(logging.DEBUG)
 
 
 
@@ -50,6 +82,7 @@ class NipapXMLRPC:
         """
         self.logger.info("Received SIGHUP - reloading configuration")
         self._cfg.read_file()
+        self.init()
 
 
 

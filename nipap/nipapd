@@ -22,17 +22,11 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     logger = logging.getLogger()
-    log_format = "%(levelname)-8s %(message)s"
-
-    # do logging to syslog by default
-    log_syslog = logging.handlers.SysLogHandler(address = '/dev/log')
-    log_syslog.setFormatter(logging.Formatter(log_format))
-    log_syslog.setLevel(logging.WARNING)
-    logger.addHandler(log_syslog)
 
     default = {
-        'debug': False,
-        'foreground': False,
+        'syslog': 'false',
+        'debug': 'false',
+        'foreground': 'false',
         'pid_file': None,
         'port': 1337,
         'db_host': None,
@@ -69,18 +63,12 @@ if __name__ == '__main__':
         cfg.set('nipapd', val.dest, str(eval("options." + val.dest)))
 
 
-    if cfg.getboolean('nipapd', 'debug') or cfg.getboolean('nipapd', 'foreground'):
-        # log to stdout
-        log_stream = logging.StreamHandler()
-        log_stream.setFormatter(logging.Formatter("%(asctime)s: " + log_format))
-        if cfg.getboolean('nipapd', 'debug'):
-            logger.setLevel(logging.DEBUG)
-
-        logger.addHandler(log_stream)
-    else:
+    if not cfg.getboolean('nipapd', 'foreground'):
         import daemon
         ret = daemon.createDaemon()
 
+    # init our XML-RPC daemon
+    nipapxml = nipap.xmlrpc.NipapXMLRPC(root_logger = logger)
 
     # pid file handling
     if cfg.get('nipapd', 'pid_file'):
@@ -97,9 +85,9 @@ if __name__ == '__main__':
         lf.flush()
 
 
+    # run XML-RPC daemon
     import twisted
     try:
-        nipapxml = nipap.xmlrpc.NipapXMLRPC()
         nipapxml.run()
     except twisted.internet.error.CannotListenError, exc:
         logger.error(exc)
