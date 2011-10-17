@@ -99,8 +99,8 @@ if __name__ == '__main__':
 
     import twisted
     try:
-        napxml = nipap.xmlrpc.NipapXMLRPC()
-        napxml.run()
+        nipapxml = nipap.xmlrpc.NipapXMLRPC()
+        nipapxml.run()
     except twisted.internet.error.CannotListenError, exc:
         logger.error(exc)
         sys.exit(1)

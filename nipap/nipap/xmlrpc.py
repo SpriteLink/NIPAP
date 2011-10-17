@@ -25,10 +25,24 @@ class NipapXMLRPC:
 
 
     def run(self):
+
+        # most signals are handled by Twisted by default but for SIGHUP to
+        # behave as we want (ie, reload the configuration file) we need to
+        # install a custom handler
+        import signal
+        signal.signal(signal.SIGHUP, self.sigHup)
+
         from twisted.internet import reactor
         protocol = NipapProtocol()
         reactor.listenTCP(self._cfg.getint('nipapd', 'port'), server.Site(protocol))
         reactor.run()
+
+    def _sigHup(self, num, frame):
+        """ Customer signal handler for SIGHUP
+        """
+        # TODO: refactor the program so that we may reload the configuration
+        #       file here
+        pass
 
 
 class NipapProtocol(xmlrpc.XMLRPC):
