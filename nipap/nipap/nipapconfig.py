@@ -7,7 +7,7 @@ __license__    = "MIT"
 __status__     = "Development"
 __url__        = "http://github.com/plajjan/NIPAP"
 
-class NipapConfig(ConfigParser.ConfigParser):
+class NipapConfig(ConfigParser.SafeConfigParser):
     """ Makes configuration data available.
 
         Implemented as a class with a shared state; once an instance has been
@@ -29,7 +29,7 @@ class NipapConfig(ConfigParser.ConfigParser):
             if cfg_path is None:
                 raise NipapConfigError("missing configuration file path")
                 
-            ConfigParser.ConfigParser.__init__(self, default)
+            ConfigParser.ConfigParser.__init__(self, default, allow_no_value = True)
 
             try:
                 cfg_fp = open(cfg_path, 'r')

@@ -206,9 +206,27 @@ class Nipap:
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.debug("Initialising NIPAP")
 
+        from nipapconfig import NipapConfig
+        self._cfg = NipapConfig()
+
+        # Get database configuration
+        db_args = {}
+        db_args['host'] = self._cfg.get('nipapd', 'db_host')
+        db_args['database'] = self._cfg.get('nipapd', 'db_name')
+        db_args['user'] = self._cfg.get('nipapd', 'db_user')
+        db_args['password'] = self._cfg.get('nipapd', 'db_pass')
+        db_args['sslmode'] = self._cfg.get('nipapd', 'db_sslmode')
+        # delete keys that are None, for example if we want to connect over a
+        # UNIX socket, the 'host' argument should not be passed into the DSN
+        if db_args['host'] is not None and db_args['host'] == '':
+            db_args['host'] = None
+        for key in db_args.copy():
+            if db_args[key] is None:
+                del(db_args[key])
+
         # Create database connection
         try:
-            self._con_pg = psycopg2.connect("host='localhost' dbname='nap' user='napd' password='dpan'")
+            self._con_pg = psycopg2.connect(**db_args)
             self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
             self._register_inet()

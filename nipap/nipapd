@@ -34,7 +34,13 @@ if __name__ == '__main__':
         'debug': False,
         'foreground': False,
         'pid_file': None,
-        'port': 1337
+        'port': 1337,
+        'db_host': None,
+        'db_name': 'nipap',
+        'db_port': None,
+        'db_user': 'nipap',
+        'db_pass': 'papin',
+        'db_sslmode': 'require'
     }
 
     try:
