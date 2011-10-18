@@ -527,7 +527,7 @@ function showPrefix(prefix, parent_container, relative) {
 	var prefix_button = $('#prefix_button' + prefix.id);
 	prefix_button.addClass('minibutton');
 	prefix_button.addClass('prefix_button');
-	prefix_button.html("<div class='prefix_button_icon' class='prefix_button_icon'>&nbsp;</span>");
+	prefix_button.html("<div class='prefix_button_icon' class='prefix_button_icon'>&nbsp;</div>");
 	prefix_button.click(prefix, function(e) {
 		showPrefixMenu(e.currentTarget.getAttribute('data-prefix-id'));
 		e.preventDefault();
