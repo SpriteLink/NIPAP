@@ -8,19 +8,20 @@ long_desc = open('README.rst').read()
 short_desc = long_desc.split('\n')[0].split(' - ')[1].strip()
 
 setup(
-	name = 'nipap',
-	version = nipap.__version__,
-	description = short_desc,
-	long_description = long_desc,
-	author = nipap.__author__,
-	license = nipap.__license__,
-	url = nipap.__url__,
-	packages = ['nipap'],
-	keywords = ['nipap'],
-	requires = ['twisted', 'ldap', 'sqlite3', 'IPy', 'psycopg2'],
+    name = 'nipap',
+    version = nipap.__version__,
+    description = short_desc,
+    long_description = long_desc,
+    author = nipap.__author__,
+    author_email = nipap.__author_email__,
+    license = nipap.__license__,
+    url = nipap.__url__,
+    packages = ['nipap'],
+    keywords = ['nipap'],
+    requires = ['twisted', 'ldap', 'sqlite3', 'IPy', 'psycopg2'],
     scripts = ['nipapd'],
     data_files = [ ('/etc/nipap/', ['nipap.conf']) ],
-	classifiers = [
+    classifiers = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
@@ -29,6 +30,6 @@ setup(
         'Natural Language :: English',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 2.6',
-		'Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware'
-	]
+        'Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware'
+    ]
 )
