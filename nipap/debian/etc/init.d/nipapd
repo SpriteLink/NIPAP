@@ -1,0 +1,34 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:	nipapd
+# Required-Start:	$postgresql
+# Required-Stop:	$postgresql
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+# Short-Description:	NIPAP XML-RPC server
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+case "$1" in
+	start)
+		log_daemon_msg "Starting NIPAPd XML-RPC server" "nipapd"
+		;;
+	stop)
+		log_daemon_msg "Stopping NIPAPd XML-RPC server" "nipapd"
+		;;
+	reload)
+		log_daemon_msg "Reloading NIPAPd XML-RPC server's configuration" "nipapd"
+		;;
+	restart)
+		log_daemon_msg "Restarting NIPAPd XML-RPC server" "nipapd"
+		;;
+	status)
+		log_daemon_msg "Status!" "nipapd"
+		;;
+	*)
+		log_action_msg "Usage: /etc/init.d/nipapd {start|stop|restart|reload|status}"
+esac
+
+exit 0
