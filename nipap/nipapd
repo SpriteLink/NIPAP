@@ -89,7 +89,7 @@ if __name__ == '__main__':
     import twisted
     try:
         nipapxml.run()
-    except twisted.internet.error.CannotListenError, exc:
+    except Exception, exc:
         logger.error(exc)
         sys.exit(1)
 
