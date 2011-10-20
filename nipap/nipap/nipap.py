@@ -231,9 +231,9 @@ class Nipap:
             self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
             self._register_inet()
         except psycopg2.Error, e:
-            raise NipapError(e)
+            raise NipapError('pgsql: ' + str(e))
         except psycopg2.Warning, w:
-            self._logger.warning(str(w))
+            self._logger.warning('pgsql: ' + str(w))
 
 
     #
