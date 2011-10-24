@@ -62,7 +62,12 @@ case "$1" in
 		log_daemon_msg "Restarting NIPAPd XML-RPC server" "nipapd"
 		;;
 	status)
-		log_daemon_msg "Status!" "nipapd"
+		RUNNING=$(running)
+		if [ -n "$RUNNING" ]; then
+			log_action_msg "NIPAPd XML-RPC server running with PID $RUNNING"
+		else
+			log_action_msg "NIPAPd XML-RPC not running"
+		fi
 		;;
 	*)
 		log_action_msg "Usage: /etc/init.d/nipapd {start|stop|restart|reload|status}"
