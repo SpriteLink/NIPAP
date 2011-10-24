@@ -46,7 +46,7 @@ case "$1" in
 		log_daemon_msg "Stopping NIPAPd XML-RPC server" "nipapd"
 		RUNNING=$(running)
 		if [ -n "$RUNNING" ]; then
-			if start-stop-daemon --stop --pidfile $PIDFILE; then
+			if start-stop-daemon --stop --pidfile $PIDFILE --retry 30; then
 				log_end_msg 0
 			else
 				log_end_msg 1
@@ -60,6 +60,24 @@ case "$1" in
 		;;
 	restart)
 		log_daemon_msg "Restarting NIPAPd XML-RPC server" "nipapd"
+		RUNNING=$(running)
+		if [ -n "$RUNNING" ]; then
+			if start-stop-daemon --stop --pidfile $PIDFILE; then
+				if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE; then
+					log_end_msg 0
+				else
+					log_end_msg 1
+				fi
+			else
+				log_end_msg 1
+			fi
+		else
+			if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE; then
+				log_end_msg 0
+			else
+				log_end_msg 1
+			fi
+		fi
 		;;
 	status)
 		RUNNING=$(running)
