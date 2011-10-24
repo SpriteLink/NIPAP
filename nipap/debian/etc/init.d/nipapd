@@ -57,6 +57,16 @@ case "$1" in
 		;;
 	reload)
 		log_daemon_msg "Reloading NIPAPd XML-RPC server's configuration" "nipapd"
+		RUNNING=$(running)
+		if [ -n "$RUNNING" ]; then
+			if start-stop-daemon --stop --signal HUP --pidfile $PIDFILE; then
+				log_end_msg 0
+			else
+				log_end_msg 1
+			fi
+		else
+			log_failure_msg "NIPAPd XML-RPC server not running"
+		fi
 		;;
 	restart)
 		log_daemon_msg "Restarting NIPAPd XML-RPC server" "nipapd"
