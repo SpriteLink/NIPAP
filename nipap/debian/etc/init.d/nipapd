@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 ### BEGIN INIT INFO
 # Provides:	nipapd
@@ -9,14 +9,59 @@
 # Short-Description:	NIPAP XML-RPC server
 ### END INIT INFO
 
+DAEMON=/usr/sbin/nipapd
+DAEMON=/home/kll/kod/NIPAP/nipap/nipapd
+DAEMON=/usr/bin/nipapd
+CONFIGFILE=/home/kll/kod/NIPAP/nipap/kll.conf
+NAME=NIPAPd
+PIDFILE=/var/run/nipapd.pid
+
 . /lib/lsb/init-functions
+
+running() {
+	if [ $(flock -xn $PIDFILE -c 'echo 1') ]; then 
+		echo "RUNNING!"
+		cat $PIDFILE
+	else
+		echo "NOT RUNNING!"
+		echo -n ""
+	fi
+}
+
 
 case "$1" in
 	start)
 		log_daemon_msg "Starting NIPAPd XML-RPC server" "nipapd"
+		RUNNING=$(running)
+		if [ -n "$RUNNING" ]; then
+			echo $RUNNING
+			log_progress_msg "already running"
+			log_end_msg 0
+		else
+			if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE; then
+				log_end_msg 0
+			else
+				log_end_msg 1
+			fi
+		fi
 		;;
 	stop)
 		log_daemon_msg "Stopping NIPAPd XML-RPC server" "nipapd"
+		RUNNING=$(running)
+		echo "before"
+		if [ -n "$RUNNING" ]; then
+			echo "running"
+			if start-stop-daemon --stop --pidfile $PIDFILE; then
+				echo "fail?"
+				log_end_msg 0
+			else
+				echo "success"
+				log_end_msg 1
+			fi
+		else
+			echo "not running"
+			log_end_msg 0
+		fi
 		;;
 	reload)
 		log_daemon_msg "Reloading NIPAPd XML-RPC server's configuration" "nipapd"

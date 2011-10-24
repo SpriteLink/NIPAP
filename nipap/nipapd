@@ -64,8 +64,8 @@ if __name__ == '__main__':
 
 
     if not cfg.getboolean('nipapd', 'foreground'):
-        import daemon
-        ret = daemon.createDaemon()
+        import nipap.daemon
+        ret = nipap.daemon.createDaemon()
 
     # init our XML-RPC daemon
     nipapxml = nipap.xmlrpc.NipapXMLRPC(root_logger = logger)
