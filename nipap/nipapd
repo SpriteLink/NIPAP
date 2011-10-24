@@ -64,8 +64,8 @@ if __name__ == '__main__':
 
 
     if not cfg.getboolean('nipapd', 'foreground'):
-        import daemon
-        ret = daemon.createDaemon()
+        import nipap.daemon
+        ret = nipap.daemon.createDaemon()
 
     # init our XML-RPC daemon
     nipapxml = nipap.xmlrpc.NipapXMLRPC(root_logger = logger)
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         # need a+ to be able to read PID from file
         lf = open(cfg.get('nipapd', 'pid_file'), 'a+', 0)
         try:
-            fcntl.lockf(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
             logger.error('NIPAPd already running (pid: ' + lf.read().strip() + ')')
             sys.exit(1)
