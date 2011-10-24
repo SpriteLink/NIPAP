@@ -20,11 +20,9 @@ PIDFILE=/var/run/nipapd.pid
 
 running() {
 	if [ $(flock -xn $PIDFILE -c 'echo 1') ]; then 
-		echo "RUNNING!"
-		cat $PIDFILE
+		echo -n
 	else
-		echo "NOT RUNNING!"
-		echo -n ""
+		cat $PIDFILE
 	fi
 }
 
@@ -34,7 +32,6 @@ case "$1" in
 		log_daemon_msg "Starting NIPAPd XML-RPC server" "nipapd"
 		RUNNING=$(running)
 		if [ -n "$RUNNING" ]; then
-			echo $RUNNING
 			log_progress_msg "already running"
 			log_end_msg 0
 		else
@@ -48,18 +45,13 @@ case "$1" in
 	stop)
 		log_daemon_msg "Stopping NIPAPd XML-RPC server" "nipapd"
 		RUNNING=$(running)
-		echo "before"
 		if [ -n "$RUNNING" ]; then
-			echo "running"
 			if start-stop-daemon --stop --pidfile $PIDFILE; then
-				echo "fail?"
 				log_end_msg 0
 			else
-				echo "success"
 				log_end_msg 1
 			fi
 		else
-			echo "not running"
 			log_end_msg 0
 		fi
 		;;
