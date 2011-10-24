@@ -1,5 +1,3 @@
-{% import 'macros.html' as nap %}
-
 {% if c.pool is defined %}
 <form method="post" name="pool_form" action="{{ h.url(controller="pool", action="edit", id=c.pool.id) }}">
 {% else %}

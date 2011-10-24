@@ -80,9 +80,9 @@
 
 {% block menu %}
 <div id="search_box">
-	{{ nap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
+	{{ nipap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
 	<div style="position: absolute; right: 20px; top: 55px;">
-		{{ nap.button('Add prefix', color='red', url=h.url(controller = 'prefix', action = 'add', schema = c.schema.id)) }}
+		{{ nipap.button('Add prefix', color='red', url=h.url(controller = 'prefix', action = 'add', schema = c.schema.id)) }}
 	</div>
 </div>
 
@@ -92,6 +92,6 @@
 
 {% block raw_content %}
 
-{{ nap.prefix_search_result() }}
+{{ nipap.prefix_search_result() }}
 
 {% endblock %}

@@ -1,4 +1,4 @@
-{% import 'macros.html' as nap %}
+{% import 'macros.html' as nipap %}
 
 {#
 
@@ -139,8 +139,8 @@
 			<div class="options-guide">
 				You have chosen to allocate your new prefix from inside another, already existing, prefix. Please use the search tool to find and select the prefix which you would like to allocate your new prefix from.
 			</div>
-			{{ nap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
-			{{ nap.prefix_search_result() }}
+			{{ nipap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
+			{{ nipap.prefix_search_result() }}
         </div>
         <div class="rule"></div>
 		<div class="option" id="prefix_length_prefix_container" style="display: none;">
