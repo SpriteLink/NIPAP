@@ -12,9 +12,7 @@ set -e
 ### END INIT INFO
 
 DAEMON=/usr/sbin/nipapd
-DAEMON=/home/kll/kod/NIPAP/nipap/nipapd
-DAEMON=/usr/bin/nipapd
-CONFIGFILE=/home/kll/kod/NIPAP/nipap/kll.conf
+CONFIGFILE=/etc/nipap/nipap.conf
 NAME=NIPAPd
 PIDFILE=/var/run/nipapd.pid
 
