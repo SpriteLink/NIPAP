@@ -1,0 +1,3 @@
+include nipapwww/config/deployment.ini_tmpl
+recursive-include nipapwww/public *
+recursive-include nipapwww/templates *
