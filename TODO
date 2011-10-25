@@ -9,13 +9,11 @@ Core
    searching for new candidate prefixes. prolly useful for paginating output in
    a potential web gui
  - add test suite for the XML-RPC API
- - authorization in XML-RPC framework
  - write test cases for the search_prefix function
 
 
 polish, chrome and shine
 ------------------------
- - configuration file for napd, save DB settings
  - generate random password for DB user on make install and save in napd
    configuration file automatically
  - debian packaging

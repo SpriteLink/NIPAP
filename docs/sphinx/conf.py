@@ -12,8 +12,8 @@
 # serve to show the default.
 
 import sys, os
-sys.path.append('../../napd')
-sys.path.append('../../nap-www/napwww')
+sys.path.append('../../nipap')
+sys.path.append('../../nipap-www/nipapwww')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

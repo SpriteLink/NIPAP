@@ -1,2 +1,2 @@
-.. automodule:: xmlrpc
+.. automodule:: nipap.xmlrpc
    :members:
