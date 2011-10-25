@@ -2,8 +2,8 @@
 
 ### BEGIN INIT INFO
 # Provides:	nipapd
-# Required-Start:	$remote_fs $network $postgresql
-# Required-Stop:	$remote_fs $network $postgresql
+# Required-Start:	$remote_fs $network postgresql
+# Required-Stop:	$remote_fs $network postgresql
 # Default-Start:	2 3 4 5
 # Default-Stop:		0 1 6
 # Short-Description:	NIPAP XML-RPC server
