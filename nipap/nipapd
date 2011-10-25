@@ -22,6 +22,8 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     logger = logging.getLogger()
+    nullh = logging.FileHandler('/dev/null')
+    logger.addHandler(nullh)
 
     default = {
         'syslog': 'false',
