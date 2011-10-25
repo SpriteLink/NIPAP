@@ -1,4 +1,6 @@
-#!/bin/sh -e
+#!/bin/sh
+
+set -e
 
 ### BEGIN INIT INFO
 # Provides:	nipapd
@@ -17,6 +19,17 @@ NAME=NIPAPd
 PIDFILE=/var/run/nipapd.pid
 
 . /lib/lsb/init-functions
+
+RUN=no
+# include defaults if available
+if [ -f /etc/default/nipapd ]; then
+	. /etc/default/nipapd
+fi
+
+if [ "$RUN" != "yes" ]; then
+	log_action_msg "$NAME disabled; edit /etc/default/nipapd"
+	exit 0
+fi
 
 running() {
 	if [ $(flock -xn $PIDFILE -c 'echo 1') ]; then 
