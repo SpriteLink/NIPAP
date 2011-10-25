@@ -229,6 +229,8 @@ class SqliteAuth(BaseAuth):
         if self._authenticated is not None:
             return self._authenticated
 
+        self._logger.debug('Trying to authenticate as user \'%s\'' % self.username)
+
         sql = '''SELECT * FROM user WHERE username = ?'''
         self._db_curs.execute(sql, (self.username, ))
         user = self._db_curs.fetchone()
