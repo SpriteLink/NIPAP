@@ -6,7 +6,7 @@ import re
 import sys
 import time
 
-sys.path.append('../../napd/')
+sys.path.append('../../nipap/')
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
@@ -24,14 +24,14 @@ class bonk:
         self.n = nipap.nipap.Nipap()
 
         #self.n.remove_prefix({ 'name': 'test-schema' }, { 'prefix': '2.0.0.0/8' })
-        #self.n.add_prefix({'name': 'test-schema' }, { 'authoritative_source': 'nap', 'prefix': '2.0.0.0/8', 'description': 'test' })
+        #self.n.add_prefix({'name': 'test-schema' }, { 'prefix': '2.0.0.0/8', 'description': 'test' })
 
 
 
     def clear_db(self):
         """ Clear out everything in the database
         """
-        self.nap._execute("TRUNCATE ip_net_plan CASCADE")
+        self.n._execute("TRUNCATE ip_net_plan CASCADE")
 
 
 
@@ -99,7 +99,7 @@ class bonk:
                             t2 = time.time()
                             for o4 in xrange(os4, 255):
                                 prefix = "%s.%s.%s.%s" % (o1, o2, o3, o4)
-                                self.n.add_prefix({'name': 'test-schema' }, { 'authoritative_source': 'nap', 'prefix': prefix, 'description': 'test' })
+                                self.n.add_prefix({'name': 'test-schema' }, { 'prefix': prefix, 'description': 'test' })
                                 i += 1
                                 if i >= count:
                                     raise StopIteration()
@@ -127,7 +127,7 @@ class bonk:
 
     def add_prefix(self, argp):
         t0 = time.time()
-        prefix = self.n.add_prefix({ 'name': 'test-schema' }, { 'prefix': argp, 'description': 'test', 'authoritative_source': 'test' })
+        prefix = self.n.add_prefix({ 'name': 'test-schema' }, { 'prefix': argp, 'description': 'test' })
         t1 = time.time()
         d1 = t1-t0
         print "Add prefix:", argp, "took", d1, "seconds"
@@ -155,7 +155,7 @@ class bonk:
         res = self.n.find_free_prefix({ 'schema_name': 'test-schema', 'from-prefix': ['1.0.0.0/8'] }, 32, 500)
         t2 = time.time()
         for prefix in res:
-            self.n.add_prefix({ 'authoritative_source': 'nap', 'schema_name': 'test-schema', 'prefix': prefix, 'description': 'test' })
+            self.n.add_prefix({ 'schema_name': 'test-schema', 'prefix': prefix, 'description': 'test' })
         t3 = time.time()
         res = self.n.find_free_prefix({ 'schema_name': 'test-schema', 'from-prefix': ['1.0.0.0/8'] }, 32, 1)
         t4 = time.time()

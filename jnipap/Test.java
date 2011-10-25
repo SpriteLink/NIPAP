@@ -56,7 +56,7 @@ public class Test {
 
 			
 			/*
-			 * It says in napd/nap.py that search_prefix should return a list of dicts
+			 * It says in nipap/nipap.py that search_prefix should return a list of dicts
 			 * A list is most close to the java ArrayList, and a dict is a sort of Map
 			 * Unfortunately, that didin't work, but the following does...
 			 */

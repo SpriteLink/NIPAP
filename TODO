@@ -14,7 +14,7 @@ Core
 
 polish, chrome and shine
 ------------------------
- - generate random password for DB user on make install and save in napd
+ - generate random password for DB user on make install and save in config file
    configuration file automatically
  - debian packaging
  - redhat packaging?

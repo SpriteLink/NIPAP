@@ -9,7 +9,7 @@ wrapper to easyily pass arguments to the internal class doing the real work. I
 had my table with a bunch of prefixes from my previous testing of inserting
 prefixes; ::
 
-    nap=# select count(*) from ip_net_plan;
+    nipap=# select count(*) from ip_net_plan;
       count  
     ---------
      1175844
@@ -97,7 +97,7 @@ prefixes. Instead, let's see what happens next. We still have those "contains"
 matches. Running one of those queries manually shows they each take about half
 a second: ::
 
-    nap=# SELECT 1 FROM ip_net_plan WHERE schema = (SELECT id FROM ip_net_schema WHERE name='test-schema') AND prefix >>= '1.0.0.0' AND prefix << '1.0.0.0/8';
+    nipap=# SELECT 1 FROM ip_net_plan WHERE schema = (SELECT id FROM ip_net_schema WHERE name='test-schema') AND prefix >>= '1.0.0.0' AND prefix << '1.0.0.0/8';
      ?column? 
     ----------
             1
