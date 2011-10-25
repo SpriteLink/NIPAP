@@ -68,6 +68,9 @@ case "$1" in
 			log_failure_msg "NIPAPd XML-RPC server not running"
 		fi
 		;;
+	force-reload)
+		$0 reload
+		;;
 	restart)
 		log_daemon_msg "Restarting NIPAPd XML-RPC server" "nipapd"
 		RUNNING=$(running)
@@ -98,7 +101,7 @@ case "$1" in
 		fi
 		;;
 	*)
-		log_action_msg "Usage: /etc/init.d/nipapd {start|stop|restart|reload|status}"
+		log_action_msg "Usage: /etc/init.d/nipapd {start|stop|restart|reload|force-reload|status}"
 esac
 
 exit 0
