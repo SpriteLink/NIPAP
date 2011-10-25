@@ -415,7 +415,6 @@ class XhrController(BaseController):
                 p.monitor = True
             else:
                 p.monitor = False
-        p.authoritative_source = 'nap-www'
 
         log.debug('request: %s' % str(request.params))
 
