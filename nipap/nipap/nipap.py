@@ -712,8 +712,6 @@ class Nipap:
         sql = "UPDATE ip_net_schema SET " + update
         sql += " WHERE " + where
 
-        self._logger.debug("ASDF :: %s :: %s" % (sql, str(params)))
-
         self._execute(sql, params)
 
         # write to audit table
