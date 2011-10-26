@@ -34,8 +34,6 @@ public class Connection {
 		// Create configuration object
 		this.config = new XmlRpcClientConfigImpl();
 		this.config.setServerURL(srv_url);
-		this.config.setBasicUserName("dev@local");
-		this.config.setBasicPassword("dev");
 		this.config.setEnabledForExtensions(true);
 
 		// Create client object
@@ -44,6 +42,14 @@ public class Connection {
 		this.connection.setTypeFactory(new NonExNullParser(this.connection));
 
 	}
+
+        public void setUsername(String username) {
+            this.config.setBasicUserName(username);
+        }
+
+        public void setPassword(String password) {
+            this.config.setBasicPassword(password);
+        }
 
 	/**
 	 * Get an instance of the JnipapConnection
@@ -84,6 +90,29 @@ public class Connection {
 		return _instance;
 
 	}
+
+        /**
+         * Get an instance of the JnipapConnection
+         *
+         * Function is equal to getInstance(URL srv_url) with the addition that
+         * the username & password which will be used to authenticate the
+         * queries can be specified.
+         *
+         * @param srv_url URL to the NIPAP server
+         * @param username Username to authenticate as
+         * @param password Password to authenticate with
+         * @return A reference to the JnipapConnection object
+         */
+        public static Connection getInstance(URL srv_url, String username,
+            String password) {
+
+            Connection conn = Connection.getInstance(srv_url);
+            conn.setUsername(username);
+            conn.setPassword(password);
+
+            return conn;
+
+        }
 }
 
 class JnipapConnectionError extends RuntimeException {

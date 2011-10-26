@@ -12,7 +12,7 @@ import jnipap.AuthOptions;
  */
 abstract public class Jnipap {
 
-	public int id;
+	public Integer id;
 
 	protected Connection conn;
 
@@ -30,12 +30,12 @@ abstract public class Jnipap {
 	/**
 	 * Save the object to NIPAP
 	 */
-	abstract public void save(AuthOptions auth);
+	abstract public void save(AuthOptions auth) throws ConnectionException;
 
 	/**
 	 * Remove object from NIPAP
 	 */
-	abstract public void remove(AuthOptions auth);
+	abstract public void remove(AuthOptions auth) throws ConnectionException;
 
 }
 

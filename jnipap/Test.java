@@ -1,5 +1,3 @@
-package jnipap;
-
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -10,6 +8,7 @@ import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
 import jnipap.Schema;
 import jnipap.AuthOptions;
+import jnipap.Connection;
 
 public class Test {
 
@@ -23,14 +22,21 @@ public class Test {
 
 		try {
 			URL u = new URL("http://127.0.0.1:1337/RPC2");
-			Connection conn = Connection.getInstance(u);
+			Connection conn = Connection.getInstance(u, "dev@local",
+                                "dev");
 		} catch(Exception e) {
 			System.out.println(e);
 		}
 
 		try {
-			Schema s = Schema.get(auth, 162);
+
+			Schema s;
+			s = Schema.get(auth, 162);
 			System.out.println(s.toString());
+
+			s.description = "Chop chop";
+			s.save(auth);
+
 		} catch(Exception e) {
 			System.out.println(e);
 		}
