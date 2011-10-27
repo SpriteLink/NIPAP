@@ -4,7 +4,7 @@
 PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/python-pynipap-build
-PROJECT=nipap
+PROJECT=nipapd
 
 all:
 #	$(PYTHON) setup.py build

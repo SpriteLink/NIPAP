@@ -8,7 +8,7 @@ long_desc = open('README.rst').read()
 short_desc = long_desc.split('\n')[0].split(' - ')[1].strip()
 
 setup(
-    name = 'nipap',
+    name = 'nipapd',
     version = nipap.__version__,
     description = short_desc,
     long_description = long_desc,
@@ -19,7 +19,6 @@ setup(
     packages = ['nipap'],
     keywords = ['nipap'],
     requires = ['twisted', 'ldap', 'sqlite3', 'IPy', 'psycopg2'],
-    scripts = ['nipapd'],
     data_files = [
 				('/etc/nipap/', ['nipap.conf']),
 				('/usr/sbin/', ['nipapd'])
