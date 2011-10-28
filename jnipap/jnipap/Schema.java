@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcHttpTransportException;
 
 import jnipap.NonExistentException;
 import jnipap.ConnectionException;
+import jnipap.AuthFailedException;
 import jnipap.Connection;
 
 public class Schema extends Jnipap {
@@ -30,7 +32,7 @@ public class Schema extends Jnipap {
 	/**
 	 * Save object to NIPAP
 	 */
-	public void save(AuthOptions auth) throws ConnectionException {
+	public void save(AuthOptions auth) throws JnipapException {
 
 		// create hashmap of schema attributes
 		HashMap<String, Object> attr = new HashMap<String, Object>();
@@ -68,11 +70,7 @@ public class Schema extends Jnipap {
 
 		// perform operation
 		Object[] result;
-		try {
-			result = (Object[])conn.connection.execute(cmd, params);
-		} catch(XmlRpcException e) {
-			throw new ConnectionException(e);
-		}
+		result = (Object[])conn.execute(cmd, params);
 
 		// If we added a new schema, fetch and set ID
 		if (this.id == null) {
@@ -131,7 +129,7 @@ public class Schema extends Jnipap {
 	 * @param id ID of requested schema
 	 * @return The schema which was found
 	 */
-	public static Schema get(AuthOptions auth, int id) throws NonExistentException, ConnectionException {
+	public static Schema get(AuthOptions auth, int id) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
@@ -150,11 +148,11 @@ public class Schema extends Jnipap {
 
 		// execute query
 		Object[] result;
-		try {
-			result = (Object[])conn.connection.execute("list_schema", params);
-		} catch(XmlRpcException e) {
-			throw new ConnectionException(e);
-		}
+//		try {
+			result = (Object[])conn.execute("list_schema", params);
+//		} catch(JnipapException e) {
+//			throw e;
+//		}
 
 		// extract data from result
 		if (result.length < 1) {

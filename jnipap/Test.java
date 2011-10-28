@@ -34,8 +34,11 @@ public class Test {
 			s = Schema.get(auth, 162);
 			System.out.println(s.toString());
 
-			s.description = "Chop chop";
-			s.save(auth);
+//			s.description = "Chop chop";
+//			s.save(auth);
+			Schema s2 = new Schema();
+			s2.name = "global";
+			s2.save(auth);
 
 		} catch(Exception e) {
 			System.out.println(e);
