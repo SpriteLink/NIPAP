@@ -2,14 +2,14 @@
 
 PSQL=psql
 
-DB_NAME=nap
-DB_USER=nap
+DB_NAME=nipap
+DB_USER=nipap
 # TODO: enable this! it's a random password generated at install time, but
 # nipapd needs to support a configuration file that we can put it in before we
 # enable it!
 DB_PASS=$(shell </dev/urandom tr -dc [:alpha:] | head -c16)
 # use this supersafe static password until further
-DB_PASS=dpan
+DB_PASS=papin
 
 #
 # TODO: need install thingy for ip4r
