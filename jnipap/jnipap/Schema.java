@@ -108,6 +108,8 @@ public class Schema extends Jnipap {
 
 	/**
 	 * Return a string representation of a schema
+	 *
+	 * @return String describing the schema and its attributes
 	 */
 	public String toString() {
 
@@ -116,6 +118,37 @@ public class Schema extends Jnipap {
 			" name: " + this.name +
 			" desc: " + this.description +
 			" vrf: " + this.vrf;
+
+	}
+
+	/**
+	 * Get list of schemas from NIPAP by its attributes
+	 */
+	public static List<Schema> list(AuthOptions auth, Map<String, Object> schema_spec) throws JnipapException {
+
+		// Create XML-RPC connection
+		Connection conn = Connection.getInstance();
+
+		// Build function args
+		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		args.put("auth", auth.toMap());
+		args.put("schema", schema_spec);
+
+		List<HashMap> params = new ArrayList<HashMap>();
+		params.add(args);
+
+		// execute query
+		Object[] result = (Object[])conn.execute("list_schema", params);
+
+		// extract data from result
+		ArrayList<Schema> ret = new ArrayList<Schema>();
+
+		for (int i = 0; i < result.length; i++) {
+			HashMap<String, Object> result_schema = (HashMap<String, Object>)result[0];
+			ret.add(Schema.fromMap(result_schema));
+		}
+
+		return ret;
 
 	}
 
@@ -147,12 +180,7 @@ public class Schema extends Jnipap {
 		params.add(args);
 
 		// execute query
-		Object[] result;
-//		try {
-			result = (Object[])conn.execute("list_schema", params);
-//		} catch(JnipapException e) {
-//			throw e;
-//		}
+		Object[] result = (Object[])conn.execute("list_schema", params);
 
 		// extract data from result
 		if (result.length < 1) {
@@ -185,4 +213,5 @@ public class Schema extends Jnipap {
 		return schema;
 
 	}
+
 }

@@ -1,6 +1,8 @@
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
@@ -30,15 +32,32 @@ public class Test {
 
 		try {
 
-			Schema s;
-			s = Schema.get(auth, 162);
-			System.out.println(s.toString());
+//			Schema s;
+//			s = Schema.get(auth, 162);
+//			System.out.println(s.toString());
 
 //			s.description = "Chop chop";
 //			s.save(auth);
+			System.out.println("Creating schema 2");
 			Schema s2 = new Schema();
-			s2.name = "global";
+			s2.name = "global 1";
+			s2.vrf = "1257:1337";
 			s2.save(auth);
+
+			System.out.println("Creating schema 3");
+			Schema s3 = new Schema();
+			s3.name = "global 2";
+			s3.description = "Tjingetjong";
+			s3.save(auth);
+
+			System.out.println("\nFetching all schemas...");
+			HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+			List<Schema> l = Schema.list(auth, schema_spec);
+
+			for (int i = 0; i < l.size(); i++) {
+				System.out.println(l.get(i).toString());
+			}
+
 
 		} catch(Exception e) {
 			System.out.println(e);
