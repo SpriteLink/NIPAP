@@ -8,7 +8,7 @@ DB_USER=nipap
 # nipapd needs to support a configuration file that we can put it in before we
 # enable it!
 DB_PASS=$(shell </dev/urandom tr -dc [:alpha:] | head -c16)
-# use this supersafe static password until further
+# use this supersecure static password until further
 DB_PASS=papin
 
 #
