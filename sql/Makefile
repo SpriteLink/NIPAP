@@ -48,10 +48,10 @@ db:
 
 install:
 	-createlang -d $(DB_NAME) plpgsql
-	psql -q -d $(DB_NAME) -f find_free_prefix.plsql
-	psql -q -d $(DB_NAME) -f get_prefix.plsql
-	psql -q -d $(DB_NAME) -f calc_indent.plsql
-	psql -q -d $(DB_NAME) -f ip_net.plsql
+	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f find_free_prefix.plsql
+	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f get_prefix.plsql
+	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f calc_indent.plsql
+	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f ip_net.plsql
 
 clean:
-	psql -q -d $(DB_NAME) -f clean.plsql
+	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f clean.plsql

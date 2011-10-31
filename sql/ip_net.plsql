@@ -267,16 +267,6 @@ CREATE TRIGGER trigger_ip_net_plan_prefix__iu_after
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_prefix_family_after();
 
-
-GRANT ALL ON ip_net_plan TO napd;
-GRANT USAGE ON ip_net_plan_id_seq TO napd;
-GRANT ALL ON ip_net_pool TO napd;
-GRANT USAGE ON ip_net_pool_id_seq TO napd;
-GRANT ALL ON ip_net_schema TO napd;
-GRANT USAGE ON ip_net_schema_id_seq TO napd;
-GRANT ALL ON ip_net_log TO napd;
-GRANT USAGE ON ip_net_log_id_seq TO napd;
-
 --
 -- example data
 --
