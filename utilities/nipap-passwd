@@ -43,7 +43,7 @@ if __name__ == '__main__':
         for u in a.list_users():
             print "%-20s %-25s %-7d" % (u['username'], u['full_name'], int(u['trusted']))
 
-    if options.add_user:
+    elif options.add_user:
         if not options.password:
             print "Please specify password with --password"
             sys.exit(1)
@@ -54,6 +54,9 @@ if __name__ == '__main__':
         a.add_user(options.add_user, options.password, options.name, options.trusted)
         print "Added user %s" % options.add_user
 
-    if options.delete_user:
+    elif options.delete_user:
         a.remove_user(options.delete_user)
         print "User %s deleted" % options.delete_user
+
+    else:
+        parser.print_help()
