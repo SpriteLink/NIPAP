@@ -22,7 +22,8 @@ if __name__ == '__main__':
     parser.add_option('-l', '--list', action='store_true', dest='list', help='list users')
     parser.add_option('-t', '--trusted', action='store_true', dest='trusted', default=False, help='mark user as trusted')
     parser.add_option('-n', '--name', dest='name', type='string', help='set user\'s name to NAME')
-    parser.add_option('-c', '--config', dest='config', default='/etc/nipap/nipap.conf', type='string', help='read configuration from CONFIG')
+    parser.add_option('-c', '--config', dest='config', default='/etc/nipap/nipap.conf', type='string', help=
+            'read configuration from CONFIG [default:/etc/nipap/nipap.conf]')
     options, args = parser.parse_args()
 
     logger = logging.getLogger()
