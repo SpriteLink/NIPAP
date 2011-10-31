@@ -21,7 +21,13 @@ setup(
     requires = ['twisted', 'ldap', 'sqlite3', 'IPy', 'psycopg2'],
     data_files = [
 				('/etc/nipap/', ['nipap.conf']),
-				('/usr/sbin/', ['nipapd'])
+				('/usr/sbin/', ['nipapd']),
+				('/usr/share/nipap/sql/', [
+					'sql/calc_indent.plsql',
+					'sql/find_free_prefix.plsql',
+					'sql/get_prefix.plsql',
+					'sql/ip_net.plsql'
+				])
 	],
     classifiers = [
         'Development Status :: 4 - Beta',
