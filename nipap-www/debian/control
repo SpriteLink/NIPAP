@@ -1,0 +1,14 @@
+Source: nipap-www
+Section: web
+Priority: optional
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Build-Depends: debhelper (>= 5.0.38), debhelper (>= 7),
+ python-central (>= 0.5.6), python-setuptools (>= 0.6b3)
+Standards-Version: 3.9.1
+
+Package: nipap-www
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}, python-pylons (>=1.0), python-pynipap, nipap-common
+XB-Python-Version: ${python:Versions}
+Description: web frontend for NIPAP
+ A web UI for the NIPAP IP address planning service.

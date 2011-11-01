@@ -1,0 +1,11 @@
+nipap-www (0.5.0dev-2) natty; urgency=low
+
+  * Various smaller changes...
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 31 Oct 2011 17:32:18 +0100
+
+nipap-www (0.5.0dev-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 25 Oct 2011 16:17:57 +0200

@@ -1,2 +1,4 @@
 Pylons>=1.0
 Jinja2
+pynipap
+nipapd

@@ -1,0 +1,2 @@
+# Keep a few files out of the debian package
+extend-diff-ignore = "(^|/)(test.ini|Makefile)$"
