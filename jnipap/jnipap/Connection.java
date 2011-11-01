@@ -1,9 +1,21 @@
 package jnipap;
 
 import java.net.URL;
+import java.util.List;
 
+import java.security.InvalidParameterException;
+
+import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcHttpTransportException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+
+import jnipap.JnipapException;
+import jnipap.InputException;
+import jnipap.MissingInputException;
+import jnipap.NonExistentException;
+import jnipap.DuplicateException;
+import jnipap.ConnectionException;
 
 /**
  * A singelton class containing a connection to the Jnipap XML-RPC server
@@ -43,13 +55,76 @@ public class Connection {
 
 	}
 
-        public void setUsername(String username) {
-            this.config.setBasicUserName(username);
-        }
+	public void setUsername(String username) {
+		this.config.setBasicUserName(username);
+	}
 
-        public void setPassword(String password) {
-            this.config.setBasicPassword(password);
-        }
+	public void setPassword(String password) {
+		this.config.setBasicPassword(password);
+	}
+
+	public Object execute(String pMethodName, Object[] pParams) throws JnipapException {
+		try {
+			return this.connection.execute(pMethodName, pParams);
+		} catch(XmlRpcException e) {
+			throw (JnipapException)this.xmlRpcExceptionToJnipapException(e);
+		}
+	}
+
+	public Object execute(String pMethodName, List pParams) throws JnipapException {
+		try {
+			return this.connection.execute(pMethodName, pParams);
+		} catch(XmlRpcException e) {
+			throw (JnipapException)this.xmlRpcExceptionToJnipapException(e);
+		}
+	}
+
+	/**
+	 * Converts an XmlRpcException to a JnipapException
+	 *
+	 * @param e XmlRpcException to convert
+	 * @return A JnipapException or subclass of it describing the error
+	 */
+	private Exception xmlRpcExceptionToJnipapException(XmlRpcException e) {
+
+		if (e instanceof XmlRpcHttpTransportException ) {
+
+			XmlRpcHttpTransportException e2 = (XmlRpcHttpTransportException)e;
+
+			// Failed authentications turn up here
+			if (e2.getStatusCode() == 401) {
+				return new AuthFailedException("Authentication failed.");
+			} else {
+				return new ConnectionException(e2);
+			}
+
+		} else {
+
+			// one of our own NIPAP-errors?
+			switch (e.code) {
+				case 1000:
+					return new JnipapException(e.getMessage());
+				case 1100:
+					return new InputException(e.getMessage());
+				case 1110:
+					return new MissingInputException(e.getMessage());
+				case 1120:
+					return new InvalidParameterException(e.getMessage());
+				case 1130:
+					return new IllegalArgumentException(e.getMessage());
+				case 1200:
+					return new IllegalArgumentException(e.getMessage());
+				case 1300:
+					return new NonExistentException(e.getMessage());
+				case 1400:
+					return new DuplicateException(e.getMessage());
+				default:
+					return new JnipapException(e);
+			}
+
+		}
+
+	}
 
 	/**
 	 * Get an instance of the JnipapConnection
@@ -62,7 +137,7 @@ public class Connection {
 
 		// Throw exception if no connection previously has been created
 		if (_instance == null) {
-			throw new JnipapConnectionError("JnipapConnection not configured. Specify URL first!");
+			throw new IllegalStateException("JnipapConnection not configured. Specify URL first!");
 		}
 
 		return _instance;
@@ -113,18 +188,4 @@ public class Connection {
             return conn;
 
         }
-}
-
-class JnipapConnectionError extends RuntimeException {
-
-	/**
-	 * Constructor
-	 *
-	 * @param msg Error message
-	 * @return JnipapConnectionError exception
-	 */
-	public JnipapConnectionError(String msg) {
-		super(msg);
-	}
-
 }

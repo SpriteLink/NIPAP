@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcHttpTransportException;
 
 import jnipap.NonExistentException;
 import jnipap.ConnectionException;
+import jnipap.AuthFailedException;
 import jnipap.Connection;
 
 public class Schema extends Jnipap {
@@ -30,7 +32,7 @@ public class Schema extends Jnipap {
 	/**
 	 * Save object to NIPAP
 	 */
-	public void save(AuthOptions auth) throws ConnectionException {
+	public void save(AuthOptions auth) throws JnipapException {
 
 		// create hashmap of schema attributes
 		HashMap<String, Object> attr = new HashMap<String, Object>();
@@ -68,11 +70,7 @@ public class Schema extends Jnipap {
 
 		// perform operation
 		Object[] result;
-		try {
-			result = (Object[])conn.connection.execute(cmd, params);
-		} catch(XmlRpcException e) {
-			throw new ConnectionException(e);
-		}
+		result = (Object[])conn.execute(cmd, params);
 
 		// If we added a new schema, fetch and set ID
 		if (this.id == null) {
@@ -110,6 +108,8 @@ public class Schema extends Jnipap {
 
 	/**
 	 * Return a string representation of a schema
+	 *
+	 * @return String describing the schema and its attributes
 	 */
 	public String toString() {
 
@@ -118,6 +118,37 @@ public class Schema extends Jnipap {
 			" name: " + this.name +
 			" desc: " + this.description +
 			" vrf: " + this.vrf;
+
+	}
+
+	/**
+	 * Get list of schemas from NIPAP by its attributes
+	 */
+	public static List<Schema> list(AuthOptions auth, Map<String, Object> schema_spec) throws JnipapException {
+
+		// Create XML-RPC connection
+		Connection conn = Connection.getInstance();
+
+		// Build function args
+		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		args.put("auth", auth.toMap());
+		args.put("schema", schema_spec);
+
+		List<HashMap> params = new ArrayList<HashMap>();
+		params.add(args);
+
+		// execute query
+		Object[] result = (Object[])conn.execute("list_schema", params);
+
+		// extract data from result
+		ArrayList<Schema> ret = new ArrayList<Schema>();
+
+		for (int i = 0; i < result.length; i++) {
+			HashMap<String, Object> result_schema = (HashMap<String, Object>)result[0];
+			ret.add(Schema.fromMap(result_schema));
+		}
+
+		return ret;
 
 	}
 
@@ -131,7 +162,7 @@ public class Schema extends Jnipap {
 	 * @param id ID of requested schema
 	 * @return The schema which was found
 	 */
-	public static Schema get(AuthOptions auth, int id) throws NonExistentException, ConnectionException {
+	public static Schema get(AuthOptions auth, int id) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
@@ -149,12 +180,7 @@ public class Schema extends Jnipap {
 		params.add(args);
 
 		// execute query
-		Object[] result;
-		try {
-			result = (Object[])conn.connection.execute("list_schema", params);
-		} catch(XmlRpcException e) {
-			throw new ConnectionException(e);
-		}
+		Object[] result = (Object[])conn.execute("list_schema", params);
 
 		// extract data from result
 		if (result.length < 1) {
@@ -187,4 +213,5 @@ public class Schema extends Jnipap {
 		return schema;
 
 	}
+
 }
