@@ -4,7 +4,7 @@
 PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/python-pynipap-build
-PROJECT=python-pynipap
+PROJECT=pynipap
 
 all:
 	@echo "make source - Create source package"
@@ -16,8 +16,8 @@ all:
 source:
 	$(PYTHON) setup.py sdist
 
-install:
-	$(PYTHON) setup.py install
+#install:
+#	$(PYTHON) setup.py install
 
 buildrpm:
 	$(PYTHON) setup.py bdist_rpm --post-install=rpm/postinstall --pre-uninstall=rpm/preuninstall
@@ -25,10 +25,10 @@ buildrpm:
 builddeb:
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
-	$(PYTHON) setup.py sdist --dist-dir=../ --prune
+	$(PYTHON) setup.py sdist --dist-dir=../ #--prune
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
-	dpkg-buildpackage -i -I -rfakeroot
+	debuild -us -uc
 
 distclean:
 realclean:

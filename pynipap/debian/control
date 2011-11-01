@@ -1,4 +1,4 @@
-Source: python-pynipap
+Source: pynipap
 Section: python
 Priority: optional
 Maintainer: Kristian Larsson <kll@tele2.net>, Lukas Garberg <lukas@spritelink.net>

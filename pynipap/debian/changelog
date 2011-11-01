@@ -1,4 +1,10 @@
-python-pynipap (0.5.0) unstable; urgency=low
+pynipap (0.5.0-1) natty; urgency=low
+
+  * Unifying with other NIPAP packages.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 31 Oct 2011 16:32:09 +0100
+
+pynipap (0.5.0) unstable; urgency=low
 
   * Initial release.
 
