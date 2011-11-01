@@ -16,8 +16,8 @@ all:
 source:
 	$(PYTHON) setup.py sdist
 
-#install:
-#	$(PYTHON) setup.py install
+install:
+	$(PYTHON) setup.py install
 
 buildrpm:
 	$(PYTHON) setup.py bdist_rpm --post-install=rpm/postinstall --pre-uninstall=rpm/preuninstall

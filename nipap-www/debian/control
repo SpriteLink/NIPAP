@@ -8,7 +8,7 @@ Standards-Version: 3.9.1
 
 Package: nipap-www
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python-pylons (>=1.0), python-pynipap, nipap-common
+Depends: python (>= 2.4), ${misc:Depends}, python-pylons (>=1.0), python-pynipap, nipap-common
 XB-Python-Version: ${python:Versions}
 Description: web frontend for NIPAP
  A web UI for the NIPAP IP address planning service.
