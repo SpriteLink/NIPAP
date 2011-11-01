@@ -2,7 +2,7 @@ pynipap (0.5.0-2) natty; urgency=low
 
   * Added options file which ignores the Makefile.
 
- -- Lukas Garberg <garberg@sticky>  Tue, 01 Nov 2011 10:32:26 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 01 Nov 2011 10:32:26 +0100
 
 pynipap (0.5.0-1) unstable; urgency=low
 
