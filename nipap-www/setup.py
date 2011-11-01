@@ -19,7 +19,8 @@ setup(
     test_suite='nose.collector',
     package_data={'nipapwww': ['i18n/*/LC_MESSAGES/*.mo']},
     data_files = [
-        ( '/etc/nipap/', [ 'nipap-www.ini' ] ),
+        ( '/etc/nipap/', [ 'nipap-www.ini', 'nipap-www.wsgi' ] ),
+        ( '/var/cache/nipap-www/', [] )
     ],
     #message_extractors={'nipapwww': [
     #        ('**.py', 'python', None),
