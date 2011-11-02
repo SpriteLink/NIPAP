@@ -28,6 +28,9 @@ class NipapXMLRPC:
         self._cfg = NipapConfig()
         self.cfg_file = None
 
+        # Add dispatch entry for <ex:nil/>
+        xmlrpclib.Unmarshaller.dispatch["ex:nil"] = xmlrpclib.Unmarshaller.end_nil
+
         self.init()
 
 
