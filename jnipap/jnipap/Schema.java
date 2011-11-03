@@ -31,6 +31,8 @@ public class Schema extends Jnipap {
 
 	/**
 	 * Save object to NIPAP
+	 *
+	 * @param auth Authentication options
 	 */
 	public void save(AuthOptions auth) throws JnipapException {
 
@@ -81,6 +83,8 @@ public class Schema extends Jnipap {
 
 	/**
 	 * Remove object from NIPAP
+	 *
+	 * @param auth Authentication options
 	 */
 	public void remove(AuthOptions auth) throws ConnectionException {
 
@@ -213,7 +217,10 @@ public class Schema extends Jnipap {
 	}
 
 	/**
-	 * Search for a schema
+	 * List schemas having specified attributes
+	 *
+	 * @param auth Authentication options
+	 * @param schema_spec Map where attributes can be specified
 	 */
 	public static List<Schema> list(AuthOptions auth, Map<String, Object> schema_spec) throws JnipapException {
 
