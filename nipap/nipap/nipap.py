@@ -521,7 +521,6 @@ class Nipap:
         else:
             col_prefix = table_name + "."
 
-
         if type(query['val1']) == dict and type(query['val2']) == dict:
             # Sub expression, recurse! This is used for boolean operators: AND OR
             # add parantheses
@@ -939,7 +938,7 @@ class Nipap:
 
         self._logger.debug("Expanded to: %s" % str(query))
 
-        search_result = self.search_schema(query, search_options)
+        search_result = self.search_schema(auth, query, search_options)
         search_result['interpretation'] = query_str_parts
 
         return search_result
