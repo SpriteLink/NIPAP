@@ -35,7 +35,7 @@ abstract public class Jnipap {
 	/**
 	 * Remove object from NIPAP
 	 */
-	abstract public void remove(AuthOptions auth) throws ConnectionException;
+	abstract public void remove(AuthOptions auth) throws JnipapException;
 
 }
 

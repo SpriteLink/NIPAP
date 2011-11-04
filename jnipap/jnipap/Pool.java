@@ -16,11 +16,11 @@ import jnipap.Schema;
 
 public class Pool extends Jnipap {
 
-	// Schema attributes
+	// Pool attributes
 	public String name;
 	public Schema schema;
 	public String description;
-	public String default_type;
+	public String default_type; // Some kind of enum?
 	public Integer ipv4_default_prefix_length;
 	public Integer ipv6_default_prefix_length;
 
@@ -40,7 +40,7 @@ public class Pool extends Jnipap {
 
 		// TODO: handle schema = null
 
-		// create hashmap of schema attributes
+		// create hashmap of pool attributes
 		HashMap<String, Object> attr = new HashMap<String, Object>();
 		attr.put("name", this.name);
 		attr.put("description", this.description);
@@ -78,8 +78,7 @@ public class Pool extends Jnipap {
 		}
 
 		// perform operation
-		Integer result;
-		result = (Integer)conn.execute(cmd, params);
+		Integer result = (Integer)conn.execute(cmd, params);
 
 		// If we added a new pool, fetch and set ID
 		if (this.id == null) {
@@ -91,27 +90,26 @@ public class Pool extends Jnipap {
 	/**
 	 * Remove object from NIPAP
 	 */
-	public void remove(AuthOptions auth) throws ConnectionException {
+	public void remove(AuthOptions auth) throws JnipapException {
 
 		// Build pool spec
 		HashMap<String, Object> pool_spec = new HashMap<String, Object>();
 		pool_spec.put("id", this.id);
 
+		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		schema_spec.put("id", this.schema.id);
+
 		// Build function args
 		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
 		args.put("auth", auth.toMap());
+		args.put("schema", schema_spec);
 		args.put("pool", pool_spec);
 
 		List<HashMap> params = new ArrayList<HashMap>();
 		params.add(args);
 
 		// execute query
-		Object[] result;
-		try {
-			result = (Object[])conn.connection.execute("remove_pool", params);
-		} catch(XmlRpcException e) {
-			throw new ConnectionException(e);
-		}
+		Object[] result = (Object[])conn.execute("remove_pool", params);
 
 	}
 
@@ -240,15 +238,19 @@ public class Pool extends Jnipap {
 	 * @param pool_spec Map of pool attributes
 	 * @return List of pools matching the attributes
 	 */
-	public static List<Pool> list(AuthOptions auth, Map<String, Object> pool_spec) throws JnipapException {
+	public static List<Pool> list(AuthOptions auth, Schema schema, Map<String, Object> pool_spec) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
+
+		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		schema_spec.put("id", schema.id);
 
 		// Build function args
 		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
 		args.put("auth", auth.toMap());
 		args.put("pool", pool_spec);
+		args.put("schema", schema_spec);
 
 		List<HashMap> params = new ArrayList<HashMap>();
 		params.add(args);
@@ -278,13 +280,13 @@ public class Pool extends Jnipap {
 	 * @param id ID of requested pool
 	 * @return The pool which was found
 	 */
-	public static Pool get(AuthOptions auth, int id) throws JnipapException {
+	public static Pool get(AuthOptions auth, Schema schema, int id) throws JnipapException {
 
 		// Build pool spec
 		HashMap<String, Object> pool_spec = new HashMap<String, Object>();
 		pool_spec.put("id", id);
 
-		List<Pool> result = Pool.list(auth, pool_spec);
+		List<Pool> result = Pool.list(auth, schema, pool_spec);
 
 		// extract data from result
 		if (result.size() < 1) {

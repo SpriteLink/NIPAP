@@ -71,8 +71,7 @@ public class Schema extends Jnipap {
 		}
 
 		// perform operation
-		Integer result;
-		result = (Integer)conn.execute(cmd, params);
+		Integer result = (Integer)conn.execute(cmd, params);
 
 		// If we added a new schema, fetch and set ID
 		if (this.id == null) {
@@ -86,7 +85,7 @@ public class Schema extends Jnipap {
 	 *
 	 * @param auth Authentication options
 	 */
-	public void remove(AuthOptions auth) throws ConnectionException {
+	public void remove(AuthOptions auth) throws JnipapException {
 
 		// Build schema spec
 		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
@@ -101,12 +100,7 @@ public class Schema extends Jnipap {
 		params.add(args);
 
 		// execute query
-		Object[] result;
-		try {
-			result = (Object[])conn.connection.execute("remove_schema", params);
-		} catch(XmlRpcException e) {
-			throw new ConnectionException(e);
-		}
+		Object[] result = (Object[])conn.execute("remove_schema", params);
 
 	}
 
