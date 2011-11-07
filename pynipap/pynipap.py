@@ -670,6 +670,9 @@ class Prefix(Pynipap):
             self.indent = p['indent']
             self.family = p['family']
             self.display_prefix = p['display_prefix']
+            self.authoritative_source = p['authoritative_source']
+            self.alarm_priority = p['alarm_priority']
+            self.monitor = p['monitor']
 
         # Old object, edit
         else:
