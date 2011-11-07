@@ -27,6 +27,7 @@ Contents:
    design
    nipap
    xmlrpc
+   authlib
 
 
 Indices and tables

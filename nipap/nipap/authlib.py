@@ -1,4 +1,7 @@
-""" A base authentication & authorization module.
+""" Authentication library
+    ======================
+
+    A base authentication & authorization module.
 
     Includes the base class BaseAuth.
 """

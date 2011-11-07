@@ -32,6 +32,8 @@
     * :func:`~Nipap.add_schema` - Create a new schema.
     * :func:`~Nipap.edit_schema` - Edit a schema.
     * :func:`~Nipap.remove_schema` - Remove a schema.
+    * :func:`~Nipap.search_schema` - Search schemas from a specifically formatted dict.
+    * :func:`~Nipap.smart_search_schema` - Search schemas from arbitarly formatted string.
 
 
     Prefix
@@ -57,7 +59,8 @@
     * :attr:`indent` - Depth in prefix tree. Set by NIPAP.
     * :attr:`country` - Country where the prefix resides (two-letter country code).
     * :attr:`order_id` - Order identifier.
-    * :attr:`authoritative_source` - String identifying which system added the prefix.
+    * :attr:`authoritative_source` - String identifying which system last
+        modified the prefix.
     * :attr:`alarm_priority` - String 'low', 'medium' or 'high'. Used by netwatch.
     * :attr:`monitor` - A boolean specifying whether the prefix should be
         monitored or not.
@@ -125,6 +128,17 @@
         }
 
     If multiple keys are given, they will be ANDed together.
+
+    Authorization & accounting
+    --------------------------
+    With each query an object extending the BaseAuth class should be passed.
+    This object is used in the Nipap class to perform authorization (not yet
+    implemented) and accounting. Authentication should be performed at an
+    earlier stage and is NOT done in the Nipap class.
+
+    Each command which alters data stored in NIPAP is logged. There are
+    currently no API functions for extracting this data, but this will change
+    in the future.
 
     Classes
     -------
@@ -567,6 +581,8 @@ class Nipap:
     def add_schema(self, auth, attr):
         """ Add a new network schema.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `attr` [schema_attr]
                 The news schema's attributes.
 
@@ -608,6 +624,8 @@ class Nipap:
     def remove_schema(self, auth, spec):
         """ Remove a schema.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `spec` [schema_spec]
                 A schema specification.
 
@@ -640,6 +658,8 @@ class Nipap:
     def list_schema(self, auth, spec=None):
         """ Return a list of schemas matching `spec`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `spec` [schema_spec]
                 A schema specification. If omitted, all schemas are returned.
 
@@ -688,6 +708,8 @@ class Nipap:
     def edit_schema(self, auth, spec, attr):
         """ Updata schema matching `spec` with attributes `attr`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `spec` [schema_spec]
                 Schema specification.
             * `attr` [schema_attr]
@@ -732,6 +754,8 @@ class Nipap:
     def search_schema(self, auth, query, search_options = {}):
         """ Search schema list for schemas matching `query`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `query` [dict_to_sql]
                 How the search should be performed.
             * `search_options` [options_dict]
@@ -852,6 +876,8 @@ class Nipap:
     def smart_search_schema(self, auth, query_str, search_options = {}):
         """ Perform a smart search on schema list.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `query_str` [string]
                 Search string
             * `search_options` [options_dict]
@@ -1043,9 +1069,10 @@ class Nipap:
     def add_pool(self, auth, schema_spec, attr):
         """ Create a pool according to `attr`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
-
             * `attr` [pool_attr]
                 A dict containing the attributes the new pool should have.
 
@@ -1090,6 +1117,8 @@ class Nipap:
     def remove_pool(self, auth, schema_spec, spec):
         """ Remove a pool.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `spec` [pool_spec]
@@ -1129,6 +1158,8 @@ class Nipap:
     def list_pool(self, auth, schema_spec, spec = {}):
         """ Return a list of pools.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `spec` [pool_spec]
@@ -1196,6 +1227,8 @@ class Nipap:
     def edit_pool(self, auth, schema_spec, spec, attr):
         """ Update pool given by `spec` with attributes `attr`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `spec` [pool_spec]
@@ -1255,6 +1288,8 @@ class Nipap:
     def search_pool(self, auth, schema_spec, query, search_options = {}):
         """ Search pool list for pools matching `query`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `query` [dict_to_sql]
@@ -1400,6 +1435,8 @@ class Nipap:
     def smart_search_pool(self, auth, schema_spec, query_str, search_options = {}):
         """ Perform a smart search on pool list.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `query_str` [string]
@@ -1605,6 +1642,8 @@ class Nipap:
     def add_prefix(self, auth, schema_spec, attr, args = {}):
         """ Add a prefix and return its ID.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `attr` [prefix_attr]
@@ -1722,6 +1761,8 @@ class Nipap:
     def edit_prefix(self, auth, schema_spec, spec, attr):
         """ Update prefix matching `spec` with attributes `attr`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `spec` [prefix_spec]
@@ -1810,6 +1851,8 @@ class Nipap:
     def find_free_prefix(self, auth, schema_spec, args):
         """ Finds free prefixes in the sources given in `args`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             `args` [find_free_prefix_args]
@@ -1829,7 +1872,7 @@ class Nipap:
 
             Example::
 
-                attr = {
+                args = {
                     'from-pool': { 'name': 'CUSTOMER-' },
                     'family': 6,
                     'prefix_length': 64
@@ -1844,7 +1887,7 @@ class Nipap:
 
             Example::
 
-                attr = {
+                args = {
                     'from-prefix': '192.0.2.0/24'
                     'prefix_length': 27
                 }
@@ -1964,6 +2007,8 @@ class Nipap:
     def list_prefix(self, auth, schema_spec, spec = None):
         """ List prefixes matching the `spec`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `spec` [prefix_spec]
@@ -2002,6 +2047,8 @@ class Nipap:
     def remove_prefix(self, auth, schema_spec, spec):
         """ Remove prefix matching `spec`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `spec` [prefix_spec]
@@ -2055,6 +2102,8 @@ class Nipap:
     def search_prefix(self, auth, schema_spec, query, search_options = {}):
         """ Search prefix list for prefixes matching `query`.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `query` [dict_to_sql]
@@ -2344,6 +2393,8 @@ class Nipap:
     def smart_search_prefix(self, auth, schema_spec, query_str, search_options = {}):
         """ Perform a smart search on prefix list.
 
+            * `auth` [BaseAuth]
+                AAA options.
             * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
             * `query_str` [string]

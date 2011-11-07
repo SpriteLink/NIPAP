@@ -2,4 +2,6 @@
 *.sw[po]
 *.pyc
 *.class
+*.tar.gz
+*.deb
 docs/sphinx/_build/

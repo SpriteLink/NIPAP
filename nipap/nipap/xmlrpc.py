@@ -2,9 +2,27 @@
 """ XML-RPC glue class
     ==================
 
-    This module contains a "glue class" used by Twisted to export the NIPAP API functions over XML-RPC.
+    This module contains a "glue class" used by Twisted to export the NIPAP API
+    functions over XML-RPC.
 
-    For a detailed description of the API, see :doc:`nipap`.
+    Each function call takes only one argument, an XML-RPC struct which
+    contains the function arguments which are passed on to the
+    :class:`Nipap`-class.
+
+    For a detailed description of the API functions, see :doc:`nipap`.
+
+    Authentication
+    --------------
+    Authentication is implemented using basic HTTP authentication. The user
+    credentials are passed to the :class:`AuthFactory` class together with the
+    (optional) auth argument from the arguments-dict. If the authentication
+    fails a HTTP 401 is returned.
+
+    See the :doc:`authlib` documentation for a detailed explanation of how the
+    authentication system works.
+
+    Classes
+    -------
 """
 from twisted.web import http, xmlrpc, server
 from twisted.internet import defer, protocol, reactor
@@ -177,6 +195,15 @@ class NipapProtocol(xmlrpc.XMLRPC):
     #
     def xmlrpc_add_schema(self, args):
         """ Add a new network schema.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `attr` [struct]
+                Schema attributes.
+
+            Returns the schema ID.
         """
 
         try:
@@ -187,6 +214,13 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_remove_schema(self, args):
         """ Removes a schema.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                A schema spec.
         """
 
         try:
@@ -197,6 +231,15 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_list_schema(self, args = {}):
         """ List schemas.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Specifies schema attributes to match (optional).
+
+            Returns a list of structs matching the schema spec.
         """
 
         try:
@@ -207,6 +250,15 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_edit_schema(self, args):
         """ Edit a schema.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                A schema spec specifying which schema(s) to edit.
+            * `attr` [struct]
+                Schema attributes.
         """
 
         try:
@@ -218,8 +270,18 @@ class NipapProtocol(xmlrpc.XMLRPC):
     def xmlrpc_search_schema(self, args):
         """ Search for schemas.
 
-            The 'query' input is a specially crafted dict/struct which
-            permits quite flexible searches.
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `query` [struct]
+                A struct specifying the search query.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing search result and the search options
+            used.
         """
 
         try:
@@ -231,9 +293,18 @@ class NipapProtocol(xmlrpc.XMLRPC):
     def xmlrpc_smart_search_schema(self, args):
         """ Perform a smart search.
 
-            The smart search function tries to extract a query from a text
-            string. This query is then passed to the search_prefix function,
-            which performs the actual search.
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `query_string` [string]
+                The search string.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing search result, interpretation of the
+            search string and the search options used.
         """
 
         try:
@@ -247,6 +318,17 @@ class NipapProtocol(xmlrpc.XMLRPC):
     #
     def xmlrpc_add_pool(self, args):
         """ Add a pool.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `attr` [struct]
+                Attributes which will be set on the new pool.
+
+            Returns ID of created pool.
         """
 
         try:
@@ -257,6 +339,15 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_remove_pool(self, args):
         """ Remove a pool.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `pool` [struct]
+                Specifies what pool(s) to remove.
         """
 
         try:
@@ -267,6 +358,17 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_list_pool(self, args):
         """ List pools.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `pool` [struct]
+                Specifies pool attributes which will be matched.
+
+            Returns a list of structs describing the matching pools.
         """
 
         try:
@@ -277,6 +379,17 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_edit_pool(self, args):
         """ Edit pool.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `pool` [struct]
+                Specifies pool attributes to match.
+            * `attr` [struct]
+                Pool attributes to set.
         """
 
         try:
@@ -288,8 +401,20 @@ class NipapProtocol(xmlrpc.XMLRPC):
     def xmlrpc_search_pool(self, args):
         """ Search for pools.
 
-            The 'query' input is a specially crafted dict/struct which
-            permits quite flexible searches.
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `query` [struct]
+                A struct specifying the search query.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing search result and the search options
+            used.
         """
 
         try:
@@ -301,9 +426,20 @@ class NipapProtocol(xmlrpc.XMLRPC):
     def xmlrpc_smart_search_pool(self, args):
         """ Perform a smart search.
 
-            The smart search function tries to extract a query from a text
-            string. This query is then passed to the search_prefix function,
-            which performs the actual search.
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `query` [string]
+                The search string.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing search result, interpretation of the
+            query string and the search options used.
         """
 
         try:
@@ -319,6 +455,20 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_add_prefix(self, args):
         """ Add a prefix.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `attr` [struct]
+                Attributes to set on the new prefix.
+            * `args` [srgs]
+                Arguments for addition of prefix, such as what pool or prefix
+                it should be allocated from.
+
+            Returns ID of created prefix.
         """
 
         try:
@@ -330,6 +480,17 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_list_prefix(self, args):
         """ List prefixes.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `prefix` [struct]
+                Prefix attributes to match.
+
+            Returns a list of structs describing the matching prefixes.
         """
 
         try:
@@ -341,6 +502,17 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_edit_prefix(self, args):
         """ Edit prefix.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `prefix` [struct]
+                Prefix attributes which describes what prefix(es) to edit.
+            * `attr` [struct]
+                Attribuets to set on the new prefix.
         """
 
         try:
@@ -352,6 +524,15 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_remove_prefix(self, args):
         """ Remove a prefix.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `prefix` [struct]
+                Attributes used to select what prefix to remove.
         """
 
         try:
@@ -364,8 +545,20 @@ class NipapProtocol(xmlrpc.XMLRPC):
     def xmlrpc_search_prefix(self, args):
         """ Search for prefixes.
 
-            The 'query' input is a specially crafted dict/struct which
-            permits quite flexible searches.
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `query` [struct]
+                A struct specifying the search query.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing the search result together with the
+            search options used.
         """
 
         try:
@@ -378,9 +571,20 @@ class NipapProtocol(xmlrpc.XMLRPC):
     def xmlrpc_smart_search_prefix(self, args):
         """ Perform a smart search.
 
-            The smart search function tries to extract a query from a text
-            string. This query is then passed to the search_prefix function,
-            which performs the actual search.
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `query` [string]
+                The search string.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing search result, interpretation of the
+            query string and the search options used.
         """
 
         try:
@@ -392,6 +596,16 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def xmlrpc_find_free_prefix(self, args):
         """ Find a free prefix.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `schema` [struct]
+                Schema to work in.
+            * `args` [struct]
+                Arguments for the find_free_prefix-function such as what prefix
+                or pool to allocate from.
         """
 
         try:
