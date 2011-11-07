@@ -1,9 +1,64 @@
 """ Authentication library
     ======================
 
-    A base authentication & authorization module.
+    A base authentication & authorization (not yet implemented) module.
 
     Includes the base class BaseAuth.
+
+    Authentication and authorization in NIPAP
+    -----------------------------------------
+
+    Due to the way NIPAP is thought to be used a somewhat involved
+    authentication model has been implemented, but fear not! If the extra
+    features not are needed, much of the complexity can be ignored.
+
+    Even though NIPAP does not yet support authorization, all users can perform
+    all operations, there are two classes of users: trusted and not trusted.
+    What differ between trusted and non-trusted users is that a thusted user
+    can perform operations which will be logged as performed by another user.
+    This feature is thought to be used by NIPAP clients which have their own
+    means of authenticating users; say for example a web application supporting
+    the NTLM single sign-on feature. By letting the web application use a
+    trusted account to authenticate against the NIPAP server, it can specify a
+    user who will be listed as responsible for the changes made different from
+    the account used to authenticate the backend queries.
+
+    The NIPAP authentication system also has a concept of authoritative source.
+    The authoritative source is a string which defines what system made the
+    last change to a prefix. Well-behaved clients SHOULD present a warning to
+    the user when trying to alter a prefix with an authoritative source
+    different than the system itself, as other system might depend on the
+    information being unchanged. This is, however, by no means enforced by the
+    NIPAP service.
+
+    Authentication backends
+    -----------------------
+    Two authentication backends are shipped with NIPAP:
+
+    * LdapAuth - authenticates users against an LDAP server
+    * SqliteAuth - authenticates users against a local SQLite-database
+
+    The authentication classes presented here are used both in the NIPAP web UI
+    and in the XML-RPC backend. So far only the SqliteAuth backend supports
+    trusted users.
+
+    What authentication backend to use can be specified by suffixing the
+    username with @`backend`, where `backend` is set in the configuration file.
+    If not defined, a (configurable) default backend is used.
+
+    Authentication options
+    ----------------------
+    With each NIPAP query authentication options can be specified. The
+    authentication options are passed as a dict with the following keys taken
+    into account:
+
+    * :attr:`authoritative_source` - Authoritative source for the query.
+    * :attr:`username` - Username to impersonate, requires authentication as \
+        trusted user.
+    * :attr:`full_name` - Full name of impersonated user.
+
+    Classes
+    -------
 """
 
 import logging
@@ -26,6 +81,16 @@ class AuthFactory:
     
             Examines the auth backend given after the '@' in the username and
             returns a suitable instance of a subclass of the BaseAuth class.
+
+            * `username` [string]
+                Username to authenticate as.
+            * `password` [string]
+                Password to authenticate with.
+            * `authoritative_source` [string]
+                Authoritative source of the query.
+            * `auth_options` [dict]
+                A dict which, if authenticated as a trusted user, can override
+                `username` and `authoritative_source`.
         """
     
         user_authbackend = username.rsplit('@', 1);
@@ -65,6 +130,18 @@ class BaseAuth:
 
     def __init__(self, username, password, authoritative_source, auth_backend, auth_options={}):
         """ Constructor.
+
+            * `username` [string]
+                Username to authenticate as.
+            * `password` [string]
+                Password to authenticate with.
+            * `authoritative_source` [string]
+                Authoritative source of the query.
+            * `auth_backend` [string]
+                Name of authentication backend.
+            * `auth_options` [dict]
+                A dict which, if authenticated as a trusted user, can override
+                `username` and `authoritative_source`.
         """
 
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -110,6 +187,16 @@ class LdapAuth(BaseAuth):
 
     def __init__(self, username, password, authoritative_source, auth_options={}):
         """ Constructor.
+
+            * `username` [string]
+                Username to authenticate as.
+            * `password` [string]
+                Password to authenticate with.
+            * `authoritative_source` [string]
+                Authoritative source of the query.
+            * `auth_options` [dict]
+                A dict which, if authenticated as a trusted user, can override
+                `username` and `authoritative_source`.
         """
 
         BaseAuth.__init__(self, username, password, authoritative_source, 'ldap', auth_options)
@@ -128,6 +215,9 @@ class LdapAuth(BaseAuth):
 
     def authenticate(self):
         """ Verify authentication.
+
+            Returns True/False dependant on whether the authentication
+            succeeded or not.
         """
 
         # if authentication has been performed, return last result
@@ -173,7 +263,17 @@ class SqliteAuth(BaseAuth):
     def __init__(self, username, password, authoritative_source, auth_options={}):
         """ Constructor.
 
-            Verifies that the auth database exists.
+            * `username` [string]
+                Username to authenticate as.
+            * `password` [string]
+                Password to authenticate with.
+            * `authoritative_source` [string]
+                Authoritative source of the query.
+            * `auth_options` [dict]
+                A dict which, if authenticated as a trusted user, can override
+                `username` and `authoritative_source`.
+
+            If the user database and tables are not found, they are created.
         """
 
         BaseAuth.__init__(self, username, password, authoritative_source, 'local', auth_options)
@@ -226,6 +326,9 @@ class SqliteAuth(BaseAuth):
 
     def authenticate(self):
         """ Verify authentication.
+
+            Returns True/False dependant on whether the authentication
+            succeeded or not.
         """
 
         # if authentication has been performed, return last result
@@ -279,6 +382,15 @@ class SqliteAuth(BaseAuth):
 
     def add_user(self, username, password, full_name=None, trusted=False):
         """ Add user to SQLite database.
+
+            * `username` [string]
+                Username of new user.
+            * `password` [string]
+                Password of new user.
+            * `full_name` [string]
+                Full name of new user.
+            * `trusted` [boolean]
+                Whether the new user should be trusted or not.
         """
 
         # generate salt
@@ -298,6 +410,9 @@ class SqliteAuth(BaseAuth):
 
     def remove_user(self, username):
         """ Remove user from the SQLite database.
+
+            * `username` [string]
+                Username of user to remove.
         """
 
         sql = '''DELETE FROM user WHERE username = ?'''
