@@ -114,10 +114,10 @@ class AuthFactory:
         # If no auth backend was specified, use default
         if len(user_authbackend) == 1:
             default_auth = cfg.get('auth', 'default_backend')
-#            try:
-            return backends[default_auth](default_auth, user_authbackend[0], password, authoritative_source, auth_options)
-#            except KeyError:
-#                raise AuthError("Default auth backend '%s' not defined" % default_auth)
+            try:
+                return backends[default_auth](default_auth, user_authbackend[0], password, authoritative_source, auth_options)
+            except KeyError:
+                raise AuthError("Default auth backend '%s' not defined" % default_auth)
     
         # Return requested auth backend, if defined
         try:
