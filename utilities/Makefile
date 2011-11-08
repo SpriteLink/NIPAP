@@ -1,7 +1,7 @@
 START=^
 
 clean:
-	for I in `seq 32|sort -nr`; do echo "Deleting IPv4 prefixes with length: $$I"; psql -c "DELETE FROM ip_net_plan WHERE family(prefix) = 4 AND masklen(prefix)=$$I" nap > /dev/null; done ;
+	for I in `seq 32|sort -nr`; do echo "Deleting IPv4 prefixes with length: $$I"; psql -c "DELETE FROM ip_net_plan WHERE family(prefix) = 4 AND masklen(prefix)=$$I" nipap > /dev/null; done ;
 
 transfer:
 	rm -f 1 2

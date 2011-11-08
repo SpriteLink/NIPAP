@@ -13,7 +13,7 @@ DB_PASS=papin
 
 #
 # TODO: need install thingy for ip4r
-# psql -f /usr/lib/postgresql/8.4/lib/ip4r.so nap
+# psql -f /usr/lib/postgresql/8.4/lib/ip4r.so nipap
 #
 # 	- how do we determine if the system has ip4r modules at all?
 # 		* can we ask psql?
