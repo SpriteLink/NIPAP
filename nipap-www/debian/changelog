@@ -1,3 +1,9 @@
+nipap-www (0.5.1dev-1) oneiric; urgency=low
+
+  * New upstream version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 08 Nov 2011 13:45:38 +0100
+
 nipap-www (0.5.0dev-2) natty; urgency=low
 
   * Various smaller changes...

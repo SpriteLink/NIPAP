@@ -1,4 +1,4 @@
-Source: nipapd
+Source: nipap
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Section: python
 Priority: optional
@@ -8,7 +8,7 @@ Standards-Version: 3.9.1
 
 Package: nipap-common
 Architecture: all
-Depends: python (>= 2.4), python-twisted-web, python-sqlite, python-ldap, python-ipy
+Depends: python (>= 2.4), ${misc:Depends}, python-twisted-web, python-sqlite, python-ldap, python-ipy
 Description: Neat IP Address Planner
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the common libraries.
@@ -16,7 +16,7 @@ Description: Neat IP Address Planner
 
 Package: nipapd
 Architecture: all
-Depends: nipap-common, python (>= 2.4), python-psycopg2, postgresql (>=8.4)
+Depends: nipap-common, python (>= 2.4), ${misc:Depends}, python-psycopg2, postgresql (>=8.4)
 Description: Neat IP Address Planner XML-RPC daemon
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the XML-RPC daemon.

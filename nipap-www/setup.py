@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nipap-www',
-    version='0.5.0',
+    version='0.5.1',
     description='web frontend for NIPAP',
     author='Kristian Larsson, Lukas Garberg',
     author_email='kll@tele2.net, lukas@spritelink.net',
@@ -11,7 +11,7 @@ setup(
         "Pylons>=1.0",
         "Jinja2",
         "pynipap",
-        "nipapd"
+        "nipap"
     ],
 #    setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),

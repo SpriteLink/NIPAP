@@ -35,8 +35,10 @@ from authlib import AuthFactory, AuthError
 
 
 class NipapXMLRPC:
+
     stop = None
     _cfg = None
+    _protocol = None
     root_logger = None
 
     def __init__(self, root_logger = None):
@@ -92,8 +94,8 @@ class NipapXMLRPC:
         signal.signal(signal.SIGHUP, self._sigHup)
 
         from twisted.internet import reactor
-        protocol = NipapProtocol()
-        reactor.listenTCP(self._cfg.getint('nipapd', 'port'), server.Site(protocol))
+        self._protocol = NipapProtocol()
+        reactor.listenTCP(self._cfg.getint('nipapd', 'port'), server.Site(self._protocol))
         reactor.run()
 
 
@@ -103,6 +105,7 @@ class NipapXMLRPC:
         """
         self.logger.info("Received SIGHUP - reloading configuration")
         self._cfg.read_file()
+        self._protocol._auth_fact.reload()
         self.init()
 
 
@@ -110,6 +113,8 @@ class NipapXMLRPC:
 class NipapProtocol(xmlrpc.XMLRPC):
     """ Class to allow XML-RPC access to the lovely NIPAP system.
     """
+
+    _auth_fact = None
 
     def __init__(self):
         xmlrpc.XMLRPC.__init__(self)
@@ -119,6 +124,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         self.logger.info("Initialising NIPAP Protocol")
 
         self.nipap = nipap.Nipap()
+        self._auth_fact = AuthFactory()
 
 
     def render(self, request):
@@ -138,17 +144,19 @@ class NipapProtocol(xmlrpc.XMLRPC):
         if type(nipap_args) == dict:
             auth_options = nipap_args.get('auth')
 
+        # fetch auth object for session
         try:
-            auth = AuthFactory.get_auth(request.getUser(), request.getPassword(), auth_options.get('authoritative_source'), auth_options or {})
+            auth = self._auth_fact.get_auth(request.getUser(), request.getPassword(), auth_options.get('authoritative_source'), auth_options or {})
         except AuthError, exp:
             self.logger.error("Unable to get auth object: %s" % str(exp))
             request.setResponseCode(http.UNAUTHORIZED)
             return "Authentication error."
 
-
+        # authenticated?
         if not auth.authenticate():
             request.setResponseCode(http.UNAUTHORIZED)
             return "Authentication failed."
+
         # this will throw an error later on - don't worry
         try:
             args[0]['auth'] = auth

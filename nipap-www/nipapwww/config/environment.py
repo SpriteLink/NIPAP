@@ -46,7 +46,8 @@ def load_environment(global_conf, app_conf):
     config['pylons.strict_c'] = False
 
     # Make sure that there is a configuration object
-    cfg = NipapConfig(config['nipap_config_path'])
+    cfg = NipapConfig(config['nipap_config_path'], 
+        { 'auth_cache_timeout': '3600' })
 
     # set XML-RPC URI in pynipap module
     pynipap.xmlrpc_uri = cfg.get('www', 'xmlrpc_uri')

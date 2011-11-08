@@ -1,4 +1,10 @@
-nipapd (0.5.0-1) unstable; urgency=low
+nipap (0.5.1-1) natty; urgency=low
+
+  * New upstream version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 08 Nov 2011 08:16:30 +0100
+
+nipap (0.5.0-1) unstable; urgency=low
 
   * source package automatically created by stdeb 0.6.0+git
 

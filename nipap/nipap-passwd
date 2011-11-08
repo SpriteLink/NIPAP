@@ -37,9 +37,9 @@ if __name__ == '__main__':
     cfg = NipapConfig(options.config)
 
     if options.db_file:
-        cfg.set('auth', 'sqliteauth_db_path', options.db_file)
+        cfg.set('auth.backends.local', 'db_path', options.db_file)
 
-    a = nipap.authlib.SqliteAuth('a', 'b', 'c')
+    a = nipap.authlib.SqliteAuth('local', 'a', 'b', 'c')
 
     if options.list:
         # print a nicely formatted list of users
@@ -57,11 +57,11 @@ if __name__ == '__main__':
             sys.exit(1)
 
         a.add_user(options.add_user, options.password, options.name, options.trusted)
-        print "Added user %s to %s" % (options.add_user, cfg.get('auth', 'sqliteauth_db_path'))
+        print "Added user %s to %s" % (options.add_user, cfg.get('auth', 'db_path'))
 
     elif options.delete_user:
         a.remove_user(options.delete_user)
-        print "User %s deleted from %s" % (options.delete_user, cfg.get('auth', 'sqliteauth_db_path'))
+        print "User %s deleted from %s" % (options.delete_user, cfg.get('auth', 'db_path'))
 
     else:
         parser.print_help()

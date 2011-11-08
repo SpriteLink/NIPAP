@@ -62,21 +62,65 @@
 """
 
 import logging
+from datetime import datetime, timedelta
+import hashlib
+
 from nipapconfig import NipapConfig
 
 # Used by auth modules
 import sqlite3
 import ldap
 import string
-import hashlib
 import random
 
 class AuthFactory:
     """ An factory for authentication backends.
     """
-    
-    @classmethod
-    def get_auth(cls, username, password, authoritative_source, auth_options={}):
+
+    _logger = None
+    _config = None
+    _auth_cache = {}
+    _backends = {}
+
+
+    def __init__(self):
+        """ Constructor.
+        """
+
+        # Initialize stuff.
+        self._config = NipapConfig()
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._init_backends()
+
+
+
+    def _init_backends(self):
+        """ Initialize auth backends.
+        """
+
+        # fetch auth backends from config file
+        self._backends = {}
+        for section in self._config.sections():
+
+            # does the section define an auth backend?
+            section_components = section.rsplit('.', 1)
+            if section_components[0] == 'auth.backends':
+                self._backends[section_components[1]] = eval(self._config.get(section, 'type'))
+
+        self._logger.debug("Registered auth backends %s" % str(self._backends))
+
+
+
+    def reload(self):
+        """ Reload AuthFactory.
+        """
+
+        self._auth_cache = {}
+        self._init_backends()
+
+
+
+    def get_auth(self, username, password, authoritative_source, auth_options={}):
         """ Returns an authentication object.
     
             Examines the auth backend given after the '@' in the username and
@@ -93,36 +137,44 @@ class AuthFactory:
                 `username` and `authoritative_source`.
         """
 
-        logger = logging.getLogger(cls.__name__)
-        cfg = NipapConfig()
 
-        # fetch auth backends from config file
-        backends = {}
-        for section in cfg.sections():
+        # remove invalid cache entries
+        for key in self._auth_cache:
+            if self._auth_cache[key]['valid_until'] < datetime.utcnow():
+                del(self._auth_cache[key])
 
-            # does the section define an auth backend?
-            section_components = section.rsplit('.', 1)
-            if section_components[0] == 'auth.backends':
-                backends[section_components[1]] = eval(cfg.get(section, 'type'))
-
-        logger.debug("Registered auth backends %s" % str(backends))
+        user_authbackend = username.rsplit('@', 1)
     
-        user_authbackend = username.rsplit('@', 1);
-    
-        # If no auth backend was specified, use default
+        # Find out what auth backend to use.
+        # If no auth backend was specified in username, use default
+        backend = ""
         if len(user_authbackend) == 1:
-            default_auth = cfg.get('auth', 'default_backend')
-            try:
-                return backends[default_auth](default_auth, user_authbackend[0], password, authoritative_source, auth_options)
-            except KeyError:
-                raise AuthError("Default auth backend '%s' not defined" % default_auth)
+            backend = self._config.get('auth', 'default_backend')
+            self._logger.debug("Using default auth backend %s" % backend)
+        else:
+            backend = user_authbackend[1]
     
-        # Return requested auth backend, if defined
+        # do we have a cached instance?
+        auth_str = ( str(username) + str(password) + str(authoritative_source)
+            + str(auth_options) )
+        if auth_str in self._auth_cache:
+            self._logger.debug('found cached auth object for user %s' % username)
+            return self._auth_cache[auth_str]['auth_object']
+
+        # Create auth object
         try:
-            return backends[user_authbackend[1]](user_authbackend[1], user_authbackend[0], password, authoritative_source, auth_options)
+            auth = self._backends[backend](backend, user_authbackend[0], password, authoritative_source, auth_options)
         except KeyError:
             raise AuthError("Invalid auth backend '%s' specified" %
-                str(user_authbackend[1]))
+                str(backend))
+
+        # save auth object to cache
+        self._auth_cache[auth_str] = {
+            'valid_until': datetime.utcnow() + timedelta(seconds=self._config.getint('auth', 'auth_cache_timeout')),
+            'auth_object': auth
+        }
+
+        return auth
 
 
 

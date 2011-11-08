@@ -1,4 +1,4 @@
 Pylons python-pylons
 Jinja2 python-jinja2
 pynipap python-pynipap
-nipapd nipap-common
+nipap nipap-common

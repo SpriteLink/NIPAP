@@ -8,7 +8,7 @@ long_desc = open('README.rst').read()
 short_desc = long_desc.split('\n')[0].split(' - ')[1].strip()
 
 setup(
-    name = 'nipapd',
+    name = 'nipap',
     version = nipap.__version__,
     description = short_desc,
     long_description = long_desc,

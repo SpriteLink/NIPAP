@@ -36,7 +36,8 @@ if __name__ == '__main__':
         'db_port': None,
         'db_user': 'nipap',
         'db_pass': 'papin',
-        'db_sslmode': 'require'
+        'db_sslmode': 'require',
+        'auth_cache_timeout': '3600'
     }
 
     try:

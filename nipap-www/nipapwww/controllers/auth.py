@@ -26,14 +26,15 @@ class AuthController(BaseController):
             return render('login.html')
 
         # Verify username and password.
-        a = AuthFactory.get_auth(request.params.get('username'), request.params.get('password'), 'nipap')
-        if not a.authenticate():
+        auth_fact = AuthFactory()
+        auth = auth_fact.get_auth(request.params.get('username'), request.params.get('password'), 'nipap')
+        if not auth.authenticate():
             c.error = 'Invalid username or password'
             return render('login.html')
 
         # Mark user as logged in
-        session['user'] = a.username
-        session['full_name'] = a.full_name
+        session['user'] = auth.username
+        session['full_name'] = auth.full_name
         session.save()
 
         # Send user back to the page he originally wanted to get to
