@@ -102,10 +102,8 @@ class AuthFactory:
 
             # does the section define an auth backend?
             section_components = section.rsplit('.', 1)
-            if section_components[0] != 'auth.backends':
-                continue
-
-            backends[section_components[1]] = eval(cfg.get(section, 'type'))
+            if section_components[0] == 'auth.backends':
+                backends[section_components[1]] = eval(cfg.get(section, 'type'))
 
         logger.debug("Registered auth backends %s" % str(backends))
     
