@@ -92,19 +92,38 @@ class AuthFactory:
                 A dict which, if authenticated as a trusted user, can override
                 `username` and `authoritative_source`.
         """
+
+        logger = logging.getLogger(cls.__name__)
+        cfg = NipapConfig()
+
+        # fetch auth backends from config file
+        backends = {}
+        for section in cfg.sections():
+
+            # does the section define an auth backend?
+            section_components = section.rsplit('.', 1)
+            if section_components[0] != 'auth.backends':
+                continue
+
+            backends[section_components[1]] = eval(cfg.get(section, 'type'))
+
+        logger.debug("Registered auth backends %s" % str(backends))
     
         user_authbackend = username.rsplit('@', 1);
     
-        # TODO: make default backend and mapping of suffix to backend configurable
         # If no auth backend was specified, use default
         if len(user_authbackend) == 1:
-            return LdapAuth(user_authbackend[0], password, authoritative_source, auth_options)
+            default_auth = cfg.get('auth', 'default_backend')
+#            try:
+            return backends[default_auth](default_auth, user_authbackend[0], password, authoritative_source, auth_options)
+#            except KeyError:
+#                raise AuthError("Default auth backend '%s' not defined" % default_auth)
     
-        # local => SqliteAuth
-        if user_authbackend[1] == 'local':
-            return SqliteAuth(user_authbackend[0], password, authoritative_source, auth_options)
-        else:
-            raise AuthError('Invalid auth backend %s specified' %
+        # Return requested auth backend, if defined
+        try:
+            return backends[user_authbackend[1]](user_authbackend[1], user_authbackend[0], password, authoritative_source, auth_options)
+        except KeyError:
+            raise AuthError("Invalid auth backend '%s' specified" %
                 str(user_authbackend[1]))
 
 
@@ -185,9 +204,11 @@ class LdapAuth(BaseAuth):
     _ldap_conn = None
     _authenticated = None
 
-    def __init__(self, username, password, authoritative_source, auth_options={}):
+    def __init__(self, name, username, password, authoritative_source, auth_options={}):
         """ Constructor.
 
+            * `name` [string]
+                Name of auth backend.
             * `username` [string]
                 Username to authenticate as.
             * `password` [string]
@@ -199,9 +220,9 @@ class LdapAuth(BaseAuth):
                 `username` and `authoritative_source`.
         """
 
-        BaseAuth.__init__(self, username, password, authoritative_source, 'ldap', auth_options)
-        self._ldap_uri = self._cfg.get('auth', 'ldapauth_uri')
-        self._ldap_basedn = self._cfg.get('auth', 'ldapauth_basedn')
+        BaseAuth.__init__(self, username, password, authoritative_source, name, auth_options)
+        self._ldap_uri = self._cfg.get('auth.backends.' + self.auth_backend, 'uri')
+        self._ldap_basedn = self._cfg.get('auth.backends.' + self.auth_backend, 'basedn')
 
         self._logger.debug('creating instance')
 
@@ -227,8 +248,7 @@ class LdapAuth(BaseAuth):
         try:
             self._ldap_conn.simple_bind_s('uid=' + self.username + ',' + self._ldap_basedn, self.password)
         except ldap.SERVER_DOWN, exc:
-            self._logger.error('Could not connect to LDAP server: %s' % str(exc[0]['info']))
-            raise AuthError(str(exc[0]['info']))
+            raise AuthError('Could not connect to LDAP server')
         except ldap.INVALID_CREDENTIALS, exc:
             # Auth failed
             self._logger.debug('erroneous password for user %s' % self.username)
@@ -260,9 +280,11 @@ class SqliteAuth(BaseAuth):
     _db_curs = None
     _authenticated = None
 
-    def __init__(self, username, password, authoritative_source, auth_options={}):
+    def __init__(self, name, username, password, authoritative_source, auth_options={}):
         """ Constructor.
 
+            * `name` [string]
+                Name of auth backend.
             * `username` [string]
                 Username to authenticate as.
             * `password` [string]
@@ -276,7 +298,7 @@ class SqliteAuth(BaseAuth):
             If the user database and tables are not found, they are created.
         """
 
-        BaseAuth.__init__(self, username, password, authoritative_source, 'local', auth_options)
+        BaseAuth.__init__(self, username, password, authoritative_source, name, auth_options)
 
         self._logger.debug('creating instance')
 
@@ -286,7 +308,7 @@ class SqliteAuth(BaseAuth):
 
         # connect to database
         try:
-            self._db_conn = sqlite3.connect(self._cfg.get('auth', 'sqliteauth_db_path'), check_same_thread = False)
+            self._db_conn = sqlite3.connect(self._cfg.get('auth.backends.' + self.auth_backend, 'db_path'), check_same_thread = False)
             self._db_conn.row_factory = sqlite3.Row
             self._db_curs = self._db_conn.cursor()
             self._db_curs.execute(sql_verify_table)

@@ -31,7 +31,7 @@ import xmlrpclib
 from nipapconfig import NipapConfig
 
 import nipap
-from authlib import AuthFactory
+from authlib import AuthFactory, AuthError
 
 
 class NipapXMLRPC:
@@ -138,7 +138,13 @@ class NipapProtocol(xmlrpc.XMLRPC):
         if type(nipap_args) == dict:
             auth_options = nipap_args.get('auth')
 
-        auth = AuthFactory.get_auth(request.getUser(), request.getPassword(), auth_options.get('authoritative_source'), auth_options or {})
+        try:
+            auth = AuthFactory.get_auth(request.getUser(), request.getPassword(), auth_options.get('authoritative_source'), auth_options or {})
+        except AuthError, exp:
+            self.logger.error("Unable to get auth object: %s" % str(exp))
+            request.setResponseCode(http.UNAUTHORIZED)
+            return "Authentication error."
+
 
         if not auth.authenticate():
             request.setResponseCode(http.UNAUTHORIZED)
