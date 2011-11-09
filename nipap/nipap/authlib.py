@@ -105,7 +105,9 @@ class AuthFactory:
             # does the section define an auth backend?
             section_components = section.rsplit('.', 1)
             if section_components[0] == 'auth.backends':
-                self._backends[section_components[1]] = eval(self._config.get(section, 'type'))
+                auth_backend = section_components[1]
+                self._backends[auth_backend] = eval(self._config.get(section, 'type'))
+                self._backends[auth_backend].verify_config(auth_backend)
 
         self._logger.debug("Registered auth backends %s" % str(self._backends))
 
@@ -322,6 +324,17 @@ class LdapAuth(BaseAuth):
 
 
 
+    @classmethod
+    def verify_config(cls, auth_backend):
+        """ Verify that all required configuration options are set
+        """
+
+        cfg = NipapConfig()
+        cfg.get('auth.backends.' + auth_backend, 'uri')
+        cfg.get('auth.backends.' + auth_backend, 'basedn')
+
+
+
 class SqliteAuth(BaseAuth):
     """ An authentication and authorization class for local auth.
     """
@@ -515,6 +528,16 @@ class SqliteAuth(BaseAuth):
         h.update(salt)
         h.update(password)
         return h.hexdigest()
+
+
+
+    @classmethod
+    def verify_config(cls, auth_backend):
+        """ Verify that all required configuration options are set
+        """
+
+        cfg = NipapConfig()
+        cfg.get('auth.backends.' + auth_backend, 'db_path')
 
 
 
