@@ -7,6 +7,7 @@ Features in short:
  * Native support for IPv6
  * Rapid address assignment using automatic assignment from pre-defined address-pools
  * Easy to use (and pretty) web interface (in turn utilizing the XML-RPC interface)
+ * Flexible authentication using SQLite and/or LDAP
  * XML-RPC middleware, allowing easy integration
 
 License
