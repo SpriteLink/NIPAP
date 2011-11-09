@@ -1,3 +1,16 @@
+nipap (0.5.1-3) oneiric; urgency=low
+
+  * Added hack to support python 2.5. Links the nipap-module to
+    /usr/lib/python2.5/dist-packages/.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 09 Nov 2011 16:52:00 +0100
+
+nipap (0.5.1-2) oneiric; urgency=low
+
+  * Changed dependency from python-sqlite to python-pysqlite2.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 09 Nov 2011 10:57:57 +0100
+
 nipap (0.5.1-1) natty; urgency=low
 
   * New upstream version.
