@@ -107,7 +107,7 @@ class AuthFactory:
             if section_components[0] == 'auth.backends':
                 auth_backend = section_components[1]
                 self._backends[auth_backend] = eval(self._config.get(section, 'type'))
-                self._backends[auth_backend].verify_config(auth_backend)
+                self._backends[auth_backend](auth_backend, 'a', 'b', 'c')
 
         self._logger.debug("Registered auth backends %s" % str(self._backends))
 
@@ -202,6 +202,11 @@ class BaseAuth:
     def __init__(self, username, password, authoritative_source, auth_backend, auth_options={}):
         """ Constructor.
 
+            Note that the instance variables not are set by the constructor but
+            by the :func:`authenticate` method. Therefore, run the
+            :func:`authenticate`-method before trying to access those
+            variables!
+
             * `username` [string]
                 Username to authenticate as.
             * `password` [string]
@@ -259,6 +264,11 @@ class LdapAuth(BaseAuth):
     def __init__(self, name, username, password, authoritative_source, auth_options={}):
         """ Constructor.
 
+            Note that the instance variables not are set by the constructor but
+            by the :func:`authenticate` method. Therefore, run the
+            :func:`authenticate`-method before trying to access those
+            variables!
+
             * `name` [string]
                 Name of auth backend.
             * `username` [string]
@@ -280,9 +290,6 @@ class LdapAuth(BaseAuth):
 
         self._logger.debug('LDAP URI: ' + self._ldap_uri)
         self._ldap_conn = ldap.initialize(self._ldap_uri)
-
-        # run authentication method to populate instance variables
-        self.authenticate()
 
 
 
@@ -324,17 +331,6 @@ class LdapAuth(BaseAuth):
 
 
 
-    @classmethod
-    def verify_config(cls, auth_backend):
-        """ Verify that all required configuration options are set
-        """
-
-        cfg = NipapConfig()
-        cfg.get('auth.backends.' + auth_backend, 'uri')
-        cfg.get('auth.backends.' + auth_backend, 'basedn')
-
-
-
 class SqliteAuth(BaseAuth):
     """ An authentication and authorization class for local auth.
     """
@@ -345,6 +341,11 @@ class SqliteAuth(BaseAuth):
 
     def __init__(self, name, username, password, authoritative_source, auth_options={}):
         """ Constructor.
+
+            Note that the instance variables not are set by the constructor but
+            by the :func:`authenticate` method. Therefore, run the
+            :func:`authenticate`-method before trying to access those
+            variables!
 
             * `name` [string]
                 Name of auth backend.
@@ -383,10 +384,6 @@ class SqliteAuth(BaseAuth):
         except sqlite3.Error, e:
             self._logger.error('Could not open user database: %s' % str(e))
             raise AuthError(str(e))
-
-
-        # run authentication method to populate instance variables
-        self.authenticate()
 
 
 
@@ -528,16 +525,6 @@ class SqliteAuth(BaseAuth):
         h.update(salt)
         h.update(password)
         return h.hexdigest()
-
-
-
-    @classmethod
-    def verify_config(cls, auth_backend):
-        """ Verify that all required configuration options are set
-        """
-
-        cfg = NipapConfig()
-        cfg.get('auth.backends.' + auth_backend, 'db_path')
 
 
 
