@@ -25,7 +25,7 @@ class NipapConfig(ConfigParser.SafeConfigParser):
                 raise NipapConfigError("missing configuration file")
             self._cfg_path = cfg_path
 
-            ConfigParser.ConfigParser.__init__(self, default, allow_no_value = True)
+            ConfigParser.ConfigParser.__init__(self, default)
 
             self.read_file()
 
