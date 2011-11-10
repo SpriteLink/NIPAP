@@ -254,13 +254,13 @@ class Nipap:
     # Miscellaneous help functions
     #
 
-    def _register_inet(oid=None, conn_or_curs=None):
+    def _register_inet(self, oid=None, conn_or_curs=None):
         """Create the INET type and an Inet adapter."""
         from psycopg2 import extensions as _ext
         if not oid: oid = 869
         _ext.INET = _ext.new_type((oid, ), "INET",
                 lambda data, cursor: data and Inet(data) or None)
-        _ext.register_type(_ext.INET, conn_or_curs)
+        _ext.register_type(_ext.INET, self._con_pg)
         return _ext.INET
 
 
