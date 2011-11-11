@@ -8,10 +8,16 @@ import time
 
 parser = optparse.OptionParser()
 parser.add_option('-p', '--port', dest='port', type='int', default='1337', help="TCP port")
+parser.add_option('-U', '--user')
+parser.add_option('-P', '--password')
 
 (options, args) = parser.parse_args()
 
-server_url = 'http://127.0.0.1:%(port)d/XMLRPC' % { 'port': options.port }
+cred = ''
+if options.user and options.password:
+	cred = options.user + '@' + options.password
+
+server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': options.port, 'cred': cred }
 server = xmlrpclib.Server(server_url, allow_none=1);
 
 t0 = time.time()
