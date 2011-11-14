@@ -4,6 +4,7 @@
 import re
 
 import sys
+sys.path.append('../pynipap/')
 import pynipap
 from pynipap import AuthOptions, Schema, Pool, Prefix, NipapNonExistentError, NipapDuplicateError, NipapValueError
 
@@ -23,6 +24,9 @@ class CommentLine(Exception):
 class Importer:
     def __init__(self, url, schema_name):
         self._logger = logging.getLogger(self.__class__.__name__)
+
+        import pynipap
+        pynipap.xmlrpc_uri = url
 
         # import nap class and stuff
         sl = Schema.list({ 'name': schema_name })
