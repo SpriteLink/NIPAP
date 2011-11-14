@@ -2038,7 +2038,9 @@ class Nipap:
 
         res = list()
         for row in self._curs_pg:
-            res.append(dict(row))
+            pref = dict(row)
+            pref['display_prefix'] = str(pref['display_prefix'])
+            res.append(pref)
 
         return res
 
