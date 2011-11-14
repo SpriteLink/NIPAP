@@ -1,3 +1,9 @@
+pynipap (0.5.0-3) oneiric; urgency=low
+
+  * Added hackish support for python 2.5...
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 10 Nov 2011 17:12:42 +0100
+
 pynipap (0.5.0-2) natty; urgency=low
 
   * Added options file which ignores the Makefile.
