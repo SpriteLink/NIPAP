@@ -1,0 +1,57 @@
+#!/usr/bin/python
+
+import ConfigParser
+import os
+
+import sys
+sys.path.append('../pynipap')
+import pynipap
+
+cfg = ConfigParser.ConfigParser()
+cfg.read(os.path.expanduser('~/.nipaprc'))
+
+try:
+	xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
+			'username': cfg.get('global', 'username'),
+			'password': cfg.get('global', 'password'),
+			'hostname': cfg.get('global', 'hostname'),
+			'port'	  : cfg.get('global', 'port')
+		}
+except ConfigParser.NoOptionError:
+	print >> sys.stderr, "Please define the username, password, hostname and port in your .nipaprc"
+	sys.exit(1)
+
+try:
+	schema_name = cfg.get('global', 'schema')
+except ConfigParser.NoOptionError:
+	print >> sys.stderr, "Please define the default schema in your .nipaprc"
+	sys.exit(1)
+
+
+pynipap.xmlrpc_uri = xmlrpc_uri
+ao = pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
+
+try:
+	schema = pynipap.Schema.list({ 'name': schema_name })[0]
+except:
+	print >> sys.stderr, "Non existing schema (", schema_name, ")"
+	sys.exit(1)
+
+offset = 0
+limit = 100
+while True:
+	res = pynipap.Prefix.smart_search(schema, ' '.join(sys.argv[1:]), { 'offset': offset, 'limit': limit, 'include_all_parents': True })
+	for p in res['result']:
+		print "%(prefix) -30s %(type)s %(order) -14s %(fqdn) -20s %(description)s" % {
+				'prefix'		: ''.join('  ' for x in xrange(0, p.indent)) + p.display_prefix,
+				'type'			: p.type[0].upper(),
+				'fqdn'			: p.node,
+				'order'			: p.order_id,
+				'description'	: p.description
+				}
+
+	if len(res) < limit:
+		break
+	offset += limit
+
+
