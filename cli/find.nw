@@ -17,8 +17,8 @@ try:
 			'hostname': cfg.get('global', 'hostname'),
 			'port'	  : cfg.get('global', 'port')
 		}
-except ConfigParser.NoOptionError:
-	print >> sys.stderr, "Please define the username, password, hostname and port in your .nipaprc"
+except ConfigParser.NoOptionError, ConfigParser.NoSectionError:
+	print >> sys.stderr, "Please define the username, password, hostname and port in your .nipaprc under the section 'global'"
 	sys.exit(1)
 
 try:
