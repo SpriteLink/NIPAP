@@ -46,6 +46,14 @@ except KeyError:
 
 offset = 0
 limit = 100
+print "%(prefix) -27s %(type)s %(order) -14s %(fqdn) -20s %(description)s" % {
+		'prefix'		: 'prefix',
+		'type'			: 'type',
+		'fqdn'			: 'node',
+		'order'			: 'SPAN order',
+		'description'	: 'description'
+		}
+print "--------------------------------------------------------------------------------"
 while True:
 	res = pynipap.Prefix.smart_search(schema, ' '.join(sys.argv[1:]), { 'offset': offset, 'limit': limit, 'include_all_parents': True })
 	for p in res['result']:
