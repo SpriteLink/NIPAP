@@ -31,9 +31,16 @@ except ConfigParser.NoOptionError:
 pynipap.xmlrpc_uri = xmlrpc_uri
 ao = pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
 
+import socket,xmlrpclib
 try:
 	schema = pynipap.Schema.list({ 'name': schema_name })[0]
-except:
+except socket.error:
+	print >> sys.stderr, "Connection refused, please check hostname & port"
+	sys.exit(1)
+except xmlrpclib.ProtocolError:
+	print >> sys.stderr, "Authentication failed, please check your username / password"
+	sys.exit(1)
+except KeyError:
 	print >> sys.stderr, "Non existing schema (", schema_name, ")"
 	sys.exit(1)
 
