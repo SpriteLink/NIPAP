@@ -141,9 +141,12 @@ class AuthFactory:
 
 
         # remove invalid cache entries
+        rem = list()
         for key in self._auth_cache:
             if self._auth_cache[key]['valid_until'] < datetime.utcnow():
-                del(self._auth_cache[key])
+                rem.append(key)
+        for key in rem:
+            del(self._auth_cache[key])
 
         user_authbackend = username.rsplit('@', 1)
     
