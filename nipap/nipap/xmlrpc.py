@@ -26,6 +26,7 @@
 """
 from twisted.web import http, xmlrpc, server
 from twisted.internet import defer, protocol, reactor
+from twisted.python import log
 import logging
 import xmlrpclib
 from nipapconfig import NipapConfig
@@ -93,7 +94,13 @@ class NipapXMLRPC:
         import signal
         signal.signal(signal.SIGHUP, self._sigHup)
 
-        from twisted.internet import reactor
+        # setup twisted logging
+        log.defaultObserver.stop()
+        log.defaultObserver = None
+        observer = log.PythonLoggingObserver()
+        observer.start()
+
+        # twist it!
         self._protocol = NipapProtocol()
         reactor.listenTCP(self._cfg.getint('nipapd', 'port'), server.Site(self._protocol))
         reactor.run()
