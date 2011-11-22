@@ -139,6 +139,9 @@ class AuthFactory:
                 `username` and `authoritative_source`.
         """
 
+        # validate arguments
+        if (authoritative_source is None):
+            raise AuthError("Missing authoritative_source.")
 
         # remove invalid cache entries
         rem = list()

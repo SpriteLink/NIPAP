@@ -135,7 +135,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
 
     def render(self, request):
-        self.request = request
 
         request.content.seek(0, 0)
         args, functionPath = xmlrpclib.loads(request.content.read())
@@ -146,16 +145,46 @@ class NipapProtocol(xmlrpc.XMLRPC):
         auth_options = {}
         nipap_args = {}
 
-        if len(args) > 0:
+        # validate function arguments
+        if len(args) == 1:
             nipap_args = args[0]
-        if type(nipap_args) == dict:
-            auth_options = nipap_args.get('auth')
+        else:
+            self.logger.info("Malformed request: got %d parameters" % len(args))
+            f = xmlrpclib.Fault(1000, ("NIPAP API functions take exactly 1 "
+                "argument (%d given)") % len(args))
+            self._cbRender(f, request)
+            return server.NOT_DONE_YET
+
+        if type(nipap_args) != dict:
+            f = xmlrpclib.Fault(1000, ("Function argument must be XML-RPC "
+                "struct/Python dict (Python %s given)." %
+                type(nipap_args).__name__ ))
+            self._cbRender(f, request)
+            return server.NOT_DONE_YET
+
+        # fetch auth options
+        try:
+            auth_options = nipap_args['auth']
+        except KeyError:
+            f = xmlrpclib.Fault(1000,
+                ("Missing authentication options in request."))
+            self._cbRender(f, request)
+            return server.NOT_DONE_YET
+
+        # fetch authoritative source
+        try:
+            auth_source = auth_options['authoritative_source']
+        except KeyError:
+            f = xmlrpclib.Fault(1000,
+                ("Missing authoritative source in auth options."))
+            self._cbRender(f, request)
+            return server.NOT_DONE_YET
 
         # fetch auth object for session
         try:
-            auth = self._auth_fact.get_auth(request.getUser(), request.getPassword(), auth_options.get('authoritative_source'), auth_options or {})
+            auth = self._auth_fact.get_auth(request.getUser(), request.getPassword(), auth_source, auth_options or {})
         except AuthError, exp:
-            self.logger.error("Unable to get auth object: %s" % str(exp))
+            self.logger.error("Authentication failed: %s" % str(exp))
             request.setResponseCode(http.UNAUTHORIZED)
             return "Authentication error."
 
@@ -164,51 +193,37 @@ class NipapProtocol(xmlrpc.XMLRPC):
             request.setResponseCode(http.UNAUTHORIZED)
             return "Authentication failed."
 
-        # this will throw an error later on - don't worry
+        # Replace auth options in API call arguments with auth object
         try:
             args[0]['auth'] = auth
         except:
             pass
 
-        # TODO: handle wrong number of arguments - should just be one
-
         # Authentication done
-        try:
-            function = self._getFunction(functionPath)
-        except xmlrpclib.Fault, f:
-            self._cbRender(f, request)
-        else:
-            request.setHeader("content-type", "text/xml")
-            defer.maybeDeferred(function, *args).addErrback(
-                    self._ebRender
-                    ).addCallback(
-                    self._cbRender, request
-                    )
-
-        return server.NOT_DONE_YET
+        return xmlrpc.XMLRPC.render(self, request)
 
 
 
-    def authorize(self, required = []):
-        # TODO: re-add authorization!
-        return 1
+    def xmlrpc_echo(self, args):
+        """ An echo function
 
-        llf = "XMLRPC authorize: "
-        lle = llf + "Authorization failed for '" + self.request.getUser() + "': "
-        self.logger.info(llf + "Authorizing user '" + self.request.getUser() + "': Required groups: " + str(required))
+            An API test function which simply echoes what is is passed in the
+            'message' element in the args-dict..
 
-        # for failing auth, do this:
-        if 1 == 2:
-            self.logger.error(lle + "No rows from database")
-            request.setResponseCode(http.UNAUTHORIZED)
-            return { 'result': 'failure', 'message': 'Authorization Failed!' }
+            Valid keys in the `args`-struct:
 
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `message` [string]
+                String to echo.
 
-    def xmlrpc_echo(self, message=None):
-        if 'message' is not None:
-            return message
+            Returns a string.
+        """
+        if args.get('message') is not None:
+            return args.get('message')
 
-        return "This is an echo function, if you pass me a string, I will return it to you"
+        return ("This is an echo function, if you pass me a string in the "
+            "argument 'message', I will return it to you")
 
 
     #
