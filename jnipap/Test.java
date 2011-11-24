@@ -51,8 +51,8 @@ public class Test {
 			s3.save(auth);
 
 			System.out.println("\nFetching all schemas...");
-			HashMap<String, Object> schema_spec = new HashMap<String, Object>();
-			List<Schema> l = Schema.list(auth, schema_spec);
+			HashMap schema_spec = new HashMap();
+			List l = Schema.list(auth, schema_spec);
 
 			for (int i = 0; i < l.size(); i++) {
 				System.out.println(l.get(i).toString());

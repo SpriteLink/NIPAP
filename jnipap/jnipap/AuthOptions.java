@@ -29,9 +29,9 @@ public class AuthOptions {
 	 *
 	 * @return Map of authentication options
 	 */
-	public Map<String, Object> toMap() {
+	public Map toMap() {
  
-		HashMap<String, Object> map = new HashMap<String, Object>();
+		HashMap map = new HashMap();
 
 		// Add non-null elements
 		if (this.full_name != null) {
@@ -46,7 +46,7 @@ public class AuthOptions {
 			map.put("username", this.username);
 		}
 
-		return (Map<String, Object>)map;
+		return (Map)map;
 
 	}
 

@@ -37,22 +37,22 @@ public class Schema extends Jnipap {
 	public void save(AuthOptions auth) throws JnipapException {
 
 		// create hashmap of schema attributes
-		HashMap<String, Object> attr = new HashMap<String, Object>();
+		HashMap attr = new HashMap();
 		attr.put("name", this.name);
 		attr.put("description", this.description);
 		attr.put("vrf", this.vrf);
 
 		// create schema spec
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", this.id);
 
 		// create args map
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("attr", attr);
 
 		// create params list
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// Create new or modify old?
@@ -88,15 +88,15 @@ public class Schema extends Jnipap {
 	public void remove(AuthOptions auth) throws JnipapException {
 
 		// Build schema spec
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", this.id);
 
 		// Build function args
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("schema", schema_spec);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
@@ -127,32 +127,32 @@ public class Schema extends Jnipap {
 	 * @param search_options Search options
 	 * @return A list of Schema objects matching the attributes in the schema_spec
 	 */
-	public static Map<String, Object> search(AuthOptions auth, Map<String, Object> query, Map<String, Object> search_options) throws JnipapException {
+	public static Map search(AuthOptions auth, Map query, Map search_options) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
 
 		// Build function args
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("query", query);
 		args.put("search_options", search_options);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
 		Map result = (Map)conn.execute("search_schema", params);
 
 		// extract data from result
-		HashMap<String, Object> ret = new HashMap<String, Object>();
+		HashMap ret = new HashMap();
 		ret.put("search_options", (Map)result.get("search_options"));
-		ArrayList<Schema> ret_schemas = new ArrayList<Schema>();
+		ArrayList ret_schemas = new ArrayList();
 
 		Object[] result_schemas = (Object[])result.get("result");
 
 		for (int i = 0; i < result_schemas.length; i++) {
-			Map<String, Object> result_schema = (Map<String, Object>)result_schemas[i];
+			Map result_schema = (Map)result_schemas[i];
 			ret_schemas.add(Schema.fromMap(result_schema));
 		}
 
@@ -170,38 +170,38 @@ public class Schema extends Jnipap {
 	 * @param search_options Search options
 	 * @return A list of Schema objects matching the attributes in the schema_spec
 	 */
-	public static Map<String, Object> search(AuthOptions auth, String query, Map<String, Object> search_options) throws JnipapException {
+	public static Map search(AuthOptions auth, String query, Map search_options) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
 
 		// Build function args
-		HashMap<String, Object> args = new HashMap<String, Object>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("query_string", query);
 		args.put("search_options", search_options);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
 		Map result = (Map)conn.execute("smart_search_schema", params);
 
 		// extract data from result
-		HashMap<String, Object> ret = new HashMap<String, Object>();
+		HashMap ret = new HashMap();
 		ret.put("search_options", (Map)result.get("search_options"));
 
 		Object[] interpretation_result = (Object[])result.get("interpretation");
-		List<Map> ret_interpretation = new ArrayList<Map>();
+		List ret_interpretation = new ArrayList();
 		for (int i = 0; i < interpretation_result.length; i++) {
 			ret_interpretation.add((Map)interpretation_result[i]);
 		}
 		ret.put("interpretation", ret_interpretation);
 
-		ArrayList<Schema> ret_schemas = new ArrayList<Schema>();
+		ArrayList ret_schemas = new ArrayList();
 		Object[] result_schemas = (Object[])result.get("result");
 		for (int i = 0; i < result_schemas.length; i++) {
-			Map<String, Object> result_schema = (Map<String, Object>)result_schemas[i];
+			Map result_schema = (Map)result_schemas[i];
 			ret_schemas.add(Schema.fromMap(result_schema));
 		}
 		ret.put("result", ret_schemas);
@@ -216,27 +216,27 @@ public class Schema extends Jnipap {
 	 * @param auth Authentication options
 	 * @param schema_spec Map where attributes can be specified
 	 */
-	public static List<Schema> list(AuthOptions auth, Map<String, Object> schema_spec) throws JnipapException {
+	public static List list(AuthOptions auth, Map schema_spec) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
 
 		// Build function args
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("schema", schema_spec);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
 		Object[] result = (Object[])conn.execute("list_schema", params);
 
 		// extract data from result
-		ArrayList<Schema> ret = new ArrayList<Schema>();
+		ArrayList ret = new ArrayList();
 
 		for (int i = 0; i < result.length; i++) {
-			Map<String, Object> result_schema = (	Map<String, Object>)result[i];
+			Map result_schema = (Map)result[i];
 			ret.add(Schema.fromMap(result_schema));
 		}
 
@@ -254,20 +254,20 @@ public class Schema extends Jnipap {
 	 * @param id ID of requested schema
 	 * @return The schema which was found
 	 */
-	public static Schema get(AuthOptions auth, int id) throws JnipapException {
+	public static Schema get(AuthOptions auth, Integer id) throws JnipapException {
 
 		// Build schema spec
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", id);
 
-		List<Schema> result = Schema.list(auth, schema_spec);
+		List result = Schema.list(auth, schema_spec);
 
 		// extract data from result
 		if (result.size() < 1) {
 			throw new NonExistentException("no matching schema found");
 		}
 
-		return result.get(0);
+		return (Schema)result.get(0);
 
 	}
 
@@ -279,7 +279,7 @@ public class Schema extends Jnipap {
 	 * @param input Map with schema attributes
 	 * @return Schema object
 	 */
-	public static Schema fromMap(Map<String, Object> input) {
+	public static Schema fromMap(Map input) {
 
 		Schema schema = new Schema();
 

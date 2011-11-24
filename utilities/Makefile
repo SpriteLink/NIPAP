@@ -1,7 +1,7 @@
 START=^
 
 clean:
-	for I in `seq 32|sort -nr`; do echo "Deleting IPv4 prefixes with length: $$I"; psql -c "DELETE FROM ip_net_plan WHERE family(prefix) = 4 AND masklen(prefix)=$$I" nipap > /dev/null; done ;
+	for I in `seq 32|sort -nr`; do echo "Deleting IPv4 prefixes with length: $$I"; psql -c "DELETE FROM ip_net_plan WHERE family(prefix) = 4 AND masklen(prefix)=$$I" nap > /dev/null; done ;
 
 transfer:
 	rm -f 1 2
@@ -17,7 +17,7 @@ except:
 	mv 2 1
 
 import:
-	./text-import.py --schema global 1
+	./text-import.py --schema global --url http://dev@local:dev@127.0.0.1:1337 1
 
 genpartial:
 	sed -ne '/$(START)/,$$p' 1 > 2
