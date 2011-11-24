@@ -36,7 +36,7 @@ public class Prefix extends Jnipap {
 	public Boolean monitor;
 	public Boolean display;
 	public Boolean match;
-	public Integer children = -2;
+	public Integer children = new Integer(-2);
 
 	/**
 	 * Creates new prefix object
@@ -121,12 +121,12 @@ public class Prefix extends Jnipap {
 	 *
 	 * @return Prefix attributes
 	 */
-	private HashMap<String, Object> toAttr() {
+	private HashMap toAttr() {
 
 		// TODO: handle schema = null
 
 		// create hashmap of prefix attributes
-		HashMap<String, Object> attr = new HashMap<String, Object>();
+		HashMap attr = new HashMap();
 		attr.put("description", this.description);
 		attr.put("comment", this.comment);
 		attr.put("node", this.node);
@@ -156,12 +156,12 @@ public class Prefix extends Jnipap {
 	 *
 	 * @param auth Authentication options
 	 */
-	public void save(AuthOptions auth, HashMap<String, Object> assign_args) throws JnipapException {
+	public void save(AuthOptions auth, HashMap assign_args) throws JnipapException {
 
-		HashMap<String, Object> attr = this.toAttr();
+		HashMap attr = this.toAttr();
 
 		// create schema spec
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		if (this.schema != null) { 
 			schema_spec.put("id", this.schema.id);
 		}
@@ -183,13 +183,13 @@ public class Prefix extends Jnipap {
 */
 
 		// create args map
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("attr", attr);
 		args.put("schema", schema_spec);
 
 		// create params list
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// Create new or modify old?
@@ -206,7 +206,7 @@ public class Prefix extends Jnipap {
 		} else {
 
 			// Prefix exists - modify existing.
-			HashMap<String, Object> prefix_spec = new HashMap<String, Object>();
+			HashMap prefix_spec = new HashMap();
 			prefix_spec.put("id", this.id);
 			args.put("prefix", prefix_spec);
 			cmd = "edit_prefix";
@@ -240,7 +240,7 @@ public class Prefix extends Jnipap {
 	 */
 	public void save(AuthOptions auth) throws JnipapException {
 
-		HashMap<String, Object> assign_args = new HashMap<String, Object>();
+		HashMap assign_args = new HashMap();
 		this.save(auth, assign_args);
 
 	}
@@ -253,19 +253,19 @@ public class Prefix extends Jnipap {
 	public void remove(AuthOptions auth) throws JnipapException {
 
 		// Build prefix spec
-		HashMap<String, Object> prefix_spec = new HashMap<String, Object>();
+		HashMap prefix_spec = new HashMap();
 		prefix_spec.put("id", this.id);
 
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", this.schema.id);
 
 		// Build function args
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("schema", schema_spec);
 		args.put("prefix", prefix_spec);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
@@ -297,36 +297,36 @@ public class Prefix extends Jnipap {
 	 * @param search_options Search options
 	 * @return A map containing search result and metadata
 	 */
-	public static Map<String, Object> search(AuthOptions auth, Schema schema, Map<String, Object> query, Map<String, Object> search_options) throws JnipapException {
+	public static Map search(AuthOptions auth, Schema schema, Map query, Map search_options) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
 
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", schema.id);
 
 		// Build function args
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("schema", schema_spec);
 		args.put("query", query);
 		args.put("search_options", search_options);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
 		Map result = (Map)conn.execute("search_prefix", params);
 
 		// extract data from result
-		HashMap<String, Object> ret = new HashMap<String, Object>();
+		HashMap ret = new HashMap();
 		ret.put("search_options", (Map)result.get("search_options"));
-		ArrayList<Prefix> ret_prefixes = new ArrayList<Prefix>();
+		ArrayList ret_prefixes = new ArrayList();
 
 		Object[] result_prefixes = (Object[])result.get("result");
 
 		for (int i = 0; i < result_prefixes.length; i++) {
-			Map<String, Object> result_prefix = (Map<String, Object>)result_prefixes[i];
+			Map result_prefix = (Map)result_prefixes[i];
 			ret_prefixes.add(Prefix.fromMap(auth, result_prefix));
 		}
 
@@ -345,42 +345,42 @@ public class Prefix extends Jnipap {
 	 * @param search_options Search options
 	 * @return A map containing search result and metadata 
 	 */
-	public static Map<String, Object> search(AuthOptions auth, Schema schema, String query, Map<String, Object> search_options) throws JnipapException {
+	public static Map search(AuthOptions auth, Schema schema, String query, Map search_options) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
 
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", schema.id);
 
 		// Build function args
-		HashMap<String, Object> args = new HashMap<String, Object>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("schema", schema_spec);
 		args.put("query_string", query);
 		args.put("search_options", search_options);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
 		Map result = (Map)conn.execute("smart_search_prefix", params);
 
 		// extract data from result
-		HashMap<String, Object> ret = new HashMap<String, Object>();
+		HashMap ret = new HashMap();
 		ret.put("search_options", (Map)result.get("search_options"));
 
 		Object[] interpretation_result = (Object[])result.get("interpretation");
-		List<Map> ret_interpretation = new ArrayList<Map>();
+		List ret_interpretation = new ArrayList();
 		for (int i = 0; i < interpretation_result.length; i++) {
 			ret_interpretation.add((Map)interpretation_result[i]);
 		}
 		ret.put("interpretation", ret_interpretation);
 
-		ArrayList<Prefix> ret_prefixes = new ArrayList<Prefix>();
+		ArrayList ret_prefixes = new ArrayList();
 		Object[] result_prefixes = (Object[])result.get("result");
 		for (int i = 0; i < result_prefixes.length; i++) {
-			Map<String, Object> result_prefix = (Map<String, Object>)result_prefixes[i];
+			Map result_prefix = (Map)result_prefixes[i];
 			ret_prefixes.add(Prefix.fromMap(auth, result_prefix));
 		}
 		ret.put("result", ret_prefixes);
@@ -396,31 +396,31 @@ public class Prefix extends Jnipap {
 	 * @param prefix_spec Map of prefix attributes
 	 * @return List of prefixes matching the attributes
 	 */
-	public static List<Prefix> list(AuthOptions auth, Schema schema, Map<String, Object> prefix_spec) throws JnipapException {
+	public static List list(AuthOptions auth, Schema schema, Map prefix_spec) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
 
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", schema.id);
 
 		// Build function args
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("schema", schema_spec);
 		args.put("prefix", prefix_spec);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
 		Object[] result = (Object[])conn.execute("list_prefix", params);
 
 		// extract data from result
-		ArrayList<Prefix> ret = new ArrayList<Prefix>();
+		ArrayList ret = new ArrayList();
 
 		for (int i = 0; i < result.length; i++) {
-			Map<String, Object> result_prefix = (Map<String, Object>)result[i];
+			Map result_prefix = (Map)result[i];
 			ret.add(Prefix.fromMap(auth, result_prefix));
 		}
 
@@ -441,17 +441,17 @@ public class Prefix extends Jnipap {
 	public static Prefix get(AuthOptions auth, Schema schema, Integer id) throws JnipapException {
 
 		// Build prefix spec
-		HashMap<String, Object> prefix_spec = new HashMap<String, Object>();
+		HashMap prefix_spec = new HashMap();
 		prefix_spec.put("id", id);
 
-		List<Prefix> result = Prefix.list(auth, schema, prefix_spec);
+		List result = Prefix.list(auth, schema, prefix_spec);
 
 		// extract data from result
 		if (result.size() < 1) {
 			throw new NonExistentException("no matching prefix found");
 		}
 
-		return result.get(0);
+		return (Prefix)result.get(0);
 
 	}
 
@@ -464,7 +464,7 @@ public class Prefix extends Jnipap {
 	 * @param auth Authentication options
 	 * @return Prefix object
 	 */
-	public static Prefix fromMap(AuthOptions auth, Map<String, Object> input) throws JnipapException {
+	public static Prefix fromMap(AuthOptions auth, Map input) throws JnipapException {
 
 		Prefix prefix = new Prefix();
 

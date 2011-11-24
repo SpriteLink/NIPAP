@@ -41,24 +41,24 @@ public class Pool extends Jnipap {
 		// TODO: handle schema = null
 
 		// create hashmap of pool attributes
-		HashMap<String, Object> attr = new HashMap<String, Object>();
-		attr.put("name", this.name);
-		attr.put("description", this.description);
-		attr.put("default_type", this.default_type);
-		attr.put("ipv4_default_prefix_length", this.ipv4_default_prefix_length);
-		attr.put("ipv6_default_prefix_length", this.ipv6_default_prefix_length);
+		HashMap attr = new HashMap();
+		attr.put((Object)"name", (Object)this.name);
+		attr.put((Object)"description", (Object)this.description);
+		attr.put((Object)"default_type", (Object)this.default_type);
+		attr.put((Object)"ipv4_default_prefix_length", (Object)this.ipv4_default_prefix_length);
+		attr.put((Object)"ipv6_default_prefix_length", (Object)this.ipv6_default_prefix_length);
 
 		// create pool spec
-		HashMap<String, Object> pool_spec = new HashMap<String, Object>();
+		HashMap pool_spec = new HashMap();
 		pool_spec.put("id", this.id);
 
 		// create args map
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("attr", attr);
 
 		// create params list
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// Create new or modify old?
@@ -93,19 +93,19 @@ public class Pool extends Jnipap {
 	public void remove(AuthOptions auth) throws JnipapException {
 
 		// Build pool spec
-		HashMap<String, Object> pool_spec = new HashMap<String, Object>();
+		HashMap pool_spec = new HashMap();
 		pool_spec.put("id", this.id);
 
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", this.schema.id);
 
 		// Build function args
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("schema", schema_spec);
 		args.put("pool", pool_spec);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
@@ -139,36 +139,36 @@ public class Pool extends Jnipap {
 	 * @param search_options Search options
 	 * @return A list of Pool objects matching the attributes in the query map
 	 */
-	public static Map<String, Object> search(AuthOptions auth, Schema schema, Map<String, Object> query, Map<String, Object> search_options) throws JnipapException {
+	public static Map search(AuthOptions auth, Schema schema, Map query, Map search_options) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
 
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", schema.id);
 
 		// Build function args
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("schema", schema_spec);
 		args.put("query", query);
 		args.put("search_options", search_options);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
 		Map result = (Map)conn.execute("search_pool", params);
 
 		// extract data from result
-		HashMap<String, Object> ret = new HashMap<String, Object>();
+		HashMap ret = new HashMap();
 		ret.put("search_options", (Map)result.get("search_options"));
-		ArrayList<Pool> ret_pools = new ArrayList<Pool>();
+		ArrayList ret_pools = new ArrayList();
 
 		Object[] result_pools = (Object[])result.get("result");
 
 		for (int i = 0; i < result_pools.length; i++) {
-			Map<String, Object> result_pool = (Map<String, Object>)result_pools[i];
+			Map result_pool = (Map)result_pools[i];
 			ret_pools.add(Pool.fromMap(auth, result_pool));
 		}
 
@@ -187,42 +187,42 @@ public class Pool extends Jnipap {
 	 * @param search_options Search options
 	 * @return A list of Pool objects matching the query string
 	 */
-	public static Map<String, Object> search(AuthOptions auth, Schema schema, String query, Map<String, Object> search_options) throws JnipapException {
+	public static Map search(AuthOptions auth, Schema schema, String query, Map search_options) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
 
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", schema.id);
 
 		// Build function args
-		HashMap<String, Object> args = new HashMap<String, Object>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("schema", schema_spec);
 		args.put("query_string", query);
 		args.put("search_options", search_options);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
 		Map result = (Map)conn.execute("smart_search_pool", params);
 
 		// extract data from result
-		HashMap<String, Object> ret = new HashMap<String, Object>();
+		HashMap ret = new HashMap();
 		ret.put("search_options", (Map)result.get("search_options"));
 
 		Object[] interpretation_result = (Object[])result.get("interpretation");
-		List<Map> ret_interpretation = new ArrayList<Map>();
+		List ret_interpretation = new ArrayList();
 		for (int i = 0; i < interpretation_result.length; i++) {
 			ret_interpretation.add((Map)interpretation_result[i]);
 		}
 		ret.put("interpretation", ret_interpretation);
 
-		ArrayList<Pool> ret_pools = new ArrayList<Pool>();
+		ArrayList ret_pools = new ArrayList();
 		Object[] result_pools = (Object[])result.get("result");
 		for (int i = 0; i < result_pools.length; i++) {
-			Map<String, Object> result_pool = (Map<String, Object>)result_pools[i];
+			Map result_pool = (Map)result_pools[i];
 			ret_pools.add(Pool.fromMap(auth, result_pool));
 		}
 		ret.put("result", ret_pools);
@@ -238,31 +238,31 @@ public class Pool extends Jnipap {
 	 * @param pool_spec Map of pool attributes
 	 * @return List of pools matching the attributes
 	 */
-	public static List<Pool> list(AuthOptions auth, Schema schema, Map<String, Object> pool_spec) throws JnipapException {
+	public static List list(AuthOptions auth, Schema schema, Map pool_spec) throws JnipapException {
 
 		// Create XML-RPC connection
 		Connection conn = Connection.getInstance();
 
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
+		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", schema.id);
 
 		// Build function args
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
+		HashMap args = new HashMap();
 		args.put("auth", auth.toMap());
 		args.put("pool", pool_spec);
 		args.put("schema", schema_spec);
 
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
 		Object[] result = (Object[])conn.execute("list_pool", params);
 
 		// extract data from result
-		ArrayList<Pool> ret = new ArrayList<Pool>();
+		ArrayList ret = new ArrayList();
 
 		for (int i = 0; i < result.length; i++) {
-			Map<String, Object> result_pool = (Map<String, Object>)result[i];
+			Map result_pool = (Map)result[i];
 			ret.add(Pool.fromMap(auth, result_pool));
 		}
 
@@ -280,20 +280,20 @@ public class Pool extends Jnipap {
 	 * @param id ID of requested pool
 	 * @return The pool which was found
 	 */
-	public static Pool get(AuthOptions auth, Schema schema, int id) throws JnipapException {
+	public static Pool get(AuthOptions auth, Schema schema, Integer id) throws JnipapException {
 
 		// Build pool spec
-		HashMap<String, Object> pool_spec = new HashMap<String, Object>();
-		pool_spec.put("id", id);
+		HashMap pool_spec = new HashMap();
+		pool_spec.put((Object)"id", (Object)id);
 
-		List<Pool> result = Pool.list(auth, schema, pool_spec);
+		List result = Pool.list(auth, schema, pool_spec);
 
 		// extract data from result
 		if (result.size() < 1) {
 			throw new NonExistentException("no matching pool found");
 		}
 
-		return result.get(0);
+		return (Pool)result.get(0);
 
 	}
 
@@ -306,7 +306,7 @@ public class Pool extends Jnipap {
 	 * @param auth Authentication options
 	 * @return Pool object
 	 */
-	public static Pool fromMap(AuthOptions auth, Map<String, Object> input) throws JnipapException {
+	public static Pool fromMap(AuthOptions auth, Map input) throws JnipapException {
 
 		Pool pool = new Pool();
 
