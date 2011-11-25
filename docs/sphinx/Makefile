@@ -34,6 +34,14 @@ html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+	for f in `ls $(BUILDDIR)/html/*.html`; do\
+		sed -e 's/_static/static/' $$f > tmp;\
+		mv tmp $$f;\
+	done
+
+	if [ -d $(BUILDDIR)/html/_static ]; then \
+		mv $(BUILDDIR)/html/_static $(BUILDDIR)/html/static;\
+	fi
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
