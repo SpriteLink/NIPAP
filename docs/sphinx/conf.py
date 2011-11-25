@@ -13,6 +13,7 @@
 
 import sys, os
 sys.path.insert(0, '../../nipap')
+sys.path.insert(0, '../../pynipap')
 #sys.path.append('../../nipap-www/nipapwww')
 
 # If extensions (or modules to document with autodoc) are in another directory,
