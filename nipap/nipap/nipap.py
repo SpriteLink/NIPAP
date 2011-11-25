@@ -2091,6 +2091,7 @@ class Nipap:
                     'pool_name': pool['name'],
                     'prefix': p['id'],
                     'prefix_prefix': p['prefix'],
+                    'description': 'Prefix %s removed from pool %s' % (p['prefix'], pool['name']),
                     'username': auth.username,
                     'authenticated_as': auth.authenticated_as,
                     'full_name': auth.full_name,
