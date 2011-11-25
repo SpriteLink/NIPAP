@@ -1853,9 +1853,9 @@ class Nipap:
 
             * `auth` [BaseAuth]
                 AAA options.
-            `schema_spec` [schema_spec]
+            * `schema_spec` [schema_spec]
                 Specifies what schema we are working within.
-            `args` [find_free_prefix_args]
+            * `args` [find_free_prefix_args]
                 Arguments to the find free prefix function.
 
             Returns a list of dicts.
