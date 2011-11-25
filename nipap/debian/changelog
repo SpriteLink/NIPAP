@@ -1,3 +1,9 @@
+nipap (0.5.6-1) oneiric; urgency=low
+
+  * New upstream (bugfix) version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Fri, 25 Nov 2011 13:53:06 +0100
+
 nipap (0.5.5-1) oneiric; urgency=low
 
   * New upstream version. 

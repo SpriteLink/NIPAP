@@ -1998,7 +1998,7 @@ class Nipap:
 
         res = list()
         for row in self._curs_pg:
-            res.append(row['prefix'])
+            res.append(str(row['prefix']))
 
         return res
 
