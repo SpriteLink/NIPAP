@@ -200,7 +200,19 @@ class NipapProtocol(xmlrpc.XMLRPC):
             pass
 
         # Authentication done
-        return xmlrpc.XMLRPC.render(self, request)
+        try:
+            function = self._getFunction(functionPath)
+        except xmlrpclib.Fault, f:
+            self._cbRender(f, request)
+        else:
+            request.setHeader("content-type", "text/xml")
+            defer.maybeDeferred(function, *args).addErrback(
+                    self._ebRender
+                    ).addCallback(
+                    self._cbRender, request
+                    )
+
+        return server.NOT_DONE_YET
 
 
 
