@@ -28,6 +28,7 @@ Contents:
    nipap
    xmlrpc
    authlib
+   pynipap
 
 
 Indices and tables

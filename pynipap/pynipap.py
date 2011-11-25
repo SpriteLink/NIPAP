@@ -1,3 +1,149 @@
+"""
+    pynipap - a Python NIPAP client library
+    =======================================
+
+    pynipap is a Python client library for the NIPAP IP address planning
+    system. It is structured as a simple ORM.
+
+    There are three ORM-classes:
+
+    * :class:`Schema`
+    * :class:`Pool`
+    * :class:`Prefix`
+
+    Each of these maps to the NIPAP objects with the same name. See the main
+    NIPAP API documentation for an overview of the different object types and
+    what they are used for.
+
+    There are also a few supporting classes:
+
+    * :class:`AuthOptions` - Authentication options.
+
+    And a bunch of exceptions:
+
+    * :class:`NipapError`
+    * :class:`NipapNonExistentError`
+    * :class:`NipapInputError`
+    * :class:`NipapMissingInputError`
+    * :class:`NipapExtraneousInputError`
+    * :class:`NipapNoSuchOperatorError`
+    * :class:`NipapValueError`
+    * :class:`NipapDuplicateError`
+
+    General usage
+    -------------
+    pynipap has been designed to be very simple to use and rapid to get about using.
+
+    Preparations
+    ^^^^^^^^^^^^
+    Make sure that pynipap is accessible in your `sys.path`, you can test it by
+    starting a python shell and running::
+
+        import pynipap
+
+    If that works, you are good to go!
+
+    To simplify your code slightly, you can import the individual classes into
+    your main namespace::
+
+        import pynipap
+        from pynipap import Schema, Pool, Prefix
+
+    Before you can access NIPAP you need to specify the URL to the NIPAP
+    XML-RPC service and the authentication options to use for your connection.
+    NIPAP has a authentication system which is somewhat involved, see the main
+    NIPAP documentation.
+
+    The URL, including the user credentials, is set in the pynipap module variable `xmlrpc_uri` as so::
+
+        pynipap.xmlrpc_uri = "http://user:pass@127.0.0.1:9002"
+
+    The minimum authentication options which we need to set is the
+    `authoritative_source` option, which specifies what system is accessing
+    NIPAP. This is logged for each query which alters the NIPAP database and
+    attached to each prefix which is created or edited. Well-behaved clients
+    are required to honor this and verify that the user really want to alter
+    the prefix, when trying to edit a prefix which last was edited by another
+    system. The :class:`AuthOptions` class is a class with a shared state,
+    similar to a singleton class; that is, when a first instance is created
+    each consecutive instances will be copies of the first one. In this way the
+    authentication options can be accessed from all of the pynipap classes. ::
+
+        a = AuthOptions({
+                'authoritative_source': 'my_fancy_nipap_client' 
+            })
+
+    After this, we are good to go!
+
+    Accessing data
+    ^^^^^^^^^^^^^^
+
+    To fetch data from NIPAP, a set of static methods (@classmethod) has been
+    defined in each of the ORM classes. They are:
+
+    * :func:`get` - Get a single object from its ID.
+    * :func:`list` - List objects matching a simple criteria.
+    * :func:`search` - Perform a full-blown search.
+    * :func:`smart_search` - Perform a magic search from a string.
+
+    Each of these functions return either an instance of the requested class
+    (:py:class:`Schema`, :class:`Pool`, :class:`Prefix`) or a list of
+    instances. The :func:`search` and :func:`smart_search` functions also
+    embeds the lists in dicts which contain search meta data.
+
+    The easiest way to get data out of NIPAP is to use the :func:`get`-method,
+    given that you know the ID of the object you want to fetch::
+
+        # Fetch schema with ID 1 and print its name
+        schema = Schema.get(1)
+        print schema.name
+
+    As all pools and prefixes are bound to a schema, all methods for fetching
+    these need a schema object which is takes as a first function argument. ::
+
+        # list all pools in the schema
+        pools = Pool.list(schema)
+
+        # print the name of the pools
+        for p in pools:
+            print p.name
+
+    Each of the list functions can also take a `spec`-dict as a second
+    argument. With the spec you can perform a simple search operation by
+    specifying object attribute values. ::
+
+        # List pools with a default type of 'assignment'
+        pools = Pool.list(schema, { 'default_type': 'assignment' })
+
+    Performing searches
+    ^^^^^^^^^^^^^^^^^^^
+    Commin' up, commin' up.
+
+    Saving changes
+    ^^^^^^^^^^^^^^
+
+    Changes made to objects are not automatically saved. To save the changes,
+    simply run the object's :func:`save`-method::
+
+        schema.name = "Spam spam spam"
+        schema.save()
+
+    Error handling
+    --------------
+
+    As is customary in Python applications, an error results in an exception
+    being thrown. All pynipap exceptions extend the main exception
+    :class:`NipapError`. A goal with the pynipap library has been to make the
+    XML-RPC-channel to the backend as transparent as possible, so the XML-RPC
+    Faults which the NIPAP server returns in case of errors are converted and
+    re-thrown as new exceptions which also they extend :class:`NipapError`,
+    for example the NipapDuplicateError which is thrown when a duplicate key
+    error occurs in NIPAP.
+
+
+    Classes
+    -------
+"""
 import xmlrpclib
 import logging
 import sys
@@ -19,11 +165,9 @@ xmlrpc_uri = None
 class AuthOptions:
     """ A global-ish authentication option container.
 
-        WHAT ARE THE IMPLICATIONS OF THIS CLASS?! IS ISOLATION GUARANTEED?!
-        NO.
-
-        VERY SEVERE ISSUE.
-        TODO: fix.
+        Note that this essentially is a global variable. If you handle multiple
+        queries from different users, you need to make sure that the
+        AuthOptions-instances are set to the current user's.
     """
 
     __shared_state = {}
@@ -51,14 +195,15 @@ class XMLRPCConnection:
 
 
     def __init__(self):
-        """ Create XML-RPC connection to url.
+        """ Create XML-RPC connection.
 
-            If an earlier created instance exists, url
-            does not need to be passed.
+            The connection will be created to the URL set in the module
+            variable `xmlrpc_uri`. The instanciation will fail unless this
+            variable is set.
         """
 
         if xmlrpc_uri is None:
-            raise NipapError('XML-RPC uri not spcified')
+            raise NipapError('XML-RPC URI not specified')
 
 
         # Currently not used due to threading safety issues
@@ -79,6 +224,9 @@ class XMLRPCConnection:
 
 class Pynipap:
     """ A base class for the pynipap model classes.
+
+        All Pynipap classes which maps to data in NIPAP (:py:class:Schema,
+        :py:class:Pool, :py:class:Prefix) extends this class.
     """
 
     _xmlrpc = None
@@ -113,8 +261,14 @@ class Schema(Pynipap):
     """
 
     name = None
+    """ The name of the schema, as a string.
+    """
     description = None
+    """ Schema description, as a string.
+    """
     vrf = None
+    """ VRF where the schema's addresses reside. A string.
+    """
 
 
     @classmethod
