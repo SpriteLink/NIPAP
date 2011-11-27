@@ -77,7 +77,11 @@ if __name__ == '__main__':
     # pid file handling
     if cfg.get('nipapd', 'pid_file') and not options.no_pid_file:
         # need a+ to be able to read PID from file
-        lf = open(cfg.get('nipapd', 'pid_file'), 'a+', 0)
+        try:
+            lf = open(cfg.get('nipapd', 'pid_file'), 'a+', 0)
+        except IOError, exc:
+            logger.error("Unable to open PID file '" + str(exc.filename) + "': " + str(exc.strerror))
+            sys.exit(1)
         try:
             fcntl.flock(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
