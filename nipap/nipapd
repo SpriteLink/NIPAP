@@ -18,6 +18,7 @@ if __name__ == '__main__':
     parser.add_option("-p", "--port", dest="port", type="int", help="listen to TCP port PORT")
     parser.add_option("-c", "--config", dest="config_file", type="string", default="/etc/nipap/nipap.conf", help="read configuration from file CONFIG_FILE")
     parser.add_option("-P", "--pid-file", type="string", help="write a PID file")
+    parser.add_option("--no-pid-file", action="store_true", default=False, help="turn off writing PID file (override config)")
 
     (options, args) = parser.parse_args()
 
@@ -74,7 +75,7 @@ if __name__ == '__main__':
     nipapxml = nipap.xmlrpc.NipapXMLRPC(root_logger = logger)
 
     # pid file handling
-    if cfg.get('nipapd', 'pid_file'):
+    if cfg.get('nipapd', 'pid_file') and not options.no_pid_file:
         # need a+ to be able to read PID from file
         lf = open(cfg.get('nipapd', 'pid_file'), 'a+', 0)
         try:
