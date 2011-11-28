@@ -13,7 +13,7 @@ all:
 	@echo "make buildrpm - Generate a rpm package"
 	@echo "make builddeb - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
-	@echo "make debpackages - Create Packages.gz file suitable for github apt repo"
+	@echo "make debrepo - Create Packages.gz file suitable for github apt repo"
 
 source:
 	for PROJ in $(SUBPROJ); do
@@ -35,7 +35,7 @@ builddeb:
 		cd $$PROJ; make builddeb; cd ..; \
 	done
 
-debpackages:
+debrepo:
 ifeq ($(CURBRANCH), $(shell echo -n 'gh-pages'))
 	dpkg-scanpackages . > Packages
 	sed -i 's/Filename: .\//Filename: /' Packages
