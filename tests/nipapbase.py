@@ -18,6 +18,8 @@ class NipapTest(unittest.TestCase):
     """ Tests the NIPAP class
     """
 
+
+    cfg = NipapConfig('/etc/nipap/nipap.conf')
     logger = logging.getLogger()
     nipap = nipap.nipap.Nipap()
 
@@ -30,8 +32,7 @@ class NipapTest(unittest.TestCase):
         # create dummy auth object
         # As the authentication is performed before the query hits the Nipap
         # class, it does not matter what user we use here
-        cfg = NipapConfig('/etc/nipap/nipap.conf')
-        self.auth = SqliteAuth('unittest', 'unittest', 'unittest')
+        self.auth = SqliteAuth('local', 'unittest', 'unittest', 'unittest')
         self.auth.authenticated_as = 'unittest'
         self.auth.full_name = 'Unit test'
 
