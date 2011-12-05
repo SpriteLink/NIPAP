@@ -510,8 +510,8 @@ class Nipap:
                 raise NipapValueError("schema specification key 'name' must be a string")
             if 'id' in spec:
                 raise NipapExtraneousInputError("schema specification contain both 'id' and 'key', specify schema id or name")
-        else:
-            raise NipapMissingInputError('missing both id and name in schema spec')
+        #else:
+        #    raise NipapMissingInputError('missing both id and name in schema spec')
 
         where, params = self._sql_expand_where(spec, 'spec_')
 
@@ -655,7 +655,7 @@ class Nipap:
 
 
 
-    def list_schema(self, auth, spec=None):
+    def list_schema(self, auth, spec = {}):
         """ Return a list of schemas matching `spec`.
 
             * `auth` [BaseAuth]
@@ -671,8 +671,8 @@ class Nipap:
         sql = "SELECT * FROM ip_net_schema"
         params = list()
 
-        if spec is not None:
-            where, params = self._expand_schema_spec(spec)
+        where, params = self._expand_schema_spec(spec)
+        if len(params) > 0:
             sql += " WHERE " + where
 
         sql += " ORDER BY name ASC"
@@ -701,6 +701,9 @@ class Nipap:
         schema = self.list_schema(auth, spec)
         if len(schema) == 0:
             raise NipapInputError("non-existing schema specified")
+        elif len(schema) > 1:
+            raise NipapInputError("found multiple matching schemas")
+
         return schema[0]
 
 
