@@ -277,7 +277,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_list_schema(self, args = {}):
+    def xmlrpc_list_schema(self, args):
         """ List schemas.
 
             Valid keys in the `args`-struct:
