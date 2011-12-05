@@ -31,6 +31,7 @@ public class Prefix extends Jnipap {
 	public Integer indent;
 	public String country;
 	public String order_id;
+	public String external_key;
 	public String authoritative_source;
 	public String alarm_priority;
 	public Boolean monitor;
@@ -133,6 +134,7 @@ public class Prefix extends Jnipap {
 		attr.put("type", this.type);
 		attr.put("country", this.country);
 		attr.put("order_id", this.order_id);
+		attr.put("external_key", this.external_key);
 		attr.put("alarm_priority", this.alarm_priority);
 		attr.put("monitor", this.monitor);
 
@@ -480,6 +482,7 @@ public class Prefix extends Jnipap {
 		prefix.indent = (Integer)input.get("indent");
 		prefix.country = (String)input.get("country");
 		prefix.order_id = (String)input.get("order_id");
+		prefix.external_key = (String)input.get("external_key");
 		prefix.authoritative_source = (String)input.get("authoritative_source");
 		prefix.alarm_priority = (String)input.get("alarm_priority");
 		prefix.monitor = (Boolean)input.get("monitor");
