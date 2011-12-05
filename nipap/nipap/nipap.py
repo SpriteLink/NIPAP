@@ -59,6 +59,8 @@
     * :attr:`indent` - Depth in prefix tree. Set by NIPAP.
     * :attr:`country` - Country where the prefix resides (two-letter country code).
     * :attr:`order_id` - Order identifier.
+    * :attr:`external_key` - A field for use by external systems which needs to
+        store references to its own dataset.
     * :attr:`authoritative_source` - String identifying which system last
         modified the prefix.
     * :attr:`alarm_priority` - String 'low', 'medium' or 'high'. Used by netwatch.
@@ -786,10 +788,6 @@ class Nipap:
             * :data:`like` - SQL LIKE
             * :data:`regex_match` - Regular expression match
             * :data:`regex_not_match` - Regular expression not match
-            * :data:`contains` - IP prefix contains
-            * :data:`contains_equals` - IP prefix contains or is equal to
-            * :data:`contained_within` - IP prefix is contained within
-            * :data:`contained_within_equals` - IP prefix is contained within or equals
 
             The :attr:`val1` and :attr:`val2` keys specifies the values which are subjected
             to the comparison. :attr:`val1` can be either any prefix attribute or an
@@ -893,7 +891,7 @@ class Nipap:
 
                 The :attr:`interpretation` is given as a list of dicts, each
                 explaining how a part of the search key was interpreted (ie. what
-                prefix attribute the search operation was performed on).
+                schema attribute the search operation was performed on).
 
                 The :attr:`result` is a list of dicts containing the search result.
 
@@ -1322,15 +1320,11 @@ class Nipap:
             * :data:`like` - SQL LIKE
             * :data:`regex_match` - Regular expression match
             * :data:`regex_not_match` - Regular expression not match
-            * :data:`contains` - IP prefix contains
-            * :data:`contains_equals` - IP prefix contains or is equal to
-            * :data:`contained_within` - IP prefix is contained within
-            * :data:`contained_within_equals` - IP prefix is contained within or equals
 
             The :attr:`val1` and :attr:`val2` keys specifies the values which are subjected
-            to the comparison. :attr:`val1` can be either any prefix attribute or an
+            to the comparison. :attr:`val1` can be either any pool attribute or an
             entire query dict. :attr:`val2` can be either the value you want to
-            compare the prefix attribute to, or an entire `query` dict.
+            compare the pool attribute to, or an entire `query` dict.
 
             Example 1 - Find the pool whose name match 'test'::
 
@@ -1368,8 +1362,8 @@ class Nipap:
             returned or set an offset for the result.
 
             The following options are available:
-            * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
-            * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
+            * :attr:`max_result` - The maximum number of pools to return (default :data:`50`).
+            * :attr:`offset` - Offset the result list this many pools (default :data:`0`).
         """
 
         # Add schema to query part list
@@ -1454,7 +1448,7 @@ class Nipap:
 
                 The :attr:`interpretation` is given as a list of dicts, each
                 explaining how a part of the search key was interpreted (ie. what
-                prefix attribute the search operation was performed on).
+                pool attribute the search operation was performed on).
 
                 The :attr:`result` is a list of dicts containing the search result.
 
@@ -1541,7 +1535,8 @@ class Nipap:
             raise NipapMissingInputError('missing schema')
 
         allowed_keys = ['id', 'family', 'schema',
-            'type', 'pool_name', 'pool_id', 'prefix', 'pool', 'monitor']
+            'type', 'pool_name', 'pool_id', 'prefix', 'pool', 'monitor',
+            'external_key' ]
         for key in spec.keys():
             if key not in allowed_keys:
                 raise NipapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
@@ -1609,6 +1604,7 @@ class Nipap:
             prefix_attr['node'] = 'node'
             prefix_attr['country'] = 'country'
             prefix_attr['order_id'] = 'order_id'
+            prefix_attr['external_key'] = 'external_key'
             prefix_attr['authoritative_source'] = 'authoritative_source'
             prefix_attr['alarm_priority'] = 'alarm_priority'
             prefix_attr['monitor'] = 'monitor'
@@ -1716,7 +1712,7 @@ class Nipap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'schema', 'description',
             'comment', 'pool', 'node', 'type', 'country',
-            'order_id', 'alarm_priority', 'monitor']
+            'order_id', 'alarm_priority', 'monitor', 'external_key' ]
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('host' not in attr):
             raise NipapMissingInputError('Either description or host must be specified.')
@@ -1784,7 +1780,7 @@ class Nipap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool', 'node', 'type', 'country',
-            'order_id', 'alarm_priority', 'monitor' ]
+            'order_id', 'alarm_priority', 'monitor', 'external_key' ]
 
         self._check_attr(attr, [], allowed_attr)
 
@@ -2332,6 +2328,7 @@ class Nipap:
         indent,
         country,
         order_id,
+        external_key,
         authoritative_source,
         alarm_priority,
         monitor,
