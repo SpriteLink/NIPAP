@@ -1,3 +1,9 @@
+pynipap (0.5.1-1) oneiric; urgency=low
+
+  * New upstream version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 05 Dec 2011 10:48:16 +0100
+
 pynipap (0.5.0-3) oneiric; urgency=low
 
   * Added hackish support for python 2.5...
