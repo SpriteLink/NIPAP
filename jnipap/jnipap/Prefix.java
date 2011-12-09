@@ -40,15 +40,6 @@ public class Prefix extends Jnipap {
 	public Integer children = new Integer(-2);
 
 	/**
-	 * Creates new prefix object
-	 */
-	public Prefix() {
-
-		super();
-
-	}
-
-	/**
 	 * Save object to NIPAP - assing prefix from pool
 	 */
 	 /*
@@ -156,9 +147,9 @@ public class Prefix extends Jnipap {
 	/**
 	 * Save object to NIPAP
 	 *
-	 * @param auth Authentication options
+	 * @param conn Connection with auth options
 	 */
-	public void save(AuthOptions auth, HashMap assign_args) throws JnipapException {
+	public void save(Connection conn, HashMap assign_args) throws JnipapException {
 
 		HashMap attr = this.toAttr();
 
@@ -186,7 +177,7 @@ public class Prefix extends Jnipap {
 
 		// create args map
 		HashMap args = new HashMap();
-		args.put("auth", auth.toMap());
+		args.put("auth", conn.authMap());
 		args.put("attr", attr);
 		args.put("schema", schema_spec);
 
@@ -223,7 +214,7 @@ public class Prefix extends Jnipap {
 			this.id = result;
 
 			// Get new prefix data
-			Prefix p = Prefix.get(auth, this.schema, this.id);
+			Prefix p = Prefix.get(conn, this.schema, this.id);
 			this.prefix = p.prefix;
 			this.display_prefix = p.display_prefix;
 			this.indent = p.indent;
@@ -233,26 +224,26 @@ public class Prefix extends Jnipap {
 			this.monitor = p.monitor;
 		}
 
-
-
 	}
 
 	/**
 	 * Save object to NIPAP
+	 *
+	 * @param conn Connection with auth options
 	 */
-	public void save(AuthOptions auth) throws JnipapException {
+	public void save(Connection conn) throws JnipapException {
 
 		HashMap assign_args = new HashMap();
-		this.save(auth, assign_args);
+		this.save(conn, assign_args);
 
 	}
 
 	/**
 	 * Remove object from NIPAP
 	 *
-	 * @param auth Authentication options
+	 * @param conn Connection with auth options
 	 */
-	public void remove(AuthOptions auth) throws JnipapException {
+	public void remove(Connection conn) throws JnipapException {
 
 		// Build prefix spec
 		HashMap prefix_spec = new HashMap();
@@ -263,7 +254,7 @@ public class Prefix extends Jnipap {
 
 		// Build function args
 		HashMap args = new HashMap();
-		args.put("auth", auth.toMap());
+		args.put("auth", conn.authMap());
 		args.put("schema", schema_spec);
 		args.put("prefix", prefix_spec);
 
@@ -293,23 +284,20 @@ public class Prefix extends Jnipap {
 	/**
 	 * Search NIPAP prefixes by specifying a specifically crafted map
 	 *
-	 * @param auth Authentication options
+	 * @param conn Connection with auth options
 	 * @param schema Schema to search
 	 * @param query Map describing the search query
 	 * @param search_options Search options
 	 * @return A map containing search result and metadata
 	 */
-	public static Map search(AuthOptions auth, Schema schema, Map query, Map search_options) throws JnipapException {
-
-		// Create XML-RPC connection
-		Connection conn = Connection.getInstance();
+	public static Map search(Connection conn, Schema schema, Map query, Map search_options) throws JnipapException {
 
 		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", schema.id);
 
 		// Build function args
 		HashMap args = new HashMap();
-		args.put("auth", auth.toMap());
+		args.put("auth", conn.authMap());
 		args.put("schema", schema_spec);
 		args.put("query", query);
 		args.put("search_options", search_options);
@@ -329,7 +317,7 @@ public class Prefix extends Jnipap {
 
 		for (int i = 0; i < result_prefixes.length; i++) {
 			Map result_prefix = (Map)result_prefixes[i];
-			ret_prefixes.add(Prefix.fromMap(auth, result_prefix));
+			ret_prefixes.add(Prefix.fromMap(conn, result_prefix));
 		}
 
 		ret.put("result", ret_prefixes);
@@ -341,23 +329,20 @@ public class Prefix extends Jnipap {
 	/**
 	 * Search NIPAP prefixes by specifying a search string
 	 *
-	 * @param auth Authentication options
+	 * @param conn Connection with auth options
 	 * @param schema Schema to search
 	 * @param query Search string
 	 * @param search_options Search options
 	 * @return A map containing search result and metadata 
 	 */
-	public static Map search(AuthOptions auth, Schema schema, String query, Map search_options) throws JnipapException {
-
-		// Create XML-RPC connection
-		Connection conn = Connection.getInstance();
+	public static Map search(Connection conn, Schema schema, String query, Map search_options) throws JnipapException {
 
 		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", schema.id);
 
 		// Build function args
 		HashMap args = new HashMap();
-		args.put("auth", auth.toMap());
+		args.put("auth", conn.authMap());
 		args.put("schema", schema_spec);
 		args.put("query_string", query);
 		args.put("search_options", search_options);
@@ -383,7 +368,7 @@ public class Prefix extends Jnipap {
 		Object[] result_prefixes = (Object[])result.get("result");
 		for (int i = 0; i < result_prefixes.length; i++) {
 			Map result_prefix = (Map)result_prefixes[i];
-			ret_prefixes.add(Prefix.fromMap(auth, result_prefix));
+			ret_prefixes.add(Prefix.fromMap(conn, result_prefix));
 		}
 		ret.put("result", ret_prefixes);
 
@@ -394,21 +379,18 @@ public class Prefix extends Jnipap {
 	/**
 	 * List prefixes with specified attributes
 	 *
-	 * @param auth Authentication options
+	 * @param conn Connection with auth options
 	 * @param prefix_spec Map of prefix attributes
 	 * @return List of prefixes matching the attributes
 	 */
-	public static List list(AuthOptions auth, Schema schema, Map prefix_spec) throws JnipapException {
-
-		// Create XML-RPC connection
-		Connection conn = Connection.getInstance();
+	public static List list(Connection conn, Schema schema, Map prefix_spec) throws JnipapException {
 
 		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", schema.id);
 
 		// Build function args
 		HashMap args = new HashMap();
-		args.put("auth", auth.toMap());
+		args.put("auth", conn.authMap());
 		args.put("schema", schema_spec);
 		args.put("prefix", prefix_spec);
 
@@ -423,7 +405,7 @@ public class Prefix extends Jnipap {
 
 		for (int i = 0; i < result.length; i++) {
 			Map result_prefix = (Map)result[i];
-			ret.add(Prefix.fromMap(auth, result_prefix));
+			ret.add(Prefix.fromMap(conn, result_prefix));
 		}
 
 		return ret;
@@ -436,17 +418,17 @@ public class Prefix extends Jnipap {
 	 * Fetch a prefix from NIPAP by specifying its ID. If no matching prefix
 	 * was found, an exception is thrown.
 	 *
-	 * @param auth Authentication options
+	 * @param conn Connection with auth options
 	 * @param id ID of requested prefix
 	 * @return The prefix which was found
 	 */
-	public static Prefix get(AuthOptions auth, Schema schema, Integer id) throws JnipapException {
+	public static Prefix get(Connection conn, Schema schema, Integer id) throws JnipapException {
 
 		// Build prefix spec
 		HashMap prefix_spec = new HashMap();
 		prefix_spec.put("id", id);
 
-		List result = Prefix.list(auth, schema, prefix_spec);
+		List result = Prefix.list(conn, schema, prefix_spec);
 
 		// extract data from result
 		if (result.size() < 1) {
@@ -463,16 +445,16 @@ public class Prefix extends Jnipap {
 	 * Helper function for creating objects of data received over XML-RPC
 	 *
 	 * @param input Map with prefix attributes
-	 * @param auth Authentication options
+	 * @param conn Connection with auth options
 	 * @return Prefix object
 	 */
-	public static Prefix fromMap(AuthOptions auth, Map input) throws JnipapException {
+	public static Prefix fromMap(Connection conn, Map input) throws JnipapException {
 
 		Prefix prefix = new Prefix();
 
 		prefix.id = (Integer)input.get("id");
 		prefix.family = (Integer)input.get("family");
-		prefix.schema = Schema.get(auth, (Integer)input.get("schema"));
+		prefix.schema = Schema.get(conn, (Integer)input.get("schema"));
 		prefix.prefix = (String)input.get("prefix");
 		prefix.display_prefix = (String)input.get("display_prefix");
 		prefix.description = (String)input.get("description");
@@ -492,7 +474,7 @@ public class Prefix extends Jnipap {
 
 		// If pool is not null, fetch pool object
 		if (input.get("pool") != null) {
-			prefix.pool = Pool.get(auth, prefix.schema, (Integer)input.get("pool"));
+			prefix.pool = Pool.get(conn, prefix.schema, (Integer)input.get("pool"));
 		}
 
 		return prefix;

@@ -2,6 +2,8 @@ package jnipap;
 
 import java.net.URL;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.security.InvalidParameterException;
 
@@ -27,11 +29,15 @@ import jnipap.ConnectionException;
  */
 public class Connection {
 
-	public XmlRpcClient connection;
+	private XmlRpcClient connection;
 	private XmlRpcClientConfigImpl config;
+	private static URL srv_url;
 
-	private static Connection _instance;
-
+	public String full_name;
+	public String authoritative_source;
+	public String auth_username;
+	public String password;
+	public String username;
 
 	/**
 	 * Creates a JnipapConnection
@@ -41,26 +47,64 @@ public class Connection {
 	 *
 	 * @param srv_url URL to the NIPAP server
 	 */
-	private Connection(URL srv_url) {
+	public Connection(URL srv_url, String auth_username, String password) {
+
+		this.srv_url = srv_url;
+		this.username = auth_username;
+		this.auth_username = auth_username;
 
 		// Create configuration object
-		this.config = new XmlRpcClientConfigImpl();
-		this.config.setServerURL(srv_url);
-		this.config.setEnabledForExtensions(true);
+		config = new XmlRpcClientConfigImpl();
+		config.setServerURL(srv_url);
+		config.setEnabledForExtensions(true);
+		config.setBasicUserName(auth_username);
+		config.setBasicPassword(password);
 
 		// Create client object
-		this.connection = new XmlRpcClient();
-		this.connection.setConfig(this.config);
-		this.connection.setTypeFactory(new NonExNullParser(this.connection));
+		connection = new XmlRpcClient();
+		connection.setConfig(this.config);
+		connection.setTypeFactory(new NonExNullParser(this.connection));
 
 	}
 
+	/**
+	 * Impersonate other user.
+	 *
+	 * This function is used to set a different username than the one used for
+	 * authentication as responsible for the changes. For this to work, the
+	 * user used for authentication must be "trusted", which means that it has
+	 * permission to impersonate other users.
+	 *
+	 * @param username Username which will be responsible for all actions.
+	 */
 	public void setUsername(String username) {
-		this.config.setBasicUserName(username);
+		this.username = username;
 	}
 
-	public void setPassword(String password) {
-		this.config.setBasicPassword(password);
+	/**
+	 * Return a Map-representation of the auth options
+	 *
+	 * @return Map of authentication options
+	 */
+	public Map authMap() {
+
+		HashMap map = new HashMap();
+
+		// Add non-null elements
+		if (this.full_name != null) {
+			map.put("full_name", this.full_name);
+		}
+
+		if (this.authoritative_source != null) {
+			map.put("authoritative_source", this.authoritative_source);
+		}
+
+		if (this.username != null) {
+			map.put("username", this.username);
+		}
+
+		return (Map)map;
+
 	}
 
 	public Object execute(String pMethodName, Object[] pParams) throws JnipapException {
@@ -126,66 +170,4 @@ public class Connection {
 
 	}
 
-	/**
-	 * Get an instance of the JnipapConnection
-	 *
-	 * If no instance previously has been created an error will be thrown.
-	 *
-	 * @return A reference to the JnipapConnection object
-	 */
-	public static Connection getInstance() {
-
-		// Throw exception if no connection previously has been created
-		if (_instance == null) {
-			throw new IllegalStateException("JnipapConnection not configured. Specify URL first!");
-		}
-
-		return _instance;
-
-	}
-
-	/**
-	 * Get an instance of the JnipapConnection
-	 *
-	 * If no instance of the JnipapConnection exists, a new one will be created
-	 * to the specified URL. Otherwise, the old object is returned and the URL ignored.
-	 *
-	 * Should this behavior be changed to alter the URL?
-	 *
-	 * @param srv_url URL to the NIPAP server
-	 * @return A reference to the JnipapConnection object
-	 */
-	public static Connection getInstance(URL srv_url) {
-
-		// Create new instance if none exist.
-		if (_instance == null) {
-			_instance = new Connection(srv_url);
-		}
-
-		return _instance;
-
-	}
-
-        /**
-         * Get an instance of the JnipapConnection
-         *
-         * Function is equal to getInstance(URL srv_url) with the addition that
-         * the username & password which will be used to authenticate the
-         * queries can be specified.
-         *
-         * @param srv_url URL to the NIPAP server
-         * @param username Username to authenticate as
-         * @param password Password to authenticate with
-         * @return A reference to the JnipapConnection object
-         */
-        public static Connection getInstance(URL srv_url, String username,
-            String password) {
-
-            Connection conn = Connection.getInstance(srv_url);
-            conn.setUsername(username);
-            conn.setPassword(password);
-
-            return conn;
-
-        }
 }
