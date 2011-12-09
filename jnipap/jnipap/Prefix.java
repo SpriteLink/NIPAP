@@ -119,20 +119,16 @@ public class Prefix extends Jnipap {
 
 		// create hashmap of prefix attributes
 		HashMap attr = new HashMap();
-		attr.put("description", this.description);
-		attr.put("comment", this.comment);
-		attr.put("node", this.node);
-		attr.put("type", this.type);
-		attr.put("country", this.country);
-		attr.put("order_id", this.order_id);
-		attr.put("external_key", this.external_key);
-		attr.put("alarm_priority", this.alarm_priority);
-		attr.put("monitor", this.monitor);
-
-		// Prefix can be null if we are creating a new prefix
-		if (this.prefix != null) {
-			attr.put("prefix", this.prefix);
-		}
+		putUnlessNull(attr, "description", this.description);
+		putUnlessNull(attr, "comment", this.comment);
+		putUnlessNull(attr, "node", this.node);
+		putUnlessNull(attr, "type", this.type);
+		putUnlessNull(attr, "country", this.country);
+		putUnlessNull(attr, "order_id", this.order_id);
+		putUnlessNull(attr, "external_key", this.external_key);
+		putUnlessNull(attr, "alarm_priority", this.alarm_priority);
+		putUnlessNull(attr, "monitor", this.monitor);
+		putUnlessNull(attr, "prefix", this.prefix);
 
 		// Pool assigned?
 		if (this.pool != null) {
@@ -157,6 +153,8 @@ public class Prefix extends Jnipap {
 		HashMap schema_spec = new HashMap();
 		if (this.schema != null) { 
 			schema_spec.put("id", this.schema.id);
+		} else {
+			// throw exception?
 		}
 
 /*

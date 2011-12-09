@@ -1,5 +1,7 @@
 package jnipap;
 
+import java.util.HashMap;
+
 import jnipap.Connection;
 
 /**
@@ -24,5 +26,20 @@ abstract public class Jnipap {
 	 * Remove object from NIPAP
 	 */
 	abstract public void remove(Connection auth) throws JnipapException;
+
+
+	/**
+	 * Add value to hash map unless null.
+	 *
+	 * Helper function which adds an element to a HashMap unless the value is
+	 * null.
+	 */
+	protected void putUnlessNull(HashMap hash, Object key, Object value) {
+
+		if (value != null) {
+			hash.put(key, value);
+		}
+
+	}
 
 }

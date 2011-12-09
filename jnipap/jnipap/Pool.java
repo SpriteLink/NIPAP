@@ -43,10 +43,15 @@ public class Pool extends Jnipap {
 		HashMap pool_spec = new HashMap();
 		pool_spec.put("id", this.id);
 
+		// create schema spec
+		HashMap schema_spec = new HashMap();
+		schema_spec.put("id", this.schema.id);
+
 		// create args map
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
 		args.put("attr", attr);
+		args.put("schema", schema_spec);
 
 		// create params list
 		List params = new ArrayList();
