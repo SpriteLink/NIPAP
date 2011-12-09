@@ -1696,6 +1696,11 @@ class Nipap:
                 # TODO: Raise other exception?
                 raise NipapNonExistentError("no free prefix found")
 
+        # If assigning from pool and missing prefix type, set default
+        if 'from-pool' in args and 'type' not in attr:
+            pool = self._get_pool(auth, schema_spec, args['from-pool'])
+            attr['type'] = pool['default_type']
+
         pool = None
         if 'pool_id' in attr or 'pool_name' in attr:
             if 'pool_id' in attr:
