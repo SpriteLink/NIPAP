@@ -40,7 +40,7 @@ public class Prefix extends Jnipap {
 	public Integer children = new Integer(-2);
 
 	/**
-	 * Save object to NIPAP - assing prefix from pool
+	 * Save object to NIPAP - assign prefix from pool
 	 */
 	 /*
 	public void save(AuthOptions auth, Pool from_pool, Integer inet_family) throws JnipapException {
