@@ -31,7 +31,7 @@ public class Connection {
 
 	private XmlRpcClient connection;
 	private XmlRpcClientConfigImpl config;
-	private static URL srv_url;
+	protected static URL srv_url;
 
 	public String full_name;
 	public String authoritative_source;
@@ -40,10 +40,7 @@ public class Connection {
 	public String username;
 
 	/**
-	 * Creates a JnipapConnection
-	 *
-	 * The constructor is made private as it is only called from the
-	 * getInstance-method.
+	 * Creates a Connection.
 	 *
 	 * @param srv_url URL to the NIPAP server
 	 */
@@ -53,12 +50,30 @@ public class Connection {
 		this.username = auth_username;
 		this.auth_username = auth_username;
 
+		setup();
+
+	}
+
+	/**
+	 * Creates a connection.
+	 *
+	 * Used by subclasses where the class is instanciated before the options
+	 * are known.
+	 */
+	protected Connection() {}
+
+
+	/**
+	 * Set up the connection objects.
+	 */
+	protected void setup() {
+
 		// Create configuration object
 		config = new XmlRpcClientConfigImpl();
-		config.setServerURL(srv_url);
+		config.setServerURL(this.srv_url);
 		config.setEnabledForExtensions(true);
-		config.setBasicUserName(auth_username);
-		config.setBasicPassword(password);
+		config.setBasicUserName(this.auth_username);
+		config.setBasicPassword(this.password);
 
 		// Create client object
 		connection = new XmlRpcClient();
@@ -66,6 +81,7 @@ public class Connection {
 		connection.setTypeFactory(new NonExNullParser(this.connection));
 
 	}
+
 
 	/**
 	 * Impersonate other user.
