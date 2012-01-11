@@ -33,13 +33,13 @@ public class OPool extends jnipap.Pool implements SQLData {
 	public void writeSQL(SQLOutput stream) throws SQLException {
 
 		// Write data to stream
-		stream.writeBigDecimal(new BigDecimal(id.intValue()));
-		stream.writeString(name);
+		stream.writeBigDecimal(Helpers.bigDecOrNull(id));
+		stream.writeString(Helpers.strOrNull(name));
 		stream.writeObject(schema);
-		stream.writeString(description);
-		stream.writeString(default_type);
-		stream.writeBigDecimal(new BigDecimal(ipv4_default_prefix_length.intValue()));
-		stream.writeBigDecimal(new BigDecimal(ipv6_default_prefix_length.intValue()));
+		stream.writeString(Helpers.strOrNull(description));
+		stream.writeString(Helpers.strOrNull(default_type));
+		stream.writeBigDecimal(Helpers.bigDecOrNull(ipv4_default_prefix_length));
+		stream.writeBigDecimal(Helpers.bigDecOrNull(ipv6_default_prefix_length));
 
 	}
 

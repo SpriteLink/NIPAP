@@ -1,7 +1,5 @@
 package ojnipap;
 
-import java.math.BigDecimal;
-
 import java.sql.Array;
 import java.sql.SQLData;
 import java.sql.SQLInput;
@@ -39,10 +37,10 @@ public class OSchema extends jnipap.Schema implements SQLData {
 	public void writeSQL(SQLOutput stream) throws SQLException {
 
 		// Write data to stream
-		stream.writeBigDecimal(new BigDecimal(id.intValue()));
-		stream.writeString(name);
-		stream.writeString(description);
-		stream.writeString(vrf);
+		stream.writeBigDecimal(Helpers.bigDecOrNull(id));
+		stream.writeString(Helpers.strOrNull(name));
+		stream.writeString(Helpers.strOrNull(description));
+		stream.writeString(Helpers.strOrNull(vrf));
 
 	}
 
