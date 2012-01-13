@@ -42,71 +42,143 @@ public class Prefix extends Jnipap {
 	/**
 	 * Save object to NIPAP - assign prefix from pool
 	 */
-	 /*
-	public void save(AuthOptions auth, Pool from_pool, Integer inet_family) throws JnipapException {
+	public void save(Connection conn, Pool from_pool, AddPrefixOptions opts) throws JnipapException {
 
 		// id should be null when assigning new prefixes
 		if (this.id != null) {
-			throw new IllegalStateException("attempting to assign prefix from pool when prefix already exists");
+			throw new IllegalStateException("prefix id is defined; attempting to assign prefix from prefix when prefix already exists");
 		}
 
-		HashMap<String, Object> attr = this.toAttr();
-		attr.put("schema", this.schema.id);
-		attr.put("family", this.family);
+		// create schema spec
+		HashMap schema_spec = new HashMap();
+		if (this.schema != null) {
+			schema_spec.put("id", this.schema.id);
+		}
 
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
-		schema_spec.put("id", this.schema.id);
+		HashMap attr = this.toAttr();
+
+		// add pool to options map
+		opts.put("from-pool", from_pool.id);
 
 		// create args map
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
-		args.put("auth", auth.toMap());
+		HashMap args = new HashMap();
+		args.put("auth", conn.authMap());
 		args.put("attr", attr);
 		args.put("schema", schema_spec);
+		args.put("args", opts);
 
 		// create params list
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
 		// perform operation
-		this.id = (Integer)conn.execute(cmd, params);
+		id = (Integer)conn.execute("add_prefix", params);
+		updateInstance();
 
 	}
-	*/
-
 
 	/**
 	 * Save object to NIPAP - assing prefix from prefix
 	 */
-	 /*
-	public void save(AuthOptions auth, Prefix from_prefix, Integer prefix_length) throws JnipapException {
+	public void save(Connection conn, Prefix from_prefix, AddPrefixOptions opts) throws JnipapException {
 
 		// id should be null when assigning new prefixes
 		if (this.id != null) {
-			throw new IllegalStateException("attempting to assign prefix from prefix when prefix already exists");
+			throw new IllegalStateException("prefix id is defined; attempting to assign prefix from prefix when prefix already exists");
 		}
 
-		HashMap<String, Object> attr = this.toAttr();
-		attr.put("schema", this.schema.id);
+		// create schema spec
+		HashMap schema_spec = new HashMap();
+		if (this.schema != null) {
+			schema_spec.put("id", this.schema.id);
+		}
 
-		HashMap<String, Object> schema_spec = new HashMap<String, Object>();
-		schema_spec.put("id", this.schema.id);
+		HashMap attr = this.toAttr();
+
+		// add prefix to options map - THIS MODIFIES THE MAP WE GOT PASSED
+		// Maybe we should create a copy...?
+		ArrayList pref_list = new ArrayList();
+		pref_list.add(from_prefix.prefix);
+		opts.put("from-prefix", pref_list);
 
 		// create args map
-		HashMap<String, Map<String, Object>> args = new HashMap<String, Map<String, Object>>();
-		args.put("auth", auth.toMap());
+		HashMap args = new HashMap();
+		args.put("auth", conn.authMap());
+		args.put("attr", attr);
+		args.put("schema", schema_spec);
+		args.put("args", opts);
+
+		// create params list
+		List params = new ArrayList();
+		params.add(args);
+
+		// perform operation
+		id = (Integer)conn.execute("add_prefix", params);
+		updateInstance();
+
+	}
+
+	/**
+	 * Save changes made to existing prefix OR create new fully defined (not assigned from pool or other prefix) prefix
+	 */
+	public void save(Connection conn) throws JnipapException {
+
+		HashMap attr = this.toAttr();
+
+		// create schema spec
+		HashMap schema_spec = new HashMap();
+		if (this.schema != null) {
+			schema_spec.put("id", this.schema.id);
+		}
+
+		// create args map
+		HashMap args = new HashMap();
+		args.put("auth", conn.authMap());
 		args.put("attr", attr);
 		args.put("schema", schema_spec);
 
 		// create params list
-		List<HashMap> params = new ArrayList<HashMap>();
+		List params = new ArrayList();
 		params.add(args);
 
+		// Create new or modify old?
+		if (id == null) {
 
-		// perform operation
-		this.id = (Integer)conn.execute(cmd, params);
+			// ID null - create new prefix
+			id = (Integer)conn.execute("add_prefix", params);
+
+		} else {
+
+			// Prefix exists - modify existing.
+			HashMap prefix_spec = new HashMap();
+			prefix_spec.put("id", id);
+			args.put("prefix", prefix_spec);
+			conn.execute("edit_prefix", params);
+
+		}
+
+		updateInstance();
 
 	}
-	*/
+
+	/**
+	 * Fetch current data from NIPAP and update instance
+	 */
+	private void updateInstance() throws JnipapException {
+
+		// Get new prefix data
+		Prefix p = Prefix.get(conn, schema, id);
+
+		// assign data which might have changed
+		prefix = p.prefix;
+		display_prefix = p.display_prefix;
+		indent = p.indent;
+		family = p.family;
+		authoritative_source = p.authoritative_source;
+		alarm_priority = p.alarm_priority;
+		monitor = p.monitor;
+
+	}
 
 	/**
 	 * Returns a HashMap of a few of the prefix attributes
@@ -135,104 +207,14 @@ public class Prefix extends Jnipap {
 			attr.put("pool", this.pool.id);
 		}
 
+		// Schema assigned?
+		/*
+		if (this.schema != null) {
+			attr.put("schema", this.schema.id);
+		}
+		*/
+
 		return attr;
-
-	}
-	
-
-	/**
-	 * Save object to NIPAP
-	 *
-	 * @param conn Connection with auth options
-	 */
-	public void save(Connection conn, HashMap assign_args) throws JnipapException {
-
-		HashMap attr = this.toAttr();
-
-		// create schema spec
-		HashMap schema_spec = new HashMap();
-		if (this.schema != null) { 
-			schema_spec.put("id", this.schema.id);
-		} else {
-			// throw exception?
-		}
-
-/*
-		HashMap<String, Object> assign_args_out = new HashMap<String, Object>();
-		if ("from-pool") {
-			assign_args_out.put("from-pool", assign_args.get("from-pool"));
-		}
-		if ("from-prefix") {
-			assign_args_out.put("from-prefix", assign_args.get("from-prefix"));
-		}
-		if ("family") {
-			assign_args_out.put("family", assign_args.get("family"));
-		}
-		if ("prefix_length") {
-			assign_args_out.put("prefix_length", assign_args.get("prefix_length"));
-		}
-*/
-
-		// create args map
-		HashMap args = new HashMap();
-		args.put("auth", conn.authMap());
-		args.put("attr", attr);
-		args.put("schema", schema_spec);
-
-		// create params list
-		List params = new ArrayList();
-		params.add(args);
-
-		// Create new or modify old?
-		String cmd;
-		if (this.id == null) {
-
-			// ID null - create new prefix
-			if (this.schema != null) {
-				attr.put("schema", this.schema.id);
-			}
-			cmd = "add_prefix";
-			args.put("args", assign_args);
-
-		} else {
-
-			// Prefix exists - modify existing.
-			HashMap prefix_spec = new HashMap();
-			prefix_spec.put("id", this.id);
-			args.put("prefix", prefix_spec);
-			cmd = "edit_prefix";
-
-		}
-
-		// perform operation
-		Integer result = (Integer)conn.execute(cmd, params);
-
-		// If we added a new prefix, fetch and set ID
-		if (this.id == null) {
-			this.id = result;
-
-			// Get new prefix data
-			Prefix p = Prefix.get(conn, this.schema, this.id);
-			this.prefix = p.prefix;
-			this.display_prefix = p.display_prefix;
-			this.indent = p.indent;
-			this.family = p.family;
-			this.authoritative_source = p.authoritative_source;
-			this.alarm_priority = p.alarm_priority;
-			this.monitor = p.monitor;
-		}
-
-	}
-
-	/**
-	 * Save object to NIPAP
-	 *
-	 * @param conn Connection with auth options
-	 */
-	public void save(Connection conn) throws JnipapException {
-
-		HashMap assign_args = new HashMap();
-		this.save(conn, assign_args);
 
 	}
 
