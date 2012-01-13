@@ -1,0 +1,36 @@
+package ojnipap;
+
+import java.util.HashMap;
+
+import java.sql.SQLData;
+import java.sql.SQLInput;
+import java.sql.SQLOutput;
+import java.sql.SQLException;
+
+import ojnipap.OSchema;
+import ojnipap.OPool;
+import ojnipap.OConnection;
+
+public class OSearchOptions extends HashMap implements SQLData {
+
+	public void readSQL(SQLInput stream, String typeName) throws SQLException {
+
+        put("max_result", new Integer(stream.readBigDecimal().intValue()));
+        put("offset", new Integer(stream.readBigDecimal().intValue()));
+
+    }
+
+	public void writeSQL(SQLOutput stream) throws SQLException {
+
+        stream.writeBigDecimal(Helpers.bigDecOrNull((Integer)get("max_result")));
+        stream.writeBigDecimal(Helpers.bigDecOrNull((Integer)get("offset")));
+
+    }
+
+	public String getSQLTypeName() {
+
+		return "NIPAP_SEARCH_OPTIONS";
+
+	}
+
+}
