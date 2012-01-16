@@ -39,30 +39,6 @@ public class API {
 	}
 
 	/**
-	 * Create Oracle-style ARRAY
-	 *
-	 * @param type_name Name of the table type in Oracle
-	 * @param data Data to place in the array
-	 */
-	private static ARRAY getARRAY(String type_name, Object data) throws JnipapException {
-
-		// Create Oracle-friendly array...
-		java.sql.Connection oconn;
-		ArrayDescriptor desc;
-		ARRAY ret;
-		try {
-			oconn = DriverManager.getConnection("jdbc:default:connection:");
-			desc = ArrayDescriptor.createDescriptor(type_name, oconn);
-			ret = new ARRAY(desc, oconn, (Object)data);
-		} catch(SQLException e) {
-			throw new JnipapException(e.toString());
-		}
-
-		return ret;
-
-	}
-
-	/**
 	 * Get a list of schemas
 	 *
 	 * Returns a list of all schemas.
@@ -354,6 +330,30 @@ public class API {
 		sqlobj.children = p.children;
 
 		return sqlobj;
+
+	}
+
+	/**
+	 * Create Oracle-style ARRAY
+	 *
+	 * @param type_name Name of the table type in Oracle
+	 * @param data Data to place in the array
+	 */
+	private static ARRAY getARRAY(String type_name, Object data) throws JnipapException {
+
+		// Create Oracle-friendly array...
+		java.sql.Connection oconn;
+		ArrayDescriptor desc;
+		ARRAY ret;
+		try {
+			oconn = DriverManager.getConnection("jdbc:default:connection:");
+			desc = ArrayDescriptor.createDescriptor(type_name, oconn);
+			ret = new ARRAY(desc, oconn, (Object)data);
+		} catch(SQLException e) {
+			throw new JnipapException(e.toString());
+		}
+
+		return ret;
 
 	}
 

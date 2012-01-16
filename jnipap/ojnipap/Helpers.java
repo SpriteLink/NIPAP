@@ -2,6 +2,9 @@ package ojnipap;
 
 import java.math.BigDecimal;
 
+import java.sql.SQLInput;
+import java.sql.SQLException;
+
 class Helpers {
 
 	/**
@@ -36,7 +39,7 @@ class Helpers {
 	 * BigDecimal with the value 1, otherwise 0.
 	 *
 	 * @param b Boolean value
-	 * @return A BigInteger with values 0 or 1
+	 * @return A BigDecimal with values 0 or 1
 	 */
 	static BigDecimal bigDecBoolOrNull(Boolean b) {
 
@@ -64,6 +67,26 @@ class Helpers {
 		}
 		
 		return new BigDecimal(i.intValue());
+
+	}
+
+	/**
+	 * Read BigDecimal value from stream and return Integer or null
+	 *
+	 * This helper function reads a BigDecimal from the stream. If the stream
+	 * contains a null value, null is returned. Otherwise an Integer object
+	 * with the requested value is returned.
+	 *
+	 * @param val stream to read data from
+	 * @return Integer object
+	 */
+	static Integer integerOrNull(BigDecimal val) throws SQLException {
+
+		if (val == null) {
+			return null;
+		}
+
+		return new Integer(val.intValue());
 
 	}
 

@@ -9,6 +9,9 @@ import java.sql.SQLException;
 
 import jnipap.AddPrefixOptions;
 
+/**
+ * SQLObject mapped AddPrefixOptions class
+ */
 public class OAddPrefixOptions extends AddPrefixOptions implements SQLData {
 
 	public void readSQL(SQLInput stream, String typeName) throws SQLException {
