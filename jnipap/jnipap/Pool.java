@@ -29,8 +29,6 @@ public class Pool extends Jnipap {
 	 */
 	public void save(Connection conn) throws JnipapException {
 
-		// TODO: handle schema = null
-
 		// create hashmap of pool attributes
 		HashMap attr = new HashMap();
 		attr.put((Object)"name", (Object)this.name);
@@ -44,6 +42,7 @@ public class Pool extends Jnipap {
 		pool_spec.put("id", this.id);
 
 		// create schema spec
+		// TODO: handle schema = null
 		HashMap schema_spec = new HashMap();
 		schema_spec.put("id", this.schema.id);
 

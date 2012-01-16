@@ -58,7 +58,9 @@ public class Prefix extends Jnipap {
 		HashMap attr = this.toAttr();
 
 		// add pool to options map
-		opts.put("from-pool", from_pool.id);
+		HashMap pool_spec = new HashMap();
+		pool_spec.put("id", from_pool.id);
+		opts.put("from-pool", pool_spec);
 
 		// create args map
 		HashMap args = new HashMap();
@@ -73,7 +75,7 @@ public class Prefix extends Jnipap {
 
 		// perform operation
 		id = (Integer)conn.execute("add_prefix", params);
-		updateInstance();
+		updateInstance(conn);
 
 	}
 
@@ -114,7 +116,7 @@ public class Prefix extends Jnipap {
 
 		// perform operation
 		id = (Integer)conn.execute("add_prefix", params);
-		updateInstance();
+		updateInstance(conn);
 
 	}
 
@@ -157,14 +159,14 @@ public class Prefix extends Jnipap {
 
 		}
 
-		updateInstance();
+		updateInstance(conn);
 
 	}
 
 	/**
 	 * Fetch current data from NIPAP and update instance
 	 */
-	private void updateInstance() throws JnipapException {
+	private void updateInstance(Connection conn) throws JnipapException {
 
 		// Get new prefix data
 		Prefix p = Prefix.get(conn, schema, id);
@@ -313,7 +315,7 @@ public class Prefix extends Jnipap {
 	 * @param schema Schema to search
 	 * @param query Search string
 	 * @param search_options Search options
-	 * @return A map containing search result and metadata 
+	 * @return A map containing search result and metadata
 	 */
 	public static Map search(Connection conn, Schema schema, String query, Map search_options) throws JnipapException {
 
@@ -403,6 +405,7 @@ public class Prefix extends Jnipap {
 	 * @return The prefix which was found
 	 */
 	public static Prefix get(Connection conn, Schema schema, Integer id) throws JnipapException {
+
 
 		// Build prefix spec
 		HashMap prefix_spec = new HashMap();
