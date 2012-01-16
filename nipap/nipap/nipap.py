@@ -1677,6 +1677,10 @@ class Nipap:
 
         self._logger.debug("add_prefix called; attr: %s; args: %s" % (str(attr), str(args)))
 
+        # args degfined?
+        if args is None:
+            args = {}
+
         # populate 'schema' with correct id
         schema = self._get_schema(auth, schema_spec)
         attr['schema'] = schema['id']
