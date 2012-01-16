@@ -132,4 +132,23 @@ class AuthFailedException extends JnipapException {
 		super(msg);
 	}
 
+	public AuthFailedException(Throwable cause) {
+		super(cause);
+	}
+
+}
+
+/**
+ * Thrown when ivalid parameters were sent
+ */
+class InvalidParameterException extends JnipapException {
+
+	public InvalidParameterException(String msg) {
+		super(msg);
+	}
+
+	public InvalidParameterException(Throwable cause) {
+		super(cause);
+	}
+
 }

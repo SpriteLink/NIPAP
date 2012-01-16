@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-import java.security.InvalidParameterException;
-
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcHttpTransportException;
 import org.apache.xmlrpc.client.XmlRpcClient;
@@ -20,7 +18,7 @@ import jnipap.DuplicateException;
 import jnipap.ConnectionException;
 
 /**
- * A singelton class containing a connection to the Jnipap XML-RPC server
+ * A class containing a connection to the NIPAP XML-RPC server
  *
  * This class is used by all NIPAP mapped objects to obtain a connection to
  * the NIPAP XML-RPC server.
@@ -49,6 +47,7 @@ public class Connection {
 		this.srv_url = srv_url;
 		this.username = auth_username;
 		this.auth_username = auth_username;
+		this.password = password;
 
 		setup();
 
