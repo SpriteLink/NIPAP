@@ -26,7 +26,7 @@ public class API {
 
 	/**
 	 * Get a schema from ID
-	 * 
+	 *
 	 * @param conn Connection object
 	 * @param id Schema ID to search for
 	 * @return Schema with id `id`
@@ -194,6 +194,40 @@ public class API {
 	public static ARRAY searchPrefix(OConnection conn, OSchema schema, String query) throws JnipapException {
 
 		return searchPrefix(conn, schema, query, new OSearchOptions());
+
+	}
+
+	/**
+	 * Perform a search in the external_key field.
+	 *
+	 * Returns a list of prefixes having the external_key attribute set to
+	 * `query`. The search is performed using the `equals` operator.
+	 *
+	 * @param conn Connection object
+	 * @param schema Schema to search in
+	 * @param query String to search
+	 * @param search_options Search options such as limiting the number of results
+	 * @return An array of OSchema objects matching the search query
+	 */
+	public static ARRAY searchPrefixExtKey(OConnection conn, OSchema schema, String query, OSearchOptions search_options) throws JnipapException {
+
+		// Build search query map
+		HashMap search_query = new HashMap();
+		search_query.put("operator", "equals");
+		search_query.put("val1", "external_key");
+		search_query.put("val2", query);
+
+		// Perform search
+		Map result = Prefix.search((jnipap.Connection)conn, (Schema)schema, search_query, search_options);
+
+		// Extract & convert data
+		List raw_prefixes = (List)result.get("result");
+		OPrefix[] ret = new OPrefix[raw_prefixes.size()];
+		for (int i = 0; i < raw_prefixes.size(); i++) {
+			ret[i] = toSQLObj((Prefix)raw_prefixes.get(i));
+		}
+
+		return getARRAY("NIPAP_PREFIX_TBL", (Object)ret);
 
 	}
 
