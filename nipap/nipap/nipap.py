@@ -66,8 +66,8 @@
     * :attr:`alarm_priority` - String 'low', 'medium' or 'high'. Used by netwatch.
     * :attr:`monitor` - A boolean specifying whether the prefix should be
         monitored or not.
-    * :attr:`display` - Only set by the :func:`search_prefix` and
-        :func:`smart_search_prefix` functions, see their documentation for
+    * :attr:`display` - Only set by the :func:`~Nipap.search_prefix` and
+        :func:`~Nipap.smart_search_prefix` functions, see their documentation for
         explanation.
 
     Prefix functions
@@ -830,8 +830,8 @@ class Nipap:
             returned or set an offset for the result.
 
             The following options are available:
-            * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
-            * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
+                * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
+                * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
         """
 
         #
@@ -1362,8 +1362,8 @@ class Nipap:
             returned or set an offset for the result.
 
             The following options are available:
-            * :attr:`max_result` - The maximum number of pools to return (default :data:`50`).
-            * :attr:`offset` - Offset the result list this many pools (default :data:`0`).
+                * :attr:`max_result` - The maximum number of pools to return (default :data:`50`).
+                * :attr:`offset` - Offset the result list this many pools (default :data:`0`).
         """
 
         # Add schema to query part list
@@ -2195,12 +2195,12 @@ class Nipap:
             returned.
 
             The following options are available:
-            * :attr:`parents_depth` - How many levels of parents to return. Set to :data:`-1` to include all parents.
-            * :attr:`children_depth` - How many levels of children to return. Set to :data:`-1` to include all children.
-            * :attr:`include_all_parents` - Include all parents, no matter what depth is specified.
-            * :attr:`include_all_children` - Include all children, no matter what depth is specified.
-            * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
-            * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
+                * :attr:`parents_depth` - How many levels of parents to return. Set to :data:`-1` to include all parents.
+                * :attr:`children_depth` - How many levels of children to return. Set to :data:`-1` to include all children.
+                * :attr:`include_all_parents` - Include all parents, no matter what depth is specified.
+                * :attr:`include_all_children` - Include all children, no matter what depth is specified.
+                * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
+                * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
 
             The options above gives the possibility to specify how many levels
             of parent and child prefixes to return in addition to the prefixes
