@@ -5,6 +5,7 @@ NIPAP is the Neat IP Address Planner - a system built for managing large amounts
 Features in short:
  * Very fast and scalable to hundred of thousands of prefixes
  * Native support for IPv6 (full feature parity with IPv4)
+ * Support for VRFs through the use of "schemas", allowing overlapping prefixes
  * Rapid address assignment using automatic assignment from pre-defined address-pools
  * XML-RPC middleware, allowing easy integration
  * Easy to use (and pretty) web interface (in turn utilizing the XML-RPC interface)
