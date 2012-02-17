@@ -78,8 +78,8 @@ class Command:
                 if 'exec' in val:
                     self.exe = val['exec']
 
-                # Options need special attention as they have an argument
-                if val['type'] == 'option':
+                # Elements wich takes arguments need special attention
+                if 'argument' in val:  #val['type'] == 'option':
 
                     # is there an argument (the next element)?
                     if len(inp_cmd) > i+1:
@@ -107,13 +107,6 @@ class Command:
                         # if there is no next element, let key_complete be true and set params to the option argument
                         self.params = { 'argument': val['argument'] }
 
-                # Or are we handling a command with an argument?
-                elif val['type'] == 'command' and 'argument' in val:
-                    if len(inp_cmd) > i+1:
-                        self.arg = inp_cmd[i+1]
-                        i += 1
-                    else:
-                        self.params[key] = val.get('argument')
 
                 # otherwise we are handling a command
                 else:
@@ -127,7 +120,7 @@ class Command:
         """ Get a list of valid completions on the current level
         """
 
-        print "running complete function %s " % self.key
+#        print "running complete function %s " % self.key
 
         comp = []
         for k, v in self.key.items():
@@ -148,17 +141,17 @@ class Command:
         """ Get a list of valid next values
         """
 
-        print "finding next values: %s" % self.key
+#        print "finding next values: %s" % self.key
 
         for k, v in self.params.items():
             if v['type'] == 'value':
-                print "found a value!"
+#                print "found a value!"
                 if 'complete' in v:
                     return v['complete']('')
                 else:
                     return []
 
-        print "no fisk: %s" % self.key
+#        print "no fisk: %s" % self.key
         return self.params.keys()
 
 
