@@ -49,9 +49,18 @@ import pynipap
 from pynipap import Schema, Pool, Prefix, NipapError
 from command import Command
 
+# definitions
+valid_countries = [ 'DE', 'EE', 'NL', 'SE', 'US' ] # test test, fill up! :)
+valid_prefix_types = [ 'host', 'reservation', 'assignment' ]
+valid_families = [ 'ipv4', 'ipv6' ]
+valid_bools = [ 'true', 'false' ]
+valid_priorities = [ 'low', 'medium', 'high' ]
+
+
 # global vars
 schema = None
 cfg = None
+
 
 def setup_connection(cfg):
 
@@ -466,6 +475,46 @@ def modify_pool(arg, opts):
     print "Pool %s saved." % p.name
 
 
+
+def modify_prefix(arg, opts):
+    """ Modify the prefix 'arg' with the options 'opts'
+    """
+
+    s = get_schema()
+
+    res = Prefix.list(s, { 'prefix': arg })
+    if len(res) == 0:
+        print >> sys.stderr, "Prefix %s not found." % arg
+
+    p = res[0]
+
+    if 'description' in opts:
+        p.description = opts['description']
+    if 'comment' in opts:
+        p.comment = opts['comment']
+    if 'node' in opts:
+        p.node = opts['node']
+    if 'type' in opts:
+        p.type = opts['type']
+    if 'country' in opts:
+        p.country = opts['country']
+    if 'order_id' in opts:
+        p.order_id = opts['order_id']
+    if 'alarm_priority' in opts:
+        p.alarm_priority = opts['alarm_priority']
+    if 'monitor' in opts:
+        p.monitor = _str_to_bool(opts['monitor'])
+
+    try:
+        p.save()
+    except NipapError, e:
+        print >> sys.stderr, "Could not save prefix changes: %s" % e.message
+        sys.exit(1)
+
+    print "Prefix %s saved." % p.display_prefix
+
+
+
 """
     COMPLETION FUNCTIONS
 """
@@ -482,22 +531,29 @@ def _complete_string(key, haystack):
     return match
 
 
+
 def complete_bool(arg):
-    valid = [ 'true', 'false' ]
-    return _complete_string(arg, valid)
+    return _complete_string(arg, valid_bools)
 
     
-def complete_family(arg):
 
-    valid = [ 'ipv4', 'ipv6' ]
-    return _complete_string(arg, valid)
+def complete_country(arg):
+    return _complete_string(arv, valid_countries)
+
+
+
+def complete_family(arg):
+    return _complete_string(arg, valid_families)
 
 
 
 def complete_prefix_type(arg):
+    return _complete_string(arg, valid_prefix_types)
 
-    valid = [ 'host', 'reservation', 'assignment' ]
-    return _complete_string(arg, valid)
+
+
+def complete_priority(arg):
+    return _complete_string(arg, valid_priorities)
 
 
 
@@ -543,15 +599,28 @@ def complete_schema_name(arg):
     VALIDATION FUNCTIONS
 """
 def validate_bool(arg):
-    return arg in [ 'true', 'false' ]
+    return arg in valid_bools
+
+
+
+def validate_country(arg):
+    return arg in valid_countries
+
 
 
 def validate_family(arg):
-    return arg in [ 'ipv4', 'ipv6' ]
+    return arg in valid_families
+
 
 
 def validate_prefix_type(arg):
-    return arg in [ 'host', 'reservation', 'assignment' ]
+    return arg in valid_prefix_types
+
+
+
+def validate_priority(arg):
+    return arg in valid_priorities
+
 
 
 def validate_schema_name(arg):
@@ -563,6 +632,7 @@ def validate_schema_name(arg):
         })
 
     return len(res['result']) == 1
+
 
 
 def validate_pool_name(arg):
@@ -596,6 +666,15 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
+                            }
+                        },
+                        'country': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_country,
+                                'validator': validate_country
                             }
                         },
                         'description': {
@@ -680,9 +759,17 @@ cmds = {
                                 'complete': complete_bool,
                                 'validator': validate_bool
                             }
+                        },
+                        'alarm_priority': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_priority,
+                                'validator': validate_priority
+                            }
                         }
                     },
-                    'exec': add_prefix,
                 },
 
                 # list
@@ -699,6 +786,96 @@ cmds = {
                 # modify
                 'modify': {
                     'type': 'command',
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Prefix to edit',
+                    },
+                    'params': {
+                        'set': {
+                            'type': 'command',
+                            'exec': modify_prefix,
+                            'params': {
+                                'comment': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    }
+                                },
+                                'country': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'complete': complete_country,
+                                        'validator': validate_country
+                                    }
+                                },
+                                'description': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    }
+                                },
+                                'family': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'complete': complete_family,
+                                        'validator': validate_family
+                                    }
+                                },
+                                'type': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'description': 'Prefix type: reservation | assignment | host',
+                                        'content_type': unicode,
+                                        'complete': complete_prefix_type,
+                                        'validator': validate_prefix_type
+                                    }
+                                },
+                                'node': {
+                                    'type': 'option',
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+        #                                'complete': complete_node,
+        #                                'validator': validate_node
+                                    }
+                                },
+                                'order': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    }
+                                },
+                                'monitor': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'complete': complete_bool,
+                                        'validator': validate_bool
+                                    }
+                                },
+                                'alarm_priority': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'complete': complete_priority,
+                                        'validator': validate_priority
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
 
                 # remove
