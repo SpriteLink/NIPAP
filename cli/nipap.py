@@ -19,11 +19,11 @@
     add             done
     list            done
     format list     done
-    modify
+    modify          done
     add prefix
     remove prefix
     expand
-    remove
+    remove          done
     view            done
 
     Prefix:
@@ -160,7 +160,7 @@ def list_schema(arg, opts):
 
     for s in res['result']:
         print "%s %s %s" % (s.name, s.description, s.vrf)
-    
+
 
 
 def list_prefix(arg, opts):
@@ -251,7 +251,7 @@ def view_pool(arg, opts):
     print "  %-15s : %s" % ("Name", p.name)
     print "  %-15s : %s" % ("Description", p.description)
     print "  %-15s : %s" % ("Default type", p.default_type)
-    print "  %-15s : %d / %d" % ("Preflen (v4/v6)", p.ipv4_default_prefix_length, p.ipv6_default_prefix_length)
+    print "  %-15s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
     print "\n-- Prefixes in pool"
 
     res = Prefix.list(s, { 'pool': p.id})
@@ -292,6 +292,25 @@ def remove_schema(arg, opts):
         print "Operation canceled."
 
 
+def remove_pool(arg, opts):
+
+    s = get_schema()
+    res = Pool.list(s, { 'name': arg })
+    if len(res) < 1:
+        print >> sys.stderr, "No pool with name %s found." % arg
+        sys.exit(1)
+
+    p = res[0]
+
+    res = raw_input("Do you really want to remove the pool %s? [y/n]: " % p.name)
+
+    if res == 'y':
+        p.remove()
+        print "Pool %s removed." % p.name
+    else:
+        print "Operation canceled."
+
+
 """
     MODIFY FUNCTIONS
 """
@@ -299,14 +318,14 @@ def remove_schema(arg, opts):
 def modify_schema(arg, opts):
     """ Modify a schema with the options set in opts
     """
-    
+
     res = pynipap.Schema.list({ 'name': arg })
     if len(res) < 1:
         print >> sys.stderr, "No schema with name %s found." % arg
         sys.exit(1)
 
     s = res[0]
-    
+
     if 'name' in opts:
         s.name = opts['name']
     if 'vrf' in opts:
@@ -317,6 +336,35 @@ def modify_schema(arg, opts):
     s.save()
 
     print "Schema %s saved." % s.name
+
+
+
+def modify_pool(arg, opts):
+    """ Modify a pool with the options set in opts
+    """
+
+    s = get_schema()
+    res = Pool.list(s, { 'name': arg })
+    if len(res) < 1:
+        print >> sys.stderr, "No pool with name %s found." % arg
+        sys.exit(1)
+
+    p = res[0]
+
+    if 'name' in opts:
+        p.name = opts['name']
+    if 'description' in opts:
+        p.description = opts['description']
+    if 'default_type' in opts:
+        p.default_type = opts['default_type']
+    if 'ipv4_default_prefix_length' in opts:
+        p.ipv4_default_prefix_length = opts['ipv4_default_prefix_length']
+    if 'ipv6_default_prefix_length' in opts:
+        p.ipv6_default_prefix_length = opts['ipv6_default_prefix_length']
+
+    p.save()
+
+    print "Pool %s saved." % p.name
 
 
 """
@@ -376,7 +424,7 @@ def complete_schema_name(arg):
         search_string = '^%s' % arg
 
     res = pynipap.Schema.search({
-        'operator': 'regex_match', 
+        'operator': 'regex_match',
         'val1': 'name',
         'val2':  search_string
         })
@@ -401,7 +449,7 @@ def validate_prefix_type(arg):
 def validate_schema_name(arg):
 
     res = pynipap.Schema.search({
-        'operator': 'equals', 
+        'operator': 'equals',
         'val1': 'name',
         'val2': arg
         })
@@ -416,7 +464,7 @@ def validate_pool_name(arg):
     s = get_schema()
 
     res = pynipap.Pool.search(s, {
-        'operator': 'equals', 
+        'operator': 'equals',
         'val1': 'name',
         'val2': arg
         })
@@ -448,7 +496,7 @@ cmds = {
                         },
                         'family': {
                             'type': 'option',
-                            'argument': { 
+                            'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
                                 'complete': complete_family,
@@ -457,7 +505,7 @@ cmds = {
                         },
                         'type': {
                             'type': 'option',
-                            'argument': { 
+                            'argument': {
                                 'type': 'value',
                                 'description': 'Prefix type: reservation | assignment | host',
                                 'content_type': unicode,
@@ -659,7 +707,7 @@ cmds = {
                                         'content_type': unicode,
                                         'description': 'Schema name',
                                     }
-        
+
                                 },
                                 'description': {
                                     'type': 'option',
@@ -730,16 +778,11 @@ cmds = {
                         }
                     }
                 },
-                
+
                 # list
                 'list': {
                     'type': 'command',
                     'exec': list_pool,
-#                    'argument': {
-#                        'type': 'value',
-#                        'content_type': unicode,
-#                        'descripton': 'Pool search string',
-#                    },
                     'params': {
                         'default_type': {
                             'type': 'option',
@@ -789,12 +832,76 @@ cmds = {
                 # remove
                 'remove': {
                     'type': 'command',
-
+                    'exec': remove_pool,
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Pool name',
+                        'complete': complete_pool_name,
+                        'validator': validate_pool_name
+                    }
                 },
 
                 # modify
                 'modify': {
                     'type': 'command',
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Pool name',
+                        'complete': complete_pool_name,
+                        'validator': validate_pool_name
+                    },
+                    'params': {
+                        'set': {
+                            'type': 'command',
+                            'exec': modify_pool,
+                            'params': {
+                                'default_type': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'descripton': 'Default prefix type: reservation | assignment | host',
+                                        'complete': complete_prefix_type,
+                                        'validator': validate_prefix_type
+                                    }
+                                },
+                                'name': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'descripton': 'Name of the pool'
+                                    }
+                                },
+                                'description': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'descripton': 'A short description of the pool'
+                                    }
+                                },
+                                'ipv4_default_prefix_length': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': int,
+                                        'descripton': 'Default IPv4 prefix length'
+                                    }
+                                },
+                                'ipv6_default_prefix_length': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': int,
+                                        'descripton': 'Default IPv6 prefix length'
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                 },
 
