@@ -53,15 +53,22 @@ class Command:
             # Find which of the valid commands matches the current element of inp_cmd
             # 
             if self.params is not None:
+                self.key_complete = False
                 for param, content in self.params.items():
 
                     # match string to command
                     if re.match(p, param):
                         self.key[param] = content
+
+                        # If we have an exact match, make sure that
+                        # is the only element in self.key
                         if p == param:
                             self.key_complete = True
-                        else:
-                            self.key_complete = False
+                            self.key = { param: content }
+                            break
+#                        else:
+#                            self.key_complete = False
+
             else:
                 raise Exception('Out of params')
 
@@ -70,8 +77,13 @@ class Command:
 #            elif len(self.key) > 1:
 #                raise ValueError("Multiple matches: %s" % ', '.join(self.key.keys()))
 
-            # there should only be one element, is there an easier
-            # way to extract it than looping?
+            # if we have a complete key and multiple matches
+            # (such as 'prefix' and 'prefix-length'), continue completing the same values.
+            # We need to find a way to differ between 'prefix' and 'prefix '.
+#            if len(self.key) > 1 and self.key_complete == True:
+#                self.params = self.key
+#                continue
+
             for key, val in self.key.items():
 
                 # if the element we reached has an executable registered, save it!
