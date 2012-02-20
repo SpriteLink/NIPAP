@@ -28,9 +28,10 @@
 
     Prefix:
     add
-     - from pool
-     - from prefix
-     - specified
+     - from pool    done
+     - from prefix  done
+     - specified    done
+     - complete host
     list            done
     modify
     remove
@@ -45,7 +46,7 @@ import re
 import ConfigParser
 sys.path.append('../pynipap')
 import pynipap
-from pynipap import Schema, Pool, Prefix
+from pynipap import Schema, Pool, Prefix, NipapError
 from command import Command
 
 # global vars
@@ -85,6 +86,18 @@ def get_schema():
 
     return Schema.list({ 'name': schema_name })[0]
 
+
+def _str_to_bool(arg):
+
+    if arg is None:
+        return False
+
+    if arg == 'true':
+        return True
+    elif arg == 'false':
+        return False
+    else:
+        raise ValueError('Only values true and false permitted')
 
 
 """
@@ -197,6 +210,48 @@ def add_prefix(arg, opts):
 
     p = Prefix()
     p.schema = s
+    p.prefix = opts.get('prefix')
+    p.type = opts.get('type')
+    p.descripton = opts.get('description')
+    p.node = opts.get('node')
+    p.country = opts.get('country')
+    p.order_id = opts.get('order_id')
+    p.alarm_priority = opts.get('alarm_priority')
+    p.comment = opts.get('comment')
+    p.monitor = _str_to_bool(opts.get('monitor'))
+
+    args = {}
+    if 'from-pool' in opts:
+        res = Pool.list(s, { 'name': opts['from-pool'] })
+        if len(res) == 0:
+            print >> sys.stderr, "No pool named %s found." % opts['from-pool']
+            sys.exit(1)
+
+        args['from-pool'] = res[0]
+        
+    if 'from-prefix' in opts:
+        args['from-prefix'] = [ opts['from-prefix'], ]
+
+    if 'prefix-length' in opts:
+        args['prefix_length'] = int(opts['prefix-length'])
+
+    if 'family' in opts:
+        family = opts['family']
+        if opts['family'] == 'ipv4':
+            family = 4
+        elif opts['family'] == 'ipv6':
+            family = 6
+
+        args['family'] = family
+
+
+    try:
+        p.save(args)
+    except NipapError, e:
+        print >> sys.stderr, "Could not add prefix to NIPAP: %s" % e.message
+        sys.exit(1)
+
+    print "Prefix %s added." % p.display_prefix
 
 
 
@@ -427,7 +482,11 @@ def _complete_string(key, haystack):
     return match
 
 
+def complete_bool(arg):
+    valid = [ 'true', 'false' ]
+    return _complete_string(arg, valid)
 
+    
 def complete_family(arg):
 
     valid = [ 'ipv4', 'ipv6' ]
@@ -483,12 +542,17 @@ def complete_schema_name(arg):
 """
     VALIDATION FUNCTIONS
 """
+def validate_bool(arg):
+    return arg in [ 'true', 'false' ]
+
+
 def validate_family(arg):
     return arg in [ 'ipv4', 'ipv6' ]
 
 
 def validate_prefix_type(arg):
     return arg in [ 'host', 'reservation', 'assignment' ]
+
 
 def validate_schema_name(arg):
 
@@ -566,6 +630,7 @@ cmds = {
                                 'type': 'value',
                                 'content_type': unicode,
                                 'complete': complete_pool_name,
+                                'validator': validate_pool_name,
                             }
                         },
                         'from-prefix': {
@@ -607,6 +672,15 @@ cmds = {
                                 'content_type': int
                             }
                         },
+                        'monitor': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_bool,
+                                'validator': validate_bool
+                            }
+                        }
                     },
                     'exec': add_prefix,
                 },
