@@ -31,10 +31,10 @@
      - from pool
      - from prefix
      - specified
-    list
+    list            done
     modify
     remove
-    view
+    view            done
 
 
 """
@@ -83,7 +83,7 @@ def get_schema():
         print >> sys.stderr, "Please define the default schema in your .nipaprc"
         sys.exit(1)
 
-    return pynipap.Schema.list({ 'name': schema_name })[0]
+    return Schema.list({ 'name': schema_name })[0]
 
 
 
@@ -131,7 +131,7 @@ def list_pool(arg, opts):
     s = get_schema()
 
     query = _expand_list_query(opts)
-    res = pynipap.Pool.search(s, query)
+    res = Pool.search(s, query)
     if len(res['result']) > 0:
         print "%-20s%-40s%-15s%-8s" % ("Name", "Description", "Default type", "4 / 6")
         print "-----------------------------------------------------------------------------------"
@@ -152,7 +152,7 @@ def list_schema(arg, opts):
     """
 
     query = _expand_list_query(opts)
-    res = pynipap.Schema.search(query)
+    res = Schema.search(query)
     if len(res['result']) > 0:
         print "Name Description VRF"
     else:
@@ -164,7 +164,24 @@ def list_schema(arg, opts):
 
 
 def list_prefix(arg, opts):
-    pass
+    """ List prefixes matching 'arg'
+    """
+
+    s = get_schema()
+
+    res = Prefix.smart_search(s, arg, { 'parents_depth': -1, 'max_result': 1200 })
+    if len(res['result']) == 0:
+        print "No addresses matching '%s' found." % arg
+        return
+
+    for p in res['result']:
+        if p.display == False:
+            continue
+
+        try:
+            print "%-30s%-3s%-20s%-15s%-40s" % ("".join("  " for i in range(p.indent)) + p.display_prefix, p.type[0].upper(), p.node, p.order_id, p.description)
+        except UnicodeEncodeError, e:
+            print "\nCrazy encoding for prefix %s\n" % p.prefix
 
 
 
@@ -173,7 +190,13 @@ def list_prefix(arg, opts):
 """
 
 def add_prefix(arg, opts):
-    pass
+    """ Add prefix to NIPAP
+    """
+
+    s = get_schema()
+
+    p = Prefix()
+    p.schema = s
 
 
 
@@ -181,7 +204,7 @@ def add_schema(arg, opts):
     """ Add schema to NIPAP
     """
 
-    s = pynipap.Schema()
+    s = Schema()
     s.name = opts.get('name')
     s.description = opts.get('description')
     s.vrf = opts.get('vrf')
@@ -224,7 +247,7 @@ def view_schema(arg, opts):
     """ View a single schema
     """
 
-    res = pynipap.Schema.list({ 'name': arg })
+    res = Schema.list({ 'name': arg })
     if len(res) < 1:
         print >> sys.stderr, "No schema with name %s found." % arg
         sys.exit(1)
@@ -263,8 +286,29 @@ def view_pool(arg, opts):
 def view_prefix(arg, opts):
     """ View a single prefix.
     """
-    p = pynipap.Prefix.get()
-    pass
+
+    s = get_schema()
+
+    res = Prefix.search(s, { 'operator': 'equals', 'val1': 'prefix', 'val2': arg }, {})
+
+    if len(res['result']) == 0:
+        print "Address %s not found." % arg
+        return
+
+    p = res['result'][0]
+    print  "-- Address "
+    print "  %-15s : %s" % ("Prefix", p.prefix)
+    print "  %-15s : %s" % ("Display prefix", p.display_prefix)
+    print "  %-15s : %s" % ("Type", p.type)
+    print "  %-15s : IPv%s" % ("Family", p.family)
+    print "  %-15s : %s" % ("Description", p.description)
+    print "  %-15s : %s" % ("Node", p.node)
+    print "  %-15s : %s" % ("Order", p.order_id)
+    print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
+    print "  %-15s : %s" % ("Monitor", p.monitor)
+    print "-- Comment"
+    print p.comment
+
 
 
 
@@ -274,7 +318,7 @@ def view_prefix(arg, opts):
 
 def remove_schema(arg, opts):
 
-    res = pynipap.Schema.list({ 'name': arg })
+    res = Schema.list({ 'name': arg })
     if len(res) < 1:
         print >> sys.stderr, "No schema with name %s found." % arg
         sys.exit(1)
@@ -319,7 +363,7 @@ def modify_schema(arg, opts):
     """ Modify a schema with the options set in opts
     """
 
-    res = pynipap.Schema.list({ 'name': arg })
+    res = Schema.list({ 'name': arg })
     if len(res) < 1:
         print >> sys.stderr, "No schema with name %s found." % arg
         sys.exit(1)
@@ -404,7 +448,7 @@ def complete_pool_name(arg):
     search_string = '^'
     if arg is not None:
         search_string += arg
-    res = pynipap.Pool.search(s, {
+    res = Pool.search(s, {
         'operator': 'regex_match',
         'val1': 'name',
         'val2': search_string
@@ -423,7 +467,7 @@ def complete_schema_name(arg):
     if arg is not None:
         search_string = '^%s' % arg
 
-    res = pynipap.Schema.search({
+    res = Schema.search({
         'operator': 'regex_match',
         'val1': 'name',
         'val2':  search_string
@@ -448,7 +492,7 @@ def validate_prefix_type(arg):
 
 def validate_schema_name(arg):
 
-    res = pynipap.Schema.search({
+    res = Schema.search({
         'operator': 'equals',
         'val1': 'name',
         'val2': arg
@@ -463,7 +507,7 @@ def validate_pool_name(arg):
 
     s = get_schema()
 
-    res = pynipap.Pool.search(s, {
+    res = Pool.search(s, {
         'operator': 'equals',
         'val1': 'name',
         'val2': arg
@@ -477,8 +521,11 @@ cmds = {
         'address': {
             'type': 'command',
             'params': {
+
+                # add
                 'add': {
                     'type': 'command',
+                    'exec': add_prefix,
                     'params': {
                         'comment': {
                             'type': 'option',
@@ -519,7 +566,13 @@ cmds = {
                                 'type': 'value',
                                 'content_type': unicode,
                                 'complete': complete_pool_name,
-#                                'validator': validate_pool
+                            }
+                        },
+                        'from-prefix': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
                             }
                         },
                         'node': {
@@ -557,13 +610,24 @@ cmds = {
                     },
                     'exec': add_prefix,
                 },
+
+                # list
                 'list': {
                     'type': 'command',
-                    'exec': list_prefix
+                    'exec': list_prefix,
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Prefix',
+                    },
                 },
+
+                # modify
                 'modify': {
                     'type': 'command',
                 },
+
+                # remove
                 'remove': {
                     'type': 'command',
                     'argument': {
@@ -571,6 +635,8 @@ cmds = {
                         'description': 'Address to remove'
                     }
                 },
+
+                # view
                 'view': {
                     'type': 'command',
                     'exec': view_prefix,
