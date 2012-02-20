@@ -79,13 +79,16 @@ class Command:
                     self.exe = val['exec']
 
                 # Elements wich takes arguments need special attention
-                if 'argument' in val:  #val['type'] == 'option':
+                if 'argument' in val:
 
                     # is there an argument (the next element)?
                     if len(inp_cmd) > i+1:
 
-                        # there is - add it to the exec arguments
-                        self.exe_options[key] = inp_cmd[i+1]
+                        # there is - save it
+                        if val['type'] == 'option':
+                            self.exe_options[key] = inp_cmd[i+1]
+                        else:
+                            self.arg = inp_cmd[i+1]
 
                         # Validate the argument if possible
                         if 'validator' in val['argument']:
@@ -99,8 +102,10 @@ class Command:
                         else:
                             self.key_complete = True
 
-                        # set params to the previous level parameters, before the option argument
-                        self.params = self.top_param
+                        # if there are sub parameters, add them
+                        if 'params' in val:
+                            self.params = val['params']
+
                         i += 1
 
                     else:
@@ -111,7 +116,7 @@ class Command:
                 # otherwise we are handling a command
                 else:
                     self.params = val.get('params')
-                    self.top_param = self.params
+#                    self.top_param = self.params
 
             i += 1
 
@@ -119,8 +124,6 @@ class Command:
     def complete(self):
         """ Get a list of valid completions on the current level
         """
-
-#        print "running complete function %s " % self.key
 
         comp = []
         for k, v in self.key.items():
@@ -141,23 +144,19 @@ class Command:
         """ Get a list of valid next values
         """
 
-#        print "finding next values: %s" % self.key
 
         for k, v in self.params.items():
             if v['type'] == 'value':
-#                print "found a value!"
                 if 'complete' in v:
                     return v['complete']('')
                 else:
                     return []
 
-#        print "no fisk: %s" % self.key
         return self.params.keys()
 
 
     def get_complete_string(self):
         s = ''
-#        print  "smack: %s" % str(self.params)
         for k, v in self.params.items():
             if v['type'] != 'value':
                 s += " %s" % k
