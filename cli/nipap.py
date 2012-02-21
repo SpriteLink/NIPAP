@@ -538,7 +538,7 @@ def complete_bool(arg):
     
 
 def complete_country(arg):
-    return _complete_string(arv, valid_countries)
+    return _complete_string(arg, valid_countries)
 
 
 
