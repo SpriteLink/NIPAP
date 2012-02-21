@@ -51,7 +51,6 @@ class Command:
             self.key = {}
 
             # Find which of the valid commands matches the current element of inp_cmd
-            # 
             if self.params is not None:
                 self.key_complete = False
                 for param, content in self.params.items():
@@ -62,7 +61,7 @@ class Command:
 
                         # If we have an exact match, make sure that
                         # is the only element in self.key
-                        if p == param:
+                        if p == param and len(inp_cmd) > i+1:
                             self.key_complete = True
                             self.key = { param: content }
                             break
@@ -71,18 +70,6 @@ class Command:
 
             else:
                 raise Exception('Out of params')
-
-#            if len(self.key) == 0:
-#                raise ValueError("No matches")
-#            elif len(self.key) > 1:
-#                raise ValueError("Multiple matches: %s" % ', '.join(self.key.keys()))
-
-            # if we have a complete key and multiple matches
-            # (such as 'prefix' and 'prefix-length'), continue completing the same values.
-            # We need to find a way to differ between 'prefix' and 'prefix '.
-#            if len(self.key) > 1 and self.key_complete == True:
-#                self.params = self.key
-#                continue
 
             for key, val in self.key.items():
 
@@ -96,6 +83,8 @@ class Command:
                     # is there an argument (the next element)?
                     if len(inp_cmd) > i+1:
 
+                        self.key = { 'argumemt': val['argument'] }
+
                         # there is - save it
                         if val['type'] == 'option':
                             self.exe_options[key] = inp_cmd[i+1]
@@ -106,11 +95,6 @@ class Command:
                         if 'validator' in val['argument']:
                             self.key_complete = val['argument']['validator'](inp_cmd[i+1])
 
-                            # if the validation failed, this is handled in the same way as an 
-                            # incomplete command and should cause the caller to ask for completions
-                            if not self.key_complete:
-                                # set the key (current element) to the option argument
-                                self.key = { 'argumemt': val['argument'] }
                         else:
                             self.key_complete = True
 
@@ -121,14 +105,14 @@ class Command:
                         i += 1
 
                     else:
-                        # if there is no next element, let key_complete be true and set params to the option argument
+                        # if there is no next element, let key_complete be true
+                        # and set params to the option argument
                         self.params = { 'argument': val['argument'] }
 
 
-                # otherwise we are handling a command
+                # otherwise we are handling a command without arguments
                 else:
                     self.params = val.get('params')
-#                    self.top_param = self.params
 
             i += 1
 
