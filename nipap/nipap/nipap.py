@@ -1048,6 +1048,7 @@ class Nipap:
             pool_attr['name'] = 'name'
             pool_attr['schema'] = 'schema'
             pool_attr['description'] = 'description'
+            pool_attr['default_type'] = 'default_type'
 
             if query['val1'] not in pool_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))

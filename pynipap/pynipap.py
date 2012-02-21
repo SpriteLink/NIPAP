@@ -548,7 +548,7 @@ class Pool(Pynipap):
         result['result'] = []
         result['search_options'] = search_result['search_options']
         for pool in search_result['result']:
-            p = Pool.from_dict(schema)
+            p = Pool.from_dict(pool)
             result['result'].append(p)
 
         return result
