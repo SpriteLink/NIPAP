@@ -595,61 +595,6 @@ def complete_schema_name(arg):
 
 
 
-"""
-    VALIDATION FUNCTIONS
-"""
-def validate_bool(arg):
-    return arg in valid_bools
-
-
-
-def validate_country(arg):
-    return arg in valid_countries
-
-
-
-def validate_family(arg):
-    return arg in valid_families
-
-
-
-def validate_prefix_type(arg):
-    return arg in valid_prefix_types
-
-
-
-def validate_priority(arg):
-    return arg in valid_priorities
-
-
-
-def validate_schema_name(arg):
-
-    res = Schema.search({
-        'operator': 'equals',
-        'val1': 'name',
-        'val2': arg
-        })
-
-    return len(res['result']) == 1
-
-
-
-def validate_pool_name(arg):
-    """ Validate if there is a pool with name 'arg'
-    """
-
-    s = get_schema()
-
-    res = Pool.search(s, {
-        'operator': 'equals',
-        'val1': 'name',
-        'val2': arg
-        })
-
-    return len(res['result']) == 1
-
-
 cmds = {
     'params': {
         'address': {
@@ -674,7 +619,6 @@ cmds = {
                                 'type': 'value',
                                 'content_type': unicode,
                                 'complete': complete_country,
-                                'validator': validate_country
                             }
                         },
                         'description': {
@@ -690,7 +634,6 @@ cmds = {
                                 'type': 'value',
                                 'content_type': unicode,
                                 'complete': complete_family,
-                                'validator': validate_family
                             }
                         },
                         'type': {
@@ -700,7 +643,6 @@ cmds = {
                                 'description': 'Prefix type: reservation | assignment | host',
                                 'content_type': unicode,
                                 'complete': complete_prefix_type,
-                                'validator': validate_prefix_type
                             }
                         },
                         'from-pool': {
@@ -709,7 +651,6 @@ cmds = {
                                 'type': 'value',
                                 'content_type': unicode,
                                 'complete': complete_pool_name,
-                                'validator': validate_pool_name,
                             }
                         },
                         'from-prefix': {
@@ -757,7 +698,6 @@ cmds = {
                                 'type': 'value',
                                 'content_type': unicode,
                                 'complete': complete_bool,
-                                'validator': validate_bool
                             }
                         },
                         'alarm_priority': {
@@ -766,7 +706,6 @@ cmds = {
                                 'type': 'value',
                                 'content_type': unicode,
                                 'complete': complete_priority,
-                                'validator': validate_priority
                             }
                         }
                     },
@@ -809,7 +748,6 @@ cmds = {
                                         'type': 'value',
                                         'content_type': unicode,
                                         'complete': complete_country,
-                                        'validator': validate_country
                                     }
                                 },
                                 'description': {
@@ -825,7 +763,6 @@ cmds = {
                                         'type': 'value',
                                         'content_type': unicode,
                                         'complete': complete_family,
-                                        'validator': validate_family
                                     }
                                 },
                                 'type': {
@@ -835,7 +772,6 @@ cmds = {
                                         'description': 'Prefix type: reservation | assignment | host',
                                         'content_type': unicode,
                                         'complete': complete_prefix_type,
-                                        'validator': validate_prefix_type
                                     }
                                 },
                                 'node': {
@@ -861,7 +797,6 @@ cmds = {
                                         'type': 'value',
                                         'content_type': unicode,
                                         'complete': complete_bool,
-                                        'validator': validate_bool
                                     }
                                 },
                                 'alarm_priority': {
@@ -870,7 +805,6 @@ cmds = {
                                         'type': 'value',
                                         'content_type': unicode,
                                         'complete': complete_priority,
-                                        'validator': validate_priority
                                     }
                                 }
                             }
@@ -938,11 +872,6 @@ cmds = {
                 'list': {
                     'type': 'command',
                     'exec': list_schema,
-#                    'argument': {
-#                        'type': 'value',
-#                        'content_type': unicode,
-#                        'descripton': 'Schema search string'
-#                    },
                     'params': {
                         'vrf': {
                             'type': 'option',
@@ -959,7 +888,6 @@ cmds = {
                                 'content_type': unicode,
                                 'description': 'Schema name',
                                 'complete': complete_schema_name,
-                                'validator': validate_schema_name
                             }
 
                         },
@@ -981,7 +909,6 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Schema name',
                         'complete': complete_schema_name,
-                        'validator': validate_schema_name
                     }
                 },
                 'remove': {
@@ -992,7 +919,6 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Schema name',
                         'complete': complete_schema_name,
-                        'validator': validate_schema_name
                     }
                 },
                 'modify': {
@@ -1002,7 +928,6 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Schema name',
                         'complete': complete_schema_name,
-                        'validator': validate_schema_name
                     },
                     'params': {
                         'set': {
@@ -1058,7 +983,6 @@ cmds = {
                                 'content_type': unicode,
                                 'descripton': 'Default prefix type: reservation | assignment | host',
                                 'complete': complete_prefix_type,
-                                'validator': validate_prefix_type
                             }
                         },
                         'name': {
@@ -1108,7 +1032,6 @@ cmds = {
                                 'content_type': unicode,
                                 'descripton': 'Default prefix type: reservation | assignment | host',
                                 'complete': complete_prefix_type,
-                                'validator': validate_prefix_type
                             }
                         },
                         'name': {
@@ -1155,7 +1078,6 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
-                        'validator': validate_pool_name
                     }
                 },
 
@@ -1167,7 +1089,6 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
-                        'validator': validate_pool_name
                     },
                     'params': {
                         'set': {
@@ -1181,7 +1102,6 @@ cmds = {
                                         'content_type': unicode,
                                         'descripton': 'Default prefix type: reservation | assignment | host',
                                         'complete': complete_prefix_type,
-                                        'validator': validate_prefix_type
                                     }
                                 },
                                 'name': {
@@ -1231,7 +1151,6 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
-                        'validator': validate_pool_name
                     }
 
                 }
