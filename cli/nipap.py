@@ -8,12 +8,12 @@
 
     Schema:
     add             done
-    list            
+    list            done - bug in backend
     search          
     modify          done
     remove          done
     view            done
-    format view
+    format view     done
 
     Pool:
     add             done
@@ -25,17 +25,19 @@
     expand
     remove          done
     view            done
+    schema sel.
 
     Prefix:
     add
      - from pool    done
      - from prefix  done
      - specified    done
-     - complete host
+     - complete node
     list            done
-    modify
-    remove
+    modify          done
+    remove          done
     view            done
+    schema sel.
 
 
 """
@@ -155,7 +157,9 @@ def list_pool(arg, opts):
     query = _expand_list_query(opts)
     res = Pool.search(s, query)
     if len(res['result']) > 0:
-        print "%-20s%-40s%-15s%-8s" % ("Name", "Description", "Default type", "4 / 6")
+        print "%-20s%-40s%-15s%-8s" % (
+            "Name", "Description", "Default type", "4 / 6"
+        )
         print "-----------------------------------------------------------------------------------"
     else:
         print "No matching pools found"
@@ -165,7 +169,11 @@ def list_pool(arg, opts):
             desc = p.description[0:34] + "..."
         else:
             desc = p.description
-        print "%-20s%-40s%-15s%-2s / %-3s" % (p.name, desc, p.default_type, str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
+        print "%-20s%-40s%-15s%-2s / %-3s" % (
+            p.name, desc, p.default_type,
+            str(p.ipv4_default_prefix_length),
+            str(p.ipv6_default_prefix_length)
+        )
 
 
 
@@ -176,12 +184,17 @@ def list_schema(arg, opts):
     query = _expand_list_query(opts)
     res = Schema.search(query)
     if len(res['result']) > 0:
-        print "Name Description VRF"
+        print "%-17s %-45s %-16s" % ("Name", "Description", "VRF")
+        print "--------------------------------------------------------------------------------"
     else:
         print "No matching schemas found."
 
     for s in res['result']:
-        print "%s %s %s" % (s.name, s.description, s.vrf)
+        if len(s.description) > 45:
+            desc = s.description[0:42] + "..."
+        else:
+            desc = s.description
+        print "%-17s %-45s %-16s" % (s.name, desc, s.vrf)
 
 
 
@@ -201,9 +214,12 @@ def list_prefix(arg, opts):
             continue
 
         try:
-            print "%-30s%-3s%-20s%-15s%-40s" % ("".join("  " for i in range(p.indent)) + p.display_prefix, p.type[0].upper(), p.node, p.order_id, p.description)
+            print "%-30s%-3s%-20s%-15s%-40s" % (
+                "".join("  " for i in range(p.indent)) + p.display_prefix,
+                p.type[0].upper(), p.node, p.order_id, p.description
+            )
         except UnicodeEncodeError, e:
-            print "\nCrazy encoding for prefix %s\n" % p.prefix
+            print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
 
 
 
@@ -304,6 +320,7 @@ def add_pool(arg, opts):
     print "Pool %s created with id %s" % (p.name, p.id)
 
 
+
 """
     VIEW FUNCTIONS
 """
@@ -318,7 +335,12 @@ def view_schema(arg, opts):
 
     s = res[0]
 
-    print "Name: %s\nDescription: %s\nVRF: %s" % (s.name, s.description, s.vrf)
+    print "-- Schema"
+    print "  %-12s : %s" % ("Name", s.name)
+    print "  %-12s : %d" % ("ID", s.id)
+    print "  %-12s : %s" % ("Description", s.description)
+    print "  %-12s : %s" % ("VRF", s.vrf)
+
 
 
 def view_pool(arg, opts):
@@ -400,6 +422,7 @@ def remove_schema(arg, opts):
         print "Operation canceled."
 
 
+
 def remove_pool(arg, opts):
 
     s = get_schema()
@@ -415,6 +438,29 @@ def remove_pool(arg, opts):
     if res == 'y':
         p.remove()
         print "Pool %s removed." % p.name
+    else:
+        print "Operation canceled."
+
+
+
+def remove_prefix(arg, opts):
+    """ Remove prefix
+    """
+
+    s = get_schema()
+    res = Prefix.list(s, { 'prefix': arg })
+
+    if len(res) < 1:
+        print >> sys.stderr, "No prefix %s found." % arg
+        sys.exit(1)
+
+    p = res[0]
+
+    res = raw_input("Do you really want to remove the prefix %s in schema %s? [y/n]: " % (p.prefix, s.name))
+
+    if res == 'y':
+        p.remove()
+        print "Prefix %s removed." % p.prefix
     else:
         print "Operation canceled."
 
@@ -815,9 +861,11 @@ cmds = {
                 # remove
                 'remove': {
                     'type': 'command',
+                    'exec': remove_prefix,
                     'argument': {
+                        'type': 'value',
                         'content_type': unicode,
-                        'description': 'Address to remove'
+                        'description': 'Remove address'
                     }
                 },
 
