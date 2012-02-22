@@ -11,7 +11,7 @@ class Command:
     """ Contains the next valid values
     """
     params = {}
-    
+
     """ Pointer to function to execute
     """
     exe = None
@@ -36,7 +36,7 @@ class Command:
     def parse_cmd(self, tree, inp_cmd):
         """ Extract command and options from string.
         """
-        
+
         self.exe = None
         self.arg = None
         self.exe_options = {}
@@ -101,6 +101,11 @@ class Command:
                         # if there are sub parameters, add them
                         if 'params' in val:
                             self.params = val['params']
+
+                        # if the command is finished (there is an element after the argument) and
+                        # there is an exec_imemdiately-function, execute it now
+                        if 'exec_immediately' in val and len(inp_cmd) > i+2:
+                            val['exec_immediately'](inp_cmd[i+1], self.exe_options)
 
                         i += 1
 

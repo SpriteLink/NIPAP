@@ -3,48 +3,14 @@
 
     NIPAP Command-line interface
 
-    TODO
-    ----
-
-    Schema:
-    add             done
-    list            done - bug in backend
-    search          
-    modify          done
-    remove          done
-    view            done
-    format view     done
-
-    Pool:
-    add             done
-    list            done
-    format list     done
-    modify          done
-    add prefix
-    remove prefix
-    expand
-    remove          done
-    view            done
-    schema sel.
-
-    Prefix:
-    add
-     - from pool    done
-     - from prefix  done
-     - specified    done
-     - complete node
-    list            done
-    modify          done
-    remove          done
-    view            done
-    schema sel.
-
-
 """
 
 import os
 import sys
 import re
+import shlex
+import pipes
+import subprocess
 import ConfigParser
 sys.path.append('../pynipap')
 import pynipap
@@ -82,20 +48,30 @@ def setup_connection(cfg):
 
 
 
-def get_schema():
+def get_schema(arg = None, opts = None):
+    """ Get schema
+    """
+
+    global schema
 
     # if there is a schema set, return it
     if schema is not None:
         return schema
 
-    # fetch default schema
-    try:
-        schema_name = cfg.get('global', 'schema')
-    except ConfigParser.NoOptionError:
-        print >> sys.stderr, "Please define the default schema in your .nipaprc"
-        sys.exit(1)
+    if arg is None:
+        # fetch default schema
+        try:
+            schema_name = cfg.get('global', 'default_schema')
+        except ConfigParser.NoOptionError:
+            print >> sys.stderr, "Please define the default schema in your .nipaprc"
+            sys.exit(1)
+    else:
+        schema_name = arg
 
-    return Schema.list({ 'name': schema_name })[0]
+    schema = Schema.list({ 'name': schema_name })[0]
+
+    return schema
+
 
 
 def _str_to_bool(arg):
@@ -109,6 +85,7 @@ def _str_to_bool(arg):
         return False
     else:
         raise ValueError('Only values true and false permitted')
+
 
 
 """
@@ -237,7 +214,7 @@ def add_prefix(arg, opts):
     p.schema = s
     p.prefix = opts.get('prefix')
     p.type = opts.get('type')
-    p.descripton = opts.get('description')
+    p.description = opts.get('description')
     p.node = opts.get('node')
     p.country = opts.get('country')
     p.order_id = opts.get('order_id')
@@ -304,7 +281,7 @@ def add_pool(arg, opts):
     """
 
     p = Pool()
-    p.schema = get_schema()
+    p.schema = get_schema(opts.get('schema'))
     p.name = opts.get('name')
     p.description = opts.get('description')
     p.default_type = opts.get('default_type')
@@ -347,7 +324,7 @@ def view_pool(arg, opts):
     """ View a single pool
     """
 
-    s = get_schema()
+    s = get_schema(opts.get('schema'))
 
     res = Pool.list(s, { 'name': arg })
 
@@ -603,6 +580,26 @@ def complete_priority(arg):
 
 
 
+def complete_node(arg):
+    """ Complete node fqdn
+    """
+
+    # get complete command from config
+    try:
+        cmd = cfg.get('global', 'complete_node_cmd')
+    except ConfigParser.NoOptionError:
+        return [ '', ]
+
+    cmd = re.sub('%search_string%', pipes.quote(arg), cmd)
+
+    args = shlex.split(cmd)
+    p = subprocess.Popen(args, stdout=subprocess.PIPE)
+    res, err = p.communicate()
+
+    nodes = res.split('\n')
+    return nodes
+
+
 def complete_pool_name(arg):
 
     s = get_schema()
@@ -646,6 +643,18 @@ cmds = {
         'address': {
             'type': 'command',
             'params': {
+
+                #set schema
+                'schema': {
+                    'type': 'option',
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Schema name',
+                        'complete': complete_schema_name,
+                    },
+                    'exec_immediately': get_schema
+                },
 
                 # add
                 'add': {
@@ -712,8 +721,7 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
-#                                'complete': complete_node,
-#                                'validator': validate_node
+                                'complete': complete_node,
                             }
                         },
                         'order': {
@@ -826,8 +834,7 @@ cmds = {
                                     'argument': {
                                         'type': 'value',
                                         'content_type': unicode,
-        #                                'complete': complete_node,
-        #                                'validator': validate_node
+                                        'complete': complete_node,
                                     }
                                 },
                                 'order': {
@@ -886,6 +893,8 @@ cmds = {
         'schema': {
             'type': 'command',
             'params': {
+
+                # add
                 'add': {
                     'type': 'command',
                     'exec': add_schema,
@@ -917,6 +926,8 @@ cmds = {
                         }
                     }
                 },
+
+                # list
                 'list': {
                     'type': 'command',
                     'exec': list_schema,
@@ -949,6 +960,8 @@ cmds = {
                         }
                     }
                 },
+
+                # view
                 'view': {
                     'exec': view_schema,
                     'type': 'command',
@@ -959,6 +972,8 @@ cmds = {
                         'complete': complete_schema_name,
                     }
                 },
+
+                # remove
                 'remove': {
                     'exec': remove_schema,
                     'type': 'command',
@@ -969,6 +984,8 @@ cmds = {
                         'complete': complete_schema_name,
                     }
                 },
+
+                # modify
                 'modify': {
                     'type': 'command',
                     'argument': {
@@ -1018,6 +1035,18 @@ cmds = {
         'pool': {
             'type': 'command',
             'params': {
+
+                #set schema
+                'schema': {
+                    'type': 'option',
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Schema name',
+                        'complete': complete_schema_name,
+                    },
+                    'exec_immediately': get_schema
+                },
 
                 # add
                 'add': {
@@ -1187,7 +1216,6 @@ cmds = {
                             }
                         }
                     }
-
                 },
 
                 # view
@@ -1200,7 +1228,6 @@ cmds = {
                         'description': 'Pool name',
                         'complete': complete_pool_name,
                     }
-
                 }
             }
         }
