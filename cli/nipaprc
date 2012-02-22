@@ -1,0 +1,9 @@
+[global]
+hostname = 127.0.0.1
+port = 9002
+username = test@local
+password = test
+
+complete_node_cmd = node list %search_string%
+
+default_schema = global
