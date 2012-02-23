@@ -451,6 +451,14 @@ class Pool(Pynipap):
         """ Save changes made to pool to NIPAP.
         """
 
+        # verify schema
+        if not isinstance(self.schema, Schema):
+            raise NipapValueError("missing/invalid schema specified")
+
+        # verify that the schema variable actually contains a schema
+        if not isinstance(self.schema, Schema):
+            raise NipapValueError("pool does not have a valid schema set")
+
         data = {
             'name': self.name,
             'description': self.description,
@@ -512,6 +520,10 @@ class Pool(Pynipap):
         """ Get the pool with id 'id'.
         """
 
+        # verify schema
+        if not isinstance(schema, Schema):
+            raise NipapValueError("missing/invalid schema specified")
+
         # cached?
         if id in _cache['Pool']:
             log.debug('cache hit for pool %d' % id)
@@ -532,6 +544,10 @@ class Pool(Pynipap):
     def search(cls, schema, query, search_opts={}):
         """ Search pools.
         """
+
+        # verify schema
+        if not isinstance(schema, Schema):
+            raise NipapValueError("missing/invalid schema specified")
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -559,6 +575,10 @@ class Pool(Pynipap):
     def smart_search(cls, schema, query_string, search_options={}):
         """ Perform a smart pool search.
         """
+
+        # verify schema
+        if not isinstance(schema, Schema):
+            raise NipapValueError("missing/invalid schema specified")
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -608,6 +628,10 @@ class Pool(Pynipap):
         """ List pools.
         """
 
+        # verify schema
+        if not isinstance(schema, Schema):
+            raise NipapValueError("missing/invalid schema specified")
+
         xmlrpc = XMLRPCConnection()
         pool_list = xmlrpc.connection.list_pool(
             {
@@ -654,6 +678,10 @@ class Prefix(Pynipap):
         """ Get the prefix with id 'id'.
         """
 
+        # verify schema
+        if not isinstance(schema, Schema):
+            raise NipapValueError("missing/invalid schema specified")
+
         # cached?
         if id in _cache['Prefix']:
             log.debug('cache hit for prefix %d' % id)
@@ -683,6 +711,10 @@ class Prefix(Pynipap):
         """ Search for prefixes.
         """
 
+        # verify schema
+        if not isinstance(schema, Schema):
+            raise NipapValueError("missing/invalid schema specified")
+
         xmlrpc = XMLRPCConnection()
         try:
             search_result = xmlrpc.connection.search_prefix(
@@ -709,6 +741,10 @@ class Prefix(Pynipap):
     def smart_search(cls, schema, query_string, search_options):
         """ Perform a smart prefix search.
         """
+
+        # verify schema
+        if not isinstance(schema, Schema):
+            raise NipapValueError("missing/invalid schema specified")
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -738,6 +774,10 @@ class Prefix(Pynipap):
         """ List prefixes.
         """
 
+        # verify schema
+        if not isinstance(schema, Schema):
+            raise NipapValueError("missing/invalid schema specified")
+
         xmlrpc = XMLRPCConnection()
         try:
             pref_list = xmlrpc.connection.list_prefix(
@@ -760,6 +800,10 @@ class Prefix(Pynipap):
     def save(self, args = {}):
         """ Save prefix to PYNIPAP.
         """
+
+        # verify that the schema variable actually contains a schema
+        if not isinstance(self.schema, Schema):
+            raise NipapValueError("prefix does not have a valid schema set")
 
         data = {
             'schema': self.schema.id,
