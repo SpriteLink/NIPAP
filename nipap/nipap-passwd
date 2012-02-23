@@ -57,7 +57,7 @@ if __name__ == '__main__':
             sys.exit(1)
 
         a.add_user(options.add_user, options.password, options.name, options.trusted)
-        print "Added user %s to %s" % (options.add_user, cfg.get('auth', 'db_path'))
+        print "Added user %s" % options.add_user
 
     elif options.delete_user:
         a.remove_user(options.delete_user)
