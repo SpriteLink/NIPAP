@@ -11,6 +11,9 @@ Features in short:
  * Easy to use (and pretty) web interface (in turn utilizing the XML-RPC interface)
  * Flexible authentication using SQLite and/or LDAP
 
+Check out the webpage for information, screenshots and more: http://SpriteLink.github.com/NIPAP
+
+
 License
 -------
 X11 / MIT
