@@ -24,6 +24,8 @@
     Classes
     -------
 """
+import twisted
+import twisted.python.versions
 from twisted.web import http, xmlrpc, server
 from twisted.internet import defer, protocol, reactor
 from twisted.python import log
@@ -200,8 +202,12 @@ class NipapProtocol(xmlrpc.XMLRPC):
             pass
 
         # Authentication done
+        ver = twisted.python.versions.Version('twisted', 11, 1, 0)
         try:
-            function = self._getFunction(functionPath)
+            if twisted._version.version >= ver:
+                function = self.lookupProcedure(functionPath)
+            else:
+                function = self._getFunction(functionPath)
         except xmlrpclib.Fault, f:
             self._cbRender(f, request)
         else:
