@@ -52,6 +52,7 @@ def get_schema(arg = None, opts = None):
     """ Get schema
     """
 
+    # yep, global variables are evil
     global schema
 
     # if there is a schema set, return it
@@ -68,7 +69,10 @@ def get_schema(arg = None, opts = None):
     else:
         schema_name = arg
 
-    schema = Schema.list({ 'name': schema_name })[0]
+    try:
+        schema = Schema.list({ 'name': schema_name })[0]
+    except IndexError:
+        schema = False
 
     return schema
 
@@ -284,7 +288,7 @@ def add_pool(arg, opts):
     p.schema = get_schema(opts.get('schema'))
     p.name = opts.get('name')
     p.description = opts.get('description')
-    p.default_type = opts.get('default_type')
+    p.default_type = opts.get('default-type')
     p.ipv4_default_prefix_length = opts.get('ipv4_default_prefix_length')
     p.ipv6_default_prefix_length = opts.get('ipv6_default_prefix_length')
 
@@ -486,8 +490,8 @@ def modify_pool(arg, opts):
         p.name = opts['name']
     if 'description' in opts:
         p.description = opts['description']
-    if 'default_type' in opts:
-        p.default_type = opts['default_type']
+    if 'default-type' in opts:
+        p.default_type = opts['default-type']
     if 'ipv4_default_prefix_length' in opts:
         p.ipv4_default_prefix_length = opts['ipv4_default_prefix_length']
     if 'ipv6_default_prefix_length' in opts:
@@ -606,11 +610,13 @@ def complete_pool_name(arg):
     search_string = '^'
     if arg is not None:
         search_string += arg
+
     res = Pool.search(s, {
         'operator': 'regex_match',
         'val1': 'name',
         'val2': search_string
     })
+
     ret = []
     for p in res['result']:
         ret.append(p.name)
@@ -630,6 +636,7 @@ def complete_schema_name(arg):
         'val1': 'name',
         'val2':  search_string
         })
+
     ret = []
     for schema in res['result']:
         ret.append(schema.name)
@@ -1053,7 +1060,7 @@ cmds = {
                     'type': 'command',
                     'exec': add_pool,
                     'params': {
-                        'default_type': {
+                        'default-type': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
@@ -1102,7 +1109,7 @@ cmds = {
                     'type': 'command',
                     'exec': list_pool,
                     'params': {
-                        'default_type': {
+                        'default-type': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
@@ -1172,7 +1179,7 @@ cmds = {
                             'type': 'command',
                             'exec': modify_pool,
                             'params': {
-                                'default_type': {
+                                'default-type': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
@@ -1254,5 +1261,9 @@ if __name__ == '__main__':
         print "valid completions: %s" % cmd.get_complete_string()
         sys.exit(1)
 
-    cmd.exe(cmd.arg, cmd.exe_options)
+    try:
+        cmd.exe(cmd.arg, cmd.exe_options)
+    except NipapError, e:
+        print >> sys.stderr, "Command failed:\n  %s" % e.message
+        sys.exit(1)
 
