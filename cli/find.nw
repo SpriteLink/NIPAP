@@ -22,7 +22,7 @@ except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
 	sys.exit(1)
 
 try:
-	schema_name = cfg.get('global', 'schema')
+	schema_name = cfg.get('global', 'default_schema')
 except ConfigParser.NoOptionError:
 	print >> sys.stderr, "Please define the default schema in your .nipaprc"
 	sys.exit(1)
