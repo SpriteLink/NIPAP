@@ -5,11 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
-import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
 import jnipap.Schema;
-import jnipap.AuthOptions;
 import jnipap.Connection;
 
 public class Test {
@@ -20,89 +17,20 @@ public class Test {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
-		AuthOptions auth = new AuthOptions();
-
 		try {
+
+			// Set up connection & auth
 			URL u = new URL("http://127.0.0.1:1337/RPC2");
-			Connection conn = Connection.getInstance(u, "dev@local",
-                                "dev");
-		} catch(Exception e) {
-			System.out.println(e);
-		}
+			Connection conn = new Connection(u, "dev@local", "dev");
+			conn.authoritative_source = "test";
 
-		try {
-
-//			Schema s;
-//			s = Schema.get(auth, 162);
-//			System.out.println(s.toString());
-
-//			s.description = "Chop chop";
-//			s.save(auth);
-			System.out.println("Creating schema 2");
-			Schema s2 = new Schema();
-			s2.name = "global 1";
-			s2.vrf = "1257:1337";
-			s2.save(auth);
-
-			System.out.println("Creating schema 3");
-			Schema s3 = new Schema();
-			s3.name = "global 2";
-			s3.description = "Tjingetjong";
-			s3.save(auth);
-
-			System.out.println("\nFetching all schemas...");
-			HashMap schema_spec = new HashMap();
-			List l = Schema.list(auth, schema_spec);
-
-			for (int i = 0; i < l.size(); i++) {
-				System.out.println(l.get(i).toString());
-			}
-
+			// fetch a schema
+			Schema s = Schema.get(conn, new Integer(1));
+			System.out.println("Found schema " + s.name);
 
 		} catch(Exception e) {
 			System.out.println(e);
 		}
 
-
-		/*
-		try {
-
-			Object[] params_arr = new Object[1];
-
-			Hashtable<String, String> auth_options = new Hashtable<String, String>();
-			auth_options.put("authoritative_source", "dev");
-			//auth_options.put("tjong", null);
-
-			Hashtable<String, String> schema_spec = new Hashtable<String, String>();
-			schema_spec.put("name", "global");
-
-			Hashtable<String, Hashtable> params = new Hashtable<String, Hashtable>();
-			params.put("auth", auth_options);
-			params.put("schema", schema_spec);
-			
-			params_arr[0] = params;
-
-			
-			/*
-			 * It says in nipap/nipap.py that search_prefix should return a list of dicts
-			 * A list is most close to the java ArrayList, and a dict is a sort of Map
-			 * Unfortunately, that didin't work, but the following does...
-			 */
-			//HashMap<String, Object> result = (HashMap<String, Object>)client.execute("list_schema", params_arr);
-/*			Object result = conn.connection.execute("list_schema", params_arr);
-
-			Object[] o = (Object[])result;
-			System.out.println(o.length);
-			HashMap schema = (HashMap)o[0];
-			System.out.println(schema);
-			
-		} catch (XmlRpcException exception) {
-			System.err.println("Call: XML-RPC Fault #" +
-					Integer.toString(exception.code) + ": " +
-					exception.toString());
-			exception.printStackTrace();
-		} catch (Exception exception) {
-			System.err.println("Call: " + exception.toString());
-		}*/
 	}
 }
