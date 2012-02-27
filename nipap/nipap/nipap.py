@@ -860,10 +860,16 @@ class Nipap:
 
         self._logger.debug('search_schema search_options: %s' % str(search_options))
 
-        where, opt = self._expand_schema_query(query)
-        sql = """SELECT *
-                FROM ip_net_schema WHERE """ + where + """ ORDER BY name LIMIT """ + str(search_options['max_result'])
+        opt = None
+        sql = """ SELECT * FROM ip_net_schema """
 
+        # add where clause if we have any search terms
+        if query != {}:
+
+            where, opt = self._expand_schema_query(query)
+            sql += " WHERE " + where
+
+        sql += " ORDER BY name LIMIT " + str(search_options['max_result'])
         self._execute(sql, opt)
 
         result = list()
