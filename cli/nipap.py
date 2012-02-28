@@ -12,6 +12,7 @@ import shlex
 import pipes
 import subprocess
 import ConfigParser
+
 import pynipap
 from pynipap import Schema, Pool, Prefix, NipapError
 from command import Command
@@ -1323,7 +1324,7 @@ cmds = {
 cfg = ConfigParser.ConfigParser()
 cfg.read(os.path.expanduser('~/.nipaprc'))
 
-setup_connection(cfg)
+setup_connection()
 
 if __name__ == '__main__':
 
@@ -1336,7 +1337,7 @@ if __name__ == '__main__':
     # execute command
     if cmd.exe is None:
         print "Incomplete command specified"
-        print "valid completions: %s" % cmd.get_complete_string()
+        print "valid completions: %s" % " ".join(cmd.next_values())
         sys.exit(1)
 
     try:

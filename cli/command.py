@@ -198,16 +198,7 @@ class Command:
 
     def next_values(self):
         """ Return list of valid next values
-
-            If currently in a correctly defined level in the command tree
-            (self.valid == True), this command returns a list of the next valid
-            values.
         """
-
-        # if command incomplete, return nothing
-        # throw exception instead?
-        if not self.complete:
-            return []
 
         nval = []
 
