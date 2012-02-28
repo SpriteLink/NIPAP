@@ -1,9 +1,9 @@
 #! /usr/bin/python
+""" NIPAP shell command
+
+    A shell command to interact with NIPAP.
 """
 
-    NIPAP Command-line interface
-
-"""
 
 import os
 import sys
@@ -12,10 +12,13 @@ import shlex
 import pipes
 import subprocess
 import ConfigParser
-sys.path.append('../pynipap')
 import pynipap
 from pynipap import Schema, Pool, Prefix, NipapError
 from command import Command
+
+
+__version__ = "0.1.0"
+
 
 # definitions
 valid_countries = [ 'DE', 'EE', 'NL', 'SE', 'US' ] # test test, fill up! :)
@@ -25,12 +28,15 @@ valid_bools = [ 'true', 'false' ]
 valid_priorities = [ 'low', 'medium', 'high' ]
 
 
-# global vars
+# evil global vars
 schema = None
 cfg = None
 
 
-def setup_connection(cfg):
+
+def setup_connection():
+    """ Set up the global pynipap connection object
+    """
 
     # build XML-RPC URI
     try:
@@ -49,7 +55,12 @@ def setup_connection(cfg):
 
 
 def get_schema(arg = None, opts = None):
-    """ Get schema
+    """ Returns schema to work in
+
+        Returns a pynipap.Schema object representing the schema we are working
+        in. If there is a schema set globally, return this. If not, fetch the
+        schema named 'arg'. If 'arg' is None, fetch the default_schema
+        attribute from the config file and return this schema.
     """
 
     # yep, global variables are evil
@@ -79,6 +90,11 @@ def get_schema(arg = None, opts = None):
 
 
 def _str_to_bool(arg):
+    """ Return True or False depending on input string
+
+        Parses the string 'arg' and returns True if it has the value "true",
+        False if it has the value "false" and throws an exception otherwise.
+    """
 
     if arg is None:
         return False
@@ -97,6 +113,36 @@ def _str_to_bool(arg):
 """
 
 def _expand_list_query(opts):
+    """ Parse a dict and return a valid query dict
+
+        Parses a dict containing object attributes and values and return a
+        valid NIPAP query dict which regex matches the values and AND:s
+        together all individual queries. The regex match is anchored in the
+        beginning of the string.
+
+        Example:
+
+            {
+                'name': 'cust',
+                'vrf': '123:2'
+            }
+
+        will be expanded to the query dict
+
+            {
+                'operator': 'and',
+                'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': '^cust'
+                    },
+                'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'vrf',
+                        'val2': '^123:2'
+                    }
+            }
+    """
 
     # create list of query parts
     query_parts = []
@@ -234,7 +280,7 @@ def add_prefix(arg, opts):
             sys.exit(1)
 
         args['from-pool'] = res[0]
-        
+
     if 'from-prefix' in opts:
         args['from-prefix'] = [ opts['from-prefix'], ]
 
@@ -384,6 +430,8 @@ def view_prefix(arg, opts):
 """
 
 def remove_schema(arg, opts):
+    """ Remove schema
+    """
 
     res = Schema.list({ 'name': arg })
     if len(res) < 1:
@@ -405,6 +453,8 @@ def remove_schema(arg, opts):
 
 
 def remove_pool(arg, opts):
+    """ Remove pool
+    """
 
     s = get_schema()
     res = Pool.list(s, { 'name': arg })
@@ -547,6 +597,11 @@ def modify_prefix(arg, opts):
 """
 
 def _complete_string(key, haystack):
+    """ Returns valid string completions
+
+        Takes the string 'key' and compares it to each of the strings in
+        'haystack'. The ones which beginns with 'key' are returned as result.
+    """
 
     if len(key) == 0:
         return haystack
@@ -560,32 +615,50 @@ def _complete_string(key, haystack):
 
 
 def complete_bool(arg):
+    """ Complete strings "true" and "false"
+    """
     return _complete_string(arg, valid_bools)
 
-    
+
 
 def complete_country(arg):
+    """ Complete country codes ("SE", "DE", ...)
+    """
     return _complete_string(arg, valid_countries)
 
 
 
 def complete_family(arg):
+    """ Complete inet family ("ipv4", "ipv6")
+    """
     return _complete_string(arg, valid_families)
 
 
 
 def complete_prefix_type(arg):
+    """ Complete NIPAP prefix type
+    """
     return _complete_string(arg, valid_prefix_types)
 
 
 
 def complete_priority(arg):
+    """ Complete NIPAP alarm priority
+    """
     return _complete_string(arg, valid_priorities)
 
 
 
 def complete_node(arg):
-    """ Complete node fqdn
+    """ Complete node hostname
+
+        This function is currently a bit special as it looks in the config file
+        for a command to use to complete a node hostname from an external
+        system.
+
+        It is configured by setting the config attribute "complete_node_cmd" to
+        a shell command. The string "%search_string%" in the command will be
+        replaced by the current search string.
     """
 
     # get complete command from config
@@ -605,6 +678,8 @@ def complete_node(arg):
 
 
 def complete_pool_name(arg):
+    """ Returns list of matching pool names
+    """
 
     s = get_schema()
     search_string = '^'
@@ -626,6 +701,8 @@ def complete_pool_name(arg):
 
 
 def complete_schema_name(arg):
+    """ Returns list of matching schema names
+    """
 
     search_string = ''
     if arg is not None:
@@ -644,7 +721,8 @@ def complete_schema_name(arg):
     return ret
 
 
-
+""" The NIPAP command tree
+"""
 cmds = {
     'params': {
         'address': {

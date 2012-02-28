@@ -1,6 +1,27 @@
+""" A module for command parsing
+
+    The command module deals with parsing a cli command properly. It supports
+    abbreviated commands ("a" is parsed as the command "add" if there is no
+    other command beginning with "a" on that level) and has methods useful for
+    tab completion of both commands and external values.
+"""
+
 import re
 
+
+__version__ = "0.1.0"
+
+
 class Command:
+    """ A command parser and handler
+
+        The Command class can be used to extract a command from a list of
+        strings (such as sys.argv).
+
+        The main method is the :func:`parse_cmd` which handles all the parsing
+        and sets appropriate instance variables. It is automatically called
+        from the constructor :func:`__init__`.
+    """
 
 
     """ Contains the current value
@@ -8,35 +29,65 @@ class Command:
     key = {}
     key_complete = True
 
+
     """ Contains the next valid values
     """
     params = {}
 
+
     """ Pointer to function to execute
     """
     exe = None
+
+
     """ Function argument - a single argument passed to the function
     """
     arg = None
+
+
     """ Function options - a dict of options passed to the function
     """
     exe_options = {}
+
 
     """ List of the commands inputed
     """
     inp_cmd = []
 
 
+
     def __init__(self, tree, inp_cmd):
+        """ Create instance of the Command class
+
+            The tree argument should contain a specifically formatted dict
+            which describes the available commands, options, arguments and
+            callbacks to methods for completion of arguments.
+            TODO: document dict format
+
+            The inp_cmd argument should contain a list of strings containing
+            the complete command to parse, such as sys.argv (without the first
+            element which specified the command itself).
+        """
 
         self.inp_cmd = inp_cmd
         self.parse_cmd(tree, inp_cmd)
 
 
+
     def parse_cmd(self, tree, inp_cmd):
         """ Extract command and options from string.
+
+            The tree argument should contain a specifically formatted dict
+            which describes the available commands, options, arguments and
+            callbacks to methods for completion of arguments.
+            TODO: document dict format
+
+            The inp_cmd argument should contain a list of strings containing
+            the complete command to parse, such as sys.argv (without the first
+            element which specified the command itself).
         """
 
+        # reset state from previous execution
         self.exe = None
         self.arg = None
         self.exe_options = {}
@@ -65,11 +116,9 @@ class Command:
                             self.key_complete = True
                             self.key = { param: content }
                             break
-#                        else:
-#                            self.key_complete = False
 
             else:
-                raise Exception('Out of params')
+                raise CommandError('Out of params')
 
             for key, val in self.key.items():
 
@@ -122,14 +171,19 @@ class Command:
             i += 1
 
 
+
     def complete(self):
-        """ Get a list of valid completions on the current level
+        """ Return list of valid completions
+
+            Returns a list of valid completions on the current level in the
+            tree. If an element of type 'value' is found, its complete callback
+            function is called (if set).
         """
 
         comp = []
         for k, v in self.key.items():
 
-            # if we have reached a value, try to fetch valid values from it
+            # if we have reached a value, try to fetch valid completions
             if v['type'] == 'value':
                 if 'complete' in v:
                     comp += v['complete'](self.inp_cmd[-1])
@@ -141,26 +195,36 @@ class Command:
         return comp
 
 
+
     def next_values(self):
-        """ Get a list of valid next values
+        """ Return list of valid next values
+
+            If currently in a correctly defined level in the command tree
+            (self.valid == True), this command returns a list of the next valid
+            values.
         """
 
+        # if command incomplete, return nothing
+        # throw exception instead?
+        if not self.complete:
+            return []
+
+        nval = []
 
         for k, v in self.params.items():
+
+            # if we have reached a value, try to fetch valid completions
             if v['type'] == 'value':
                 if 'complete' in v:
-                    return v['complete']('')
-                else:
-                    return []
+                    nval += v['complete']('')
 
-        return self.params.keys()
+            # otherwise, k is our valid completion
+            else:
+                nval.append(k)
+
+        return nval
 
 
-    def get_complete_string(self):
-        s = ''
-        for k, v in self.params.items():
-            if v['type'] != 'value':
-                s += " %s" % k
-
-        return s
-
+class CommandError(Exception):
+    """ A base error class for the command module
+    """
