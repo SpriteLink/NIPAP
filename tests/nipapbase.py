@@ -4,7 +4,7 @@
 import logging
 import unittest
 import sys
-sys.path.append('../nipapd/')
+sys.path.append('../nipap/')
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
