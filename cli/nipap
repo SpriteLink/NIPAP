@@ -8,6 +8,7 @@ import sys
 
 import nipap_cli
 from command import Command
+from pynipap import NipapError
 
 
 __version__     = "0.1.0"
