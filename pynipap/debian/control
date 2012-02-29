@@ -2,7 +2,7 @@ Source: pynipap
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Section: python
 Priority: optional
-Build-Depends: python-all (>= 2.4), debhelper (>= 7)
+Build-Depends: python (>= 2.4), debhelper (>= 7)
 Standards-Version: 3.9.1
 
 Package: python-pynipap

@@ -1,0 +1,13 @@
+Source: nipap-cli
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Section: python
+Priority: optional
+Build-Depends: python (>= 2.4), debhelper (>= 7)
+Standards-Version: 3.9.1
+
+Package: nipap-cli
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Description: Neat IP Address Planner
+ The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
+ large amounts of IP addresses. This is the shell command.

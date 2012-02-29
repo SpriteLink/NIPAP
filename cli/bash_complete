@@ -6,9 +6,9 @@ _nipap()
 	cur=${COMP_WORDS[COMP_CWORD]}
 
 	if [[ ${#cur} -eq 0 ]]; then
-		COMPREPLY=( $( nipap_helper.py ${COMP_WORDS[@]:0} ''  ) )
+		COMPREPLY=( $( nipap_helper ${COMP_WORDS[@]:0} ''  ) )
 	else
-		COMPREPLY=( $( nipap_helper.py ${COMP_WORDS[@]:0} ) )
+		COMPREPLY=( $( nipap_helper ${COMP_WORDS[@]:0} ) )
 	fi
 
 	return;
