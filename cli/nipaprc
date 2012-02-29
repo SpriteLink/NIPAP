@@ -1,9 +1,27 @@
+# --------------------------------------
+# NIPAP shell command configuration file
+# --------------------------------------
+#
+# This file contains configuration for the NIPAP shell command. The 'nipap'
+# executable will look for its config in ~/.nipaprc, so to successfully
+# configure NIPAP, this file should be palced there and modified for your
+# setup.
+#
+
 [global]
+
+# NIPAP connection settings
 hostname = 127.0.0.1
 port = 9002
 username = test@local
 password = test
 
+# Specify a command which can be used to complete node hostnames. This will be
+# called when trying to complete a node hostname.
+#
+# The string "%search_string%" will be replaced by the current search string.
 complete_node_cmd = node list %search_string%
 
+# A default schema which will be used when no schema is set in the command
+# argument.
 default_schema = global

@@ -22,7 +22,7 @@ __url__         = "http://github.com/plajjan/NIPAP"
 
 if __name__ == '__main__':
 
-    cmd = Command(nipap_cmd.cmds, sys.argv[1::])
+    cmd = Command(nipap_cli.cmds, sys.argv[1::])
 
     comp = []
 

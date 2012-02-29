@@ -1,0 +1,7 @@
+#! /bin/sh
+
+set -e
+
+rm /etc/bash_completion.d/nipap
+
+#DEBHELPER#
