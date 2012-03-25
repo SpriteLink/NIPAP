@@ -26,8 +26,8 @@ install:
 	done
 
 buildrpm:
-	for PROJ in $(SUBPROJ); do
-		cd $$PROJ; make buildrpm; cd ..
+	for PROJ in $(SUBPROJ); do \
+		cd $$PROJ; make buildrpm; cd .. \
 	done
 
 builddeb:
