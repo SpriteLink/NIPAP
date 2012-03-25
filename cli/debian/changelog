@@ -1,3 +1,9 @@
+nipap-cli (0.1.1-1) UNRELEASED; urgency=low
+
+  * New upstream version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Sun, 25 Mar 2012 22:01:15 +0200
+
 nipap-cli (0.1.0-3) UNRELEASED; urgency=low
 
   * Replaced ${python:Depends} in dependencies with python (>= 2.4)

@@ -8,8 +8,8 @@
 
 import sys
 import os
-from command import Command
-import nipap_cli
+from nipap_cli.command import Command
+from nipap_cli import nipap_cli
 from pynipap import NipapError
 
 

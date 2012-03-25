@@ -4,20 +4,17 @@ from distutils.core import setup
 
 import nipap_cli
 
-long_desc = nipap_cli.__doc__
-short_desc = long_desc.split('\n')[0].strip()
-
 setup(
     name = 'nipap-cli',
     version = nipap_cli.__version__,
-    description = short_desc,
-    long_description = long_desc,
+    description = "NIPAP shell command",
+    long_description = "A shell command to interact with NIPAP.",
     author = nipap_cli.__author__,
     author_email = nipap_cli.__author_email__,
     license = nipap_cli.__license__,
     url = nipap_cli.__url__,
-    py_modules = ['nipap_cli', 'command' ],
-    keywords = ['nipap_cli' ],
+    packages = [ 'nipap_cli', ],
+    keywords = ['nipap_cli', ],
     requires = ['pynipap', ],
     data_files = [
 				('/usr/bin/', ['nipap-helper', 'nipap']),
