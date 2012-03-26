@@ -85,15 +85,33 @@ class PrefixController(BaseController):
         if request.method == 'POST':
             c.prefix.prefix = request.params['prefix_prefix']
             c.prefix.description = request.params['prefix_description']
-            c.prefix.node = request.params['prefix_node']
-            c.prefix.country = request.params['prefix_country']
-            c.prefix.alarm_priority = request.params['prefix_alarm_priority']
-            c.prefix.comment = request.params['prefix_comment']
-            c.prefix.order_id = request.params['prefix_order_id']
+
+            if request.params['prefix_node'].strip() == '':
+                c.prefix.node = None
+            else:
+                c.prefix.node = request.params['prefix_node']
+
+            if request.params['prefix_country'].strip() == '':
+                c.prefix.country = None
+            else:
+                c.prefix.country = request.params['prefix_country']
+
+            if request.params['prefix_comment'].strip() == '':
+                c.prefix.comment = None
+            else:
+                c.prefix.comment = request.params['prefix_comment']
+
+            if request.params['prefix_order_id'].strip() == '':
+                c.prefix.order_id = None
+            else:
+                c.prefix.order_id = request.params['prefix_order_id']
+
             if request.params.get('prefix_monitor') != None:
                 c.prefix.monitor = True
             else:
                 c.prefix.monitor = False
+
+            c.prefix.alarm_priority = request.params['prefix_alarm_priority']
             c.prefix.save()
             redirect(url(controller='prefix', action='list', schema=c.schema.id))
 

@@ -224,7 +224,7 @@ class XhrController(BaseController):
             if request.params['ipv6_default_prefix_length'].strip() != '':
                 p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
             else:
-                p.ipv6_default_prefix_length= None
+                p.ipv6_default_prefix_length = None
 
         try:
            p.save()
@@ -405,19 +405,40 @@ class XhrController(BaseController):
         # standard parameters
         if 'description' in request.params:
             p.description = request.params['description']
+
         if 'comment' in request.params:
-            p.comment = request.params['comment']
+            if request.params['comment'].strip() == '':
+                p.comment = None
+            else:
+                p.comment = request.params['comment']
+
         if 'node' in request.params:
-            p.node = request.params['node']
+            if request.params['node'].strip() == '':
+                p.node = None
+            else:
+                p.node = request.params['node']
+
         if 'type' in request.params:
             p.type = request.params['type']
+
         if 'pool' in request.params:
-            p.pool = Pool.get(p.schema, int(request.params['pool']))
+            if request.params['pool'].strip() == '':
+                p.pool = None
+            else:
+                p.pool = Pool.get(p.schema, int(request.params['pool']))
+
         if 'country' in request.params:
-            p.country = request.params['country']
+            if request.params['country'].strip() == '':
+                p.country = None
+            else:
+                p.country = request.params['country']
+
         if 'order_id' in request.params:
-            if request.params['order_id'] != '':
+            if request.params['order_id'].strip() == '':
+                p.order_id = None
+            else:
                 p.order_id = request.params['order_id']
+
         if 'alarm_priority' in request.params:
             p.alarm_priority = request.params['alarm_priority']
         if 'monitor' in request.params:
@@ -468,26 +489,48 @@ class XhrController(BaseController):
             # extract attributes
             if 'prefix' in request.params:
                 p.prefix = request.params['prefix']
+
             if 'description' in request.params:
                 p.description = request.params['description']
+
             if 'comment' in request.params:
-                p.comment = request.params['comment']
+                if request.params['comment'].strip() == '':
+                    p.comment = None
+                else:
+                    p.comment = request.params['comment']
+
             if 'node' in request.params:
-                p.node = request.params['node']
+                if request.params['node'].strip() == '':
+                    p.node = None
+                else:
+                    p.node = request.params['node']
+
             if 'pool' in request.params:
-                pool = Pool.get(schema, int(request.params['pool']))
-                p.pool = pool
+                if request.params['pool'].strip() == '':
+                    p.pool = None
+                else:
+                    p.pool = Pool.get(schema, int(request.params['pool']))
+
             if 'alarm_priority' in request.params:
                 p.alarm_priority = request.params['alarm_priority']
+
             if 'monitor' in request.params:
                 if request.params['monitor'] == 'true':
                     p.monitor = True
                 else:
                     p.monitor = False
+
             if 'country' in request.params:
-                p.country = request.params['country']
+                if request.params['country'].strip() == '':
+                    p.country = None
+                else:
+                    p.country = request.params['country']
+
             if 'order_id' in request.params:
-                p.order_id = request.params['order_id']
+                if request.params['order_id'].strip() == '':
+                    p.order_id = None
+                else:
+                    p.order_id = request.params['order_id']
 
             p.save()
 
