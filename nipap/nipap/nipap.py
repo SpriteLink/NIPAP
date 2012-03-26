@@ -1087,16 +1087,15 @@ class Nipap:
             Returns ID of the added pool.
         """
 
-        self._logger.debug("add_pool called; spec: %s" % str(attr))
+        self._logger.debug("add_pool called; attrs: %s" % str(attr))
+
+        # sanity check - do we have all attributes?
+        req_attr = ['name', 'description', 'default_type']
+        self._check_pool_attr(attr, req_attr)
 
         # populate 'schema' with correct id
         schema = self._get_schema(auth, schema_spec)
         attr['schema'] = schema['id']
-
-        # sanity check - do we have all attributes?
-        req_attr = ['name', 'schema', 'description', 'default_type']
-        allowed_attr = req_attr + ['ipv4_default_prefix_length', 'ipv6_default_prefix_length']
-        self._check_attr(attr, req_attr, allowed_attr)
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_pool " + insert
@@ -1213,6 +1212,46 @@ class Nipap:
         return res
 
 
+    def _check_pool_attr(self, attr, req_attr = []):
+        """ Check pool attributes.
+        """
+
+        # check attribute names
+        allowed_attr = [
+                'name',
+                'schema',
+                'default_type',
+                'description',
+                'ipv4_default_prefix_length',
+                'ipv6_default_prefix_length'
+                ]
+        self._check_attr(attr, req_attr, allowed_attr)
+
+        # validate IPv4 prefix length
+        if 'ipv4_default_prefix_length' in attr:
+            try:
+                attr['ipv4_default_prefix_length'] = \
+                    int(attr['ipv4_default_prefix_length'])
+
+                if (attr['ipv4_default_prefix_length'] > 32 or
+                    attr['ipv4_default_prefix_length'] < 1):
+                    raise ValueError()
+            except ValueError:
+                raise NipapValueError('Default IPv4 prefix length must be an integer between 1 and 32.')
+
+        # validate IPv6 prefix length
+        if 'ipv6_default_prefix_length' in attr:
+            try:
+                attr['ipv6_default_prefix_length'] = \
+                    int(attr['ipv6_default_prefix_length'])
+
+                if (attr['ipv6_default_prefix_length'] > 128 or
+                    attr['ipv6_default_prefix_length'] < 1):
+                    raise ValueError()
+            except ValueError:
+                raise NipapValueError('Default IPv6 prefix length must be an integer between 1 and 128.')
+
+
 
     def _get_pool(self, auth, schema_spec, spec):
         """ Get a pool.
@@ -1251,14 +1290,7 @@ class Nipap:
         if ('id' not in spec and 'name' not in spec) or ( 'id' in spec and 'name' in spec ):
             raise NipapMissingInputError('''pool spec must contain either 'id' or 'name' ''')
 
-        allowed_attr = [
-                'name',
-                'default_type',
-                'description',
-                'ipv4_default_prefix_length',
-                'ipv6_default_prefix_length'
-                ]
-        self._check_attr(attr, [], allowed_attr)
+        self._check_pool_attr(attr)
 
         # populate 'schema' with correct id
         schema = self._get_schema(auth, schema_spec)

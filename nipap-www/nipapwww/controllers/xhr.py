@@ -178,10 +178,10 @@ class XhrController(BaseController):
         p.default_type = request.params.get('default_type')
         if 'ipv4_default_prefix_length' in request.params:
             if request.params['ipv4_default_prefix_length'].strip() != '':
-                p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+                p.ipv4_default_prefix_length = request.params['ipv4_default_prefix_length']
         if 'ipv6_default_prefix_length' in request.params:
             if request.params['ipv6_default_prefix_length'].strip() != '':
-                p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+                p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
 
         try:
            p.save()
@@ -211,10 +211,10 @@ class XhrController(BaseController):
             p.default_type = request.params.get('default_type')
         if 'ipv4_default_prefix_length' in request.params:
             if request.params['ipv4_default_prefix_length'].strip() != '':
-                p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+                p.ipv4_default_prefix_length = request.params['ipv4_default_prefix_length']
         if 'ipv6_default_prefix_length' in request.params:
             if request.params['ipv6_default_prefix_length'].strip() != '':
-                p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+                p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
 
         try:
            p.save()
