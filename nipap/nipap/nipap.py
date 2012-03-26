@@ -225,31 +225,7 @@ class Nipap:
         from nipapconfig import NipapConfig
         self._cfg = NipapConfig()
 
-        # Get database configuration
-        db_args = {}
-        db_args['host'] = self._cfg.get('nipapd', 'db_host')
-        db_args['database'] = self._cfg.get('nipapd', 'db_name')
-        db_args['user'] = self._cfg.get('nipapd', 'db_user')
-        db_args['password'] = self._cfg.get('nipapd', 'db_pass')
-        db_args['sslmode'] = self._cfg.get('nipapd', 'db_sslmode')
-        # delete keys that are None, for example if we want to connect over a
-        # UNIX socket, the 'host' argument should not be passed into the DSN
-        if db_args['host'] is not None and db_args['host'] == '':
-            db_args['host'] = None
-        for key in db_args.copy():
-            if db_args[key] is None:
-                del(db_args[key])
-
-        # Create database connection
-        try:
-            self._con_pg = psycopg2.connect(**db_args)
-            self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-            self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            self._register_inet()
-        except psycopg2.Error, e:
-            raise NipapError('pgsql: ' + str(e))
-        except psycopg2.Warning, w:
-            self._logger.warning('pgsql: ' + str(w))
+        self._connect_db()
 
 
     #
@@ -336,7 +312,40 @@ class Nipap:
     # SQL related functions
     #
 
-    def _execute(self, sql, opt=None):
+    def _connect_db(self):
+        """ Open database connection
+        """
+
+        # Get database configuration
+        db_args = {}
+        db_args['host'] = self._cfg.get('nipapd', 'db_host')
+        db_args['database'] = self._cfg.get('nipapd', 'db_name')
+        db_args['user'] = self._cfg.get('nipapd', 'db_user')
+        db_args['password'] = self._cfg.get('nipapd', 'db_pass')
+        db_args['sslmode'] = self._cfg.get('nipapd', 'db_sslmode')
+        # delete keys that are None, for example if we want to connect over a
+        # UNIX socket, the 'host' argument should not be passed into the DSN
+        if db_args['host'] is not None and db_args['host'] == '':
+            db_args['host'] = None
+        for key in db_args.copy():
+            if db_args[key] is None:
+                del(db_args[key])
+
+        # Create database connection
+        try:
+            self._con_pg = psycopg2.connect(**db_args)
+            self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+            self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            self._register_inet()
+        except psycopg2.Error, e:
+            self._logger.error("pgsql: %s" % e)
+            raise NipapError("Backend unable to connect to database")
+        except psycopg2.Warning, w:
+            self._logger.warning('pgsql: %s' % w)
+
+
+
+    def _execute(self, sql, opt=None, callno = 0):
         """ Execute query, catch and log errors.
         """
 
@@ -396,10 +405,25 @@ class Nipap:
             raise NipapError(str(e))
 
         except psycopg2.Error, e:
-            self._con_pg.rollback()
+            try:
+                self._con_pg.rollback()
+            except psycopg2.Error:
+                pass
+
             estr = "Unable to execute query: %s" % e
             self._logger.error(estr)
-            raise NipapError(estr)
+
+            # abort if we've already tried to reconnect
+            if callno > 0:
+                self._logger.error(estr)
+                raise NipapError(estr)
+
+            # reconnect to database and retry query
+            self._logger.info("Reconnecting to database...")
+            self._connect_db()
+
+            return self._execute(sql, opt, callno + 1)
+
         except psycopg2.Warning, w:
             self._logger.warning(str(w))
 
