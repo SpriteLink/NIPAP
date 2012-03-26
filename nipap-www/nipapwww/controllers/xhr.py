@@ -72,7 +72,10 @@ class XhrController(BaseController):
         if 'description' in request.params:
             s.description = request.params['description']
         if 'vrf' in request.params:
-            s.vrf = request.params['vrf']
+            if request.params['vrf'].strip() == '':
+                s.vrf = None
+            else:
+                s.vrf = request.params['vrf']
 
         try:
             s.save()
@@ -97,7 +100,10 @@ class XhrController(BaseController):
         if 'description' in request.params:
             s.description = request.params['description']
         if 'vrf' in request.params:
-            s.vrf = request.params['vrf']
+            if request.params['vrf'].strip() == '':
+                s.vrf = None
+            else:
+                s.vrf = request.params['vrf']
 
         try:
             s.save()
@@ -212,9 +218,13 @@ class XhrController(BaseController):
         if 'ipv4_default_prefix_length' in request.params:
             if request.params['ipv4_default_prefix_length'].strip() != '':
                 p.ipv4_default_prefix_length = request.params['ipv4_default_prefix_length']
+            else:
+                p.ipv4_default_prefix_length = None
         if 'ipv6_default_prefix_length' in request.params:
             if request.params['ipv6_default_prefix_length'].strip() != '':
                 p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
+            else:
+                p.ipv6_default_prefix_length= None
 
         try:
            p.save()

@@ -51,7 +51,7 @@
 		<trid="schema_row{{ schema.id }}">
 			<td style="padding-left: 30px;"><a href="{{ h.url(controller='prefix', action='index', schema=schema.id) }}">{{ schema.name }}</a></td>
 			<td>{{ schema.description }}</td>
-			<td>{{ schema.vrf }}</td>
+			<td>{{ schema.vrf or '' }}</td>
 			<td>
                 {% if c.schema is defined %}
 				<a href="{{ h.url(controller="schema", action="edit", id=schema.id, schema=c.schema.id) }}">edit</a> |

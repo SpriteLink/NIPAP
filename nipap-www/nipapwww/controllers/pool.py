@@ -53,10 +53,10 @@ class PoolController(BaseController):
             p.default_type = request.params.get('default_type')
 
             if request.params['ipv4_default_prefix_length'].strip() != '':
-                p.ipv4_default_prefix_length = int(request.params['ipv4_default_prefix_length'])
+                p.ipv4_default_prefix_length = request.params['ipv4_default_prefix_length']
 
             if request.params['ipv6_default_prefix_length'].strip() != '':
-                p.ipv6_default_prefix_length = int(request.params['ipv6_default_prefix_length'])
+                p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
 
             p.save()
             redirect(url(controller = 'pool', action = 'list', schema = c.schema.id))

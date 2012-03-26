@@ -1252,7 +1252,7 @@ class Nipap:
         self._check_attr(attr, req_attr, allowed_attr)
 
         # validate IPv4 prefix length
-        if 'ipv4_default_prefix_length' in attr:
+        if attr.get('ipv4_default_prefix_length') is not None:
             try:
                 attr['ipv4_default_prefix_length'] = \
                     int(attr['ipv4_default_prefix_length'])
@@ -1264,7 +1264,7 @@ class Nipap:
                 raise NipapValueError('Default IPv4 prefix length must be an integer between 1 and 32.')
 
         # validate IPv6 prefix length
-        if 'ipv6_default_prefix_length' in attr:
+        if attr.get('ipv6_default_prefix_length'):
             try:
                 attr['ipv6_default_prefix_length'] = \
                     int(attr['ipv6_default_prefix_length'])
