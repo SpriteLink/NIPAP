@@ -1362,6 +1362,7 @@ function populatePoolTable(data) {
 	// Enable pool dataTable
 	$('#pool_table').dataTable({
 		'bAutoWidth': false,
+		'bDestroy': true,
 		'bPaginate': false,
 		'bSortClasses': false,
 		'aaData': pool_table_data,
