@@ -25,10 +25,31 @@ class ErrorController(BaseController):
         request = self._py_object.request
         resp = request.environ.get('pylons.original_response')
         content = literal(resp.body) or cgi.escape(request.GET.get('message', ''))
-        page = error_document_template % \
-            dict(prefix=request.environ.get('SCRIPT_NAME', ''),
-                 code=cgi.escape(request.GET.get('code', str(resp.status_int))),
-                 message=content)
+
+        page = """<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>NIPAP error</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="/nipap.css">
+    </head>
+    <body>
+        <div class="top_menu">
+            <div class="menu_entry" style="line-height: 0px">
+                <div class="menu_entry" style="font-size: 10pt; color: #CCCCCC; padding-top: 11px; font-weight: bold;">
+                NIPAP ERROR
+                </div>
+            </div>
+        </div>
+        <div class="content_outer">
+            <div class="content_inner">
+                <p>%s</p>
+                <p>Relevant information has been forwarded to the system administrator.</p>
+            </div>
+			<div style="height: 500px;"> &nbsp; </div>
+        </div>
+    </body>
+</html>""" % content
 
         # If the error was raised from the XhrController, return HTML-less response
         if type(request.environ['pylons.original_request'].environ.get('pylons.controller')) == XhrController:
