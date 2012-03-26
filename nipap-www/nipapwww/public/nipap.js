@@ -399,7 +399,8 @@ function setSearchPrefixURI(explicit) {
  * Called when next page of results is requested by the user.
  */
 function performPrefixNextPage () {
-	if (outstanding_nextpage == 1 || end_of_result == 1) {
+	if (outstanding_nextpage == 1 || end_of_result == 1 ||
+		jQuery.trim($('#query_string').val()).length < 1) {
 		return;
 	}
 	outstanding_nextpage = 1;
