@@ -38,9 +38,9 @@ builddeb:
 debrepo:
 ifeq ($(CURBRANCH), $(shell echo -n 'gh-pages'))
 	for CHANGEFILE in `ls *.changes`; do \
-		cd apt; \
+		cd repos/apt; \
 		reprepro --ignore=wrongdistribution -Vb . include stable ../$$CHANGEFILE; \
-		cd .. ; \
+		cd ../.. ; \
 	done
 else
 	@echo "Please switch to branch: gh-pages"
