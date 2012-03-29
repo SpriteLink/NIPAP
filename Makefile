@@ -39,7 +39,7 @@ debrepo:
 ifeq ($(CURBRANCH), $(shell echo -n 'gh-pages'))
 	for CHANGEFILE in `ls *.changes`; do \
 		cd repos/apt; \
-		reprepro --ignore=wrongdistribution -Vb . include stable ../$$CHANGEFILE; \
+		reprepro --ignore=wrongdistribution -Vb . include stable ../../$$CHANGEFILE; \
 		cd ../.. ; \
 	done
 else
