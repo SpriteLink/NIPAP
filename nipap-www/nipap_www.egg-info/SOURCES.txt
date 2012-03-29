@@ -17,7 +17,6 @@ nipap_www.egg-info/top_level.txt
 nipapwww/__init__.py
 nipapwww/websetup.py
 nipapwww/config/__init__.py
-nipapwww/config/deployment.ini
 nipapwww/config/environment.py
 nipapwww/config/middleware.py
 nipapwww/config/routing.py
