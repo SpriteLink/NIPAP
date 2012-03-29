@@ -1,4 +1,8 @@
+include setup.cfg
 include development.ini
 include nipap-www.ini
+include nipap-www.wsgi
+include docs/index.txt
+include nipapwww/config/deployment.ini
 recursive-include nipapwww/public *
 recursive-include nipapwww/templates *

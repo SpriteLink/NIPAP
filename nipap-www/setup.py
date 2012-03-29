@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
+#from distutils.core import setup
 
 setup(
     name='nipap-www',
-    version='0.5.1',
+    version='0.5.2',
     description='web frontend for NIPAP',
     author='Kristian Larsson, Lukas Garberg',
     author_email='kll@tele2.net, lukas@spritelink.net',
