@@ -37,10 +37,11 @@ builddeb:
 
 debrepo:
 ifeq ($(CURBRANCH), $(shell echo -n 'gh-pages'))
-	dpkg-scanpackages . > Packages
-	sed -i 's/Filename: .\//Filename: /' Packages
-	gzip -9c Packages > $(APTDIR)/Packages.gz
-	rm Packages
+	for CHANGEFILE in `ls *.changes`; do \
+		cd apt; \
+		reprepro --ignore=wrongdistribution -Vb . include stable ../$$CHANGEFILE; \
+		cd .. ; \
+	done
 else
 	@echo "Please switch to branch: gh-pages"
 endif
@@ -51,6 +52,7 @@ clean:
 	rm -f *.build
 	rm -f *.changes
 	rm -f *.dsc
+	rm -rf apt/db apt/dist apt/pool
 	for PROJ in $(SUBPROJ); do \
 		cd $$PROJ; make clean; cd ..; \
 	done
