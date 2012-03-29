@@ -52,7 +52,7 @@ clean:
 	rm -f *.build
 	rm -f *.changes
 	rm -f *.dsc
-	rm -rf apt/db apt/dist apt/pool
+	rm -rf repos/apt/db repos/apt/dist repos/apt/pool
 	for PROJ in $(SUBPROJ); do \
 		cd $$PROJ; make clean; cd ..; \
 	done
