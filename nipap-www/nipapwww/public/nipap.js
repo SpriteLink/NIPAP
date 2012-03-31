@@ -1510,7 +1510,14 @@ function selectPrefix(prefix_id) {
 		$('#radio-prefix-type-host').removeAttr('checked');
 
 	} else if (prefix_list[prefix_id].type == 'assignment') {
-		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /32.">/32</span><input type="hidden" name="prefix_length_prefix" value=32>');
+
+		// set prefix length
+		if (prefix_list[prefix_id].family == 4) {
+			maxpreflen = 32;
+		} else {
+			maxpreflen = 128;
+		}
+		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' +  maxpreflen+ '>');
 		$('.tooltip').tipTip({delay: 100});
 
 		// enable / disable types
