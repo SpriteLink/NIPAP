@@ -224,7 +224,7 @@ BEGIN
 			-- contains one child prefix
 			-- FIXME: optimize with this, what is improvement?
 			-- IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix LIMIT 1) > 0 THEN
-			IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix) > 0 THEN
+			IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix AND schema = OLD.schema) > 0 THEN
 				RAISE EXCEPTION '1200:Disallowed delete, prefix (%) contains hosts.', OLD.prefix;
 			END IF;
 		END IF;
