@@ -13,7 +13,7 @@ from nipap.nipapconfig import NipapConfig
 
 if __name__ == '__main__':
     parser = optparse.OptionParser()
-    parser.add_option("-d", "--debug", action="store_true", dest="debug", help="enable debugging, implies -f")
+    parser.add_option("-d", "--debug", action="store_true", dest="debug", help="enable debugging")
     parser.add_option("-f", "--foreground", action="store_true", dest="foreground", help="run in foreground and log to stdout")
     parser.add_option("-p", "--port", dest="port", type="int", help="listen to TCP port PORT")
     parser.add_option("-c", "--config", dest="config_file", type="string", default="/etc/nipap/nipap.conf", help="read configuration from file CONFIG_FILE")
