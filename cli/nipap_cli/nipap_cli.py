@@ -182,7 +182,7 @@ def list_pool(arg, opts):
     query = _expand_list_query(opts)
     res = Pool.search(s, query)
     if len(res['result']) > 0:
-        print "%-20s%-40s%-15s%-8s" % (
+        print "%-19s %-39s %-14s %-8s" % (
             "Name", "Description", "Default type", "4 / 6"
         )
         print "-----------------------------------------------------------------------------------"
@@ -194,7 +194,7 @@ def list_pool(arg, opts):
             desc = p.description[0:34] + "..."
         else:
             desc = p.description
-        print "%-20s%-40s%-15s%-2s / %-3s" % (
+        print "%-19s %-39s %-14s %-2s / %-3s" % (
             p.name, desc, p.default_type,
             str(p.ipv4_default_prefix_length),
             str(p.ipv6_default_prefix_length)
@@ -239,7 +239,7 @@ def list_prefix(arg, opts):
             continue
 
         try:
-            print "%-30s%-3s%-20s%-15s%-40s" % (
+            print "%-29s %-2s %-19s %-14s %-40s" % (
                 "".join("  " for i in range(p.indent)) + p.display_prefix,
                 p.type[0].upper(), p.node, p.order_id, p.description
             )
