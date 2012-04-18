@@ -73,7 +73,7 @@ endif
 	@echo "##"
 
 
-clean: clean-tables clean-db
+clean: clean-db
 
 
 clean-db:
