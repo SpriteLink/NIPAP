@@ -48,13 +48,13 @@ all:
 db:
 	createuser -S -D -R $(DB_USER)
 	createdb -O $(DB_USER) $(DB_NAME)
+	-createlang -d $(DB_NAME) plpgsql
 	psql -q -c "ALTER USER $(DB_USER) ENCRYPTED PASSWORD '$(DB_PASS)'"
-	# TODO: The ip4r extension needs to be added to the newly created
-	# 	database.  How do we do that?
+# TODO: The ip4r extension needs to be added to the newly created
+# 	database.  How do we do that?
 
 
 tables:
-	-createlang -d $(DB_NAME) plpgsql
 	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f find_free_prefix.plsql
 	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f get_prefix.plsql
 	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f calc_indent.plsql
@@ -85,7 +85,7 @@ clean-db:
 
 
 clean-tables:
-	# TODO: If no password is specified with PGPASSWORD, this operation
-	# 	will in all likeliness result in a failure, so we should
-	# 	require a PGPASSWORD
 	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f clean.plsql
+# TODO: If no password is specified with PGPASSWORD, this operation
+# 	will in all likeliness result in a failure, so we should
+# 	require a PGPASSWORD
