@@ -518,22 +518,25 @@ function showPrefix(prefix, parent_container, relative) {
 		prefix_prefix.html(prefix.display_prefix);
 	}
 
-	// add button
-	prefix_row.append('<div id="prefix_button_col' + prefix.id + '">')
-	var prefix_button_col = $('#prefix_button_col' + prefix.id);
-	prefix_button_col.addClass('prefix_column');
-	prefix_button_col.addClass('prefix_button_col');
-	prefix_button_col.append('<div id="prefix_button' + prefix.id + '" data-prefix-id="' + prefix.id + '">');
+	// add button if list not used to select prefix to add to pool or select
+	// prefix to allocate from
+	if (prefix_link_type != 'select' && prefix_link_type != 'add_to_pool') {
+		prefix_row.append('<div id="prefix_button_col' + prefix.id + '">');
+		var prefix_button_col = $('#prefix_button_col' + prefix.id);
+		prefix_button_col.addClass('prefix_column');
+		prefix_button_col.addClass('prefix_button_col');
+		prefix_button_col.append('<div id="prefix_button' + prefix.id + '" data-prefix-id="' + prefix.id + '">');
 
-	var prefix_button = $('#prefix_button' + prefix.id);
-	prefix_button.addClass('minibutton');
-	prefix_button.addClass('prefix_button');
-	prefix_button.html("<div class='prefix_button_icon' class='prefix_button_icon'>&nbsp;</div>");
-	prefix_button.click(prefix, function(e) {
-		showPrefixMenu(e.currentTarget.getAttribute('data-prefix-id'));
-		e.preventDefault();
-		e.stopPropagation();
-	});
+		var prefix_button = $('#prefix_button' + prefix.id);
+		prefix_button.addClass('minibutton');
+		prefix_button.addClass('prefix_button');
+		prefix_button.html("<div class='prefix_button_icon' class='prefix_button_icon'>&nbsp;</div>");
+		prefix_button.click(prefix, function(e) {
+			showPrefixMenu(e.currentTarget.getAttribute('data-prefix-id'));
+			e.preventDefault();
+			e.stopPropagation();
+		});
+	}
 
 	// Add prefix type
 	prefix_row.append('<div id="prefix_type' + prefix.id + '">');
