@@ -559,7 +559,8 @@ def modify_prefix(arg, opts):
 
     res = Prefix.list(s, { 'prefix': arg })
     if len(res) == 0:
-        print >> sys.stderr, "Prefix %s not found." % arg
+        print >> sys.stderr, "Prefix %s not found in schema %s." % (arg, s.name)
+        return
 
     p = res[0]
 
