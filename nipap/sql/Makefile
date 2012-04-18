@@ -1,4 +1,5 @@
 #.PHONY: install
+# vim: ts=8 :
 
 PSQL=psql
 
@@ -21,7 +22,8 @@ endif
 #
 # 	- how do we determine if the system has ip4r modules at all?
 # 		* can we ask psql?
-# 			- Yes we can, just run a iprange() function and see what happens
+# 			- Yes we can, just run a iprange() function and see
+# 			  what happens
 # 		* if it's a debian / ubuntu system we can use apt-cache
 # 	- how do we determine where the .sql file is?
 # 		* we can guess on a few well known paths
@@ -47,10 +49,11 @@ db:
 	createuser -S -D -R $(DB_USER)
 	createdb -O $(DB_USER) $(DB_NAME)
 	psql -q -c "ALTER USER $(DB_USER) ENCRYPTED PASSWORD '$(DB_PASS)'"
+	# TODO: The ip4r extension needs to be added to the newly created
+	# 	database.  How do we do that?
 
 
 tables:
-	@echo "## A random password has been generated '$(DB_PASS)'"
 	-createlang -d $(DB_NAME) plpgsql
 	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f find_free_prefix.plsql
 	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f get_prefix.plsql
@@ -82,4 +85,7 @@ clean-db:
 
 
 clean-tables:
+	# TODO: If no password is specified with PGPASSWORD, this operation
+	# 	will in all likeliness result in a failure, so we should
+	# 	require a PGPASSWORD
 	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f clean.plsql
