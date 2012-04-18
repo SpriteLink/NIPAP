@@ -28,7 +28,7 @@
                     'schema': schema_id,
                     'name': $('input[name="name"]').val(),
                     'description': $('input[name="description"]').val(),
-                    'default_type': $('input[name="default_type"]').val(),
+                    'default_type': $('input[name="default_type"]:checked').val(),
                     'ipv4_default_prefix_length': $('input[name="ipv4_default_prefix_length"]').val(),
                     'ipv6_default_prefix_length': $('input[name="ipv6_default_prefix_length"]').val()
                 };
