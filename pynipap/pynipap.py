@@ -881,6 +881,7 @@ class Prefix(Pynipap):
             del(data['type'])
 
             try:
+                # save
                 self._xmlrpc.connection.edit_prefix(
                     {
                         'schema': { 'id': self.schema.id },
@@ -888,8 +889,12 @@ class Prefix(Pynipap):
                         'attr': data,
                         'auth': self._auth_opts.options
                     })
+
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
+
+        # update cache
+        _cache['Prefix'][self.id] = self
 
 
 
@@ -1024,7 +1029,7 @@ class NipapDuplicateError(NipapError):
 #
 
 # Simple object cache
-# TODO: fix somekind of timeout
+# TODO: fix some kind of timeout
 _cache = {
     'Pool': {},
     'Prefix': {},
