@@ -1,2 +1,3 @@
 include README.rst MANIFEST.in
-prune Makefile debian/*
+prune Makefile
+prune debian/*

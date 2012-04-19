@@ -3,7 +3,7 @@
 
 # for use lates, when we have cleaned up a bit!
 #SUBPROJ=`find $(CURDIR)/* -maxdepth 0 -type d`
-SUBPROJ=nipap pynipap nipap-www cli
+SUBPROJ=nipap pynipap nipap-www nipap-cli
 APTDIR=apt
 CURBRANCH=$(shell git branch --no-color 2> /dev/null | awk '/\\*/ { printf("%s", $$2); }')
 
