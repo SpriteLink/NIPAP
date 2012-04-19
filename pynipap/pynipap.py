@@ -149,7 +149,7 @@ import logging
 import sys
 import os
 
-__version__		= "0.5.2"
+__version__		= "0.5.3"
 __author__		= "Kristian Larsson, Lukas Garberg"
 __author_email__= "kll@tele2.net, lukas@spritelink.net"
 __copyright__	= "Copyright 2011, Kristian Larsson, Lukas Garberg"

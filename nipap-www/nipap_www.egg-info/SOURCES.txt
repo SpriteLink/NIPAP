@@ -68,7 +68,6 @@ nipapwww/public/images/ui-icons_454545_256x240.png
 nipapwww/public/images/ui-icons_888888_256x240.png
 nipapwww/public/images/ui-icons_cd0a0a_256x240.png
 nipapwww/templates/base.html
-nipapwww/templates/error.html
 nipapwww/templates/login.html
 nipapwww/templates/macros.html
 nipapwww/templates/pool_add.html
