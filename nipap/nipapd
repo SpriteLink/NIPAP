@@ -32,7 +32,7 @@ if __name__ == '__main__':
         'foreground': 'false',
         'pid_file': None,
         'port': 1337,
-        'db_host': None,
+        'db_host': 'localhost',
         'db_name': 'nipap',
         'db_port': None,
         'db_user': 'nipap',
