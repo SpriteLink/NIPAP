@@ -1,2 +1,2 @@
 # Keep a few files out of the debian package
-extend-diff-ignore = "(^|/)(test.ini|Makefile)$"
+extend-diff-ignore = "(^|/)(test.ini|Makefile|data/sessions/container_file/.*|data/sessions/container_file_lock/.*)$"

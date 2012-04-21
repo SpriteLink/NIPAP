@@ -1,3 +1,9 @@
+nipap-www (0.5.3dev-2) oneiric; urgency=low
+
+  * Removed session files from package.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Sat, 21 Apr 2012 11:11:10 +0200
+
 nipap-www (0.5.3dev-1) oneiric; urgency=low
 
   * New upstream version.
