@@ -104,7 +104,27 @@ class NipapXMLRPC:
 
         # twist it!
         self._protocol = NipapProtocol()
-        reactor.listenTCP(self._cfg.getint('nipapd', 'port'), server.Site(self._protocol))
+        # listen on all interface
+        if self._cfg.get('nipapd', 'listen') is None or self._cfg.get('nipapd', 'listen') == '':
+            self.logger.info("Listening to all addresses on port " + self._cfg.getint('nipapd', 'port'))
+            reactor.listenTCP(self._cfg.getint('nipapd', 'port'), server.Site(self._protocol))
+        else:
+            # If the used has listed specific addresses to listen to, loop
+            # through them and start listening to them. It is possible to
+            # specify port per IP by separating the address and port with a +
+            # character.
+            listen = self._cfg.get('nipapd', 'listen')
+            for entry in listen.split(','):
+                if len(entry.split('+')) > 1:
+                    address = entry.split('+')[0]
+                    port = int(entry.split('+')[1])
+                else:
+                    address = entry
+                    port = int(self._cfg.get('nipapd', 'port'))
+                self.logger.info("Listening to address " + address + " on port " + str(port))
+                reactor.listenTCP(port, server.Site(self._protocol), interface=address)
+
+        # finally, start the reactor!
         reactor.run()
 
 
