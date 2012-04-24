@@ -1,4 +1,5 @@
-
+This is a README file for developers. If you are not a developer, you'll likely
+find this file rather boring.
 
 The Makefile includes a command ('debrepo') to build a Packages.gz file and put
 this into the apt/ directory in the branch gh-pages. gh-pages is a branch
@@ -10,3 +11,16 @@ hosted on GitHub.
 To update the apt repo, build the debian packages (using make builddeb in each
 package), then run make debrepo in the project root. Commit and then push and
 it should all work! :)
+
+VERSIONING
+==========
+PyarrFS follows the pretty common version format of major.minor.patch. What
+constitutes major and minor features is of course difficult to tell and as we
+intend to release rather often we will likely end up with a minor version bump
+for every feature. This could lead to something like the Linux kernel which
+staid at 2.6 for pretty long before Linus bumped it to version 3.0 with no real
+major changes, it was just the right time. I think that will work well for us
+as well.
+
+I don't believe in date-based (like Ubuntu) versioning as we release when
+things are done, not according to some artificial deadline.
