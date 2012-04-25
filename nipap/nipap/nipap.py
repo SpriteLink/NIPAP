@@ -2589,6 +2589,7 @@ class Nipap:
                 })
 
             # Description or comment
+            # TODO: add an equal search for VRF here
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as desc/comment")
                 query_str_part['interpretation'] = 'text'
