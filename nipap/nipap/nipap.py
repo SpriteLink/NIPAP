@@ -59,7 +59,7 @@
     * :attr:`indent` - Depth in prefix tree. Set by NIPAP.
     * :attr:`country` - Country where the prefix resides (two-letter country code).
     * :attr:`order_id` - Order identifier.
-    * :attr:`vrf` - VRF where the prefix resides.
+    * :attr:`vrf` - VRF in which the prefix resides.
     * :attr:`external_key` - A field for use by external systems which needs to
         store references to its own dataset.
     * :attr:`authoritative_source` - String identifying which system last
