@@ -59,6 +59,7 @@
     * :attr:`indent` - Depth in prefix tree. Set by NIPAP.
     * :attr:`country` - Country where the prefix resides (two-letter country code).
     * :attr:`order_id` - Order identifier.
+    * :attr:`vrf` - VRF where the prefix resides.
     * :attr:`external_key` - A field for use by external systems which needs to
         store references to its own dataset.
     * :attr:`authoritative_source` - String identifying which system last
@@ -1599,7 +1600,7 @@ class Nipap:
 
         allowed_keys = ['id', 'family', 'schema',
             'type', 'pool_name', 'pool_id', 'prefix', 'pool', 'monitor',
-            'external_key' ]
+            'external_key', 'vrf' ]
         for key in spec.keys():
             if key not in allowed_keys:
                 raise NipapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
@@ -1667,6 +1668,7 @@ class Nipap:
             prefix_attr['node'] = 'node'
             prefix_attr['country'] = 'country'
             prefix_attr['order_id'] = 'order_id'
+            prefix_attr['vrf'] = 'vrf'
             prefix_attr['external_key'] = 'external_key'
             prefix_attr['authoritative_source'] = 'authoritative_source'
             prefix_attr['alarm_priority'] = 'alarm_priority'
@@ -1784,7 +1786,7 @@ class Nipap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'schema', 'description',
             'comment', 'pool', 'node', 'type', 'country',
-            'order_id', 'alarm_priority', 'monitor', 'external_key' ]
+            'order_id', 'vrf', 'alarm_priority', 'monitor', 'external_key' ]
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('host' not in attr):
             raise NipapMissingInputError('Either description or host must be specified.')
@@ -1852,7 +1854,8 @@ class Nipap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool', 'node', 'type', 'country',
-            'order_id', 'alarm_priority', 'monitor', 'external_key' ]
+            'order_id', 'vrf', 'alarm_priority', 'monitor',
+            'external_key' ]
 
         self._check_attr(attr, [], allowed_attr)
 
@@ -2400,6 +2403,7 @@ class Nipap:
         indent,
         country,
         order_id,
+        vrf,
         external_key,
         authoritative_source,
         alarm_priority,
