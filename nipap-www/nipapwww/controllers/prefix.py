@@ -106,6 +106,11 @@ class PrefixController(BaseController):
             else:
                 c.prefix.order_id = request.params['prefix_order_id']
 
+            if request.params['prefix_vrf'].strip() == '':
+                c.prefix.vrf = None
+            else:
+                c.prefix.vrf = request.params['prefix_vrf']
+
             if request.params.get('prefix_monitor') != None:
                 c.prefix.monitor = True
             else:
