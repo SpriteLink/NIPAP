@@ -665,6 +665,7 @@ class Prefix(Pynipap):
     country = None
     external_key = None
     order_id = None
+    vrf = None
     authoritative_source = None
     alarm_priority = None
     monitor = None
@@ -813,6 +814,7 @@ class Prefix(Pynipap):
             'type': self.type,
             'country': self.country,
             'order_id': self.order_id,
+            'vrf': self.vrf,
             'external_key': self.external_key,
             'alarm_priority': self.alarm_priority,
             'monitor': self.monitor
@@ -940,6 +942,7 @@ class Prefix(Pynipap):
         p.indent = pref['indent']
         p.country = pref['country']
         p.order_id = pref['order_id']
+        p.vrf = pref['vrf']
         p.external_key = pref['external_key']
         p.authoritative_source = pref['authoritative_source']
         p.alarm_priority = pref['alarm_priority']
