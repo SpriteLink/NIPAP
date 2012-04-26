@@ -266,6 +266,7 @@ def add_prefix(arg, opts):
     p.node = opts.get('node')
     p.country = opts.get('country')
     p.order_id = opts.get('order_id')
+    p.vrf = opts.get('vrf')
     p.alarm_priority = opts.get('alarm_priority')
     p.comment = opts.get('comment')
     p.monitor = _str_to_bool(opts.get('monitor'))
@@ -415,6 +416,7 @@ def view_prefix(arg, opts):
     print "  %-15s : %s" % ("Description", p.description)
     print "  %-15s : %s" % ("Node", p.node)
     print "  %-15s : %s" % ("Order", p.order_id)
+    print "  %-15s : %s" % ("VRF", p.vrf)
     print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
     print "  %-15s : %s" % ("Monitor", p.monitor)
     print "-- Comment"
@@ -576,6 +578,8 @@ def modify_prefix(arg, opts):
         p.country = opts['country']
     if 'order_id' in opts:
         p.order_id = opts['order_id']
+    if 'vrf' in opts:
+        p.vrf = opts['vrf']
     if 'alarm_priority' in opts:
         p.alarm_priority = opts['alarm_priority']
     if 'monitor' in opts:
@@ -815,6 +819,13 @@ cmds = {
                                 'content_type': unicode,
                             }
                         },
+                        'vrf': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
                         'prefix': {
                             'type': 'option',
                             'content_type': unicode,
@@ -922,6 +933,13 @@ cmds = {
                                     }
                                 },
                                 'order': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    }
+                                },
+                                'vrf': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
