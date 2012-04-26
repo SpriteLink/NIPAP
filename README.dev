@@ -17,7 +17,7 @@ things are done, not according to some artificial deadline.
 Build debian packages
 =====================
 Building debian packages out of the nipap packages is fairly simply, just go to
-the root of the NIPAP source directory and do a 'make debbuild'.
+the root of the NIPAP source directory and do a 'make builddeb'.
 
 Building a debian repo
 ======================
