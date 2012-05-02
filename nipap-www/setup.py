@@ -3,11 +3,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='nipap-www',
-    version='0.5.3',
+    version='0.6.0',
     description='web frontend for NIPAP',
     author='Kristian Larsson, Lukas Garberg',
     author_email='kll@tele2.net, lukas@spritelink.net',
-    url='https://github.com/plajjan/NIPAP',
+    url='http://SpriteLink.github.com/NIPAP',
     install_requires=[
         "Pylons>=1.0",
         "Jinja2",
