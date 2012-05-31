@@ -59,7 +59,7 @@
                     'order_id': $('input[name="prefix_order_id"]').val(),
                     'vrf': $('input[name="prefix_vrf"]').val(),
                     'comment': $('input[name="prefix_comment"]').val(),
-                    'alarm_priority': $('input[name="prefix_alarm_priority"]').val()
+                    'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val()
                 };
 
                 if ($('input[name="prefix_monitor"]').is(':checked')) {
