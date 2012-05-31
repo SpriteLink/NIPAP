@@ -1613,7 +1613,19 @@ class Nipap:
             if spec != {'id': spec['id'], 'schema': spec['schema']}:
                 raise NipapExtraneousInputError("If id specified, no other keys are allowed.")
 
+        family = None
+        if 'family' in spec:
+            family = spec['family']
+            del(spec['family'])
+
         where, params = self._sql_expand_where(spec)
+
+        if family:
+            params['family'] = family
+            if len(params) == 0:
+                where = "family(prefix) = %(family)s"
+            else:
+                where += " AND family(prefix) = %(family)s"
 
         self._logger.debug("where: %s params: %s" % (where, str(params)))
         return where, params
