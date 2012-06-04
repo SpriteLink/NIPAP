@@ -510,6 +510,10 @@ tbody.listing > tr:hover {
     width: 150px;
 }
 
+.prefix_vrf {
+    width: 60px;
+}
+
 .prefix_order_id {
     width: 80px;
 }

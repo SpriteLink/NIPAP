@@ -564,6 +564,17 @@ function showPrefix(prefix, parent_container, relative) {
 		prefix_order_id.html(prefix.order_id);
 	}
 
+	// Add VRF
+	prefix_row.append('<div id="prefix_vrf' + prefix.id + '">');
+	var prefix_vrf = $('#prefix_vrf' + prefix.id);
+	prefix_vrf.addClass('prefix_column');
+	prefix_vrf.addClass('prefix_vrf');
+	if (prefix.vrf == null || prefix.vrf == '') {
+		prefix_vrf.html("&nbsp;");
+	} else {
+		prefix_vrf.html(prefix.vrf);
+	}
+
 	// Add node
 	prefix_row.append('<div id="prefix_node' + prefix.id + '">');
 	var prefix_node = $('#prefix_node' + prefix.id);
