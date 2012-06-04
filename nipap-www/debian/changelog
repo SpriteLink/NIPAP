@@ -1,3 +1,10 @@
+nipap-www (0.6.1dev-1) oneiric; urgency=low
+
+  * Bugfix; prefix alarm priority can now be set.
+  * Added VRF prefix attribute to prefix list.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 31 May 2012 11:52:28 +0200
+
 nipap-www (0.6.0dev-1) oneiric; urgency=low
 
   * Added VRF attribute to prefixes.
