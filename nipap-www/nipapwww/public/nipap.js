@@ -486,7 +486,7 @@ function showPrefix(prefix, parent_container, relative) {
 		// If we are sure that the children has been fetched, the group will
 		// already be fully expanded and a minus sign should be shown
 		if (prefix.children == 1) {
-			prefix_exp.html("-");
+			prefix_exp.html('&ndash;');
 		}
 
 	}
