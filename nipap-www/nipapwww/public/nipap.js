@@ -488,12 +488,6 @@ function showPrefix(prefix, parent_container, relative) {
 			e.stopPropagation();
 		});
 
-		// If we are sure that the children has been fetched, the group will
-		// already be fully expanded and a minus sign should be shown
-		if (prefix.children == 1) {
-			prefix_exp.html('&ndash;');
-		}
-
 	}
 
 	prefix_indent.width(prefix_indent.width() + 15 * prefix.indent);
@@ -963,7 +957,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 		// Has indent level increased?
 		if (prev_prefix.indent < prefix.indent) {
-			// if prefix has childs, do not hide it!  since we are one indent
+			// if prefix has children, do not hide it!  since we are one indent
 			// level under last, the previous prefix is our parent and clearly
 			// has childs, thus unhide!
 			unhide( container.find('.prefix_button:first').attr('data-prefix-id') );
