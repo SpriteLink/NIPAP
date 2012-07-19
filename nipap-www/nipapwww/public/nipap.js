@@ -491,7 +491,7 @@ function showPrefix(prefix, parent_container, relative) {
 
 	}
 
-	prefix_indent.width(prefix_indent.width() + 30 * prefix.indent);
+	prefix_indent.width(prefix_indent.width() + 15 * prefix.indent);
 
 	// add prefix
 	prefix_ind_pref.append('<div id="prefix_prefix' + prefix.id + '">');
