@@ -2582,10 +2582,15 @@ class Nipap:
                 query_str_part['interpretation'] = 'IPv6 prefix'
                 query_str_part['operator'] = 'contained_within_equals'
                 query_str_part['attribute'] = 'prefix'
+
+                strict_prefix = str(IPy.IP(query_str_part['string'], make_net = True))
+                if query_str_part['string'] != strict_prefix:
+                    query_str_part['strict_prefix'] = strict_prefix
+
                 query_parts.append({
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
-                    'val2': query_str_part['string']
+                    'val2': strict_prefix
                 })
 
             # IPv6 address
