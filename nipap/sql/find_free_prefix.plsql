@@ -13,7 +13,9 @@ DECLARE
 	search_prefix inet;
 	current_prefix inet;
 	max_prefix_len integer;
+	covering_prefix inet;
 BEGIN
+	covering_prefix := NULL;
 	-- sanity checking
 	-- make sure all provided search_prefixes are of same family
 	FOR p IN SELECT generate_subscripts(arg_prefixes, 1) LOOP
@@ -69,8 +71,9 @@ BEGIN
 			END IF;
 
 			-- avoid prefixes larger than the current_prefix but inside our search_prefix
-			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND iprange(prefix) >>= iprange(current_prefix::cidr) AND iprange(prefix) << iprange(search_prefix::cidr)) THEN
-				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
+			covering_prefix := (SELECT prefix FROM ip_net_plan WHERE schema = arg_schema AND iprange(prefix) >>= iprange(current_prefix::cidr) AND iprange(prefix) << iprange(search_prefix::cidr) ORDER BY masklen(prefix) ASC LIMIT 1);
+			IF covering_prefix IS NOT NULL THEN
+				SELECT set_masklen(broadcast(covering_prefix) + 1, arg_wanted_prefix_len) INTO current_prefix;
 				CONTINUE;
 			END IF;
 			-- prefix must not contain any breakouts, that would mean it's not empty, ie not free
