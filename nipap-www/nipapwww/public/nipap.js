@@ -713,9 +713,12 @@ function receivePrefixList(search_result) {
 		} else if (interp.attribute == 'prefix' && interp.operator == 'contained_within_equals') {
 			text += ' within ';
 
-			if ('strict_prefix' in interp) {
+			if ('strict_prefix' in interp && 'expanded' in interp) {
 				text += '<b>' + interp.strict_prefix + '</b>';
 				tooltip = 'Prefix must be contained within ' + interp.strict_prefix + ', which is the base prefix of ' + interp.expanded + ' (automatically expanded from ' + interp.string + ')';
+			} else if ('strict_prefix' in interp) {
+				text += '<b>' + interp.strict_prefix + '</b>';
+				tooltip = 'Prefix must be contained within ' + interp.strict_prefix + ', which is the base prefix of ' + interp.string + '.';
 			} else if ('expanded' in interp) {
 				text += '<b>' + interp.expanded + '</b>';
 				tooltip = 'Prefix must be contained within ' + interp.expanded + ' (automatically expanded from ' + interp.string + ').';
