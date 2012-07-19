@@ -86,13 +86,15 @@ BEGIN
 			-- functions and so are not indexed
 			-- TODO: should they be indexed?
 
-			IF (set_masklen(network(search_prefix), max_prefix_len) = current_prefix) THEN
-				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
-				CONTINUE;
-			END IF;
-			IF (set_masklen(broadcast(search_prefix), max_prefix_len) = current_prefix) THEN
-				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
-				CONTINUE;
+			IF ((i_family = 4 AND masklen(search_prefix) < 31) OR i_family = 6 AND masklen(search_prefix) < 127)THEN
+				IF (set_masklen(network(search_prefix), max_prefix_len) = current_prefix) THEN
+					SELECT broadcast(current_prefix) + 1 INTO current_prefix;
+					CONTINUE;
+				END IF;
+				IF (set_masklen(broadcast(search_prefix), max_prefix_len) = current_prefix) THEN
+					SELECT broadcast(current_prefix) + 1 INTO current_prefix;
+					CONTINUE;
+				END IF;
 			END IF;
 
 			RETURN NEXT current_prefix;
