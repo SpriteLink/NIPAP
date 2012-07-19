@@ -432,6 +432,11 @@ function performPrefixNextPage () {
  */
 function showPrefix(prefix, parent_container, relative) {
 
+	// Only diplay prefixes which are not already in list
+	if ($("#prefix_entry" + prefix.id).length > 0) {
+		return;
+	}
+
 	// add main prefix container
 	if (relative == null) {
 		parent_container.append('<div id="prefix_entry' + prefix.id + '" data-prefix-id="' + prefix.id + '">');
