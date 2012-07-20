@@ -26,14 +26,9 @@ remove_query = {
 			},
 		'schema': {
 			'id': 1
-			},
-		'prefix': {
-			'prefix': '2001:db8::/64'
-			#'type': 'host'
-			},
-		'recursive': True
+			}
 		}
-server.remove_prefix(remove_query)
+server.remove_schema(remove_query)
 
 #t0 = time.time()
 #import sys
