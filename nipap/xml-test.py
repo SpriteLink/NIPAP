@@ -20,17 +20,31 @@ if options.user and options.password:
 server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': options.port, 'cred': cred }
 server = xmlrpclib.Server(server_url, allow_none=1);
 
-t0 = time.time()
-import sys
-ss = u'ballong'
-print "Type of search string:", type(ss)
-print ss
-#res = server.search_schema({ 'operator': 'regex_match', 'val1': 'name', 'val2': 'test' }, { 'max_result': 500 })
-res = server.smart_search_schema(ss, { 'max_result': 500 })
-t1 = time.time()
-d1 = t1-t0
-print "Timing:", d1
-print res
+remove_query = {
+		'auth': {
+			'authoritative_source': 'kll'
+			},
+		'schema': {
+			'id': 1
+			},
+		'prefix': {
+			'prefix': '2001:db8::/63'
+			#'type': 'host'
+			}
+		}
+server.remove_prefix(remove_query)
+
+#t0 = time.time()
+#import sys
+#ss = u'ballong'
+#print "Type of search string:", type(ss)
+#print ss
+##res = server.search_schema({ 'operator': 'regex_match', 'val1': 'name', 'val2': 'test' }, { 'max_result': 500 })
+#res = server.smart_search_schema(ss, { 'max_result': 500 })
+#t1 = time.time()
+#d1 = t1-t0
+#print "Timing:", d1
+#print res
 
 #
 # echo test
