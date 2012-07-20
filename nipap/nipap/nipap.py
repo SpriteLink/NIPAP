@@ -661,6 +661,9 @@ class Nipap:
 
         self._logger.debug("remove_schema called; spec: %s" % str(spec))
 
+        self.remove_prefix(auth, schema_spec = spec, spec = { 'prefix': '0.0.0.0/0' }, recursive = True)
+        self.remove_prefix(auth, schema_spec = spec, spec = { 'prefix': '::/0' }, recursive = True)
+
         schemas = self.list_schema(spec)
         where, params = self._expand_schema_spec(spec)
         sql = "DELETE FROM ip_net_schema WHERE %s" % where
