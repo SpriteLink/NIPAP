@@ -2132,7 +2132,25 @@ class Nipap:
 
 
 
-    def remove_prefix(self, auth, schema_spec, spec):
+    def _db_remove_prefix(self, spec, recursive = False):
+        """ Do the underlying database operations to delete a prefix
+        """
+        if recursive:
+            prefix = spec['prefix']
+            del spec['prefix']
+            where, params = self._expand_prefix_spec(spec)
+            spec['prefix'] = prefix
+            params['prefix'] = prefix
+            where = 'prefix <<= %(prefix)s AND ' + where
+        else:
+            where, params = self._expand_prefix_spec(spec)
+
+        sql = "DELETE FROM ip_net_plan AS p WHERE %s" % where
+        self._execute(sql, params)
+
+
+
+    def remove_prefix(self, auth, schema_spec, spec, recursive = False):
         """ Remove prefix matching `spec`.
 
             * `auth` [BaseAuth]
@@ -2145,12 +2163,21 @@ class Nipap:
 
         self._logger.debug("remove_prefix called; spec: %s" % str(spec))
 
+        # sanity check - do we have all attributes?
+        if 'id' not in spec and 'prefix' not in spec:
+            raise NipapMissingInputError('missing prefix or id of prefix')
+
         schema = self._get_schema(auth, schema_spec)
         spec['schema'] = schema['id']
         prefixes = self.list_prefix(auth, schema_spec, spec)
-        where, params = self._expand_prefix_spec(spec)
-        sql = "DELETE FROM ip_net_plan AS p WHERE %s" % where
-        self._execute(sql, params)
+
+        if recursive:
+            spec['type'] = 'host'
+            self._db_remove_prefix(spec, recursive)
+            del spec['type']
+            self._db_remove_prefix(spec, recursive)
+        else:
+            self._db_remove_prefix(spec)
 
         # write to audit table
         audit_params = {

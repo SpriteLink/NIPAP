@@ -610,7 +610,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.remove_prefix(args.get('auth'), args.get('schema'), args.get('prefix'))
+            return self.nipap.remove_prefix(args.get('auth'), args.get('schema'), args.get('prefix'), args.get('recursive'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
