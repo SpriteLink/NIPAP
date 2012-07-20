@@ -15,7 +15,7 @@ parser.add_option('-P', '--password')
 
 cred = ''
 if options.user and options.password:
-	cred = options.user + '@' + options.password
+	cred = options.user + ':' + options.password + '@'
 
 server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': options.port, 'cred': cred }
 server = xmlrpclib.Server(server_url, allow_none=1);
