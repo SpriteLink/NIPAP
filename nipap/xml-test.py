@@ -28,9 +28,10 @@ remove_query = {
 			'id': 1
 			},
 		'prefix': {
-			'prefix': '2001:db8::/63'
+			'prefix': '2001:db8::/64'
 			#'type': 'host'
-			}
+			},
+		'recursive': True
 		}
 server.remove_prefix(remove_query)
 
