@@ -2167,7 +2167,14 @@ class Nipap:
         self._logger.debug("remove_prefix called; spec: %s" % str(spec))
 
         # sanity check - do we have all attributes?
-        if 'id' not in spec and 'prefix' not in spec:
+        if 'id' in spec:
+            # recursive requires a prefix, so translate id to prefix
+            p = self.list_prefix(auth, schema_spec, spec)[0]
+            del spec['id']
+            spec['prefix'] = p['prefix']
+        elif 'prefix' in spec:
+            pass
+        else:
             raise NipapMissingInputError('missing prefix or id of prefix')
 
         schema = self._get_schema(auth, schema_spec)
