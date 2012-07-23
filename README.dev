@@ -7,7 +7,7 @@ NIPAP follows the pretty common version format of major.minor.patch. What
 constitutes major and minor features is of course difficult to tell and as we
 intend to release rather often we will likely end up with a minor version bump
 for every feature. This could lead to something like the Linux kernel which
-staid at 2.6 for pretty long before Linus bumped it to version 3.0 with no real
+stayed at 2.6 for pretty long before Linus bumped it to version 3.0 with no real
 major changes, it was just the right time. I think that will work well for us
 as well.
 
