@@ -61,6 +61,18 @@
 				});
 			});
         });
+
+		/*
+		 * Callback function after a schema has been removed
+		 */
+		function schemaRemoved(schema) {
+			if ('error' in schema) {
+				showDialogNotice('Error', schema.message);
+				return;
+			}
+			$('#schema_row' + schema.id).remove();
+		}
+
     </script>
 {% endblock %}
 
