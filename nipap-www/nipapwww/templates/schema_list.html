@@ -42,7 +42,7 @@
 
 					$('#schema_remove' + schema_id).click(function(e) {
 						e.preventDefault();
-						var dialog = showDialogYesNo('Really remove schema?', 'Are you sure you want to remove the schema ' + schema_name + '?',
+						var dialog = showDialogYesNo('Really remove schema?', 'Are you sure you want to remove the schema "' + schema_name + '"?',
 						function () {
 							var data = {
 								'id': schema_id
