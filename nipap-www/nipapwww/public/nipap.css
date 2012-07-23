@@ -530,11 +530,6 @@ tbody.listing > tr:hover {
     display: none;
 }
 
-.popup_button {
-    width: 23px;
-    height: 16px;
-}
-
 .popup_button_icon {
     background: url('/images/display_menu.png') no-repeat;
     width: 18px;
@@ -600,8 +595,8 @@ tbody.listing > tr:hover {
 }
 
 .minibutton {
-/*    color: #333; */
-/*    text-shadow: 1px 1px 0 white; */
+	width: 23px;
+	height: 16px;
     cursor: pointer;
     border: 1px solid #D4D4D4;
     -webkit-border-radius: 3px;

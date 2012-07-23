@@ -529,7 +529,6 @@ function showPrefix(prefix, parent_container, relative) {
 
 		var prefix_button = $('#prefix_button' + prefix.id);
 		prefix_button.addClass('minibutton');
-		prefix_button.addClass('popup_button');
 		prefix_button.html('<div class="popup_button_icon">&nbsp;</div>');
 		prefix_button.click(prefix, function(e) {
 			showPrefixMenu(e.currentTarget.getAttribute('data-prefix-id'));
@@ -980,7 +979,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 			// if prefix has childs, do not hide it!  since we are one indent
 			// level under last, the previous prefix is our parent and clearly
 			// has childs, thus unhide!
-			unhide( container.find('.popup_button:first').attr('data-prefix-id') );
+			unhide( container.find('.minibutton:first').attr('data-prefix-id') );
 
 			// we get the number of children for assignments from the database
 			if (prev_prefix.type == 'assignment') {
@@ -1013,7 +1012,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 				// we don't bother putting three or less prefixes into a hidden container
 				if (parseInt(container.children().length) <= 3) {
-					unhide( container.find('.popup_button:first').attr('data-prefix-id') );
+					unhide( container.find('.minibutton:first').attr('data-prefix-id') );
 				}
 				container = indent_head[prefix.indent];
 			} else if (prev_prefix.match == true && prefix.match == false) {
@@ -1024,7 +1023,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		} else {
 			// if less than 8 children prefixes total, do not hide
 			if (parseInt(container.parent().find('.prefix_entry').length) < 8) {
-				unhide( container.find('.popup_button:first').attr('data-prefix-id') );
+				unhide( container.find('.minibutton:first').attr('data-prefix-id') );
 			}
 			container = indent_head[prefix.indent];
 		}
@@ -1064,7 +1063,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 	// this last clause is to prevent the last prefixes in a list to be hidden
 	// we don't bother putting three or less prefixes into a hidden container
 	if (parseInt(container.children().length) <= 3) {
-		unhide( container.find('.popup_button:first').attr('data-prefix-id') );
+		unhide( container.find('.minibutton:first').attr('data-prefix-id') );
 	}
 
 }
