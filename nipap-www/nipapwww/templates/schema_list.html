@@ -21,14 +21,39 @@
             */
 			$(".minibutton").each(function() {
 				$(this).click(function(e) {
-					var schema_id = e.currentTarget.getAttribute('data-schema-id');
-					var menu = getPopupMenu($(this), 'schema', schema_id);
+					var tr = $(this).parent().parent();
+					var schema_id = tr.attr('data-schema-id');
+					var schema_name = tr.children('td:first').text();
+					var menu = getPopupMenu($(this), 'Schema', schema_id);
 
+					var cur_schema = '';
 					{% if c.schema is defined %}
-					menu.append('<a href="/schema/edit/' + schema_id + '?schema={{c.schema.id}}">Edit</a>');
+					cur_schema = '?schema={{c.schema.id}}';
+					menu.append('<a href="/schema/edit/' + schema_id + cur_schema + '">Edit</a>');
+					if (schema_id == {{c.schema.id}}) {
+						menu.append('<a id="schema_remove' + schema_id + '" href="/schema/remove/' + schema_id + '">Remove</a>');
+					} else {
+						menu.append('<a id="schema_remove' + schema_id + '" href="/schema/remove/' + schema_id + cur_schema + '">Remove</a>');
+					}
 					{% else %}
-					menu.append('<a href="/schema/edit/' + schema_id + '">Edit</a>');
+					menu.append('<a href="/schema/edit/' + schema_id + cur_schema + '">Edit</a>');
+					menu.append('<a id="schema_remove' + schema_id + '" href="/schema/remove/' + schema_id + cur_schema + '">Remove</a>');
 					{% endif %}
+
+					$('#schema_remove' + schema_id).click(function(e) {
+						e.preventDefault();
+						var dialog = showDialogYesNo('Really remove schema?', 'Are you sure you want to remove the schema ' + schema_name + '?',
+						function () {
+							var data = {
+								'id': schema_id
+							};
+							$.getJSON('/xhr/remove_schema', data, schemaRemoved);
+
+							hidePopupMenu();
+							dialog.dialog('close');
+
+						});
+					});
 
 					menu.slideDown('fast');
 					e.preventDefault();
@@ -68,7 +93,7 @@
 			<td>{{ schema.description }}</td>
 			<td>{{ schema.vrf or '' }}</td>
 			<td>
-				<div id="schema_button{{schema.id}}" class="minibutton" data-schema-id="{{schema.id}}">
+				<div id="schema_button{{schema.id}}" class="minibutton">
 					<div class="popup_button_icon">&nbsp;</div>
 				</div>
 			</td>

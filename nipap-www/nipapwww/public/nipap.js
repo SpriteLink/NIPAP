@@ -625,7 +625,7 @@ function getPopupMenu(button, name_prefix, data_id) {
 	$('body').append('<div id="' + name + '">');
 	var menu = $('#' + name);
 	menu.addClass("popup_menu");
-	menu.html("<h3>Prefix menu</h3>");
+	menu.html("<h3>" + name_prefix + " menu</h3>");
 
 	// show overlay
 	$('body').append('<div class="popup_menu_overlay"></div>');
