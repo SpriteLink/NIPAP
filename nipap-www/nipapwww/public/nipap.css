@@ -530,19 +530,14 @@ tbody.listing > tr:hover {
     display: none;
 }
 
-.prefix_button {
-    width: 23px;
-    height: 16px;
-}
-
-.prefix_button_icon {
+.popup_button_icon {
     background: url('/images/display_menu.png') no-repeat;
     width: 18px;
     height: 12px;
     margin: 2px;
 }
 
-.prefix_menu {
+.popup_menu {
     position: absolute;
     z-index: 20;
     display: none;
@@ -558,7 +553,7 @@ tbody.listing > tr:hover {
     color: hsl(0, 0%, 47%);
 }
 
-.prefix_menu > h3 {
+.popup_menu > h3 {
     font-weight: bold;
     font-size: 11px;
     text-align: center;
@@ -574,7 +569,7 @@ tbody.listing > tr:hover {
     border-bottom: 1px solid hsl(180, 11%, 95%);
 }
 
-.prefix_menu > a {
+.popup_menu > a {
     display: block;
     padding: 5px;
     text-decoration: none;
@@ -582,13 +577,13 @@ tbody.listing > tr:hover {
     border-top: 1px solid hsl(0, 0%, 93%);
 }
 
-.prefix_menu > a:hover {
+.popup_menu > a:hover {
     background-color: hsl(210, 53%, 51%);
     color: #ffffff;
     text-shadow: 0 0 2px hsla(0, 0%, 0%, 0.6);
 }
 
-.prefix_menu_overlay {
+.popup_menu_overlay {
     display: none;
     z-index: 10;
     opacity: 0.0;
@@ -600,8 +595,8 @@ tbody.listing > tr:hover {
 }
 
 .minibutton {
-/*    color: #333; */
-/*    text-shadow: 1px 1px 0 white; */
+	width: 23px;
+	height: 16px;
     cursor: pointer;
     border: 1px solid #D4D4D4;
     -webkit-border-radius: 3px;
@@ -621,7 +616,7 @@ tbody.listing > tr:hover {
     background: -moz-linear-gradient(top,#589adb,#3173b4);
 }
 
-.minibutton:hover .prefix_button_icon {
+.minibutton:hover .popup_button_icon {
     background-position: left bottom;
 }
 

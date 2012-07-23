@@ -569,6 +569,23 @@ class XhrController(BaseController):
         return json.dumps(p, cls=NipapJSONEncoder)
 
 
+
+    def remove_schema(self):
+        """ Remove a schema.
+        """
+
+        try:
+            schema = Schema.get(int(request.params['id']))
+            schema.remove()
+
+        except NipapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(schema, cls=NipapJSONEncoder)
+
+
+
+
 class NipapJSONEncoder(json.JSONEncoder):
     """ A class used to encode NIPAP objects to JSON.
     """
