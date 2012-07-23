@@ -4,21 +4,6 @@
     <script>
 
         $(function () {
-            /*
-             * blagh, this was a bit more bulky then I wanted just right now...
-             * TODO: change from onclick to unobtrusive JavaScript.
-            // add confirmation dialog to delete-action
-            var schema_delete_links = $('a[id^=delete_schema_]');
-            for (key in schema_delete_links) {
-
-                // find ID of schema
-                var id = schema_delete_links[key].id.split('_')[2];
-
-                // add event handler
-                schema_delete_links[key].click(displayVerify, { 'url': {{ h.url(controller='schema', action='remove', id="' + schema.id + '") }} });
-
-            }
-            */
 			$(".minibutton").each(function() {
 				$(this).click(function(e) {
 					var tr = $(this).parent().parent();
