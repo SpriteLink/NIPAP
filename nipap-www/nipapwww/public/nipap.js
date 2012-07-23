@@ -633,9 +633,8 @@ function getPopupMenu(button, name_prefix, data_id) {
 	$(".popup_menu_overlay").show();
 
 	// Set menu position
-	var button_pos = button.position();
-	menu.css('top', button_pos.top + button.height() + 5 + 'px');
-	menu.css('left', button_pos.left + 'px');
+	menu.css('top', button.offset().top + button.height() + 5 + 'px');
+	menu.css('left', button.offset().left + 'px');
 
 	return menu;
 }
