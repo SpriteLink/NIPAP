@@ -19,7 +19,22 @@
 
             }
             */
+			$(".minibutton").each(function() {
+				$(this).click(function(e) {
+					var schema_id = e.currentTarget.getAttribute('data-schema-id');
+					var menu = getPopupMenu($(this), 'schema', schema_id);
 
+					{% if c.schema is defined %}
+					menu.append('<a href="/schema/edit/' + schema_id + '?schema={{c.schema.id}}">Edit</a>');
+					{% else %}
+					menu.append('<a href="/schema/edit/' + schema_id + '">Edit</a>');
+					{% endif %}
+
+					menu.slideDown('fast');
+					e.preventDefault();
+					e.stopPropagation();
+				});
+			});
         });
     </script>
 {% endblock %}
@@ -48,17 +63,14 @@
 	</thead>
 	<tbody class="listing">
 		{% for schema in c.schemas %}
-		<trid="schema_row{{ schema.id }}">
+		<tr id="schema_row{{ schema.id }}" data-schema-id="{{schema.id}}">
 			<td style="padding-left: 30px;"><a href="{{ h.url(controller='prefix', action='index', schema=schema.id) }}">{{ schema.name }}</a></td>
 			<td>{{ schema.description }}</td>
 			<td>{{ schema.vrf or '' }}</td>
 			<td>
-                {% if c.schema is defined %}
-				<a href="{{ h.url(controller="schema", action="edit", id=schema.id, schema=c.schema.id) }}">edit</a> |
-                {% else %}
-				<a href="{{ h.url(controller="schema", action="edit", id=schema.id) }}">edit</a> | 
-                {% endif %}
-				<a href="{{ h.url(controller="schema", action="remove", id=schema.id) }}" id="delete_schema_{{ schema.id }}" onclick="showDialogYesNo('Remove {{schema.name}}?', 'By removing {{ schema.name }}, ALL prefixes in the schema will be removed too! You cannot undo this action. Are you sure?', function () { window.location.href = '{{ h.url(controller="schema", action="remove", id=schema.id) }}'; }); return false;">del</a>
+				<div id="schema_button{{schema.id}}" class="minibutton popup_button" data-schema-id="{{schema.id}}">
+					<div class="popup_button_icon">&nbsp;</div>
+				</div>
 			</td>
 		</tr>
 		{% endfor %}

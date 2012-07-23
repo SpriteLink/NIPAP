@@ -529,8 +529,8 @@ function showPrefix(prefix, parent_container, relative) {
 
 		var prefix_button = $('#prefix_button' + prefix.id);
 		prefix_button.addClass('minibutton');
-		prefix_button.addClass('prefix_button');
-		prefix_button.html("<div class='prefix_button_icon' class='prefix_button_icon'>&nbsp;</div>");
+		prefix_button.addClass('popup_button');
+		prefix_button.html('<div class="popup_button_icon">&nbsp;</div>');
 		prefix_button.click(prefix, function(e) {
 			showPrefixMenu(e.currentTarget.getAttribute('data-prefix-id'));
 			e.preventDefault();
@@ -615,16 +615,40 @@ function prefixRemoved(prefix) {
 
 }
 
+
+/*
+ * Build a popup menu
+ */
+function getPopupMenu(button, name_prefix, data_id) {
+
+	// Add prefix menu
+	var name = 'popupmenu_' + name + '_' + data_id;
+	$('body').append('<div id="' + name + '">');
+	var menu = $('#' + name);
+	menu.addClass("popup_menu");
+	menu.html("<h3>Prefix menu</h3>");
+
+	// show overlay
+	$('body').append('<div class="popup_menu_overlay"></div>');
+	$(".popup_menu_overlay").click(function() { hidePopupMenu() });
+	$(".popup_menu_overlay").show();
+
+	// Set menu position
+	var button_pos = button.position();
+	menu.css('top', button_pos.top + button.height() + 5 + 'px');
+	menu.css('left', button_pos.left + 'px');
+
+	return menu;
+}
+
 /*
  * Show the prefix menu
  */
 function showPrefixMenu(prefix_id) {
 
 	// Add prefix menu
-	$('body').append('<div id="prefix_menu' + prefix_id + '">');
-	var menu = $('#prefix_menu' + prefix_id);
-	menu.addClass("prefix_menu");
-	menu.html("<h3>Prefix menu</h3>");
+	var button = $('#prefix_button' + prefix_id);
+	var menu = getPopupMenu(button, 'prefix', prefix_id);
 
 	// Add different manu entries depending on where the prefix list is displayed
 	if (prefix_link_type == 'select') {
@@ -645,33 +669,25 @@ function showPrefixMenu(prefix_id) {
 					};
 					$.getJSON('/xhr/remove_prefix', data, prefixRemoved);
 
-					hidePrefixMenu();
+					hidePopupMenu();
 					dialog.dialog('close');
 
 				});
-
 		});
 	}
 
-
-	// show overlay
-	$(".prefix_menu_overlay").show();
-
-	// Set menu position
-	var button_pos = $('#prefix_button' + prefix_id).position();
-	menu.css('top', button_pos.top + $('#prefix_button' + prefix_id).height() + 5 + 'px');
-	menu.css('left', button_pos.left + 'px');
+	// and display the menu with a nice slide down animation
 	menu.slideDown('fast');
 
 }
 
 
 /*
- * Hide prefix menu
+ * Hide any popup menu
  */
-function hidePrefixMenu() {
-	$(".prefix_menu").remove();
-	$(".prefix_menu_overlay").hide();
+function hidePopupMenu() {
+	$(".popup_menu").remove();
+	$(".popup_menu_overlay").hide();
 }
 
 
@@ -964,7 +980,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 			// if prefix has childs, do not hide it!  since we are one indent
 			// level under last, the previous prefix is our parent and clearly
 			// has childs, thus unhide!
-			unhide( container.find('.prefix_button:first').attr('data-prefix-id') );
+			unhide( container.find('.popup_button:first').attr('data-prefix-id') );
 
 			// we get the number of children for assignments from the database
 			if (prev_prefix.type == 'assignment') {
@@ -997,7 +1013,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 
 				// we don't bother putting three or less prefixes into a hidden container
 				if (parseInt(container.children().length) <= 3) {
-					unhide( container.find('.prefix_button:first').attr('data-prefix-id') );
+					unhide( container.find('.popup_button:first').attr('data-prefix-id') );
 				}
 				container = indent_head[prefix.indent];
 			} else if (prev_prefix.match == true && prefix.match == false) {
@@ -1008,7 +1024,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 		} else {
 			// if less than 8 children prefixes total, do not hide
 			if (parseInt(container.parent().find('.prefix_entry').length) < 8) {
-				unhide( container.find('.prefix_button:first').attr('data-prefix-id') );
+				unhide( container.find('.popup_button:first').attr('data-prefix-id') );
 			}
 			container = indent_head[prefix.indent];
 		}
@@ -1048,7 +1064,7 @@ function insertPrefixList(pref_list, start_container, prev_prefix) {
 	// this last clause is to prevent the last prefixes in a list to be hidden
 	// we don't bother putting three or less prefixes into a hidden container
 	if (parseInt(container.children().length) <= 3) {
-		unhide( container.find('.prefix_button:first').attr('data-prefix-id') );
+		unhide( container.find('.popup_button:first').attr('data-prefix-id') );
 	}
 
 }
