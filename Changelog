@@ -1,5 +1,6 @@
 Version 0.7.0
 -------------
+ * Fix; Rendering of prefix list improvements
  * CLI tab completion improvements
  * Example tool for CSV export
  * Toolbox menu now also for schemas!
