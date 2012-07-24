@@ -145,6 +145,10 @@ CREATE INDEX ip_net_log__prefix__index ON ip_net_log(prefix);
 CREATE INDEX ip_net_log__pool__index ON ip_net_log(pool);
 
 
+--
+-- Trigger function to keep data consistent in the ip_net_plan table with
+-- regards to prefix type and similar.
+--
 CREATE OR REPLACE FUNCTION tf_ip_net_prefix_iu_before() RETURNS trigger AS $_$
 DECLARE
 	parent RECORD;
@@ -204,11 +208,19 @@ BEGIN
 		END IF;
 	END IF;
 
-	-- don't allow changing of type
+	-- only allow specific cases for changing the type of prefix
 	IF TG_OP = 'UPDATE' THEN
-		IF OLD.type != NEW.type THEN
-			-- FIXME: better exception code
-			RAISE EXCEPTION '1200:Changing type is disallowed';
+		IF (OLD.type = 'reservation' AND NEW.type = 'assignment') OR (OLD.type = 'assignment' AND new.type = 'reservation') THEN
+			-- don't allow any childs, since they would automatically be of the
+			-- wrong type, ie inconsistent data
+			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = NEW.schema AND iprange(prefix) << iprange(NEW.prefix)) THEN
+				RAISE EXCEPTION '1200:Changing from type ''%'' to ''%'' requires there to be no children prefixes.', OLD.type, NEW.type;
+			END IF;
+		ELSE
+			IF OLD.type != NEW.type THEN
+				-- FIXME: better exception code
+				RAISE EXCEPTION '1200:Changing type is disallowed';
+			END IF;
 		END IF;
 	END IF;
 
