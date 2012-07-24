@@ -6,9 +6,9 @@ _nipap()
 	cur=${COMP_WORDS[COMP_CWORD]}
 
 	if [[ ${#cur} -eq 0 ]]; then
-		COMPREPLY=( $( nipap-helper ${COMP_WORDS[@]:0} ''  ) )
+		COMPREPLY=( $( helper-nipap ${COMP_WORDS[@]:0} ''  ) )
 	else
-		COMPREPLY=( $( nipap-helper ${COMP_WORDS[@]:0} ) )
+		COMPREPLY=( $( helper-nipap ${COMP_WORDS[@]:0} ) )
 	fi
 
 	return;

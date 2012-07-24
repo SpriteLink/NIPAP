@@ -17,7 +17,7 @@ setup(
     keywords = ['nipap_cli', ],
     requires = ['pynipap', ],
     data_files = [
-				('/usr/bin/', ['nipap-helper', 'nipap']),
+				('/usr/bin/', ['helper-nipap', 'nipap']),
                 ('/usr/share/doc/nipap-cli/', ['bash_complete', 'nipaprc'])
     ],
     classifiers = [
