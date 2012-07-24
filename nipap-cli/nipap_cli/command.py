@@ -165,8 +165,7 @@ class Command:
                     if option_parsing and p != '':
                         del self.params[key]
 
-                # otherwise we are handling a command without arguments or are
-                # into option parsing
+                # otherwise we are handling a command without arguments
                 else:
                     self.params = val.get('params')
                     if self.exe is not None:
