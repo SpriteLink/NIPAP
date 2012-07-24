@@ -475,7 +475,7 @@ function showPrefix(prefix, reference, offset) {
 	var prefix_exp = $('#prefix_exp' + prefix.id);
 	prefix_exp.addClass("prefix_exp");
 
-	// If the prefixes has children  (or we do not know), add expand button
+	// If the prefixes has children (or we do not know), add expand button
 	if (prefix.children == 0 || hasMaxPreflen(prefix)) {
 
 		// the prefix_indent container must contain _something_
@@ -979,17 +979,23 @@ function insertPrefix(prefix, prev_prefix) {
 			prev_prefix.children = -1;
 		}
 
-		// if prefix has children, do not hide it!  since we are one indent
+		// If prefix has children, do not hide it! Since we are one indent
 		// level under last, the previous prefix is our parent and clearly
 		// has children, thus unhide!
-		unhide( prev_prefix.id );
-		expandGroup(prev_prefix.id);
+		unhide(prev_prefix.id);
+
+		// If previous prefix was assignment and a match, do not expand. This
+		// means that host prefixes will be hidden from display unless the user
+		// actively shows them.
+		if (!(prev_prefix.type == 'assignment' && prev_prefix.match)) {
+			expandGroup(prev_prefix.id);
+		}
 
 	} else if (prefix.indent < prev_prefix.indent) {
 		// Indent level decreased
 
 		/* Find the collapse container which the previous prefix was placed
-		 * into.  As it might be placed in a hidden container, we might need to
+		 * into. As it might be placed in a hidden container, we might need to
 		 * go two steps down in the DOM tree.
 		 */
 		main_container = $("#prefix_entry" + prev_prefix.id).parent();
@@ -1228,7 +1234,7 @@ function showAllocContainer(e) {
 	$('#radio-prefix-type-assignment').removeAttr('checked');
 	$('#radio-prefix-type-host').removeAttr('checked');
 
-	// Re-evaluate node FQDN field when prefix length is changed.  The same
+	// Re-evaluate node FQDN field when prefix length is changed. The same
 	// thing for the prefix_length_prefix field is done in the selectPrefix
 	// function. From some reason it can not be done here...
 	$('input[name="prefix_length_pool"]').keyup(enableNodeFQDN);
@@ -1538,7 +1544,7 @@ function prefixFormSubmit(e) {
 	if (prefix_data.type == 'host') {
 		prefix_data.monitor = false;
 	} else {
-		prefix_data.monitor =  $('input[name="prefix_monitor"]').val();
+		prefix_data.monitor = $('input[name="prefix_monitor"]').val();
 	}
 
 	// Add pool to prefix data if it is available
@@ -1601,7 +1607,7 @@ function selectPrefix(prefix_id) {
 		} else {
 			maxpreflen = 128;
 		}
-		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' +  maxpreflen+ '>');
+		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' + maxpreflen+ '>');
 		$('.tooltip').tipTip({delay: 100});
 
 		// enable / disable types
