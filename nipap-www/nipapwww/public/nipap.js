@@ -388,8 +388,6 @@ function setSearchPrefixURI(explicit) {
 		encodeURIComponent($('input[name="search_opt_child"]:checked').val()) +
 		'&explicit=' + encodeURIComponent(explicit);
 
-    log(url_str);
-
 	window.location.href = url_str;
 
 }
@@ -425,22 +423,31 @@ function performPrefixNextPage () {
  * relative placement is asked for, the prefix can instead be placed before or
  * after an already existing prefix.
  *
- * The 'relative' option can either be null, when the prefix is to be placed in
- * a parent container, or an object with two attributes: 'reference', which is the
- * DOM entry to base the placement on, and 'orientation' which can be the
- * strings 'before' or 'after'.
+ * Use the options 'relative' and 'offset' to determine where to place the
+ * prefix. 'reference' should be an object which will be used as reference for
+ * the placement and 'offset' determines where how to offset the new object
+ * relative to 'reference'.
+ *
+ * 'offset' can take the following values:
+ * append - append element into reference
+ * prepend - prepend element into reference
+ * before - place element before reference
+ * after - place element after reference
  */
-function showPrefix(prefix, parent_container, relative) {
+function showPrefix(prefix, reference, offset) {
 
 	// add main prefix container
-	if (relative == null) {
-		parent_container.append('<div id="prefix_entry' + prefix.id + '" data-prefix-id="' + prefix.id + '">');
+	var econt = '<div id="prefix_entry' + prefix.id + '" data-prefix-id="' + prefix.id + '">';
+	if (offset == null) {
+		reference.append(econt);
+	} else if (offset == 'before') {
+		reference.before(econt);
+	} else if (offset == 'after') {
+		reference.after(econt);
+	} else if (offset == 'prepend') {
+		reference.prepend(econt);
 	} else {
-		if (relative.orientation == 'before') {
-			relative.reference.before('<div id="prefix_entry' + prefix.id + '">');
-		} else {
-			relative.reference.after('<div id="prefix_entry' + prefix.id + '">');
-		}
+		log("Invalid offset " + offset);
 	}
 
 	var prefix_entry = $('#prefix_entry' + prefix.id);
@@ -468,7 +475,7 @@ function showPrefix(prefix, parent_container, relative) {
 	var prefix_exp = $('#prefix_exp' + prefix.id);
 	prefix_exp.addClass("prefix_exp");
 
-	// If the prefixes has children  (or we do not know), add expand button
+	// If the prefixes has children (or we do not know), add expand button
 	if (prefix.children == 0 || hasMaxPreflen(prefix)) {
 
 		// the prefix_indent container must contain _something_
@@ -483,15 +490,9 @@ function showPrefix(prefix, parent_container, relative) {
 			e.stopPropagation();
 		});
 
-		// If we are sure that the children has been fetched, the group will
-		// already be fully expanded and a minus sign should be shown
-		if (prefix.children == 1) {
-			prefix_exp.html("-");
-		}
-
 	}
 
-	prefix_indent.width(prefix_indent.width() + 30 * prefix.indent);
+	prefix_indent.width(prefix_indent.width() + 15 * prefix.indent);
 
 	// add prefix
 	prefix_ind_pref.append('<div id="prefix_prefix' + prefix.id + '">');
@@ -596,6 +597,11 @@ function showPrefix(prefix, parent_container, relative) {
 		prefix_description.html(prefix.description);
 	}
 
+	// add collapse container
+	if (!hasMaxPreflen(prefix)) {
+		prefix_entry.after('<div class="prefix_collapse" id="collapse' + prefix.id + '">');
+	}
+
 }
 
 /*
@@ -671,10 +677,18 @@ function showPrefixMenu(prefix_id) {
 					dialog.dialog('close');
 
 				});
+
 		});
 	}
 
-	// and display the menu with a nice slide down animation
+
+	// show overlay
+	$(".prefix_menu_overlay").show();
+
+	// Set menu position
+	var button_pos = $('#prefix_button' + prefix_id).position();
+	menu.css('top', button_pos.top + $('#prefix_button' + prefix_id).height() + 5 + 'px');
+	menu.css('left', button_pos.left + 'px');
 	menu.slideDown('fast');
 
 }
@@ -766,7 +780,7 @@ function receivePrefixList(search_result) {
 	if (search_result.result.length > 0) {
 
 		// insert prefix list
-		insertPrefixList(search_result.result, $("#prefix_list"), search_result.result[0]);
+		insertPrefixList(search_result.result);
 
 	} else {
 
@@ -827,7 +841,14 @@ function receivePrefixListUpdate(search_result, link_type) {
 
 	}
 
-	insertPrefixList(pref_list.slice(1), $("#collapse" + pref_list[0].id), pref_list[0]);
+	insertPrefixList(pref_list);
+
+	// As the user pressed the expand button, they probably want to see as much
+	// as possible of the prefix they expanded. Therefore, unhide all hidden
+	// prefixes.
+	unhide($("#collapse" + pref_list[0].id).children(".prefix_hidden_container").attr('data-prefix-id'));
+
+	// Finally, expand the collapsed container!
 	expandGroup(pref_list[0].id);
 
 }
@@ -837,6 +858,7 @@ function receivePrefixListUpdate(search_result, link_type) {
  * Receive the "next page" of a prefix list
  */
 function receivePrefixListNextPage(search_result) {
+
 	pref_list = search_result.result;
 
 	// Zero result elements. Should not happen as we at least always should
@@ -850,14 +872,15 @@ function receivePrefixListNextPage(search_result) {
 
 	// less than max_result means we reached the end of the result set
 	} else if (pref_list.length < search_result.search_options.max_result) {
+
 		end_of_result = 1;
 		outstanding_nextpage = 0;
 		$('#nextpage').hide();
 		return;
+
 	}
 
-	insertPrefixList(pref_list.slice(1), null, pref_list[0]);
-
+	insertPrefixList(pref_list);
 	outstanding_nextpage = 0;
 
 }
@@ -878,203 +901,263 @@ function optToDepth(opt) {
 }
 
 /*
- * Insert prefixes into the list
+ * Insert a list of prefixes
+ *
  */
-function insertPrefixList(pref_list, start_container, prev_prefix) {
+function insertPrefixList(pref_list) {
+
+	var prefix = null;
+	var prev_prefix = null;
 
 	// return if we did not get any prefixes
 	if (pref_list.length == 0) {
 		return;
 	}
 
-	/*
-	 * Keep track of the current "placement method", how prefixes currently
-	 * are placed. Can take the values 'parent_container', 'before' and
-	 * 'after'.
-	 */
-	var placement_method = 'parent_container';
-	var dist_prefix_id = null;
-	var dist_prefix_container = null;
+	// Handle first prefix
+	prefix = pref_list[0];
+	if ($("#prefix_entry" + prefix.id).length > 0) {
 
-	// If we have a start container, try to fetch its first child
-	if (start_container != null) {
+		// First prefix already in list
+		prev_prefix = prefix_list[prefix.id];
 
-		indent_head[pref_list[0].indent] = start_container;
-		container = start_container;
+	} else {
 
-		// Fetch first prefix in container, if any
-		dist_prefix_container = start_container.children(':first');
-		if (dist_prefix_container.length > 0) {
-
-			log('First disturbing prefix in container has ID ' + dist_prefix_container.attr('id'));
-			dist_prefix_id = dist_prefix_container.data('prefix_id');
-
-			placement_method = 'before';
-
-		} else {
-
-			log('No disturbing prefix found.');
-			dist_prefix_container = null;
-
-			placement_method = 'parent_container';
-
-		}
+		// This should only happen when adding the very first prefix to a completely empty list
+		// Add it manually so we have a starting point
+		showPrefix(prefix, $("#prefix_list"), null);
+		prev_prefix = prefix;
+		prefix_list[prefix.id] = prefix;
 
 	}
 
-	// go through received prefixes
-	for (key in pref_list) {
+	// iterate received prefixes
+	for (i = 1; i < pref_list.length; i++) {
 
-		prefix = pref_list[key];
+		// Add prefix to global prefix list object if it's not already there
+		prefix = pref_list[i];
 		if (!(prefix.id in prefix_list)) {
 			prefix_list[prefix.id] = prefix;
 		}
 
-		/*
-		 * Compare IDs to see if the prefix we want to place already exists.
-		 * This check implicitly also handles the case when we have no
-		 * disturbing prefixes, as none of the received prefixes should have ID
-		 * null and thus the expression below never be true.
-		 */
-		if (dist_prefix_id == prefix.id) {
-
-			// Try to fetch the container after the current prefix
-			while (true) {
-
-				if (dist_prefix_container.length == 0) {
-					// reached end of list, what to do? go parent?
-					dist_prefix_id == null;
-					placement_method = 'parent_container';
-					break;
-				} else if (dist_prefix_container.hasClass('prefix_collapse')) {
-					// skip over collapse containers
-					dist_prefix_container = dist_prefix_container.next();
-				} else if (dist_prefix_container.hasClass('prefix_hidden_container')) {
-					// enter into hidden containers and continue traversing
-					dist_prefix_container = dist_prefix_container.children(':first');
-				} else if (dist_prefix_container.attr('data-prefix-id') && parseInt(dist_prefix_container.attr('data-prefix-id')) != dist_prefix_id) {
-					dist_prefix_id = parseInt(dist_prefix_container.attr('data-prefix-id'));
-					placement_method = 'before';
-					break;
-				} else {
-					dist_prefix_container = dist_prefix_container.next();
-				}
-
-			}
-
-			continue;
-
-		}
-
-		// If there is no indent container for the current level, set
-		// indent head for current indent level to the top level container.
-		if (!(prefix.indent in indent_head)) {
-			indent_head[prefix.indent] = $('#prefix_list');
-			log("Adding element to top level group");
-		}
-
-		// Has indent level increased?
-		if (prev_prefix.indent < prefix.indent) {
-			// if prefix has childs, do not hide it!  since we are one indent
-			// level under last, the previous prefix is our parent and clearly
-			// has childs, thus unhide!
-			unhide( container.find('.minibutton:first').attr('data-prefix-id') );
-
-			// we get the number of children for assignments from the database
-			if (prev_prefix.type == 'assignment') {
-				container = indent_head[prefix.indent];
-
-				// add hidden container if this isn't a match
-				if (prefix.match != true) {
-					container = addHiddenContainer(prefix, container);
-				}
-
-			} else if (prev_prefix.type == 'reservation') {
-				// If the previous prefix is a reservation, we know (since we are
-				// one indent level below previous) that it has at least one
-				// child.
-				if (prev_prefix.children == -2) {
-					prev_prefix.children = -1;
-				}
-				container = indent_head[prefix.indent];
-			}
-
-			// prev_prefix is parent prefix - if it's a match, we don't need to expand it
-			if (prev_prefix.match == false) {
-				expandGroup(prev_prefix.id);
-			}
-
-		} else if (prev_prefix.indent == prefix.indent) {
-
-			// switching into a match from a non-match, so we should display a "expand upwards" arrow
-			if (prev_prefix.match == false && prefix.match == true) {
-
-				// we don't bother putting three or less prefixes into a hidden container
-				if (parseInt(container.children().length) <= 3) {
-					unhide( container.find('.minibutton:first').attr('data-prefix-id') );
-				}
-				container = indent_head[prefix.indent];
-			} else if (prev_prefix.match == true && prefix.match == false) {
-				// switching into a non-match from a match, so we should display a "expand downwards" arrow
-				container = addHiddenContainer(prefix, container);
-			}
-
-		} else {
-			// if less than 8 children prefixes total, do not hide
-			if (parseInt(container.parent().find('.prefix_entry').length) < 8) {
-				unhide( container.find('.minibutton:first').attr('data-prefix-id') );
-			}
-			container = indent_head[prefix.indent];
+		// Add prefix to prefix list if it's not already there (is this redundant to the operation above..?)
+		if ($("#prefix_entry" + prefix.id).length == 0) {
+			insertPrefix(prefix, prev_prefix);
 		}
 
 		prev_prefix = prefix;
 
-		// Only display prefixes we are supposed to display
-		if (prefix.display != true) {
-			continue;
-		}
+	}
 
-		// Place prefix
-		if (placement_method == 'parent_container') {
-			var relative = null;
-		} else if (placement_method == 'before') {
-			var relative = {
-				'reference': dist_prefix_container,
-				'orientation': 'before'
-			};
+	// If the last prefix was added to a hidden container, unhide
+	// if there are not very many prefixes in it
+	var p_parent = $("#prefix_entry" + prev_prefix.id).parent();
+	if (parseInt(p_parent.find('.prefix_entry').length) < 4) {
+		unhide( p_parent.attr('data-prefix-id') );
+	}
+
+}
+
+/*
+ * Insert a single prefix into the prefix list
+ *
+ * Once there was a lengthy explanation of the logic behind how this is done,
+ * but nowadays the code should be quite readable. The code below is quite
+ * involved though, as there are many cases to take into account...
+ */
+function insertPrefix(prefix, prev_prefix) {
+
+	var main_container = null;
+	var reference = null;
+	var offset = null;
+
+	if (prefix.indent > prev_prefix.indent) {
+		// Indent level incresed
+
+		main_container = $("#collapse" + prev_prefix.id);
+
+		// if we have a match, add directly to top of main container.
+		if (prefix.match) {
+			reference = main_container;
+			offset = 'prepend';
 		} else {
-			var relative = {
-				'reference': dist_prefix_container,
-				'orientation': 'after'
-			};
+			// No match, add to hidden container. Is there already one?
+			if (main_container.children().length == 0) {
+				// Nothing at all. Add new hidden container to main_container.
+				reference = addHiddenContainer(prefix, main_container, null);
+				offset = null;
+			} else {
+				if (main_container.children(':first').hasClass('prefix_hidden_container')) {
+					reference = main_container.children(':first');
+					offset = 'prepend';
+				} else {
+					// add hidden container
+					reference = addHiddenContainer(prefix, main_container, 'prepend');
+					offset = null;
+				}
+			 }
 		}
 
-		showPrefix(prefix, container, relative);
+		// We know (since we are one indent level below previous) that
+		// it has at least one child.
+		if (prev_prefix.children == -2) {
+			prev_prefix.children = -1;
+		}
 
-		// add collapse container for current prefix
-		if (!hasMaxPreflen(prefix)) {
-			$('#prefix_entry' + prefix.id).after('<div class="prefix_collapse" id="collapse' + prefix.id + '">');
-			indent_head[prefix.indent + 1] = $('#collapse' + prefix.id);
+		// If prefix has children, do not hide it! Since we are one indent
+		// level under last, the previous prefix is our parent and clearly
+		// has children, thus unhide!
+		unhide(prev_prefix.id);
+
+		// If previous prefix was assignment and a match, do not expand. This
+		// means that host prefixes will be hidden from display unless the user
+		// actively shows them.
+		if (!(prev_prefix.type == 'assignment' && prev_prefix.match)) {
+			expandGroup(prev_prefix.id);
+		}
+
+	} else if (prefix.indent < prev_prefix.indent) {
+		// Indent level decreased
+
+		/* Find the collapse container which the previous prefix was placed
+		 * into. As it might be placed in a hidden container, we might need to
+		 * go two steps down in the DOM tree.
+		 */
+		main_container = $("#prefix_entry" + prev_prefix.id).parent();
+		if (main_container.hasClass('prefix_hidden_container')) {
+			main_container = main_container.parent();
+		}
+
+		// OK. Match or no match?
+		if (prefix.match) {
+			// match. Place directly after main_container
+			reference = main_container;
+			offset = 'after';
+		} else {
+			// No match. Place in hidden container - is there one?
+			var next = main_container.next();
+
+			if (next.length == 0) {
+				// Main container last elemment, place hidden container after it.
+				reference = addHiddenContainer(prefix, main_container, 'after');
+				offset = null;
+			} else {
+				if (next.hasClass('prefix_hidden_container')) {
+					// Next element was a hidden container, prepend in it.
+					reference = next;
+					offset = 'prepend';
+				} else {
+					// Next element was something else. Create new hidden container.
+					reference = addHiddenContainer(prefix, main_container, 'prepend');
+					offset = null;
+				}
+			}
+		}
+
+		// If we exited a hidden container, see how many prefixes there are in
+		// it.
+		if (!prev_prefix.match) {
+			var p_parent = $("#prefix_entry" + prev_prefix.id).parent();
+			if (parseInt(p_parent.children('.prefix_entry').length) <= 4) {
+				unhide( p_parent.attr('data-prefix-id') );
+			}
+		}
+
+	} else {
+		// Indent level equal
+
+		if (prev_prefix.match == false && prefix.match == true) {
+
+			// Switching into a match from a non-match, so we should display a
+			// "expand upwards" arrow. Place after the element after previous
+			// prefix's parent (the hidden container's text).
+			reference = $("#prefix_entry" + prev_prefix.id).parent().next();
+			offset = 'after';
+
+			// if there are not very many elements in hidden container, show it
+			if (reference.children(".prefix_entry").length <= 4) {
+				unhide(reference.attr('data-prefix-id'));
+			}
+
+		} else if (prev_prefix.match == true && prefix.match == false) {
+
+			// switching into a non-match from a match, so we should display a "expand downwards" arrow
+			// create new hidden container in previous prefix's parent (the collapse container)
+
+			// does container already exist?
+			var next = $("#prefix_entry" + prev_prefix.id).next();
+			if (next.length == 0) {
+				// create new if there is no next element or the next element is not a hidden container
+				reference = addHiddenContainer(prefix, $("#prefix_entry" + prev_prefix.id), 'after');
+				offset = null;
+			} else {
+				// there are elements after the previous one. Is it a collapse container?
+				if (next.hasClass('prefix_hidden_container')) {
+					reference = next;
+					offset = 'prepend';
+				} else {
+					// next element was no collapse container. Add new before next element.
+					reference = addHiddenContainer(prefix, next, 'before');
+					offset = null;
+				}
+			}
+
+		} else {
+			// match unchanged - add to previous container
+			// EVEN EASIER (AND BETTER) - add after previous prefix
+			reference = $("#prefix_entry" + prev_prefix.id);
+			if (reference.next().hasClass('prefix_collapse')) {
+				reference = reference.next();
+			}
+			offset = 'after';
 		}
 
 	}
 
-	// this last clause is to prevent the last prefixes in a list to be hidden
-	// we don't bother putting three or less prefixes into a hidden container
-	if (parseInt(container.children().length) <= 3) {
-		unhide( container.find('.minibutton:first').attr('data-prefix-id') );
-	}
+	showPrefix(prefix, reference, offset);
 
 }
 
 
 /*
  * Add a container for hidden prefixes
+ *
+ * Use the options 'relative' and 'offset' to determine where to place the
+ * hidden container. 'reference' should be an object which will be used as
+ * reference for the placement and 'offset' determines where how to offset the
+ * new object relative to 'reference'.
+ *
+ * 'offset' can take the following values:
+ * append - append element into reference
+ * prepend - prepend element into reference
+ * before - place element before reference
+ * after - place element after reference
  */
-function addHiddenContainer(prefix, container) {
-	container.append('<div id="prefix_hidden_container' + prefix.id + '" class="prefix_hidden_container" style=""></div>');
-	container.append('<a id="prefix_hidden_text' + prefix.id + '" class="prefix_hidden_text" style="padding-left: ' + (10 + parseInt(prefix.indent) * 30) + 'px;" href="javascript:void(0);" onclick="unhide(' + prefix.id + ');">(hidden prefixes, click to display)</a>');
-	container = $('#prefix_hidden_container' + prefix.id);
+function addHiddenContainer(prefix, reference, offset) {
+
+	if ($("#prefix_entry" + prefix.id).length > 0) {
+		// prefix already exists. Return something.
+		// aaargh, this is not clean :( Should be determined elsewhere!
+		return $("#prefix_entry" + prefix.id).parent();
+	}
+
+	var hcont = '<div id="prefix_hidden_container' + prefix.id + '" class="prefix_hidden_container" data-prefix-id="' + prefix.id + '"></div>';
+
+	if (offset == null || offset == 'append') {
+		reference.append(hcont);
+	} else if (offset == 'before') {
+		reference.before(hcont);
+	} else if (offset == 'after') {
+		reference.after(hcont);
+	} else if (offset == 'prepend') {
+		reference.prepend(hcont);
+	} else {
+		log("Invalid offset: " + offset);
+	}
+
+	var container = $('#prefix_hidden_container' + prefix.id);
+	container.after('<a id="prefix_hidden_text' + prefix.id + '" class="prefix_hidden_text" style="padding-left: ' + (10 + parseInt(prefix.indent) * 30) + 'px;" href="javascript:void(0);" onclick="unhide(' + prefix.id + ');">(hidden prefixes, click to display)</a>');
+
 	return container;
 }
 
@@ -1176,7 +1259,7 @@ function showAllocContainer(e) {
 	$('#radio-prefix-type-assignment').removeAttr('checked');
 	$('#radio-prefix-type-host').removeAttr('checked');
 
-	// Re-evaluate node FQDN field when prefix length is changed.  The same
+	// Re-evaluate node FQDN field when prefix length is changed. The same
 	// thing for the prefix_length_prefix field is done in the selectPrefix
 	// function. From some reason it can not be done here...
 	$('input[name="prefix_length_pool"]').keyup(enableNodeFQDN);
@@ -1486,7 +1569,7 @@ function prefixFormSubmit(e) {
 	if (prefix_data.type == 'host') {
 		prefix_data.monitor = false;
 	} else {
-		prefix_data.monitor =  $('input[name="prefix_monitor"]').val();
+		prefix_data.monitor = $('input[name="prefix_monitor"]').val();
 	}
 
 	// Add pool to prefix data if it is available
@@ -1549,7 +1632,7 @@ function selectPrefix(prefix_id) {
 		} else {
 			maxpreflen = 128;
 		}
-		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' +  maxpreflen+ '>');
+		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' + maxpreflen+ '>');
 		$('.tooltip').tipTip({delay: 100});
 
 		// enable / disable types
