@@ -1043,10 +1043,10 @@ function insertPrefix(prefix, prev_prefix) {
 
 		if (prev_prefix.match == false && prefix.match == true) {
 
-			// switching into a match from a non-match, so we should display a
-			// "expand upwards" arrow
-			// Place after previous prefix's parent (a hidden container).
-			reference = $("#prefix_entry" + prev_prefix.id).parent();
+			// Switching into a match from a non-match, so we should display a
+			// "expand upwards" arrow. Place after the element after previous
+			// prefix's parent (the hidden container's text).
+			reference = $("#prefix_entry" + prev_prefix.id).parent().next();
 			offset = 'after';
 
 			// if there are not very many elements in hidden container, show it
