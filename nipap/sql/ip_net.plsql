@@ -214,7 +214,7 @@ BEGIN
 			-- don't allow any childs, since they would automatically be of the
 			-- wrong type, ie inconsistent data
 			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = NEW.schema AND iprange(prefix) << iprange(NEW.prefix)) THEN
-				RAISE EXCEPTION '1200:Changing from type ''%'' to ''%'' requires there to be no children prefixes.', OLD.type, NEW.type;
+				RAISE EXCEPTION '1200:Changing from type ''%'' to ''%'' requires there to be no child prefixes.', OLD.type, NEW.type;
 			END IF;
 		ELSE
 			IF OLD.type != NEW.type THEN
