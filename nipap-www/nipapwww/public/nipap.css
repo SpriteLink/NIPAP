@@ -122,6 +122,8 @@ a.menu_link:hover {
     z-index: 1;
     border: 2px solid #000000;
     border-radius: 15px;
+    -moz-border-radius: 15px 15px 15px 15px;
+    -webkit-border-radius: 15px;
     position: fixed;
     background-color: #ffffff;
 }
@@ -477,6 +479,7 @@ tbody.listing > tr:hover {
     font-weight: bold;
     text-align: center;
     vertical-align: middle;
+	border-radius: 2px;
     -moz-border-radius: 2px 2px 2px 2px;
     -webkit-border-radius: 2px;
 }
@@ -547,8 +550,9 @@ tbody.listing > tr:hover {
     box-shadow: 0 0 13px rgba(0,0,0,0.31);
     -webkit-box-shadow: 0 0 13px rgba(0,0,0,0.31);
     -moz-box-shadow: 0 0 13px rgba(0,0,0,0.31);
-    -webkit-border-radius: 5px;
+	border-radius: 5px;
     -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
     background-color: #ffffff;
     color: hsl(0, 0%, 47%);
 }
@@ -562,10 +566,12 @@ tbody.listing > tr:hover {
     padding: 5px;
     background: -webkit-gradient(linear,left top,left bottom,from(hsl(180, 12%, 97%)),to(hsl(180, 13%, 92%)));
     background: -moz-linear-gradient(top,hsl(180, 12%, 97%),hsl(180, 13%, 92%));
-    -webkit-border-top-left-radius: 5px;
-    -webkit-border-top-right-radius: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
     -moz-border-radius-topleft: 5px;
     -moz-border-radius-topright: 5px;
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
     border-bottom: 1px solid hsl(180, 11%, 95%);
 }
 
@@ -599,9 +605,9 @@ tbody.listing > tr:hover {
 	height: 16px;
     cursor: pointer;
     border: 1px solid #D4D4D4;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
     border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
     background: #F4F4F4;
     filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#f4f4f4',endColorstr='#ececec');
     background: -webkit-gradient(linear,left top,left bottom,from(#F4F4F4),to(#ECECEC));
