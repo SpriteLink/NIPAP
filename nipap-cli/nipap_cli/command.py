@@ -92,6 +92,7 @@ class Command:
 
         self.params = tree['params']
         self.key = {}
+        option_parsing = False
 
         # iterate the list of inputted commands
         i = 0
@@ -161,10 +162,15 @@ class Command:
                         # and set params to the option argument
                         self.params = { 'argument': val['argument'] }
 
+                    if option_parsing and p != '':
+                        del self.params[key]
 
-                # otherwise we are handling a command without arguments
+                # otherwise we are handling a command without arguments or are
+                # into option parsing
                 else:
                     self.params = val.get('params')
+                    if self.exe is not None:
+                        option_parsing = True
 
             i += 1
 
