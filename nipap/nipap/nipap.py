@@ -405,6 +405,22 @@ class Nipap:
 
             raise NipapError(str(e))
 
+        except psycopg2.DataError, e:
+            self._con_pg.rollback()
+
+            m = re.search('invalid cidr value: "([^"]+)"', e.pgerror)
+            if m is not None:
+                strict_prefix = str(IPy.IP(m.group(1), make_net = True))
+                estr = "Invalid prefix (%s); bits set to right of mask. Network address for current mask: %s" % (m.group(1), strict_prefix)
+                raise NipapValueError(estr)
+
+            m = re.search('invalid input syntax for type cidr: "([^"]+)"', e.pgerror)
+            if m is not None:
+                estr = "Invalid syntax for prefix (%s)" % m.group(1)
+                raise NipapValueError(estr)
+
+            raise NipapValueError(str(e))
+
         except psycopg2.Error, e:
             try:
                 self._con_pg.rollback()
