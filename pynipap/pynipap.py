@@ -880,7 +880,6 @@ class Prefix(Pynipap):
         else:
             # remove keys which we are not allowed to edit
             del(data['schema'])
-            del(data['type'])
 
             try:
                 # save
