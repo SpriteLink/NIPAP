@@ -1722,11 +1722,28 @@ class Nipap:
                         'col_prefix': col_prefix,
                         'operator': _operation_map[query['operator']]
                         }
+
+            elif query['operator'] in (
+                    'equals',
+                    'not_equals',
+                    'like',
+                    'regex_match',
+                    'regex_not_match'):
+                # we COALESCE column with '' to allow for example a regexp
+                # search on '.*' to match columns which are NULL in the
+                # database.
+                # NOTE: not sure if it's a good idea to do it for all the
+                #       operators listed above
+                where = str(" COALESCE(%s%s, '') %s %%s " %
+                        ( col_prefix, prefix_attr[query['val1']],
+                        _operation_map[query['operator']] )
+                        )
+
             else:
                 where = str(" %s%s %s %%s " %
-                    ( col_prefix, prefix_attr[query['val1']],
-                    _operation_map[query['operator']] )
-                )
+                        ( col_prefix, prefix_attr[query['val1']],
+                        _operation_map[query['operator']] )
+                        )
 
             opt.append(query['val2'])
 
