@@ -37,6 +37,32 @@ This implies that major version can be trusted, while the risk for bugs are
 higher in minor versions and again smaller with patch releases.
 
 
+NEWS / Changelog
+----------------
+There is a NEWS file outlining the differences with every version. It can
+either be updated as changes are made or just before a new release is rolled by
+going through the git log since the last version and making sure everything
+worth mentioning is in the NEWS file.
+
+Note how a NEWS file is usually used to document changes between versions of a
+package while a Changelog file is used to convey information about changes
+between commits. The Debian changelog included with packages normally do not
+follow this "changelog principle" but rather they are usually used to document
+changes to the actual packaging or to patches and changes made by the
+maintainer of a package.
+
+As documented on http://www.debian.org/doc/debian-policy/footnotes.html#f16, it
+is under certain circumstances perfectly fine to essentially have the same file
+as Debian changelog and the project "changelog" (or NEWS file as is more correct).
+One such instance is when the Debian package closely follows the project, as is
+the case with NIPAP. Thus, the NEWS file will be very similar to the Debian
+changelog.
+
+Debian style package managers are able to fetch the Debian changelog file from
+repositories and can thus display the changes between versions before
+installing a package.
+
+
 Rolling a new version
 ---------------------
 The different packages are first built as Python easy_install / distutils
@@ -56,3 +82,7 @@ packages. Non-native packages are all packages that are not exlusively packaged
 for debian. If you want to release a new debian release, for example if you
 made changes to the actual packagin but not the source of the project, just
 increment the -x number.
+
+When dch launches an editor for editing the changelog. Copy the content of the
+NEWS file into the Debian changelog (see previous chapten "NEWS / Changelog"
+for more information). Make sure the formatting aligns and save the file.
