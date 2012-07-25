@@ -90,7 +90,7 @@
 {% block content %}
 
 <div class="page-title">
-Edit {{ c.prefix.type }} {{ c.prefix.prefix }}
+Prefix administration &mdash;&gt; edit prefix
 </div>
 
 <!--
@@ -98,10 +98,11 @@ Edit {{ c.prefix.type }} {{ c.prefix.prefix }}
     PREFIX DATA
 
 -->
-<div id="prefix_data_container" style="padding: 15px;">
+<div id="prefix_data_container">
 <form method="post" name="prefix_form" action="{{ h.url(controller="prefix", action="edit", id=c.prefix.id, schema=c.schema.id) }}">
     <div class="options-group">
         <div class="options-content">
+            <h3 class="options-group-heading">Properties of {{ c.prefix.type }} {{ c.prefix.prefix }}</h3>
             <div class="option">
                 <dl>
                     <dt>Prefix</dt>
