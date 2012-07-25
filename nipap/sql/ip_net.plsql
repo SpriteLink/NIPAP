@@ -195,6 +195,16 @@ BEGIN
 			ELSIF parent.type != 'reservation' THEN
 				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
 			END IF;
+
+			-- also check that the new prefix does not have any childs other than hosts
+			--
+			-- it is practically feasible that it would even have a child of
+			-- type 'host', since it would require a parent of type assignment,
+			-- but we don't need to limit the consistency check here if we ever
+			-- are to make changes in the future
+			IF EXISTS (SELECT * FROM ip_net_plan WHERE schema = NEW.schema AND type != 'host' AND iprange(prefix) << iprange(NEW.prefix) LIMIT 1) THEN
+				RAISE EXCEPTION '1200:Prefix of type ''assignment'' must not have any subnets other than of type ''host''';
+			END IF;
 			NEW.display_prefix := NEW.prefix;
 		ELSIF NEW.type = 'reservation' THEN
 			IF parent.type IS NULL THEN
