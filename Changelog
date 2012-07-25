@@ -1,6 +1,6 @@
 Version 0.7.0
 -------------
- * Fix; Rendering of prefix list improvements
+ * Fix; Rendering of prefix list in web UI improvements
  * CLI tab completion improvements
  * Example tool for CSV export
  * Toolbox menu now also for schemas!
@@ -13,8 +13,6 @@ Version 0.7.0
  * Fix; IPv6 prefix search can handle bits set in host part of prefix
  * Fix; find_free_prefix now handles /31s and /127 correctly
  * Vastly improve find_free_prefix lookup speed, relevant for IPv6
- * Fix; Prefix list in web UI places prefix containers more correctly
- * Decreased indent width in web UI
 
 Version 0.6.1
 -------------
