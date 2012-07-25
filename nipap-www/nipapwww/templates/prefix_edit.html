@@ -68,6 +68,10 @@
                     data.monitor = 'false';
                 }
 
+                if ('{{ c.prefix.type }}' != 'host') {
+                    data.type = $('input[name="prefix_type"]:checked').val();
+                }
+
                 $.getJSON('{{ h.url(controller="xhr", action="edit_prefix", id=c.prefix.id) }}', data, prefixEdited);
 
                 // prevent default action ("ordinary" HTTP POST)
@@ -107,6 +111,18 @@ Prefix administration &mdash;&gt; edit prefix
                 <dl>
                     <dt>Prefix</dt>
                     <dd><input type="text" name="prefix_prefix" value="{{ c.prefix.prefix }}" class="tooltip" title="The prefix, i.e. 192.0.2.16/28"></dd>
+                </dl>
+            </div>
+
+            <div class="rule"></div>
+
+            <div class="option">
+                <dl>
+                    <dt>Type</dt>
+                    <dd>
+                        <input type="radio" id="prefix-type-res" name="prefix_type" value="reservation" class="tooltip" title="" {% if c.prefix.type == 'reservation' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="prefix-type-res">Reservation</label>
+                        <input type="radio" id="prefix-type-ass" name="prefix_type" value="assignment" class="tooltip" title="" {% if c.prefix.type == 'assignment' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="prefix-type-ass">Assignment</label>
+                    </dd>
                 </dl>
             </div>
 

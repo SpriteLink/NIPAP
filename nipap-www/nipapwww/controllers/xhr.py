@@ -500,6 +500,9 @@ class XhrController(BaseController):
             if 'prefix' in request.params:
                 p.prefix = request.params['prefix']
 
+            if 'type' in request.params:
+                p.type = request.params['type']
+
             if 'description' in request.params:
                 p.description = request.params['description']
 
