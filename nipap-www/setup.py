@@ -14,6 +14,7 @@ setup(
         "pynipap",
         "nipap"
     ],
+    license='MIT',
 #    setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
