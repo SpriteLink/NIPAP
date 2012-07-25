@@ -162,7 +162,7 @@ class Command:
                         # and set params to the option argument
                         self.params = { 'argument': val['argument'] }
 
-                    if option_parsing and p != '':
+                    if option_parsing and p == key:
                         del self.params[key]
 
                 # otherwise we are handling a command without arguments
