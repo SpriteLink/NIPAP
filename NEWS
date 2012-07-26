@@ -1,6 +1,6 @@
 Version 0.8.0
 -------------
- * Bug in database inconsistency fixed
+ * Bug in database inconsistency checks fixed
  * Regexp search improved; '.*' will now also match NULL values, which is
    typically what users expect.
  * CLI tab completion bug fixed (bug implemented by mistake in 0.7.0)
