@@ -146,14 +146,6 @@ class XhrController(BaseController):
         if 'offset' in request.params:
             search_options['offset'] = request.params['offset']
 
-        log.debug("params: %s" % str(request.params))
-
-        log.debug("Smart search query: schema=%d q=%s search_options=%s" %
-            (int(request.params['schema']),
-            request.params['query_string'],
-            str(search_options)
-        ))
-
         try:
             schema = Schema.get(int(request.params['schema']))
             result = Pool.smart_search(schema,
@@ -273,8 +265,6 @@ class XhrController(BaseController):
         # fetch attributes from request.params
         attr = XhrController.extract_prefix_attr(request.params)
 
-        log.debug("Got %d attributes" % len(attr))
-
         # build query dict
         n = 0
         q = {}
@@ -351,12 +341,6 @@ class XhrController(BaseController):
             search_options['max_result'] = request.params['max_result']
         if 'offset' in request.params:
             search_options['offset'] = request.params['offset']
-
-        log.debug("Smart search query: schema=%s q=%s search_options=%s" %
-            (str(request.params.get('schema')),
-            request.params.get('query_string'),
-            str(search_options)
-        ))
 
         try:
             schema = Schema.get(int(request.params['schema']))
@@ -456,8 +440,6 @@ class XhrController(BaseController):
                 p.monitor = True
             else:
                 p.monitor = False
-
-        log.debug('request: %s' % str(request.params))
 
         # arguments
         args = {}
