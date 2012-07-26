@@ -1,5 +1,13 @@
+Version 0.8.0
+-------------
+ * Bug in database inconsistency checks fixed
+ * Regexp search improved; '.*' will now also match NULL values, which is
+   typically what users expect.
+ * CLI tab completion bug fixed (bug implemented by mistake in 0.7.0)
+
 Version 0.7.0
 -------------
+ * User friendly error messages & improved handling for invalid prefix input
  * Fix; Rendering of prefix list in web UI improvements
  * CLI tab completion improvements
  * Example tool for CSV export
