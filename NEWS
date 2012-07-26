@@ -4,6 +4,8 @@ Version 0.8.0
  * Regexp search improved; '.*' will now also match NULL values, which is
    typically what users expect.
  * CLI tab completion bug fixed (bug implemented by mistake in 0.7.0)
+ * Prefix type can now, in certain cases, be changed from web UI and CLI
+   application.
 
 Version 0.7.0
 -------------
