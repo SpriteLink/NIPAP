@@ -140,125 +140,18 @@ COMMENT ON COLUMN ip_net_log.authoritative_source IS 'System from which the acti
 COMMENT ON COLUMN ip_net_log.full_name IS 'Full name of the user who is responsible for the action';
 COMMENT ON COLUMN ip_net_log.description IS 'Text describing the action';
 
+--
+-- Indices.
+--
 CREATE INDEX ip_net_log__schema__index ON ip_net_log(schema);
 CREATE INDEX ip_net_log__prefix__index ON ip_net_log(prefix);
 CREATE INDEX ip_net_log__pool__index ON ip_net_log(pool);
 
 
 --
--- Trigger function to keep data consistent in the ip_net_plan table with
--- regards to prefix type and similar.
+-- Triggers for consistency checking and updating indent level on ip_net_plan
+-- table.
 --
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_iu_before() RETURNS trigger AS $_$
-DECLARE
-	parent RECORD;
-	child RECORD;
-	i_max_pref_len integer;
-BEGIN
-	-- this is a shortcut to avoid running the rest of this trigger as it
-	-- can be fairly costly performance wise
-	--
-	-- sanity checking is done on 'type' and derivations of 'prefix' so if
-	-- those stay the same, we don't need to run the rest of the sanity
-	-- checks.
-	IF TG_OP = 'UPDATE' THEN
-		-- we need to nest cause plpgsql is stupid :(
-		IF OLD.type = NEW.type AND OLD.prefix = NEW.prefix THEN
-			RETURN NEW;
-		END IF;
-	END IF;
-
-
-	i_max_pref_len := 32;
-	IF family(NEW.prefix) = 6 THEN
-		i_max_pref_len := 128;
-	END IF;
-	-- contains the parent prefix
-	SELECT * INTO parent FROM ip_net_plan WHERE schema = NEW.schema AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
-
-	-- check that type is correct on insert and update
-	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-		IF NEW.type = 'host' THEN
-			IF masklen(NEW.prefix) != i_max_pref_len THEN
-				RAISE EXCEPTION '1200:Prefix of type host must have all bits set in netmask';
-			END IF;
-			IF parent.prefix IS NULL THEN
-				RAISE EXCEPTION '1200:Prefix of type host must have a parent (covering) prefix of type assignment';
-			END IF;
-			IF parent.type != 'assignment' THEN
-				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''assignment''', parent.prefix, parent.type;
-			END IF;
-			NEW.display_prefix := set_masklen(NEW.prefix::inet, masklen(parent.prefix));
-		ELSIF NEW.type = 'assignment' THEN
-			IF parent.type IS NULL THEN
-				-- all good
-			ELSIF parent.type != 'reservation' THEN
-				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
-			END IF;
-
-			-- also check that the new prefix does not have any childs other than hosts
-			--
-			-- it is practically feasible that it would even have a child of
-			-- type 'host', since it would require a parent of type assignment,
-			-- but we don't need to limit the consistency check here if we ever
-			-- are to make changes in the future
-			IF EXISTS (SELECT * FROM ip_net_plan WHERE schema = NEW.schema AND type != 'host' AND iprange(prefix) << iprange(NEW.prefix) LIMIT 1) THEN
-				RAISE EXCEPTION '1200:Prefix of type ''assignment'' must not have any subnets other than of type ''host''';
-			END IF;
-			NEW.display_prefix := NEW.prefix;
-		ELSIF NEW.type = 'reservation' THEN
-			IF parent.type IS NULL THEN
-				-- all good
-			ELSIF parent.type != 'reservation' THEN
-				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
-			END IF;
-			NEW.display_prefix := NEW.prefix;
-		ELSE
-			RAISE EXCEPTION 'Unknown prefix type';
-		END IF;
-	END IF;
-
-	-- only allow specific cases for changing the type of prefix
-	IF TG_OP = 'UPDATE' THEN
-		IF (OLD.type = 'reservation' AND NEW.type = 'assignment') OR (OLD.type = 'assignment' AND new.type = 'reservation') THEN
-			-- don't allow any childs, since they would automatically be of the
-			-- wrong type, ie inconsistent data
-			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = NEW.schema AND iprange(prefix) << iprange(NEW.prefix)) THEN
-				RAISE EXCEPTION '1200:Changing from type ''%'' to ''%'' requires there to be no child prefixes.', OLD.type, NEW.type;
-			END IF;
-		ELSE
-			IF OLD.type != NEW.type THEN
-				-- FIXME: better exception code
-				RAISE EXCEPTION '1200:Changing type is disallowed';
-			END IF;
-		END IF;
-	END IF;
-
-	RETURN NEW;
-END;
-$_$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_d_before() RETURNS trigger AS $_$
-BEGIN
-	-- prevent certain deletes to maintain DB integrity
-	IF TG_OP = 'DELETE' THEN
-		-- if an assignment contains hosts, we block the delete
-		IF OLD.type = 'assignment' THEN
-			-- contains one child prefix
-			-- FIXME: optimize with this, what is improvement?
-			-- IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix LIMIT 1) > 0 THEN
-			IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix AND schema = OLD.schema) > 0 THEN
-				RAISE EXCEPTION '1200:Disallowed delete, prefix (%) contains hosts.', OLD.prefix;
-			END IF;
-		END IF;
-		-- everything else is allowed
-	END IF;
-
-	RETURN OLD;
-END;
-$_$ LANGUAGE plpgsql;
-
 CREATE TRIGGER trigger_ip_net_plan_prefix__iu_before
 	BEFORE UPDATE OR INSERT
 	ON ip_net_plan
@@ -270,22 +163,6 @@ CREATE TRIGGER trigger_ip_net_plan_prefix__d_before
 	ON ip_net_plan
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_prefix_d_before();
-
-
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family_after() RETURNS trigger AS $$
-DECLARE
-	r RECORD;
-BEGIN
-	IF TG_OP = 'DELETE' THEN
-		PERFORM calc_indent(OLD.schema, OLD.prefix, -1);
-	ELSIF TG_OP = 'INSERT' THEN
-		PERFORM calc_indent(NEW.schema, NEW.prefix, 1);
-	ELSE
-		-- nothing!
-	END IF;
-	RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_ip_net_plan_prefix__iu_after
 	AFTER DELETE OR INSERT OR UPDATE
