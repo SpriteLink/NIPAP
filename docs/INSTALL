@@ -1,0 +1,17 @@
+
+
+Assuming you have a fresh tar.gz of NIPAP, you will need to install a few dependancies of NIPAP.
+To begin with, install the PostgreSQL database, version 8.4 or later
+PostgreSQL > 8.4
+Jinja2
+Pylons
+Twisted
+SQLite3
+IPy
+Psycopg2
+
+
+Debian
+------
+
+
