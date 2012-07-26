@@ -24,9 +24,7 @@ setup(
 				('/usr/bin/', ['nipap-passwd']),
 				('/usr/sbin/', ['nipapd']),
 				('/usr/share/nipap/sql/', [
-					'sql/calc_indent.plsql',
-					'sql/find_free_prefix.plsql',
-					'sql/get_prefix.plsql',
+					'sql/functions.plsql',
 					'sql/ip_net.plsql'
 				])
 	],
