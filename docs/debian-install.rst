@@ -4,6 +4,12 @@ This will walk you through the setup process to get NIPAP running. With no
 prior experience it should take about 15 minutes to get NIPAP running,
 including installing all prerequisites.
 
+Debian and Ubuntu are the only two distributions supported at this time. It is
+certainly possible to install on other Linux flavours or other UNIX-style
+operating systems, but there are no packages and currently no instructions. We
+were hoping to provide .rpms, but given the large amount of dependencies
+missing in RHEL and the added complexity in the package build process, this has
+yet to happen.
 
 
 Debian installation
@@ -54,9 +60,8 @@ Postgres version.
 
 Get ip4r from CVS; http://pgfoundry.org/scm/?group_id=1000079
 Once you have it, follow the instructions to have it installed on your machine.
-It should be a simple matter of getting a few dev libs for postgresl and TODO
-
-
+It should be a simple matter of getting a few dev libs for postgresl via apt
+and then ./configure && make && make install
 
 Populating the database
 -----------------------
@@ -70,7 +75,16 @@ you typically sudo to root and then su to postgres, from where you can add the
 new user:
 ``sudo -i
 su - postgres
-createuser -S -R -D -W nipap``
-You'll be prompted for a new password - remember it. Now
+createuser -S -R -D -W nipap
+createdb -O nipap nipap``
+You'll be prompted for a new password when creating the user- remember it. Now
+we need to populate the database with some tables and functions. In the ip4r
+directory downloaded via CVS, there is a file called ip4r.sql that needs to be
+run in for the 'nipap' database, again as the nipap user;
+``psql -d nipap -f <path to ip4r.sql>``
+Continue with the functions file followed by the tables;
+``psql -d nipap -f /usr/share/nipap/sql/functions.plsql
+psql -d nipap -f /usr/share/nipap/sql/ip_net.plsql``
 
+Your database is now ready to go!
 
