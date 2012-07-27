@@ -54,13 +54,21 @@ IPv6 data.
 
 ip4r
 ----
-Installing ip4r must currently be done from source as the version shipped in
-Debian / Ubuntu or any other distribution is too old and only supports IPv4. If
-you are absolutely certain you will never use IPv6, you can go ahead and
-install the package postgresql-9.1-ip4r or the appropriate package for your
-Postgres version.
+ip4r in CVS supports IPv4 as well as IPv6. Unfortunately, it is not released as
+a new version yet nor do any distributions carry the version from CVS, thus for
+IPv6 support you will have to install it yourself.
 
-Get ip4r from CVS; http://pgfoundry.org/scm/?group_id=1000079
+If you are lucky enough to run a Debian 6.0 (Squeeze) installation on amd64, we
+have a prebuilt ip4r package in the NIPAP Debian repository that matches up
+with the PostgreSQL 8.4 that ships in Debian 6.0. Install it with::
+
+    apt-get install postgresql-8.4-ip4r
+
+... and skip to the next section.
+
+If you are using something other than Debian 6.0 on amd64, you will need to
+install ip4r from source. Get ip4r from CVS;
+http://pgfoundry.org/scm/?group_id=1000079
 Once you have it, follow the instructions to have it installed on your machine.
 It should be a simple matter of getting a few dev libs for postgresl via apt
 and then ./configure && make && make install
