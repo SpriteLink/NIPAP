@@ -54,14 +54,18 @@ IPv6 data.
 
 ip4r
 ----
-ip4r in CVS supports IPv4 as well as IPv6. Unfortunately, it is not released as
-a new version yet nor do any distributions carry the version from CVS, thus for
-IPv6 support you will have to install it yourself.
+The latest ip4r code in CVS supports IPv4 as well as IPv6. Unfortunately, it
+has not been released as a new version yet nor do any distributions carry the
+version from CVS, thus for IPv6 support you will have to get the CVS version
+yourself.
 
 If you are lucky enough to run a Debian 6.0 (Squeeze) installation on amd64, we
 have a prebuilt ip4r package in the NIPAP Debian repository that matches up
-with the PostgreSQL 8.4 that ships in Debian 6.0. Install it with::
+with the PostgreSQL 8.4 that ships in Debian 6.0. Add the 'extras' repo, update
+and install it with::
 
+    echo "deb http://spritelink.github.com/NIPAP/repos/apt stable main extras" > /etc/apt/sources.list.d/nipap.list
+    apt-get update
     apt-get install postgresql-8.4-ip4r
 
 ... and skip to the next section.
