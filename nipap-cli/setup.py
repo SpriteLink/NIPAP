@@ -4,6 +4,12 @@ from distutils.core import setup
 
 import nipap_cli
 
+# This is a bloody hack to circumvent a lack of feature with Python distutils.
+# Files specified in the data_files list cannot be renamed upon installation
+# and we don't want to keep two copies of the .nipaprc file in git
+import shutil
+shutil.copyfile('nipaprc', '.nipaprc')
+
 setup(
     name = 'nipap-cli',
     version = nipap_cli.__version__,
@@ -17,6 +23,7 @@ setup(
     keywords = ['nipap_cli', ],
     requires = ['pynipap', ],
     data_files = [
+				('/etc/skel/', ['.nipaprc']),
 				('/usr/bin/', ['helper-nipap', 'nipap']),
                 ('/usr/share/doc/nipap-cli/', ['bash_complete', 'nipaprc'])
     ],
@@ -32,3 +39,7 @@ setup(
         'Topic :: Internet'
     ]
 )
+
+# Remove the .nipaprc put the by the above hack.
+import os
+os.remove('.nipaprc')
