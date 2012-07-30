@@ -10,6 +10,15 @@
                 Log in
             </div>
             <div class="rule"></div>
+            {% if c.welcome_message is defined %}
+            <div class="option">
+                <dl>
+                    <dt></dt>
+                    <dd>{{c.welcome_message}}</dd>
+                </dl>
+            </div>
+            <div class="rule"></div>
+            {% endif %}
             <div class="option">
                 <dl>
                     <dt>Username</dt>
