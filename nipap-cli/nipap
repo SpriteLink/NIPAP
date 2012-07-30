@@ -4,6 +4,7 @@
     A shell command to interact with NIPAP.
 """
 
+import logging
 import sys
 
 from nipap_cli import nipap_cli
@@ -12,6 +13,9 @@ from pynipap import NipapError
 
 
 if __name__ == '__main__':
+    logger = logging.getLogger()
+    nullh = logging.NullHandler()
+    logger.addHandler(nullh)
 
     try:
         cmd = Command(nipap_cli.cmds, sys.argv[1::])
