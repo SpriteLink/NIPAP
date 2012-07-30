@@ -8,6 +8,9 @@ from pylons.controllers.util import abort, redirect
 from nipapwww.lib.base import BaseController, render
 
 from nipap.authlib import AuthFactory, AuthError
+from nipap.nipapconfig import NipapConfig
+
+from ConfigParser import NoOptionError
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +26,12 @@ class AuthController(BaseController):
         """
 
         if request.method != 'POST':
+            cfg = NipapConfig()
+            try:
+                c.welcome_message = cfg.get('www', 'welcome_message')
+            except NoOptionError:
+                pass
+
             return render('login.html')
 
         # Verify username and password.
