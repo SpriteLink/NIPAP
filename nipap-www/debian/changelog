@@ -1,3 +1,11 @@
+nipap-www (0.9.0-1) stable; urgency=low
+
+  * Add ability to show a custom welcome message on web UI login page
+  * Simplify loading of NIPAP SQL structure
+  * Vastly improve installation documentation
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 30 Jul 2012 14:56:57 +0200
+
 nipap-www (0.8.0-1) stable; urgency=low
 
   * Bug in database inconsistency checks fixed
