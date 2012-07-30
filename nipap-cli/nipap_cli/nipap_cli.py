@@ -866,6 +866,7 @@ cmds = {
                     'exec': list_prefix,
                     'argument': {
                         'type': 'value',
+                        'default': '',
                         'content_type': unicode,
                         'description': 'Prefix',
                     },
