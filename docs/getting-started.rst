@@ -48,9 +48,9 @@ nipapd daemon and CLI client::
 apt-get will complain about that the packages cannot be authenticated. This is
 due to the reason that the NIPAP Debian repository is not signed. Ignore the
 warning and type 'y' to continue. After the installation is done, you will have
-a PostgreSQL database and all the other necessary dependancies installed except
-for ip4r, an addon to Postgres which allows for efficient indexing of IPv4 and
-IPv6 data.
+the PostgreSQL database server and all the other necessary dependancies
+installed except for ip4r, an addon to Postgres which allows for efficient
+indexing of IPv4 and IPv6 data.
 
 ip4r
 ----
@@ -75,7 +75,7 @@ install ip4r from source. Get ip4r from CVS;
 http://pgfoundry.org/scm/?group_id=1000079
 Once you have it, follow the instructions to have it installed on your machine.
 It should be a simple matter of getting a few dev libs for postgresl via apt
-and then ./configure && make && make install
+and then make && make install.
 
 Populating the database
 -----------------------
@@ -93,7 +93,7 @@ new user::
     createuser -S -R -D -W nipap
     createdb -O nipap nipap
 
-You'll be prompted for a new password when creating the user- remember it. Now
+You'll be prompted for a new password when creating the user - remember it. Now
 we need to populate the database with some tables and functions. In the ip4r
 directory downloaded via CVS, there is a file called ip4r.sql that needs to be
 run in for the 'nipap' database, again as the nipap user::
@@ -149,6 +149,91 @@ Now let's try adding a prefix too::
 And list everything covered by 0.0.0.0/0::
 
     nipap address list 0/0
+
+Installation of the web UI
+--------------------------
+The NIPAP web UI performs all operations through the NIPAP XML-RPC API served
+by nipapd, which means they do not need to be installed on the same machine. It
+is built on the Pylons web framework and requires Pylons version >= 1.0. This
+version has unfortunately not yet made it into neither the Debian nor the
+Ubuntu official repositories yet. For you lycky enough to run an apt-based
+distribution, there is a Pylons 1.0 package in the NIPAP 'extra' repository
+which should work on any apt-based system running python 2.5, 2.6 or 2.7.  See
+how to enable the 'extra' repo under the ip4r-section above. With the 'extra'
+repository enabled, the NIPAP web UI is installed using the following command::
+
+    apt-get install nipap-www
+
+When apt-get has completed the installation, you should have all dependencies
+required for the NIPAP web UI as well as the web UI itself installed.
+
+Configuration of the web UI
+---------------------------
+Begin by adding a user for the web interface to the local authentication
+database on the server where nipapd is running::
+
+	nipap-passwd -a *username* -p *password* -n 'NIPAP web UI' -t
+
+The '-t' option tells nipap-passwd to make the new user a 'trusted' user, that
+is a user which can authenticate against nipapd using one username but log all
+changes as made by another user. See the docs for the NIPAP authentication
+library for more information about this:
+http://spritelink.github.com/NIPAP/nipap/authlib.html
+
+Now we need to configure the web UI with the URI to the nipapd server. Edit
+/etc/nipap/nipap.conf and set the option 'xmlrpc_uri' under the section
+'[www]'. The URI should have the form
+'http://*username*:*password*@*address*:*port*', for example
+'http://www:secret@127.0.0.1:9000' to connect to nipapd running on the local
+machine (127.0.0.1) listening on port 9000 and authenticate with the username
+'www' and password 'secret'.
+
+For authentication, the NIPAP web UI uses the same authentication library and
+settings as nipapd. That means, if they are running on the same machine they by
+default use the same authentication database and the users can use the same
+credentials for the web UI as for the backend. If they are not running on the
+same machine, there will be two separate authentication databases; one for the
+XML-RPC backend and one for the web UI.  Thus the web users needs to be added
+on the machine where the web UI is running as well, using the 'nipap-passwd'
+command as described above. These users does not need to be 'trusted' as above
+though, so skip the '-t' option.
+
+Serving the web UI
+------------------
+The NIPAP web UI can be served by any WGSI-capable web server such as Apache
+httpd with mod_wsgi. For quick tests and development the lightweight server
+'paster', part of Python Paste, is handy.
+
+paster
+======
+Using paster is the easiest way to get the NIPAP web UI up and running, but
+it's not really suitable for deployment. Anyway, to serve the NIPAP web UI from
+paster, simply run the following::
+
+	paster serve /etc/nipap/nipap-www.ini
+
+Using the default configuration, the web UI should now be reachable on port
+5000. To change the port, edit /etc/nipap/nipap-www.ini.
+
+Apache httpd with mod_wsgi
+==========================
+Begin by installing Apache httpd with mod_wsgi::
+
+	apt-get install libapache2-mod-wsgi
+
+Then, add a new virtual host or configure the default one with the line::
+
+	WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
+
+The web server needs to be able to write to its cache, alter the permissions of
+/var/cache/nipap-www so that the web server can write to it and preferrably
+also make sure no one else has access to it. For a typical Debian install of
+Apache httpd, the following should suffice::
+
+	chown www-data:www-data /var/cache/nipap-www
+	chmod -R u=rwX /var/cache/nipap-www
+
+Now, restart Apache httpd and the NIPAP web UI should be up and running!
 
 That wraps up this getting started guide, for more information see the manual
 pages.
