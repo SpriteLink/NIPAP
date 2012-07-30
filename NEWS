@@ -1,3 +1,7 @@
+Version 0.10.0
+-------------
+ * Improved tab completion, now handles entries containing space
+
 Version 0.9.0
 -------------
  * Add ability to show a custom welcome message on web UI login page
