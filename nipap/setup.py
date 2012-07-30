@@ -21,7 +21,6 @@ setup(
     requires = ['twisted', 'ldap', 'sqlite3', 'IPy', 'psycopg2'],
     data_files = [
 				('/etc/nipap/', ['local_auth.db', 'nipap.conf']),
-				('/etc/skel/', ['.nipaprc']),
 				('/usr/bin/', ['nipap-passwd']),
 				('/usr/sbin/', ['nipapd']),
 				('/usr/share/nipap/sql/', [

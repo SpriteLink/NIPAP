@@ -1,7 +1,0 @@
-[global]
-hostname = localhost
-port     = 1337
-username = guest
-password = guest
-
-default_schema = test
