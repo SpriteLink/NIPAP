@@ -7,6 +7,18 @@
 
     prefix_link_type = 'edit';
 
+    $(function() {
+        $(document).ready(function() {
+            var div = $('#floating_prefix_header');
+            var start = $('#fixed_prefix_header').offset().top;
+
+            $.event.add(window, "scroll", function() {
+                var p = $(window).scrollTop();
+                $(div).css('visibility', ((p)>start) ? 'visible' : 'hidden');
+            });
+        });
+    });
+
     /*
      * Handles the query passed in the URL, if any.
      */

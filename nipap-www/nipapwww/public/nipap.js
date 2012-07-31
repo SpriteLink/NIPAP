@@ -351,7 +351,9 @@ function performPrefixSearch(explicit) {
 
 	$('#prefix_list').empty();
 	$('#search_result_help').hide();
-	$('#fixed_prefix_header').css('visibility', 'visible');
+	if (prefix_link_type == 'edit') {
+		$('#fixed_prefix_header').css('visibility', 'visible');
+	}
 
 	showLoadingIndicator($('#prefix_list'));
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixList);
