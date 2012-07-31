@@ -314,7 +314,7 @@ class LdapAuth(BaseAuth):
             self._ldap_conn.simple_bind_s('uid=' + self.username + ',' + self._ldap_basedn, self.password)
         except ldap.SERVER_DOWN, exc:
             raise AuthError('Could not connect to LDAP server')
-        except ldap.INVALID_CREDENTIALS, exc:
+        except (ldap.INVALID_CREDENTIALS, ldap.INVALID_DN_SYNTAX, ldap.UNWILLING_TO_PERFORM), exc:
             # Auth failed
             self._logger.debug('erroneous password for user %s' % self.username)
             self._authenticated = False
@@ -327,7 +327,7 @@ class LdapAuth(BaseAuth):
         self.trusted = False
 
         try:
-            res = self._ldap_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, 'uid=' + self.username, ['cn']);
+            res = self._ldap_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, 'uid=' + self.username, ['cn'])
             self.full_name = res[0][1]['cn'][0]
         except:
             self.full_name = ''
