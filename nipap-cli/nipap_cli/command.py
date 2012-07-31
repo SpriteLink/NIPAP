@@ -124,6 +124,10 @@ class Command:
                 # if the element we reached has an executable registered, save it!
                 if 'exec' in val:
                     self.exe = val['exec']
+                    try:
+                        self.arg = val['argument']['default']
+                    except:
+                        pass
 
                 # Elements wich takes arguments need special attention
                 if 'argument' in val:
