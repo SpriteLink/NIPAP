@@ -229,6 +229,11 @@ def list_prefix(arg, opts):
 
     s = get_schema()
 
+    # default to empty search string instead of None, which would only be
+    # casted to string anyway, so the smart_search would be for 'None'
+    if arg is None:
+        arg = ''
+
     res = Prefix.smart_search(s, arg, { 'parents_depth': -1, 'max_result': 1200 })
     if len(res['result']) == 0:
         print "No addresses matching '%s' found." % arg
