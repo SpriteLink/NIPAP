@@ -20,6 +20,15 @@
                 schema_id = {{ c.schema.id }};
                 {% endif %}
             });
+			$(document).ready(function() {
+				var div = $('#floating_prefix_header');
+				var start = $('#fixed_prefix_header').offset().top;
+
+				$.event.add(window, "scroll", function() {
+					var p = $(window).scrollTop();
+					$(div).css('visibility', ((p)>start) ? 'visible' : 'hidden');
+				});
+			});
         </script>
         {% block head %}
         {% endblock %}

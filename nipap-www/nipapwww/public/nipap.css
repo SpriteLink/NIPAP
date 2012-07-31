@@ -369,6 +369,15 @@ input[type="submit"] {
     border-bottom: 1px solid #DDDDDD;
 }
 
+.prefix_list_header {
+	max-width: 1200px;
+	padding: 7px;
+	font-weight: bold;
+	text-decoration: underline;
+	margin: auto;
+	background-color: #FFFFFF;
+}
+
 .required {
     color: #ea3333;
     font-size: 1.5em;
