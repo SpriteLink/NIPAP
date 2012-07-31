@@ -284,6 +284,7 @@ function clearPrefixSearch() {
 	$('#prefix_list').empty();
 	$('#search_interpret_container').empty();
 	$('#search_result_help').show();
+	$('#fixed_prefix_header').css('visibility', 'hidden');
 	$('#nextpage').hide();
 	query_id += 1;
 
@@ -350,6 +351,7 @@ function performPrefixSearch(explicit) {
 
 	$('#prefix_list').empty();
 	$('#search_result_help').hide();
+	$('#fixed_prefix_header').css('visibility', 'visible');
 
 	showLoadingIndicator($('#prefix_list'));
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixList);
