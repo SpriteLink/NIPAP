@@ -617,7 +617,7 @@ def _complete_string(key, haystack):
 
     match = []
     for straw in haystack:
-        if string.find(straw, key) >= 0:
+        if string.find(straw, key) == 0:
             match.append(straw)
     return match
 

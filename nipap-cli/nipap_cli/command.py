@@ -106,7 +106,7 @@ class Command:
                 for param, content in self.params.items():
 
                     # match string to command
-                    if string.find(param, p) >= 0:
+                    if string.find(param, p) == 0:
                         self.key[param] = content
 
                         # If we have an exact match, make sure that
