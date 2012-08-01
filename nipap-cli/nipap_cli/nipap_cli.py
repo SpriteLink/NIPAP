@@ -12,6 +12,7 @@ import shlex
 import pipes
 import subprocess
 import ConfigParser
+import string
 
 import pynipap
 from pynipap import Schema, Pool, Prefix, NipapError
@@ -616,7 +617,7 @@ def _complete_string(key, haystack):
 
     match = []
     for straw in haystack:
-        if re.match(key, straw):
+        if string.find(straw, key) >= 0:
             match.append(straw)
     return match
 

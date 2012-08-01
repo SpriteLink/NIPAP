@@ -7,7 +7,7 @@
 """
 
 import re
-
+import string
 
 
 class Command:
@@ -106,7 +106,7 @@ class Command:
                 for param, content in self.params.items():
 
                     # match string to command
-                    if re.match(p, param):
+                    if string.find(param, p) >= 0:
                         self.key[param] = content
 
                         # If we have an exact match, make sure that
