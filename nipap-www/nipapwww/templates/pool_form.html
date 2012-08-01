@@ -38,15 +38,15 @@
 		<div class="option">
 			<dl>
 				<dt>
-					<span class="question-mark tooltip" title="TODO: fill me in">&nbsp;&nbsp;?&nbsp;&nbsp;</span>Default type
+					<span class="question-mark tooltip" title="New prefixes from this pool will by default have this prefix type.">&nbsp;&nbsp;?&nbsp;&nbsp;</span>Default type
 				</dt>
 				<dd>
-					<input id="radio-default-type-reservation" type="radio" name="default_type" value="reservation" {% if c.pool is defined %}{% if c.pool.default_type == 'reservation' %} checked{% endif %}{% endif %}>
-					<label for="radio-default-type-reservation">Reservation</label>
-					<input id="radio-default-type-assignment" type="radio" name="default_type" value="assignment" {% if c.pool is defined %}{% if c.pool.default_type == 'assignment' %} checked{% endif %}{% endif %}>
-					<label for="radio-default-type-assignment">Assignment</label>
-					<input id="radio-default-type-host" type="radio" name="default_type" value="host" {% if c.pool is defined %}{% if c.pool.default_type == 'host' %} checked{% endif %}{% endif %}>
-					<label id="label-default-type-host" for="radio-default-type-host">Host</label>
+					<input id="radio-default-type-reservation" class="tooltip" title="TODO: fill me in" type="radio" name="default_type" value="reservation" {% if c.pool is defined %}{% if c.pool.default_type == 'reservation' %} checked{% endif %}{% endif %}>
+					<label for="radio-default-type-reservation" class="tooltip" title="TODO: fill me in">Reservation</label>
+					<input id="radio-default-type-assignment" class="tooltip" title="TODO: fill me in" type="radio" name="default_type" value="assignment" {% if c.pool is defined %}{% if c.pool.default_type == 'assignment' %} checked{% endif %}{% endif %}>
+					<label for="radio-default-type-assignment" class="tooltip" title="TODO: fill me in">Assignment</label>
+					<input id="radio-default-type-host" class="tooltip" title="TODO: fill me in" type="radio" name="default_type" value="host" {% if c.pool is defined %}{% if c.pool.default_type == 'host' %} checked{% endif %}{% endif %}>
+					<label id="label-default-type-host" class="tooltip" title="TODO: fill me in" for="radio-default-type-host">Host</label>
 				</dd>
 			</dl>
 		</div>
@@ -56,7 +56,7 @@
 		<div class="option">
 			<dl>
 				<dt>
-					<span class="question-mark tooltip" title="TODO: fill me in">&nbsp;&nbsp;?&nbsp;&nbsp;</span>Default IPv4 prefix length
+					Default IPv4 prefix length
 				</dt>
 				<dd>
 					<input type="text" name="ipv4_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv4_default_prefix_length or '' }}{% endif %}" class="tooltip" title="The default IPv4 prefix length of prefixes assigned from this pool. Should be an integer value, for example 24 or 31.">
@@ -69,7 +69,7 @@
 		<div class="option">
 			<dl>
 				<dt>
-					<span class="question-mark tooltip" title="TODO: fill me in">&nbsp;&nbsp;?&nbsp;&nbsp;</span>Default IPv6 prefix length
+					Default IPv6 prefix length
 				</dt>
 				<dd>
 					<input type="text" name="ipv6_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv6_default_prefix_length or '' }}{% endif %}" class="tooltip" title="The default IPv6 prefix length of prefixes assigned from this pool. Should be an integer value, for example 64 or 112.">
