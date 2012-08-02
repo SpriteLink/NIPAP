@@ -8,7 +8,7 @@ import logging
 import sys
 
 from nipap_cli import nipap_cli
-from nipap_cli.command import Command
+from nipap_cli.command import Command, CommandError
 from pynipap import NipapError
 
 
@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     try:
         cmd = Command(nipap_cli.cmds, sys.argv[1::])
-    except ValueError, e:
+    except (ValueError, CommandError, NipapError), e:
         print >> sys.stderr, "Error: %s" % e.message
         sys.exit(1)
 
