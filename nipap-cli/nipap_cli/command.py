@@ -117,7 +117,7 @@ class Command:
                             break
 
             else:
-                raise CommandError('Out of params')
+                raise InvalidCommand('ran out of parameters; command too long')
 
             for key, val in self.key.items():
 
@@ -227,4 +227,8 @@ class Command:
 
 class CommandError(Exception):
     """ A base error class for the command module
+    """
+
+class InvalidCommand(CommandError):
+    """ Raised when an invalid command is parsed
     """

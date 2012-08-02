@@ -8,7 +8,7 @@
 
 import sys
 import os
-from nipap_cli.command import Command
+from nipap_cli.command import Command, InvalidCommand
 from nipap_cli import nipap_cli
 from pynipap import NipapError
 
@@ -17,18 +17,18 @@ __author__      = "Kristian Larsson, Lukas Garberg"
 __author_email__ = "kll@tele2.net, lukas@spritelink.net"
 __license__     = "MIT"
 __status__      = "Development"
-__url__         = "http://github.com/plajjan/NIPAP"
+__url__         = "http://SpriteLink.github.com/NIPAP/"
 
 
 if __name__ == '__main__':
 
-    cmd = Command(nipap_cli.cmds, sys.argv[1::])
 
     comp = []
 
     try:
+        cmd = Command(nipap_cli.cmds, sys.argv[1::])
         comp = sorted(cmd.complete())
-    except NipapError:
+    except (NipapError, InvalidCommand):
         # handle errors silently
         pass
 
