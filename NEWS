@@ -1,6 +1,12 @@
 Version 0.10.0
 -------------
+ * Added a fancy floating header to the prefix search page
  * Improved tab completion, now handles entries containing space
+ * Improve CLI prefix search argument handling
+ * Revamp color scheme for prefix type icons (very pretty now!)
+ * nipap-passwd is now in /usr/sbin
+ * Removed erroneous logging from the nipap CLI client
+ * Improved handling of authentication errors
 
 Version 0.9.0
 -------------
