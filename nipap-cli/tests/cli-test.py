@@ -3,9 +3,9 @@
 import unittest
 
 import sys
-sys.path.append('../')
+sys.path.insert(0, '..')
 from nipap_cli import nipap_cli
-from nipap_cli.command import Command
+from nipap_cli.command import Command, CommandError, InvalidCommand
 
 class CliCheck(unittest.TestCase):
     def cli_test(self, command):
@@ -32,13 +32,9 @@ class CliCheck(unittest.TestCase):
 
 
     def test_cmd_stop(self):
-        """ should not return anything as we should already have found the command (view) and have an argument to it
+        """ Should raise an InvalidCommand exception as the command is too long
         """
-        self.assertEqual(self.cli_test(('address', 'view', 'FOO', '',)),
-                (nipap_cli.view_prefix, 'FOO', {},
-                    []
-                )
-            )
+        self.assertRaises(InvalidCommand, self.cli_test, ('address', 'view', 'FOO', ''))
 
 
 
