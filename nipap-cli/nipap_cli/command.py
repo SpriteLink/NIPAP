@@ -131,7 +131,7 @@ class Command:
                     # is there an argument (the next element)?
                     if len(inp_cmd) > i+1:
 
-                        self.key = { 'argumemt': val['argument'] }
+                        self.key = { 'argument': val['argument'] }
 
                         # there is - save it
                         if val['type'] == 'option':
@@ -149,6 +149,12 @@ class Command:
                         # if there are sub parameters, add them
                         if 'params' in val:
                             self.params = val['params']
+
+                        # If we reached a command without parameters (which
+                        # should be the end of the command), unset the params
+                        # dict.
+                        elif val['type'] == 'command':
+                            self.params = None
 
                         # if the command is finished (there is an element after the argument) and
                         # there is an exec_imemdiately-function, execute it now

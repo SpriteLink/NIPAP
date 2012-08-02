@@ -733,6 +733,7 @@ def complete_schema_name(arg):
 """ The NIPAP command tree
 """
 cmds = {
+    'type': 'command',
     'params': {
         'address': {
             'type': 'command',
