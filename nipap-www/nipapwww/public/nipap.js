@@ -198,6 +198,8 @@ function showDialog(id, title, content, width) {
 function displaySearchHelp() {
 
 	var c = '';
+
+	d = showDialog('search_help', 'Searching', c, 800);
 	c += '<div class="dialog_text" style="padding: 15px;">' +
 		"Searching is the primary method of navigating the many thousand of prefixes that NIPAP is built to handle. It's very similar to how popular search engines, such as Google, Yahoo or Bing, are used." +
 		"<h4>Matching text</h4>Just as with any search engine, you can enter a word or multiple words to match the text information associated with a prefix, that is the description or comment field. Each word is treated as a search 'term' and all search terms are joined together by the boolean operator AND. That means that searching for <i>'<b>foo bar</b>'</i> will be interpreted as a search for <i>'<b>foo</b>'</i> and <i>'<b>bar</b>'</i>. Any match must contain both the word <i>'<b>foo</b>'</i> and the word <i>'<b>bar</b>'</i>, though not necessarily in that order. <i>'<b>bar foo</b>'</i> will match, just as <i>'<b>foo</b> test test <b>bar</b>'</i> will match." +
@@ -208,10 +210,29 @@ function displaySearchHelp() {
 		   "<br/><br/>To match prefixes with 'TEST-ROUTER-1' in description or comment and that are somewhere in the network 10.0.0.0/8:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.0/8 TEST-ROUTER-1" +
 		   '<br/><br/></div>';
 
-	d = showDialog('search_help', 'Searching', c, 800);
+	return false;
+}
+
+
+
+/*
+ * Display "pop-up" with help about the prefix types.
+ */
+function displayPrefixTypeHelp() {
+
+	var c = '';
+	c += '<div class="dialog_text" style="padding: 15px;">' +
+		"Prefix types is an artificial construct to ensure consistency in the NIPAP data. Each prefix must have a type, either 'reservation', 'assignment' or 'host'.<br/><br/>" +
+		"'host' are used to document individual hosts in a subnet, while 'assignments' are used to document prefixes with a \"specific use\", a \"subnet\". For example, a /30 link network is an 'assignment' while the two individual usable addresses inside the /30 are 'hosts'.<br/><br/>" +
+		"'reservation' differs from 'assignment' in that a reservation is not yet meant for a specific use, ie it is not used in the network. If you want to reserve a larger prefix for use a link networks, you would create a 'reservation', perhaps a /24. Within that network you could then assign /30s or /31s into 'assignments' and in them document the individual hosts. The /24 'reservation' is only reserved for link networks.<br/><br/>" +
+		"As a rule of thumb, you will likely find 'assignments' in the routing table while most 'reservations' will not be in your routing table (except for large aggregates)." +
+		   '<br/><br/></div>';
+
+	d = showDialog('prefix_type_help', 'Prefix types', c, 800);
 
 	return false;
 }
+
 
 /*
  * Error handler for ajax-errors.
