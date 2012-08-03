@@ -175,9 +175,15 @@ class AuthOptions:
 
     def __init__(self, options = None):
         """ Create a shared option container.
+
+            The argument 'options' must be a dict containing authentication
+            options.
         """
 
         self.__dict__ = self.__shared_state
+
+        if len(self.__shared_state) == 0 and options is None:
+            raise NipapMissingInputError("authentication options not set")
 
         if options is not None:
             self.options = options
@@ -277,11 +283,14 @@ class Schema(Pynipap):
         """
 
         xmlrpc = XMLRPCConnection()
-        schema_list = xmlrpc.connection.list_schema(
-            {
-                'schema': spec,
-                'auth': AuthOptions().options
-            })
+        try:
+            schema_list = xmlrpc.connection.list_schema(
+                {
+                    'schema': spec,
+                    'auth': AuthOptions().options
+                })
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
 
         res = list()
         for schema in schema_list:
@@ -633,12 +642,15 @@ class Pool(Pynipap):
             raise NipapValueError("missing/invalid schema specified")
 
         xmlrpc = XMLRPCConnection()
-        pool_list = xmlrpc.connection.list_pool(
-            {
-                'schema': { 'id': schema.id },
-                'pool': spec,
-                'auth': AuthOptions().options
-            })
+        try:
+            pool_list = xmlrpc.connection.list_pool(
+                {
+                    'schema': { 'id': schema.id },
+                    'pool': spec,
+                    'auth': AuthOptions().options
+                })
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
         res = list()
         for pool in pool_list:
             p = Pool.from_dict(pool)
@@ -799,7 +811,7 @@ class Prefix(Pynipap):
 
 
     def save(self, args = {}):
-        """ Save prefix to PYNIPAP.
+        """ Save prefix to NIPAP.
         """
 
         # verify that the schema variable actually contains a schema
@@ -832,8 +844,6 @@ class Prefix(Pynipap):
 
         # New object, create from scratch
         if self.id is None:
-
-            self._logger.error("save: args = %s" % str(args))
 
             # format args
             x_args = {}

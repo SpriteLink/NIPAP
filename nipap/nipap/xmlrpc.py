@@ -187,9 +187,11 @@ class NipapProtocol(xmlrpc.XMLRPC):
         # fetch auth options
         try:
             auth_options = nipap_args['auth']
-        except KeyError:
+            if type(auth_options) is not dict:
+                raise ValueError()
+        except (KeyError, ValueError):
             f = xmlrpclib.Fault(1000,
-                ("Missing authentication options in request."))
+                ("Missing/invalid authentication options in request."))
             self._cbRender(f, request)
             return server.NOT_DONE_YET
 
