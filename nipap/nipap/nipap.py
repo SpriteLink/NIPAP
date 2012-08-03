@@ -414,9 +414,9 @@ class Nipap:
                 estr = "Invalid prefix (%s); bits set to right of mask. Network address for current mask: %s" % (m.group(1), strict_prefix)
                 raise NipapValueError(estr)
 
-            m = re.search('invalid input syntax for type cidr: "([^"]+)"', e.pgerror)
+            m = re.search('invalid input syntax for type (cidr|inet): "([^"]+)"', e.pgerror)
             if m is not None:
-                estr = "Invalid syntax for prefix (%s)" % m.group(1)
+                estr = "Invalid syntax for prefix (%s)" % m.group(2)
                 raise NipapValueError(estr)
 
             raise NipapValueError(str(e))
