@@ -38,15 +38,16 @@
 		<div class="option">
 			<dl>
 				<dt>
-				<span class="question-mark tooltip" title="New prefixes from this pool will by default have this prefix type. Click for more information.">&nbsp;&nbsp;<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();">?</a>&nbsp;&nbsp;</span>Default type
+				Default type
 				</dt>
 				<dd>
-					<input id="radio-default-type-reservation" class="tooltip" title="Reservations are " type="radio" name="default_type" value="reservation" {% if c.pool is defined %}{% if c.pool.default_type == 'reservation' %} checked{% endif %}{% endif %}>
-					<label for="radio-default-type-reservation" class="tooltip" title="TODO: fill me in">Reservation</label>
-					<input id="radio-default-type-assignment" class="tooltip" title="TODO: fill me in" type="radio" name="default_type" value="assignment" {% if c.pool is defined %}{% if c.pool.default_type == 'assignment' %} checked{% endif %}{% endif %}>
-					<label for="radio-default-type-assignment" class="tooltip" title="TODO: fill me in">Assignment</label>
+					<input id="radio-default-type-reservation" class="tooltip" title="Reservation are for reserving a network for later assigning as specific assignments" type="radio" name="default_type" value="reservation" {% if c.pool is defined %}{% if c.pool.default_type == 'reservation' %} checked{% endif %}{% endif %}>
+					<label for="radio-default-type-reservation" class="tooltip" title="Reservation are for reserving a network for later assigning as specific assignments">Reservation</label>
+					<input id="radio-default-type-assignment" class="tooltip" title="A single subnet, for a specific use in the network" type="radio" name="default_type" value="assignment" {% if c.pool is defined %}{% if c.pool.default_type == 'assignment' %} checked{% endif %}{% endif %}>
+					<label for="radio-default-type-assignment" class="tooltip" title="A single subnet, for a specific use in the network">Assignment</label>
 					<input id="radio-default-type-host" class="tooltip" title="A single host within an assignment" type="radio" name="default_type" value="host" {% if c.pool is defined %}{% if c.pool.default_type == 'host' %} checked{% endif %}{% endif %}>
 					<label id="label-default-type-host" class="tooltip" title="A single host within an assignment" for="radio-default-type-host">Host</label>
+					<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
 				</dd>
 			</dl>
 		</div>
