@@ -9,25 +9,31 @@ CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
 CREATE TYPE priority_3step AS ENUM ('low', 'medium', 'high');
 
 
---
--- This is where we store "schemas"
--- think of them as something like namespaces for our address plans
--- one would typically be the global one where all public addresses go
--- then we could have several for RFC1918 space to avoid collisions
---
-CREATE TABLE ip_net_schema (
-	id serial PRIMARY KEY,
-	name text NOT NULL,
-	description text,
-	vrf text
+CREATE TABLE ip_net_asn (
+	asn integer NOT NULL PRIMARY KEY,
+	name text
 );
 
-CREATE UNIQUE INDEX ip_net_schema__name__index ON ip_net_schema (name);
-CREATE UNIQUE INDEX ip_net_schema__vrf__index ON ip_net_schema (vrf);
+--
+-- This is where we store VRFs
+--
+CREATE TABLE ip_net_vrf (
+	id serial PRIMARY KEY,
+	vrf text,
+	name text NOT NULL,
+	description text
+);
 
-COMMENT ON TABLE ip_net_schema IS 'IP Address schemas, something like namespaces for our address plan';
-COMMENT ON INDEX ip_net_schema__name__index IS 'schema name';
-COMMENT ON INDEX ip_net_schema__vrf__index IS 'schema VRF-id';
+CREATE UNIQUE INDEX ip_net_vrf__unique__index ON ip_net_vrf ((''::TEXT)) WHERE vrf IS NULL;
+CREATE UNIQUE INDEX ip_net_vrf__vrf__index ON ip_net_vrf (vrf) WHERE vrf IS NOT NULL;
+CREATE UNIQUE INDEX ip_net_vrf__name__index ON ip_net_vrf (name);
+-- TODO: add trigger function on I/U to validate vrf format (123.123.123.123:4567 or 1234:5678 - 32:16 or 16:32)
+
+COMMENT ON TABLE ip_net_vrf IS 'IP Address VRFs';
+COMMENT ON INDEX ip_net_vrf__vrf__index IS 'VRF VRF-id';
+COMMENT ON INDEX ip_net_vrf__name__index IS 'VRF name';
+
+INSERT INTO ip_net_vrf (id, vrf, name) VALUES (0, NULL, 'No VRF');
 
 
 --
@@ -38,18 +44,14 @@ COMMENT ON INDEX ip_net_schema__vrf__index IS 'schema VRF-id';
 --
 CREATE TABLE ip_net_pool (
 	id serial PRIMARY KEY,
-	name text NOT NULL,
-	schema integer NOT NULL REFERENCES ip_net_schema (id) ON UPDATE CASCADE ON DELETE CASCADE DEFAULT 1,
+	name text NOT NULL UNIQUE,
 	description text,
 	default_type ip_net_plan_type,
 	ipv4_default_prefix_length integer,
 	ipv6_default_prefix_length integer
 );
 
-CREATE UNIQUE INDEX ip_net_pool__schema_name__index ON ip_net_pool (schema, name);
-
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
-COMMENT ON INDEX ip_net_pool__schema_name__index IS 'pool name';
 
 
 --
@@ -61,7 +63,7 @@ COMMENT ON INDEX ip_net_pool__schema_name__index IS 'pool name';
 --
 CREATE TABLE ip_net_plan (
 	id serial PRIMARY KEY,
-	schema integer NOT NULL REFERENCES ip_net_schema (id) ON UPDATE CASCADE ON DELETE CASCADE DEFAULT 1,
+	vrf integer NOT NULL DEFAULT 0 REFERENCES ip_net_vrf (id) ON UPDATE CASCADE ON DELETE CASCADE,
 	prefix cidr NOT NULL,
 	display_prefix inet,
 	description text,
@@ -72,16 +74,15 @@ CREATE TABLE ip_net_plan (
 	indent integer,
 	country text,
 	order_id text,
-	vrf text,
 	external_key text,
-	authoritative_source text NOT NULL,
+	authoritative_source text NOT NULL DEFAULT 'nipap',
 	alarm_priority priority_3step,
 	monitor boolean
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
 
-COMMENT ON COLUMN ip_net_plan.schema IS 'Address-schema';
+COMMENT ON COLUMN ip_net_plan.vrf IS 'VRF in which the prefix resides';
 COMMENT ON COLUMN ip_net_plan.prefix IS '"true" IP prefix, with hosts registered as /32';
 COMMENT ON COLUMN ip_net_plan.display_prefix IS 'IP prefix with hosts having their covering assignments prefix-length';
 COMMENT ON COLUMN ip_net_plan.description IS 'Prefix description';
@@ -92,16 +93,14 @@ COMMENT ON COLUMN ip_net_plan.type IS 'Type is one of "reservation", "assignment
 COMMENT ON COLUMN ip_net_plan.indent IS 'Number of indents to properly render this prefix';
 COMMENT ON COLUMN ip_net_plan.country IS 'ISO3166-1 two letter country code';
 COMMENT ON COLUMN ip_net_plan.order_id IS 'Order identifier';
-COMMENT ON COLUMN ip_net_plan.vrf IS 'VRF in which the prefix resides';
 COMMENT ON COLUMN ip_net_plan.external_key IS 'Field for use by exernal systems which need references to its own dataset.';
 COMMENT ON COLUMN ip_net_plan.authoritative_source IS 'The authoritative source for information regarding this prefix';
 COMMENT ON COLUMN ip_net_plan.alarm_priority IS 'Priority of alarms sent for this prefix to NetWatch.';
 COMMENT ON COLUMN ip_net_plan.monitor IS 'Whether the prefix should be monitored or not.';
 
-CREATE UNIQUE INDEX ip_net_plan__schema_prefix__index ON ip_net_plan (schema, prefix);
+CREATE UNIQUE INDEX ip_net_plan__vrf_prefix__index ON ip_net_plan (vrf, prefix);
 
-COMMENT ON INDEX ip_net_plan__schema_prefix__index IS 'prefix';
-CREATE INDEX ip_net_plan__schema__index ON ip_net_plan (schema);
+CREATE INDEX ip_net_plan__vrf__index ON ip_net_plan (vrf);
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 CREATE INDEX ip_net_plan__family__index ON ip_net_plan (family(prefix));
 CREATE INDEX ip_net_plan__prefix_iprange_index ON ip_net_plan USING gist(iprange(prefix));
@@ -111,8 +110,8 @@ CREATE INDEX ip_net_plan__prefix_iprange_index ON ip_net_plan USING gist(iprange
 --
 CREATE TABLE ip_net_log (
 	id serial PRIMARY KEY,
-	schema_name TEXT,
-	schema INTEGER,
+	vrf_name TEXT,
+	vrf TEXT,
 	prefix_prefix cidr,
 	prefix INTEGER,
 	pool_name TEXT,
@@ -127,8 +126,8 @@ CREATE TABLE ip_net_log (
 
 COMMENT ON TABLE ip_net_log IS 'Log of changes made to tables';
 
-COMMENT ON COLUMN ip_net_log.schema_name IS 'Name of affected schema, or schema of affected prefix';
-COMMENT ON COLUMN ip_net_log.schema IS 'ID of affected schema, or schema of affected prefix';
+COMMENT ON COLUMN ip_net_log.vrf_name IS 'Name of affected VRF, or VRF of affected prefix';
+COMMENT ON COLUMN ip_net_log.vrf IS 'ID of affected VRF, or VRF of affected prefix';
 COMMENT ON COLUMN ip_net_log.prefix_prefix IS 'Prefix which was affected of the action';
 COMMENT ON COLUMN ip_net_log.prefix IS 'ID of affected prefix';
 COMMENT ON COLUMN ip_net_log.pool_name IS 'Name of affected pool';
@@ -143,7 +142,7 @@ COMMENT ON COLUMN ip_net_log.description IS 'Text describing the action';
 --
 -- Indices.
 --
-CREATE INDEX ip_net_log__schema__index ON ip_net_log(schema);
+CREATE INDEX ip_net_log__vrf__index ON ip_net_log(vrf);
 CREATE INDEX ip_net_log__prefix__index ON ip_net_log(prefix);
 CREATE INDEX ip_net_log__pool__index ON ip_net_log(pool);
 

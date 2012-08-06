@@ -6,7 +6,7 @@
 -- calc_indent is an internal function that calculates the correct indentation
 -- for a prefix. It is called from a trigger function on the ip_net_plan table.
 --
-CREATE OR REPLACE FUNCTION calc_indent(arg_schema integer, arg_prefix inet, delta integer) RETURNS bool AS $_$
+CREATE OR REPLACE FUNCTION calc_indent(arg_vrf integer, arg_prefix inet, delta integer) RETURNS bool AS $_$
 DECLARE
 	r record;
 	current_indent integer;
@@ -16,13 +16,13 @@ BEGIN
 		FROM
 			(SELECT DISTINCT inp.prefix
 			FROM ip_net_plan inp
-			WHERE schema = arg_schema
+			WHERE vrf = arg_vrf
 				AND iprange(prefix) >> iprange(arg_prefix::cidr)
 			) AS a
 		);
 
-	UPDATE ip_net_plan SET indent = current_indent WHERE schema = arg_schema AND prefix = arg_prefix;
-	UPDATE ip_net_plan SET indent = indent + delta WHERE schema = arg_schema AND iprange(prefix) << iprange(arg_prefix::cidr);
+	UPDATE ip_net_plan SET indent = current_indent WHERE vrf = arg_vrf AND prefix = arg_prefix;
+	UPDATE ip_net_plan SET indent = indent + delta WHERE vrf = arg_vrf AND iprange(prefix) << iprange(arg_prefix::cidr);
 
 	RETURN true;
 END;
@@ -37,14 +37,14 @@ $_$ LANGUAGE plpgsql;
 --
 
 -- default to 1 prefix if no count is specified
-CREATE OR REPLACE FUNCTION find_free_prefix(arg_schema integer, IN arg_prefixes inet[], arg_wanted_prefix_len integer) RETURNS SETOF inet AS $_$
+CREATE OR REPLACE FUNCTION find_free_prefix(arg_vrf integer, IN arg_prefixes inet[], arg_wanted_prefix_len integer) RETURNS SETOF inet AS $_$
 BEGIN
-	RETURN QUERY SELECT * FROM find_free_prefix(arg_schema, arg_prefixes, arg_wanted_prefix_len, 1) AS prefix;
+	RETURN QUERY SELECT * FROM find_free_prefix(arg_vrf, arg_prefixes, arg_wanted_prefix_len, 1) AS prefix;
 END;
 $_$ LANGUAGE plpgsql;
 
 -- full function
-CREATE OR REPLACE FUNCTION find_free_prefix(arg_schema integer, IN arg_prefixes inet[], arg_wanted_prefix_len integer, arg_count integer) RETURNS SETOF inet AS $_$
+CREATE OR REPLACE FUNCTION find_free_prefix(arg_vrf integer, IN arg_prefixes inet[], arg_wanted_prefix_len integer, arg_count integer) RETURNS SETOF inet AS $_$
 DECLARE
 	i_family integer;
 	i_found integer;
@@ -104,19 +104,19 @@ BEGIN
 				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
 				CONTINUE;
 			END IF;
-			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema=arg_schema AND prefix=current_prefix) THEN
+			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE vrf=arg_vrf AND prefix=current_prefix) THEN
 				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
 				CONTINUE;
 			END IF;
 
 			-- avoid prefixes larger than the current_prefix but inside our search_prefix
-			covering_prefix := (SELECT prefix FROM ip_net_plan WHERE schema = arg_schema AND iprange(prefix) >>= iprange(current_prefix::cidr) AND iprange(prefix) << iprange(search_prefix::cidr) ORDER BY masklen(prefix) ASC LIMIT 1);
+			covering_prefix := (SELECT prefix FROM ip_net_plan WHERE vrf = arg_vrf AND iprange(prefix) >>= iprange(current_prefix::cidr) AND iprange(prefix) << iprange(search_prefix::cidr) ORDER BY masklen(prefix) ASC LIMIT 1);
 			IF covering_prefix IS NOT NULL THEN
 				SELECT set_masklen(broadcast(covering_prefix) + 1, arg_wanted_prefix_len) INTO current_prefix;
 				CONTINUE;
 			END IF;
 			-- prefix must not contain any breakouts, that would mean it's not empty, ie not free
-			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = arg_schema AND iprange(prefix) <<= iprange(current_prefix::cidr)) THEN
+			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE vrf = arg_vrf AND iprange(prefix) <<= iprange(current_prefix::cidr)) THEN
 				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
 				CONTINUE;
 			END IF;
@@ -159,16 +159,16 @@ $_$ LANGUAGE plpgsql;
 -- get_prefix provides a convenient and MVCC-proof way of getting the next
 -- available prefix from another prefix.
 --
-CREATE OR REPLACE FUNCTION get_prefix(arg_schema integer, IN arg_prefixes inet[], arg_wanted_prefix_len integer) RETURNS inet AS $_$
+CREATE OR REPLACE FUNCTION get_prefix(arg_vrf integer, IN arg_prefixes inet[], arg_wanted_prefix_len integer) RETURNS inet AS $_$
 DECLARE
 	p inet;
 BEGIN
 	LOOP
 		-- get a prefix
-		SELECT prefix INTO p FROM find_free_prefix(arg_schema, arg_prefixes, arg_wanted_prefix_len) AS prefix;
+		SELECT prefix INTO p FROM find_free_prefix(arg_vrf, arg_prefixes, arg_wanted_prefix_len) AS prefix;
 
 		BEGIN
-			INSERT INTO ip_net_plan (schema, prefix) VALUES (arg_schema, p);
+			INSERT INTO ip_net_plan (vrf, prefix) VALUES (arg_vrf, p);
 			RETURN p;
 		EXCEPTION WHEN unique_violation THEN
 			-- Loop and try to find a new prefix
@@ -210,7 +210,7 @@ BEGIN
 		i_max_pref_len := 128;
 	END IF;
 	-- contains the parent prefix
-	SELECT * INTO parent FROM ip_net_plan WHERE schema = NEW.schema AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
+	SELECT * INTO parent FROM ip_net_plan WHERE vrf = NEW.vrf AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
 
 	-- check that type is correct on insert and update
 	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
@@ -238,7 +238,7 @@ BEGIN
 			-- type 'host', since it would require a parent of type assignment,
 			-- but we don't need to limit the consistency check here if we ever
 			-- are to make changes in the future
-			IF EXISTS (SELECT * FROM ip_net_plan WHERE schema = NEW.schema AND type != 'host' AND iprange(prefix) << iprange(NEW.prefix) LIMIT 1) THEN
+			IF EXISTS (SELECT * FROM ip_net_plan WHERE vrf = NEW.vrf AND type != 'host' AND iprange(prefix) << iprange(NEW.prefix) LIMIT 1) THEN
 				RAISE EXCEPTION '1200:Prefix of type ''assignment'' must not have any subnets other than of type ''host''';
 			END IF;
 			NEW.display_prefix := NEW.prefix;
@@ -259,7 +259,7 @@ BEGIN
 		IF (OLD.type = 'reservation' AND NEW.type = 'assignment') OR (OLD.type = 'assignment' AND new.type = 'reservation') THEN
 			-- don't allow any childs, since they would automatically be of the
 			-- wrong type, ie inconsistent data
-			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE schema = NEW.schema AND iprange(prefix) << iprange(NEW.prefix)) THEN
+			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE vrf = NEW.vrf AND iprange(prefix) << iprange(NEW.prefix)) THEN
 				RAISE EXCEPTION '1200:Changing from type ''%'' to ''%'' requires there to be no child prefixes.', OLD.type, NEW.type;
 			END IF;
 		ELSE
@@ -288,7 +288,7 @@ BEGIN
 			-- contains one child prefix
 			-- FIXME: optimize with this, what is improvement?
 			-- IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix LIMIT 1) > 0 THEN
-			IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix AND schema = OLD.schema) > 0 THEN
+			IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix AND vrf = OLD.vrf) > 0 THEN
 				RAISE EXCEPTION '1200:Disallowed delete, prefix (%) contains hosts.', OLD.prefix;
 			END IF;
 		END IF;
@@ -309,9 +309,9 @@ DECLARE
 	r RECORD;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
-		PERFORM calc_indent(OLD.schema, OLD.prefix, -1);
+		PERFORM calc_indent(OLD.vrf, OLD.prefix, -1);
 	ELSIF TG_OP = 'INSERT' THEN
-		PERFORM calc_indent(NEW.schema, NEW.prefix, 1);
+		PERFORM calc_indent(NEW.vrf, NEW.prefix, 1);
 	ELSE
 		-- nothing!
 	END IF;
