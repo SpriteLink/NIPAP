@@ -22,6 +22,7 @@ function prefixAdded(data) {
         $('#prefix_added_container').show();
 
         $('#prefix_added_list').prepend('<div id="prefix_added_entry' + data.id + '" class="prefix_added_entry">Added prefix: ' + data.prefix + ' - ' + data.description + '</div>');
+        scrollItemVisible($("#prefix_added_entry" + data.id));
         $("#prefix_added_entry" + data.id).animate({ backgroundColor: "#ccffcc" }, 1).delay(200).animate({ backgroundColor: "#3d9400" }, 700).delay(200).animate({ backgroundColor: "#ccffcc" }, 1000);
     }
 
