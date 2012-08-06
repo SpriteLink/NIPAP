@@ -1,4 +1,4 @@
 etc
-usr/bin/nipap-passwd
+usr/sbin/nipap-passwd
 usr/sbin/nipapd
 usr/share/nipap
