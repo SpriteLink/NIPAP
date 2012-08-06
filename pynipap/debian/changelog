@@ -1,3 +1,16 @@
+pynipap (0.10.0-1) stable; urgency=low
+
+  * Added a fancy floating header to the prefix search page
+  * Improved tab completion, now handles entries containing space
+  * Improve CLI prefix search argument handling
+  * Revamp color scheme for prefix type icons (very pretty now!)
+  * nipap-passwd is now in /usr/sbin
+  * Removed erroneous logging from the nipap CLI client
+  * Improved handling of authentication errors
+  * Improved automatic scrolling in web UI
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 06 Aug 2012 15:07:29 +0200
+
 pynipap (0.9.0-1) stable; urgency=low
 
   * Add ability to show a custom welcome message on web UI login page
