@@ -1707,3 +1707,56 @@ function hideLoadingIndicator() {
 	$(".loading").fadeOut().remove();
 
 }
+
+/*
+ * Scroll to place item of interest in view.
+ *
+ * This function implements a scrolling scheme which tries to avoid
+ * scrolling too much, which only annoys the user.
+ */
+function scrollItemVisible(item) {
+
+	// viewport margin, in part of viewport height
+	var w_margin = 0.1;
+
+	// get current visible part of screen
+	var w_height = $(window).height();
+	var w_top = $(window).scrollTop();
+	var w_bottom = w_top + w_height;
+
+	// get location of element
+	e_top = item.offset().top;
+	e_bottom = e_top + item.height();
+
+	// is element within "visible portion" of screen?
+	if (e_top >= w_top + w_margin * w_height && e_bottom <= w_bottom - w_margin * w_height) {
+
+		// Yes! Do nothing!
+		return;
+
+	}
+
+	/*
+	 * Nope, we need to scroll.
+	 *
+	 * If the element is placed above the screen, scroll to place it on top of
+	 * screen. Also if the element is larger then viewport, place it on top to
+	 * make as much of the item as possible visible.
+	 *
+	 * Otherwise (which should mean that the element is placed below the bottom
+	 * of the viewport), scroll to place bottom of item just above bottom of
+	 * viewport.
+	 */
+	if ((e_top < w_top + w_margin * w_height) || (w_height - 2 * w_margin * w_height <= item.height())) {
+
+		// Item is above viewport. Scroll to place it at the top.
+		$("html,body").animate({ scrollTop: e_top - w_margin * w_height }, 700);
+
+	} else {
+
+		// item is below viewport. Scroll to place it at the bottom.
+		$("html,body").animate({ scrollTop: e_bottom + w_margin * w_height - w_height }, 700);
+
+	}
+
+}
