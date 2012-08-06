@@ -4,11 +4,7 @@
 import logging
 import unittest
 import sys
-sys.path.append('../nipap/')
-
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-log_format = "%(levelname)-8s %(message)s"
+sys.path.insert(0, '../nipap/')
 
 import nipap.nipap
 from nipap.authlib import SqliteAuth
@@ -18,16 +14,14 @@ class NipapTest(unittest.TestCase):
     """ Tests the NIPAP class
     """
 
-
-    cfg = NipapConfig('/etc/nipap/nipap.conf')
-    logger = logging.getLogger()
-    nipap = nipap.nipap.Nipap()
-
-
+    nipap = None
 
     def setUp(self):
         """ Better start from a clean slate!
         """
+
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        self.nipap = nipap.nipap.Nipap()
 
         # create dummy auth object
         # As the authentication is performed before the query hits the Nipap
@@ -36,7 +30,7 @@ class NipapTest(unittest.TestCase):
         self.auth.authenticated_as = 'unittest'
         self.auth.full_name = 'Unit test'
 
-        self.nipap._execute("TRUNCATE ip_net_plan, ip_net_pool, ip_net_schema, ip_net_log")
+        self.nipap._execute("TRUNCATE ip_net_plan, ip_net_pool, ip_net_schema, ip_net_log, ip_net_asn")
 
         self.schema_attrs = {
                 'name': 'test-schema1',
@@ -748,49 +742,152 @@ class NipapTest(unittest.TestCase):
 
 
 
-def test_edit_prefix(self):
-    """ Functionality testing of edit_prefix.
-    """
+    def test_edit_prefix(self):
+        """ Functionality testing of edit_prefix.
+        """
 
-    schema = { 'id': self.schema_attrs['id'] }
-    data = { 
-        'prefix': '192.0.2.0/24', 
-        'description': 'foo',
-        'comment': 'bar',
-        'order_id': '0xBEEF',
-        'alarm_priority': 'low',
-        'type': 'assignment',
-        'node': 'TOK-CORE-1',
-        'country': 'EE',
-        'authoritative_source': 'unittest',
-        'pool': self.pool_attrs['id']
+        schema = { 'id': self.schema_attrs['id'] }
+        data = {
+            'prefix': '192.0.2.0/24',
+            'description': 'foo',
+            'comment': 'bar',
+            'order_id': '0xBEEF',
+            'alarm_priority': 'low',
+            'type': 'assignment',
+            'node': 'TOK-CORE-1',
+            'country': 'EE',
+            'authoritative_source': 'unittest',
+            'pool': self.pool_attrs['id']
+            }
+
+        # basic edit
+        self.nipap.edit_prefix(self.auth, schema, { 'id': self.prefix_attrs['id'] }, data)
+        p = self.nipap.list_prefix(self.auth, schema, {'id': self.prefix_attrs['id']})[0]
+        # remove what we did not touch
+        for k, v in data.keys():
+            if k not in p:
+                del p[k]
+        self.assertEqual(data, p, "Prefix data incorrect after edit.")
+
+        # create a collision
+        self.assertRaises(nipap.nipap.NipapError, self.nipap.edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'prefix': data['prefix']})
+
+        # try to change schema - disallowed
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap_edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'schema': self.schema_attrs2['id']})
+
+
+
+    def test_add_asn(self):
+        """ Test adding ASNs to NIPAP.
+        """
+
+        data = {
+            'asn': 1,
+            'name': 'Test ASN #1'
         }
 
-    # basic edit
-    self.nipap.edit_prefix(self.auth, schema, { 'id': self.prefix_attrs['id'] }, data)
-    p = self.nipap.list_prefix(self.auth, schema, {'id': self.prefix_attrs['id']})[0]
-    # remove what we did not touch
-    for k, v in data.keys():
-        if k not in p:
-            del p[k]
-    self.assertEqual(data, p, "Prefix data incorrect after edit.")
+        self.assertEqual(self.nipap.add_asn(self.auth, data), 1, "add_asn did not return correct ASN.")
+        asn = self.nipap.list_asn(self.auth, { 'asn': 1 })[0]
+        self.assertEquals(data, asn, "ASN in database not equal to what was added.")
+        self.assertRaises(nipap.nipap.NipapDuplicateError, self.nipap.add_asn, self.auth, data)
 
-    # create a collision
-    self.assertRaises(nipap.nipap.NipapError, self.nipap.edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'prefix': data['prefix']})
 
-    # try to change schema - disallowed
-    self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap_edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'schema': self.schema_attrs2['id']})
+    def test_remove_asn(self):
+        """ Test removing ASNs from NIPAP.
+        """
+
+        data = {
+            'asn': 2,
+            'name': 'Test ASN #2'
+        }
+
+        asn = self.nipap.add_asn(self.auth, data)
+        self.nipap.remove_asn(self.auth, asn)
+        self.assertEquals(0, len(self.nipap.list_asn(self.auth, { 'asn': 2 })), "Removed ASN still in database")
+
+
+
+    def test_edit_asn(self):
+        """ Test editing ASNs.
+        """
+
+        data = {
+            'asn': 3,
+            'name': 'Test ASN #3'
+        }
+
+        asn = self.nipap.add_asn(self.auth, data)
+        self.nipap.edit_asn(self.auth, data['asn'], { 'name': 'b0rk' })
+        self.assertEquals(self.nipap.list_asn(self.auth, { 'asn': 3 })[0]['name'], 'b0rk', "Edited ASN still has it's old name.")
+        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap.edit_asn, self.auth, {'asn': 3}, {'asn': 4, 'name': 'Test ASN #4'})
+
+
+
+    def test_search_asn(self):
+        """ Test searching ASNs.
+        """
+
+        data = {
+            'asn': 4,
+            'name': 'This is AS number 4'
+        }
+
+        asn = self.nipap.add_asn(self.auth, data)
+        q = {
+            'operator': 'equals',
+            'val1': 'asn',
+            'val2': data['asn']
+        }
+        res = self.nipap.search_asn(self.auth, q)
+        self.assertEquals(len(res['result']), 1, "equal search resulted in wrong number of hits")
+        self.assertEquals(res['result'][0]['name'], data['name'], "search hit got wrong name")
+
+        q = {
+            'operator': 'regex_match',
+            'val1': 'name',
+            'val2': 'number'
+        }
+        res = self.nipap.search_asn(self.auth, q)
+        self.assertEquals(len(res['result']), 1, "regex search resulted in wrong number of hits")
+        self.assertEquals(res['result'][0]['asn'], data['asn'], "search hit got wrong asn")
+
+
+
+    def test_smart_search_asn(self):
+        """ Test smart_search_asn function.
+        """
+
+        data = {
+            'asn': 5,
+            'name': 'Autonomous System Number 5'
+        }
+
+        asn = self.nipap.add_asn(self.auth, data)
+        res = self.nipap.smart_search_asn(self.auth, "Autonomous")
+        self.assertEquals(len(res['result']), 1, "search resulted in wrong number of hits")
+        self.assertEquals(res['result'][0]['asn'], data['asn'], "search hit got wrong asn")
+        self.assertEquals(res['interpretation'][0]['attribute'], 'name', "search term interpretated as wrong type")
+
+        res = self.nipap.smart_search_asn(self.auth, "5")
+        self.assertEquals(len(res['result']), 1, "search resulted in wrong number of hits")
+        self.assertEquals(res['result'][0]['asn'], data['asn'], "search hit got wrong asn")
+        self.assertEquals(res['interpretation'][0]['attribute'], 'asn', "search term interpretated as wrong type")
 
 
 
 def main():
+
     if sys.version_info >= (2,7):
         unittest.main(verbosity=2)
     else:
         unittest.main()
 
 
-
-
 if __name__ == '__main__':
+
+    log_format = "%(levelname)-8s %(message)s"
+    logging.basicConfig(format=log_format)
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
     main()
