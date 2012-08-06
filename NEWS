@@ -7,6 +7,7 @@ Version 0.10.0
  * nipap-passwd is now in /usr/sbin
  * Removed erroneous logging from the nipap CLI client
  * Improved handling of authentication errors
+ * Improved automatic scrolling in web UI
 
 Version 0.9.0
 -------------
