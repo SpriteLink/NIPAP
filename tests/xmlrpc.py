@@ -141,7 +141,7 @@ class NipapXmlTest(unittest.TestCase):
     def test_prefix_smart_search(self):
         """ Add a prefix and list
         """
-        s.add_prefix({ 'auth': ad, 'attr': {
+        p1 = s.add_prefix({ 'auth': ad, 'attr': {
                 'prefix': '1.3.3.0/24',
                 'type': 'assignment',
                 'description': 'FOO'
@@ -154,7 +154,41 @@ class NipapXmlTest(unittest.TestCase):
             } })
 
         res = s.smart_search_prefix({ 'auth': ad, 'query_string': 'F' })
-        print res
+        expected = {
+                'interpretation': [{'operator': 'regex', 'attribute':
+                    'description or comment or node or order id', 'interpretation':
+                    'text', 'string': 'F'}],
+                'search_options': {'include_all_children':
+                False, 'max_result': 50, 'include_all_parents': False,
+                'parents_depth': 0, 'offset': 0, 'children_depth': 0},
+                'result': [
+                    {'comment': None,
+                        'external_key': None,
+                        'family': 4,
+                        'prefix': '1.3.3.0/24',
+                        'authoritative_source': 'nipap',
+                        'id': p1,
+                        'display_prefix': '1.3.3.0/24',
+                        'monitor': None,
+                        'children': -2,
+                        'prefix_length': 24,
+                        'type': 'assignment',
+                        'match': True,
+                        'node': None,
+                        'description': 'FOO',
+                        'order_id': None,
+                        'vrf': None,
+                        'vrf_id': 0,
+                        'pool': None,
+                        'alarm_priority': None,
+                        'indent': 0,
+                        'country': None,
+                        'vrf_name': None,
+                        'display': True
+                        }
+                    ]
+            }
+        self.assertEqual(res, expected)
 
 
 
