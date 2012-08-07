@@ -995,7 +995,17 @@ class Nipap:
             for part in shlex.split(query_str.encode('utf-8')):
                 query_str_parts.append({ 'string': part.decode('utf-8') })
         except:
-            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result': [] }
+            return {
+                'interpretation': [
+                    {
+                        'string': query_str,
+                        'interpretation': 'unclosed quote',
+                        'attribute': 'text'
+                    }
+                ],
+                'search_options': search_options,
+                'result': []
+            }
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -1570,7 +1580,7 @@ class Nipap:
             `search_options` argument.
         """
 
-        self._logger.debug("Query string: %s %s" % (query_str, type(query_str)))
+        self._logger.debug("smart_search_pool query string: %s" % query_str)
 
         # find query parts
         # XXX: notice the ugly workarounds for shlex not supporting Unicode
@@ -1579,7 +1589,17 @@ class Nipap:
             for part in shlex.split(query_str.encode('utf-8')):
                 query_str_parts.append({ 'string': part.decode('utf-8') })
         except:
-            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result': [] }
+            return {
+                'interpretation': [
+                    {
+                        'string': query_str,
+                        'interpretation': 'unclosed quote',
+                        'attribute': 'text'
+                    }
+                ],
+                'search_options': search_options,
+                'result': []
+            }
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -2617,7 +2637,7 @@ class Nipap:
             `search_options` argument.
         """
 
-        self._logger.debug("Query string: %s %s" % (query_str, type(query_str)))
+        self._logger.debug("smart_search_prefix query string: %s" % query_str)
 
         # find query parts
         # XXX: notice the ugly workarounds for shlex not supporting Unicode
@@ -2626,7 +2646,17 @@ class Nipap:
             for part in shlex.split(query_str.encode('utf-8')):
                 query_str_parts.append({ 'string': part.decode('utf-8') })
         except:
-            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result': [] }
+            return {
+                'interpretation': [
+                    {
+                        'string': query_str,
+                        'interpretation': 'unclosed quote',
+                        'attribute': 'text'
+                    }
+                ],
+                'search_options': search_options,
+                'result': []
+            }
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -3115,7 +3145,17 @@ class Nipap:
             for part in shlex.split(query_str.encode('utf-8')):
                 query_str_parts.append({ 'string': part.decode('utf-8') })
         except:
-            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result': [] }
+            return {
+                'interpretation': [
+                    {
+                        'string': query_str,
+                        'interpretation': 'unclosed quote',
+                        'attribute': 'text'
+                    }
+                ],
+                'search_options': search_options,
+                'result': []
+            }
 
         # go through parts and add to query_parts list
         query_parts = list()
