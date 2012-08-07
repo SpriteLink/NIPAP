@@ -75,6 +75,94 @@ class NipapXmlTest(unittest.TestCase):
         expected.append(attr)
         self.assertEqual(s.list_vrf({ 'auth': ad, 'vrf': {} }), expected)
 
+        attr['vrf'] = '123:abc'
+        with self.assertRaisesRegexp(xmlrpclib.Fault, '.'): # TODO: specify exception string
+            s.add_vrf({ 'auth': ad, 'attr': attr })
+
+
+
+    def test_vrf_edit(self):
+        """ Edit VRF and verify the change
+        """
+        attr = {
+            'vrf': '65000:123',
+            'name': '65k:123',
+            'description': 'VRF 65000:123'
+        }
+        spec = { 'vrf': '65000:123' }
+        s.add_vrf({ 'auth': ad, 'attr': attr })
+
+        # omitting VRF spec
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'vrf specification must be a dict'):
+            s.edit_vrf({ 'auth': ad, 'attr': { 'name': 'test_vrf_edit' } })
+
+        # omitting VRF attributes
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'invalid input type, must be dict'):
+            s.edit_vrf({ 'auth': ad, 'vrf': spec })
+
+        # specifying too many attributes in spec
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'specification contains too many keys'):
+            s.edit_vrf({ 'auth': ad, 'vrf': { 'vrf': '65000:123', 'name': '65k:123' }, 'attr': {} })
+
+        # test changing ID
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'extraneous attribute'):
+            s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': { 'id': 1337 } })
+
+        # empty attribute list
+        s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': {} })
+        res = s.list_vrf({ 'auth': ad, 'vrf': spec })
+        self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
+        res = res[0]
+        self.assertEqual(res, attr, 'VRF changed after empty edit_vrf operation')
+
+        # valid change
+        attr['vrf'] = '65000:1234'
+        attr['name'] = '65k:1234'
+        attr['description'] = 'VRF 65000:1234'
+        s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': attr })
+
+        # verify result of valid change
+        res = s.list_vrf({ 'auth': ad, 'vrf': { 'vrf': attr['vrf'] } })
+        self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
+        res = res[0]
+        self.assertEqual(res, attr, 'VRF change incorrect')
+
+
+
+    def test_vrf_add_search(self):
+        """ Add VRF and search for it
+        """
+
+        # add VRF
+        attr = {
+            'vrf': '65000:1235',
+            'name': '65k:1235',
+            'description': 'Virtual Routing and Forwarding instance 65000:123'
+        }
+        attr['id'] = s.add_vrf({ 'auth': ad, 'attr': attr })
+
+        # equal match
+        q = {
+            'operator': 'equals',
+            'val1': 'vrf',
+            'val2': attr['vrf']
+        }
+        res = s.search_vrf({ 'auth': ad, 'query': q })
+        self.assertEquals(res['result'], [ attr, ], 'Search result from equal match did not match')
+
+        # regex match
+        q = {
+            'operator': 'regex_match',
+            'val1': 'description',
+            'val2': 'instance 65000'
+        }
+        res = s.search_vrf({ 'auth': ad, 'query': q })
+        self.assertEquals(res['result'], [ attr, ], 'Search result from regex match did not match')
+
+        # smart search
+        res = s.smart_search_vrf({ 'auth': ad, 'query_string': 'forwarding instance' })
+        self.assertEquals(res['result'], [ attr, ], 'Smart search result did not match')
+
 
 
     def test_prefix_add(self):

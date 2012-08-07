@@ -116,8 +116,9 @@ CREATE INDEX ip_net_plan__prefix_iprange_index ON ip_net_plan USING gist(iprange
 --
 CREATE TABLE ip_net_log (
 	id serial PRIMARY KEY,
+	vrf INTEGER,
+	vrf_vrf TEXT,
 	vrf_name TEXT,
-	vrf TEXT,
 	prefix_prefix cidr,
 	prefix INTEGER,
 	pool_name TEXT,
