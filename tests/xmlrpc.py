@@ -159,6 +159,10 @@ class NipapXmlTest(unittest.TestCase):
         res = s.search_vrf({ 'auth': ad, 'query': q })
         self.assertEquals(res['result'], [ attr, ], 'Search result from regex match did not match')
 
+        # smart search
+        res = s.smart_search_vrf({ 'auth': ad, 'query_string': 'forwarding instance' })
+        self.assertEquals(res['result'], [ attr, ], 'Smart search result did not match')
+
 
 
     def test_prefix_add(self):
