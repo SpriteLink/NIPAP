@@ -36,7 +36,7 @@ class NipapTest(unittest.TestCase):
         self.auth.authenticated_as = 'unittest'
         self.auth.full_name = 'Unit test'
 
-        self.nipap._execute("TRUNCATE ip_net_plan, ip_net_pool, ip_net_schema, ip_net_log")
+        self.nipap._execute("TRUNCATE ip_net_plan, ip_net_pool, ip_net_vrf, ip_net_log")
 
         self.schema_attrs = {
                 'name': 'test-schema1',

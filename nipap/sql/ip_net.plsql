@@ -20,20 +20,26 @@ CREATE TABLE ip_net_asn (
 CREATE TABLE ip_net_vrf (
 	id serial PRIMARY KEY,
 	vrf text,
-	name text NOT NULL,
+	name text,
 	description text
 );
 
-CREATE UNIQUE INDEX ip_net_vrf__unique__index ON ip_net_vrf ((''::TEXT)) WHERE vrf IS NULL;
+--
+-- A little hack to allow a single VRF with no VRF or name
+--
+CREATE UNIQUE INDEX ip_net_vrf__unique_vrf__index ON ip_net_vrf ((''::TEXT)) WHERE vrf IS NULL;
+CREATE UNIQUE INDEX ip_net_vrf__unique_name__index ON ip_net_vrf ((''::TEXT)) WHERE name IS NULL;
+--
+INSERT INTO ip_net_vrf (id, vrf, name) VALUES (0, NULL, NULL);
+
 CREATE UNIQUE INDEX ip_net_vrf__vrf__index ON ip_net_vrf (vrf) WHERE vrf IS NOT NULL;
-CREATE UNIQUE INDEX ip_net_vrf__name__index ON ip_net_vrf (name);
+CREATE UNIQUE INDEX ip_net_vrf__name__index ON ip_net_vrf (name) WHERE name IS NOT NULL;
 -- TODO: add trigger function on I/U to validate vrf format (123.123.123.123:4567 or 1234:5678 - 32:16 or 16:32)
 
 COMMENT ON TABLE ip_net_vrf IS 'IP Address VRFs';
 COMMENT ON INDEX ip_net_vrf__vrf__index IS 'VRF VRF-id';
 COMMENT ON INDEX ip_net_vrf__name__index IS 'VRF name';
 
-INSERT INTO ip_net_vrf (id, vrf, name) VALUES (0, NULL, 'No VRF');
 
 
 --

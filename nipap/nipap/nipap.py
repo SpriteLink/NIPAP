@@ -6,10 +6,10 @@
     This module contains the Nipap class which provides most of the logic in NIPAP
     apart from that contained within the PostgreSQL database.
 
-    NIPAP contains three types of objects: schemas, prefixes and pools.
+    NIPAP contains three types of objects: vrfs, prefixes and pools.
 
 
-    Schema
+    VRF
     ------
     A schema can be thought of as a namespace for IP addresses, they make it
     possible to keep track of addresses that are used simultaneously in multiple
@@ -518,25 +518,25 @@ class Nipap:
 
 
     #
-    # Schema functions
+    # VRF functions
     #
-    def _expand_schema_spec(self, spec):
-        """ Expand schema specification to SQL.
+    def _expand_vrf_spec(self, spec):
+        """ Expand VRF specification to SQL.
 
             id [integer]
-                internal database id of schema
+                internal database id of VRF
 
             name [string]
-                name of schema
+                name of VRF
 
-            A schema is referenced either by its internal database id or by its
+            A VRF is referenced either by its internal database id or by its
             name. Both are used for exact matching and so no wildcard or
             regular expressions are allowed. Only one key may be used and an
             error will be thrown if both id and name is specified.
         """
 
         if type(spec) is not dict:
-            raise NipapInputError("schema specification must be a dict")
+            raise NipapInputError("vrf specification must be a dict")
 
         allowed_values = ['id', 'name', 'vrf']
         for a in spec:
@@ -545,16 +545,16 @@ class Nipap:
 
         if 'id' in spec:
             if type(spec['id']) not in (int, long):
-                raise NipapValueError("schema specification key 'id' must be an integer")
+                raise NipapValueError("vrf specification key 'id' must be an integer")
             if 'name' in spec:
-                raise NipapExtraneousInputError("schema specification contain both 'id' and 'key', specify schema id or name")
+                raise NipapExtraneousInputError("vrf specification contain both 'id' and 'key', specify vrf id or name")
         elif 'name' in spec:
             if type(spec['name']) != type(''):
-                raise NipapValueError("schema specification key 'name' must be a string")
+                raise NipapValueError("vrf specification key 'name' must be a string")
             if 'id' in spec:
-                raise NipapExtraneousInputError("schema specification contain both 'id' and 'key', specify schema id or name")
+                raise NipapExtraneousInputError("vrf specification contain both 'id' and 'key', specify vrf id or name")
         #else:
-        #    raise NipapMissingInputError('missing both id and name in schema spec')
+        #    raise NipapMissingInputError('missing both id and name in vrf spec')
 
         where, params = self._sql_expand_where(spec, 'spec_')
 
@@ -562,8 +562,8 @@ class Nipap:
 
 
 
-    def _expand_schema_query(self, query, table_name = None):
-        """ Expand schema query dict into a WHERE-clause.
+    def _expand_vrf_query(self, query, table_name = None):
+        """ Expand VRF query dict into a WHERE-clause.
 
             If you need to prefix each column reference with a table
             name, that can be supplied via the table_name argument.
@@ -582,8 +582,8 @@ class Nipap:
             # Sub expression, recurse! This is used for boolean operators: AND OR
             # add parantheses
 
-            sub_where1, opt1 = self._expand_schema_query(query['val1'], table_name)
-            sub_where2, opt2 = self._expand_schema_query(query['val2'], table_name)
+            sub_where1, opt1 = self._expand_vrf_query(query['val1'], table_name)
+            sub_where2, opt2 = self._expand_vrf_query(query['val2'], table_name)
             try:
                 where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
@@ -597,13 +597,13 @@ class Nipap:
             # TODO: raise exception if someone passes one dict and one "something else"?
 
             # val1 is variable, val2 is string.
-            schema_attr = dict()
-            schema_attr['id'] = 'id'
-            schema_attr['name'] = 'name'
-            schema_attr['description'] = 'description'
-            schema_attr['vrf'] = 'vrf'
+            vrf_attr = dict()
+            vrf_attr['id'] = 'id'
+            vrf_attr['name'] = 'name'
+            vrf_attr['description'] = 'description'
+            vrf_attr['vrf'] = 'vrf'
 
-            if query['val1'] not in schema_attr:
+            if query['val1'] not in vrf_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
             # build where clause
@@ -611,7 +611,7 @@ class Nipap:
                 raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
 
             where = str(" %s%s %s %%s " %
-                ( col_prefix, schema_attr[query['val1']],
+                ( col_prefix, vrf_attr[query['val1']],
                 _operation_map[query['operator']] )
             )
 
@@ -621,107 +621,110 @@ class Nipap:
 
 
 
-    def add_schema(self, auth, attr):
-        """ Add a new network schema.
+    def add_vrf(self, auth, attr):
+        """ Add a new VRF.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `attr` [schema_attr]
-                The news schema's attributes.
+            * `attr` [vrf_attr]
+                The news VRF's attributes.
 
-            Add a schema based on the values stored in the inputted attr dict.
+            Add a VRF based on the values stored in the inputted attr dict.
 
-            Returns the ID of the added schema.
+            Returns the internal database ID of the added VRF.
         """
 
-        self._logger.debug("add_schema called; attr: %s" % str(attr))
+        self._logger.debug("add_vrf called; attr: %s" % str(attr))
 
         # sanity check - do we have all attributes?
-        req_attr = [ 'name', 'description' ]
-        allowed_attr = [ 'name', 'description', 'vrf' ]
-        self._check_attr(attr, req_attr, allowed_attr)
+        req_attr = [ 'vrf', 'name', 'description' ]
+        self._check_attr(attr, req_attr, req_attr)
 
         insert, params = self._sql_expand_insert(attr)
-        sql = "INSERT INTO ip_net_schema " + insert
+        sql = "INSERT INTO ip_net_vrf " + insert
 
         self._execute(sql, params)
-        schema_id  = self._lastrowid()
+        vrf_id  = self._lastrowid()
 
         # write to audit table
         audit_params = {
-            'schema': schema_id,
-            'schema_name': attr['name'],
+            'vrf': vrf_id,
+            'vrf_name': attr['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added schema %s with attr: %s' % (attr['name'], str(attr))
+            'description': 'Added VRF %s with attr: %s' % (attr['name'], str(attr))
         }
 
         sql, params = self._sql_expand_insert(audit_params)
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
-        return schema_id
+        return vrf_id
 
 
-    def remove_schema(self, auth, spec):
-        """ Remove a schema.
+    def remove_vrf(self, auth, spec):
+        """ Remove a VRF.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `spec` [schema_spec]
-                A schema specification.
+            * `spec` [vrf_spec]
+                A VRF specification.
 
-            Remove schema matching the `spec` argument.
+            Remove VRF matching the `spec` argument.
         """
 
-        self._logger.debug("remove_schema called; spec: %s" % str(spec))
+        self._logger.debug("remove_vrf called; spec: %s" % str(spec))
 
-        self.remove_prefix(auth, schema_spec = spec, spec = { 'prefix': '0.0.0.0/0' }, recursive = True)
-        self.remove_prefix(auth, schema_spec = spec, spec = { 'prefix': '::/0' }, recursive = True)
+        v4spec = spec.copy()
+        v4spec['prefix'] = '0.0.0.0/0'
+        v6spec = spec.copy()
+        v6spec['prefix'] = '::/0'
+        self.remove_prefix(auth, spec = v4spec, recursive = True)
+        self.remove_prefix(auth, spec = v6spec, recursive = True)
 
-        schemas = self.list_schema(spec)
-        where, params = self._expand_schema_spec(spec)
-        sql = "DELETE FROM ip_net_schema WHERE %s" % where
+        vrfs = self.list_vrf(spec)
+        where, params = self._expand_vrf_spec(spec)
+        sql = "DELETE FROM ip_net_vrf WHERE %s" % where
         self._execute(sql, params)
 
         # write to audit table
-        for s in schemas:
+        for s in vrfs:
             audit_params = {
-                'schema': s['id'],
-                'schema_name': s['name'],
+                'vrf': s['id'],
+                'vrf_name': s['name'],
                 'username': auth.username,
                 'authenticated_as': auth.authenticated_as,
                 'full_name': auth.full_name,
                 'authoritative_source': auth.authoritative_source,
-                'description': 'Removed schema %s' % s['name']
+                'description': 'Removed vrf %s' % s['name']
             }
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
-    def list_schema(self, auth, spec = {}):
-        """ Return a list of schemas matching `spec`.
+    def list_vrf(self, auth, spec = {}):
+        """ Return a list of VRFs matching `spec`.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `spec` [schema_spec]
-                A schema specification. If omitted, all schemas are returned.
+            * `spec` [vrf_spec]
+                A VRF specification. If omitted, all VRFs are returned.
 
             Returns a list of dicts.
         """
 
-        self._logger.debug("list_schema called; spec: %s" % str(spec))
+        self._logger.debug("list_vrf called; spec: %s" % str(spec))
 
-        sql = "SELECT * FROM ip_net_schema"
+        sql = "SELECT * FROM ip_net_vrf"
         params = list()
 
-        where, params = self._expand_schema_spec(spec)
+        where, params = self._expand_vrf_spec(spec)
         if len(params) > 0:
             sql += " WHERE " + where
 
-        sql += " ORDER BY name ASC"
+        sql += " ORDER BY vrf ASC NULLS FIRST"
 
         self._execute(sql, params)
 
@@ -733,24 +736,29 @@ class Nipap:
 
 
 
-    def _get_schema(self, auth, spec):
-        """ Get a schema.
+    def _get_vrf(self, auth, spec):
+        """ Get a VRF based on prefix spec
 
             Shorthand function to reduce code in the functions below, since
             more or less all of them needs to perform the actions that are
             specified here.
 
-            The major difference to :func:`list_schema` is that an exception
-            is raised if no schema matching the spec is found.
+            The major difference to :func:`list_schema` is that we always return
+            results - empty results if no VRF is found.
         """
 
-        schema = self.list_schema(auth, spec)
-        if len(schema) == 0:
-            raise NipapInputError("non-existing schema specified")
-        elif len(schema) > 1:
+        vrf = []
+        if 'vrf' in spec:
+            vrf = self.list_vrf(auth, { 'vrf': spec['vrf'] })
+        elif 'vrf_name' in spec:
+            vrf = self.list_vrf(auth, { 'vrf': spec['vrf'] })
+
+        if len(vrf) == 1:
+            return vrf[0]
+        elif len(vrf) > 1:
             raise NipapInputError("found multiple matching schemas")
 
-        return schema[0]
+        return {'vrf': None, 'vrf_name': None}
 
 
 
@@ -1138,7 +1146,7 @@ class Nipap:
         self._check_pool_attr(attr, req_attr)
 
         # populate 'schema' with correct id
-        schema = self._get_schema(auth, schema_spec)
+        schema = self._get_vrf(auth, schema_spec)
         attr['schema'] = schema['id']
 
         insert, params = self._sql_expand_insert(attr)
@@ -1165,23 +1173,18 @@ class Nipap:
 
 
 
-    def remove_pool(self, auth, schema_spec, spec):
+    def remove_pool(self, auth, spec):
         """ Remove a pool.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `spec` [pool_spec]
                 Specifies what pool(s) to remove.
         """
 
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
 
-        # populate 'schema' with correct id
-        schema = self._get_schema(auth, schema_spec)
-
-        pools = self.list_pool(auth, schema_spec, spec)
+        pools = self.list_pool(auth, spec)
 
         where, params = self._expand_pool_spec(spec)
         sql = "DELETE FROM ip_net_pool AS po WHERE %s" % where
@@ -1614,12 +1617,8 @@ class Nipap:
         if type(spec) is not dict:
             raise NipapInputError('invalid prefix specification')
 
-        if 'schema' not in spec:
-            raise NipapMissingInputError('missing schema')
-
-        allowed_keys = ['id', 'family', 'schema',
-            'type', 'pool_name', 'pool_id', 'prefix', 'pool', 'monitor',
-            'external_key', 'vrf' ]
+        allowed_keys = ['id', 'family', 'type', 'pool_name', 'pool_id',
+                'prefix', 'pool', 'monitor', 'external_key', 'vrf', 'vrf_name']
         for key in spec.keys():
             if key not in allowed_keys:
                 raise NipapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
@@ -1629,13 +1628,21 @@ class Nipap:
 
         # if we have id, no other input is needed
         if 'id' in spec:
-            if spec != {'id': spec['id'], 'schema': spec['schema']}:
+            if spec != {'id': spec['id']}:
                 raise NipapExtraneousInputError("If id specified, no other keys are allowed.")
 
         family = None
         if 'family' in spec:
             family = spec['family']
             del(spec['family'])
+
+        if 'vrf_name' in spec:
+            spec['vrf.name'] = spec['vrf_name']
+            del(spec['vrf_name'])
+
+        if 'vrf' in spec:
+            spec['vrf.vrf'] = spec['vrf']
+            del(spec['vrf'])
 
         where, params = self._sql_expand_where(spec)
 
@@ -1747,13 +1754,11 @@ class Nipap:
 
 
 
-    def add_prefix(self, auth, schema_spec, attr, args = {}):
+    def add_prefix(self, auth, attr, args = {}):
         """ Add a prefix and return its ID.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `attr` [prefix_attr]
                 Prefix attributes.
             * `args` [add_prefix_args]
@@ -1790,9 +1795,7 @@ class Nipap:
         if args is None:
             args = {}
 
-        # populate 'schema' with correct id
-        schema = self._get_schema(auth, schema_spec)
-        attr['schema'] = schema['id']
+        vrf = self._get_vrf(auth, attr)
         attr['authoritative_source'] = auth.authoritative_source
 
         # sanity checks
@@ -1826,7 +1829,7 @@ class Nipap:
             attr['pool'] = pool['id']
 
         # do we have all attributes?
-        req_attr = [ 'prefix', 'schema', 'authoritative_source' ]
+        req_attr = [ 'prefix', 'authoritative_source' ]
         allowed_attr = [
             'authoritative_source', 'prefix', 'schema', 'description',
             'comment', 'pool', 'node', 'type', 'country',
@@ -1843,8 +1846,8 @@ class Nipap:
 
         # write to audit table
         audit_params = {
-            'schema': schema['id'],
-            'schema_name': schema['name'],
+            'vrf': vrf['vrf'],
+            'vrf_name': vrf['vrf_name'],
             'prefix': prefix_id,
             'prefix_prefix': attr['prefix'],
             'username': auth.username,
@@ -1858,8 +1861,8 @@ class Nipap:
 
         if pool is not None:
             audit_params = {
-                'schema': schema['id'],
-                'schema_name': schema['name'],
+                'vrf': vrf['vrf'],
+                'vrf_name': vrf['vrf_name'],
                 'pool': pool['id'],
                 'pool_name': pool['name'],
                 'prefix': prefix_id,
@@ -1870,6 +1873,7 @@ class Nipap:
                 'authoritative_source': auth.authoritative_source,
                 'description': 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
             }
+        # TODO: huh, shouldn't there be an INSERT here?
 
         return prefix_id
 
@@ -1966,13 +1970,11 @@ class Nipap:
 
 
 
-    def find_free_prefix(self, auth, schema_spec, args):
+    def find_free_prefix(self, auth, args):
         """ Finds free prefixes in the sources given in `args`.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `args` [find_free_prefix_args]
                 Arguments to the find free prefix function.
 
@@ -2023,8 +2025,6 @@ class Nipap:
         if type(args) is not dict:
             raise NipapInputError("invalid input, please provide dict as args")
 
-        args['schema'] = self._get_schema(auth, schema_spec)['id']
-
         # TODO: find good default value for max_num
         # TODO: let max_num be configurable from configuration file
         max_count = 1000
@@ -2057,7 +2057,7 @@ class Nipap:
         wpl = 0
         if 'from-pool' in args:
             # extract prefixes from
-            pool_result = self.list_pool(auth, schema_spec, args['from-pool'])
+            pool_result = self.list_pool(auth, args['from-pool'])
             self._logger.debug(args)
             if pool_result == []:
                 raise NipapNonExistentError("Non-existent pool specified")
@@ -2105,9 +2105,9 @@ class Nipap:
 
         damp = 'SELECT array_agg((prefix::text)::inet) FROM (' + sql_prefix + ') AS a'
 
-        sql = """SELECT * FROM find_free_prefix(%(schema)s, (""" + damp + """), %(prefix_length)s, %(max_result)s) AS prefix"""
+        sql = """SELECT * FROM find_free_prefix(%(vrf)s, (""" + damp + """), %(prefix_length)s, %(max_result)s) AS prefix"""
 
-        params['schema'] = args['schema']
+        params['vrf'] = self._get_verf(auth, args['vrf'])
         params['prefixes'] = prefixes
         params['prefix_length'] = wpl
         params['max_result'] = args['count']
@@ -2122,13 +2122,11 @@ class Nipap:
 
 
 
-    def list_prefix(self, auth, schema_spec, spec = None):
+    def list_prefix(self, auth, spec = None):
         """ List prefixes matching the `spec`.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `spec` [prefix_spec]
                 Specifies prefixes to list. If omitted, all will be listed.
 
@@ -2142,15 +2140,35 @@ class Nipap:
         self._logger.debug("list_prefix called; spec: %s" % str(spec))
 
         if type(spec) is dict:
-
-            spec['schema'] = self._get_schema(auth, schema_spec)['id']
-
             where, params = self._expand_prefix_spec(spec)
-
         else:
             raise NipapError("invalid prefix specification")
 
-        sql = """SELECT *, family(prefix) AS family FROM ip_net_plan WHERE %s ORDER BY prefix""" % where
+        if where != '':
+            where = ' WHERE ' + where
+
+        sql = """SELECT
+            inp.id,
+            vrf.vrf AS vrf,
+            vrf.name AS vrf_name,
+            family(prefix) AS family,
+            inp.prefix,
+            inp.display_prefix,
+            inp.description,
+            inp.node,
+            inp.comment,
+            inp.pool,
+            inp.type,
+            inp.indent,
+            inp.country,
+            inp.order_id,
+            inp.external_key,
+            inp.authoritative_source,
+            inp.alarm_priority,
+            inp.monitor
+            FROM ip_net_plan inp
+            JOIN ip_net_vrf vrf ON (inp.vrf = vrf.id) %s
+            ORDER BY prefix""" % where
 
         self._execute(sql, params)
 
@@ -2164,7 +2182,7 @@ class Nipap:
 
 
 
-    def _db_remove_prefix(self, spec, recursive = False):
+    def _db_remove_prefix(self, recursive = False):
         """ Do the underlying database operations to delete a prefix
         """
         if recursive:
@@ -2182,13 +2200,11 @@ class Nipap:
 
 
 
-    def remove_prefix(self, auth, schema_spec, spec, recursive = False):
+    def remove_prefix(self, auth, spec, recursive = False):
         """ Remove prefix matching `spec`.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `spec` [prefix_spec]
                 Specifies prefixe to remove.
         """
@@ -2198,7 +2214,7 @@ class Nipap:
         # sanity check - do we have all attributes?
         if 'id' in spec:
             # recursive requires a prefix, so translate id to prefix
-            p = self.list_prefix(auth, schema_spec, spec)[0]
+            p = self.list_prefix(auth, spec)[0]
             del spec['id']
             spec['prefix'] = p['prefix']
         elif 'prefix' in spec:
@@ -2206,9 +2222,7 @@ class Nipap:
         else:
             raise NipapMissingInputError('missing prefix or id of prefix')
 
-        schema = self._get_schema(auth, schema_spec)
-        spec['schema'] = schema['id']
-        prefixes = self.list_prefix(auth, schema_spec, spec)
+        prefixes = self.list_prefix(auth, spec)
 
         if recursive:
             spec['type'] = 'host'

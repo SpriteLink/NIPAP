@@ -20,6 +20,8 @@ if options.user and options.password:
 server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': options.port, 'cred': cred }
 server = xmlrpclib.Server(server_url, allow_none=1);
 
+ad = { 'authoritative_source': 'nipap' }
+
 remove_query = {
 		'auth': {
 			'authoritative_source': 'kll'
@@ -28,14 +30,44 @@ remove_query = {
 			'id': 1
 			}
 		}
-server.remove_schema(remove_query)
+#server.remove_schema(remove_query)
+print server.list_vrf({ 'auth': ad, 'vrf': {} })
+#print server.add_vrf({ 'auth': { 'authoritative_source': 'kll' },
+#        'attr': {
+#            'vrf': '1257:124',
+#            'name': 'test2',
+#            'description': 'my test VRF'
+#            }
+#        }
+#    )
+print server.list_vrf({ 'auth': ad, 'vrf': {} })
+print server.add_prefix({ 'auth': ad, 'attr': {
+            'prefix': '1.0.0.0/24',
+            'type': 'assignment',
+            'description': 'test'
+        }
+    })
+
+print "All VRFs:"
+res = server.list_prefix({ 'auth': ad })
+for p in res:
+    print "%10s %s" % (p['vrf_name'], p['prefix'])
+
+print "VRF: test2"
+res = server.list_prefix({ 'auth': ad,
+        'prefix': {
+            'vrf': '1257:124'
+            }
+        })
+for p in res:
+    print "%10s %s" % (p['vrf_name'], p['prefix'])
 
 #t0 = time.time()
 #import sys
 #ss = u'ballong'
 #print "Type of search string:", type(ss)
 #print ss
-##res = server.search_schema({ 'operator': 'regex_match', 'val1': 'name', 'val2': 'test' }, { 'max_result': 500 })
+#res = server.search_schema({ 'operator': 'regex_match', 'val1': 'name', 'val2': 'test' }, { 'max_result': 500 })
 #res = server.smart_search_schema(ss, { 'max_result': 500 })
 #t1 = time.time()
 #d1 = t1-t0

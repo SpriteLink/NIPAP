@@ -554,7 +554,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.list_prefix(args.get('auth'), args.get('prefix'))
+            return self.nipap.list_prefix(args.get('auth'), args.get('prefix', {}))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
