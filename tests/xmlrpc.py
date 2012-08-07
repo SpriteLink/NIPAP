@@ -75,6 +75,58 @@ class NipapXmlTest(unittest.TestCase):
         expected.append(attr)
         self.assertEqual(s.list_vrf({ 'auth': ad, 'vrf': {} }), expected)
 
+        attr['vrf'] = '123:abc'
+        with self.assertRaisesRegexp(xmlrpclib.Fault, '.'): # TODO: specify exception string
+            s.add_vrf({ 'auth': ad, 'attr': attr })
+
+
+
+    def test_vrf_edit(self):
+        """ Edit VRF and verify the change
+        """
+        attr = {
+            'vrf': '65000:123',
+            'name': '65k:123',
+            'description': 'VRF 65000:123'
+        }
+        spec = { 'vrf': '65000:123' }
+        s.add_vrf({ 'auth': ad, 'attr': attr })
+
+        # omitting VRF spec
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'vrf specification must be a dict'):
+            s.edit_vrf({ 'auth': ad, 'attr': { 'name': 'test_vrf_edit' } })
+
+        # omitting VRF attributes
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'invalid input type, must be dict'):
+            s.edit_vrf({ 'auth': ad, 'vrf': spec })
+
+        # specifying too many attributes in spec
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'specification contains too many keys'):
+            s.edit_vrf({ 'auth': ad, 'vrf': { 'vrf': '65000:123', 'name': '65k:123' }, 'attr': {} })
+
+        # test changing ID
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'extraneous attribute'):
+            s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': { 'id': 1337 } })
+
+        # empty attribute list
+        s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': {} })
+        res = s.list_vrf({ 'auth': ad, 'vrf': spec })
+        self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
+        res = res[0]
+        self.assertEqual(res, attr, 'VRF changed after empty edit_vrf operation')
+
+        # valid change
+        attr['vrf'] = '65000:1234'
+        attr['name'] = '65k:1234'
+        attr['description'] = 'VRF 65000:1234'
+        s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': attr })
+
+        # verify result of valid change
+        res = s.list_vrf({ 'auth': ad, 'vrf': { 'vrf': attr['vrf'] } })
+        self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
+        res = res[0]
+        self.assertEqual(res, attr, 'VRF change incorrect')
+
 
 
     def test_prefix_add(self):
