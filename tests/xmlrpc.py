@@ -138,6 +138,26 @@ class NipapXmlTest(unittest.TestCase):
 
 
 
+    def test_prefix_smart_search(self):
+        """ Add a prefix and list
+        """
+        s.add_prefix({ 'auth': ad, 'attr': {
+                'prefix': '1.3.3.0/24',
+                'type': 'assignment',
+                'description': 'FOO'
+            } })
+
+        s.add_prefix({ 'auth': ad, 'attr': {
+                'prefix': '1.3.3.0/32',
+                'type': 'host',
+                'description': 'BAR'
+            } })
+
+        res = s.smart_search_prefix({ 'auth': ad, 'query_string': 'F' })
+        print res
+
+
+
 if __name__ == '__main__':
     if sys.version_info >= (2,7):
         unittest.main(verbosity=2)
