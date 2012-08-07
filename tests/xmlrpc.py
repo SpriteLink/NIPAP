@@ -26,6 +26,7 @@ class NipapXmlTest(unittest.TestCase):
 
         We presume the database is empty
     """
+    maxDiff = None
 
     logger = logging.getLogger()
     cfg = NipapConfig('/etc/nipap/nipap.conf')
@@ -116,6 +117,25 @@ class NipapXmlTest(unittest.TestCase):
             }
         expected.update(attr)
         self.assertEqual(s.list_prefix({ 'auth': ad }), [expected])
+
+        attr = {
+                'description': 'test for from-prefix 1.3.3.0/24',
+                'type': 'host'
+            }
+        args = { 'from-prefix': ['1.3.3.0/24'], 'prefix_length': 32 }
+        res = s.add_prefix({ 'auth': ad, 'attr': attr, 'args': args })
+
+        expected_host = expected.copy()
+        expected_host.update(attr)
+        expected_host['id'] = res
+        expected_host['prefix'] = '1.3.3.1/32'
+        expected_host['display_prefix'] = '1.3.3.1/24'
+        expected_host['indent'] = 1
+        expected_list = []
+        expected_list.append(expected)
+        expected_list.append(expected_host)
+        self.assertEqual(s.list_prefix({ 'auth': ad }), expected_list)
+
 
 
 if __name__ == '__main__':
