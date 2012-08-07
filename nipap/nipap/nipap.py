@@ -755,8 +755,6 @@ class Nipap:
 
         if len(vrf) == 1:
             return vrf[0]
-        elif len(vrf) > 1:
-            raise NipapInputError("found multiple matching schemas")
 
         return {'vrf': None, 'vrf_name': None}
 
