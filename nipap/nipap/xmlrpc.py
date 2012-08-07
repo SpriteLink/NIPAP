@@ -662,3 +662,132 @@ class NipapProtocol(xmlrpc.XMLRPC):
             return self.nipap.find_free_prefix(args.get('auth'), args.get('args'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    #
+    # ASN FUNCTIONS
+    #
+    def xmlrpc_add_asn(self, args):
+        """ Add a new ASN.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `attr` [struct]
+                ASN attributes.
+
+            Returns the ASN.
+        """
+
+        try:
+            return self.nipap.add_asn(args.get('auth'), args.get('attr'))
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    def xmlrpc_remove_asn(self, args):
+        """ Removes an ASN.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `asn` [integer]
+                An ASN.
+        """
+
+        try:
+            self.nipap.remove_asn(args.get('auth'), args.get('asn'))
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    def xmlrpc_list_asn(self, args):
+        """ List ASNs.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `asn` [struct]
+                Specifies ASN attributes to match (optional).
+
+            Returns a list of ASNs matching the ASN spec as a list of structs.
+        """
+
+        try:
+            return self.nipap.list_asn(args.get('auth'), args.get('asn'))
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    def xmlrpc_edit_asn(self, args):
+        """ Edit an ASN.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `asn` [integer]
+                An integer specifying which ASN to edit.
+            * `attr` [struct]
+                ASN attributes.
+        """
+
+        try:
+            self.nipap.edit_asn(args.get('auth'), args.get('asn'), args.get('attr'))
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    def xmlrpc_search_asn(self, args):
+        """ Search ASNs.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `query` [struct]
+                A struct specifying the search query.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing search result and the search options
+            used.
+        """
+
+        try:
+            return self.nipap.search_asn(args.get('auth'), args.get('query'), args.get('search_options'))
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    def xmlrpc_smart_search_asn(self, args):
+        """ Perform a smart search among ASNs.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `query_string` [string]
+                The search string.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing search result, interpretation of the
+            search string and the search options used.
+        """
+
+        try:
+            return self.nipap.smart_search_asn(args.get('auth'), args.get('query_string'), args.get('search_options'))
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
