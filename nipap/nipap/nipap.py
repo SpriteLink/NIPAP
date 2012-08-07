@@ -565,16 +565,15 @@ class Nipap:
 
         if 'id' in spec:
             if type(spec['id']) not in (int, long):
-                raise NipapValueError("vrf specification key 'id' must be an integer")
-            if 'name' in spec:
-                raise NipapExtraneousInputError("vrf specification contain both 'id' and 'key', specify vrf id or name")
+                raise NipapValueError("VRF specification key 'id' must be an integer.")
+        elif 'vrf' in spec:
+            if type(spec['vrf']) != type(''):
+                raise NipapValueError("VRF specification key 'vrf' must be a string.")
         elif 'name' in spec:
             if type(spec['name']) != type(''):
-                raise NipapValueError("vrf specification key 'name' must be a string")
-            if 'id' in spec:
-                raise NipapExtraneousInputError("vrf specification contain both 'id' and 'key', specify vrf id or name")
-        #else:
-        #    raise NipapMissingInputError('missing both id and name in vrf spec')
+                raise NipapValueError("VRF specification key 'name' must be a string.")
+        if len(spec) > 1:
+            raise NipapExtraneousInputError("VRF specification contains too many keys, specify VRF id, vrf or name.")
 
         where, params = self._sql_expand_where(spec, 'spec_')
 
@@ -649,7 +648,7 @@ class Nipap:
             * `attr` [vrf_attr]
                 The news VRF's attributes.
 
-            Add a VRF based on the values stored in the inputted attr dict.
+            Add a VRF based on the values stored in the inputted `attr` dict.
 
             Returns the internal database ID of the added VRF.
         """
@@ -664,17 +663,18 @@ class Nipap:
         sql = "INSERT INTO ip_net_vrf " + insert
 
         self._execute(sql, params)
-        vrf_id  = self._lastrowid()
+        vrf_id = self._lastrowid()
 
         # write to audit table
         audit_params = {
             'vrf': vrf_id,
+            'vrf_vrf': attr['vrf'],
             'vrf_name': attr['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added VRF %s with attr: %s' % (attr['name'], str(attr))
+            'description': 'Added VRF %s with attr: %s' % (attr['vrf'], str(attr))
         }
 
         sql, params = self._sql_expand_insert(audit_params)
@@ -703,21 +703,22 @@ class Nipap:
         self.remove_prefix(auth, spec = v4spec, recursive = True)
         self.remove_prefix(auth, spec = v6spec, recursive = True)
 
-        vrfs = self.list_vrf(spec)
         where, params = self._expand_vrf_spec(spec)
         sql = "DELETE FROM ip_net_vrf WHERE %s" % where
         self._execute(sql, params)
 
         # write to audit table
-        for s in vrfs:
+        vrfs = self.list_vrf(spec)
+        for v in vrfs:
             audit_params = {
-                'vrf': s['id'],
-                'vrf_name': s['name'],
+                'vrf': v['id'],
+                'vrf_vrf': v['vrf'],
+                'vrf_name': v['name'],
                 'username': auth.username,
                 'authenticated_as': auth.authenticated_as,
                 'full_name': auth.full_name,
                 'authoritative_source': auth.authoritative_source,
-                'description': 'Removed vrf %s' % s['name']
+                'description': 'Removed vrf %s' % v['vrf']
             }
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -780,53 +781,54 @@ class Nipap:
 
 
 
-    def edit_schema(self, auth, spec, attr):
-        """ Updata schema matching `spec` with attributes `attr`.
+    def edit_vrf(self, auth, spec, attr):
+        """ Update VRFs matching `spec` with attributes `attr`.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `spec` [schema_spec]
-                Schema specification.
-            * `attr` [schema_attr]
+            * `spec` [vrf_spec]
+                Attibutes specifying what VRF to edit.
+            * `attr` [vrf_attr]
                 Dict specifying fields to be updated and their new values.
         """
 
-        self._logger.debug("edit_schema called; spec: %s  attr: %s" %
+        self._logger.debug("edit_vrf called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
 
         # sanity check - do we have all attributes?
-        req_attr = [ 'name', 'description']
-        allowed_attr = [ 'name', 'description', 'vrf' ]
+        req_attr = [ ]
+        allowed_attr = [ 'vrf', 'name', 'description' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
-        schemas = self.list_schema(auth, spec)
-
-        where, params1 = self._expand_schema_spec(spec)
+        where, params1 = self._expand_vrf_spec(spec)
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())
 
-        sql = "UPDATE ip_net_schema SET " + update
+        sql = "UPDATE ip_net_vrf SET " + update
         sql += " WHERE " + where
 
         self._execute(sql, params)
 
+        vrfs = self.list_vrf(auth, spec)
+
         # write to audit table
-        for s in schemas:
+        for v in vrfs:
             audit_params = {
-                'schema': s['id'],
-                'schema_name': s['name'],
+                'vrf': v['id'],
+                'vrf_vrf': v['vrf'],
+                'vrf_name': v['name'],
                 'username': auth.username,
                 'authenticated_as': auth.authenticated_as,
                 'full_name': auth.full_name,
                 'authoritative_source': auth.authoritative_source,
-                'description': 'Edited schema %s attr: %s' % (s['name'], str(attr))
+                'description': 'Edited VRF %s attr: %s' % (v['vrf'], str(attr))
             }
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
-    def search_schema(self, auth, query, search_options = {}):
+    def search_vrf(self, auth, query, search_options = {}):
         """ Search schema list for schemas matching `query`.
 
             * `auth` [BaseAuth]
@@ -868,15 +870,15 @@ class Nipap:
 
                 query = {
                     'operator': 'equals',
-                    'val1': 'name',
-                    'val2': 'test'
+                    'val1': 'vrf',
+                    'val2': '65000:123'
                 }
 
             This will be expanded to the pseudo-SQL query::
 
-                SELECT * FROM schema WHERE name = 'test'
+                SELECT * FROM vrf WHERE vrf = '65000:123'
 
-            Example 2 - Find schema whose name or description regex matches 'test'::
+            Example 2 - Find vrf whose name or description regex matches 'test'::
 
                 query = {
                     'operator': 'or',
@@ -894,7 +896,7 @@ class Nipap:
 
             This will be expanded to the pseudo-SQL query::
 
-                SELECT * FROM schema WHERE name ~* 'test' OR description ~* 'test'
+                SELECT * FROM vrf WHERE name ~* 'test' OR description ~* 'test'
 
             The search options can also be used to limit the number of rows
             returned or set an offset for the result.
@@ -928,15 +930,15 @@ class Nipap:
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
-        self._logger.debug('search_schema search_options: %s' % str(search_options))
+        self._logger.debug('search_vrf search_options: %s' % str(search_options))
 
         opt = None
-        sql = """ SELECT * FROM ip_net_schema """
+        sql = """ SELECT * FROM ip_net_vrf """
 
         # add where clause if we have any search terms
         if query != {}:
 
-            where, opt = self._expand_schema_query(query)
+            where, opt = self._expand_vrf_query(query)
             sql += " WHERE " + where
 
         sql += " ORDER BY name LIMIT " + str(search_options['max_result'])
@@ -950,15 +952,15 @@ class Nipap:
 
 
 
-    def smart_search_schema(self, auth, query_str, search_options = {}):
-        """ Perform a smart search on schema list.
+    def smart_search_vrf(self, auth, query_str, search_options = {}):
+        """ Perform a smart search on VRF list.
 
             * `auth` [BaseAuth]
                 AAA options.
             * `query_str` [string]
                 Search string
             * `search_options` [options_dict]
-                Search options. See :func:`search_schema`.
+                Search options. See :func:`search_vrf`.
 
             Return a dict with three elements:
                 * :attr:`interpretation` - How the query string was interpreted.
@@ -980,11 +982,11 @@ class Nipap:
             against the name or description column with regex match or the VRF
             column with an exact match.
 
-            See the :func:`search_schema` function for an explanation of the
+            See the :func:`search_vrf` function for an explanation of the
             `search_options` argument.
         """
 
-        self._logger.debug("Query string: %s %s" % (query_str, type(query_str)))
+        self._logger.debug("smart_search_vrf query string: %s" % query_str)
 
         # find query parts
         # XXX: notice the ugly workarounds for shlex not supporting Unicode
@@ -999,31 +1001,31 @@ class Nipap:
         query_parts = list()
         for query_str_part in query_str_parts:
 
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'name or description'
-                query_parts.append({
+            self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
+            query_str_part['interpretation'] = 'text'
+            query_str_part['operator'] = 'regex'
+            query_str_part['attribute'] = 'name or description'
+            query_parts.append({
+                'operator': 'or',
+                'val1': {
                     'operator': 'or',
                     'val1': {
-                        'operator': 'or',
-                        'val1': {
-                            'operator': 'regex_match',
-                            'val1': 'name',
-                            'val2': query_str_part['string']
-                        },
-                        'val2': {
-                            'operator': 'regex_match',
-                            'val1': 'description',
-                            'val2': query_str_part['string']
-                        }
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': query_str_part['string']
                     },
                     'val2': {
-                        'operator': 'equals',
-                        'val1': 'vrf',
+                        'operator': 'regex_match',
+                        'val1': 'description',
                         'val2': query_str_part['string']
                     }
-                })
+                },
+                'val2': {
+                    'operator': 'equals',
+                    'val1': 'vrf',
+                    'val2': query_str_part['string']
+                }
+            })
 
         # Sum all query parts to one query
         query = {}
@@ -1039,9 +1041,9 @@ class Nipap:
                 }
 
 
-        self._logger.debug("Expanded to: %s" % str(query))
+        self._logger.debug("smart_search_vrf; query expanded to: %s" % str(query))
 
-        search_result = self.search_schema(auth, query, search_options)
+        search_result = self.search_vrf(auth, query, search_options)
         search_result['interpretation'] = query_str_parts
 
         return search_result
