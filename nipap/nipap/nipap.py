@@ -105,26 +105,6 @@
     * :func:`~Nipap.add_pool` - Add a pool.
     * :func:`~Nipap.edit_pool` - Edit a pool.
     * :func:`~Nipap.remove_pool` - Remove a pool.
-    * :func:`~Nipap.search_pool` - Search pools from a specifically formatted dict.
-    * :func:`~Nipap.smart_search_pool` - Search pools from arbitarly formatted string.
-
-    ASN
-    ---
-    An ASN object represents an Autonomous System Number (ASN).
-
-    ASN attributes
-    ^^^^^^^^^^^^^^
-    * :attr:`asn` - AS number.
-    * :attr:`name` - A name of the AS number.
-
-    ASN functions
-    ^^^^^^^^^^^^^
-    * :func:`~Nipap.list_asn` - Return a list of ASNs.
-    * :func:`~Nipap.add_asn` - Add an ASN.
-    * :func:`~Nipap.edit_asn` - Edit an ASN.
-    * :func:`~Nipap.remove_asn` - Remove an ASN.
-    * :func:`~Nipap.search_asn` - Search ASNs from specifically formatted dict.
-    * :func:`~Nipap.smart_search_asn` - Search ASNs from arbitarly formatted string.
 
 
     The 'spec'
@@ -2286,13 +2266,11 @@ class Nipap:
 
 
 
-    def search_prefix(self, auth, schema_spec, query, search_options = {}):
+    def search_prefix(self, auth, query, search_options = {}):
         """ Search prefix list for prefixes matching `query`.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `query` [dict_to_sql]
                 How the search should be performed.
             * `search_options` [options_dict]
@@ -2394,21 +2372,6 @@ class Nipap:
             need to implement client side IP address logic.
         """
 
-        # Add schema to query part list
-        schema = self._get_schema(auth, schema_spec)
-        schema_q = {
-            'operator': 'equals',
-            'val1': 'schema',
-            'val2': schema['id']
-        }
-        if len(query) == 0:
-            query = schema_q
-        query = {
-            'operator': 'and',
-            'val1': schema_q,
-            'val2': query
-        }
-
         #
         # sanitize search options and set default if option missing
         #
@@ -2498,7 +2461,9 @@ class Nipap:
         sql = """
     SELECT
         id,
-        schema,
+        vrf_id,
+        vrf,
+        vrf_name,
         family,
         display,
         match,
@@ -2513,7 +2478,6 @@ class Nipap:
         indent,
         country,
         order_id,
-        vrf,
         external_key,
         authoritative_source,
         alarm_priority,
@@ -2531,7 +2495,24 @@ class Nipap:
             ELSE -2
         END AS children
     FROM (
-        SELECT DISTINCT ON(p1.prefix) p1.*,
+        SELECT DISTINCT ON(p1.prefix) p1.id,
+            p1.prefix,
+            p1.display_prefix,
+            p1.description,
+            p1.comment,
+            p1.node,
+            p1.pool,
+            p1.type,
+            p1.indent,
+            p1.country,
+            p1.order_id,
+            p1.external_key,
+            p1.authoritative_source,
+            p1.alarm_priority,
+            p1.monitor,
+            vrf.id AS vrf_id,
+            vrf.vrf AS vrf,
+            vrf.name AS vrf_name,
             masklen(p1.prefix) AS prefix_length,
             family(p1.prefix) AS family,
             (""" + display + """) AS display,
@@ -2539,7 +2520,7 @@ class Nipap:
             FROM ip_net_plan AS p1
             JOIN ip_net_plan AS p2 ON
             (
-                (p1.schema = p2.schema)
+                (p1.vrf = p2.vrf)
                 AND
                 (
                     -- Join in the parents which were requested
@@ -2552,12 +2533,12 @@ class Nipap:
                     (iprange(p1.prefix) << iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
                 )
             )
-            WHERE p2.schema = %s AND p2.prefix IN (
+            JOIN ip_net_vrf AS vrf ON (p1.vrf = vrf.id)
+            WHERE p2.prefix IN (
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
                 ORDER BY prefix
                 LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
             ) ORDER BY p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY prefix"
-        opt.insert(0, schema['id'])
 
         self._execute(sql, opt)
 
@@ -2579,13 +2560,11 @@ class Nipap:
 
 
 
-    def smart_search_prefix(self, auth, schema_spec, query_str, search_options = {}):
+    def smart_search_prefix(self, auth, query_str, search_options = {}, query_dict = {}):
         """ Perform a smart search on prefix list.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `query_str` [string]
                 Search string
             * `search_options` [options_dict]
@@ -2756,413 +2735,7 @@ class Nipap:
 
         self._logger.debug("Expanded to: %s" % str(query))
 
-        search_result = self.search_prefix(auth, schema_spec, query, search_options)
-        search_result['interpretation'] = query_str_parts
-
-        return search_result
-
-
-    #
-    # ASN functions
-    #
-
-    def _expand_asn_query(self, query, table_name = None):
-        """ Expand ASN query dict into a WHERE-clause.
-
-            If you need to prefix each column reference with a table
-            name, that can be supplied via the table_name argument.
-        """
-
-        where = str()
-        opt = list()
-
-        # handle table name, can be None
-        if table_name is None:
-            col_prefix = ""
-        else:
-            col_prefix = table_name + "."
-
-        if type(query['val1']) == dict and type(query['val2']) == dict:
-            # Sub expression, recurse! This is used for boolean operators: AND OR
-            # add parantheses
-
-            sub_where1, opt1 = self._expand_asn_query(query['val1'], table_name)
-            sub_where2, opt2 = self._expand_asn_query(query['val2'], table_name)
-            try:
-                where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
-            except KeyError:
-                raise NoSuchOperatorError("No such operator %s" % str(query['operator']))
-
-            opt += opt1
-            opt += opt2
-
-        else:
-
-            # TODO: raise exception if someone passes one dict and one "something else"?
-
-            # val1 is variable, val2 is string.
-            asn_attr = dict()
-            asn_attr['asn'] = 'asn'
-            asn_attr['name'] = 'name'
-
-            if query['val1'] not in asn_attr:
-                raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
-
-            # build where clause
-            if query['operator'] not in _operation_map:
-                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
-
-            where = str(" %s%s %s %%s " %
-                ( col_prefix, asn_attr[query['val1']],
-                _operation_map[query['operator']] )
-            )
-
-            opt.append(query['val2'])
-
-        return where, opt
-
-
-
-    def _expand_asn_spec(self, spec):
-        """ Expand ASN specification to SQL.
-
-            asn [integer]
-                Automonous System Number
-
-            name [string]
-                name of ASN
-        """
-
-        if type(spec) is not dict:
-            raise NipapInputError("schema specification must be a dict")
-
-        allowed_values = ['asn', 'name']
-        for a in spec:
-            if a not in allowed_values:
-                raise NipapExtraneousInputError("extraneous specification key %s" % a)
-
-        if 'asn' in spec:
-            if type(spec['asn']) not in (int, long):
-                raise NipapValueError("asn specification key 'asn' must be an integer")
-            if 'name' in spec:
-                raise NipapExtraneousInputError("asn specification contain both 'asn' and 'name', specify asn or name")
-        elif 'name' in spec:
-            if type(spec['name']) != type(''):
-                raise NipapValueError("asn specification key 'name' must be a string")
-            if 'asn' in spec:
-                raise NipapExtraneousInputError("asn specification contain both 'asn' and 'name', specify asn or name")
-
-        where, params = self._sql_expand_where(spec, 'spec_')
-
-        return where, params
-
-
-
-    def list_asn(self, auth, spec = {}):
-        """ List AS numbers
-        """
-
-        self._logger.debug("list_asn called; spec: %s" % str(spec))
-
-        sql = "SELECT * FROM ip_net_asn"
-        params = list()
-
-        where, params = self._expand_asn_spec(spec)
-        if len(params) > 0:
-            sql += " WHERE " + where
-
-        sql += " ORDER BY asn ASC"
-
-        self._execute(sql, params)
-
-        res = list()
-        for row in self._curs_pg:
-            res.append(dict(row))
-
-        return res
-
-
-
-    def add_asn(self, auth, attr):
-        """ Add AS number to NIPAP.
-
-            * `auth` [BaseAuth]
-                AAA options.
-            * `attr` [asn_attr]
-                ASN attributes.
-        """
-
-        self._logger.debug("add_asn called; attr: %s" % str(attr))
-
-        # sanity check - do we have all attributes?
-        req_attr = [ 'asn', ]
-        allowed_attr = [ 'asn', 'name' ]
-        self._check_attr(attr, req_attr, allowed_attr)
-
-        insert, params = self._sql_expand_insert(attr)
-        sql = "INSERT INTO ip_net_asn " + insert
-
-        self._execute(sql, params)
-
-        # write to audit table
-        audit_params = {
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'description': 'Added ASN %s with attr: %s' % (attr['asn'], str(attr))
-        }
-
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
-
-        return int(attr['asn'])
-
-
-
-    def edit_asn(self, auth, asn, attr):
-        """ Edit AS number
-
-            * `auth` [BaseAuth] AAA options.
-            * `asn` [integer] AS number to edit.
-            * `attr` [asn_attr] New AS attributes.
-        """
-
-        self._logger.debug("edit_asn called; asn: %s attr: %s" %
-                (str(asn), str(attr)))
-
-        # sanity check - do we have all attributes?
-        req_attr = [ ]
-        allowed_attr = [ 'name', ]
-        self._check_attr(attr, req_attr, allowed_attr)
-
-        update, params = self._sql_expand_update(attr)
-
-        if not isinstance(asn, ( int, long )):
-            raise NipapValueError("'asn' must be integer")
-        params['asn'] = asn
-
-        sql = "UPDATE ip_net_asn SET " + update + " WHERE asn = %(asn)s"
-
-        self._execute(sql, params)
-
-        # write to audit table
-        audit_params = {
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source
-        }
-        audit_params['description'] = 'Edited ASN %s attr: %s' % (str(asn), str(attr))
-
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
-
-
-
-    def remove_asn(self, auth, asn):
-        """ Remove AS number
-        """
-
-        self._logger.debug("remove_asn called; asn: %s" % str(asn))
-
-        sql = "DELETE FROM ip_net_asn WHERE asn = %s"
-        self._execute(sql, (asn, ))
-
-        # write to audit table
-        audit_params = {
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'description': 'Removed ASN %s' % str(asn)
-        }
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
-
-
-
-    def search_asn(self, auth, query, search_options = {}):
-        """ Search ASNs for entries matching 'query'
-
-            * `auth` [BaseAuth]
-                AAA options.
-            * `query` [dict_to_sql]
-                How the search should be performed.
-            * `search_options` [options_dict]
-                Search options, see below.
-
-            Returns a list of dicts.
-
-            The `query` argument passed to this function is designed to be
-            able to specify how quite advanced search operations should be
-            performed in a generic format. It is internally expanded to a SQL
-            WHERE-clause.
-
-            The `query` is a dict with three elements, where one specifies the
-            operation to perform and the two other specifies its arguments. The
-            arguments can themselves be `query` dicts, to build more complex
-            queries.
-
-            The :attr:`operator` key specifies what operator should be used for the
-            comparison. Currently the following operators are supported:
-
-            * :data:`and` - Logical AND
-            * :data:`or` - Logical OR
-            * :data:`equals` - Equality; =
-            * :data:`not_equals` - Inequality; !=
-            * :data:`like` - SQL LIKE
-            * :data:`regex_match` - Regular expression match
-            * :data:`regex_not_match` - Regular expression not match
-
-            The :attr:`val1` and :attr:`val2` keys specifies the values which are subjected
-            to the comparison. :attr:`val1` can be either any prefix attribute or an
-            entire query dict. :attr:`val2` can be either the value you want to
-            compare the prefix attribute to, or an entire `query` dict.
-
-            The search options can also be used to limit the number of rows
-            returned or set an offset for the result.
-
-            The following options are available:
-                * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
-                * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
-        """
-
-        #
-        # sanitize search options and set default if option missing
-        #
-
-        # max_result
-        if 'max_result' not in search_options:
-            search_options['max_result'] = 50
-        else:
-            try:
-                search_options['max_result'] = int(search_options['max_result'])
-            except (ValueError, TypeError), e:
-                raise NipapValueError('Invalid value for option' +
-                    ''' 'max_result'. Only integer values allowed.''')
-
-        # offset
-        if 'offset' not in search_options:
-            search_options['offset'] = 0
-        else:
-            try:
-                search_options['offset'] = int(search_options['offset'])
-            except (ValueError, TypeError), e:
-                raise NipapValueError('Invalid value for option' +
-                    ''' 'offset'. Only integer values allowed.''')
-
-        self._logger.debug('search_asn search_options: %s' % str(search_options))
-
-        opt = None
-        sql = """ SELECT * FROM ip_net_asn """
-
-        # add where clause if we have any search terms
-        if query != {}:
-
-            where, opt = self._expand_asn_query(query)
-            sql += " WHERE " + where
-
-        sql += " ORDER BY asn LIMIT " + str(search_options['max_result'])
-        self._execute(sql, opt)
-
-        result = list()
-        for row in self._curs_pg:
-            result.append(dict(row))
-
-        return { 'search_options': search_options, 'result': result }
-
-
-
-    def smart_search_asn(self, auth, query_str, search_options = {}):
-        """ Perform a smart search operation among AS numbers
-
-            * `auth` [BaseAuth]
-                AAA options.
-            * `query_str` [string]
-                Search string
-            * `search_options` [options_dict]
-                Search options. See :func:`search_asn`.
-
-            Return a dict with three elements:
-                * :attr:`interpretation` - How the query string was interpreted.
-                * :attr:`search_options` - Various search_options.
-                * :attr:`result` - The search result.
-
-                The :attr:`interpretation` is given as a list of dicts, each
-                explaining how a part of the search key was interpreted (ie. what
-                schema attribute the search operation was performed on).
-
-                The :attr:`result` is a list of dicts containing the search result.
-
-            The smart search function tries to convert the query from a text
-            string to a `query` dict which is passed to the
-            :func:`search_asn` function.  If multiple search keys are
-            detected, they are combined with a logical AND.
-
-            See the :func:`search_asn` function for an explanation of the
-            `search_options` argument.
-        """
-
-        self._logger.debug("smart_search_asn called; query_str: %s" % query_str)
-
-        # find query parts
-        # XXX: notice the ugly workarounds for shlex not supporting Unicode
-        query_str_parts = []
-        try:
-            for part in shlex.split(query_str.encode('utf-8')):
-                query_str_parts.append({ 'string': part.decode('utf-8') })
-        except:
-            return { 'interpretation': [ { 'string': query_str, 'interpretation': 'unclosed quote', 'attribute': 'text' } ], 'search_options': search_options, 'result': [] }
-
-        # go through parts and add to query_parts list
-        query_parts = list()
-        for query_str_part in query_str_parts:
-
-            is_int = True
-            try:
-                int(query_str_part['string'])
-            except ValueError:
-                is_int = False
-
-            if is_int:
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as integer (ASN)")
-                query_str_part['interpretation'] = 'asn'
-                query_str_part['operator'] = 'equals'
-                query_str_part['attribute'] = 'asn'
-                query_parts.append({
-                    'operator': 'equals',
-                    'val1': 'asn',
-                    'val2': query_str_part['string']
-                })
-
-            else:
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'name'
-                query_parts.append({
-                    'operator': 'regex_match',
-                    'val1': 'name',
-                    'val2': query_str_part['string']
-                })
-
-        # Sum all query parts to one query
-        query = {}
-        if len(query_parts) > 0:
-            query = query_parts[0]
-
-        if len(query_parts) > 1:
-            for query_part in query_parts[1:]:
-                query = {
-                    'operator': 'and',
-                    'val1': query_part,
-                    'val2': query
-                }
-
-        self._logger.debug("Expanded to: %s" % str(query))
-
-        search_result = self.search_asn(auth, query, search_options)
+        search_result = self.search_prefix(auth, query, search_options)
         search_result['interpretation'] = query_str_parts
 
         return search_result
