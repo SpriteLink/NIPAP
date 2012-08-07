@@ -129,6 +129,38 @@ class NipapXmlTest(unittest.TestCase):
 
 
 
+    def test_vrf_add_search(self):
+        """ Add VRF and search for it
+        """
+
+        # add VRF
+        attr = {
+            'vrf': '65000:1235',
+            'name': '65k:1235',
+            'description': 'Virtual Routing and Forwarding instance 65000:123'
+        }
+        attr['id'] = s.add_vrf({ 'auth': ad, 'attr': attr })
+
+        # equal match
+        q = {
+            'operator': 'equals',
+            'val1': 'vrf',
+            'val2': attr['vrf']
+        }
+        res = s.search_vrf({ 'auth': ad, 'query': q })
+        self.assertEquals(res['result'], [ attr, ], 'Search result from equal match did not match')
+
+        # regex match
+        q = {
+            'operator': 'regex_match',
+            'val1': 'description',
+            'val2': 'instance 65000'
+        }
+        res = s.search_vrf({ 'auth': ad, 'query': q })
+        self.assertEquals(res['result'], [ attr, ], 'Search result from regex match did not match')
+
+
+
     def test_prefix_add(self):
         """ Add a prefix and list
         """
