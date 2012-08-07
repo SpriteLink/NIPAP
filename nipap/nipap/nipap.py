@@ -756,7 +756,7 @@ class Nipap:
         if len(vrf) == 1:
             return vrf[0]
 
-        return {'vrf': None, 'vrf_name': None}
+        return { 'id': 0, 'vrf': None, 'vrf_name': None}
 
 
 
@@ -1803,7 +1803,7 @@ class Nipap:
         else:
             if ('from-pool' not in args and 'from-prefix' not in args) or ('from-pool' in args and 'from-prefix' in args):
                 raise NipapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
-            res = self.find_free_prefix(auth, schema_spec, args)
+            res = self.find_free_prefix(auth, vrf, args)
             if res != []:
                 attr['prefix'] = res[0]
             else:
@@ -1968,7 +1968,7 @@ class Nipap:
 
 
 
-    def find_free_prefix(self, auth, args):
+    def find_free_prefix(self, auth, vrf, args):
         """ Finds free prefixes in the sources given in `args`.
 
             * `auth` [BaseAuth]
@@ -2105,7 +2105,7 @@ class Nipap:
 
         sql = """SELECT * FROM find_free_prefix(%(vrf)s, (""" + damp + """), %(prefix_length)s, %(max_result)s) AS prefix"""
 
-        params['vrf'] = self._get_verf(auth, args['vrf'])
+        params['vrf'] = vrf['id']
         params['prefixes'] = prefixes
         params['prefix_length'] = wpl
         params['max_result'] = args['count']
