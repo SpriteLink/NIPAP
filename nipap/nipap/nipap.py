@@ -703,12 +703,14 @@ class Nipap:
         self.remove_prefix(auth, spec = v4spec, recursive = True)
         self.remove_prefix(auth, spec = v6spec, recursive = True)
 
+        # get list if VRFs to remove before removing them
+        vrfs = self.list_vrf(auth, spec)
+
         where, params = self._expand_vrf_spec(spec)
         sql = "DELETE FROM ip_net_vrf WHERE %s" % where
         self._execute(sql, params)
 
         # write to audit table
-        vrfs = self.list_vrf(spec)
         for v in vrfs:
             audit_params = {
                 'vrf': v['id'],
@@ -800,6 +802,9 @@ class Nipap:
         allowed_attr = [ 'vrf', 'name', 'description' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
+        # get list of VRFs which will be changed before changing them
+        vrfs = self.list_vrf(auth, spec)
+
         where, params1 = self._expand_vrf_spec(spec)
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())
@@ -808,8 +813,6 @@ class Nipap:
         sql += " WHERE " + where
 
         self._execute(sql, params)
-
-        vrfs = self.list_vrf(auth, spec)
 
         # write to audit table
         for v in vrfs:
@@ -2865,7 +2868,7 @@ class Nipap:
         """
 
         if type(spec) is not dict:
-            raise NipapInputError("schema specification must be a dict")
+            raise NipapInputError("asn specification must be a dict")
 
         allowed_values = ['asn', 'name']
         for a in spec:
@@ -2889,16 +2892,16 @@ class Nipap:
 
 
 
-    def list_asn(self, auth, spec = {}):
+    def list_asn(self, auth, asn = {}):
         """ List AS numbers
         """
 
-        self._logger.debug("list_asn called; spec: %s" % str(spec))
+        self._logger.debug("list_asn called; asn: %s" % str(asn))
 
         sql = "SELECT * FROM ip_net_asn"
         params = list()
 
-        where, params = self._expand_asn_spec(spec)
+        where, params = self._expand_asn_spec(asn)
         if len(params) > 0:
             sql += " WHERE " + where
 
@@ -2967,27 +2970,28 @@ class Nipap:
         allowed_attr = [ 'name', ]
         self._check_attr(attr, req_attr, allowed_attr)
 
-        update, params = self._sql_expand_update(attr)
+        asns = self.list_asn(auth, asn)
 
-        if not isinstance(asn, ( int, long )):
-            raise NipapValueError("'asn' must be integer")
-        params['asn'] = asn
+        where, params1 = self._expand_asn_spec(asn)
+        update, params2 = self._sql_expand_update(attr)
+        params = dict(params2.items() + params1.items())
 
-        sql = "UPDATE ip_net_asn SET " + update + " WHERE asn = %(asn)s"
+        sql = "UPDATE ip_net_asn SET " + update + " WHERE " + where
 
         self._execute(sql, params)
 
         # write to audit table
-        audit_params = {
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source
-        }
-        audit_params['description'] = 'Edited ASN %s attr: %s' % (str(asn), str(attr))
+        for a in asns:
+            audit_params = {
+                'username': auth.username,
+                'authenticated_as': auth.authenticated_as,
+                'full_name': auth.full_name,
+                'authoritative_source': auth.authoritative_source
+            }
+            audit_params['description'] = 'Edited ASN %s attr: %s' % (str(a['asn']), str(attr))
 
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
@@ -2997,19 +3001,25 @@ class Nipap:
 
         self._logger.debug("remove_asn called; asn: %s" % str(asn))
 
-        sql = "DELETE FROM ip_net_asn WHERE asn = %s"
-        self._execute(sql, (asn, ))
+        # get list of ASNs to remove before removing them
+        asns = self.list_asn(auth, asn)
+
+        # remove
+        where, params = self._expand_asn_spec(asn)
+        sql = "DELETE FROM ip_net_asn WHERE " + where
+        self._execute(sql, params)
 
         # write to audit table
-        audit_params = {
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'description': 'Removed ASN %s' % str(asn)
-        }
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+        for a in asns:
+            audit_params = {
+                'username': auth.username,
+                'authenticated_as': auth.authenticated_as,
+                'full_name': auth.full_name,
+                'authoritative_source': auth.authoritative_source,
+                'description': 'Removed ASN %s' % str(a['asn'])
+            }
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
