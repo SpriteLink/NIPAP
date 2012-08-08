@@ -7,7 +7,7 @@
 
     There are three ORM-classes:
 
-    * :class:`Schema`
+    * :class:`VRF`
     * :class:`Pool`
     * :class:`Prefix`
 
@@ -47,7 +47,7 @@
     your main namespace::
 
         import pynipap
-        from pynipap import Schema, Pool, Prefix
+        from pynipap import VRF, Pool, Prefix
 
     Before you can access NIPAP you need to specify the URL to the NIPAP
     XML-RPC service and the authentication options to use for your connection.
@@ -70,7 +70,7 @@
     authentication options can be accessed from all of the pynipap classes. ::
 
         a = AuthOptions({
-                'authoritative_source': 'my_fancy_nipap_client' 
+                'authoritative_source': 'my_fancy_nipap_client'
             })
 
     After this, we are good to go!
@@ -87,22 +87,21 @@
     * :func:`smart_search` - Perform a magic search from a string.
 
     Each of these functions return either an instance of the requested class
-    (:py:class:`Schema`, :class:`Pool`, :class:`Prefix`) or a list of
+    (:py:class:`VRF`, :class:`Pool`, :class:`Prefix`) or a list of
     instances. The :func:`search` and :func:`smart_search` functions also
     embeds the lists in dicts which contain search meta data.
 
     The easiest way to get data out of NIPAP is to use the :func:`get`-method,
     given that you know the ID of the object you want to fetch::
 
-        # Fetch schema with ID 1 and print its name
-        schema = Schema.get(1)
-        print schema.name
+        # Fetch VRF with ID 1 and print its name
+        vrf = VRF.get(1)
+        print vrf.name
 
-    As all pools and prefixes are bound to a schema, all methods for fetching
-    these need a schema object which is takes as a first function argument. ::
+    To list all objects each object has a :func:`list`-function. ::
 
-        # list all pools in the schema
-        pools = Pool.list(schema)
+        # list all pools
+        pools = Pool.list()
 
         # print the name of the pools
         for p in pools:
@@ -113,7 +112,7 @@
     specifying object attribute values. ::
 
         # List pools with a default type of 'assignment'
-        pools = Pool.list(schema, { 'default_type': 'assignment' })
+        pools = Pool.list({ 'default_type': 'assignment' })
 
     Performing searches
     ^^^^^^^^^^^^^^^^^^^
@@ -125,8 +124,8 @@
     Changes made to objects are not automatically saved. To save the changes,
     simply run the object's :func:`save`-method::
 
-        schema.name = "Spam spam spam"
-        schema.save()
+        vrf.name = "Spam spam spam"
+        vrf.save()
 
     Error handling
     --------------
@@ -231,7 +230,7 @@ class XMLRPCConnection:
 class Pynipap:
     """ A base class for the pynipap model classes.
 
-        All Pynipap classes which maps to data in NIPAP (:py:class:Schema,
+        All Pynipap classes which maps to data in NIPAP (:py:class:VRF,
         :py:class:Pool, :py:class:Prefix) extends this class.
     """
 
@@ -262,89 +261,89 @@ class Pynipap:
 
 
 
-class Schema(Pynipap):
-    """ A schema.
+class VRF(Pynipap):
+    """ A VRF.
     """
 
+    vrf = None
+    """ The VRF ID, as a string (x:y or x.x.x.x:y)
+    """
     name = None
-    """ The name of the schema, as a string.
+    """ The name of the VRF, as a string.
     """
     description = None
-    """ Schema description, as a string.
-    """
-    vrf = None
-    """ VRF where the schema's addresses reside. A string.
+    """ VRF description, as a string.
     """
 
 
     @classmethod
-    def list(cls, spec = {}):
-        """ List schemas.
+    def list(cls, vrf = {}):
+        """ List VRFs.
         """
 
         xmlrpc = XMLRPCConnection()
         try:
-            schema_list = xmlrpc.connection.list_schema(
+            vrf_list = xmlrpc.connection.list_vrf(
                 {
-                    'schema': spec,
+                    'vrf': vrf,
                     'auth': AuthOptions().options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
 
         res = list()
-        for schema in schema_list:
-            res.append(Schema.from_dict(schema))
+        for v in vrf_list:
+            res.append(VRF.from_dict(v))
 
         return res
 
 
     @classmethod
     def from_dict(cls, parm):
-        """ Create new Schema-object from dict.
+        """ Create new VRF-object from dict.
 
             Suitable for creating objects from XML-RPC data.
             All available keys must exist.
         """
 
-        s = Schema()
-        s.id = parm['id']
-        s.name = parm['name']
-        s.description = parm['description']
-        s.vrf = parm['vrf']
-        return s
+        v = VRF()
+        v.id = parm['id']
+        v.vrf = parm['vrf']
+        v.name = parm['name']
+        v.description = parm['description']
+        return v
 
 
 
     @classmethod
     def get(cls, id):
-        """ Get the schema with id 'id'.
+        """ Get the VRF with id 'id'.
         """
 
         # cached?
-        if id in _cache['Schema']:
-            log.debug('cache hit for schema %d' % id)
-            return _cache['Schema'][id]
-        log.debug('cache miss for schema %d' % id)
+        if id in _cache['VRF']:
+            log.debug('cache hit for VRF %d' % id)
+            return _cache['VRF'][id]
+        log.debug('cache miss for VRF %d' % id)
 
         try:
-            schema = Schema.list({ 'id': id })[0]
+            vrf = VRF.list({ 'id': id })[0]
         except IndexError, e:
-            raise NipapNonExistentError('no schema with ID ' + str(id) + ' found')
+            raise NipapNonExistentError('no VRF with ID ' + str(id) + ' found')
 
-        _cache['Schema'][id] = schema
-        return schema
+        _cache['VRF'][id] = vrf
+        return vrf
 
 
 
     @classmethod
     def search(cls, query, search_opts={}):
-        """ Search schemas.
+        """ Search VRFs.
         """
 
         xmlrpc = XMLRPCConnection()
         try:
-            search_result = xmlrpc.connection.search_schema(
+            search_result = xmlrpc.connection.search_vrf(
                 {
                     'query': query,
                     'search_options': search_opts,
@@ -355,9 +354,8 @@ class Schema(Pynipap):
         result = dict()
         result['result'] = []
         result['search_options'] = search_result['search_options']
-        for schema in search_result['result']:
-            s = Schema.from_dict(schema)
-            result['result'].append(s)
+        for v in search_result['result']:
+            result['result'].append(VRF.from_dict(v))
 
         return result
 
@@ -365,12 +363,12 @@ class Schema(Pynipap):
 
     @classmethod
     def smart_search(cls, query_string, search_options={}):
-        """ Perform a smart schema search.
+        """ Perform a smart VRF search.
         """
 
         xmlrpc = XMLRPCConnection()
         try:
-            smart_result = xmlrpc.connection.smart_search_schema(
+            smart_result = xmlrpc.connection.smart_search_vrf(
                 {
                     'query_string': query_string,
                     'search_options': search_options,
@@ -382,9 +380,8 @@ class Schema(Pynipap):
         result['interpretation'] = smart_result['interpretation']
         result['search_options'] = smart_result['search_options']
         result['result'] = list()
-        for schema in smart_result['result']:
-            p = Schema.from_dict(schema)
-            result['result'].append(p)
+        for v in smart_result['result']:
+            result['result'].append(VRF.from_dict(v))
 
         return result
 
@@ -395,15 +392,15 @@ class Schema(Pynipap):
         """
 
         data = {
+            'vrf': self.vrf,
             'name': self.name,
-            'description': self.description,
-            'vrf': self.vrf
+            'description': self.description
         }
 
         if self.id is None:
             # New object, create
             try:
-                self.id = self._xmlrpc.connection.add_schema(
+                self.id = self._xmlrpc.connection.add_vrf(
                     {
                         'attr': data,
                         'auth': self._auth_opts.options
@@ -414,33 +411,33 @@ class Schema(Pynipap):
         else:
             # Old object, edit
             try:
-                self._xmlrpc.connection.edit_schema(
+                self._xmlrpc.connection.edit_vrf(
                     {
-                        'schema': { 'id': self.id },
+                        'vrf': { 'id': self.id },
                         'attr': data,
                         'auth': self._auth_opts.options
                     })
             except xmlrpclib.Fault, f:
                 raise _fault_to_exception(f)
 
-        _cache['Schema'][self.id] = self
+        _cache['VRF'][self.id] = self
 
 
 
     def remove(self):
-        """ Remove schema.
+        """ Remove VRF.
         """
 
         try:
-            self._xmlrpc.connection.remove_schema(
+            self._xmlrpc.connection.remove_vrf(
                 {
-                    'schema': { 'id': self.id },
+                    'vrf': { 'id': self.id },
                     'auth': self._auth_opts.options
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
-        if self.id in _cache['Schema']:
-            del(_cache['Schema'][self.id])
+        if self.id in _cache['VRF']:
+            del(_cache['VRF'][self.id])
 
 
 
@@ -449,7 +446,6 @@ class Pool(Pynipap):
     """
 
     name = None
-    schema = None
     description = None
     default_type = None
     ipv4_default_prefix_length = None
@@ -459,14 +455,6 @@ class Pool(Pynipap):
     def save(self):
         """ Save changes made to pool to NIPAP.
         """
-
-        # verify schema
-        if not isinstance(self.schema, Schema):
-            raise NipapValueError("missing/invalid schema specified")
-
-        # verify that the schema variable actually contains a schema
-        if not isinstance(self.schema, Schema):
-            raise NipapValueError("pool does not have a valid schema set")
 
         data = {
             'name': self.name,
@@ -478,11 +466,9 @@ class Pool(Pynipap):
 
         if self.id is None:
             # New object, create
-            data['schema'] = self.schema.id,
             try:
                 self.id = self._xmlrpc.connection.add_pool(
                     {
-                        'schema': { 'id': self.schema.id },
                         'attr': data,
                         'auth': self._auth_opts.options
                     })
@@ -494,7 +480,6 @@ class Pool(Pynipap):
             try:
                 self._xmlrpc.connection.edit_pool(
                     {
-                        'schema': { 'id': self.schema.id },
                         'pool': { 'id': self.id },
                         'attr': data,
                         'auth': self._auth_opts.options
@@ -513,7 +498,6 @@ class Pool(Pynipap):
         try:
             self._xmlrpc.connection.remove_pool(
                 {
-                    'schema': { 'id': self.schema.id },
                     'pool': { 'id': self.id },
                     'auth': self._auth_opts.options
                 })
@@ -525,13 +509,9 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def get(cls, schema, id):
+    def get(cls, id):
         """ Get the pool with id 'id'.
         """
-
-        # verify schema
-        if not isinstance(schema, Schema):
-            raise NipapValueError("missing/invalid schema specified")
 
         # cached?
         if id in _cache['Pool']:
@@ -540,7 +520,7 @@ class Pool(Pynipap):
         log.debug('cache miss for pool %d' % id)
 
         try:
-            pool = Pool.list(schema, {'id': id})[0]
+            pool = Pool.list({'id': id})[0]
         except KeyError, e:
             raise NipapNonExistentError('no pool with ID ' + str(id) + ' found')
 
@@ -550,19 +530,14 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def search(cls, schema, query, search_opts={}):
+    def search(cls, query, search_opts={}):
         """ Search pools.
         """
-
-        # verify schema
-        if not isinstance(schema, Schema):
-            raise NipapValueError("missing/invalid schema specified")
 
         xmlrpc = XMLRPCConnection()
         try:
             search_result = xmlrpc.connection.search_pool(
                 {
-                    'schema': { 'id': schema.id },
                     'query': query,
                     'search_options': search_opts,
                     'auth': AuthOptions().options
@@ -581,19 +556,14 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, schema, query_string, search_options={}):
+    def smart_search(cls, query_string, search_options={}):
         """ Perform a smart pool search.
         """
-
-        # verify schema
-        if not isinstance(schema, Schema):
-            raise NipapValueError("missing/invalid schema specified")
 
         xmlrpc = XMLRPCConnection()
         try:
             smart_result = xmlrpc.connection.smart_search_pool(
                 {
-                    'schema': { 'id': schema.id },
                     'query_string': query_string,
                     'search_options': search_options,
                     'auth': AuthOptions().options
@@ -622,7 +592,6 @@ class Pool(Pynipap):
 
         p = Pool()
         p.id = parm['id']
-        p.schema = Schema.get(parm['schema'])
         p.name = parm['name']
         p.description = parm['description']
         p.default_type = parm['default_type']
@@ -633,19 +602,14 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def list(self, schema, spec = {}):
+    def list(self, spec = {}):
         """ List pools.
         """
-
-        # verify schema
-        if not isinstance(schema, Schema):
-            raise NipapValueError("missing/invalid schema specified")
 
         xmlrpc = XMLRPCConnection()
         try:
             pool_list = xmlrpc.connection.list_pool(
                 {
-                    'schema': { 'id': schema.id },
                     'pool': spec,
                     'auth': AuthOptions().options
                 })
@@ -665,7 +629,7 @@ class Prefix(Pynipap):
     """
 
     family = None
-    schema = None
+    vrf = None
     prefix = None
     display_prefix = None
     description = None
@@ -677,7 +641,6 @@ class Prefix(Pynipap):
     country = None
     external_key = None
     order_id = None
-    vrf = None
     authoritative_source = None
     alarm_priority = None
     monitor = None
@@ -687,13 +650,9 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def get(cls, schema, id):
+    def get(cls, id):
         """ Get the prefix with id 'id'.
         """
-
-        # verify schema
-        if not isinstance(schema, Schema):
-            raise NipapValueError("missing/invalid schema specified")
 
         # cached?
         if id in _cache['Prefix']:
@@ -702,7 +661,7 @@ class Prefix(Pynipap):
         log.debug('cache miss for prefix %d' % id)
 
         try:
-            prefix = Prefix.list(schema, {'id': id})[0]
+            prefix = Prefix.list({'id': id})[0]
         except KeyError, e:
             raise NipapNonExistentError('no prefix with ID ' + str(id) + ' found')
 
@@ -720,19 +679,14 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def search(cls, schema, query, search_opts):
+    def search(cls, query, search_opts):
         """ Search for prefixes.
         """
-
-        # verify schema
-        if not isinstance(schema, Schema):
-            raise NipapValueError("missing/invalid schema specified")
 
         xmlrpc = XMLRPCConnection()
         try:
             search_result = xmlrpc.connection.search_prefix(
                 {
-                    'schema': { 'id': schema.id },
                     'query': query,
                     'search_options': search_opts,
                     'auth': AuthOptions().options
@@ -751,19 +705,14 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, schema, query_string, search_options):
+    def smart_search(cls, query_string, search_options):
         """ Perform a smart prefix search.
         """
-
-        # verify schema
-        if not isinstance(schema, Schema):
-            raise NipapValueError("missing/invalid schema specified")
 
         xmlrpc = XMLRPCConnection()
         try:
             smart_result = xmlrpc.connection.smart_search_prefix(
                 {
-                    'schema': { 'id': schema.id },
                     'query_string': query_string,
                     'search_options': search_options,
                     'auth': AuthOptions().options
@@ -783,19 +732,14 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def list(cls, schema, spec = {}):
+    def list(cls, spec = {}):
         """ List prefixes.
         """
-
-        # verify schema
-        if not isinstance(schema, Schema):
-            raise NipapValueError("missing/invalid schema specified")
 
         xmlrpc = XMLRPCConnection()
         try:
             pref_list = xmlrpc.connection.list_prefix(
                 {
-                    'schema': { 'id': schema.id },
                     'prefix': spec,
                     'auth': AuthOptions().options
                 })
@@ -814,23 +758,22 @@ class Prefix(Pynipap):
         """ Save prefix to NIPAP.
         """
 
-        # verify that the schema variable actually contains a schema
-        if not isinstance(self.schema, Schema):
-            raise NipapValueError("prefix does not have a valid schema set")
-
         data = {
-            'schema': self.schema.id,
             'description': self.description,
             'comment': self.comment,
             'node': self.node,
             'type': self.type,
             'country': self.country,
             'order_id': self.order_id,
-            'vrf': self.vrf,
             'external_key': self.external_key,
             'alarm_priority': self.alarm_priority,
             'monitor': self.monitor
         }
+
+        if self.vrf is not None:
+            if not isinstance(self.vrf, VRF):
+                raise NipapValueError("VRF invalid.")
+            data['vrf'] = self.vrf.id
 
         # Prefix can be none if we are creating a new prefix
         # from a pool or other prefix!
@@ -858,7 +801,6 @@ class Prefix(Pynipap):
             try:
                 self.id = self._xmlrpc.connection.add_prefix(
                     {
-                        'schema': { 'id': self.schema.id },
                         'attr': data,
                         'args': x_args,
                         'auth': self._auth_opts.options
@@ -870,7 +812,6 @@ class Prefix(Pynipap):
             try:
                 p = self._xmlrpc.connection.list_prefix(
                     {
-                        'schema': { 'id': self.schema.id },
                         'prefix': { 'id': self.id },
                         'auth': self._auth_opts.options
                     })[0]
@@ -889,13 +830,12 @@ class Prefix(Pynipap):
         # Old object, edit
         else:
             # remove keys which we are not allowed to edit
-            del(data['schema'])
+            del(data['vrf'])
 
             try:
                 # save
                 self._xmlrpc.connection.edit_prefix(
                     {
-                        'schema': { 'id': self.schema.id },
                         'prefix': { 'id': self.id },
                         'attr': data,
                         'auth': self._auth_opts.options
@@ -916,7 +856,6 @@ class Prefix(Pynipap):
         try:
             self._xmlrpc.connection.remove_prefix(
                 {
-                    'schema': { 'id': self.schema.id },
                     'prefix': { 'id': self.id },
                     'auth': self._auth_opts.options
                 })
@@ -936,17 +875,16 @@ class Prefix(Pynipap):
 
         p = Prefix()
         p.id = pref['id']
+        if pref['vrf'] is not None: # VRF is not mandatory
+            p.vrf = VRF.get(pref['vrf'])
         p.family = pref['family']
-        p.schema = Schema.get(pref['schema'])
         p.prefix = pref['prefix']
         p.display_prefix = pref['display_prefix']
         p.description = pref['description']
         p.comment = pref['comment']
         p.node = pref['node']
-        if pref['pool'] is None: # Pool is not mandatory
-            p.pool = None
-        else:
-            p.pool = Pool.get(p.schema, pref['pool'])
+        if pref['pool'] is not None: # Pool is not mandatory
+            p.pool = Pool.get(pref['pool'])
         p.type = pref['type']
         p.indent = pref['indent']
         p.country = pref['country']
@@ -1045,7 +983,7 @@ class NipapDuplicateError(NipapError):
 _cache = {
     'Pool': {},
     'Prefix': {},
-    'Schema': {}
+    'VRF': {}
 }
 
 # Map from XML-RPC Fault codes to Exception classes
