@@ -28,11 +28,19 @@ class NipapXmlTest(unittest.TestCase):
     """
     maxDiff = None
 
-    logger = logging.getLogger()
-    cfg = NipapConfig('/etc/nipap/nipap.conf')
-    nipap = nipap.nipap.Nipap()
+    logger = None
+    cfg = None
+    nipap = None
 
     def setUp(self):
+
+        # logging
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+        # NIPAP
+        self.cfg = NipapConfig('/etc/nipap/nipap.conf')
+        self.nipap = nipap.nipap.Nipap()
+
         # create dummy auth object
         # As the authentication is performed before the query hits the Nipap
         # class, it does not matter what user we use here
@@ -43,6 +51,7 @@ class NipapXmlTest(unittest.TestCase):
         self.nipap._execute("DELETE FROM ip_net_vrf WHERE id > 0")
         self.nipap._execute("DELETE FROM ip_net_plan WHERE masklen(prefix) = 32")
         self.nipap._execute("DELETE FROM ip_net_plan")
+        self.nipap._execute("DELETE FROM ip_net_asn")
 
 
 
@@ -280,7 +289,124 @@ class NipapXmlTest(unittest.TestCase):
 
 
 
+    def test_asn_add_list(self):
+        """ Add ASN to NIPAP and list it
+        """
+
+        attr = {
+            'asn': 1,
+            'name': 'Test ASN #1'
+        }
+
+        # add ASN
+        self.assertEqual(s.add_asn({ 'auth': ad, 'attr': attr}), 1, "add_asn did not return correct ASN.")
+
+        # make sure that it got added
+        asn = s.list_asn({ 'auth': ad, 'asn': { 'asn': 1 } })
+        self.assertEqual(len(asn), 1, "Wrong number of ASNs returned.")
+        asn = asn[0]
+        self.assertEquals(attr, asn, "ASN in database not equal to what was added.")
+
+        # adding the same ASN again should result in duplicate key error
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'Duplicate value for'):
+            s.add_asn({ 'auth': ad, 'attr': attr })
+
+
+
+    def test_remove_asn(self):
+        """ Remove ASN from NIPAP
+        """
+
+        attr = {
+            'asn': 2,
+            'name': 'Test ASN #2'
+        }
+
+        asn = s.add_asn({ 'auth': ad, 'attr': attr })
+        s.remove_asn({ 'auth': ad, 'asn': { 'asn': asn } })
+        self.assertEquals(0, len(s.list_asn({ 'auth': ad, 'asn': { 'asn': 2 } })), "Removed ASN still in database")
+
+
+
+    def test_edit_asn(self):
+        """ Edit ASNs
+        """
+
+        attr = {
+            'asn': 3,
+            'name': 'Test ASN #3'
+        }
+
+        asn = s.add_asn({ 'auth': ad, 'attr': attr })
+        s.edit_asn({ 'auth': ad, 'asn': { 'asn': attr['asn'] }, 'attr': { 'name': 'b0rk' } })
+        self.assertEquals(s.list_asn({ 'auth': ad, 'asn': { 'asn': 3 } })[0]['name'], 'b0rk', "Edited ASN still has it's old name.")
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'extraneous attribute'):
+            s.edit_asn({ 'auth': ad, 'asn': { 'asn': 3 }, 'attr': {'asn': 4, 'name': 'Test ASN #4'} })
+
+
+
+    def test_search_asn(self):
+        """ Search ASNs
+        """
+
+        attr = {
+            'asn': 4,
+            'name': 'This is AS number 4'
+        }
+
+        asn = s.add_asn({ 'auth': ad, 'attr': attr })
+
+        # equal match
+        q = {
+            'operator': 'equals',
+            'val1': 'asn',
+            'val2': attr['asn']
+        }
+        res = s.search_asn({ 'auth': ad, 'query': q })
+        self.assertEquals(len(res['result']), 1, "equal search resulted in wrong number of hits")
+        self.assertEquals(res['result'][0]['name'], attr['name'], "search hit got wrong name")
+
+        # regexp match
+        q = {
+            'operator': 'regex_match',
+            'val1': 'name',
+            'val2': 'number'
+        }
+        res = s.search_asn({ 'auth': ad, 'query': q })
+        self.assertEquals(len(res['result']), 1, "regex search resulted in wrong number of hits")
+        self.assertEquals(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
+
+
+
+    def test_smart_search_asn(self):
+        """ Test smart_search_asn function.
+        """
+
+        attr = {
+            'asn': 5,
+            'name': 'Autonomous System Number 5'
+        }
+
+        asn = s.add_asn({ 'auth': ad, 'attr': attr })
+        res = s.smart_search_asn({ 'auth': ad, 'query_string': "Autonomous" })
+        self.assertEquals(len(res['result']), 1, "search resulted in wrong number of hits")
+        self.assertEquals(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
+        self.assertEquals(res['interpretation'][0]['attribute'], 'name', "search term interpretated as wrong type")
+
+        res = s.smart_search_asn({ 'auth': ad, 'query_string': "5" })
+        self.assertEquals(len(res['result']), 1, "search resulted in wrong number of hits")
+        self.assertEquals(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
+        self.assertEquals(res['interpretation'][0]['attribute'], 'asn', "search term interpretated as wrong type")
+
+
+
 if __name__ == '__main__':
+
+    # set up logging
+    log = logging.getLogger()
+    logging.basicConfig()
+    log.setLevel(logging.INFO)
+
     if sys.version_info >= (2,7):
         unittest.main(verbosity=2)
     else:
