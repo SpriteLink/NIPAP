@@ -1073,18 +1073,15 @@ class Nipap:
         if type(spec) is not dict:
             raise NipapInputError("pool specification must be a dict")
 
-        allowed_values = ['id', 'name', 'schema']
+        allowed_values = ['id', 'name' ]
         for a in spec:
             if a not in allowed_values:
                 raise NipapExtraneousInputError("extraneous specification key %s" % a)
 
-        if 'schema' not in spec:
-            raise NipapMissingInputError('missing schema')
-
         if 'id' in spec:
             if type(spec['id']) not in (long, int):
                 raise NipapValueError("pool specification key 'id' must be an integer")
-            if spec != { 'id': spec['id'], 'schema': spec['schema'] }:
+            if spec != { 'id': spec['id'] }:
                 raise NipapExtraneousInputError("pool specification with 'id' should not contain anything else")
         elif 'name' in spec:
             if type(spec['name']) != type(''):
@@ -1137,7 +1134,6 @@ class Nipap:
             pool_attr = dict()
             pool_attr['id'] = 'id'
             pool_attr['name'] = 'name'
-            pool_attr['schema'] = 'schema'
             pool_attr['description'] = 'description'
             pool_attr['default_type'] = 'default_type'
 
@@ -1159,13 +1155,11 @@ class Nipap:
 
 
 
-    def add_pool(self, auth, schema_spec, attr):
+    def add_pool(self, auth, attr):
         """ Create a pool according to `attr`.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `attr` [pool_attr]
                 A dict containing the attributes the new pool should have.
 
@@ -1178,10 +1172,6 @@ class Nipap:
         req_attr = ['name', 'description', 'default_type']
         self._check_pool_attr(attr, req_attr)
 
-        # populate 'schema' with correct id
-        schema = self._get_vrf(auth, schema_spec)
-        attr['schema'] = schema['id']
-
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_pool " + insert
 
@@ -1190,8 +1180,6 @@ class Nipap:
 
         # write to audit table
         audit_params = {
-            'schema': schema['id'],
-            'schema_name': schema['name'],
             'pool': pool_id,
             'pool_name': attr['name'],
             'username': auth.username,
@@ -1217,6 +1205,7 @@ class Nipap:
 
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
 
+        # fetch list of pools to remove before they are removed
         pools = self.list_pool(auth, spec)
 
         where, params = self._expand_pool_spec(spec)
@@ -1225,8 +1214,6 @@ class Nipap:
 
         # write to audit table
         audit_params = {
-            'schema': schema['id'],
-            'schema_name': schema['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
@@ -1242,13 +1229,11 @@ class Nipap:
 
 
 
-    def list_pool(self, auth, schema_spec, spec = {}):
+    def list_pool(self, auth, spec = {}):
         """ Return a list of pools.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `spec` [pool_spec]
                 Specifies what pool(s) to list. Of omitted, all will be listed.
 
@@ -1260,16 +1245,12 @@ class Nipap:
         sql = """SELECT po.id,
                         po.name,
                         po.description,
-                        po.schema,
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
                         (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool=po.id ORDER BY prefix) AS a) AS prefixes
                 FROM ip_net_pool AS po """
         params = list()
-
-        # populate 'schema' with correct id
-        spec['schema'] = self._get_schema(auth, schema_spec)['id']
 
         # expand spec
         where, params = self._expand_pool_spec(spec)
@@ -1299,7 +1280,6 @@ class Nipap:
         # check attribute names
         allowed_attr = [
                 'name',
-                'schema',
                 'default_type',
                 'description',
                 'ipv4_default_prefix_length',
@@ -1333,7 +1313,7 @@ class Nipap:
 
 
 
-    def _get_pool(self, auth, schema_spec, spec):
+    def _get_pool(self, auth, spec):
         """ Get a pool.
 
             Shorthand function to reduce code in the functions below, since
@@ -1344,20 +1324,18 @@ class Nipap:
             is raised if no schema matching the spec is found.
         """
 
-        pool = self.list_pool(auth, schema_spec, spec)
+        pool = self.list_pool(auth, spec)
         if len(pool) == 0:
             raise NipapInputError("non-existing pool specified")
         return pool[0]
 
 
 
-    def edit_pool(self, auth, schema_spec, spec, attr):
+    def edit_pool(self, auth, spec, attr):
         """ Update pool given by `spec` with attributes `attr`.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `spec` [pool_spec]
                 Specifies what pool to edit.
             * `attr` [pool_attr]
@@ -1372,11 +1350,6 @@ class Nipap:
 
         self._check_pool_attr(attr)
 
-        # populate 'schema' with correct id
-        schema = self._get_schema(auth, schema_spec)
-        pools = self.list_pool(auth, schema_spec, spec)
-
-        spec['schema'] = schema['id']
         where, params1 = self._expand_pool_spec(spec)
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())
@@ -1388,8 +1361,6 @@ class Nipap:
 
         # write to audit table
         audit_params = {
-            'schema': schema['id'],
-            'schema_name': schema['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
@@ -1405,13 +1376,11 @@ class Nipap:
 
 
 
-    def search_pool(self, auth, schema_spec, query, search_options = {}):
+    def search_pool(self, auth, query, search_options = {}):
         """ Search pool list for pools matching `query`.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `query` [dict_to_sql]
                 How the search should be performed.
             * `search_options` [options_dict]
@@ -1485,21 +1454,6 @@ class Nipap:
                 * :attr:`offset` - Offset the result list this many pools (default :data:`0`).
         """
 
-        # Add schema to query part list
-        schema = self._get_schema(auth, schema_spec)
-        schema_q = {
-            'operator': 'equals',
-            'val1': 'schema',
-            'val2': schema['id']
-        }
-        if len(query) == 0:
-            query = schema_q
-        query = {
-            'operator': 'and',
-            'val1': schema_q,
-            'val2': query
-        }
-
         #
         # sanitize search options and set default if option missing
         #
@@ -1530,7 +1484,6 @@ class Nipap:
         sql = """SELECT po.id,
                         po.name,
                         po.description,
-                        po.schema,
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
@@ -1548,13 +1501,11 @@ class Nipap:
 
 
 
-    def smart_search_pool(self, auth, schema_spec, query_str, search_options = {}):
+    def smart_search_pool(self, auth, query_str, search_options = {}):
         """ Perform a smart search on pool list.
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `query_str` [string]
                 Search string
             * `search_options` [options_dict]
@@ -1642,7 +1593,7 @@ class Nipap:
 
         self._logger.debug("Expanded to: %s" % str(query))
 
-        search_result = self.search_pool(auth, schema_spec, query, search_options)
+        search_result = self.search_pool(auth, query, search_options)
         search_result['interpretation'] = query_str_parts
 
         return search_result
@@ -1922,7 +1873,7 @@ class Nipap:
 
 
 
-    def edit_prefix(self, auth, schema_spec, spec, attr):
+    def edit_prefix(self, auth, spec, attr):
         """ Update prefix matching `spec` with attributes `attr`.
 
             * `auth` [BaseAuth]
@@ -1950,10 +1901,7 @@ class Nipap:
 
         self._check_attr(attr, [], allowed_attr)
 
-        schema = self._get_schema(auth, schema_spec)
-        spec['schema'] = schema['id']
-
-        prefixes = self.list_prefix(auth, schema_spec, spec)
+        prefixes = self.list_prefix(auth, spec)
         where, params1 = self._expand_prefix_spec(spec)
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())
@@ -1963,9 +1911,8 @@ class Nipap:
         self._execute(sql, params)
 
         # write to audit table
+        # TODO: add VRF stuff
         audit_params = {
-            'schema': schema['id'],
-            'schema_name': schema['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
@@ -1974,7 +1921,7 @@ class Nipap:
 
         pool_id = attr.get('pool')
         if pool_id is not None:
-            pool = self._get_pool(auth, schema_spec, { 'id': pool_id })
+            pool = self._get_pool(auth, { 'id': pool_id })
         else:
             pool = {
                 'id': None,
@@ -1996,8 +1943,6 @@ class Nipap:
                     continue
 
                 audit_params2 = {
-                    'schema': schema['id'],
-                    'schema_name': schema['name'],
                     'prefix': p['id'],
                     'prefix_prefix': p['prefix'],
                     'pool': pool['id'],
@@ -3282,7 +3227,7 @@ class NipapNonExistentError(NipapError):
 class NipapDuplicateError(NipapError):
     """ The passed object violates unique constraints
 
-        For example, create a schema with a name of an already existing one.
+        For example, create a VRF with a name of an already existing one.
     """
 
     error_code = 1400
