@@ -8,15 +8,12 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from nipapwww.lib.base import BaseController, render
-from pynipap import Schema, Prefix, Pool, NipapError
+from pynipap import VRF, Prefix, Pool, NipapError
 
 log = logging.getLogger(__name__)
 
 class XhrController(BaseController):
     """ Interface to a few of the NIPAP API functions.
-
-        TODO: verify that we have a schema id or name specified and
-        fail gracefully if not.
     """
 
     @classmethod
@@ -49,68 +46,70 @@ class XhrController(BaseController):
 
 
 
-    def list_schema(self):
-        """ List schemas and return JSON encoded result.
+    def list_vrf(self):
+        """ List VRFs and return JSON encoded result.
         """
 
         try:
-            schemas = Schema.list()
+            vrfs = VRF.list()
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(schemas, cls=NipapJSONEncoder)
+        return json.dumps(vrfs, cls=NipapJSONEncoder)
 
 
 
-    def add_schema(self):
-        """ Add a new schema to NIPAP and returns its data.
+    def add_vrf(self):
+        """ Add a new VRF to NIPAP and return its data.
         """
 
-        s = Schema()
-        if 'name' in request.params:
-            s.name = request.params['name']
-        if 'description' in request.params:
-            s.description = request.params['description']
+        v = VRF()
         if 'vrf' in request.params:
-            if request.params['vrf'].strip() == '':
-                s.vrf = None
-            else:
-                s.vrf = request.params['vrf']
+            if request.params['vrf'].strip() != '':
+                v.vrf = request.params['vrf'].strip()
+        if 'name' in request.params:
+            if request.params['name'].strip() != '':
+                v.name = request.params['name'].strip()
+        if 'description' in request.params:
+            v.description = request.params['description']
 
         try:
-            s.save()
+            v.save()
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(s, cls=NipapJSONEncoder)
+        return json.dumps(v, cls=NipapJSONEncoder)
 
 
 
-    def edit_schema(self, id):
-        """ Edit a schema.
+    def edit_vrf(self, id):
+        """ Edit a VRF.
         """
 
         try:
-            s = Schema.get(int(id))
+            v = VRF.get(int(id))
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        if 'name' in request.params:
-            s.name = request.params['name']
-        if 'description' in request.params:
-            s.description = request.params['description']
         if 'vrf' in request.params:
-            if request.params['vrf'].strip() == '':
-                s.vrf = None
+            if request.params['vrf'].strip() != '':
+                v.vrf = request.params['vrf'].strip()
             else:
-                s.vrf = request.params['vrf']
+                v.vrf = None
+        if 'name' in request.params:
+            if request.params['name'].strip() != '':
+                v.name = request.params['name'].strip()
+            else:
+                v.vrf = None
+        if 'description' in request.params:
+            v.description = request.params['description']
 
         try:
-            s.save()
+            v.save()
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(s, cls=NipapJSONEncoder)
+        return json.dumps(v, cls=NipapJSONEncoder)
 
 
 
@@ -119,8 +118,7 @@ class XhrController(BaseController):
         """
 
         try:
-            schema = Schema.get(int(request.params['schema']))
-            pools = Pool.list(schema)
+            pools = Pool.list()
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
@@ -147,9 +145,7 @@ class XhrController(BaseController):
             search_options['offset'] = request.params['offset']
 
         try:
-            schema = Schema.get(int(request.params['schema']))
-            result = Pool.smart_search(schema,
-                request.params['query_string'],
+            result = Pool.smart_search(request.params['query_string'],
                 search_options
                 )
         except NipapError, e:
@@ -163,14 +159,8 @@ class XhrController(BaseController):
         """ Add a pool.
         """
 
-        try:
-            c.schema = Schema.get(int(request.params.get('schema')))
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
-
         # extract attributes
         p = Pool()
-        p.schema = c.schema
         p.name = request.params.get('name')
         p.description = request.params.get('description')
         p.default_type = request.params.get('default_type')
@@ -194,13 +184,8 @@ class XhrController(BaseController):
         """ Edit a pool.
         """
 
-        try:
-            c.schema = Schema.get(int(request.params.get('schema')))
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
-
         # extract attributes
-        p = Pool.get(c.schema, int(id))
+        p = Pool.get(int(id))
         if 'name' in request.params:
             p.name = request.params.get('name')
         if 'description' in request.params:
@@ -235,8 +220,7 @@ class XhrController(BaseController):
         attr = XhrController.extract_prefix_attr(request.params)
 
         try:
-            schema = Schema.get(int(request.params['schema']))
-            prefixes = Prefix.list(schema, attr)
+            prefixes = Prefix.list(attr)
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
@@ -299,8 +283,7 @@ class XhrController(BaseController):
             search_opts['offset'] = request.params['offset']
 
         try:
-            schema = Schema.get(int(request.params['schema']))
-            result = Prefix.search(schema, q, search_opts)
+            result = Prefix.search(q, search_opts)
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
@@ -343,9 +326,7 @@ class XhrController(BaseController):
             search_options['offset'] = request.params['offset']
 
         try:
-            schema = Schema.get(int(request.params['schema']))
-            result = Prefix.smart_search(schema,
-                request.params['query_string'],
+            result = Prefix.smart_search(request.params['query_string'],
                 search_options
                 )
         except NipapError, e:
@@ -360,7 +341,7 @@ class XhrController(BaseController):
 
             The following keys can be used:
 
-            schema          Schema to which the prefix is to be added (mandatory)
+            vrf             ID of VRF to place the prefix in
             prefix          the prefix to add if already known
             family          address family (4 or 6)
             description     A short description
@@ -370,7 +351,6 @@ class XhrController(BaseController):
             pool            ID of pool
             country         Country where the prefix is used
             order_id        Order identifier
-            vrf             VRF
             alarm_priority  Alarm priority of prefix
             monitor         If the prefix should be monitored or not
 
@@ -381,60 +361,46 @@ class XhrController(BaseController):
 
         p = Prefix()
 
-        # parameters which are "special cases"
-        try:
-            p.schema = Schema.get(int(request.params['schema']))
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        # Sanitize input parameters
+        if 'vrf' in request.params:
+            try:
+                p.vrf = VRF.get(int(request.params['vrf']))
+            except NipapError, e:
+                return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        # standard parameters
         if 'description' in request.params:
-            if request.params['description'].strip() == '':
-                p.description = None
-            else:
-                p.description = request.params['description']
+            if request.params['description'].strip() != '':
+                p.description = request.params['description'].strip()
 
         if 'comment' in request.params:
-            if request.params['comment'].strip() == '':
-                p.comment = None
-            else:
-                p.comment = request.params['comment']
+            if request.params['comment'].strip() != '':
+                p.comment = request.params['comment'].strip()
 
         if 'node' in request.params:
-            if request.params['node'].strip() == '':
-                p.node = None
-            else:
-                p.node = request.params['node']
+            if request.params['node'].strip() != '':
+                p.node = request.params['node'].strip()
 
         if 'type' in request.params:
-            p.type = request.params['type']
+            p.type = request.params['type'].strip()
 
         if 'pool' in request.params:
-            if request.params['pool'].strip() == '':
-                p.pool = None
-            else:
-                p.pool = Pool.get(p.schema, int(request.params['pool']))
+            if request.params['pool'].strip() != '':
+                try:
+                    p.pool = Pool.get(int(request.params['pool']))
+                except NipapError, e:
+                    return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         if 'country' in request.params:
-            if request.params['country'].strip() == '':
-                p.country = None
-            else:
-                p.country = request.params['country']
+            if request.params['country'].strip() != '':
+                p.country = request.params['country'].strip()
 
         if 'order_id' in request.params:
-            if request.params['order_id'].strip() == '':
-                p.order_id = None
-            else:
-                p.order_id = request.params['order_id']
-
-        if 'vrf' in request.params:
-            if request.params['vrf'].strip() == '':
-                p.vrf = None
-            else:
-                p.vrf = request.params['vrf']
+            if request.params['order_id'].strip() != '':
+                p.order_id = request.params['order_id'].strip()
 
         if 'alarm_priority' in request.params:
-            p.alarm_priority = request.params['alarm_priority']
+            p.alarm_priority = request.params['alarm_priority'].strip()
+
         if 'monitor' in request.params:
             if request.params['monitor'] == 'true':
                 p.monitor = True
@@ -447,7 +413,7 @@ class XhrController(BaseController):
             args['from-prefix'] = request.params.getall('from_prefix[]')
         if 'from_pool' in request.params:
             try:
-                args['from-pool'] = Pool.get(p.schema, int(request.params['from_pool']))
+                args['from-pool'] = Pool.get(int(request.params['from_pool']))
             except NipapError, e:
                 return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
         if 'family' in request.params:
@@ -474,40 +440,41 @@ class XhrController(BaseController):
         """
 
         try:
-            schema = Schema.get(int(request.params['schema']))
-
-            p = Prefix.get(schema, int(id))
+            p = Prefix.get(int(id))
 
             # extract attributes
             if 'prefix' in request.params:
                 p.prefix = request.params['prefix']
 
             if 'type' in request.params:
-                p.type = request.params['type']
+                p.type = request.params['type'].strip()
 
             if 'description' in request.params:
-                p.description = request.params['description']
+                p.description = request.params['description'].strip()
 
             if 'comment' in request.params:
                 if request.params['comment'].strip() == '':
                     p.comment = None
                 else:
-                    p.comment = request.params['comment']
+                    p.comment = request.params['comment'].strip()
 
             if 'node' in request.params:
                 if request.params['node'].strip() == '':
                     p.node = None
                 else:
-                    p.node = request.params['node']
+                    p.node = request.params['node'].strip()
 
             if 'pool' in request.params:
                 if request.params['pool'].strip() == '':
                     p.pool = None
                 else:
-                    p.pool = Pool.get(schema, int(request.params['pool']))
+                    try:
+                        p.pool = Pool.get(int(request.params['pool']))
+                    except NipapError, e:
+                        return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
             if 'alarm_priority' in request.params:
-                p.alarm_priority = request.params['alarm_priority']
+                p.alarm_priority = request.params['alarm_priority'].strip()
 
             if 'monitor' in request.params:
                 if request.params['monitor'] == 'true':
@@ -519,19 +486,22 @@ class XhrController(BaseController):
                 if request.params['country'].strip() == '':
                     p.country = None
                 else:
-                    p.country = request.params['country']
+                    p.country = request.params['country'].strip()
 
             if 'order_id' in request.params:
                 if request.params['order_id'].strip() == '':
                     p.order_id = None
                 else:
-                    p.order_id = request.params['order_id']
+                    p.order_id = request.params['order_id'].strip()
 
             if 'vrf' in request.params:
                 if request.params['vrf'].strip() == '':
                     p.vrf = None
                 else:
-                    p.vrf = request.params['vrf']
+                    try:
+                        p.vrf = VRF.get(int(request.params['vrf']))
+                    except NipapError, e:
+                        return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
             p.save()
 
@@ -547,8 +517,7 @@ class XhrController(BaseController):
         """
 
         try:
-            schema = Schema.get(int(request.params['schema']))
-            p = Prefix.get(schema, int(request.params['id']))
+            p = Prefix.get(int(request.params['id']))
             p.remove()
 
         except NipapError, e:
@@ -558,18 +527,18 @@ class XhrController(BaseController):
 
 
 
-    def remove_schema(self):
-        """ Remove a schema.
+    def remove_vrf(self):
+        """ Remove a VRF.
         """
 
         try:
-            schema = Schema.get(int(request.params['id']))
-            schema.remove()
+            vrf = VRF.get(int(request.params['id']))
+            vrf.remove()
 
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(schema, cls=NipapJSONEncoder)
+        return json.dumps(vrf, cls=NipapJSONEncoder)
 
 
 
@@ -580,19 +549,18 @@ class NipapJSONEncoder(json.JSONEncoder):
 
     def default(self, obj):
 
-        if isinstance(obj, Schema):
+        if isinstance(obj, VRF):
             return {
                 'id': obj.id,
+                'vrf': obj.vrf,
                 'name': obj.name,
-                'description': obj.description,
-                'vrf': obj.vrf
+                'description': obj.description
             }
 
         elif isinstance(obj, Pool):
             return {
                 'id': obj.id,
                 'name': obj.name,
-                'schema': obj.schema.id,
                 'description': obj.description,
                 'default_type': obj.default_type,
                 'ipv4_default_prefix_length': obj.ipv4_default_prefix_length,
@@ -606,10 +574,15 @@ class NipapJSONEncoder(json.JSONEncoder):
             else:
                 pool = obj.pool.id
 
+            if obj.vrf == None:
+                vrf = None
+            else:
+                vrf = obj.vrf.id
+
             return {
                 'id': obj.id,
                 'family': obj.family,
-                'schema': obj.schema.id,
+                'vrf': vrf,
                 'prefix': obj.prefix,
                 'display_prefix': obj.display_prefix,
                 'description': obj.description,
@@ -620,7 +593,6 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'indent': obj.indent,
                 'country': obj.country,
                 'order_id': obj.order_id,
-                'vrf': obj.vrf,
                 'authoritative_source': obj.authoritative_source,
                 'monitor': obj.monitor,
                 'alarm_priority': obj.alarm_priority,
