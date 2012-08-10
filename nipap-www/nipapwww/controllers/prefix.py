@@ -17,9 +17,6 @@ class PrefixController(BaseController):
             Otherwise, redirect to schema selection page.
         """
 
-        if 'schema' not in request.params:
-            redirect(url(controller = 'schema', action = 'list'))
-
         redirect(url(controller = 'prefix', action = 'list', schema = request.params['schema']))
 
 
@@ -27,15 +24,6 @@ class PrefixController(BaseController):
     def list(self):
         """ Prefix list.
         """
-
-        # Handle schema in session.
-        if 'schema' in request.params:
-            try:
-                c.schema = Schema.get(int(request.params['schema']))
-            except NipapNonExistentError, e:
-                redirect(url(controller = 'schema', action = 'list'))
-        else:
-            redirect(url(controller = 'schema', action = 'list'))
 
         c.search_opt_parent = "all"
         c.search_opt_child = "none"
@@ -47,13 +35,6 @@ class PrefixController(BaseController):
     def add(self):
         """ Add a prefix.
         """
-
-        # make sure we have a schema
-        try:
-            c.schema = Schema.get(int(request.params['schema']))
-            c.pools = Pool.list(c.schema)
-        except (KeyError, NipapNonExistentError), e:
-            redirect(url(controller = 'schema', action = 'list'))
 
         # pass prefix to template - if we have any
         if 'prefix' in request.params:
@@ -71,12 +52,6 @@ class PrefixController(BaseController):
     def edit(self, id):
         """ Edit a prefix.
         """
-
-        # make sure we have a schema
-        try:
-            c.schema = Schema.get(int(request.params['schema']))
-        except (KeyError, NipapNonExistentError), e:
-            redirect(url(controller = 'schema', action = 'list'))
 
         # find prefix
         c.prefix = Prefix.get(c.schema, int(id))
@@ -127,12 +102,6 @@ class PrefixController(BaseController):
     def remove(self, id):
         """ Remove a prefix.
         """
-
-        # make sure we have a schema
-        try:
-            c.schema = Schema.get(int(request.params['schema']))
-        except (KeyError, NipapNonExistentError), e:
-            redirect(url(controller = 'schema', action = 'list'))
 
         # find prefix
         c.prefix = Prefix.get(c.schema, int(id))

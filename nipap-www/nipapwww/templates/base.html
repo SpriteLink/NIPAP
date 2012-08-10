@@ -28,32 +28,23 @@
         <div class="top_menu">
             <div class="menu_entry" style="line-height: 0px">
                 <div class="menu_entry" style="font-size: 10pt; color: #CCCCCC; padding-top: 11px; font-weight: bold;">
-                Schema:
+                VRFs:
                 </div>
                 <div class="menu_entry" style="position: relative;">
-                <h1 id="schema_title" style="line-height: 27px">
-                    {% if c.schema is defined %}
-                        <a href="{{ h.url(controller = 'schema', action = 'list', schema = c.schema.id) }}" class="schema_title tooltip" title="This is the currently active schema. Click to change.">
-                            {{ c.schema.name }}
-                        </a>
-                    {% else %}
-                        <a href="{{ h.url(controller = 'schema', action = 'list') }}" class="schema_title tooltip" title="No active schema selected. Click to select one!">
-                            &lt;None&gt;
-                        </a>
-                    {% endif %}
-                </h1>
+
                 </div>
             </div>
             <div class="menu_entry" style="position: absolute; left: 43%; padding-top: 0px;">
                 <ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
-                {% if c['schema'] is defined %}
-                <li style="display: inline-block; padding: 0; margin: 0;">
-                <a href="{{ h.url(controller = 'prefix', action = 'list', schema = c.schema.id) }}" class="menu_link {% if page == 'prefixes' -%}menu_link_active{%- endif -%}">prefixes</a>
+                    <li style="display: inline-block; padding: 0; margin: 0;">
+                        <a href="{{ h.url(controller = 'vrf', action = 'list') }}" class="menu_link {% if page == 'vrfs' -%}menu_link_active{%- endif -%}">VRFs</a>
+                    </li>
+                    <li style="display: inline-block; padding: 0; margin: 0;">
+                        <a href="{{ h.url(controller = 'prefix', action = 'list') }}" class="menu_link {% if page == 'prefixes' -%}menu_link_active{%- endif -%}">prefixes</a>
                     </li>
                     <li style="display: inline-block;">
-                    <a href="{{ h.url(controller = 'pool', action = 'list', schema = c.schema.id) }}" class="menu_link {% if page == 'pools' -%}menu_link_active{%- endif -%}">pools</a>
+                        <a href="{{ h.url(controller = 'pool', action = 'list') }}" class="menu_link {% if page == 'pools' -%}menu_link_active{%- endif -%}">pools</a>
                     </li>
-                {% endif %}
                 </ol>
             </div>
             <div class="menu_entry" style="position: absolute; right: 30px; padding-top: 0px;">

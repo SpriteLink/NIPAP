@@ -53,7 +53,7 @@ class AuthController(BaseController):
 
         else:
             # if previous target is unknown just send the user to a welcome page
-            redirect(url(controller='schema', action='list'))
+            redirect(url(controller='vrf', action='list'))
 
 
 
