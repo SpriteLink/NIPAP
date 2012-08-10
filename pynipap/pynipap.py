@@ -235,8 +235,15 @@ class Pynipap:
     """
 
     _xmlrpc = None
+    """ XML-RPC connection.
+    """
     _logger = None
+    """ Logging instance for this object.
+    """
+
     id = None
+    """ Internal database ID of object.
+    """
 
     def __eq__(self, other):
         """ Perform test for equality.
@@ -266,7 +273,7 @@ class VRF(Pynipap):
     """
 
     vrf = None
-    """ The VRF ID, as a string (x:y or x.x.x.x:y)
+    """ The VRF ID, as a string (x:y or x.x.x.x:y).
     """
     name = None
     """ The name of the VRF, as a string.
@@ -671,10 +678,28 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def find_free(cls):
+    def find_free(cls, vrf, args):
         """ Finds a free prefix.
         """
+
+        # sanity checks
+        if not isinstance(vrf, VRF):
+            raise NipapValueError('vrf parameter must be instance of VRF class')
+
+        # run XML-RPC query
+        xmlrpc = XMLRPCConnection()
+        try:
+            find_res = xmlrpc.connection.find_free_prefix(
+                {
+                    'vrf': { 'id': vrf.id },
+                    'args': args,
+                    'auth': AuthOptions().options
+                })
+        except xmlrpclib.Fault, f:
+            raise _fault_to_exception(f)
         pass
+
+        return find_res
 
 
 
@@ -772,7 +797,7 @@ class Prefix(Pynipap):
 
         if self.vrf is not None:
             if not isinstance(self.vrf, VRF):
-                raise NipapValueError("VRF invalid.")
+                raise NipapValueError("'vrf' attribute not instance of VRF class.")
             data['vrf'] = self.vrf.id
 
         # Prefix can be none if we are creating a new prefix
@@ -875,8 +900,8 @@ class Prefix(Pynipap):
 
         p = Prefix()
         p.id = pref['id']
-        if pref['vrf'] is not None: # VRF is not mandatory
-            p.vrf = VRF.get(pref['vrf'])
+        if pref['vrf_id'] is not None: # VRF is not mandatory
+            p.vrf = VRF.get(pref['vrf_id'])
         p.family = pref['family']
         p.prefix = pref['prefix']
         p.display_prefix = pref['display_prefix']

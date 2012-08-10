@@ -766,20 +766,27 @@ class Nipap:
             more or less all of them needs to perform the actions that are
             specified here.
 
-            The major difference to :func:`list_schema` is that we always return
-            results - empty results if no VRF is found.
+            The major difference to :func:`list_vrf` is that we always return
+            results - empty results if no VRF is specified in prefix spec.
         """
 
+        # find VRF from attributes vrf, vrf_id or vrf_name
         vrf = []
         if 'vrf' in spec:
             vrf = self.list_vrf(auth, { 'vrf': spec['vrf'] })
+        elif 'vrf_id' in spec:
+            vrf = self.list_vrf(auth, { 'id': spec['vrf_id'] })
         elif 'vrf_name' in spec:
-            vrf = self.list_vrf(auth, { 'vrf': spec['vrf'] })
+            vrf = self.list_vrf(auth, { 'name': spec['vrf_name'] })
+        else:
+            # no VRF specified - return the no-VRF VRF
+            return { 'id': 0, 'vrf': None, 'vrf_name': None }
 
-        if len(vrf) == 1:
+        if len(vrf) > 1:
             return vrf[0]
 
-        return { 'id': 0, 'vrf': None, 'vrf_name': None}
+        raise NipapNonExistentError('No matching VRF found.')
+
 
 
 
@@ -1789,7 +1796,14 @@ class Nipap:
         if args is None:
             args = {}
 
+        # Handle VRF - find the correct one and remove bad VRF keys.
         vrf = self._get_vrf(auth, attr)
+        if 'vrf_id' in attr:
+            del(attr['vrf_id'])
+        if 'vrf_name' in attr:
+            del(attr['vrf_name'])
+        attr['vrf'] = vrf['id']
+
         attr['authoritative_source'] = auth.authoritative_source
 
         # sanity checks
@@ -1963,6 +1977,9 @@ class Nipap:
 
             * `auth` [BaseAuth]
                 AAA options.
+            * `vrf` [vrf]
+                Full VRF-dict specifying in which VRF the prefix should be
+                unique.
             * `args` [find_free_prefix_args]
                 Arguments to the find free prefix function.
 
