@@ -19,7 +19,6 @@
 
         // set prefix's pool attribute in NIPAP
         data = new Object();
-        data.schema = schema_id;
         data.pool = {{ c.pool.id }};
         $.getJSON('/xhr/edit_prefix/' + prefix_id, data, prefixAdded);
 
@@ -44,7 +43,7 @@
         $("#pool_prefix_list").append('<tr id="pool_prefix_' + prefix.id + '">');
         $("#pool_prefix_" + prefix.id).append('<td>' + prefix.display_prefix + '</td>');
         $("#pool_prefix_" + prefix.id).append('<td>' + prefix.description + '</td>');
-        $("#pool_prefix_" + prefix.id).append('<td><a href="/pool/remove_prefix/{{ c.pool.id }}?schema=' + schema_id + '&prefix='+ prefix.id +'" onclick="showDialogYesNo(\'Remove ' + prefix.display_prefix + ' from pool?\', \'Are you sure you want to remove ' + prefix.display_prefix + ' from pool? You cannot undo this action.\', function () { window.location.href = \'/pool/remove_prefix/{{ c.pool.id }}?schema=' + schema_id + '&prefix='+ prefix.id +'\'; }); return false;">del</a></td>');
+        $("#pool_prefix_" + prefix.id).append('<td><a href="/pool/remove_prefix/{{ c.pool.id }}?prefix='+ prefix.id +'" onclick="showDialogYesNo(\'Remove ' + prefix.display_prefix + ' from pool?\', \'Are you sure you want to remove ' + prefix.display_prefix + ' from pool? You cannot undo this action.\', function () { window.location.href = \'/pool/remove_prefix/{{ c.pool.id }}?prefix='+ prefix.id +'\'; }); return false;">del</a></td>');
 
         // Hide all expansion boxes
         $('#prefix-alloc-method_container').hide();
@@ -71,7 +70,7 @@
         if (e.currentTarget.id == 'radio-create-new') {
 
             // fetch data for pool search box
-            $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, populatePoolTable);
+            $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', populatePoolTable);
 
             prefix_link_type = 'select';
             $('#prefix_list').empty();
@@ -181,7 +180,6 @@
        // Capture submit form event
        $('form[name="pool_form"]').submit(function(e) {
            var data = {
-               'schema': schema_id,
                'name': $('input[name="name"]').val(),
                'description': $('input[name="description"]').val(),
                'default_type': $('input[name="default_type"]:checked').val(),
@@ -246,7 +244,7 @@ Pool administration &mdash;&gt; edit pool
                     <td>{{ prefix.display_prefix }}</td>
                     <td>{{ prefix.description }}</td>
                     <td>
-                        <a href="{{ h.url(controller = 'pool', action = 'remove_prefix', id = c.pool.id, prefix = prefix.id, schema = c.schema.id) }}" onclick="showDialogYesNo('Remove {{ prefix.display_prefix }}?', 'Are you sure you want to remove {{ prefix.display_prefix }} from pool? You cannot undo this action.', function () { window.location.href = '{{ h.url(controller = "pool", action = "remove_prefix", id = c.pool.id, prefix = prefix.id, schema = c.schema.id) }}'; }); return false;">del</a>
+                        <a href="{{ h.url(controller = 'pool', action = 'remove_prefix', id = c.pool.id, prefix = prefix.id) }}" onclick="showDialogYesNo('Remove {{ prefix.display_prefix }}?', 'Are you sure you want to remove {{ prefix.display_prefix }} from pool? You cannot undo this action.', function () { window.location.href = '{{ h.url(controller = "pool", action = "remove_prefix", id = c.pool.id, prefix = prefix.id) }}'; }); return false;">del</a>
                     </td>
                 </tr>
                 {% endfor %}

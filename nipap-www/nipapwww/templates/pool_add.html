@@ -25,7 +25,6 @@
             // Capture submit form event
             $('form[name="pool_form"]').submit(function(e) {
                 var data = {
-                    'schema': schema_id,
                     'name': $('input[name="name"]').val(),
                     'description': $('input[name="description"]').val(),
                     'default_type': $('input[name="default_type"]:checked').val(),

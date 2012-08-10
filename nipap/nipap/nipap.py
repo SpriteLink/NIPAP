@@ -1618,8 +1618,9 @@ class Nipap:
         if type(spec) is not dict:
             raise NipapInputError('invalid prefix specification')
 
-        allowed_keys = ['id', 'family', 'type', 'pool_name', 'pool_id',
-                'prefix', 'pool', 'monitor', 'external_key', 'vrf', 'vrf_name']
+        allowed_keys = [ 'id', 'family', 'type', 'pool_name', 'pool_id',
+                'prefix', 'pool', 'monitor', 'external_key', 'vrf',
+                'vrf_name', 'vrf_id' ]
         for key in spec.keys():
             if key not in allowed_keys:
                 raise NipapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
@@ -1644,6 +1645,10 @@ class Nipap:
         if 'vrf' in spec:
             spec['vrf.vrf'] = spec['vrf']
             del(spec['vrf'])
+
+        if 'vrf_id' in spec:
+            spec['vrf.id'] = spec['vrf']
+            del(spec['vrf_id'])
 
         where, params = self._sql_expand_where(spec)
 
@@ -2155,6 +2160,7 @@ class Nipap:
         sql = """SELECT
             inp.id,
             vrf.vrf AS vrf,
+            vrf.id AS vrf_id,
             vrf.name AS vrf_name,
             family(prefix) AS family,
             inp.prefix,

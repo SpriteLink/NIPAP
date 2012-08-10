@@ -30,7 +30,7 @@ function prefixAdded(data) {
 
 $(function () {
 
-    $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, populatePoolTable);
+    $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', populatePoolTable);
     $('#prefix-alloc-method_container').show();
 
     // Enable actions on radio buttons

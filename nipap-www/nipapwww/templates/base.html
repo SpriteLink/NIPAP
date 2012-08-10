@@ -16,9 +16,6 @@
             $(function() {
                 $(".tooltip").tipTip({delay: 100});
                 $(document).ajaxError(ajaxErrorHandler);
-                {% if c['schema'] is defined %}
-                schema_id = {{ c.schema.id }};
-                {% endif %}
             });
         </script>
         {% block head %}

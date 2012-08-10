@@ -7,7 +7,6 @@
 /**
  * Global variables...
  */
-var schema_id = 0;
 
 /*
  * The prefix_list variable is used to keep a copy of all the prefixes
@@ -347,7 +346,6 @@ function performPrefixSearch(explicit) {
 	var search_q = {
 		'query_id': query_id,
 		'query_string': $('#query_string').val(),
-		'schema': schema_id,
 		'parents_depth': optToDepth($('input[name="search_opt_parent"]:checked').val()),
 		'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
 		'include_all_parents': 'true',
@@ -536,7 +534,7 @@ function showPrefix(prefix, reference, offset) {
 	} else if (prefix_link_type == 'add_to_pool') {
 
 		prefix_prefix.html('<a href="/pool/add_prefix/' + pool_id + '?prefix=' +
-			prefix.id + '&schema=' + schema_id + '" onClick="addToPool(' + prefix.id +
+			prefix.id + '" onClick="addToPool(' + prefix.id +
 			'); return false;">' + prefix.display_prefix + '</a>');
 
 	// Or edit prefix
@@ -686,14 +684,13 @@ function showPrefixMenu(prefix_id) {
 		// Add to pool (Add prefix to pool on edit pool page)
 	} else {
 		// ordinary prefix list
-		menu.append('<a href="/prefix/edit/' + prefix_id + '?schema=' + schema_id + '">Edit</a>');
-		menu.append('<a id="prefix_remove' + prefix_id + '" href="/prefix/remove/' + prefix_id + '?schema=' + schema_id + '">Remove</a>');
+		menu.append('<a href="/prefix/edit/' + prefix_id + '">Edit</a>');
+		menu.append('<a id="prefix_remove' + prefix_id + '" href="/prefix/remove/' + prefix_id + '">Remove</a>');
 		$('#prefix_remove' + prefix_id).click(function(e) {
 			e.preventDefault();
 			var dialog = showDialogYesNo('Really remove prefix?', 'Are you sure you want to remove the prefix ' + prefix_list[prefix_id].display_prefix + '?',
 				function () {
 					var data = {
-						'schema': schema_id,
 						'id': prefix_id
 					};
 					$.getJSON('/xhr/remove_prefix', data, prefixRemoved);
@@ -1197,7 +1194,6 @@ function collapseClick(id) {
 
 		// Yes, ask server for prefix list
 		var data = {
-			'schema': schema_id,
 			'id': id,
 			'include_parents': false,
 			'include_children': false,
@@ -1579,7 +1575,6 @@ function prefixFormSubmit(e) {
 
 	// create prefix data object
 	var prefix_data = {
-		'schema': schema_id,
 		'description': $('input[name="prefix_description"]').val(),
 		'comment': $('textarea[name="prefix_comment"]').val(),
 		'node': $('input[name="prefix_node"]').val(),
