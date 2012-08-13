@@ -806,9 +806,9 @@ class Prefix(Pynipap):
             data['prefix'] = self.prefix
 
         if self.pool is not None:
-            data['pool'] = self.pool.id
+            data['pool_id'] = self.pool.id
         else:
-            data['pool'] = None
+            data['pool_id'] = None
 
         # New object, create from scratch
         if self.id is None:
@@ -908,8 +908,8 @@ class Prefix(Pynipap):
         p.description = pref['description']
         p.comment = pref['comment']
         p.node = pref['node']
-        if pref['pool'] is not None: # Pool is not mandatory
-            p.pool = Pool.get(pref['pool'])
+        if pref['pool_id'] is not None: # Pool is not mandatory
+            p.pool = Pool.get(pref['pool_id'])
         p.type = pref['type']
         p.indent = pref['indent']
         p.country = pref['country']

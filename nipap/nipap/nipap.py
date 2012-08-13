@@ -1618,7 +1618,7 @@ class Nipap:
         if type(spec) is not dict:
             raise NipapInputError('invalid prefix specification')
 
-        allowed_keys = [ 'id', 'family', 'type', 'pool_name', 'pool_id',
+        allowed_keys = [ 'id', 'family', 'type', 'pool', 'pool_id',
                 'prefix', 'pool', 'monitor', 'external_key', 'vrf',
                 'vrf_name', 'vrf_id' ]
         for key in spec.keys():
@@ -1649,6 +1649,14 @@ class Nipap:
         if 'vrf_id' in spec:
             spec['vrf.id'] = spec['vrf']
             del(spec['vrf_id'])
+
+        if 'pool' in spec:
+            spec['pool.name'] = spec['pool']
+            del(spec['pool'])
+
+        if 'pool_id' in spec:
+            spec['pool.id'] = spec['pool_id']
+            del(spec['pool_id'])
 
         where, params = self._sql_expand_where(spec)
 
@@ -1705,14 +1713,17 @@ class Nipap:
             prefix_attr['prefix'] = 'prefix'
             prefix_attr['schema'] = 'schema'
             prefix_attr['description'] = 'description'
-            prefix_attr['pool'] = 'pool'
+            prefix_attr['pool'] = 'pool.name'
+            prefix_attr['pool_id'] = 'pool.id'
             prefix_attr['family'] = 'family'
             prefix_attr['comment'] = 'comment'
             prefix_attr['type'] = 'type'
             prefix_attr['node'] = 'node'
             prefix_attr['country'] = 'country'
             prefix_attr['order_id'] = 'order_id'
-            prefix_attr['vrf'] = 'vrf'
+            prefix_attr['vrf'] = 'vrf.vrf'
+            prefix_attr['vrf_name'] = 'vrf.name'
+            prefix_attr['vrf_id'] = 'vrf.id'
             prefix_attr['external_key'] = 'external_key'
             prefix_attr['authoritative_source'] = 'authoritative_source'
             prefix_attr['alarm_priority'] = 'alarm_priority'
@@ -1797,9 +1808,21 @@ class Nipap:
 
         self._logger.debug("add_prefix called; attr: %s; args: %s" % (str(attr), str(args)))
 
-        # args degfined?
+        # args defined?
         if args is None:
             args = {}
+
+        # Handle Pool - find correct one and remove bad pool keys
+        pool = None
+        if 'pool_id' in attr or 'pool' in attr:
+            if 'pool_id' in attr:
+                pool = self._get_pool(auth, { 'id': attr['pool_id'] })
+                del(attr['pool_id'])
+            else:
+                pool = self._get_pool(auth, { 'name': attr['pool'] })
+                del(attr['pool'])
+
+            attr['pool'] = pool['id']
 
         # Handle VRF - find the correct one and remove bad VRF keys.
         vrf = self._get_vrf(auth, attr)
@@ -1827,19 +1850,8 @@ class Nipap:
 
         # If assigning from pool and missing prefix type, set default
         if 'from-pool' in args and 'type' not in attr:
-            pool = self._get_pool(auth, schema_spec, args['from-pool'])
+            pool = self._get_pool(auth, args['from-pool'])
             attr['type'] = pool['default_type']
-
-        pool = None
-        if 'pool_id' in attr or 'pool_name' in attr:
-            if 'pool_id' in attr:
-                pool = self._get_pool(auth, schema_spec, { 'id': attr['pool_id'] })
-                del(attr['pool_id'])
-            else:
-                pool = self._get_pool(auth, schema_spec, { 'name': attr['pool_name'] })
-                del(attr['pool_name'])
-
-            attr['pool'] = pool['id']
 
         # do we have all attributes?
         req_attr = [ 'prefix', 'authoritative_source' ]
@@ -1874,19 +1886,12 @@ class Nipap:
 
         if pool is not None:
             audit_params = {
-                'vrf': vrf['vrf'],
-                'vrf_name': vrf['vrf_name'],
                 'pool': pool['id'],
                 'pool_name': pool['name'],
-                'prefix': prefix_id,
-                'prefix_prefix': attr['prefix'],
-                'username': auth.username,
-                'authenticated_as': auth.authenticated_as,
-                'full_name': auth.full_name,
-                'authoritative_source': auth.authoritative_source,
                 'description': 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
             }
-        # TODO: huh, shouldn't there be an INSERT here?
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
         return prefix_id
 
@@ -1912,6 +1917,45 @@ class Nipap:
 
         attr['authoritative_source'] = auth.authoritative_source
 
+        # Handle Pool - find correct one and remove bad pool keys
+        pool = None
+        if 'pool_id' in attr or 'pool' in attr:
+            if 'pool_id' in attr:
+                if attr['pool_id'] is None:
+                    pool = {
+                        'id': None,
+                        'name': None
+                    }
+                else:
+                    pool = self._get_pool(auth, { 'id': attr['pool_id'] })
+
+                del(attr['pool_id'])
+            else:
+                if attr['pool'] is None:
+                    pool = {
+                        'id': None,
+                        'name': None
+                    }
+                else:
+                    pool = self._get_pool(auth, { 'name': attr['pool'] })
+
+            attr['pool'] = pool['id']
+
+        else:
+            pool = {
+                'id': None,
+                'name': None
+            }
+
+        # Handle VRF - find the correct one and remove bad VRF keys.
+        if 'vrf' in attr or 'vrf_id' in attr or 'vrf_name' in attr:
+            vrf = self._get_vrf(auth, attr)
+            if 'vrf_id' in attr:
+                del(attr['vrf_id'])
+            if 'vrf_name' in attr:
+                del(attr['vrf_name'])
+            attr['vrf'] = vrf['id']
+
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool', 'node', 'type', 'country',
@@ -1935,17 +1979,11 @@ class Nipap:
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source
+            'authoritative_source': auth.authoritative_source,
+            'vrf': vrf['vrf'],
+            'vrf_name': vrf['name'],
+            'vrf_id': vrf['id']
         }
-
-        pool_id = attr.get('pool')
-        if pool_id is not None:
-            pool = self._get_pool(auth, { 'id': pool_id })
-        else:
-            pool = {
-                'id': None,
-                'name': None
-            }
 
         for p in prefixes:
             audit_params['prefix'] = p['id']
@@ -1955,10 +1993,10 @@ class Nipap:
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
             # If pool is set, we might need to add log entry regarding the pool expansion also.
-            if 'pool' in attr:
+            if pool['id'] is not None:
 
                 # Only add to log if something was changed
-                if p['pool'] == pool['id']:
+                if p['pool_id'] == pool['id']:
                     continue
 
                 audit_params2 = {
@@ -2168,7 +2206,8 @@ class Nipap:
             inp.description,
             inp.node,
             inp.comment,
-            inp.pool,
+            pool.name AS pool,
+            pool.id AS pool_id,
             inp.type,
             inp.indent,
             inp.country,
@@ -2178,7 +2217,8 @@ class Nipap:
             inp.alarm_priority,
             inp.monitor
             FROM ip_net_plan inp
-            JOIN ip_net_vrf vrf ON (inp.vrf = vrf.id) %s
+            JOIN ip_net_vrf vrf ON (inp.vrf = vrf.id)
+            LEFT JOIN ip_net_pool pool ON (inp.pool = pool.id) %s
             ORDER BY prefix""" % where
 
         self._execute(sql, params)
@@ -2193,7 +2233,7 @@ class Nipap:
 
 
 
-    def _db_remove_prefix(self, recursive = False):
+    def _db_remove_prefix(self, spec, recursive = False):
         """ Do the underlying database operations to delete a prefix
         """
         if recursive:
@@ -2487,6 +2527,7 @@ class Nipap:
         comment,
         node,
         pool,
+        pool_id,
         type,
         indent,
         country,
@@ -2514,7 +2555,8 @@ class Nipap:
             p1.description,
             p1.comment,
             p1.node,
-            p1.pool,
+            pool.name AS pool,
+            pool.id AS pool_id,
             p1.type,
             p1.indent,
             p1.country,
@@ -2547,6 +2589,7 @@ class Nipap:
                 )
             )
             JOIN ip_net_vrf AS vrf ON (p1.vrf = vrf.id)
+            LEFT JOIN ip_net_pool AS pool ON (p1.pool = pool.id)
             WHERE p2.prefix IN (
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
                 ORDER BY prefix
