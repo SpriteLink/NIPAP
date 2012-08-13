@@ -413,6 +413,8 @@ class Nipap:
         except psycopg2.IntegrityError, e:
             self._con_pg.rollback()
 
+            self._logger.info(str(e))
+
             # this is a duplicate key error
             if e.pgcode == "23505":
                 m = re.match(r'.*"([^"]+)"', e.pgerror)
@@ -421,12 +423,15 @@ class Nipap:
                 cursor = self._con_pg.cursor()
                 cursor.execute("SELECT obj_description(oid) FROM pg_class WHERE relname = %(relname)s", { 'relname': m.group(1) })
                 for desc in cursor:
+                    self._logger.error(str(desc))
                     raise NipapDuplicateError("Duplicate value for '" + str(desc[0]) + "', the value you have inputted is already in use.")
 
             raise NipapError(str(e))
 
         except psycopg2.DataError, e:
             self._con_pg.rollback()
+
+            self._logger.info(str(e))
 
             m = re.search('invalid cidr value: "([^"]+)"', e.pgerror)
             if m is not None:
@@ -782,7 +787,7 @@ class Nipap:
             # no VRF specified - return the no-VRF VRF
             return { 'id': 0, 'vrf': None, 'vrf_name': None }
 
-        if len(vrf) > 1:
+        if len(vrf) > 0:
             return vrf[0]
 
         raise NipapNonExistentError('No matching VRF found.')
@@ -1610,7 +1615,7 @@ class Nipap:
     #
     # PREFIX FUNCTIONS
     #
-    def _expand_prefix_spec(self, spec):
+    def _expand_prefix_spec(self, spec, prefix_col_prefix = ''):
         """ Expand prefix specification to SQL.
         """
 
@@ -1638,25 +1643,32 @@ class Nipap:
             family = spec['family']
             del(spec['family'])
 
-        if 'vrf_name' in spec:
-            spec['vrf.name'] = spec['vrf_name']
-            del(spec['vrf_name'])
+        # do we need to rename prefix columns?
+        if prefix_col_prefix != '':
+            spec2 = {}
+            for k in spec:
+                spec2[prefix_col_prefix + k] = spec[k]
+            spec = spec2
 
-        if 'vrf' in spec:
-            spec['vrf.vrf'] = spec['vrf']
-            del(spec['vrf'])
+        if prefix_col_prefix + 'vrf_name' in spec:
+            spec['vrf.name'] = spec[prefix_col_prefix + 'vrf_name']
+            del(spec[prefix_col_prefix + 'vrf_name'])
 
-        if 'vrf_id' in spec:
-            spec['vrf.id'] = spec['vrf']
-            del(spec['vrf_id'])
+        if prefix_col_prefix + 'vrf' in spec:
+            spec['vrf.vrf'] = spec[prefix_col_prefix + 'vrf']
+            del(spec[prefix_col_prefix + 'vrf'])
 
-        if 'pool' in spec:
-            spec['pool.name'] = spec['pool']
-            del(spec['pool'])
+        if prefix_col_prefix + 'vrf_id' in spec:
+            spec['vrf.id'] = spec[prefix_col_prefix + 'vrf']
+            del(spec[prefix_col_prefix + 'vrf_id'])
 
-        if 'pool_id' in spec:
-            spec['pool.id'] = spec['pool_id']
-            del(spec['pool_id'])
+        if prefix_col_prefix + 'pool' in spec:
+            spec['pool.name'] = spec[prefix_col_prefix + 'pool']
+            del(spec[prefix_col_prefix + 'pool'])
+
+        if prefix_col_prefix + 'pool_id' in spec:
+            spec['pool.id'] = spec[prefix_col_prefix + 'pool_id']
+            del(spec[prefix_col_prefix + 'pool_id'])
 
         where, params = self._sql_expand_where(spec)
 
@@ -1816,13 +1828,31 @@ class Nipap:
         pool = None
         if 'pool_id' in attr or 'pool' in attr:
             if 'pool_id' in attr:
-                pool = self._get_pool(auth, { 'id': attr['pool_id'] })
+                if attr['pool_id'] is None:
+                    pool = {
+                        'id': None,
+                        'name': None
+                    }
+                else:
+                    pool = self._get_pool(auth, { 'id': attr['pool_id'] })
+
                 del(attr['pool_id'])
             else:
-                pool = self._get_pool(auth, { 'name': attr['pool'] })
-                del(attr['pool'])
+                if attr['pool'] is None:
+                    pool = {
+                        'id': None,
+                        'name': None
+                    }
+                else:
+                    pool = self._get_pool(auth, { 'name': attr['pool'] })
 
             attr['pool'] = pool['id']
+
+        else:
+            pool = {
+                'id': None,
+                'name': None
+            }
 
         # Handle VRF - find the correct one and remove bad VRF keys.
         vrf = self._get_vrf(auth, attr)
@@ -1872,7 +1902,7 @@ class Nipap:
         # write to audit table
         audit_params = {
             'vrf': vrf['vrf'],
-            'vrf_name': vrf['vrf_name'],
+            'vrf_name': vrf['name'],
             'prefix': prefix_id,
             'prefix_prefix': attr['prefix'],
             'username': auth.username,
@@ -1885,11 +1915,9 @@ class Nipap:
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
         if pool is not None:
-            audit_params = {
-                'pool': pool['id'],
-                'pool_name': pool['name'],
-                'description': 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
-            }
+            audit_params['pool'] = pool['id']
+            audit_params['pool_name'] = pool['name'],
+            audit_params['description'] = 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
@@ -2188,7 +2216,7 @@ class Nipap:
         self._logger.debug("list_prefix called; spec: %s" % str(spec))
 
         if type(spec) is dict:
-            where, params = self._expand_prefix_spec(spec)
+            where, params = self._expand_prefix_spec(spec, 'inp.')
         else:
             raise NipapError("invalid prefix specification")
 

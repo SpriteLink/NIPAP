@@ -111,6 +111,8 @@ CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 CREATE INDEX ip_net_plan__family__index ON ip_net_plan (family(prefix));
 CREATE INDEX ip_net_plan__prefix_iprange_index ON ip_net_plan USING gist(iprange(prefix));
 
+COMMENT ON INDEX ip_net_plan__vrf_prefix__index IS 'prefix';
+
 --
 -- Audit log table
 --

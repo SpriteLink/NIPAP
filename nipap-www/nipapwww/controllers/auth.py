@@ -48,7 +48,6 @@ class AuthController(BaseController):
 
         # Send user back to the page he originally wanted to get to
         if session.get('path_before_login'):
-            log.error(session.get('path_before_login'))
             redirect(session['path_before_login'])
 
         else:

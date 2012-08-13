@@ -574,7 +574,7 @@ class NipapJSONEncoder(json.JSONEncoder):
             else:
                 pool = obj.pool.id
 
-            if obj.vrf == None:
+            if obj.vrf is None:
                 vrf = None
             else:
                 vrf = obj.vrf.id

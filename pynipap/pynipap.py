@@ -795,10 +795,12 @@ class Prefix(Pynipap):
             'monitor': self.monitor
         }
 
-        if self.vrf is not None:
+        if self.vrf is None:
+            data['vrf'] = None
+        else:
             if not isinstance(self.vrf, VRF):
                 raise NipapValueError("'vrf' attribute not instance of VRF class.")
-            data['vrf'] = self.vrf.id
+            data['vrf_id'] = self.vrf.id
 
         # Prefix can be none if we are creating a new prefix
         # from a pool or other prefix!
@@ -808,7 +810,7 @@ class Prefix(Pynipap):
         if self.pool is not None:
             data['pool_id'] = self.pool.id
         else:
-            data['pool_id'] = None
+            data['pool'] = None
 
         # New object, create from scratch
         if self.id is None:
