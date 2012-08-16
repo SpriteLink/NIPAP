@@ -661,8 +661,8 @@ class Nipap:
         self._logger.debug("add_vrf called; attr: %s" % str(attr))
 
         # sanity check - do we have all attributes?
-        req_attr = [ 'vrf', 'name', 'description' ]
-        self._check_attr(attr, req_attr, req_attr)
+        req_attr = [ 'vrf', 'name' ]
+        self._check_attr(attr, req_attr, req_attr + [ 'description', ])
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_vrf " + insert
@@ -785,7 +785,7 @@ class Nipap:
             vrf = self.list_vrf(auth, { 'name': spec['vrf_name'] })
         else:
             # no VRF specified - return the no-VRF VRF
-            return { 'id': 0, 'vrf': None, 'vrf_name': None }
+            return { 'id': 0, 'vrf': None, 'name': None }
 
         if len(vrf) > 0:
             return vrf[0]
@@ -1901,7 +1901,8 @@ class Nipap:
 
         # write to audit table
         audit_params = {
-            'vrf': vrf['vrf'],
+            'vrf': vrf['id'],
+            'vrf_vrf': vrf['vrf'],
             'vrf_name': vrf['name'],
             'prefix': prefix_id,
             'prefix_prefix': attr['prefix'],
@@ -2002,18 +2003,17 @@ class Nipap:
         self._execute(sql, params)
 
         # write to audit table
-        # TODO: add VRF stuff
         audit_params = {
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'vrf': vrf['vrf'],
-            'vrf_name': vrf['name'],
-            'vrf_id': vrf['id']
         }
 
         for p in prefixes:
+            audit_params['vrf'] = p['vrf_id']
+            audit_params['vrf_name'] = p['vrf_name'],
+            audit_params['vrf_vrf'] = p['vrf']
             audit_params['prefix'] = p['id']
             audit_params['prefix_prefix'] = p['prefix']
             audit_params['description'] = 'Edited prefix %s attr: %s' % (p['prefix'], str(attr))
@@ -2028,6 +2028,9 @@ class Nipap:
                     continue
 
                 audit_params2 = {
+                    'vrf': p['vrf_id'],
+                    'vrf_name': p['vrf_name'],
+                    'vrf_vrf': p['vrf'],
                     'prefix': p['id'],
                     'prefix_prefix': p['prefix'],
                     'pool': pool['id'],

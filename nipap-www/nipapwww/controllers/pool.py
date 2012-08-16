@@ -56,7 +56,7 @@ class PoolController(BaseController):
         """
 
         c.pool = Pool.get(int(id))
-        c.prefix_list = Prefix.list({ 'pool': c.pool.id })
+        c.prefix_list = Prefix.list({ 'pool_id': c.pool.id })
 
         # save changes to NIPAP
         if request.method == 'POST':

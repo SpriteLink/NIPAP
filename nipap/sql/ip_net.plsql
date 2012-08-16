@@ -59,6 +59,8 @@ CREATE TABLE ip_net_pool (
 
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 
+COMMENT ON INDEX ip_net_pool_name_key IS 'pool name';
+
 
 --
 -- this table stores the actual prefixes in the address plan, or net 
