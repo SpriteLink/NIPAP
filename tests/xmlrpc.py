@@ -48,15 +48,16 @@ class NipapXmlTest(unittest.TestCase):
         self.auth.authenticated_as = 'unittest'
         self.auth.full_name = 'Unit test'
 
-        self.nipap._execute("DELETE FROM ip_net_vrf WHERE id > 0")
         self.nipap._execute("DELETE FROM ip_net_plan WHERE masklen(prefix) = 32")
         self.nipap._execute("DELETE FROM ip_net_plan")
+        self.nipap._execute("DELETE FROM ip_net_vrf WHERE id > 0")
+        self.nipap._execute("DELETE FROM ip_net_pool")
         self.nipap._execute("DELETE FROM ip_net_asn")
 
 
 
     def test_vrf_add_list(self):
-        """ Add a VRF and verify correct input
+        """ Add a VRF and verify result in database
         """
         attr = {}
         with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute vrf'):
@@ -65,10 +66,7 @@ class NipapXmlTest(unittest.TestCase):
         attr['vrf'] = '123:456'
         with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute name'):
             s.add_vrf({ 'auth': ad, 'attr': attr })
-
         attr['name'] = 'test'
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute description'):
-            s.add_vrf({ 'auth': ad, 'attr': attr })
 
         attr['description'] = 'my test vrf'
         attr['id'] = s.add_vrf({ 'auth': ad, 'attr': attr })
@@ -236,6 +234,91 @@ class NipapXmlTest(unittest.TestCase):
         self.assertEqual(s.list_prefix({ 'auth': ad }), expected_list)
 
 
+    def test_prefix_add_vrf(self):
+        """ Test adding prefixes to VRF
+        """
+
+        args = { 'from-prefix': ['1.3.3.0/24'], 'prefix_length': 32 }
+        expected = {
+                'alarm_priority': None,
+                'authoritative_source': 'nipap',
+                'comment': None,
+                'country': None,
+                'description': 'test prefix',
+                'display_prefix': '1.3.3.0/24',
+                'external_key': None,
+                'family': 4,
+                'id': 131,
+                'indent': 0,
+                'monitor': None,
+                'node': None,
+                'order_id': None,
+                'pool': None,
+                'pool_id': None,
+                'vrf': None,
+                'vrf_name': None,
+                'vrf_id': 0
+            }
+
+        # add VRF
+        vrf_attr = {
+            'vrf': '123:4567',
+            'name': 'test_prefix_add_vrf1',
+        }
+        vrf_attr['id'] = s.add_vrf({ 'auth': ad, 'attr': vrf_attr })
+
+        # add prefix to VRF by specifying ID
+        vrf_pref_attr = {
+            'prefix': '1.3.3.0/24',
+            'vrf_id': vrf_attr['id'],
+            'type': 'assignment',
+            'description': 'Test prefix 1.3.3.0/24 in vrf 123:4567'
+        }
+        expected['id'] = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr })
+        expected['vrf'] = vrf_attr['vrf']
+        expected['vrf_name'] = vrf_attr['name']
+        expected['display_prefix'] = '1.3.3.0/24'
+        expected['indent'] = 0
+        expected.update(vrf_pref_attr)
+
+        vrf_pref = s.list_prefix({ 'auth': ad, 'prefix': { 'id': expected['id'] } })[0]
+        self.assertEqual(vrf_pref, expected, 'Prefix added with VRF ID reference not equal')
+
+        # add prefix to VRF by specifying VRF
+        vrf_pref_attr = {
+            'vrf': vrf_attr['vrf'],
+            'type': 'host',
+            'description': 'Test host 1.3.3.1/32 in vrf 123:4567'
+        }
+        expected['id'] = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr, 'args': args })
+        expected['vrf_id'] = vrf_attr['id']
+        expected['vrf_name'] = vrf_attr['name']
+        expected['display_prefix'] = '1.3.3.1/24'
+        expected['prefix'] = '1.3.3.1/32'
+        expected['indent'] = 1
+        expected.update(vrf_pref_attr)
+
+        vrf_pref = s.list_prefix({ 'auth': ad, 'prefix': { 'id': expected['id'] } })[0]
+        self.assertEqual(vrf_pref, expected, 'Prefix added with VRF reference not equal')
+
+        # add prefix to VRF by specifying VRF name
+        vrf_pref_attr = {
+            'vrf_name': vrf_attr['name'],
+            'type': 'host',
+            'description': 'Test host 1.3.3.2/32 in vrf 123:4567'
+        }
+        expected['id'] = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr, 'args': args })
+        expected['vrf'] = vrf_attr['vrf']
+        expected['vrf_id'] = vrf_attr['id']
+        expected['display_prefix'] = '1.3.3.2/24'
+        expected['prefix'] = '1.3.3.2/32'
+        expected['indent'] = 1
+        expected.update(vrf_pref_attr)
+
+        vrf_pref = s.list_prefix({ 'auth': ad, 'prefix': { 'id': expected['id'] } })[0]
+        self.assertEqual(vrf_pref, expected, 'Prefix added with VRF name reference not equal')
+
+
 
     def test_prefix_smart_search(self):
         """ Add a prefix and list
@@ -401,6 +484,82 @@ class NipapXmlTest(unittest.TestCase):
         self.assertEquals(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
         self.assertEquals(res['interpretation'][0]['attribute'], 'asn', "search term interpretated as wrong type")
 
+
+
+    def test_pool_add_list(self):
+        """ Test adding a pool and verifying it
+        """
+
+        # Add a pool
+        attr = {
+            'description': 'Test pool #1',
+            'default_type': 'assignment',
+            'ipv4_default_prefix_length': 31,
+            'ipv6_default_prefix_length': 112
+        }
+
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute name'):
+            s.add_pool({ 'auth': ad, 'attr': attr })
+
+        attr['name'] = 'pool_1'
+        attr['ipv4_default_prefix_length'] = 50
+        with self.assertRaisesRegexp(xmlrpclib.Fault, '1200: \'Default IPv4 prefix length must be an integer between 1 and 32.'):
+            s.add_pool({ 'auth': ad, 'attr': attr })
+
+        attr['ipv4_default_prefix_length'] = 31
+        attr['ipv6_default_prefix_length'] = 'over 9000'
+        with self.assertRaisesRegexp(xmlrpclib.Fault, '1200: \'Default IPv6 prefix length must be an integer between 1 and 128.'):
+            s.add_pool({ 'auth': ad, 'attr': attr })
+
+        attr['ipv6_default_prefix_length'] = 112
+
+        res = s.add_pool({ 'auth': ad, 'attr': attr })
+        expected = attr.copy()
+        expected['id'] = res
+        expected['prefixes'] = []
+
+        # list pool and verify data in NIPAP
+        p = s.list_pool({ 'auth': ad, 'pool': { 'id': expected['id'] } })
+        self.assertEquals(1, len(p), 'Wrong number of pools returned')
+        p = p[0]
+
+        self.assertEquals(p, expected, 'Received pool differs from added pool')
+
+
+    def test_edit_pool(self):
+        """ Test editing a pool
+        """
+
+        # add a pool, we need something to edit
+        attr = {
+            'name': 'test_pool_2',
+            'description': 'Test pool #2',
+            'default_type': 'reservation'
+        }
+
+        res = s.add_pool({ 'auth': ad, 'attr': attr })
+        s.edit_pool({ 'auth': ad, 'pool': { 'id': res }, 'attr': { 'name': 'edited_test_pool_1' } })
+        expected['id'] = res
+        expected['ipv4_default_prefix_length'] = None
+        expected['ipv6_default_prefix_length'] = None
+        expected['name'] = 'edited_test_pool_1'
+
+        self.assureEquals(s.list_pool({ 'auth': ad, 'pool': { 'id': res } })[0], expected)
+
+
+    def test_search_pool(self):
+        """ Test searching pools
+        """
+
+
+    def test_smart_search_pool(self):
+        """ Test smart searching among pools
+        """
+
+
+    def test_remove_pool(self):
+        """ Test removing pools
+        """
 
 
 if __name__ == '__main__':
