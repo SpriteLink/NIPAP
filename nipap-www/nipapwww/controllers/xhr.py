@@ -59,6 +59,35 @@ class XhrController(BaseController):
 
 
 
+    def smart_search_vrf(self):
+        """ Perform a smart VRF search.
+
+            The "smart" search function tries extract a query from
+            a text string. This query is then passed to the search_vrf
+            function, which performs the search.
+        """
+
+        search_options = {}
+
+        if 'query_id' in request.params:
+            search_options['query_id'] = request.params['query_id']
+
+        if 'max_result' in request.params:
+            search_options['max_result'] = request.params['max_result']
+        if 'offset' in request.params:
+            search_options['offset'] = request.params['offset']
+
+        try:
+            result = VRF.smart_search(request.params['query_string'],
+                search_options
+                )
+        except NipapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(result, cls=NipapJSONEncoder)
+
+
+
     def add_vrf(self):
         """ Add a new VRF to NIPAP and return its data.
         """
@@ -309,7 +338,7 @@ class XhrController(BaseController):
                 search_options['include_all_parents'] = True
             else:
                 search_options['include_all_parents'] = False
-                
+
         if 'include_all_children' in request.params:
             if request.params['include_all_children'] == 'true':
                 search_options['include_all_children'] = True
@@ -363,10 +392,16 @@ class XhrController(BaseController):
 
         # Sanitize input parameters
         if 'vrf' in request.params:
-            try:
-                p.vrf = VRF.get(int(request.params['vrf']))
-            except NipapError, e:
-                return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+            if len(request.params['vrf'].strip()) > 0:
+                vrf = request.params['vrf'].strip()
+
+                try:
+                    p.vrf = VRF.list({ 'vrf': vrf })[0]
+                except IndexError:
+                    return json.dumps({'error': 1, 'message': 'VRF %s not found' % vrf})
+                except NipapError, e:
+                    return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         if 'description' in request.params:
             if request.params['description'].strip() != '':
@@ -495,13 +530,18 @@ class XhrController(BaseController):
                     p.order_id = request.params['order_id'].strip()
 
             if 'vrf' in request.params:
-                if request.params['vrf'].strip() == '':
-                    p.vrf = None
-                else:
+
+                if len(request.params['vrf'].strip()) > 0:
+                    vrf = request.params['vrf'].strip()
+
                     try:
-                        p.vrf = VRF.get(int(request.params['vrf']))
+                        p.vrf = VRF.list({ 'vrf': vrf })[0]
+                    except IndexError:
+                        return json.dumps({'error': 1, 'message': 'VRF %s not found' % vrf})
                     except NipapError, e:
                         return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+                else:
+                    p.vrf = None
 
             p.save()
 
@@ -574,10 +614,10 @@ class NipapJSONEncoder(json.JSONEncoder):
             else:
                 pool = obj.pool.id
 
-            if obj.vrf == None:
+            if obj.vrf is None:
                 vrf = None
             else:
-                vrf = obj.vrf.id
+                vrf = obj.vrf.vrf
 
             return {
                 'id': obj.id,

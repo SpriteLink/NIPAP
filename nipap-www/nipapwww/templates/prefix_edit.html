@@ -85,6 +85,13 @@
             $('input[name="prefix_monitor"]').change(prefixMonitorToggled);
             prefixMonitorToggled();
 
+            // capture click event in VRF input field, display VRF selector
+            $('input[name="prefix_vrf_btn"]').click(
+                function(evt) {
+                    showVRFSelectorMenu(function(v) { log(v) } );
+                }
+            );
+
         });
 
     </script>
@@ -185,7 +192,8 @@ Prefix administration &mdash;&gt; edit prefix
                         VRF
                     </dt>
                     <dd>
-                        <input type="text" name="prefix_vrf" value="{{ c.prefix.vrf or '' }}">
+                        <input type="button" name="prefix_vrf_btn" value="{{ c.prefix.vrf.vrf or 'None' }}">
+                        <input type="hidden" name="prefix_vrf" value="{{ c.prefix.vrf.vrf or '' }}">
                     </dd>
                 </dl>
             </div>
