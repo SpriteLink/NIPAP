@@ -796,8 +796,6 @@ class Prefix(Pynipap):
         }
 
         if self.vrf is None:
-            data['vrf'] = None
-        else:
             if not isinstance(self.vrf, VRF):
                 raise NipapValueError("'vrf' attribute not instance of VRF class.")
             data['vrf_id'] = self.vrf.id
@@ -808,9 +806,9 @@ class Prefix(Pynipap):
             data['prefix'] = self.prefix
 
         if self.pool is not None:
+            if not isinstance(self.pool, Pool):
+                raise NipapValueError("'pool' attribute not instance of Pool class.")
             data['pool_id'] = self.pool.id
-        else:
-            data['pool'] = None
 
         # New object, create from scratch
         if self.id is None:
@@ -856,9 +854,6 @@ class Prefix(Pynipap):
 
         # Old object, edit
         else:
-            # remove keys which we are not allowed to edit
-            del(data['vrf'])
-
             try:
                 # save
                 self._xmlrpc.connection.edit_prefix(
@@ -916,7 +911,6 @@ class Prefix(Pynipap):
         p.indent = pref['indent']
         p.country = pref['country']
         p.order_id = pref['order_id']
-        p.vrf = pref['vrf']
         p.external_key = pref['external_key']
         p.authoritative_source = pref['authoritative_source']
         p.alarm_priority = pref['alarm_priority']

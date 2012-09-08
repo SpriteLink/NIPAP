@@ -67,11 +67,6 @@
         $('input[name="search_opt_parent"]').change(performPrefixSearch);
         $('input[name="search_opt_child"]').change(performPrefixSearch);
 
-        // capture click event on overlay placed behind prefix menu
-        $(".popup_menu_overlay").click(function(e) {
-            hidePopupMenu();
-        });
-
         // set focus
         $("#query_string").focus();
 

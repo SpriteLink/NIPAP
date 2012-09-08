@@ -47,6 +47,9 @@ var current_query = {
 	'parents_depth': 0,
 	'children_depth': 0
 };
+var current_vrf_query = {
+	'query_string': ''
+};
 var query_id = 0;
 var newest_query = 0;
 
@@ -647,25 +650,26 @@ function prefixRemoved(prefix) {
 /*
  * Build a popup menu
  */
-function getPopupMenu(button, name_prefix, data_id) {
+function getPopupMenu(ref, title, data_id) {
 
-	// Add prefix menu
-	var name = 'popupmenu_' + name + '_' + data_id;
+	// Add popup menu
+	var name = 'popupmenu_' + data_id;
 	$('body').append('<div id="' + name + '">');
 	var menu = $('#' + name);
 	menu.addClass("popup_menu");
-	menu.html("<h3>" + name_prefix + " menu</h3>");
+	menu.html("<h3>" + title + "</h3>");
 
 	// show overlay
-	$('body').append('<div class="popup_menu_overlay"></div>');
-	$(".popup_menu_overlay").click(function() { hidePopupMenu() });
-	$(".popup_menu_overlay").show();
+	$('body').append('<div class="popup_overlay"></div>');
+	$(".popup_overlay").click(function() { hidePopupMenu() });
+	$(".popup_overlay").show();
 
 	// Set menu position
-	menu.css('top', button.offset().top + button.height() + 5 + 'px');
-	menu.css('left', button.offset().left + 'px');
+	menu.css('top', ref.offset().top + ref.height() + 5 + 'px');
+	menu.css('left', ref.offset().left + 'px');
 
 	return menu;
+
 }
 
 /*
@@ -675,7 +679,7 @@ function showPrefixMenu(prefix_id) {
 
 	// Add prefix menu
 	var button = $('#prefix_button' + prefix_id);
-	var menu = getPopupMenu(button, 'prefix', prefix_id);
+	var menu = getPopupMenu(button, 'prefix menu', prefix_id);
 
 	// Add different manu entries depending on where the prefix list is displayed
 	if (prefix_link_type == 'select') {
@@ -703,15 +707,154 @@ function showPrefixMenu(prefix_id) {
 		});
 	}
 
-
-	// show overlay
-	$(".prefix_menu_overlay").show();
-
-	// Set menu position
-	var button_pos = $('#prefix_button' + prefix_id).position();
-	menu.css('top', button_pos.top + $('#prefix_button' + prefix_id).height() + 5 + 'px');
-	menu.css('left', button_pos.left + 'px');
 	menu.slideDown('fast');
+
+}
+
+/*
+ * Show VRF selector menu
+ *
+ * The function passed in parameter 'callback' will be called as
+ * callback(vrf_list) when the user has finished selecting VRFs.
+ */
+function showVRFSelectorMenu(callback) {
+
+    var pl_ref = $('input[name="prefix_vrf_btn"]');
+
+	menu = getPopupMenu(pl_ref, "Select VRF", '');
+	menu.addClass('selector');
+	menu.append('<div class="selector_filterbar"></div>');
+	menu.children('.selector_filterbar').append('<input type="text" class="selector_search_string" name="vrf_search_string">');
+	menu.append('<div id="vrf_selector_result"></div>');
+	$('input[name="vrf_search_string"]').keyup(vrfSearchKey);
+	clearVRFSelectorSearch();
+	setTimeout(function() { $('input[name="vrf_search_string"]').focus(); }, 0);
+
+	menu.slideDown('fast');
+
+}
+
+/*
+ * Wrapper for pacing our searches somewhat
+ *
+ * 200ms works out to be a pretty good delay for a fast typer
+ *
+ * TODO: merge with prefixSearchKey
+ */
+function vrfSearchKey() {
+	clearTimeout(search_key_timeout);
+	search_key_timeout = setTimeout("performVRFSelectorSearch()", 200);
+}
+
+/*
+ * Perform VRF selector search operation
+ */
+function performVRFSelectorSearch() {
+
+	// Skip search if query string empty
+	if (jQuery.trim($('input[name="vrf_search_string"]').val()).length < 1) {
+		clearVRFSelectorSearch();
+		return true;
+	}
+
+	// Keep track of search timing
+	stats.vrf_query_sent = new Date().getTime();
+
+	var search_q = {
+		'query_id': query_id,
+		'query_string': $('input[name="vrf_search_string"]').val(),
+		'max_result': 10,
+		'offset': 0
+	}
+
+	// Skip search if it's equal to the currently displayed search
+	if (search_q.query_string == current_vrf_query.query_string) {
+		return true;
+	}
+
+	current_vrf_query = search_q;
+	query_id += 1;
+	offset = 0;
+
+	$('#vrf_selector_result').empty();
+	showLoadingIndicator($('#vrf_selector_result'));
+	$.getJSON("/xhr/smart_search_vrf", current_vrf_query, receiveVRFSelector);
+
+}
+
+/*
+ * Clear VRF selector search
+ */
+function clearVRFSelectorSearch() {
+
+	// empty search box
+	$('input[name="vrf_search_string"]').val('');
+
+	// empty search result
+	$('#vrf_selector_result').empty();
+	$('#vrf_selector_result').append('<a href="#" id="vrf_selector_none" data-vrf="">No VRF</a>');
+	$('#vrf_selector_none').click(clickVRFSelector);
+
+}
+
+
+/*
+ * Receive VRF selector search result
+ *
+ * Receive search result and display in destined container.
+ */
+function receiveVRFSelector(result) {
+
+	// Boilerplate... statistics, handle errors...
+	stats.response_received = new Date().getTime();
+
+	if (! ('query_id' in result.search_options)) {
+		showDialogNotice("Error", 'No query_id');
+		return;
+	}
+	if (parseInt(result.search_options.query_id) < parseInt(newest_query)) {
+		return;
+	}
+	newest_query = parseInt(result.search_options.query_id);
+
+	// Error?
+	if ('error' in result) {
+		showDialogNotice("Error", result.message);
+		return;
+	}
+
+	// place VRFs in VRF container
+	var vrf_cont = $('#vrf_selector_result');
+	vrf_cont.empty();
+	if (result.result.length > 0) {
+		for (i = 0; i < result.result.length; i++) {
+			var vrf = result.result[i];
+			vrf_cont.append('<a href="#" id="vrf_selector_' + vrf.id + '" data-vrf="' + vrf.vrf + '">' + vrf.vrf + '</a>');
+			$('#vrf_selector_' + vrf.id).click(clickVRFSelector);
+		}
+	} else {
+		vrf_cont.append('<div style="padding: 10px;">No VRF found</div>');
+	}
+
+}
+
+/*
+ * Run when a VRF is selected in the VRF list
+ */
+function clickVRFSelector(evt) {
+
+	// update VRF input field with selected VRF
+    var selected_vrf = evt.target.getAttribute('data-vrf');
+    if (selected_vrf == '') {
+		$('input[name="prefix_vrf"]').val('');
+	    $('input[name="prefix_vrf_btn"]').val('None');
+    } else {
+		$('input[name="prefix_vrf"]').val(selected_vrf);
+	    $('input[name="prefix_vrf_btn"]').val(selected_vrf);
+    }
+
+	hidePopupMenu();
+	evt.preventDefault();
 
 }
 
@@ -721,7 +864,7 @@ function showPrefixMenu(prefix_id) {
  */
 function hidePopupMenu() {
 	$(".popup_menu").remove();
-	$(".popup_menu_overlay").hide();
+	$(".popup_overlay").hide();
 }
 
 

@@ -413,8 +413,6 @@ class Nipap:
         except psycopg2.IntegrityError, e:
             self._con_pg.rollback()
 
-            self._logger.info(str(e))
-
             # this is a duplicate key error
             if e.pgcode == "23505":
                 m = re.match(r'.*"([^"]+)"', e.pgerror)
@@ -423,15 +421,12 @@ class Nipap:
                 cursor = self._con_pg.cursor()
                 cursor.execute("SELECT obj_description(oid) FROM pg_class WHERE relname = %(relname)s", { 'relname': m.group(1) })
                 for desc in cursor:
-                    self._logger.error(str(desc))
                     raise NipapDuplicateError("Duplicate value for '" + str(desc[0]) + "', the value you have inputted is already in use.")
 
             raise NipapError(str(e))
 
         except psycopg2.DataError, e:
             self._con_pg.rollback()
-
-            self._logger.info(str(e))
 
             m = re.search('invalid cidr value: "([^"]+)"', e.pgerror)
             if m is not None:
@@ -1046,7 +1041,7 @@ class Nipap:
                     }
                 },
                 'val2': {
-                    'operator': 'equals',
+                    'operator': 'regex_match',
                     'val1': 'vrf',
                     'val2': query_str_part['string']
                 }
@@ -1615,16 +1610,18 @@ class Nipap:
     #
     # PREFIX FUNCTIONS
     #
-    def _expand_prefix_spec(self, spec, prefix_col_prefix = ''):
+    def _expand_prefix_spec(self, spec, prefix = None):
         """ Expand prefix specification to SQL.
         """
+
+        self._logger.error('_expand_prefix_spec; spec: %s' % str(spec))
 
         # sanity checks
         if type(spec) is not dict:
             raise NipapInputError('invalid prefix specification')
 
         allowed_keys = [ 'id', 'family', 'type', 'pool', 'pool_id',
-                'prefix', 'pool', 'monitor', 'external_key', 'vrf',
+                'prefix', 'monitor', 'external_key', 'vrf',
                 'vrf_name', 'vrf_id' ]
         for key in spec.keys():
             if key not in allowed_keys:
@@ -1636,7 +1633,16 @@ class Nipap:
         # if we have id, no other input is needed
         if 'id' in spec:
             if spec != {'id': spec['id']}:
-                raise NipapExtraneousInputError("If id specified, no other keys are allowed.")
+                raise NipapExtraneousInputError("If 'id' specified, no other keys are allowed.")
+
+        # Add column name prefix to spec if needed.
+        # This is only done for attributes of the prefix itself, not things
+        # stored in other tables. They are handled separately below.
+        if prefix is not None:
+            for key in [ 'id', 'family', 'type', 'prefix', 'monitor', 'external_key' ]:
+                if key in spec:
+                    spec['%s%s' % (prefix, key)] = spec[key]
+                    del(spec[key])
 
         family = None
         if 'family' in spec:
@@ -1828,31 +1834,13 @@ class Nipap:
         pool = None
         if 'pool_id' in attr or 'pool' in attr:
             if 'pool_id' in attr:
-                if attr['pool_id'] is None:
-                    pool = {
-                        'id': None,
-                        'name': None
-                    }
-                else:
                     pool = self._get_pool(auth, { 'id': attr['pool_id'] })
-
                 del(attr['pool_id'])
             else:
-                if attr['pool'] is None:
-                    pool = {
-                        'id': None,
-                        'name': None
-                    }
-                else:
-                    pool = self._get_pool(auth, { 'name': attr['pool'] })
+                pool = self._get_pool(auth, { 'name': attr['pool'] })
+                del(attr['pool'])
 
             attr['pool'] = pool['id']
-
-        else:
-            pool = {
-                'id': None,
-                'name': None
-            }
 
         # Handle VRF - find the correct one and remove bad VRF keys.
         vrf = self._get_vrf(auth, attr)
@@ -1916,9 +1904,11 @@ class Nipap:
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
         if pool is not None:
-            audit_params['pool'] = pool['id']
-            audit_params['pool_name'] = pool['name'],
-            audit_params['description'] = 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
+            audit_params = {
+                'pool': pool['id'],
+                'pool_name': pool['name'],
+                'description': 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
+            }
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
@@ -1977,13 +1967,12 @@ class Nipap:
             }
 
         # Handle VRF - find the correct one and remove bad VRF keys.
-        if 'vrf' in attr or 'vrf_id' in attr or 'vrf_name' in attr:
-            vrf = self._get_vrf(auth, attr)
-            if 'vrf_id' in attr:
-                del(attr['vrf_id'])
-            if 'vrf_name' in attr:
-                del(attr['vrf_name'])
-            attr['vrf'] = vrf['id']
+        vrf = self._get_vrf(auth, attr)
+        if 'vrf_id' in attr:
+            del(attr['vrf_id'])
+        if 'vrf_name' in attr:
+            del(attr['vrf_name'])
+        attr['vrf'] = vrf['id']
 
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
@@ -1994,7 +1983,8 @@ class Nipap:
         self._check_attr(attr, [], allowed_attr)
 
         prefixes = self.list_prefix(auth, spec)
-        where, params1 = self._expand_prefix_spec(spec)
+        self._logger.error("edit_prefix; spec: %s" % str(spec))
+        where, params1 = self._expand_prefix_spec(spec.copy())
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())
 
@@ -2008,6 +1998,9 @@ class Nipap:
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
+            'vrf_vrf': vrf['vrf'],
+            'vrf_name': vrf['name'],
+            'vrf': vrf['id']
         }
 
         for p in prefixes:
@@ -2218,8 +2211,9 @@ class Nipap:
 
         self._logger.debug("list_prefix called; spec: %s" % str(spec))
 
+
         if type(spec) is dict:
-            where, params = self._expand_prefix_spec(spec, 'inp.')
+            where, params = self._expand_prefix_spec(spec.copy(), 'inp.')
         else:
             raise NipapError("invalid prefix specification")
 
