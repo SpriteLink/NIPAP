@@ -53,6 +53,9 @@ var current_vrf_query = {
 var query_id = 0;
 var newest_query = 0;
 
+// place to store current VRF selector callback function
+var curVRFCallback = null;
+
 var offset = 0;
 var outstanding_nextpage = 0;
 var end_of_result = 0;
@@ -717,17 +720,24 @@ function showPrefixMenu(prefix_id) {
  * The function passed in parameter 'callback' will be called as
  * callback(vrf_list) when the user has finished selecting VRFs.
  */
-function showVRFSelectorMenu(callback) {
+function showVRFSelectorMenu(callback, pl_ref) {
 
-    var pl_ref = $('input[name="prefix_vrf_btn"]');
+	// As we can not pass the callback all the way until the result from
+	// getJSON query is received, we store it in a globa variable...
+	curVRFCallback = callback;
 
+	// Create a generic popup menu and make it a selector
 	menu = getPopupMenu(pl_ref, "Select VRF", '');
 	menu.addClass('selector');
+
+	// Add search filter
 	menu.append('<div class="selector_filterbar"></div>');
 	menu.children('.selector_filterbar').append('<input type="text" class="selector_search_string" name="vrf_search_string">');
-	menu.append('<div id="vrf_selector_result"></div>');
 	$('input[name="vrf_search_string"]').keyup(vrfSearchKey);
+	menu.append('<div id="vrf_selector_result"></div>');
 	clearVRFSelectorSearch();
+
+	// Set focus to text box, after all other processing is done
 	setTimeout(function() { $('input[name="vrf_search_string"]').focus(); }, 0);
 
 	menu.slideDown('fast');
@@ -793,7 +803,7 @@ function clearVRFSelectorSearch() {
 	// empty search result
 	$('#vrf_selector_result').empty();
 	$('#vrf_selector_result').append('<a href="#" id="vrf_selector_none" data-vrf="">No VRF</a>');
-	$('#vrf_selector_none').click(clickVRFSelector);
+	$('#vrf_selector_none').click(curVRFCallback);
 
 }
 
@@ -830,7 +840,8 @@ function receiveVRFSelector(result) {
 		for (i = 0; i < result.result.length; i++) {
 			var vrf = result.result[i];
 			vrf_cont.append('<a href="#" id="vrf_selector_' + vrf.id + '" data-vrf="' + vrf.vrf + '">' + vrf.vrf + '</a>');
-			$('#vrf_selector_' + vrf.id).click(clickVRFSelector);
+			// set click callback on VRF to the one currently set globally...
+			$('#vrf_selector_' + vrf.id).click(curVRFCallback);
 		}
 	} else {
 		vrf_cont.append('<div style="padding: 10px;">No VRF found</div>');
@@ -839,19 +850,32 @@ function receiveVRFSelector(result) {
 }
 
 /*
- * Run when a VRF is selected in the VRF list
+ * Run when a VRF is selected for a prefix
  */
-function clickVRFSelector(evt) {
+function clickPrefixVRFSelector(evt) {
 
 	// update VRF input field with selected VRF
-    var selected_vrf = evt.target.getAttribute('data-vrf');
-    if (selected_vrf == '') {
+	var selected_vrf = evt.target.getAttribute('data-vrf');
+	if (selected_vrf == '') {
 		$('input[name="prefix_vrf"]').val('');
-	    $('input[name="prefix_vrf_btn"]').val('None');
-    } else {
+		$('input[name="prefix_vrf_btn"]').val('None');
+	} else {
 		$('input[name="prefix_vrf"]').val(selected_vrf);
-	    $('input[name="prefix_vrf_btn"]').val(selected_vrf);
-    }
+		$('input[name="prefix_vrf_btn"]').val(selected_vrf);
+	}
+
+	hidePopupMenu();
+	evt.preventDefault();
+
+}
+
+/*
+ * Run when a VRF is selected for filtering
+ */
+function clickFilterVRFSelector(evt) {
+
+	var selected_vrf = evt.target.getAttribute('data-vrf');
+	log('VRF ' + selected_vrf + ' selected');
 
 	hidePopupMenu();
 	evt.preventDefault();

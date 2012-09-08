@@ -61,7 +61,7 @@ $(function () {
     // capture click event in VRF input field, display VRF selector
     $('input[name="prefix_vrf_btn"]').click(
         function(evt) {
-            showVRFSelectorMenu(function(v) { log(v) } );
+            showVRFSelectorMenu(clickPrefixVRFSelector, $('input[name="prefix_vrf_btn"]'));
         }
     );
 

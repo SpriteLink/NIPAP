@@ -16,6 +16,14 @@
             $(function() {
                 $(".tooltip").tipTip({delay: 100});
                 $(document).ajaxError(ajaxErrorHandler);
+                {% if session.user is defined %}
+                $('#add_vrf_filter_btn').click(
+                    function(evt) {
+                        showVRFSelectorMenu(clickFilterVRFSelector, $('#add_vrf_filter_btn'));
+                        evt.preventDefault();
+                    }
+                );
+                {% endif %}
             });
         </script>
         {% block head %}
@@ -23,13 +31,12 @@
     </head>
     <body>
         <div class="top_menu">
-            <div class="menu_entry" style="line-height: 0px">
-                <div class="menu_entry" style="font-size: 10pt; color: #CCCCCC; padding-top: 11px; font-weight: bold;">
+            <div class="menu_entry">
+                <div style="font-size: 10pt; color: #CCCCCC; padding-top: 10px; font-weight: bold; float: left;">
                 VRFs:
                 </div>
-                <div class="menu_entry" style="position: relative;">
-
-                </div>
+                <div class="menu_entry" id="cur_vrf_container" style="float: left;"></div>
+                <div class="menu_entry" style="padding-top: 10px;"><a href="#" id="add_vrf_filter_btn">add +</a></div>
             </div>
             <div class="menu_entry" style="position: absolute; left: 43%; padding-top: 0px;">
                 <ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
