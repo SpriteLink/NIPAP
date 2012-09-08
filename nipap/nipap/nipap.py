@@ -1361,6 +1361,8 @@ class Nipap:
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())
 
+        pools = self.list_pool(auth, spec)
+
         sql = "UPDATE ip_net_pool SET " + update
         sql += " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND " + where
 
@@ -1635,46 +1637,37 @@ class Nipap:
             if spec != {'id': spec['id']}:
                 raise NipapExtraneousInputError("If 'id' specified, no other keys are allowed.")
 
-        # Add column name prefix to spec if needed.
-        # This is only done for attributes of the prefix itself, not things
-        # stored in other tables. They are handled separately below.
-        if prefix is not None:
-            for key in [ 'id', 'family', 'type', 'prefix', 'monitor', 'external_key' ]:
-                if key in spec:
-                    spec['%s%s' % (prefix, key)] = spec[key]
-                    del(spec[key])
-
         family = None
         if 'family' in spec:
             family = spec['family']
             del(spec['family'])
 
         # do we need to rename prefix columns?
-        if prefix_col_prefix != '':
+        if prefix is not None:
             spec2 = {}
             for k in spec:
-                spec2[prefix_col_prefix + k] = spec[k]
+                spec2[prefix + k] = spec[k]
             spec = spec2
 
-        if prefix_col_prefix + 'vrf_name' in spec:
-            spec['vrf.name'] = spec[prefix_col_prefix + 'vrf_name']
-            del(spec[prefix_col_prefix + 'vrf_name'])
+        if prefix + 'vrf_name' in spec:
+            spec['vrf.name'] = spec[prefix + 'vrf_name']
+            del(spec[prefix + 'vrf_name'])
 
-        if prefix_col_prefix + 'vrf' in spec:
-            spec['vrf.vrf'] = spec[prefix_col_prefix + 'vrf']
-            del(spec[prefix_col_prefix + 'vrf'])
+        if prefix + 'vrf' in spec:
+            spec['vrf.vrf'] = spec[prefix + 'vrf']
+            del(spec[prefix + 'vrf'])
 
-        if prefix_col_prefix + 'vrf_id' in spec:
-            spec['vrf.id'] = spec[prefix_col_prefix + 'vrf']
-            del(spec[prefix_col_prefix + 'vrf_id'])
+        if prefix + 'vrf_id' in spec:
+            spec['vrf.id'] = spec[prefix + 'vrf']
+            del(spec[prefix + 'vrf_id'])
 
-        if prefix_col_prefix + 'pool' in spec:
-            spec['pool.name'] = spec[prefix_col_prefix + 'pool']
-            del(spec[prefix_col_prefix + 'pool'])
+        if prefix + 'pool' in spec:
+            spec['pool.name'] = spec[prefix + 'pool']
+            del(spec[prefix + 'pool'])
 
-        if prefix_col_prefix + 'pool_id' in spec:
-            spec['pool.id'] = spec[prefix_col_prefix + 'pool_id']
-            del(spec[prefix_col_prefix + 'pool_id'])
+        if prefix + 'pool_id' in spec:
+            spec['pool.id'] = spec[prefix + 'pool_id']
+            del(spec[prefix + 'pool_id'])
 
         where, params = self._sql_expand_where(spec)
 
@@ -1834,7 +1827,7 @@ class Nipap:
         pool = None
         if 'pool_id' in attr or 'pool' in attr:
             if 'pool_id' in attr:
-                    pool = self._get_pool(auth, { 'id': attr['pool_id'] })
+                pool = self._get_pool(auth, { 'id': attr['pool_id'] })
                 del(attr['pool_id'])
             else:
                 pool = self._get_pool(auth, { 'name': attr['pool'] })

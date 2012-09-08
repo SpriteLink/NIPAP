@@ -534,17 +534,27 @@ class NipapXmlTest(unittest.TestCase):
         attr = {
             'name': 'test_pool_2',
             'description': 'Test pool #2',
-            'default_type': 'reservation'
+            'default_type': 'reservation',
+            'ipv4_default_prefix_length': 31,
+            'ipv6_default_prefix_length': 112
+        }
+
+        attr2 = {
+            'name': 'test_pool_2_edit',
+            'description': 'Test pool #2 edit',
+            'default_type': 'assignment',
+            'ipv4_default_prefix_length': 30,
+            'ipv6_default_prefix_length': 96
         }
 
         res = s.add_pool({ 'auth': ad, 'attr': attr })
-        s.edit_pool({ 'auth': ad, 'pool': { 'id': res }, 'attr': { 'name': 'edited_test_pool_1' } })
-        expected['id'] = res
-        expected['ipv4_default_prefix_length'] = None
-        expected['ipv6_default_prefix_length'] = None
-        expected['name'] = 'edited_test_pool_1'
+        s.edit_pool({ 'auth': ad, 'pool': { 'id': res }, 'attr': attr2 })
 
-        self.assureEquals(s.list_pool({ 'auth': ad, 'pool': { 'id': res } })[0], expected)
+        expected = attr2.copy()
+        expected['id'] = res
+        expected['prefixes'] = []
+
+        self.assertEquals(s.list_pool({ 'auth': ad, 'pool': { 'id': res } })[0], expected)
 
 
     def test_search_pool(self):
