@@ -865,11 +865,10 @@ function clickPrefixVRFSelector(evt) {
 
 	// update VRF input field with selected VRF
 	var selected_vrf = evt.target.getAttribute('data-vrf_id');
+	$('input[name="prefix_vrf"]').val(selected_vrf);
 	if (selected_vrf == '0') {
-		$('input[name="prefix_vrf"]').val('0');
 		$('input[name="prefix_vrf_btn"]').val('None');
 	} else {
-		$('input[name="prefix_vrf"]').val(selected_vrf);
 		$('input[name="prefix_vrf_btn"]').val(evt.target.getAttribute('data-vrf'));
 	}
 

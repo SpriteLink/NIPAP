@@ -1612,11 +1612,9 @@ class Nipap:
     #
     # PREFIX FUNCTIONS
     #
-    def _expand_prefix_spec(self, spec, prefix = None):
+    def _expand_prefix_spec(self, spec, prefix = ''):
         """ Expand prefix specification to SQL.
         """
-
-        self._logger.error('_expand_prefix_spec; spec: %s' % str(spec))
 
         # sanity checks
         if type(spec) is not dict:
@@ -1642,12 +1640,11 @@ class Nipap:
             family = spec['family']
             del(spec['family'])
 
-        # do we need to rename prefix columns?
-        if prefix is not None:
-            spec2 = {}
-            for k in spec:
-                spec2[prefix + k] = spec[k]
-            spec = spec2
+        # rename prefix columns
+        spec2 = {}
+        for k in spec:
+            spec2[prefix + k] = spec[k]
+        spec = spec2
 
         if prefix + 'vrf_name' in spec:
             spec['vrf.name'] = spec[prefix + 'vrf_name']
@@ -1674,9 +1671,9 @@ class Nipap:
         if family:
             params['family'] = family
             if len(params) == 0:
-                where = "family(prefix) = %(family)s"
+                where = "family(" + prefix + "prefix) = %(family)s"
             else:
-                where += " AND family(prefix) = %(family)s"
+                where += " AND family(" + prefix + "prefix) = %(family)s"
 
         self._logger.debug("where: %s params: %s" % (where, str(params)))
         return where, params
@@ -1976,7 +1973,6 @@ class Nipap:
         self._check_attr(attr, [], allowed_attr)
 
         prefixes = self.list_prefix(auth, spec)
-        self._logger.error("edit_prefix; spec: %s" % str(spec))
         where, params1 = self._expand_prefix_spec(spec.copy())
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())

@@ -416,20 +416,15 @@ class XhrController(BaseController):
 
         p = Prefix()
 
-        log.error(str(request.params))
-
         # Sanitize input parameters
         if 'vrf' in request.params:
 
-            if len(request.params['vrf'].strip()) > 0:
-                vrf = request.params['vrf'].strip()
-
-                try:
-                    p.vrf = VRF.list({ 'vrf': vrf })[0]
-                except IndexError:
-                    return json.dumps({'error': 1, 'message': 'VRF %s not found' % vrf})
-                except NipapError, e:
-                    return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+            try:
+                p.vrf = VRF.get(int(request.params['vrf']))
+            except ValueError:
+                return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.params['vrf']})
+            except NipapError, e:
+                return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         if 'description' in request.params:
             if request.params['description'].strip() != '':
@@ -559,17 +554,12 @@ class XhrController(BaseController):
 
             if 'vrf' in request.params:
 
-                if len(request.params['vrf'].strip()) > 0:
-                    vrf = request.params['vrf'].strip()
-
-                    try:
-                        p.vrf = VRF.list({ 'vrf': vrf })[0]
-                    except IndexError:
-                        return json.dumps({'error': 1, 'message': 'VRF %s not found' % vrf})
-                    except NipapError, e:
-                        return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
-                else:
-                    p.vrf = None
+                try:
+                    p.vrf = VRF.get(int(request.params['vrf']))
+                except ValueError:
+                    return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.params['vrf']})
+                except NipapError, e:
+                    return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
             p.save()
 
