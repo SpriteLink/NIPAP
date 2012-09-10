@@ -2299,8 +2299,6 @@ class Nipap:
 
         # write to audit table
         audit_params = {
-            'schema': schema['id'],
-            'schema_name': schema['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
@@ -2310,14 +2308,15 @@ class Nipap:
             audit_params['prefix'] = p['id']
             audit_params['prefix_prefix'] = p['prefix']
             audit_params['description'] = 'Removed prefix %s' % p['prefix']
+            audit_params['vrf'] = p['vrf_id']
+            audit_params['vrf_vrf'] = p['vrf']
+            audit_params['vrf_name'] = p['vrf_name']
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
             if p['pool'] is not None:
                 pool = self._get_pool(auth, schema_spec, { 'id': p['pool'] })
                 audit_params2 = {
-                    'schema': schema['id'],
-                    'schema_name': schema['name'],
                     'pool': pool['id'],
                     'pool_name': pool['name'],
                     'prefix': p['id'],
