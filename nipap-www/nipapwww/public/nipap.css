@@ -73,6 +73,18 @@ a.menu_link:hover {
     background-color: #444444;
 }
 
+/*
+ * Things related to the VRF prefix search filter
+ */
+.vrf_filter_entry {
+    float: left;
+    font-size: 10pt;
+    font-weight: bold;
+    color: #cccccc;
+    line-height: 27px;
+    padding: 5px;
+}
+
 .content_outer {
     padding: 0px;
     margin: 0px;

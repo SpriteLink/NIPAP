@@ -335,6 +335,7 @@ function prefixSearchKey() {
  * Perform a search operation
  */
 function performPrefixSearch(explicit) {
+
 	if (explicit != true) {
 		explicit = false;
 	}
@@ -357,7 +358,15 @@ function performPrefixSearch(explicit) {
 		'include_all_parents': 'true',
 		'include_all_children': 'false',
 		'max_result': 50,
-		'offset': 0
+		'offset': 0,
+		'vrf_filter': []
+	}
+
+	// Find what VRFs has been added to VRF filter
+	var f_vrf_elems = $('#vrf_filter_container').children();
+	for (i = 0; i < f_vrf_elems.length; i++) {
+		var vrf = f_vrf_elems[i].getAttribute('data-vrf_id');
+		search_q.vrf_filter.push(vrf);
 	}
 
 	// Skip search if it's equal to the currently displayed search
@@ -802,7 +811,7 @@ function clearVRFSelectorSearch() {
 
 	// empty search result
 	$('#vrf_selector_result').empty();
-	$('#vrf_selector_result').append('<a href="#" id="vrf_selector_none" data-vrf="">No VRF</a>');
+	$('#vrf_selector_result').append('<a href="#" id="vrf_selector_none" data-vrf_id="0">No VRF</a>');
 	$('#vrf_selector_none').click(curVRFCallback);
 
 }
@@ -839,7 +848,7 @@ function receiveVRFSelector(result) {
 	if (result.result.length > 0) {
 		for (i = 0; i < result.result.length; i++) {
 			var vrf = result.result[i];
-			vrf_cont.append('<a href="#" id="vrf_selector_' + vrf.id + '" data-vrf="' + vrf.vrf + '">' + vrf.vrf + '</a>');
+			vrf_cont.append('<a href="#" id="vrf_selector_' + vrf.id + '" data-vrf_id="' + vrf.id + '" data-vrf="' + vrf.vrf + '">' + vrf.vrf + '</a>');
 			// set click callback on VRF to the one currently set globally...
 			$('#vrf_selector_' + vrf.id).click(curVRFCallback);
 		}
@@ -855,13 +864,13 @@ function receiveVRFSelector(result) {
 function clickPrefixVRFSelector(evt) {
 
 	// update VRF input field with selected VRF
-	var selected_vrf = evt.target.getAttribute('data-vrf');
-	if (selected_vrf == '') {
-		$('input[name="prefix_vrf"]').val('');
+	var selected_vrf = evt.target.getAttribute('data-vrf_id');
+	if (selected_vrf == '0') {
+		$('input[name="prefix_vrf"]').val('0');
 		$('input[name="prefix_vrf_btn"]').val('None');
 	} else {
 		$('input[name="prefix_vrf"]').val(selected_vrf);
-		$('input[name="prefix_vrf_btn"]').val(selected_vrf);
+		$('input[name="prefix_vrf_btn"]').val(evt.target.getAttribute('data-vrf'));
 	}
 
 	hidePopupMenu();
@@ -874,8 +883,18 @@ function clickPrefixVRFSelector(evt) {
  */
 function clickFilterVRFSelector(evt) {
 
-	var selected_vrf = evt.target.getAttribute('data-vrf');
-	log('VRF ' + selected_vrf + ' selected');
+	var vrf = evt.target.getAttribute('data-vrf_id');
+	if (vrf == '0') {
+		var disp_vrf = 'no VRF';
+	} else {
+		var disp_vrf = evt.target.getAttribute('data-vrf');
+	}
+
+	// add VRF to filter list, if it's not already there
+	if ($('#f_' + vrf).length == 0) {
+		$('#vrf_filter_container').append('<div class="vrf_filter_entry" id="f_' + vrf + '" data-vrf_id="' + vrf + '">' + disp_vrf + '</div>');
+		performPrefixSearch(true);
+	}
 
 	hidePopupMenu();
 	evt.preventDefault();
@@ -899,6 +918,12 @@ function hidePopupMenu() {
 function receivePrefixList(search_result) {
 	stats.response_received = new Date().getTime();
 
+	// Error?
+	if ('error' in search_result) {
+		showDialogNotice("Error", search_result.message);
+		return;
+	}
+
 	if (! ('query_id' in search_result.search_options)) {
 		showDialogNotice("Error", 'No query_id');
 		return;
@@ -907,12 +932,6 @@ function receivePrefixList(search_result) {
 		return;
 	}
 	newest_query = parseInt(search_result.search_options.query_id);
-
-	// Error?
-	if ('error' in search_result) {
-		showDialogNotice("Error", search_result.message);
-		return;
-	}
 
 	/*
 	 * Interpretation list

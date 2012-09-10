@@ -730,7 +730,7 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, query_string, search_options):
+    def smart_search(cls, query_string, search_options, extra_query = None):
         """ Perform a smart prefix search.
         """
 
@@ -740,7 +740,8 @@ class Prefix(Pynipap):
                 {
                     'query_string': query_string,
                     'search_options': search_options,
-                    'auth': AuthOptions().options
+                    'auth': AuthOptions().options,
+                    'extra_query': extra_query
                 })
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
@@ -795,7 +796,7 @@ class Prefix(Pynipap):
             'monitor': self.monitor
         }
 
-        if self.vrf is None:
+        if self.vrf is not None:
             if not isinstance(self.vrf, VRF):
                 raise NipapValueError("'vrf' attribute not instance of VRF class.")
             data['vrf_id'] = self.vrf.id

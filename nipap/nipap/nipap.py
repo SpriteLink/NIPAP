@@ -2634,7 +2634,7 @@ class Nipap:
 
 
 
-    def smart_search_prefix(self, auth, query_str, search_options = {}, query_dict = {}):
+    def smart_search_prefix(self, auth, query_str, search_options = {}, extra_query = None):
         """ Perform a smart search on prefix list.
 
             * `auth` [BaseAuth]
@@ -2643,6 +2643,9 @@ class Nipap:
                 Search string
             * `search_options` [options_dict]
                 Search options. See :func:`search_prefix`.
+            * `extra_query` [dict_to_sql]
+                Extra search terms, will be AND:ed together with what is
+                extracted from the query string.
 
             Return a dict with three elements:
                 * :attr:`interpretation` - How the query string was interpreted.
@@ -2815,6 +2818,13 @@ class Nipap:
                     'val1': query_part,
                     'val2': query
                 }
+
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
+            }
 
 
         self._logger.debug("Expanded to: %s" % str(query))

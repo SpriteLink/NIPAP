@@ -329,6 +329,7 @@ class XhrController(BaseController):
         """
 
         search_options = {}
+        vrf_filter = None
 
         if 'query_id' in request.params:
             search_options['query_id'] = request.params['query_id']
@@ -353,10 +354,35 @@ class XhrController(BaseController):
             search_options['max_result'] = request.params['max_result']
         if 'offset' in request.params:
             search_options['offset'] = request.params['offset']
+        if 'vrf_filter[]' in request.params:
+            vrf_filter_parts = []
+
+            # Fetch VRF IDs from search query and build extra query dict for
+            # smart_search_prefix.
+            vrfs = request.params.getall('vrf_filter[]')
+
+            if len(vrfs) > 0:
+                vrf = vrfs[0]
+                vrf_filter = {
+                    'operator': 'equals',
+                    'val1': 'vrf_id',
+                    'val2': int(vrf) if len(vrf) > 0 else None
+                }
+
+                for vrf in vrfs[1:]:
+                    vrf_filter = {
+                        'operator': 'or',
+                        'val1': vrf_filter,
+                        'val2': {
+                            'operator': 'equals',
+                            'val1': 'vrf_id',
+                            'val2': int(vrf) if len(vrf) > 0 else None
+                        }
+                    }
 
         try:
             result = Prefix.smart_search(request.params['query_string'],
-                search_options
+                search_options, vrf_filter
                 )
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
@@ -389,6 +415,8 @@ class XhrController(BaseController):
         """
 
         p = Prefix()
+
+        log.error(str(request.params))
 
         # Sanitize input parameters
         if 'vrf' in request.params:

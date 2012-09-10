@@ -634,6 +634,9 @@ class NipapProtocol(xmlrpc.XMLRPC):
             * `search_options` [struct]
                 Options for the search query, such as limiting the number
                 of results returned.
+            * `extra_query` [struct]
+                Extra search terms, will be AND:ed together with what is
+                extracted from the query string.
 
             Returns a struct containing search result, interpretation of the
             query string and the search options used.
@@ -641,7 +644,8 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.smart_search_prefix(args.get('auth'),
-                    args.get('query_string'), args.get('search_options', {}))
+                    args.get('query_string'), args.get('search_options'),
+                    args.get('extra_query', {}))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
