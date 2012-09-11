@@ -6,34 +6,31 @@
     This module contains the Nipap class which provides most of the logic in NIPAP
     apart from that contained within the PostgreSQL database.
 
-    NIPAP contains three types of objects: vrfs, prefixes and pools.
+    NIPAP contains three types of objects: VRFs, prefixes and pools.
 
 
     VRF
     ------
-    A schema can be thought of as a namespace for IP addresses, they make it
-    possible to keep track of addresses that are used simultaneously in multiple
-    parallell routing tables / VRFs. A typical example would be customer VPNs,
-    where multiple customers are using the same RFC1918 addresses.  By far, most
-    operations will be carried out in the 'global' schema which contains addresses
-    used on the Internet. Most API functions require a schema to be passed as
-    the first argument.
+    A VRF represents a Virtual Routing and Forwarding instance. By default, one
+    VRF which represents the global routing table ("no VRF") is defined. This
+    ID always has the ID 0.
 
-    Schema attributes
-    ^^^^^^^^^^^^^^^^^
-    * :attr:`id` - ID number of the schema.
-    * :attr:`name` - A short name, such as 'global'.
-    * :attr:`description` - A longer description of what the schema is used for.
-    * :attr:`vrf` - The VRF where the addresses in the schema is used.
+    VRF attributes
+    ^^^^^^^^^^^^^^
+    * :attr:`id` - ID number of the VRF.
+    * :attr:`vrf` - The VRF RDs administrator and assigned number subfields
+        (eg. 65000:123).
+    * :attr:`name` - A short name, such as 'VPN Customer A'.
+    * :attr:`description` - A longer description of what the VRF is used for.
 
-    Schema functions
-    ^^^^^^^^^^^^^^^^
-    * :func:`~Nipap.list_schema` - Return a list of schemas.
-    * :func:`~Nipap.add_schema` - Create a new schema.
-    * :func:`~Nipap.edit_schema` - Edit a schema.
-    * :func:`~Nipap.remove_schema` - Remove a schema.
-    * :func:`~Nipap.search_schema` - Search schemas from a specifically formatted dict.
-    * :func:`~Nipap.smart_search_schema` - Search schemas from arbitarly formatted string.
+    VRF functions
+    ^^^^^^^^^^^^^
+    * :func:`~Nipap.list_vrf` - Return a list of VRFs.
+    * :func:`~Nipap.add_vrf` - Create a new VRF.
+    * :func:`~Nipap.edit_vrf` - Edit a VRF.
+    * :func:`~Nipap.remove_vrf` - Remove a VRF.
+    * :func:`~Nipap.search_vrf` - Search VRFs from a specifically formatted dict.
+    * :func:`~Nipap.smart_search_vrf` - Search VRFs from arbitarly formatted string.
 
 
     Prefix
@@ -50,7 +47,9 @@
     * :attr:`prefix` - The IP prefix itself.
     * :attr:`display_prefix` - A more user-friendly version of the prefix.
     * :attr:`family` - Address family (integer 4 or 6). Set by NIPAP.
-    * :attr:`schema` - ID number of the schema the prefix belongs to.
+    * :attr:`vrf` - VRF which the prefix belongs to.
+    * :attr:`vrf_id` - ID number of the VRF the prefix belongs to.
+    * :attr:`vrf_name` - Name of VRF which the prefix belongs to.
     * :attr:`description` - A short description of the prefix.
     * :attr:`comment` - A longer text describing the prefix and its use.
     * :attr:`node` - FQDN of node the prefix is assigned to, if type is host.
@@ -59,7 +58,6 @@
     * :attr:`indent` - Depth in prefix tree. Set by NIPAP.
     * :attr:`country` - Country where the prefix resides (two-letter country code).
     * :attr:`order_id` - Order identifier.
-    * :attr:`vrf` - VRF in which the prefix resides.
     * :attr:`external_key` - A field for use by external systems which needs to
         store references to its own dataset.
     * :attr:`authoritative_source` - String identifying which system last
@@ -94,7 +92,6 @@
     * :attr:`id` - ID number of the pool.
     * :attr:`name` - A short name.
     * :attr:`description` - A longer description of the pool.
-    * :attr:`schema` - ID number of the schema is it associated with.
     * :attr:`default_type` - Default prefix type (see prefix types above.
     * :attr:`ipv4_default_prefix_length` - Default prefix length of IPv4 prefixes.
     * :attr:`ipv6_default_prefix_length` - Default prefix length of IPv6 prefixes.
@@ -139,7 +136,7 @@
 
     The spec is a dict formatted as::
 
-        schema_spec = {
+        vrf_spec = {
             'id': 512
         }
 
@@ -839,7 +836,7 @@ class Nipap:
 
 
     def search_vrf(self, auth, query, search_options = {}):
-        """ Search schema list for schemas matching `query`.
+        """ Search VRF list for VRFs matching `query`.
 
             * `auth` [BaseAuth]
                 AAA options.
@@ -876,7 +873,7 @@ class Nipap:
             entire query dict. :attr:`val2` can be either the value you want to
             compare the prefix attribute to, or an entire `query` dict.
 
-            Example 1 - Find the schema whose name match 'test'::
+            Example 1 - Find the VRF whose VRF match '65000:123'::
 
                 query = {
                     'operator': 'equals',
@@ -979,13 +976,13 @@ class Nipap:
 
                 The :attr:`interpretation` is given as a list of dicts, each
                 explaining how a part of the search key was interpreted (ie. what
-                schema attribute the search operation was performed on).
+                VRF attribute the search operation was performed on).
 
                 The :attr:`result` is a list of dicts containing the search result.
 
             The smart search function tries to convert the query from a text
             string to a `query` dict which is passed to the
-            :func:`search_schema` function.  If multiple search keys are
+            :func:`search_vrf` function.  If multiple search keys are
             detected, they are combined with a logical AND.
 
             It will basically just take each search term and try to match it
@@ -1328,7 +1325,7 @@ class Nipap:
             specified here.
 
             The major difference to :func:`list_pool` is that an exception
-            is raised if no schema matching the spec is found.
+            is raised if no pool matching the spec is found.
         """
 
         pool = self.list_pool(auth, spec)
@@ -1719,7 +1716,6 @@ class Nipap:
             prefix_attr = dict()
             prefix_attr['id'] = 'id'
             prefix_attr['prefix'] = 'prefix'
-            prefix_attr['schema'] = 'schema'
             prefix_attr['description'] = 'description'
             prefix_attr['pool'] = 'pool.name'
             prefix_attr['pool_id'] = 'pool.id'
@@ -1864,7 +1860,7 @@ class Nipap:
         # do we have all attributes?
         req_attr = [ 'prefix', 'authoritative_source' ]
         allowed_attr = [
-            'authoritative_source', 'prefix', 'schema', 'description',
+            'authoritative_source', 'prefix', 'description',
             'comment', 'pool', 'node', 'type', 'country',
             'order_id', 'vrf', 'alarm_priority', 'monitor', 'external_key' ]
         self._check_attr(attr, req_attr, allowed_attr)
@@ -1911,14 +1907,14 @@ class Nipap:
 
             * `auth` [BaseAuth]
                 AAA options.
-            * `schema_spec` [schema_spec]
-                Specifies what schema we are working within.
             * `spec` [prefix_spec]
                 Specifies the prefix to edit.
             * `attr` [prefix_attr]
                 Prefix attributes.
 
-            Note that a prefix's type or schema can not be changed.
+            Note that there are restrictions on when and how a prefix's type
+            can be changed; reservations can be changed to assignments and vice
+            versa, but only if they contain no child prefixes.
         """
 
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
@@ -2315,7 +2311,7 @@ class Nipap:
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
             if p['pool'] is not None:
-                pool = self._get_pool(auth, schema_spec, { 'id': p['pool'] })
+                pool = self._get_pool(auth, { 'id': p['pool'] })
                 audit_params2 = {
                     'pool': pool['id'],
                     'pool_name': pool['name'],
@@ -3166,7 +3162,7 @@ class Nipap:
 
                 The :attr:`interpretation` is given as a list of dicts, each
                 explaining how a part of the search key was interpreted (ie. what
-                schema attribute the search operation was performed on).
+                ASN attribute the search operation was performed on).
 
                 The :attr:`result` is a list of dicts containing the search result.
 
