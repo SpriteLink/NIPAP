@@ -85,6 +85,37 @@ a.menu_link:hover {
     padding: 5px;
 }
 
+a.vrf_filter_entry {
+    text-decoration: none;
+}
+
+a.vrf_filter_entry:hover {
+    background-color: #444444;
+}
+
+/*
+ * An add-button
+ */
+a.add_btn {
+    display: block;
+    text-decoration: none;
+    font-size: 16pt;
+    font-weight: bold;
+    width: 20px;
+    height: 20px;
+    float: left;
+    text-align: center;
+    color: #cccccc;
+    margin-top: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+}
+
+a.add_btn:hover {
+    text-decoration: none;
+    background-color: #444444;
+}
+
 .content_outer {
     padding: 0px;
     margin: 0px;

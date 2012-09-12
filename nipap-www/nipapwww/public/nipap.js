@@ -15,8 +15,8 @@
  * whether the prefix has children or not. These values are allowed:
  *  -2: We have no clue
  *  -1: At least one, but might be more (used for parent prefixes which
- *	  was received when a prefix further down was requested including
- *	  parents)
+ *      was received when a prefix further down was requested including
+ *      parents)
  *   0: No children
  *  >0: Has children
  */
@@ -891,11 +891,25 @@ function clickFilterVRFSelector(evt) {
 
 	// add VRF to filter list, if it's not already there
 	if ($('#f_' + vrf).length == 0) {
-		$('#vrf_filter_container').append('<div class="vrf_filter_entry" id="f_' + vrf + '" data-vrf_id="' + vrf + '">' + disp_vrf + '</div>');
+		$('#vrf_filter_container').append('<a href="#" class="vrf_filter_entry" id="vrf_filter_entry_' + vrf + '" data-vrf_id="' + vrf + '">' + disp_vrf + '</a>');
+		$("#vrf_filter_entry_" + vrf).click(clickFilterVRFEntry);
 		performPrefixSearch(true);
 	}
 
 	hidePopupMenu();
+	evt.preventDefault();
+
+}
+
+/*
+ * Run when a VRF in the current filter is clicked
+ */
+function clickFilterVRFEntry(evt) {
+
+	var vrf = evt.target.getAttribute('data-vrf_id');
+	$("#vrf_filter_entry_" + vrf).remove().animate('slow');
+	performPrefixSearch(true);
+
 	evt.preventDefault();
 
 }
