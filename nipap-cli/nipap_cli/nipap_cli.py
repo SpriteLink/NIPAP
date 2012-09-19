@@ -15,7 +15,7 @@ import ConfigParser
 import string
 
 import pynipap
-from pynipap import Schema, Pool, Prefix, NipapError
+from pynipap import VRF, Pool, Prefix, NipapError
 from command import Command
 
 
@@ -28,7 +28,7 @@ valid_priorities = [ 'low', 'medium', 'high' ]
 
 
 # evil global vars
-schema = None
+#schema = None
 cfg = None
 
 
@@ -53,38 +53,38 @@ def setup_connection():
 
 
 
-def get_schema(arg = None, opts = None):
-    """ Returns schema to work in
-
-        Returns a pynipap.Schema object representing the schema we are working
-        in. If there is a schema set globally, return this. If not, fetch the
-        schema named 'arg'. If 'arg' is None, fetch the default_schema
-        attribute from the config file and return this schema.
-    """
-
-    # yep, global variables are evil
-    global schema
-
-    # if there is a schema set, return it
-    if schema is not None:
-        return schema
-
-    if arg is None:
-        # fetch default schema
-        try:
-            schema_name = cfg.get('global', 'default_schema')
-        except ConfigParser.NoOptionError:
-            print >> sys.stderr, "Please define the default schema in your .nipaprc"
-            sys.exit(1)
-    else:
-        schema_name = arg
-
-    try:
-        schema = Schema.list({ 'name': schema_name })[0]
-    except IndexError:
-        schema = False
-
-    return schema
+#def get_schema(arg = None, opts = None):
+#    """ Returns schema to work in
+#
+#        Returns a pynipap.Schema object representing the schema we are working
+#        in. If there is a schema set globally, return this. If not, fetch the
+#        schema named 'arg'. If 'arg' is None, fetch the default_schema
+#        attribute from the config file and return this schema.
+#    """
+#
+#    # yep, global variables are evil
+#    global schema
+#
+#    # if there is a schema set, return it
+#    if schema is not None:
+#        return schema
+#
+#    if arg is None:
+#        # fetch default schema
+#        try:
+#            schema_name = cfg.get('global', 'default_schema')
+#        except ConfigParser.NoOptionError:
+#            print >> sys.stderr, "Please define the default schema in your .nipaprc"
+#            sys.exit(1)
+#    else:
+#        schema_name = arg
+#
+#    try:
+#        schema = Schema.list({ 'name': schema_name })[0]
+#    except IndexError:
+#        schema = False
+#
+#    return schema
 
 
 
@@ -178,10 +178,8 @@ def list_pool(arg, opts):
     """ List pools matching a search criteria
     """
 
-    s = get_schema()
-
     query = _expand_list_query(opts)
-    res = Pool.search(s, query)
+    res = Pool.search(query)
     if len(res['result']) > 0:
         print "%-19s %-39s %-14s %-8s" % (
             "Name", "Description", "Default type", "4 / 6"
@@ -203,24 +201,24 @@ def list_pool(arg, opts):
 
 
 
-def list_schema(arg, opts):
-    """ List schemas matching a search criteria
+def list_vrf(arg, opts):
+    """ List VRFs matching a search criteria
     """
 
     query = _expand_list_query(opts)
-    res = Schema.search(query)
+    res = VRF.search(query)
     if len(res['result']) > 0:
-        print "%-17s %-45s %-16s" % ("Name", "Description", "VRF")
+        print "%-16s %-22s %-40s" % ("VRF", "Name", "Description")
         print "--------------------------------------------------------------------------------"
     else:
-        print "No matching schemas found."
+        print "No matching VRFs found."
 
-    for s in res['result']:
-        if len(s.description) > 45:
-            desc = s.description[0:42] + "..."
+    for v in res['result']:
+        if len(str(v.description)) > 40:
+            desc = v.description[0:37] + "..."
         else:
-            desc = s.description
-        print "%-17s %-45s %-16s" % (s.name, desc, s.vrf)
+            desc = v.description
+        print "%-16s %-22s %-40s" % (v.vrf, v.name, desc)
 
 
 
@@ -228,14 +226,12 @@ def list_prefix(arg, opts):
     """ List prefixes matching 'arg'
     """
 
-    s = get_schema()
-
     # default to empty search string instead of None, which would only be
     # casted to string anyway, so the smart_search would be for 'None'
     if arg is None:
         arg = ''
 
-    res = Prefix.smart_search(s, arg, { 'parents_depth': -1, 'max_result': 1200 })
+    res = Prefix.smart_search(arg, { 'parents_depth': -1, 'max_result': 1200 })
     if len(res['result']) == 0:
         print "No addresses matching '%s' found." % arg
         return
@@ -262,24 +258,27 @@ def add_prefix(arg, opts):
     """ Add prefix to NIPAP
     """
 
-    s = get_schema()
-
     p = Prefix()
-    p.schema = s
     p.prefix = opts.get('prefix')
     p.type = opts.get('type')
     p.description = opts.get('description')
     p.node = opts.get('node')
     p.country = opts.get('country')
     p.order_id = opts.get('order_id')
-    p.vrf = opts.get('vrf')
     p.alarm_priority = opts.get('alarm_priority')
     p.comment = opts.get('comment')
     p.monitor = _str_to_bool(opts.get('monitor'))
 
+    if 'vrf' in opts:
+        try:
+            p.vrf = VRF.list({ 'vrf': opts['vrf'] })[0]
+        except IndexError:
+            print >> sys.stderr, "Could not find VRF %s" % str(opts['vrf'])
+            sys.exit(1)
+
     args = {}
     if 'from-pool' in opts:
-        res = Pool.list(s, { 'name': opts['from-pool'] })
+        res = Pool.list({ 'name': opts['from-pool'] })
         if len(res) == 0:
             print >> sys.stderr, "No pool named %s found." % opts['from-pool']
             sys.exit(1)
@@ -312,22 +311,22 @@ def add_prefix(arg, opts):
 
 
 
-def add_schema(arg, opts):
-    """ Add schema to NIPAP
+def add_vrf(arg, opts):
+    """ Add VRF to NIPAP
     """
 
-    s = Schema()
-    s.name = opts.get('name')
-    s.description = opts.get('description')
-    s.vrf = opts.get('vrf')
+    v = VRF()
+    v.vrf = opts.get('vrf')
+    v.name = opts.get('name')
+    v.description = opts.get('description')
 
     try:
-        s.save()
+        v.save()
     except pynipap.NipapError, e:
-        print >> sys.stderr, "Could not add schema to NIPAP: %s" % e.message
+        print >> sys.stderr, "Could not add VRF to NIPAP: %s" % e.message
         sys.exit(1)
 
-    print "Added schema %s with id %d" % (s.name, s.id)
+    print "Added VRF %s with id %d" % (v.vrf, v.id)
 
 
 
@@ -336,7 +335,6 @@ def add_pool(arg, opts):
     """
 
     p = Pool()
-    p.schema = get_schema(opts.get('schema'))
     p.name = opts.get('name')
     p.description = opts.get('description')
     p.default_type = opts.get('default-type')
@@ -356,22 +354,22 @@ def add_pool(arg, opts):
 """
     VIEW FUNCTIONS
 """
-def view_schema(arg, opts):
-    """ View a single schema
+def view_vrf(arg, opts):
+    """ View a single VRF
     """
 
-    res = Schema.list({ 'name': arg })
+    res = VRF.list({ 'vrf': arg })
     if len(res) < 1:
-        print >> sys.stderr, "No schema with name %s found." % arg
+        print >> sys.stderr, "VRF %s not found." % arg
         sys.exit(1)
 
-    s = res[0]
+    v = res[0]
 
-    print "-- Schema"
-    print "  %-12s : %s" % ("Name", s.name)
-    print "  %-12s : %d" % ("ID", s.id)
-    print "  %-12s : %s" % ("Description", s.description)
-    print "  %-12s : %s" % ("VRF", s.vrf)
+    print "-- VRF"
+    print "  %-12s : %d" % ("ID", v.id)
+    print "  %-12s : %s" % ("VRF", v.vrf)
+    print "  %-12s : %s" % ("Name", v.name)
+    print "  %-12s : %s" % ("Description", v.description)
 
 
 
@@ -379,9 +377,7 @@ def view_pool(arg, opts):
     """ View a single pool
     """
 
-    s = get_schema(opts.get('schema'))
-
-    res = Pool.list(s, { 'name': arg })
+    res = Pool.list({ 'name': arg })
 
     if len(res) == 0:
         print "No pool named %s found." % arg
@@ -389,13 +385,14 @@ def view_pool(arg, opts):
 
     p = res[0]
     print  "-- Pool "
+    print "  %-15s : %d" % ("ID", p.id)
     print "  %-15s : %s" % ("Name", p.name)
     print "  %-15s : %s" % ("Description", p.description)
     print "  %-15s : %s" % ("Default type", p.default_type)
     print "  %-15s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
     print "\n-- Prefixes in pool"
 
-    res = Prefix.list(s, { 'pool': p.id})
+    res = Prefix.list({ 'pool': p.id})
     for pref in res:
         print "  %s" % pref.display_prefix
 
@@ -405,24 +402,27 @@ def view_prefix(arg, opts):
     """ View a single prefix.
     """
 
-    s = get_schema()
-
-    res = Prefix.search(s, { 'operator': 'equals', 'val1': 'prefix', 'val2': arg }, {})
+    res = Prefix.search({ 'operator': 'equals', 'val1': 'prefix', 'val2': arg }, {})
 
     if len(res['result']) == 0:
         print "Address %s not found." % arg
         return
 
     p = res['result'][0]
+    if p.vrf is None:
+        vrf = p.vrf
+    else:
+        vrf = p.vrf.vrf
+
     print  "-- Address "
     print "  %-15s : %s" % ("Prefix", p.prefix)
     print "  %-15s : %s" % ("Display prefix", p.display_prefix)
     print "  %-15s : %s" % ("Type", p.type)
     print "  %-15s : IPv%s" % ("Family", p.family)
+    print "  %-15s : %s" % ("VRF", vrf)
     print "  %-15s : %s" % ("Description", p.description)
     print "  %-15s : %s" % ("Node", p.node)
     print "  %-15s : %s" % ("Order", p.order_id)
-    print "  %-15s : %s" % ("VRF", p.vrf)
     print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
     print "  %-15s : %s" % ("Monitor", p.monitor)
     print "-- Comment"
@@ -435,24 +435,24 @@ def view_prefix(arg, opts):
     REMOVE FUNCTIONS
 """
 
-def remove_schema(arg, opts):
-    """ Remove schema
+def remove_vrf(arg, opts):
+    """ Remove VRF
     """
 
-    res = Schema.list({ 'name': arg })
+    res = VRF.list({ 'name': arg })
     if len(res) < 1:
-        print >> sys.stderr, "No schema with name %s found." % arg
+        print >> sys.stderr, "VRF %s not found." % arg
         sys.exit(1)
 
-    s = res[0]
+    v = res[0]
 
-    print "Name: %s\nDescription: %s\nVRF: %s" % (s.name, s.description, s.vrf)
-    print "\nWARNING: THIS WILL REMOVE THE SCHEMA INCLUDING ALL IT'S ADDRESSES"
-    res = raw_input("Do you really want to remove the schema %s? [y/n]: " % s.name)
+    print "VRF: %s\nName: %s\nDescription: %s" % (v.vrf, v.name, v.description)
+    print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL IT'S ADDRESSES"
+    res = raw_input("Do you really want to remove the VRF %s? [y/n]: " % v.vrf)
 
     if res == 'y':
         s.remove()
-        print "Schema %s removed." % s.name
+        print "VRF %s removed." % v.vrf
     else:
         print "Operation canceled."
 
@@ -462,8 +462,7 @@ def remove_pool(arg, opts):
     """ Remove pool
     """
 
-    s = get_schema()
-    res = Pool.list(s, { 'name': arg })
+    res = Pool.list({ 'name': arg })
     if len(res) < 1:
         print >> sys.stderr, "No pool with name %s found." % arg
         sys.exit(1)
@@ -484,8 +483,11 @@ def remove_prefix(arg, opts):
     """ Remove prefix
     """
 
-    s = get_schema()
-    res = Prefix.list(s, { 'prefix': arg })
+    spec = { 'prefix': arg }
+    if 'vrf' in opts:
+        spec['vrf'] = opts['vrf']
+
+    res = Prefix.list(spec)
 
     if len(res) < 1:
         print >> sys.stderr, "No prefix %s found." % arg
@@ -493,7 +495,7 @@ def remove_prefix(arg, opts):
 
     p = res[0]
 
-    res = raw_input("Do you really want to remove the prefix %s in schema %s? [y/n]: " % (p.prefix, s.name))
+    res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, p.vrf))
 
     if res == 'y':
         p.remove()
@@ -506,27 +508,27 @@ def remove_prefix(arg, opts):
     MODIFY FUNCTIONS
 """
 
-def modify_schema(arg, opts):
-    """ Modify a schema with the options set in opts
+def modify_vrf(arg, opts):
+    """ Modify a VRF with the options set in opts
     """
 
-    res = Schema.list({ 'name': arg })
+    res = VRF.list({ 'name': arg })
     if len(res) < 1:
-        print >> sys.stderr, "No schema with name %s found." % arg
+        print >> sys.stderr, "VRF %s not found." % arg
         sys.exit(1)
 
-    s = res[0]
+    v = res[0]
 
-    if 'name' in opts:
-        s.name = opts['name']
     if 'vrf' in opts:
-        s.vrf = opts['vrf']
+        v.vrf = opts['vrf']
+    if 'name' in opts:
+        v.name = opts['name']
     if 'description' in opts:
-        s.description = opts['description']
+        v.description = opts['description']
 
-    s.save()
+    v.save()
 
-    print "Schema %s saved." % s.name
+    print "VRF %s saved." % v.vrf
 
 
 
@@ -534,8 +536,7 @@ def modify_pool(arg, opts):
     """ Modify a pool with the options set in opts
     """
 
-    s = get_schema()
-    res = Pool.list(s, { 'name': arg })
+    res = Pool.list({ 'name': arg })
     if len(res) < 1:
         print >> sys.stderr, "No pool with name %s found." % arg
         sys.exit(1)
@@ -563,11 +564,13 @@ def modify_prefix(arg, opts):
     """ Modify the prefix 'arg' with the options 'opts'
     """
 
-    s = get_schema()
+    spec = { 'prefix': arg }
+    if 'vrf' in opts:
+        spec['vrf'] = opts['vrf']
 
-    res = Prefix.list(s, { 'prefix': arg })
+    res = Prefix.list(spec)
     if len(res) == 0:
-        print >> sys.stderr, "Prefix %s not found in schema %s." % (arg, s.name)
+        print >> sys.stderr, "Prefix %s not found in VRF %s." % (arg, opts.get('vrf'))
         return
 
     p = res[0]
@@ -584,12 +587,17 @@ def modify_prefix(arg, opts):
         p.country = opts['country']
     if 'order_id' in opts:
         p.order_id = opts['order_id']
-    if 'vrf' in opts:
-        p.vrf = opts['vrf']
     if 'alarm_priority' in opts:
         p.alarm_priority = opts['alarm_priority']
     if 'monitor' in opts:
         p.monitor = _str_to_bool(opts['monitor'])
+
+    if 'vrf' in opts:
+        try:
+            p.vrf = VRF.list({ 'vrf': opts['vrf'] })[0]
+        except IndexError:
+            print >> sys.stderr, "VRF %s not found." % opts['vrf']
+            sys.exit(1)
 
     try:
         p.save()
@@ -690,12 +698,11 @@ def complete_pool_name(arg):
     """ Returns list of matching pool names
     """
 
-    s = get_schema()
     search_string = '^'
     if arg is not None:
         search_string += arg
 
-    res = Pool.search(s, {
+    res = Pool.search({
         'operator': 'regex_match',
         'val1': 'name',
         'val2': search_string
@@ -709,23 +716,23 @@ def complete_pool_name(arg):
 
 
 
-def complete_schema_name(arg):
-    """ Returns list of matching schema names
+def complete_vrf(arg):
+    """ Returns list of matching VRFs
     """
 
     search_string = ''
     if arg is not None:
         search_string = '^%s' % arg
 
-    res = Schema.search({
+    res = VRF.search({
         'operator': 'regex_match',
-        'val1': 'name',
+        'val1': 'vrf',
         'val2':  search_string
         })
 
     ret = []
-    for schema in res['result']:
-        ret.append(schema.name)
+    for v in res['result']:
+        ret.append(v.vrf)
 
     return ret
 
@@ -740,16 +747,16 @@ cmds = {
             'params': {
 
                 #set schema
-                'schema': {
-                    'type': 'option',
-                    'argument': {
-                        'type': 'value',
-                        'content_type': unicode,
-                        'description': 'Schema name',
-                        'complete': complete_schema_name,
-                    },
-                    'exec_immediately': get_schema
-                },
+#                'schema': {
+#                    'type': 'option',
+#                    'argument': {
+#                        'type': 'value',
+#                        'content_type': unicode,
+#                        'description': 'Schema name',
+#                        'complete': complete_schema_name,
+#                    },
+#                    'exec_immediately': get_schema
+#                },
 
                 # add
                 'add': {
@@ -831,6 +838,7 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
+                                'complete': complete_vrf,
                             }
                         },
                         'prefix': {
@@ -951,6 +959,7 @@ cmds = {
                                     'argument': {
                                         'type': 'value',
                                         'content_type': unicode,
+                                        'complete': complete_vrf,
                                     }
                                 },
                                 'monitor': {
@@ -998,22 +1007,22 @@ cmds = {
             }
         },
 
-        # schema commands
-        'schema': {
+        # VRF commands
+        'vrf': {
             'type': 'command',
             'params': {
 
                 # add
                 'add': {
                     'type': 'command',
-                    'exec': add_schema,
+                    'exec': add_vrf,
                     'params': {
                         'vrf': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
-                                'description': 'VRF which the schema is mapped to'
+                                'description': 'VRF'
                             }
                         },
                         'name': {
@@ -1021,7 +1030,7 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
-                                'description': 'Schema name',
+                                'description': 'VRF name',
                             }
 
                         },
@@ -1030,7 +1039,7 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
-                                'description': 'VRF which the schema is mapped to'
+                                'description': 'Description of the VRF'
                             }
                         }
                     }
@@ -1039,14 +1048,15 @@ cmds = {
                 # list
                 'list': {
                     'type': 'command',
-                    'exec': list_schema,
+                    'exec': list_vrf,
                     'params': {
                         'vrf': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
-                                'description': 'VRF which the schema is mapped to'
+                                'description': 'VRF',
+                                'complete': complete_vrf,
                             }
                         },
                         'name': {
@@ -1054,8 +1064,7 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
-                                'description': 'Schema name',
-                                'complete': complete_schema_name,
+                                'description': 'VRF name',
                             }
 
                         },
@@ -1064,7 +1073,7 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
-                                'description': 'VRF which the schema is mapped to'
+                                'description': 'Description of the VRF'
                             }
                         }
                     }
@@ -1072,25 +1081,25 @@ cmds = {
 
                 # view
                 'view': {
-                    'exec': view_schema,
+                    'exec': view_vrf,
                     'type': 'command',
                     'argument': {
                         'type': 'value',
                         'content_type': unicode,
-                        'description': 'Schema name',
-                        'complete': complete_schema_name,
+                        'description': 'VRF',
+                        'complete': complete_vrf,
                     }
                 },
 
                 # remove
                 'remove': {
-                    'exec': remove_schema,
+                    'exec': remove_vrf,
                     'type': 'command',
                     'argument': {
                         'type': 'value',
                         'content_type': unicode,
-                        'description': 'Schema name',
-                        'complete': complete_schema_name,
+                        'description': 'VRF',
+                        'complete': complete_vrf,
                     }
                 },
 
@@ -1100,20 +1109,20 @@ cmds = {
                     'argument': {
                         'type': 'value',
                         'content_type': unicode,
-                        'description': 'Schema name',
-                        'complete': complete_schema_name,
+                        'description': 'VRF',
+                        'complete': complete_vrf,
                     },
                     'params': {
                         'set': {
                             'type': 'command',
-                            'exec': modify_schema,
+                            'exec': modify_vrf,
                             'params': {
                                 'vrf': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
                                         'content_type': unicode,
-                                        'description': 'VRF which the schema is mapped to'
+                                        'description': 'VRF'
                                     }
                                 },
                                 'name': {
@@ -1121,7 +1130,7 @@ cmds = {
                                     'argument': {
                                         'type': 'value',
                                         'content_type': unicode,
-                                        'description': 'Schema name',
+                                        'description': 'VRF name',
                                     }
 
                                 },
@@ -1130,7 +1139,7 @@ cmds = {
                                     'argument': {
                                         'type': 'value',
                                         'content_type': unicode,
-                                        'description': 'VRF which the schema is mapped to'
+                                        'description': 'Description of the VRF'
                                     }
                                 }
                             }
@@ -1144,18 +1153,6 @@ cmds = {
         'pool': {
             'type': 'command',
             'params': {
-
-                #set schema
-                'schema': {
-                    'type': 'option',
-                    'argument': {
-                        'type': 'value',
-                        'content_type': unicode,
-                        'description': 'Schema name',
-                        'complete': complete_schema_name,
-                    },
-                    'exec_immediately': get_schema
-                },
 
                 # add
                 'add': {
