@@ -28,7 +28,7 @@ valid_priorities = [ 'low', 'medium', 'high' ]
 
 
 # evil global vars
-#schema = None
+vrf = None
 cfg = None
 
 
@@ -53,38 +53,38 @@ def setup_connection():
 
 
 
-#def get_schema(arg = None, opts = None):
-#    """ Returns schema to work in
-#
-#        Returns a pynipap.Schema object representing the schema we are working
-#        in. If there is a schema set globally, return this. If not, fetch the
-#        schema named 'arg'. If 'arg' is None, fetch the default_schema
-#        attribute from the config file and return this schema.
-#    """
-#
-#    # yep, global variables are evil
-#    global schema
-#
-#    # if there is a schema set, return it
-#    if schema is not None:
-#        return schema
-#
-#    if arg is None:
-#        # fetch default schema
-#        try:
-#            schema_name = cfg.get('global', 'default_schema')
-#        except ConfigParser.NoOptionError:
-#            print >> sys.stderr, "Please define the default schema in your .nipaprc"
-#            sys.exit(1)
-#    else:
-#        schema_name = arg
-#
-#    try:
-#        schema = Schema.list({ 'name': schema_name })[0]
-#    except IndexError:
-#        schema = False
-#
-#    return schema
+def get_vrf(arg = None, opts = None):
+    """ Returns VRF to work in
+
+        Returns a pynipap.Schema object representing the VRF we are working
+        in. If there is a VRF set globally, return this. If not, fetch the
+        VRF named 'arg'. If 'arg' is None, fetch the default_vrf
+        attribute from the config file and return this VRF.
+    """
+
+    # yep, global variables are evil
+    global vrf
+
+    # if there is a VRF set, return it
+    if vrf is not None:
+        return vrf
+
+    if arg is None:
+        # fetch default vrf
+        try:
+            vrf_rd = cfg.get('global', 'default_vrf')
+        except ConfigParser.NoOptionError:
+            print >> sys.stderr, "Please define the default VRF in your .nipaprc"
+            sys.exit(1)
+    else:
+        vrf_rd = arg
+
+    try:
+        vrf = VRF.list({ 'vrf': vrf_rd })[0]
+    except IndexError:
+        vrf = False
+
+    return vrf
 
 
 
@@ -746,17 +746,17 @@ cmds = {
             'type': 'command',
             'params': {
 
-                #set schema
-#                'schema': {
-#                    'type': 'option',
-#                    'argument': {
-#                        'type': 'value',
-#                        'content_type': unicode,
-#                        'description': 'Schema name',
-#                        'complete': complete_schema_name,
-#                    },
-#                    'exec_immediately': get_schema
-#                },
+                # set VRF
+                'vrf': {
+                    'type': 'option',
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'VRF',
+                        'complete': complete_vrf,
+                    },
+                    'exec_immediately': get_vrf
+                },
 
                 # add
                 'add': {
