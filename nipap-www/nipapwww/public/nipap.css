@@ -450,6 +450,20 @@ tbody.listing > tr:hover {
     background-color: #ebf2fc;
 }
 
+.preflist_vrf_container {
+	display: table-row;
+}
+
+.preflist_vrf_panel {
+	width: 100px;
+	display: table-cell;
+}
+
+.preflist_prefix_panel {
+	display: table-cell;
+	padding-bottom: 15px;
+}
+
 .prefix_hidden_container {
     display: none;
 }
@@ -580,10 +594,6 @@ tbody.listing > tr:hover {
 
 .prefix_node {
     width: 150px;
-}
-
-.prefix_vrf {
-    width: 60px;
 }
 
 .prefix_order_id {

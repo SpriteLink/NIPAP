@@ -602,17 +602,6 @@ function showPrefix(prefix, reference, offset) {
 		prefix_order_id.html(prefix.order_id);
 	}
 
-	// Add VRF
-	prefix_row.append('<div id="prefix_vrf' + prefix.id + '">');
-	var prefix_vrf = $('#prefix_vrf' + prefix.id);
-	prefix_vrf.addClass('prefix_column');
-	prefix_vrf.addClass('prefix_vrf');
-	if (prefix.vrf == null || prefix.vrf == '') {
-		prefix_vrf.html("&nbsp;");
-	} else {
-		prefix_vrf.html(prefix.vrf);
-	}
-
 	// Add node
 	prefix_row.append('<div id="prefix_node' + prefix.id + '">');
 	var prefix_node = $('#prefix_node' + prefix.id);
@@ -938,9 +927,12 @@ function receivePrefixList(search_result) {
 	}
 
 	if (! ('query_id' in search_result.search_options)) {
-		showDialogNotice("Error", 'No query_id');
+		showDialogNotice("Error", 'No query_id in response');
 		return;
 	}
+
+	// If we receive a result older than the one we display, ignore the
+	// received result.
 	if (parseInt(search_result.search_options.query_id) < parseInt(newest_query)) {
 		return;
 	}
@@ -1123,7 +1115,6 @@ function optToDepth(opt) {
 
 /*
  * Insert a list of prefixes
- *
  */
 function insertPrefixList(pref_list) {
 
@@ -1146,7 +1137,8 @@ function insertPrefixList(pref_list) {
 
 		// This should only happen when adding the very first prefix to a completely empty list
 		// Add it manually so we have a starting point
-		showPrefix(prefix, $("#prefix_list"), null);
+		var c = insertVRFContainer(prefix.vrf);
+		showPrefix(prefix, c, null);
 		prev_prefix = prefix;
 		prefix_list[prefix.id] = prefix;
 
@@ -1191,6 +1183,15 @@ function insertPrefix(prefix, prev_prefix) {
 	var main_container = null;
 	var reference = null;
 	var offset = null;
+
+	// Changing VRF - create new VRF container and add prefix to it
+	if (prefix.vrf != prev_prefix.vrf) {
+
+		var c = insertVRFContainer(prefix.vrf);
+		showPrefix(prefix, c, null);
+		return;
+
+	}
 
 	if (prefix.indent > prev_prefix.indent) {
 		// Indent level incresed
@@ -1336,6 +1337,34 @@ function insertPrefix(prefix, prev_prefix) {
 	}
 
 	showPrefix(prefix, reference, offset);
+
+}
+
+
+/*
+ * Add a container in the prefix list for one VRF
+ */
+function insertVRFContainer(vrf) {
+
+	if (vrf == null) {
+		var vrf_s = 'No VRF';
+		var vrf_id = 'null';
+	} else {
+		var vrf_s = vrf;
+		var vrf_id = vrf.replace(':', '_');
+	}
+
+	if ($('#preflist_prefix_panel_' + vrf_id).length == 0) {
+		$("#prefix_list").append('<div class="preflist_vrf_container" id="preflist_vrf_container_' + vrf_id + '">' +
+			'<div class="preflist_vrf_panel">' + vrf_s + '</div>' +
+			'<div class="preflist_prefix_panel" id="preflist_prefix_panel_' + vrf_id + '"></div>' +
+			'</div>');
+	} else {
+		log("ERROR: insertVRFContainer called for VRF '" + vrf_s +
+			" (DOM ID '" + vrf_id + "')' which already has container.");
+	}
+
+	return $('#preflist_prefix_panel_' + vrf_id);
 
 }
 
