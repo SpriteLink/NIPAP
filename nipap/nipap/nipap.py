@@ -645,7 +645,7 @@ class Nipap:
             * `attr` [vrf_attr]
                 The news VRF's attributes.
 
-            Add a VRF based on the values stored in the inputted `attr` dict.
+            Add a VRF based on the values stored in the `attr` dict.
 
             Returns the internal database ID of the added VRF.
         """
@@ -700,7 +700,7 @@ class Nipap:
         self.remove_prefix(auth, spec = v4spec, recursive = True)
         self.remove_prefix(auth, spec = v6spec, recursive = True)
 
-        # get list if VRFs to remove before removing them
+        # get list of VRFs to remove before removing them
         vrfs = self.list_vrf(auth, spec)
 
         where, params = self._expand_vrf_spec(spec)
@@ -937,7 +937,7 @@ class Nipap:
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
-        self._logger.debug('search_vrf search_options: %s' % str(search_options))
+        self._logger.debug('search_vrf called; query: %s search_options: %s' % (str(query), str(search_options)))
 
         opt = None
         sql = """ SELECT * FROM ip_net_vrf """
@@ -1194,6 +1194,7 @@ class Nipap:
         }
         sql, params = self._sql_expand_insert(audit_params)
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
         return pool_id
 
 
@@ -1643,6 +1644,7 @@ class Nipap:
             spec2[prefix + k] = spec[k]
         spec = spec2
 
+        # handle keys which refer to external keys
         if prefix + 'vrf_name' in spec:
             spec['vrf.name'] = spec[prefix + 'vrf_name']
             del(spec[prefix + 'vrf_name'])
@@ -1652,7 +1654,7 @@ class Nipap:
             del(spec[prefix + 'vrf'])
 
         if prefix + 'vrf_id' in spec:
-            spec['vrf.id'] = spec[prefix + 'vrf']
+            spec['vrf.id'] = spec[prefix + 'vrf_id']
             del(spec[prefix + 'vrf_id'])
 
         if prefix + 'pool' in spec:
@@ -1665,6 +1667,8 @@ class Nipap:
 
         where, params = self._sql_expand_where(spec)
 
+        # prefix family needs to be handled separately as it's not stored
+        # explicitly in the database
         if family:
             params['family'] = family
             if len(params) == 0:
@@ -1672,7 +1676,7 @@ class Nipap:
             else:
                 where += " AND family(" + prefix + "prefix) = %(family)s"
 
-        self._logger.debug("where: %s params: %s" % (where, str(params)))
+        self._logger.debug("_expand_prefix_spec; where: %s params: %s" % (where, str(params)))
         return where, params
 
 
