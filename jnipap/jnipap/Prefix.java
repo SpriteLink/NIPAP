@@ -12,7 +12,7 @@ import jnipap.NonExistentException;
 import jnipap.ConnectionException;
 import jnipap.AuthFailedException;
 import jnipap.Connection;
-import jnipap.Schema;
+import jnipap.VRF;
 import jnipap.Pool;
 
 
@@ -20,7 +20,7 @@ public class Prefix extends Jnipap {
 
 	// Prefix attributes
 	public Integer family;
-	public Schema schema;
+	public VRF vrf;
 	public String prefix;
 	public String display_prefix;
 	public String description;
@@ -49,12 +49,6 @@ public class Prefix extends Jnipap {
 			throw new IllegalStateException("prefix id is defined; attempting to assign prefix from prefix when prefix already exists");
 		}
 
-		// create schema spec
-		HashMap schema_spec = new HashMap();
-		if (this.schema != null) {
-			schema_spec.put("id", this.schema.id);
-		}
-
 		HashMap attr = this.toAttr();
 
 		// add pool to options map
@@ -66,7 +60,6 @@ public class Prefix extends Jnipap {
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
 		args.put("attr", attr);
-		args.put("schema", schema_spec);
 		args.put("args", opts);
 
 		// create params list
@@ -89,12 +82,6 @@ public class Prefix extends Jnipap {
 			throw new IllegalStateException("prefix id is defined; attempting to assign prefix from prefix when prefix already exists");
 		}
 
-		// create schema spec
-		HashMap schema_spec = new HashMap();
-		if (this.schema != null) {
-			schema_spec.put("id", this.schema.id);
-		}
-
 		HashMap attr = this.toAttr();
 
 		// add prefix to options map - THIS MODIFIES THE MAP WE GOT PASSED
@@ -107,7 +94,6 @@ public class Prefix extends Jnipap {
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
 		args.put("attr", attr);
-		args.put("schema", schema_spec);
 		args.put("args", opts);
 
 		// create params list
@@ -127,17 +113,10 @@ public class Prefix extends Jnipap {
 
 		HashMap attr = this.toAttr();
 
-		// create schema spec
-		HashMap schema_spec = new HashMap();
-		if (this.schema != null) {
-			schema_spec.put("id", this.schema.id);
-		}
-
 		// create args map
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
 		args.put("attr", attr);
-		args.put("schema", schema_spec);
 
 		// create params list
 		List params = new ArrayList();
@@ -169,7 +148,7 @@ public class Prefix extends Jnipap {
 	private void updateInstance(Connection conn) throws JnipapException {
 
 		// Get new prefix data
-		Prefix p = Prefix.get(conn, schema, id);
+		Prefix p = Prefix.get(conn, id);
 
 		// assign data which might have changed
 		prefix = p.prefix;
@@ -189,8 +168,6 @@ public class Prefix extends Jnipap {
 	 */
 	private HashMap toAttr() {
 
-		// TODO: handle schema = null
-
 		// create hashmap of prefix attributes
 		HashMap attr = new HashMap();
 		putUnlessNull(attr, "description", this.description);
@@ -209,12 +186,10 @@ public class Prefix extends Jnipap {
 			attr.put("pool", this.pool.id);
 		}
 
-		// Schema assigned?
-		/*
-		if (this.schema != null) {
-			attr.put("schema", this.schema.id);
+		// VRF assigned?
+		if (this.vrf != null) {
+			attr.put("vrf_id", this.vrf.id);
 		}
-		*/
 
 		return attr;
 
@@ -231,13 +206,9 @@ public class Prefix extends Jnipap {
 		HashMap prefix_spec = new HashMap();
 		prefix_spec.put("id", this.id);
 
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", this.schema.id);
-
 		// Build function args
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
-		args.put("schema", schema_spec);
 		args.put("prefix", prefix_spec);
 
 		List params = new ArrayList();
@@ -260,27 +231,23 @@ public class Prefix extends Jnipap {
 			" prefix: " + this.prefix +
 			" display_prefix: " + this.display_prefix +
 			" desc: " + this.description +
-			" type: " + this.type;
+			" type: " + this.type +
+			" VRF: " + this.vrf;
 	}
 
 	/**
 	 * Search NIPAP prefixes by specifying a specifically crafted map
 	 *
 	 * @param conn Connection with auth options
-	 * @param schema Schema to search
 	 * @param query Map describing the search query
 	 * @param search_options Search options
 	 * @return A map containing search result and metadata
 	 */
-	public static Map search(Connection conn, Schema schema, Map query, Map search_options) throws JnipapException {
-
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", schema.id);
+	public static Map search(Connection conn, Map query, Map search_options) throws JnipapException {
 
 		// Build function args
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
-		args.put("schema", schema_spec);
 		args.put("query", query);
 		args.put("search_options", search_options);
 
@@ -312,20 +279,15 @@ public class Prefix extends Jnipap {
 	 * Search NIPAP prefixes by specifying a search string
 	 *
 	 * @param conn Connection with auth options
-	 * @param schema Schema to search
 	 * @param query Search string
 	 * @param search_options Search options
 	 * @return A map containing search result and metadata
 	 */
-	public static Map search(Connection conn, Schema schema, String query, Map search_options) throws JnipapException {
-
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", schema.id);
+	public static Map search(Connection conn, String query, Map search_options) throws JnipapException {
 
 		// Build function args
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
-		args.put("schema", schema_spec);
 		args.put("query_string", query);
 		args.put("search_options", search_options);
 
@@ -365,15 +327,11 @@ public class Prefix extends Jnipap {
 	 * @param prefix_spec Map of prefix attributes
 	 * @return List of prefixes matching the attributes
 	 */
-	public static List list(Connection conn, Schema schema, Map prefix_spec) throws JnipapException {
-
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", schema.id);
+	public static List list(Connection conn, Map prefix_spec) throws JnipapException {
 
 		// Build function args
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
-		args.put("schema", schema_spec);
 		args.put("prefix", prefix_spec);
 
 		List params = new ArrayList();
@@ -404,14 +362,14 @@ public class Prefix extends Jnipap {
 	 * @param id ID of requested prefix
 	 * @return The prefix which was found
 	 */
-	public static Prefix get(Connection conn, Schema schema, Integer id) throws JnipapException {
+	public static Prefix get(Connection conn, Integer id) throws JnipapException {
 
 
 		// Build prefix spec
 		HashMap prefix_spec = new HashMap();
 		prefix_spec.put("id", id);
 
-		List result = Prefix.list(conn, schema, prefix_spec);
+		List result = Prefix.list(conn, prefix_spec);
 
 		// extract data from result
 		if (result.size() < 1) {
@@ -437,7 +395,6 @@ public class Prefix extends Jnipap {
 
 		prefix.id = (Integer)input.get("id");
 		prefix.family = (Integer)input.get("family");
-		prefix.schema = Schema.get(conn, (Integer)input.get("schema"));
 		prefix.prefix = (String)input.get("prefix");
 		prefix.display_prefix = (String)input.get("display_prefix");
 		prefix.description = (String)input.get("description");
@@ -457,7 +414,12 @@ public class Prefix extends Jnipap {
 
 		// If pool is not null, fetch pool object
 		if (input.get("pool") != null) {
-			prefix.pool = Pool.get(conn, prefix.schema, (Integer)input.get("pool"));
+			prefix.pool = Pool.get(conn, (Integer)input.get("pool"));
+		}
+
+		// If VRF is not null, fetch VRF object
+		if (input.get("vrf_id") != null) {
+			prefix.vrf = VRF.get(conn, (Integer)input.get("vrf_id"));
 		}
 
 		return prefix;

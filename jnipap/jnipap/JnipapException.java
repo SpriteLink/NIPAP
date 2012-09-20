@@ -92,7 +92,7 @@ class ValueException extends JnipapException {
 /**
  * The requested addition/change viloates unique constraints
  *
- * For example, create a schema with a name of an already existing one.
+ * For example, when creating a VRF which already exists.
  */
 class DuplicateException extends JnipapException {
 

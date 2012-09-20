@@ -5,7 +5,7 @@ import java.util.HashMap;
 import jnipap.Connection;
 
 /**
- * Base class for all NIPAP object classes (Schema, Pool, Prefix).
+ * Base class for all NIPAP object classes (VRF, Pool, Prefix).
  *
  * Maintains an XML-RPC connection to the NIPAP daemon.
  *

@@ -12,13 +12,11 @@ import jnipap.NonExistentException;
 import jnipap.ConnectionException;
 import jnipap.AuthFailedException;
 import jnipap.Connection;
-import jnipap.Schema;
 
 public class Pool extends Jnipap {
 
 	// Pool attributes
 	public String name;
-	public Schema schema;
 	public String description;
 	public String default_type; // Some kind of enum?
 	public Integer ipv4_default_prefix_length;
@@ -41,16 +39,10 @@ public class Pool extends Jnipap {
 		HashMap pool_spec = new HashMap();
 		pool_spec.put("id", this.id);
 
-		// create schema spec
-		// TODO: handle schema = null
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", this.schema.id);
-
 		// create args map
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
 		args.put("attr", attr);
-		args.put("schema", schema_spec);
 
 		// create params list
 		List params = new ArrayList();
@@ -61,7 +53,6 @@ public class Pool extends Jnipap {
 		if (this.id == null) {
 
 			// ID null - create new pool
-			attr.put("schema", this.schema.id);
 			cmd = "add_pool";
 
 		} else {
@@ -91,13 +82,9 @@ public class Pool extends Jnipap {
 		HashMap pool_spec = new HashMap();
 		pool_spec.put("id", this.id);
 
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", this.schema.id);
-
 		// Build function args
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
-		args.put("schema", schema_spec);
 		args.put("pool", pool_spec);
 
 		List params = new ArrayList();
@@ -129,20 +116,15 @@ public class Pool extends Jnipap {
 	 * Get list of pools from NIPAP by its attributes
 	 *
 	 * @param conn Connection with auth options
-	 * @param schema Schema to search
 	 * @param query Map describing the search query
 	 * @param search_options Search options
 	 * @return A list of Pool objects matching the attributes in the query map
 	 */
-	public static Map search(Connection conn, Schema schema, Map query, Map search_options) throws JnipapException {
-
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", schema.id);
+	public static Map search(Connection conn, Map query, Map search_options) throws JnipapException {
 
 		// Build function args
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
-		args.put("schema", schema_spec);
 		args.put("query", query);
 		args.put("search_options", search_options);
 
@@ -174,20 +156,15 @@ public class Pool extends Jnipap {
 	 * Get list of pools from NIPAP matching a search string
 	 *
 	 * @param conn Connection with auth options
-	 * @param schema Schema to search
 	 * @param query Search string
 	 * @param search_options Search options
 	 * @return A list of Pool objects matching the query string
 	 */
-	public static Map search(Connection conn, Schema schema, String query, Map search_options) throws JnipapException {
-
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", schema.id);
+	public static Map search(Connection conn, String query, Map search_options) throws JnipapException {
 
 		// Build function args
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
-		args.put("schema", schema_spec);
 		args.put("query_string", query);
 		args.put("search_options", search_options);
 
@@ -227,16 +204,12 @@ public class Pool extends Jnipap {
 	 * @param pool_spec Map of pool attributes
 	 * @return List of pools matching the attributes
 	 */
-	public static List list(Connection conn, Schema schema, Map pool_spec) throws JnipapException {
-
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", schema.id);
+	public static List list(Connection conn, Map pool_spec) throws JnipapException {
 
 		// Build function args
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
 		args.put("pool", pool_spec);
-		args.put("schema", schema_spec);
 
 		List params = new ArrayList();
 		params.add(args);
@@ -266,13 +239,13 @@ public class Pool extends Jnipap {
 	 * @param id ID of requested pool
 	 * @return The pool which was found
 	 */
-	public static Pool get(Connection conn, Schema schema, Integer id) throws JnipapException {
+	public static Pool get(Connection conn, Integer id) throws JnipapException {
 
 		// Build pool spec
 		HashMap pool_spec = new HashMap();
 		pool_spec.put((Object)"id", (Object)id);
 
-		List result = Pool.list(conn, schema, pool_spec);
+		List result = Pool.list(conn, pool_spec);
 
 		// extract data from result
 		if (result.size() < 1) {
@@ -298,7 +271,6 @@ public class Pool extends Jnipap {
 
 		pool.id = (Integer)input.get("id");
 		pool.name = (String)input.get("name");
-		pool.schema = Schema.get(conn, (Integer)input.get("schema"));
 		pool.description = (String)input.get("description");
 		pool.default_type = (String)input.get("default_type");
 		pool.ipv4_default_prefix_length = (Integer)input.get("ipv4_default_prefix_length");

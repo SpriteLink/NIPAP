@@ -7,10 +7,6 @@ import java.sql.SQLInput;
 import java.sql.SQLOutput;
 import java.sql.SQLException;
 
-import ojnipap.OSchema;
-import ojnipap.OPool;
-import ojnipap.OConnection;
-
 public class OSearchOptions extends HashMap implements SQLData {
 
 	public void readSQL(SQLInput stream, String typeName) throws SQLException {

@@ -14,7 +14,7 @@ import java.sql.SQLException;
 
 import oracle.sql.STRUCT;
 
-import jnipap.Schema;
+import jnipap.VRF;
 import jnipap.Pool;
 import jnipap.Prefix;
 import jnipap.Connection;
@@ -24,17 +24,17 @@ import jnipap.Connection;
 import ojnipap.OConnection;
 
 /**
- * SQLObject version of the Schema class
+ * SQLObject version of the VRF class
  */
-public class OSchema extends jnipap.Schema implements SQLData {
+public class OVRF extends jnipap.VRF implements SQLData {
 
 	public void readSQL(SQLInput stream, String typeName) throws SQLException {
 		
 		// Read data from stream
 		id = Helpers.integerOrNull((BigDecimal)stream.readBigDecimal());
+		vrf = stream.readString();
 		name = stream.readString();
 		description = stream.readString();
-		vrf = stream.readString();
 
 	}
 
@@ -42,36 +42,36 @@ public class OSchema extends jnipap.Schema implements SQLData {
 
 		// Write data to stream
 		stream.writeBigDecimal(Helpers.bigDecOrNull(id));
+		stream.writeString(Helpers.strOrNull(vrf));
 		stream.writeString(Helpers.strOrNull(name));
 		stream.writeString(Helpers.strOrNull(description));
-		stream.writeString(Helpers.strOrNull(vrf));
 
 	}
 
 	public String getSQLTypeName() {
 
-		return "NIPAP_SCHEMA";
+		return "NIPAP_VRF";
 
 	}
 
 	/**
-	 * Create OSchema object from oracle.sql.STRUCT
+	 * Create OVRF object from oracle.sql.STRUCT
 	 *
-	 * @param input STRUCT object contaning a NIPAP_SCHEMA Oracle object
-	 * @return An OSchema instance
+	 * @param input STRUCT object contaning a NIPAP_VRF Oracle object
+	 * @return An OVRF instance
 	 */
-	static OSchema fromSTRUCT(STRUCT input) throws SQLException {
+	static OVRF fromSTRUCT(STRUCT input) throws SQLException {
 
 		if (input == null) {
 			return null;
 		}
 
-		OSchema s = new OSchema();
+		OVRF s = new OVRF();
 		Object[] val = input.getAttributes();
 		s.id = Helpers.integerOrNull((BigDecimal)val[0]);
-		s.name = (String)val[1];
-		s.description = (String)val[2];
-		s.vrf = (String)val[3];
+		s.vrf = (String)val[1];
+		s.name = (String)val[2];
+		s.description = (String)val[3];
 
 		return s;
 
