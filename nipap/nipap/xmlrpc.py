@@ -361,7 +361,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.search_vrf(args.get('auth'), args.get('query'), args.get('search_options', {}))
+            return self.nipap.search_vrf(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -384,7 +384,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.smart_search_vrf(args.get('auth'), args.get('query_string'), args.get('search_options', {}))
+            return self.nipap.smart_search_vrf(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -484,7 +484,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.search_pool(args.get('auth'), args.get('query'), args.get('search_options', {}))
+            return self.nipap.search_pool(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -507,7 +507,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.smart_search_pool(args.get('auth'), args.get('query_string'), args.get('search_options', {}))
+            return self.nipap.smart_search_pool(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -554,7 +554,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.list_prefix(args.get('auth'), args.get('prefix', {}))
+            return self.nipap.list_prefix(args.get('auth'), args.get('prefix') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -616,7 +616,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.search_prefix(args.get('auth'), args.get('query'), args.get('search_options', {}))
+            return self.nipap.search_prefix(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -644,8 +644,8 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.smart_search_prefix(args.get('auth'),
-                    args.get('query_string'), args.get('search_options'),
-                    args.get('extra_query', {}))
+                    args.get('query_string'), args.get('search_options') or {},
+                    args.get('extra_query'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -725,7 +725,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.list_asn(args.get('auth'), args.get('asn', {}))
+            return self.nipap.list_asn(args.get('auth'), args.get('asn') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -769,7 +769,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.search_asn(args.get('auth'), args.get('query'), args.get('search_options', {}))
+            return self.nipap.search_asn(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -793,6 +793,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.smart_search_asn(args.get('auth'), args.get('query_string'), args.get('search_options', {}))
+            return self.nipap.smart_search_asn(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))

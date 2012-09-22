@@ -47,13 +47,14 @@
     * :attr:`prefix` - The IP prefix itself.
     * :attr:`display_prefix` - A more user-friendly version of the prefix.
     * :attr:`family` - Address family (integer 4 or 6). Set by NIPAP.
-    * :attr:`vrf` - VRF which the prefix belongs to.
-    * :attr:`vrf_id` - ID number of the VRF the prefix belongs to.
+    * :attr:`vrf_id` - ID of the VRF which the prefix belongs to.
+    * :attr:`vrf_rt` - RT of the VRF which the prefix belongs to.
     * :attr:`vrf_name` - Name of VRF which the prefix belongs to.
     * :attr:`description` - A short description of the prefix.
     * :attr:`comment` - A longer text describing the prefix and its use.
     * :attr:`node` - FQDN of node the prefix is assigned to, if type is host.
-    * :attr:`pool` - ID of pool, if the prefix belongs to a pool.
+    * :attr:`pool_id` - ID of pool, if the prefix belongs to a pool.
+    * :attr:`pool_name` - Name of pool, if the prefix belongs to a pool.
     * :attr:`type` - Prefix type, string 'reservation', 'assignment' or 'host'.
     * :attr:`indent` - Depth in prefix tree. Set by NIPAP.
     * :attr:`country` - Country where the prefix resides (two-letter country code).
@@ -555,7 +556,7 @@ class Nipap:
         if type(spec) is not dict:
             raise NipapInputError("vrf specification must be a dict")
 
-        allowed_values = ['id', 'name', 'vrf']
+        allowed_values = ['id', 'name', 'rt']
         for a in spec:
             if a not in allowed_values:
                 raise NipapExtraneousInputError("extraneous specification key %s" % a)
@@ -563,9 +564,9 @@ class Nipap:
         if 'id' in spec:
             if type(spec['id']) not in (int, long):
                 raise NipapValueError("VRF specification key 'id' must be an integer.")
-        elif 'vrf' in spec:
-            if type(spec['vrf']) != type(''):
-                raise NipapValueError("VRF specification key 'vrf' must be a string.")
+        elif 'rt' in spec:
+            if type(spec['rt']) != type(''):
+                raise NipapValueError("VRF specification key 'rt' must be a string.")
         elif 'name' in spec:
             if type(spec['name']) != type(''):
                 raise NipapValueError("VRF specification key 'name' must be a string.")
@@ -615,9 +616,9 @@ class Nipap:
             # val1 is variable, val2 is string.
             vrf_attr = dict()
             vrf_attr['id'] = 'id'
+            vrf_attr['rt'] = 'rt'
             vrf_attr['name'] = 'name'
             vrf_attr['description'] = 'description'
-            vrf_attr['vrf'] = 'vrf'
 
             if query['val1'] not in vrf_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
@@ -653,7 +654,7 @@ class Nipap:
         self._logger.debug("add_vrf called; attr: %s" % str(attr))
 
         # sanity check - do we have all attributes?
-        req_attr = [ 'vrf', 'name' ]
+        req_attr = [ 'rt', 'name' ]
         self._check_attr(attr, req_attr, req_attr + [ 'description', ])
 
         insert, params = self._sql_expand_insert(attr)
@@ -664,14 +665,14 @@ class Nipap:
 
         # write to audit table
         audit_params = {
-            'vrf': vrf_id,
-            'vrf_vrf': attr['vrf'],
+            'vrf_id': vrf_id,
+            'vrf_rt': attr['rt'],
             'vrf_name': attr['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added VRF %s with attr: %s' % (attr['vrf'], str(attr))
+            'description': 'Added VRF %s with attr: %s' % (attr['rt'], str(attr))
         }
 
         sql, params = self._sql_expand_insert(audit_params)
@@ -710,8 +711,8 @@ class Nipap:
         # write to audit table
         for v in vrfs:
             audit_params = {
-                'vrf': v['id'],
-                'vrf_vrf': v['vrf'],
+                'vrf_id': v['id'],
+                'vrf_rt': v['rt'],
                 'vrf_name': v['name'],
                 'username': auth.username,
                 'authenticated_as': auth.authenticated_as,
@@ -737,14 +738,14 @@ class Nipap:
 
         self._logger.debug("list_vrf called; spec: %s" % str(spec))
 
-        sql = "SELECT * FROM ip_net_vrf"
-        params = list()
+        sql = "SELECT * FROM ip_net_vrf WHERE id > 0"
 
+        params = list()
         where, params = self._expand_vrf_spec(spec)
         if len(params) > 0:
-            sql += " WHERE " + where
+            sql += " AND " + where
 
-        sql += " ORDER BY vrf ASC NULLS FIRST"
+        sql += " ORDER BY rt"
 
         self._execute(sql, params)
 
@@ -769,15 +770,15 @@ class Nipap:
 
         # find VRF from attributes vrf, vrf_id or vrf_name
         vrf = []
-        if 'vrf' in spec:
-            vrf = self.list_vrf(auth, { 'vrf': spec['vrf'] })
+        if 'vrf_rt' in spec:
+            vrf = self.list_vrf(auth, { 'rt': spec['vrf_rt'] })
         elif 'vrf_id' in spec:
             vrf = self.list_vrf(auth, { 'id': spec['vrf_id'] })
         elif 'vrf_name' in spec:
             vrf = self.list_vrf(auth, { 'name': spec['vrf_name'] })
         else:
             # no VRF specified - return the no-VRF VRF
-            return { 'id': 0, 'vrf': None, 'name': None }
+            return { 'id': 0, 'rt': None, 'name': None }
 
         if len(vrf) > 0:
             return vrf[0]
@@ -821,8 +822,8 @@ class Nipap:
         # write to audit table
         for v in vrfs:
             audit_params = {
-                'vrf': v['id'],
-                'vrf_vrf': v['vrf'],
+                'vrf_id': v['id'],
+                'vrf_rt': v['rt'],
                 'vrf_name': v['name'],
                 'username': auth.username,
                 'authenticated_as': auth.authenticated_as,
@@ -940,13 +941,13 @@ class Nipap:
         self._logger.debug('search_vrf called; query: %s search_options: %s' % (str(query), str(search_options)))
 
         opt = None
-        sql = """ SELECT * FROM ip_net_vrf """
+        sql = """ SELECT * FROM ip_net_vrf WHERE id > 0 """
 
         # add where clause if we have any search terms
         if query != {}:
 
             where, opt = self._expand_vrf_query(query)
-            sql += " WHERE " + where
+            sql += " AND " + where
 
         sql += " ORDER BY name LIMIT " + str(search_options['max_result'])
         self._execute(sql, opt)
@@ -1039,7 +1040,7 @@ class Nipap:
                 },
                 'val2': {
                     'operator': 'regex_match',
-                    'val1': 'vrf',
+                    'val1': 'rt',
                     'val2': query_str_part['string']
                 }
             })
@@ -1184,7 +1185,7 @@ class Nipap:
 
         # write to audit table
         audit_params = {
-            'pool': pool_id,
+            'pool_id': pool_id,
             'pool_name': attr['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
@@ -1225,7 +1226,7 @@ class Nipap:
             'authoritative_source': auth.authoritative_source,
         }
         for p in pools:
-            audit_params['pool'] = p['id'],
+            audit_params['pool_id'] = p['id'],
             audit_params['pool_name'] = p['name'],
             audit_params['description'] = 'Removed pool %s' % p['name']
 
@@ -1253,7 +1254,7 @@ class Nipap:
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
-                        (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool=po.id ORDER BY prefix) AS a) AS prefixes
+                        (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool_id=po.id ORDER BY prefix) AS a) AS prefixes
                 FROM ip_net_pool AS po """
         params = list()
 
@@ -1374,7 +1375,7 @@ class Nipap:
             'authoritative_source': auth.authoritative_source
         }
         for p in pools:
-            audit_params['pool'] = p['id']
+            audit_params['pool_id'] = p['id']
             audit_params['pool_name'] = p['name']
             audit_params['description'] = 'Edited pool %s attr: %s' % (p['name'], str(attr))
 
@@ -1618,9 +1619,9 @@ class Nipap:
         if type(spec) is not dict:
             raise NipapInputError('invalid prefix specification')
 
-        allowed_keys = [ 'id', 'family', 'type', 'pool', 'pool_id',
-                'prefix', 'monitor', 'external_key', 'vrf',
-                'vrf_name', 'vrf_id' ]
+        allowed_keys = [ 'id', 'family', 'type', 'pool_id', 'pool_name',
+                'prefix', 'monitor', 'external_key', 'vrf_id',
+                'vrf_rt', 'vrf_name' ]
         for key in spec.keys():
             if key not in allowed_keys:
                 raise NipapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
@@ -1645,25 +1646,22 @@ class Nipap:
         spec = spec2
 
         # handle keys which refer to external keys
+        if prefix + 'vrf_id' in spec:
+            # "translate" vrf id None to id = 0
+            if spec[prefix + 'vrf_id'] is None:
+                spec[prefix + 'vrf_id'] = 0
+
         if prefix + 'vrf_name' in spec:
             spec['vrf.name'] = spec[prefix + 'vrf_name']
             del(spec[prefix + 'vrf_name'])
 
-        if prefix + 'vrf' in spec:
-            spec['vrf.vrf'] = spec[prefix + 'vrf']
-            del(spec[prefix + 'vrf'])
+        if prefix + 'vrf_rt' in spec:
+            spec['vrf.rt'] = spec[prefix + 'vrf_rt']
+            del(spec[prefix + 'vrf_rt'])
 
-        if prefix + 'vrf_id' in spec:
-            spec['vrf.id'] = spec[prefix + 'vrf_id']
-            del(spec[prefix + 'vrf_id'])
-
-        if prefix + 'pool' in spec:
-            spec['pool.name'] = spec[prefix + 'pool']
-            del(spec[prefix + 'pool'])
-
-        if prefix + 'pool_id' in spec:
-            spec['pool.id'] = spec[prefix + 'pool_id']
-            del(spec[prefix + 'pool_id'])
+        if prefix + 'pool_name' in spec:
+            spec['pool.name'] = spec[prefix + 'pool_name']
+            del(spec[prefix + 'pool_name'])
 
         where, params = self._sql_expand_where(spec)
 
@@ -1721,17 +1719,17 @@ class Nipap:
             prefix_attr['id'] = 'id'
             prefix_attr['prefix'] = 'prefix'
             prefix_attr['description'] = 'description'
-            prefix_attr['pool'] = 'pool.name'
             prefix_attr['pool_id'] = 'pool.id'
+            prefix_attr['pool_name'] = 'pool.name'
             prefix_attr['family'] = 'family'
             prefix_attr['comment'] = 'comment'
             prefix_attr['type'] = 'type'
             prefix_attr['node'] = 'node'
             prefix_attr['country'] = 'country'
             prefix_attr['order_id'] = 'order_id'
-            prefix_attr['vrf'] = 'vrf.vrf'
-            prefix_attr['vrf_name'] = 'vrf.name'
             prefix_attr['vrf_id'] = 'vrf.id'
+            prefix_attr['vrf_rt'] = 'vrf.rt'
+            prefix_attr['vrf_name'] = 'vrf.name'
             prefix_attr['external_key'] = 'external_key'
             prefix_attr['authoritative_source'] = 'authoritative_source'
             prefix_attr['alarm_priority'] = 'alarm_priority'
@@ -1822,23 +1820,22 @@ class Nipap:
 
         # Handle Pool - find correct one and remove bad pool keys
         pool = None
-        if 'pool_id' in attr or 'pool' in attr:
+        if 'pool_id' in attr or 'pool_name' in attr:
             if 'pool_id' in attr:
                 pool = self._get_pool(auth, { 'id': attr['pool_id'] })
-                del(attr['pool_id'])
             else:
-                pool = self._get_pool(auth, { 'name': attr['pool'] })
-                del(attr['pool'])
+                pool = self._get_pool(auth, { 'name': attr['pool_name'] })
+                del(attr['pool_name'])
 
-            attr['pool'] = pool['id']
+            attr['pool_id'] = pool['id']
 
         # Handle VRF - find the correct one and remove bad VRF keys.
         vrf = self._get_vrf(auth, attr)
-        if 'vrf_id' in attr:
-            del(attr['vrf_id'])
+        if 'vrf_rt' in attr:
+            del(attr['vrf_rt'])
         if 'vrf_name' in attr:
             del(attr['vrf_name'])
-        attr['vrf'] = vrf['id']
+        attr['vrf_id'] = vrf['id']
 
         attr['authoritative_source'] = auth.authoritative_source
 
@@ -1865,8 +1862,8 @@ class Nipap:
         req_attr = [ 'prefix', 'authoritative_source' ]
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
-            'comment', 'pool', 'node', 'type', 'country',
-            'order_id', 'vrf', 'alarm_priority', 'monitor', 'external_key' ]
+            'comment', 'pool_id', 'node', 'type', 'country',
+            'order_id', 'vrf_id', 'alarm_priority', 'monitor', 'external_key' ]
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('host' not in attr):
             raise NipapMissingInputError('Either description or host must be specified.')
@@ -1879,10 +1876,10 @@ class Nipap:
 
         # write to audit table
         audit_params = {
-            'vrf': vrf['id'],
-            'vrf_vrf': vrf['vrf'],
+            'vrf_id': vrf['id'],
+            'vrf_rt': vrf['rt'],
             'vrf_name': vrf['name'],
-            'prefix': prefix_id,
+            'prefix_id': prefix_id,
             'prefix_prefix': attr['prefix'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
@@ -1895,7 +1892,7 @@ class Nipap:
 
         if pool is not None:
             audit_params = {
-                'pool': pool['id'],
+                'pool_id': pool['id'],
                 'pool_name': pool['name'],
                 'description': 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
             }
@@ -1928,7 +1925,7 @@ class Nipap:
 
         # Handle Pool - find correct one and remove bad pool keys
         pool = None
-        if 'pool_id' in attr or 'pool' in attr:
+        if 'pool_id' in attr or 'pool_name' in attr:
             if 'pool_id' in attr:
                 if attr['pool_id'] is None:
                     pool = {
@@ -1938,9 +1935,8 @@ class Nipap:
                 else:
                     pool = self._get_pool(auth, { 'id': attr['pool_id'] })
 
-                del(attr['pool_id'])
             else:
-                if attr['pool'] is None:
+                if attr['pool_name'] is None:
                     pool = {
                         'id': None,
                         'name': None
@@ -1948,7 +1944,7 @@ class Nipap:
                 else:
                     pool = self._get_pool(auth, { 'name': attr['pool'] })
 
-            attr['pool'] = pool['id']
+            attr['pool_id'] = pool['id']
 
         else:
             pool = {
@@ -1958,16 +1954,16 @@ class Nipap:
 
         # Handle VRF - find the correct one and remove bad VRF keys.
         vrf = self._get_vrf(auth, attr)
-        if 'vrf_id' in attr:
-            del(attr['vrf_id'])
+        if 'vrf_rt' in attr:
+            del(attr['vrf_rt'])
         if 'vrf_name' in attr:
             del(attr['vrf_name'])
-        attr['vrf'] = vrf['id']
+        attr['vrf_id'] = vrf['id']
 
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
-            'comment', 'pool', 'node', 'type', 'country',
-            'order_id', 'vrf', 'alarm_priority', 'monitor',
+            'comment', 'pool_id', 'node', 'type', 'country',
+            'order_id', 'vrf_id', 'alarm_priority', 'monitor',
             'external_key' ]
 
         self._check_attr(attr, [], allowed_attr)
@@ -1987,16 +1983,16 @@ class Nipap:
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'vrf_vrf': vrf['vrf'],
-            'vrf_name': vrf['name'],
-            'vrf': vrf['id']
+            'vrf_id': vrf['id'],
+            'vrf_rt': vrf['rt'],
+            'vrf_name': vrf['name']
         }
 
         for p in prefixes:
-            audit_params['vrf'] = p['vrf_id']
+            audit_params['vrf_id'] = p['vrf_id']
+            audit_params['vrf_rt'] = p['vrf_rt']
             audit_params['vrf_name'] = p['vrf_name'],
-            audit_params['vrf_vrf'] = p['vrf']
-            audit_params['prefix'] = p['id']
+            audit_params['prefix_id'] = p['id']
             audit_params['prefix_prefix'] = p['prefix']
             audit_params['description'] = 'Edited prefix %s attr: %s' % (p['prefix'], str(attr))
             sql, params = self._sql_expand_insert(audit_params)
@@ -2010,12 +2006,12 @@ class Nipap:
                     continue
 
                 audit_params2 = {
-                    'vrf': p['vrf_id'],
-                    'vrf_name': p['vrf_name'],
-                    'vrf_vrf': p['vrf'],
-                    'prefix': p['id'],
+                    'prefix_id': p['id'],
                     'prefix_prefix': p['prefix'],
-                    'pool': pool['id'],
+                    'vrf_id': p['vrf_id'],
+                    'vrf_rt': p['vrf_rt'],
+                    'vrf_name': p['vrf_name'],
+                    'pool_id': pool['id'],
                     'pool_name': pool['name'],
                     'username': auth.username,
                     'authenticated_as': auth.authenticated_as,
@@ -2166,9 +2162,9 @@ class Nipap:
 
         damp = 'SELECT array_agg((prefix::text)::inet) FROM (' + sql_prefix + ') AS a'
 
-        sql = """SELECT * FROM find_free_prefix(%(vrf)s, (""" + damp + """), %(prefix_length)s, %(max_result)s) AS prefix"""
+        sql = """SELECT * FROM find_free_prefix(%(vrf_id)s, (""" + damp + """), %(prefix_length)s, %(max_result)s) AS prefix"""
 
-        params['vrf'] = vrf['id']
+        params['vrf_id'] = vrf['id']
         params['prefixes'] = prefixes
         params['prefix_length'] = wpl
         params['max_result'] = args['count']
@@ -2211,8 +2207,12 @@ class Nipap:
 
         sql = """SELECT
             inp.id,
-            vrf.vrf AS vrf,
-            vrf.id AS vrf_id,
+            CASE
+                WHEN vrf.id = 0
+                    THEN NULL
+                ELSE vrf.id
+            END AS vrf_id,
+            vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,
             family(prefix) AS family,
             inp.prefix,
@@ -2220,8 +2220,8 @@ class Nipap:
             inp.description,
             inp.node,
             inp.comment,
-            pool.name AS pool,
             pool.id AS pool_id,
+            pool.name AS pool_name,
             inp.type,
             inp.indent,
             inp.country,
@@ -2231,9 +2231,9 @@ class Nipap:
             inp.alarm_priority,
             inp.monitor
             FROM ip_net_plan inp
-            JOIN ip_net_vrf vrf ON (inp.vrf = vrf.id)
-            LEFT JOIN ip_net_pool pool ON (inp.pool = pool.id) %s
-            ORDER BY prefix""" % where
+            JOIN ip_net_vrf vrf ON (inp.vrf_id = vrf.id)
+            LEFT JOIN ip_net_pool pool ON (inp.pool_id = pool.id) %s
+            ORDER BY vrf.rt NULLS FIRST, prefix""" % where
 
         self._execute(sql, params)
 
@@ -2305,11 +2305,11 @@ class Nipap:
             'authoritative_source': auth.authoritative_source
         }
         for p in prefixes:
-            audit_params['prefix'] = p['id']
+            audit_params['prefix_id'] = p['id']
             audit_params['prefix_prefix'] = p['prefix']
             audit_params['description'] = 'Removed prefix %s' % p['prefix']
-            audit_params['vrf'] = p['vrf_id']
-            audit_params['vrf_vrf'] = p['vrf']
+            audit_params['vrf_id'] = p['vrf_id']
+            audit_params['vrf_rt'] = p['vrf_rt']
             audit_params['vrf_name'] = p['vrf_name']
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -2317,9 +2317,9 @@ class Nipap:
             if p['pool'] is not None:
                 pool = self._get_pool(auth, { 'id': p['pool'] })
                 audit_params2 = {
-                    'pool': pool['id'],
+                    'pool_id': pool['id'],
                     'pool_name': pool['name'],
-                    'prefix': p['id'],
+                    'prefix_id': p['id'],
                     'prefix_prefix': p['prefix'],
                     'description': 'Prefix %s removed from pool %s' % (p['prefix'], pool['name']),
                     'username': auth.username,
@@ -2527,8 +2527,12 @@ class Nipap:
         sql = """
     SELECT
         id,
-        vrf_id,
-        vrf,
+        CASE
+            WHEN vrf_id = 0
+                THEN NULL
+            ELSE vrf_id
+        END AS vrf_id,
+        vrf_rt,
         vrf_name,
         family,
         display,
@@ -2539,8 +2543,8 @@ class Nipap:
         description,
         comment,
         node,
-        pool,
         pool_id,
+        pool_name,
         type,
         indent,
         country,
@@ -2568,8 +2572,8 @@ class Nipap:
             p1.description,
             p1.comment,
             p1.node,
-            pool.name AS pool,
             pool.id AS pool_id,
+            pool.name AS pool_name,
             p1.type,
             p1.indent,
             p1.country,
@@ -2579,7 +2583,7 @@ class Nipap:
             p1.alarm_priority,
             p1.monitor,
             vrf.id AS vrf_id,
-            vrf.vrf AS vrf,
+            vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,
             masklen(p1.prefix) AS prefix_length,
             family(p1.prefix) AS family,
@@ -2588,7 +2592,7 @@ class Nipap:
             FROM ip_net_plan AS p1
             JOIN ip_net_plan AS p2 ON
             (
-                (p1.vrf = p2.vrf)
+                (p1.vrf_id = p2.vrf_id)
                 AND
                 (
                     -- Join in the parents which were requested
@@ -2601,13 +2605,13 @@ class Nipap:
                     (iprange(p1.prefix) << iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
                 )
             )
-            JOIN ip_net_vrf AS vrf ON (p1.vrf = vrf.id)
-            LEFT JOIN ip_net_pool AS pool ON (p1.pool = pool.id)
+            JOIN ip_net_vrf AS vrf ON (p1.vrf_id = vrf.id)
+            LEFT JOIN ip_net_pool AS pool ON (p1.pool_id = pool.id)
             WHERE p2.prefix IN (
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
                 ORDER BY prefix
                 LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
-            ) ORDER BY p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf NULLS FIRST, prefix"
+            ) ORDER BY p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf_rt NULLS FIRST, prefix"
 
         self._execute(sql, opt)
 

@@ -455,8 +455,10 @@ tbody.listing > tr:hover {
 }
 
 .preflist_vrf_panel {
-	width: 100px;
+	width: 150px;
 	display: table-cell;
+	font-size: 14px;
+	font-weight: bold;
 }
 
 .preflist_prefix_panel {

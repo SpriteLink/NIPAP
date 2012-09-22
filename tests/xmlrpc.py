@@ -60,10 +60,10 @@ class NipapXmlTest(unittest.TestCase):
         """ Add a VRF and verify result in database
         """
         attr = {}
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute vrf'):
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute rt'):
             s.add_vrf({ 'auth': ad, 'attr': attr })
 
-        attr['vrf'] = '123:456'
+        attr['rt'] = '123:456'
         with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute name'):
             s.add_vrf({ 'auth': ad, 'attr': attr })
         attr['name'] = 'test'
@@ -73,16 +73,9 @@ class NipapXmlTest(unittest.TestCase):
 
         self.assertGreater(attr['id'], 0)
 
-        expected = [{
-            'id': 0,
-            'name': None,
-            'vrf': None,
-            'description': None
-            }]
-        expected.append(attr)
-        self.assertEqual(s.list_vrf({ 'auth': ad, 'vrf': {} }), expected)
+        self.assertEqual(s.list_vrf({ 'auth': ad, 'vrf': {} }), [ attr, ])
 
-        attr['vrf'] = '123:abc'
+        attr['rt'] = '123:abc'
         with self.assertRaisesRegexp(xmlrpclib.Fault, '.'): # TODO: specify exception string
             s.add_vrf({ 'auth': ad, 'attr': attr })
 
@@ -92,11 +85,11 @@ class NipapXmlTest(unittest.TestCase):
         """ Edit VRF and verify the change
         """
         attr = {
-            'vrf': '65000:123',
+            'rt': '65000:123',
             'name': '65k:123',
             'description': 'VRF 65000:123'
         }
-        spec = { 'vrf': '65000:123' }
+        spec = { 'rt': '65000:123' }
         s.add_vrf({ 'auth': ad, 'attr': attr })
 
         # omitting VRF spec
@@ -109,7 +102,7 @@ class NipapXmlTest(unittest.TestCase):
 
         # specifying too many attributes in spec
         with self.assertRaisesRegexp(xmlrpclib.Fault, 'specification contains too many keys'):
-            s.edit_vrf({ 'auth': ad, 'vrf': { 'vrf': '65000:123', 'name': '65k:123' }, 'attr': {} })
+            s.edit_vrf({ 'auth': ad, 'vrf': { 'rt': '65000:123', 'name': '65k:123' }, 'attr': {} })
 
         # test changing ID
         with self.assertRaisesRegexp(xmlrpclib.Fault, 'extraneous attribute'):
@@ -123,13 +116,13 @@ class NipapXmlTest(unittest.TestCase):
         self.assertEqual(res, attr, 'VRF changed after empty edit_vrf operation')
 
         # valid change
-        attr['vrf'] = '65000:1234'
+        attr['rt'] = '65000:1234'
         attr['name'] = '65k:1234'
         attr['description'] = 'VRF 65000:1234'
         s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': attr })
 
         # verify result of valid change
-        res = s.list_vrf({ 'auth': ad, 'vrf': { 'vrf': attr['vrf'] } })
+        res = s.list_vrf({ 'auth': ad, 'vrf': { 'rt': attr['rt'] } })
         self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
         res = res[0]
         self.assertEqual(res, attr, 'VRF change incorrect')
@@ -142,7 +135,7 @@ class NipapXmlTest(unittest.TestCase):
 
         # add VRF
         attr = {
-            'vrf': '65000:1235',
+            'rt': '65000:1235',
             'name': '65k:1235',
             'description': 'Virtual Routing and Forwarding instance 65000:123'
         }
@@ -151,8 +144,8 @@ class NipapXmlTest(unittest.TestCase):
         # equal match
         q = {
             'operator': 'equals',
-            'val1': 'vrf',
-            'val2': attr['vrf']
+            'val1': 'rt',
+            'val2': attr['rt']
         }
         res = s.search_vrf({ 'auth': ad, 'query': q })
         self.assertEquals(res['result'], [ attr, ], 'Search result from equal match did not match')
@@ -206,11 +199,11 @@ class NipapXmlTest(unittest.TestCase):
                 'monitor': None,
                 'node': None,
                 'order_id': None,
-                'pool': None,
+                'pool_name': None,
                 'pool_id': None,
-                'vrf': None,
+                'vrf_rt': None,
                 'vrf_name': None,
-                'vrf_id': 0
+                'vrf_id': None
             }
         expected.update(attr)
         self.assertEqual(s.list_prefix({ 'auth': ad }), [expected])
@@ -253,16 +246,16 @@ class NipapXmlTest(unittest.TestCase):
                 'monitor': None,
                 'node': None,
                 'order_id': None,
-                'pool': None,
                 'pool_id': None,
-                'vrf': None,
-                'vrf_name': None,
-                'vrf_id': 0
+                'pool_name': None,
+                'vrf_id': None,
+                'vrf_rt': None,
+                'vrf_name': None
             }
 
         # add VRF
         vrf_attr = {
-            'vrf': '123:4567',
+            'rt': '123:4567',
             'name': 'test_prefix_add_vrf1',
         }
         vrf_attr['id'] = s.add_vrf({ 'auth': ad, 'attr': vrf_attr })
@@ -275,7 +268,7 @@ class NipapXmlTest(unittest.TestCase):
             'description': 'Test prefix 1.3.3.0/24 in vrf 123:4567'
         }
         expected['id'] = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr })
-        expected['vrf'] = vrf_attr['vrf']
+        expected['vrf_rt'] = vrf_attr['rt']
         expected['vrf_name'] = vrf_attr['name']
         expected['display_prefix'] = '1.3.3.0/24'
         expected['indent'] = 0
@@ -286,7 +279,7 @@ class NipapXmlTest(unittest.TestCase):
 
         # add prefix to VRF by specifying VRF
         vrf_pref_attr = {
-            'vrf': vrf_attr['vrf'],
+            'vrf_rt': vrf_attr['rt'],
             'type': 'host',
             'description': 'Test host 1.3.3.1/32 in vrf 123:4567'
         }
@@ -308,7 +301,7 @@ class NipapXmlTest(unittest.TestCase):
             'description': 'Test host 1.3.3.2/32 in vrf 123:4567'
         }
         expected['id'] = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr, 'args': args })
-        expected['vrf'] = vrf_attr['vrf']
+        expected['vrf_rt'] = vrf_attr['rt']
         expected['vrf_id'] = vrf_attr['id']
         expected['display_prefix'] = '1.3.3.2/24'
         expected['prefix'] = '1.3.3.2/32'
@@ -359,14 +352,14 @@ class NipapXmlTest(unittest.TestCase):
                         'node': None,
                         'description': 'FOO',
                         'order_id': None,
-                        'vrf': None,
-                        'vrf_id': 0,
-                        'pool': None,
+                        'vrf_id': None,
+                        'vrf_rt': None,
+                        'vrf_name': None,
                         'pool_id': None,
+                        'pool_name': None,
                         'alarm_priority': None,
                         'indent': 0,
                         'country': None,
-                        'vrf_name': None,
                         'display': True
                         }
                     ]

@@ -20,12 +20,13 @@
  *   0: No children
  *  >0: Has children
  */
-var prefix_list = Object();
+var prefix_list = new Object();
 var pool_list = new Object();
-var indent_head = Object();
+var indent_head = new Object();
+var selected_vrfs = new Object();
 
 // Object for storing statistics
-var stats = Object();
+var stats = new Object();
 
 // current options - mostly used for prefix addition on
 // the prefix add and pool edit pages.
