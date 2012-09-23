@@ -83,7 +83,8 @@ class PrefixController(BaseController):
             if request.params['prefix_vrf'].strip() == '':
                 c.prefix.vrf = None
             else:
-                c.prefix.vrf = request.params['prefix_vrf']
+                # TODO: handle non-existent VRF...
+                c.prefix.vrf = VRF.list({ 'rt': request.params['prefix_vrf'] })[0]
 
             if request.params.get('prefix_monitor') != None:
                 c.prefix.monitor = True

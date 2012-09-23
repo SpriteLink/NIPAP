@@ -757,7 +757,7 @@ class Nipap:
 
 
 
-    def _get_vrf(self, auth, spec):
+    def _get_vrf(self, auth, spec, prefix = 'vrf_'):
         """ Get a VRF based on prefix spec
 
             Shorthand function to reduce code in the functions below, since
@@ -770,12 +770,12 @@ class Nipap:
 
         # find VRF from attributes vrf, vrf_id or vrf_name
         vrf = []
-        if 'vrf_rt' in spec:
-            vrf = self.list_vrf(auth, { 'rt': spec['vrf_rt'] })
-        elif 'vrf_id' in spec:
-            vrf = self.list_vrf(auth, { 'id': spec['vrf_id'] })
-        elif 'vrf_name' in spec:
-            vrf = self.list_vrf(auth, { 'name': spec['vrf_name'] })
+        if prefix + 'id' in spec:
+            vrf = self.list_vrf(auth, { 'id': spec[prefix + 'id'] })
+        elif prefix + 'rt' in spec:
+            vrf = self.list_vrf(auth, { 'rt': spec[prefix + 'rt'] })
+        elif prefix + 'name' in spec:
+            vrf = self.list_vrf(auth, { 'name': spec[prefix + 'name'] })
         else:
             # no VRF specified - return the no-VRF VRF
             return { 'id': 0, 'rt': None, 'name': None }
@@ -1771,7 +1771,10 @@ class Nipap:
                         _operation_map[query['operator']] )
                         )
 
-            opt.append(query['val2'])
+            if query['val1'] == 'vrf_id' and query['val2'] == None:
+                opt.append('0')
+            else:
+                opt.append(query['val2'])
 
         return where, opt
 
@@ -1843,10 +1846,15 @@ class Nipap:
         if 'prefix' in attr:
             if 'from-pool' in args or 'from-prefix' in args:
                 raise NipapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
+
         else:
             if ('from-pool' not in args and 'from-prefix' not in args) or ('from-pool' in args and 'from-prefix' in args):
                 raise NipapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
-            res = self.find_free_prefix(auth, vrf, args)
+            if vrf['id'] == 0:
+                v = None
+            else:
+                v = vrf
+            res = self.find_free_prefix(auth, v, args)
             if res != []:
                 attr['prefix'] = res[0]
             else:
@@ -2164,7 +2172,9 @@ class Nipap:
 
         sql = """SELECT * FROM find_free_prefix(%(vrf_id)s, (""" + damp + """), %(prefix_length)s, %(max_result)s) AS prefix"""
 
-        params['vrf_id'] = vrf['id']
+        v = self._get_vrf(auth, vrf or {}, '')
+
+        params['vrf_id'] = v['id']
         params['prefixes'] = prefixes
         params['prefix_length'] = wpl
         params['max_result'] = args['count']

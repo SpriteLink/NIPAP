@@ -12,10 +12,10 @@
 		<div class="option">
 			<dl>
 				<dt>
-					VRF
+					RT
 				</dt>
 				<dd>
-					<input type="text" name="vrf" value="{%- if c.action == 'edit' -%}{{ c.edit_vrf.vrf or '' }}{%- endif -%}" class="tooltip" title="VRF id (e.g. 123:4567 or 192.0.2.12:345) of where the addresses reside.">
+					<input type="text" name="rt" value="{%- if c.action == 'edit' -%}{{ c.edit_vrf.rt or '' }}{%- endif -%}" class="tooltip" title="VRF RT (e.g. 123:4567 or 192.0.2.12:345).">
 				</dd>
 			</dl>
 		</div>

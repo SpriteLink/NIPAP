@@ -74,6 +74,7 @@ class XhrController(BaseController):
 
         if 'max_result' in request.params:
             search_options['max_result'] = request.params['max_result']
+
         if 'offset' in request.params:
             search_options['offset'] = request.params['offset']
 
@@ -93,9 +94,9 @@ class XhrController(BaseController):
         """
 
         v = VRF()
-        if 'vrf' in request.params:
-            if request.params['vrf'].strip() != '':
-                v.vrf = request.params['vrf'].strip()
+        if 'rt' in request.params:
+            if request.params['rt'].strip() != '':
+                v.rt = request.params['rt'].strip()
         if 'name' in request.params:
             if request.params['name'].strip() != '':
                 v.name = request.params['name'].strip()
@@ -120,16 +121,16 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        if 'vrf' in request.params:
-            if request.params['vrf'].strip() != '':
-                v.vrf = request.params['vrf'].strip()
+        if 'rt' in request.params:
+            if request.params['rt'].strip() != '':
+                v.rt = request.params['rt'].strip()
             else:
-                v.vrf = None
+                v.rt = None
         if 'name' in request.params:
             if request.params['name'].strip() != '':
                 v.name = request.params['name'].strip()
             else:
-                v.vrf = None
+                v.name = None
         if 'description' in request.params:
             v.description = request.params['description']
 
@@ -420,7 +421,10 @@ class XhrController(BaseController):
         if 'vrf' in request.params:
 
             try:
-                p.vrf = VRF.get(int(request.params['vrf']))
+                if request.params['vrf'] is None or len(request.params['vrf']) == 0:
+                    p.vrf = None
+                else:
+                    p.vrf = VRF.get(int(request.params['vrf']))
             except ValueError:
                 return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.params['vrf']})
             except NipapError, e:
@@ -555,7 +559,10 @@ class XhrController(BaseController):
             if 'vrf' in request.params:
 
                 try:
-                    p.vrf = VRF.get(int(request.params['vrf']))
+                    if request.params['vrf'] is None or len(request.params['vrf']) == 0:
+                        p.vrf = None
+                    else:
+                        p.vrf = VRF.get(int(request.params['vrf']))
                 except ValueError:
                     return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.params['vrf']})
                 except NipapError, e:
@@ -610,7 +617,7 @@ class NipapJSONEncoder(json.JSONEncoder):
         if isinstance(obj, VRF):
             return {
                 'id': obj.id,
-                'vrf': obj.vrf,
+                'rt': obj.rt,
                 'name': obj.name,
                 'description': obj.description
             }
@@ -635,7 +642,7 @@ class NipapJSONEncoder(json.JSONEncoder):
             if obj.vrf is None:
                 vrf = None
             else:
-                vrf = obj.vrf.vrf
+                vrf = obj.vrf.rt
 
             return {
                 'id': obj.id,

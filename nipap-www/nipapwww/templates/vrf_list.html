@@ -9,7 +9,7 @@
 				$(this).click(function(e) {
 					var tr = $(this).parent().parent();
 					var vrf_id = tr.attr('data-vrf-id');
-					var vrf_vrf = tr.children('td:first').text();
+					var vrf_rt = tr.children('td:first').text();
 					var menu = getPopupMenu($(this), 'VRF', vrf_id);
 
 					menu.append('<a href="/vrf/edit/' + vrf_id + '">Edit</a>');
@@ -17,7 +17,7 @@
 
 					$('#vrf_remove' + vrf_id).click(function(e) {
 						e.preventDefault();
-						var dialog = showDialogYesNo('Really remove VRF?', 'Are you sure you want to remove the VRF "' + vrf_vrf + '"?',
+						var dialog = showDialogYesNo('Really remove VRF?', 'Are you sure you want to remove the VRF "' + vrf_rt + '"?',
 						function () {
 							var data = {
 								'id': vrf_id
@@ -70,13 +70,13 @@
 <table style="border-spacing: 0px; width: 100%;">
 	<thead class="listing">
 		<tr>
-			<th style="padding-left: 30px;">VRF</th><th>Name</th><th>Description</th><th></th>
+			<th style="padding-left: 30px;">RT</th><th>Name</th><th>Description</th><th></th>
 		</tr>
 	</thead>
 	<tbody class="listing">
 		{% for vrf in c.vrfs %}
 		<tr id="vrf_row{{ vrf.id }}" data-vrf-id="{{vrf.id}}">
-			<td style="padding-left: 30px;">{{ vrf.vrf }}</a></td>
+			<td style="padding-left: 30px;">{{ vrf.rt }}</a></td>
 			<td>{{ vrf.name or '' }}</td>
 			<td>{{ vrf.description }}</td>
 			<td>

@@ -38,10 +38,11 @@ class VrfController(BaseController):
         if 'action' in request.params:
 
             if request.params['action'] == 'edit':
-                if request.params['vrf'].strip() == '':
-                    c.edit_vrf.vrf = None
+                if request.params['rt'].strip() == '':
+                    c.edit_vrf.rt = None
                 else:
-                    c.edit_vrf.vrf = request.params['vrf'].strip()
+                    c.edit_vrf.rt = request.params['rt'].strip()
+
                 if request.params['name'].strip() == '':
                     c.edit_vrf.name = None
                 else:
@@ -62,8 +63,8 @@ class VrfController(BaseController):
         if 'action' in request.params:
             if request.params['action'] == 'add':
                 v = VRF()
-                if request.params['vrf'].strip() != '':
-                    v.vrf = request.params['vrf']
+                if request.params['rt'].strip() != '':
+                    v.rt = request.params['rt']
                 if request.params['name'].strip() != '':
                     v.name = request.params['name']
                 v.description = request.params['description']

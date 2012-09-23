@@ -801,11 +801,10 @@ function clearVRFSelectorSearch() {
 
 	// empty search result
 	$('#vrf_selector_result').empty();
-	$('#vrf_selector_result').append('<a href="#" id="vrf_selector_none" data-vrf_id="0">No VRF</a>');
+	$('#vrf_selector_result').append('<a href="#" id="vrf_selector_none" data-vrf_id="">No VRF</a>');
 	$('#vrf_selector_none').click(curVRFCallback);
 
 }
-
 
 /*
  * Receive VRF selector search result
@@ -838,7 +837,7 @@ function receiveVRFSelector(result) {
 	if (result.result.length > 0) {
 		for (i = 0; i < result.result.length; i++) {
 			var vrf = result.result[i];
-			vrf_cont.append('<a href="#" id="vrf_selector_' + vrf.id + '" data-vrf_id="' + vrf.id + '" data-vrf="' + vrf.vrf + '">' + vrf.vrf + '</a>');
+			vrf_cont.append('<a href="#" id="vrf_selector_' + vrf.id + '" data-vrf_id="' + vrf.id + '" data-vrf="' + vrf.rt + '">' + vrf.rt + '</a>');
 			// set click callback on VRF to the one currently set globally...
 			$('#vrf_selector_' + vrf.id).click(curVRFCallback);
 		}
@@ -856,7 +855,7 @@ function clickPrefixVRFSelector(evt) {
 	// update VRF input field with selected VRF
 	var selected_vrf = evt.target.getAttribute('data-vrf_id');
 	$('input[name="prefix_vrf"]').val(selected_vrf);
-	if (selected_vrf == '0') {
+	if (selected_vrf == '') {
 		$('input[name="prefix_vrf_btn"]').val('None');
 	} else {
 		$('input[name="prefix_vrf_btn"]').val(evt.target.getAttribute('data-vrf'));
@@ -873,7 +872,7 @@ function clickPrefixVRFSelector(evt) {
 function clickFilterVRFSelector(evt) {
 
 	var vrf = evt.target.getAttribute('data-vrf_id');
-	if (vrf == '0') {
+	if (vrf == '') {
 		var disp_vrf = 'no VRF';
 	} else {
 		var disp_vrf = evt.target.getAttribute('data-vrf');

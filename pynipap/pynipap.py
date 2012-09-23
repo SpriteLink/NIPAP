@@ -272,8 +272,8 @@ class VRF(Pynipap):
     """ A VRF.
     """
 
-    vrf = None
-    """ The VRF ID, as a string (x:y or x.x.x.x:y).
+    rt = None
+    """ The VRF RT, as a string (x:y or x.x.x.x:y).
     """
     name = None
     """ The name of the VRF, as a string.
@@ -315,7 +315,7 @@ class VRF(Pynipap):
 
         v = VRF()
         v.id = parm['id']
-        v.vrf = parm['vrf']
+        v.rt = parm['rt']
         v.name = parm['name']
         v.description = parm['description']
         return v
@@ -399,7 +399,7 @@ class VRF(Pynipap):
         """
 
         data = {
-            'vrf': self.vrf,
+            'rt': self.rt,
             'name': self.name,
             'description': self.description
         }
@@ -682,19 +682,23 @@ class Prefix(Pynipap):
         """ Finds a free prefix.
         """
 
+        q = {
+            'args': args,
+            'auth': AuthOptions().options
+        }
+
         # sanity checks
-        if not isinstance(vrf, VRF):
+        if isinstance(vrf, VRF):
+            q['vrf'] = { 'id': vrf.id }
+        elif vrf is None:
+            q['vrf'] = None
+        else:
             raise NipapValueError('vrf parameter must be instance of VRF class')
 
         # run XML-RPC query
         xmlrpc = XMLRPCConnection()
         try:
-            find_res = xmlrpc.connection.find_free_prefix(
-                {
-                    'vrf': { 'id': vrf.id },
-                    'args': args,
-                    'auth': AuthOptions().options
-                })
+            find_res = xmlrpc.connection.find_free_prefix(q)
         except xmlrpclib.Fault, f:
             raise _fault_to_exception(f)
         pass
