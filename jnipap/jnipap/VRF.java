@@ -16,7 +16,7 @@ import jnipap.Connection;
 public class VRF extends Jnipap {
 
 	// VRF attributes
-	public String vrf;
+	public String rt;
 	public String name;
 	public String description;
 
@@ -29,7 +29,7 @@ public class VRF extends Jnipap {
 
 		// create hashmap of VRF attributes
 		HashMap attr = new HashMap();
-		attr.put("vrf", this.vrf);
+		attr.put("rt", this.rt);
 		attr.put("name", this.name);
 		attr.put("description", this.description);
 
@@ -104,7 +104,7 @@ public class VRF extends Jnipap {
 
 		// Return string representation of a VRF
 		return getClass().getName() + " id: " + this.id +
-			" vrf: " + this.vrf +
+			" rt: " + this.rt +
 			" name: " + this.name +
 			" desc: " + this.description;
 
@@ -266,7 +266,7 @@ public class VRF extends Jnipap {
 		VRF vrf = new VRF();
 
 		vrf.id = (Integer)input.get("id");
-		vrf.vrf = (String)input.get("vrf");
+		vrf.rt = (String)input.get("rt");
 		vrf.name = (String)input.get("name");
 		vrf.description = (String)input.get("description");
 

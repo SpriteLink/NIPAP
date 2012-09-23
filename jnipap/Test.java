@@ -9,6 +9,7 @@ import org.apache.xmlrpc.XmlRpcException;
 import jnipap.VRF;
 import jnipap.Prefix;
 import jnipap.Connection;
+import jnipap.AddPrefixOptions;
 
 public class Test {
 
@@ -26,22 +27,22 @@ public class Test {
 			conn.authoritative_source = "test";
 
 			// fetch a VRF
-			VRF v = VRF.get(conn, new Integer(337));
-			System.out.println("Found VRF " + v.vrf);
+			VRF v = VRF.get(conn, new Integer(151));
+			System.out.println("Found VRF " + v.rt);
 
 			// Search prefixes in VRF
 			HashMap spec = new HashMap();
-			spec.put("vrf_id", new Integer(337));
+			spec.put("vrf_id", new Integer(151));
 			List plist = Prefix.list(conn, spec);
 			for (int i = 0; i < plist.size(); i++) {
 				System.out.println(plist.get(i).toString());
 			}
 
 			// Add prefix from prefix
-			Prefix f_pref = Prefix.get(new Integer(601));
-			prefix n_pref = new Prefix();
+			Prefix f_pref = Prefix.get(conn, new Integer(231));
+			Prefix n_pref = new Prefix();
 			AddPrefixOptions opts = new AddPrefixOptions();
-			opts.put("prefix_length", 27);
+			opts.put("prefix_length", new Integer(27));
 			n_pref.type = "assignment";
 			n_pref.description = "Java-jox";
 			n_pref.country = "SE";

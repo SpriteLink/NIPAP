@@ -295,7 +295,7 @@ public class API {
 
 		OVRF sqlobj = new OVRF();
 		sqlobj.id = v.id;
-		sqlobj.vrf = v.vrf;
+		sqlobj.rt = v.rt;
 		sqlobj.name = v.name;
 		sqlobj.description = v.description;
 

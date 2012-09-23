@@ -32,7 +32,7 @@ public class OVRF extends jnipap.VRF implements SQLData {
 		
 		// Read data from stream
 		id = Helpers.integerOrNull((BigDecimal)stream.readBigDecimal());
-		vrf = stream.readString();
+		rt = stream.readString();
 		name = stream.readString();
 		description = stream.readString();
 
@@ -42,7 +42,7 @@ public class OVRF extends jnipap.VRF implements SQLData {
 
 		// Write data to stream
 		stream.writeBigDecimal(Helpers.bigDecOrNull(id));
-		stream.writeString(Helpers.strOrNull(vrf));
+		stream.writeString(Helpers.strOrNull(rt));
 		stream.writeString(Helpers.strOrNull(name));
 		stream.writeString(Helpers.strOrNull(description));
 
@@ -66,14 +66,14 @@ public class OVRF extends jnipap.VRF implements SQLData {
 			return null;
 		}
 
-		OVRF s = new OVRF();
+		OVRF v = new OVRF();
 		Object[] val = input.getAttributes();
-		s.id = Helpers.integerOrNull((BigDecimal)val[0]);
-		s.vrf = (String)val[1];
-		s.name = (String)val[2];
-		s.description = (String)val[3];
+		v.id = Helpers.integerOrNull((BigDecimal)val[0]);
+		v.rt = (String)val[1];
+		v.name = (String)val[2];
+		v.description = (String)val[3];
 
-		return s;
+		return v;
 
 	}
 
