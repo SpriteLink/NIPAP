@@ -72,15 +72,15 @@ def get_vrf(arg = None, opts = None):
     if arg is None:
         # fetch default vrf
         try:
-            vrf_rd = cfg.get('global', 'default_vrf')
+            vrf_rt = cfg.get('global', 'default_vrf')
         except ConfigParser.NoOptionError:
             print >> sys.stderr, "Please define the default VRF in your .nipaprc"
             sys.exit(1)
     else:
-        vrf_rd = arg
+        vrf_rt = arg
 
     try:
-        vrf = VRF.list({ 'vrf': vrf_rd })[0]
+        vrf = VRF.list({ 'rt': vrf_rt })[0]
     except IndexError:
         vrf = False
 
@@ -137,7 +137,7 @@ def _expand_list_query(opts):
                     },
                 'val2': {
                         'operator': 'regex_match',
-                        'val1': 'vrf',
+                        'val1': 'rt',
                         'val2': '^123:2'
                     }
             }
@@ -271,7 +271,7 @@ def add_prefix(arg, opts):
 
     if 'vrf' in opts:
         try:
-            p.vrf = VRF.list({ 'vrf': opts['vrf'] })[0]
+            p.vrf = VRF.list({ 'rt': opts['vrf'] })[0]
         except IndexError:
             print >> sys.stderr, "Could not find VRF %s" % str(opts['vrf'])
             sys.exit(1)
@@ -316,7 +316,7 @@ def add_vrf(arg, opts):
     """
 
     v = VRF()
-    v.vrf = opts.get('vrf')
+    v.rt = opts.get('rt')
     v.name = opts.get('name')
     v.description = opts.get('description')
 
@@ -358,7 +358,7 @@ def view_vrf(arg, opts):
     """ View a single VRF
     """
 
-    res = VRF.list({ 'vrf': arg })
+    res = VRF.list({ 'rt': arg })
     if len(res) < 1:
         print >> sys.stderr, "VRF %s not found." % arg
         sys.exit(1)
@@ -367,7 +367,7 @@ def view_vrf(arg, opts):
 
     print "-- VRF"
     print "  %-12s : %d" % ("ID", v.id)
-    print "  %-12s : %s" % ("VRF", v.vrf)
+    print "  %-12s : %s" % ("RT", v.rt)
     print "  %-12s : %s" % ("Name", v.name)
     print "  %-12s : %s" % ("Description", v.description)
 
@@ -412,7 +412,7 @@ def view_prefix(arg, opts):
     if p.vrf is None:
         vrf = p.vrf
     else:
-        vrf = p.vrf.vrf
+        vrf = p.vrf.rt
 
     print  "-- Address "
     print "  %-15s : %s" % ("Prefix", p.prefix)
@@ -439,14 +439,14 @@ def remove_vrf(arg, opts):
     """ Remove VRF
     """
 
-    res = VRF.list({ 'name': arg })
+    res = VRF.list({ 'rt': arg })
     if len(res) < 1:
         print >> sys.stderr, "VRF %s not found." % arg
         sys.exit(1)
 
     v = res[0]
 
-    print "VRF: %s\nName: %s\nDescription: %s" % (v.vrf, v.name, v.description)
+    print "RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description)
     print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL IT'S ADDRESSES"
     res = raw_input("Do you really want to remove the VRF %s? [y/n]: " % v.vrf)
 
@@ -485,7 +485,7 @@ def remove_prefix(arg, opts):
 
     spec = { 'prefix': arg }
     if 'vrf' in opts:
-        spec['vrf'] = opts['vrf']
+        spec['vrf_rt'] = opts['vrf']
 
     res = Prefix.list(spec)
 
@@ -494,8 +494,12 @@ def remove_prefix(arg, opts):
         sys.exit(1)
 
     p = res[0]
+    if p.vrf is None:
+        vrf = None
+    else:
+        vrf = p.vrf.rt
 
-    res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, p.vrf))
+    res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, vrf))
 
     if res == 'y':
         p.remove()
@@ -512,15 +516,15 @@ def modify_vrf(arg, opts):
     """ Modify a VRF with the options set in opts
     """
 
-    res = VRF.list({ 'name': arg })
+    res = VRF.list({ 'rt': arg })
     if len(res) < 1:
         print >> sys.stderr, "VRF %s not found." % arg
         sys.exit(1)
 
     v = res[0]
 
-    if 'vrf' in opts:
-        v.vrf = opts['vrf']
+    if 'rt' in opts:
+        v.rt = opts['rt']
     if 'name' in opts:
         v.name = opts['name']
     if 'description' in opts:
@@ -528,7 +532,7 @@ def modify_vrf(arg, opts):
 
     v.save()
 
-    print "VRF %s saved." % v.vrf
+    print "VRF %s saved." % v.rt
 
 
 
@@ -566,7 +570,7 @@ def modify_prefix(arg, opts):
 
     spec = { 'prefix': arg }
     if 'vrf' in opts:
-        spec['vrf'] = opts['vrf']
+        spec['vrf_rt'] = opts['vrf']
 
     res = Prefix.list(spec)
     if len(res) == 0:
@@ -594,7 +598,7 @@ def modify_prefix(arg, opts):
 
     if 'vrf' in opts:
         try:
-            p.vrf = VRF.list({ 'vrf': opts['vrf'] })[0]
+            p.vrf = VRF.list({ 'rt': opts['vrf'] })[0]
         except IndexError:
             print >> sys.stderr, "VRF %s not found." % opts['vrf']
             sys.exit(1)
@@ -726,7 +730,7 @@ def complete_vrf(arg):
 
     res = VRF.search({
         'operator': 'regex_match',
-        'val1': 'vrf',
+        'val1': 'rt',
         'val2':  search_string
         })
 
@@ -1017,12 +1021,12 @@ cmds = {
                     'type': 'command',
                     'exec': add_vrf,
                     'params': {
-                        'vrf': {
+                        'rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
-                                'description': 'VRF'
+                                'description': 'VRF RT'
                             }
                         },
                         'name': {
@@ -1050,12 +1054,12 @@ cmds = {
                     'type': 'command',
                     'exec': list_vrf,
                     'params': {
-                        'vrf': {
+                        'rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
-                                'description': 'VRF',
+                                'description': 'VRF RT',
                                 'complete': complete_vrf,
                             }
                         },
@@ -1117,12 +1121,12 @@ cmds = {
                             'type': 'command',
                             'exec': modify_vrf,
                             'params': {
-                                'vrf': {
+                                'rt': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
                                         'content_type': unicode,
-                                        'description': 'VRF'
+                                        'description': 'VRF RT'
                                     }
                                 },
                                 'name': {
