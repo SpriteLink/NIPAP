@@ -53,7 +53,7 @@ def setup_connection():
 
 
 
-def get_vrf(arg = None, opts = None):
+def get_vrf(arg = None, opts = None, abort = False):
     """ Returns VRF to work in
 
         Returns a pynipap.Schema object representing the VRF we are working
@@ -74,15 +74,25 @@ def get_vrf(arg = None, opts = None):
         try:
             vrf_rt = cfg.get('global', 'default_vrf')
         except ConfigParser.NoOptionError:
-            print >> sys.stderr, "Please define the default VRF in your .nipaprc"
+            print >> sys.stderr, "Please define a default VRF in your .nipaprc"
             sys.exit(1)
     else:
         vrf_rt = arg
 
-    try:
-        vrf = VRF.list({ 'rt': vrf_rt })[0]
-    except IndexError:
-        vrf = False
+    if vrf_rt == 'none':
+        vrf = VRF()
+    elif vrf_rt == 'all':
+        vrf = VRF()
+        vrf.rt = 'all'
+    else:
+        try:
+            vrf = VRF.list({ 'rt': vrf_rt })[0]
+        except IndexError:
+            if abort:
+                print >> sys.stderr, "VRF %s not found." % str(vrf_rt)
+                sys.exit(1)
+            else:
+                vrf = False
 
     return vrf
 
@@ -189,7 +199,7 @@ def list_pool(arg, opts):
         print "No matching pools found"
 
     for p in res['result']:
-        if len(p.description) > 38:
+        if len(str(p.description)) > 38:
             desc = p.description[0:34] + "..."
         else:
             desc = p.description
@@ -218,7 +228,7 @@ def list_vrf(arg, opts):
             desc = v.description[0:37] + "..."
         else:
             desc = v.description
-        print "%-16s %-22s %-40s" % (v.vrf, v.name, desc)
+        print "%-16s %-22s %-40s" % (v.rt, v.name, desc)
 
 
 
@@ -231,7 +241,18 @@ def list_prefix(arg, opts):
     if arg is None:
         arg = ''
 
-    res = Prefix.smart_search(arg, { 'parents_depth': -1, 'max_result': 1200 })
+    v = get_vrf(opts.get('vrf'), abort=True)
+
+    if v.rt == 'all':
+        vrf_q = None
+    else:
+        vrf_q = {
+            'operator': 'equals',
+            'val1': 'vrf_rt',
+            'val2': v.rt
+        }
+
+    res = Prefix.smart_search(arg, { 'parents_depth': -1, 'max_result': 1200 }, vrf_q)
     if len(res['result']) == 0:
         print "No addresses matching '%s' found." % arg
         return
@@ -270,11 +291,12 @@ def add_prefix(arg, opts):
     p.monitor = _str_to_bool(opts.get('monitor'))
 
     if 'vrf' in opts:
-        try:
-            p.vrf = VRF.list({ 'rt': opts['vrf'] })[0]
-        except IndexError:
-            print >> sys.stderr, "Could not find VRF %s" % str(opts['vrf'])
-            sys.exit(1)
+        if opts['vrf'] != 'none':
+            try:
+                p.vrf = VRF.list({ 'rt': opts['vrf'] })[0]
+            except IndexError:
+                print >> sys.stderr, "Could not find VRF %s" % str(opts['vrf'])
+                sys.exit(1)
 
     args = {}
     if 'from-pool' in opts:
@@ -307,7 +329,12 @@ def add_prefix(arg, opts):
         print >> sys.stderr, "Could not add prefix to NIPAP: %s" % e.message
         sys.exit(1)
 
-    print "Prefix %s added." % p.display_prefix
+    if p.vrf is None:
+        vrf_rt = 'none'
+    else:
+        vrf_rt = p.vrf.rt
+
+    print "Prefix %s added to VRF %s." % (p.display_prefix, vrf_rt)
 
 
 
@@ -326,7 +353,7 @@ def add_vrf(arg, opts):
         print >> sys.stderr, "Could not add VRF to NIPAP: %s" % e.message
         sys.exit(1)
 
-    print "Added VRF %s with id %d" % (v.vrf, v.id)
+    print "Added VRF %s with id %d" % (v.rt, v.id)
 
 
 
@@ -402,7 +429,21 @@ def view_prefix(arg, opts):
     """ View a single prefix.
     """
 
-    res = Prefix.search({ 'operator': 'equals', 'val1': 'prefix', 'val2': arg }, {})
+    q = { 'operator': 'equals', 'val1': 'prefix', 'val2': arg }
+
+    v = get_vrf(opts.get('vrf'), abort=True)
+    if v.rt != 'all':
+        q = {
+            'operator': 'and',
+            'val1': q,
+            'val2': {
+                'operator': 'equals',
+                'val1': 'vrf_rt',
+                'val2': v.rt
+            }
+        }
+
+    res = Prefix.search(q, {})
 
     if len(res['result']) == 0:
         print "Address %s not found." % arg
@@ -426,8 +467,7 @@ def view_prefix(arg, opts):
     print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
     print "  %-15s : %s" % ("Monitor", p.monitor)
     print "-- Comment"
-    print p.comment
-
+    print p.comment or ''
 
 
 
@@ -448,11 +488,11 @@ def remove_vrf(arg, opts):
 
     print "RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description)
     print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL IT'S ADDRESSES"
-    res = raw_input("Do you really want to remove the VRF %s? [y/n]: " % v.vrf)
+    res = raw_input("Do you really want to remove the VRF %s? [y/n]: " % v.rt)
 
     if res == 'y':
         s.remove()
-        print "VRF %s removed." % v.vrf
+        print "VRF %s removed." % v.rt
     else:
         print "Operation canceled."
 
@@ -484,8 +524,8 @@ def remove_prefix(arg, opts):
     """
 
     spec = { 'prefix': arg }
-    if 'vrf' in opts:
-        spec['vrf_rt'] = opts['vrf']
+    v = get_vrf(opts.get('vrf'), abort=True)
+    spec['vrf_rt'] = v.rt
 
     res = Prefix.list(spec)
 
@@ -569,12 +609,12 @@ def modify_prefix(arg, opts):
     """
 
     spec = { 'prefix': arg }
-    if 'vrf' in opts:
-        spec['vrf_rt'] = opts['vrf']
+    v = get_vrf(abort=True)
+    spec['vrf_rt'] = v.rt
 
     res = Prefix.list(spec)
     if len(res) == 0:
-        print >> sys.stderr, "Prefix %s not found in VRF %s." % (arg, opts.get('vrf'))
+        print >> sys.stderr, "Prefix %s not found in VRF %s." % (arg, v.rt)
         return
 
     p = res[0]
@@ -735,8 +775,30 @@ def complete_vrf(arg):
         })
 
     ret = []
+
     for v in res['result']:
-        ret.append(v.vrf)
+        ret.append(v.rt)
+    if re.match(search_string, 'none'):
+        ret.append('none')
+
+    return ret
+
+
+def complete_vrf_virtual(arg):
+    """ Returns list of matching VRFs
+
+        Includes "virtual" VRF 'all' which is used in search
+        operations
+    """
+
+    ret = complete_vrf(arg)
+
+    search_string = ''
+    if arg is not None:
+        search_string = '^%s' % arg
+
+    if re.match(search_string, 'all'):
+        ret.append('all')
 
     return ret
 
@@ -749,19 +811,6 @@ cmds = {
         'address': {
             'type': 'command',
             'params': {
-
-                # set VRF
-                'vrf': {
-                    'type': 'option',
-                    'argument': {
-                        'type': 'value',
-                        'content_type': unicode,
-                        'description': 'VRF',
-                        'complete': complete_vrf,
-                    },
-                    'exec_immediately': get_vrf
-                },
-
                 # add
                 'add': {
                     'type': 'command',
@@ -888,6 +937,17 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Prefix',
                     },
+                    'params': {
+                        'vrf': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'VRF',
+                                'complete': complete_vrf_virtual,
+                            },
+                        }
+                    }
                 },
 
                 # modify
@@ -899,6 +959,16 @@ cmds = {
                         'description': 'Prefix to edit',
                     },
                     'params': {
+                        'vrf': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'VRF',
+                                'complete': complete_vrf,
+                            },
+                            'exec_immediately': get_vrf
+                        },
                         'set': {
                             'type': 'command',
                             'exec': modify_prefix,
@@ -995,6 +1065,16 @@ cmds = {
                         'type': 'value',
                         'content_type': unicode,
                         'description': 'Remove address'
+                    },
+                    'params': {
+	                    'vrf': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_vrf,
+                            }
+                        },
                     }
                 },
 
@@ -1006,6 +1086,16 @@ cmds = {
                         'type': 'value',
                         'content_type': unicode,
                         'description': 'Address to view'
+                    },
+                    'params': {
+	                    'vrf': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_vrf,
+                            }
+                        },
                     }
                 }
             }
