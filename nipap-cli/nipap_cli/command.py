@@ -157,9 +157,11 @@ class Command:
                             self.params = None
 
                         # if the command is finished (there is an element after the argument) and
-                        # there is an exec_imemdiately-function, execute it now
+                        # there is an exec_immediately-function, execute it now
                         if 'exec_immediately' in val and len(inp_cmd) > i+2:
                             val['exec_immediately'](inp_cmd[i+1], self.exe_options)
+                            # clear exe_options as these were options for exec_immediately
+                            self.exe_options = {}
 
                         i += 1
 
