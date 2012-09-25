@@ -177,6 +177,8 @@ _operation_map = {
     'and': 'AND',
     'or': 'OR',
     'equals': '=',
+    'is': 'IS',
+    'is_not': 'IS NOT',
     'not_equals': '!=',
     'like': 'LIKE',
     'regex_match': '~*',
@@ -510,7 +512,9 @@ class Nipap:
             Logical operator is AND.
         """
 
-        sql = ' AND '.join(col_prefix + key + ' = %(' + key_prefix + key + ')s' for key in spec)
+        sql = ' AND '.join(col_prefix + key +
+            ( ' IS ' if spec[key] is None else ' = ' ) +
+            '%(' + key_prefix + key + ')s' for key in spec)
         params = {}
         for key in spec:
             params[key_prefix + key] = spec[key]
@@ -622,6 +626,12 @@ class Nipap:
 
             if query['val1'] not in vrf_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+
+            # workaround for handling equal matches of NULL-values
+            if query['operator'] == 'equals' and query['val2'] is None:
+                query['operator'] = 'is'
+            elif query['operator'] == 'not_equals' and query['val2'] is None:
+                query['operator'] = 'is_not'
 
             # build where clause
             if query['operator'] not in _operation_map:
@@ -1145,6 +1155,12 @@ class Nipap:
             if query['val1'] not in pool_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
+            # workaround for handling equal matches of NULL-values
+            if query['operator'] == 'equals' and query['val2'] is None:
+                query['operator'] = 'is'
+            elif query['operator'] == 'not_equals' and query['val2'] is None:
+                query['operator'] = 'is_not'
+
             # build where clause
             if query['operator'] not in _operation_map:
                 raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
@@ -1495,7 +1511,7 @@ class Nipap:
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
-                        (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool=po.id ORDER BY prefix) AS a) AS prefixes
+                        (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool_id=po.id ORDER BY prefix) AS a) AS prefixes
                 FROM ip_net_pool AS po WHERE """ + where + """ ORDER BY name
                 LIMIT """ + str(search_options['max_result']) + """ OFFSET """ + str(search_options['offset'])
 
@@ -1695,7 +1711,6 @@ class Nipap:
         else:
             col_prefix = table_name + "."
 
-
         if type(query['val1']) == dict and type(query['val2']) == dict:
             # Sub expression, recurse! This is used for boolean operators: AND OR
             # add parantheses
@@ -1742,6 +1757,15 @@ class Nipap:
             if query['operator'] not in _operation_map:
                 raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
 
+            if query['val1'] == 'vrf_id' and query['val2'] == None:
+                query['val2'] = 0
+
+            # workaround for handling equal matches of NULL-values
+            if query['operator'] == 'equals' and query['val2'] is None:
+                query['operator'] = 'is'
+            elif query['operator'] == 'not_equals' and query['val2'] is None:
+                query['operator'] = 'is_not'
+
             if query['operator'] in (
                     'contains',
                     'contains_equals',
@@ -1771,10 +1795,7 @@ class Nipap:
                         _operation_map[query['operator']] )
                         )
 
-            if query['val1'] == 'vrf_id' and query['val2'] == None:
-                opt.append('0')
-            else:
-                opt.append(query['val2'])
+            opt.append(query['val2'])
 
         return where, opt
 
@@ -2292,6 +2313,7 @@ class Nipap:
             p = self.list_prefix(auth, spec)[0]
             del spec['id']
             spec['prefix'] = p['prefix']
+            spec['vrf_id'] = p['vrf_id']
         elif 'prefix' in spec:
             pass
         else:
@@ -2324,7 +2346,7 @@ class Nipap:
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
-            if p['pool'] is not None:
+            if p['pool_id'] is not None:
                 pool = self._get_pool(auth, { 'id': p['pool'] })
                 audit_params2 = {
                     'pool_id': pool['id'],
@@ -2576,7 +2598,7 @@ class Nipap:
             ELSE -2
         END AS children
     FROM (
-        SELECT DISTINCT ON(p1.prefix) p1.id,
+        SELECT DISTINCT ON(vrf.rt, p1.prefix) p1.id,
             p1.prefix,
             p1.display_prefix,
             p1.description,
@@ -2621,7 +2643,7 @@ class Nipap:
                 SELECT prefix FROM ip_net_plan WHERE """ + where + """
                 ORDER BY prefix
                 LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
-            ) ORDER BY p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf_rt NULLS FIRST, prefix"
+            ) ORDER BY vrf.rt, p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf_rt NULLS FIRST, prefix"
 
         self._execute(sql, opt)
 
@@ -2889,6 +2911,12 @@ class Nipap:
 
             if query['val1'] not in asn_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+
+            # workaround for handling equal matches of NULL-values
+            if query['operator'] == 'equals' and query['val2'] is None:
+                query['operator'] = 'is'
+            elif query['operator'] == 'not_equals' and query['val2'] is None:
+                query['operator'] = 'is_not'
 
             # build where clause
             if query['operator'] not in _operation_map:
