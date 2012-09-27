@@ -365,9 +365,9 @@ function performPrefixSearch(explicit) {
 	}
 
 	// Find what VRFs has been added to VRF filter
-    $.each(selected_vrfs, function(k, v) {
+	$.each(selected_vrfs, function(k, v) {
 		search_q.vrf_filter.push(String(v.id));
-    });
+	});
 
 	// Skip search if it's equal to the currently displayed search
 	if (
@@ -912,19 +912,10 @@ function clickFilterVRFSelector(evt) {
 		selected_vrfs[String(vrf.id)] = vrf;
 
 		addVRFToSelectList(vrf, $('.selector_selectedbar'));
+		drawVRFHeader();
 
-		if ($('#full_vrf_filter_entry').attr('data-vrf') == "") {
-			// Run when first VRF is selected
-			$('#full_vrf_filter_entry').attr('data-vrf', String(vrf.rt));
-			$('#full_vrf_filter_entry').html(vrf.rt == null ? 'No VRF' : vrf.rt);
-		} else {
-			// Run following times
-			$('#extra_vrf_filter_entry').show();
-		}
-
-		var n = 0;
-		$.each(selected_vrfs, function() { n++; });
-		$('#vrf_filter_entry_more').html(n - 1);
+		// Add VRF to list
+		$.getJSON('/xhr/add_current_vrf', { 'vrf_id': String(vrf.id) }, function() {});
 
 		performPrefixSearch(true);
 
@@ -946,6 +937,7 @@ function clickFilterVRFEntry(evt) {
 
 	// Remove clicked VRF from list of selected VRFs
 	delete selected_vrfs[vrf_id];
+	$.getJSON('/xhr/del_current_vrf', { 'vrf_id': vrf_id });
 
 	var nvrfs = 0;
 	$.each(selected_vrfs, function() { nvrfs++; });
@@ -959,25 +951,54 @@ function clickFilterVRFEntry(evt) {
 	}
 
 	// Update VRF header
-	if ($("#full_vrf_filter_entry").attr('data-vrf') == String(vrf.rt)) {
-		if (nvrfs > 0) {
-
-			$.each(selected_vrfs, function (k, v) {
-				$("#full_vrf_filter_entry").html(v.rt == null ? 'no VRF' : v.rt);
-				$("#full_vrf_filter_entry").attr('data-vrf', String(v.rt));
-				return false;
-			});
-
-		} else {
-
-			$("#full_vrf_filter_entry").html("");
-			$("#full_vrf_filter_entry").attr('data-vrf', '');
-
-		}
-	}
+	drawVRFHeader();
 
 	performPrefixSearch(true);
 	evt.preventDefault();
+
+}
+
+/*
+ * Draw the VRF page header
+ */
+function drawVRFHeader() {
+
+	// Any VRFs before?
+	var full_vrf = $("#full_vrf_filter_entry").attr('data-vrf');
+
+	var n = 0;
+	var full_vrf_active = selected_vrfs.hasOwnProperty(full_vrf);
+	$.each(selected_vrfs, function (k, v) {
+
+		// Do we need to replace the fully displayed VRF?
+		if (n == 0 && !full_vrf_active) {
+			$("#full_vrf_filter_entry").html(v.rt == null ? 'No VRF' : v.rt);
+			$("#full_vrf_filter_entry").attr('data-vrf', String(v.rt));
+		}
+
+		n++;
+
+	});
+
+	if (n == 0) {
+		$("#full_vrf_filter_entry").html("");
+		$("#full_vrf_filter_entry").attr('data-vrf', '');
+	} else if (n == 1) {
+		$("#extra_vrf_filter_entry").hide();
+	} else {
+		$('#vrf_filter_entry_more').html(n - 1);
+		$("#extra_vrf_filter_entry").show();
+	}
+
+}
+
+/*
+ * Receive list of currently selected VRFs
+ */
+function receiveCurrentVRFs(data) {
+
+	selected_vrfs = data;
+	drawVRFHeader();
 
 }
 

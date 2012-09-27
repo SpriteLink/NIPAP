@@ -44,6 +44,7 @@ class AuthController(BaseController):
         # Mark user as logged in
         session['user'] = auth.username
         session['full_name'] = auth.full_name
+        session['current_vrfs'] = {}
         session.save()
 
         # Send user back to the page he originally wanted to get to
@@ -60,8 +61,7 @@ class AuthController(BaseController):
         """ Log out the user and display a confirmation message.
         """
 
-        if 'user' in session:
-            del session['user']
-            session.save()
+        # remove session
+        session.delete()
 
         return render('login.html')

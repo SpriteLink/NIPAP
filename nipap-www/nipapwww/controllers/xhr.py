@@ -607,6 +607,43 @@ class XhrController(BaseController):
 
 
 
+    def add_current_vrf(self):
+        """ Add VRF to filter list session variable
+        """
+
+        vrf_id = request.params.get('vrf_id')
+
+        if vrf_id is not None:
+
+            if vrf_id == 'null':
+                vrf = VRF()
+            else:
+                vrf = VRF.get(int(vrf_id))
+
+            session['current_vrfs'][vrf_id] = { 'id': vrf.id, 'rt': vrf.rt, 'name': vrf.name }
+            session.save()
+
+
+
+    def del_current_vrf(self):
+        """ Remove VRF to filter list session variable
+        """
+
+        vrf_id = request.params.get('vrf_id')
+        if vrf_id in session['current_vrfs']:
+            del session['current_vrfs'][vrf_id]
+
+            session.save()
+
+
+
+    def get_current_vrfs(self):
+        """ Return VRF filter list from session variable
+        """
+
+        return json.dumps(session['current_vrfs'])
+
+
 
 class NipapJSONEncoder(json.JSONEncoder):
     """ A class used to encode NIPAP objects to JSON.

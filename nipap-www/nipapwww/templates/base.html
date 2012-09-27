@@ -23,6 +23,7 @@
                         evt.preventDefault();
                     }
                 );
+                $.getJSON('/xhr/get_current_vrfs', receiveCurrentVRFs);
                 {% endif %}
             });
         </script>
