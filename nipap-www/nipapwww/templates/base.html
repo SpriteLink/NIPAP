@@ -32,10 +32,13 @@
     <body>
         <div class="top_menu">
             <div class="menu_entry">
-                <div style="font-size: 10pt; color: #CCCCCC; line-height: 37px; font-weight: bold; float: left; padding-right: 5px;">
-                VRFs:
+                <div style="font-size: 10pt; color: #CCCCCC; line-height: 37px; font-weight: bold; float: left;">
+                VRF
                 </div>
-                <div id="vrf_filter_container" style="float: left;"></div>
+                <div id="vrf_filter_container" style="float: left;">
+                    <div class="vrf_filter_entry" id="full_vrf_filter_entry" data-vrf=""></div>
+                    <div class="vrf_filter_entry" id="extra_vrf_filter_entry">and <span id="vrf_filter_entry_more">0</span> more</div>
+                </div>
                 <a href="#" class="add_btn" id="add_vrf_filter_btn">+</a>
             </div>
             <div class="menu_entry" style="position: absolute; left: 43%; padding-top: 0px;">

@@ -732,6 +732,8 @@ function showVRFSelectorMenu(callback, pl_ref) {
 	menu.append('<div class="selector_filterbar"></div>');
 	menu.children('.selector_filterbar').append('<input type="text" class="selector_search_string" name="vrf_search_string">');
 	$('input[name="vrf_search_string"]').keyup(vrfSearchKey);
+	menu.append('<div class="selector_selectedbar"></div>');
+
 	menu.append('<div id="vrf_selector_result"></div>');
 	clearVRFSelectorSearch();
 
@@ -795,13 +797,32 @@ function performVRFSelectorSearch() {
  */
 function clearVRFSelectorSearch() {
 
-	// empty search box
+	// empty search box and selected vrfs
 	$('input[name="vrf_search_string"]').val('');
+	$('.selector_selectedbar').empty();
+
+	// add selected VRFs to selectedbar
+	$.each(selected_vrfs, function (k, v) {
+
+		addVRFToSelectList(v, $('.selector_selectedbar'));
+		$('.selector_selectedbar').show();
+
+	});
 
 	// empty search result
 	$('#vrf_selector_result').empty();
 	$('#vrf_selector_result').append('<a href="#" id="vrf_selector_none" data-vrf_id="">No VRF</a>');
 	$('#vrf_selector_none').click(curVRFCallback);
+
+}
+
+/*
+ * Add single VRF to displayed list of selected vrfs
+ */
+function addVRFToSelectList(vrf, elem) {
+
+	elem.append('<a href="#" id="vrf_filter_entry_' + String(vrf.id) + '" data-vrf_id="' + String(vrf.id) + '">' + ( vrf.id == null ? 'No VRF' : vrf.rt ) + '</a>');
+	$("#vrf_filter_entry_" + String(vrf.id)).click(clickFilterVRFEntry);
 
 }
 
@@ -886,16 +907,30 @@ function clickFilterVRFSelector(evt) {
 	}
 
 	// add VRF to filter list, if it's not already there
-	if ($('#vrf_filter_entry_' + vrf_id).length == 0) {
+	if (!selected_vrfs.hasOwnProperty(String(vrf.id))) {
 
 		selected_vrfs[String(vrf.id)] = vrf;
 
-		$('#vrf_filter_container').append('<a href="#" class="vrf_filter_entry" id="vrf_filter_entry_' + String(vrf.id) + '" data-vrf_id="' + String(vrf.id) + '">' + disp_vrf + '</a>');
-		$("#vrf_filter_entry_" + String(vrf.id)).click(clickFilterVRFEntry);
+		addVRFToSelectList(vrf, $('.selector_selectedbar'));
+
+		if ($('#full_vrf_filter_entry').attr('data-vrf') == "") {
+			// Run when first VRF is selected
+			$('#full_vrf_filter_entry').attr('data-vrf', String(vrf.rt));
+			$('#full_vrf_filter_entry').html(vrf.rt == null ? 'No VRF' : vrf.rt);
+		} else {
+			// Run following times
+			$('#extra_vrf_filter_entry').show();
+		}
+
+		var n = 0;
+		$.each(selected_vrfs, function() { n++; });
+		$('#vrf_filter_entry_more').html(n - 1);
+
 		performPrefixSearch(true);
+
 	}
 
-	hidePopupMenu();
+	$('.selector_selectedbar').show();
 	evt.preventDefault();
 
 }
@@ -905,11 +940,43 @@ function clickFilterVRFSelector(evt) {
  */
 function clickFilterVRFEntry(evt) {
 
-	var vrf = evt.target.getAttribute('data-vrf_id');
-	$("#vrf_filter_entry_" + vrf).remove().animate('slow');
-	delete selected_vrfs[vrf];
-	performPrefixSearch(true);
+	// get VRF object of clicked VRF
+	var vrf_id = evt.target.getAttribute('data-vrf_id');
+	var vrf = selected_vrfs[vrf_id];
 
+	// Remove clicked VRF from list of selected VRFs
+	delete selected_vrfs[vrf_id];
+
+	var nvrfs = 0;
+	$.each(selected_vrfs, function() { nvrfs++; });
+	$('#vrf_filter_entry_more').html(nvrfs - 1);
+
+	// Remove VRF from displayed list of VRFs
+	$("#vrf_filter_entry_" + vrf_id).remove().animate('slow');
+
+	if (nvrfs == 1) {
+		$('#extra_vrf_filter_entry').hide();
+	}
+
+	// Update VRF header
+	if ($("#full_vrf_filter_entry").attr('data-vrf') == String(vrf.rt)) {
+		if (nvrfs > 0) {
+
+			$.each(selected_vrfs, function (k, v) {
+				$("#full_vrf_filter_entry").html(v.rt == null ? 'no VRF' : v.rt);
+				$("#full_vrf_filter_entry").attr('data-vrf', String(v.rt));
+				return false;
+			});
+
+		} else {
+
+			$("#full_vrf_filter_entry").html("");
+			$("#full_vrf_filter_entry").attr('data-vrf', '');
+
+		}
+	}
+
+	performPrefixSearch(true);
 	evt.preventDefault();
 
 }

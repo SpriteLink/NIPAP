@@ -81,8 +81,8 @@ a.menu_link:hover {
     font-size: 10pt;
     font-weight: bold;
     color: #cccccc;
-    line-height: 27px;
-    padding: 5px;
+    line-height: 37px;
+    padding-left: 5px;
 }
 
 a.vrf_filter_entry {
@@ -91,6 +91,10 @@ a.vrf_filter_entry {
 
 a.vrf_filter_entry:hover {
     background-color: #444444;
+}
+
+#extra_vrf_filter_entry {
+    display: none;
 }
 
 /*
@@ -720,6 +724,12 @@ tbody.listing > tr:hover {
 	padding: 10px;
 	border-top: 1px solid #DDD;
 	border-bottom: 1px solid #DDD;
+}
+
+.selector_selectedbar {
+	background-color: #F8F8F8;
+	border-bottom: 1px solid #DDD;
+    display: none;
 }
 
 .minibutton {
