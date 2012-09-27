@@ -24,6 +24,7 @@ var prefix_list = new Object();
 var pool_list = new Object();
 var indent_head = new Object();
 var selected_vrfs = new Object();
+var vrf_list = new Object();
 
 // Object for storing statistics
 var stats = new Object();
@@ -364,11 +365,9 @@ function performPrefixSearch(explicit) {
 	}
 
 	// Find what VRFs has been added to VRF filter
-	var f_vrf_elems = $('#vrf_filter_container').children();
-	for (i = 0; i < f_vrf_elems.length; i++) {
-		var vrf = f_vrf_elems[i].getAttribute('data-vrf_id');
-		search_q.vrf_filter.push(vrf);
-	}
+    $.each(selected_vrfs, function(k, v) {
+		search_q.vrf_filter.push(String(v.id));
+    });
 
 	// Skip search if it's equal to the currently displayed search
 	if (
@@ -835,8 +834,14 @@ function receiveVRFSelector(result) {
 	var vrf_cont = $('#vrf_selector_result');
 	vrf_cont.empty();
 	if (result.result.length > 0) {
+		vrf_list = new Object();
 		for (i = 0; i < result.result.length; i++) {
+
 			var vrf = result.result[i];
+
+			// Add to global list of current VRFs
+			vrf_list[vrf.id] = vrf;
+
 			vrf_cont.append('<a href="#" id="vrf_selector_' + vrf.id + '" data-vrf_id="' + vrf.id + '" data-vrf="' + vrf.rt + '">' + vrf.rt + '</a>');
 			// set click callback on VRF to the one currently set globally...
 			$('#vrf_selector_' + vrf.id).click(curVRFCallback);
@@ -871,17 +876,22 @@ function clickPrefixVRFSelector(evt) {
  */
 function clickFilterVRFSelector(evt) {
 
-	var vrf = evt.target.getAttribute('data-vrf_id');
-	if (vrf == '') {
+	var vrf = { 'id': null, 'rt': null, 'name': null };
+	var vrf_id = evt.target.getAttribute('data-vrf_id');
+	if (vrf_id == '') {
 		var disp_vrf = 'no VRF';
 	} else {
-		var disp_vrf = evt.target.getAttribute('data-vrf');
+		vrf = vrf_list[vrf_id];
+		var disp_vrf = vrf.rt;
 	}
 
 	// add VRF to filter list, if it's not already there
-	if ($('#f_' + vrf).length == 0) {
-		$('#vrf_filter_container').append('<a href="#" class="vrf_filter_entry" id="vrf_filter_entry_' + vrf + '" data-vrf_id="' + vrf + '">' + disp_vrf + '</a>');
-		$("#vrf_filter_entry_" + vrf).click(clickFilterVRFEntry);
+	if ($('#vrf_filter_entry_' + vrf_id).length == 0) {
+
+		selected_vrfs[String(vrf.id)] = vrf;
+
+		$('#vrf_filter_container').append('<a href="#" class="vrf_filter_entry" id="vrf_filter_entry_' + String(vrf.id) + '" data-vrf_id="' + String(vrf.id) + '">' + disp_vrf + '</a>');
+		$("#vrf_filter_entry_" + String(vrf.id)).click(clickFilterVRFEntry);
 		performPrefixSearch(true);
 	}
 
@@ -897,6 +907,7 @@ function clickFilterVRFEntry(evt) {
 
 	var vrf = evt.target.getAttribute('data-vrf_id');
 	$("#vrf_filter_entry_" + vrf).remove().animate('slow');
+	delete selected_vrfs[vrf];
 	performPrefixSearch(true);
 
 	evt.preventDefault();
@@ -918,6 +929,7 @@ function hidePopupMenu() {
  * Plots prefixes and adds them to list.
  */
 function receivePrefixList(search_result) {
+
 	stats.response_received = new Date().getTime();
 
 	// Error?
@@ -948,6 +960,7 @@ function receivePrefixList(search_result) {
 		var interp = search_result.interpretation[key];
 		var text = '<b>' + interp.string + ':</b> ' + interp.interpretation;
 		var tooltip = '';
+
 		if (interp.interpretation == 'unclosed quote') {
 			text += ', please close quote!';
 			tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';

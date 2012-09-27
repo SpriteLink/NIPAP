@@ -367,7 +367,7 @@ class XhrController(BaseController):
                 vrf_filter = {
                     'operator': 'equals',
                     'val1': 'vrf_id',
-                    'val2': int(vrf) if len(vrf) > 0 else None
+                    'val2': int(vrf) if vrf != 'null' else None
                 }
 
                 for vrf in vrfs[1:]:
@@ -377,7 +377,7 @@ class XhrController(BaseController):
                         'val2': {
                             'operator': 'equals',
                             'val1': 'vrf_id',
-                            'val2': int(vrf) if len(vrf) > 0 else None
+                            'val2': int(vrf) if vrf != 'null' else None
                         }
                     }
 
