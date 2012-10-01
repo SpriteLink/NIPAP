@@ -85,14 +85,6 @@ a.menu_link:hover {
     padding-left: 5px;
 }
 
-a.vrf_filter_entry {
-    text-decoration: none;
-}
-
-a.vrf_filter_entry:hover {
-    background-color: #444444;
-}
-
 #extra_vrf_filter_entry {
     display: none;
 }
@@ -160,34 +152,6 @@ a.add_btn:hover {
 
     font-weight: bold;
     color: #555555;
-}
-
-#vrf_selector {
-    display: none;
-    height: 480px;
-    width: 640px;
-    z-index: 1;
-    border: 2px solid #000000;
-    border-radius: 15px;
-    -moz-border-radius: 15px 15px 15px 15px;
-    -webkit-border-radius: 15px;
-    position: fixed;
-    background-color: #ffffff;
-}
-
-#vrf_title {
-    float: left;
-    padding: 0;
-    margin: 0;
-}
-
-a.vrf_title {
-    color: #ffffff;
-    text-decoration: none;
-}
-
-a.vrf_title:hover {
-    color: #dd4b39;
 }
 
 #search_box {
@@ -726,10 +690,9 @@ tbody.listing > tr:hover {
 	border-bottom: 1px solid #DDD;
 }
 
-.selector_selectedbar {
-	background-color: #F8F8F8;
-	border-bottom: 1px solid #DDD;
-    display: none;
+.selector_tick {
+	width: 16px;
+	float: left;
 }
 
 .minibutton {

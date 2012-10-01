@@ -11,7 +11,7 @@
             if ('error' in data) {
                 showDialogNotice('Operation failed', data.message);
             } else {
-                $('#vrf_success_vrf').html(data.vrf);
+                $('#vrf_success_rt').html(data.rt);
                 $('#vrf_success_container').show();
                 $("html,body").animate({ scrollTop: $("#vrf_success_container").offset().top - 50}, 700);
                 $("#vrf_success_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#3d9400" }, 700).delay(200).animate({ backgroundColor: "#ccffcc" }, 1000);
@@ -53,7 +53,7 @@ VRF administration &mdash;&gt; add VRF
 		<div class="options-content">
 			<h3 class="options-group-heading">Result</h3>
 			<div id="vrf_success_bg" style="padding: 15px; background-color: #ccffcc;">
-				The VRF <span id="vrf_success_vrf"></span> was successfully added.
+				The VRF <span id="vrf_success_rt"></span> was successfully added.
 			</div>
 		</div>
 	</div>

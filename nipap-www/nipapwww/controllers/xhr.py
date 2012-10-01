@@ -641,7 +641,7 @@ class XhrController(BaseController):
         """ Return VRF filter list from session variable
         """
 
-        return json.dumps(session['current_vrfs'])
+        return json.dumps(session.get('current_vrfs', {}))
 
 
 
