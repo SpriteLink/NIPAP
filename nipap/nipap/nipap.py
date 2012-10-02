@@ -1894,8 +1894,8 @@ class Nipap:
             'comment', 'pool_id', 'node', 'type', 'country',
             'order_id', 'vrf_id', 'alarm_priority', 'monitor', 'external_key' ]
         self._check_attr(attr, req_attr, allowed_attr)
-        if ('description' not in attr) and ('host' not in attr):
-            raise NipapMissingInputError('Either description or host must be specified.')
+        if ('description' not in attr) and ('node' not in attr):
+            raise NipapMissingInputError('Either description or node must be specified.')
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_plan " + insert
