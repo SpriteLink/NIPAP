@@ -810,7 +810,10 @@ class Prefix(Pynipap):
         if self.prefix is not None:
             data['prefix'] = self.prefix
 
-        if self.pool is not None:
+        if self.pool is None:
+            data['pool_id'] = None
+
+        else:
             if not isinstance(self.pool, Pool):
                 raise NipapValueError("'pool' attribute not instance of Pool class.")
             data['pool_id'] = self.pool.id
