@@ -1971,7 +1971,7 @@ class Nipap:
                         'name': None
                     }
                 else:
-                    pool = self._get_pool(auth, { 'name': attr['pool'] })
+                    pool = self._get_pool(auth, { 'name': attr['pool_name'] })
 
             attr['pool_id'] = pool['id']
 
@@ -2020,19 +2020,15 @@ class Nipap:
         for p in prefixes:
             audit_params['vrf_id'] = p['vrf_id']
             audit_params['vrf_rt'] = p['vrf_rt']
-            audit_params['vrf_name'] = p['vrf_name'],
+            audit_params['vrf_name'] = p['vrf_name']
             audit_params['prefix_id'] = p['id']
             audit_params['prefix_prefix'] = p['prefix']
             audit_params['description'] = 'Edited prefix %s attr: %s' % (p['prefix'], str(attr))
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
-            # If pool is set, we might need to add log entry regarding the pool expansion also.
-            if pool['id'] is not None:
-
-                # Only add to log if something was changed
-                if p['pool_id'] == pool['id']:
-                    continue
+            # Only add to log if something was changed
+            if p['pool_id'] != pool['id']:
 
                 audit_params2 = {
                     'prefix_id': p['id'],
@@ -2040,16 +2036,33 @@ class Nipap:
                     'vrf_id': p['vrf_id'],
                     'vrf_rt': p['vrf_rt'],
                     'vrf_name': p['vrf_name'],
-                    'pool_id': pool['id'],
-                    'pool_name': pool['name'],
                     'username': auth.username,
                     'authenticated_as': auth.authenticated_as,
                     'full_name': auth.full_name,
                     'authoritative_source': auth.authoritative_source,
-                    'description': 'Expanded pool %s with prefix %s' % (pool['name'], p['prefix'])
                 }
-                sql, params = self._sql_expand_insert(audit_params2)
-                self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
+                # If pool ID set, pool was expanded
+                if pool['id'] is not None:
+
+                    audit_params2['pool_id'] = pool['id']
+                    audit_params2['pool_name'] = pool['name']
+                    audit_params2['description'] = 'Expanded pool %s with prefix %s' % (pool['name'], p['prefix'])
+
+                    sql, params = self._sql_expand_insert(audit_params2)
+                    self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
+                # if prefix had pool set previously, prefix was removed from that pool
+                if p['pool_id'] is not None:
+
+                    pool2 = self._get_pool(auth, { 'id': p['pool_id'] })
+
+                    audit_params2['pool_id'] = pool2['id']
+                    audit_params2['pool_name'] = pool2['name']
+                    audit_params2['description'] = 'Removed prefix %s from pool %s' % (p['prefix'], pool2['name'])
+
+                    sql, params = self._sql_expand_insert(audit_params2)
+                    self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
