@@ -13,12 +13,12 @@ import jnipap.ConnectionException;
 import jnipap.AuthFailedException;
 import jnipap.Connection;
 
-public class Schema extends Jnipap {
+public class VRF extends Jnipap {
 
-	// Schema attributes
+	// VRF attributes
+	public String rt;
 	public String name;
 	public String description;
-	public String vrf;
 
 	/**
 	 * Save object to NIPAP
@@ -27,15 +27,15 @@ public class Schema extends Jnipap {
 	 */
 	public void save(Connection conn) throws JnipapException {
 
-		// create hashmap of schema attributes
+		// create hashmap of VRF attributes
 		HashMap attr = new HashMap();
+		attr.put("rt", this.rt);
 		attr.put("name", this.name);
 		attr.put("description", this.description);
-		attr.put("vrf", this.vrf);
 
-		// create schema spec
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", this.id);
+		// create VRF spec
+		HashMap vrf_spec = new HashMap();
+		vrf_spec.put("id", this.id);
 
 		// create args map
 		HashMap args = new HashMap();
@@ -50,21 +50,21 @@ public class Schema extends Jnipap {
 		String cmd;
 		if (this.id == null) {
 
-			// ID null - create new schema
-			cmd = "add_schema";
+			// ID null - create new VRF
+			cmd = "add_vrf";
 
 		} else {
 
-			// Schema exists - modify existing.
-			args.put("schema", schema_spec);
-			cmd = "edit_schema";
+			// VRF exists - modify existing.
+			args.put("vrf", vrf_spec);
+			cmd = "edit_vrf";
 
 		}
 
 		// perform operation
 		Integer result = (Integer)conn.execute(cmd, params);
 
-		// If we added a new schema, fetch and set ID
+		// If we added a new VRF, fetch and set ID
 		if (this.id == null) {
 			this.id = result;
 		}
@@ -78,45 +78,45 @@ public class Schema extends Jnipap {
 	 */
 	public void remove(Connection conn) throws JnipapException {
 
-		// Build schema spec
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", this.id);
+		// Build VRF spec
+		HashMap vrf_spec = new HashMap();
+		vrf_spec.put("id", this.id);
 
 		// Build function args
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
-		args.put("schema", schema_spec);
+		args.put("vrf", vrf_spec);
 
 		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
-		Object[] result = (Object[])conn.execute("remove_schema", params);
+		Object[] result = (Object[])conn.execute("remove_vrf", params);
 
 	}
 
 	/**
-	 * Return a string representation of a schema
+	 * Return a string representation of a VRF
 	 *
-	 * @return String describing the schema and its attributes
+	 * @return String describing the VRF and its attributes
 	 */
 	public String toString() {
 
-		// Return string representation of a schema
+		// Return string representation of a VRF
 		return getClass().getName() + " id: " + this.id +
+			" rt: " + this.rt +
 			" name: " + this.name +
-			" desc: " + this.description +
-			" vrf: " + this.vrf;
+			" desc: " + this.description;
 
 	}
 
 	/**
-	 * Get list of schemas from NIPAP by its attributes
+	 * Get list of VRFs from NIPAP by its attributes
 	 *
 	 * @param auth Authentication options
 	 * @param query Map describing the search query
 	 * @param search_options Search options
-	 * @return A list of Schema objects matching the attributes in the schema_spec
+	 * @return A list of VRF objects matching the attributes in the vrf_spec
 	 */
 	public static Map search(Connection conn, Map query, Map search_options) throws JnipapException {
 
@@ -130,33 +130,33 @@ public class Schema extends Jnipap {
 		params.add(args);
 
 		// execute query
-		Map result = (Map)conn.execute("search_schema", params);
+		Map result = (Map)conn.execute("search_vrf", params);
 
 		// extract data from result
 		HashMap ret = new HashMap();
 		ret.put("search_options", (Map)result.get("search_options"));
-		ArrayList ret_schemas = new ArrayList();
+		ArrayList ret_vrfs = new ArrayList();
 
-		Object[] result_schemas = (Object[])result.get("result");
+		Object[] result_vrfs = (Object[])result.get("result");
 
-		for (int i = 0; i < result_schemas.length; i++) {
-			Map result_schema = (Map)result_schemas[i];
-			ret_schemas.add(Schema.fromMap(result_schema));
+		for (int i = 0; i < result_vrfs.length; i++) {
+			Map result_vrf = (Map)result_vrfs[i];
+			ret_vrfs.add(VRF.fromMap(result_vrf));
 		}
 
-		ret.put("result", ret_schemas);
+		ret.put("result", ret_vrfs);
 
 		return ret;
 
 	}
 
 	/**
-	 * Get list of schemas from NIPAP by a string
+	 * Get list of VRFs from NIPAP by a string
 	 *
 	 * @param auth Authentication options
 	 * @param query Search string
 	 * @param search_options Search options
-	 * @return A list of Schema objects matching the attributes in the schema_spec
+	 * @return A list of VRF objects matching the attributes in the vrf_spec
 	 */
 	public static Map search(Connection conn, String query, Map search_options) throws JnipapException {
 
@@ -170,7 +170,7 @@ public class Schema extends Jnipap {
 		params.add(args);
 
 		// execute query
-		Map result = (Map)conn.execute("smart_search_schema", params);
+		Map result = (Map)conn.execute("smart_search_vrf", params);
 
 		// extract data from result
 		HashMap ret = new HashMap();
@@ -183,43 +183,43 @@ public class Schema extends Jnipap {
 		}
 		ret.put("interpretation", ret_interpretation);
 
-		ArrayList ret_schemas = new ArrayList();
-		Object[] result_schemas = (Object[])result.get("result");
-		for (int i = 0; i < result_schemas.length; i++) {
-			Map result_schema = (Map)result_schemas[i];
-			ret_schemas.add(Schema.fromMap(result_schema));
+		ArrayList ret_vrfs = new ArrayList();
+		Object[] result_vrfs = (Object[])result.get("result");
+		for (int i = 0; i < result_vrfs.length; i++) {
+			Map result_vrf = (Map)result_vrfs[i];
+			ret_vrfs.add(VRF.fromMap(result_vrf));
 		}
-		ret.put("result", ret_schemas);
+		ret.put("result", ret_vrfs);
 
 		return ret;
 
 	}
 
 	/**
-	 * List schemas having specified attributes
+	 * List VRFs having specified attributes
 	 *
 	 * @param auth Authentication options
-	 * @param schema_spec Map where attributes can be specified
+	 * @param vrf_spec Map where attributes can be specified
 	 */
-	public static List list(Connection conn, Map schema_spec) throws JnipapException {
+	public static List list(Connection conn, Map vrf_spec) throws JnipapException {
 
 		// Build function args
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
-		args.put("schema", schema_spec);
+		args.put("vrf", vrf_spec);
 
 		List params = new ArrayList();
 		params.add(args);
 
 		// execute query
-		Object[] result = (Object[])conn.execute("list_schema", params);
+		Object[] result = (Object[])conn.execute("list_vrf", params);
 
 		// extract data from result
 		ArrayList ret = new ArrayList();
 
 		for (int i = 0; i < result.length; i++) {
-			Map result_schema = (Map)result[i];
-			ret.add(Schema.fromMap(result_schema));
+			Map result_vrf = (Map)result[i];
+			ret.add(VRF.fromMap(result_vrf));
 		}
 
 		return ret;
@@ -227,50 +227,50 @@ public class Schema extends Jnipap {
 	}
 
 	/**
-	 * Get schema from NIPAP by ID
+	 * Get VRF from NIPAP by ID
 	 *
-	 * Fetch the schema from NIPAP by specifying its ID. If no matching schema
-	 * was found, an exception is thrown.
+	 * Fetch the VRF from NIPAP by specifying its ID. If no matching VRF
+	 * is found, an exception is thrown.
 	 *
 	 * @param auth Authentication options
-	 * @param id ID of requested schema
-	 * @return The schema which was found
+	 * @param id ID of requested VRF
+	 * @return The VRF which was found
 	 */
-	public static Schema get(Connection conn, Integer id) throws JnipapException {
+	public static VRF get(Connection conn, Integer id) throws JnipapException {
 
-		// Build schema spec
-		HashMap schema_spec = new HashMap();
-		schema_spec.put("id", id);
+		// Build VRF spec
+		HashMap vrf_spec = new HashMap();
+		vrf_spec.put("id", id);
 
-		List result = Schema.list(conn, schema_spec);
+		List result = VRF.list(conn, vrf_spec);
 
 		// extract data from result
 		if (result.size() < 1) {
-			throw new NonExistentException("no matching schema found");
+			throw new NonExistentException("no matching VRF found");
 		}
 
-		return (Schema)result.get(0);
+		return (VRF)result.get(0);
 
 	}
 
 	/**
-	 * Create schema object from map of schema attributes
+	 * Create VRF object from map of VRF attributes
 	 *
 	 * Helper function for creating objects of data received over XML-RPC
 	 *
-	 * @param input Map with schema attributes
-	 * @return Schema object
+	 * @param input Map with VRF attributes
+	 * @return VRF object
 	 */
-	public static Schema fromMap(Map input) {
+	public static VRF fromMap(Map input) {
 
-		Schema schema = new Schema();
+		VRF vrf = new VRF();
 
-		schema.id = (Integer)input.get("id");
-		schema.name = (String)input.get("name");
-		schema.description = (String)input.get("description");
-		schema.vrf = (String)input.get("vrf");
+		vrf.id = (Integer)input.get("id");
+		vrf.rt = (String)input.get("rt");
+		vrf.name = (String)input.get("name");
+		vrf.description = (String)input.get("description");
 
-		return schema;
+		return vrf;
 
 	}
 

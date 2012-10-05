@@ -41,7 +41,7 @@
 	</div>
 
 	<div style="position: absolute; right: 20px; top: 14px;">
-		{{ nipap.button('Add pool', color='red', url=h.url(controller = 'pool', action = 'add', schema = c.schema.id)) }}
+		{{ nipap.button('Add pool', color='red', url=h.url(controller = 'pool', action = 'add')) }}
 	</div>
 
 	<table class="listing" id="pool_table" style="width: 100%;" border=0>
@@ -58,8 +58,8 @@
 				<td>{{ pool.default_type }}</td>
 				<td>{{ pool.ipv4_default_prefix_length or '-' }} / {{ pool.ipv6_default_prefix_length or '-' }}</td>
 				<td>
-					<a href="{{ h.url(controller = 'pool', action = 'edit', id = pool.id, schema = c.schema.id) }}">edit</a> | 
-					<a href="{{ h.url(controller = 'pool', action = 'remove', id = pool.id, schema = c.schema.id) }}" onclick="showDialogYesNo('Remove {{ pool.name  }}?', 'Are you sure you want to remove {{ pool.name }}? You cannot undo this.', function () { window.location.href = '{{ h.url(controller="pool", action="remove", id=pool.id, schema = c.schema.id) }}'; }); return false;">del</a>
+					<a href="{{ h.url(controller = 'pool', action = 'edit', id = pool.id) }}">edit</a> | 
+					<a href="{{ h.url(controller = 'pool', action = 'remove', id = pool.id) }}" onclick="showDialogYesNo('Remove {{ pool.name  }}?', 'Are you sure you want to remove {{ pool.name }}? You cannot undo this.', function () { window.location.href = '{{ h.url(controller="pool", action="remove", id=pool.id) }}'; }); return false;">del</a>
 				</td>
 			</tr>
 			{% endfor %}

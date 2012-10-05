@@ -31,7 +31,7 @@ function prefixAdded(data) {
 
 $(function () {
 
-    $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', {'schema': schema_id }, populatePoolTable);
+    $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', populatePoolTable);
     $('#prefix-alloc-method_container').show();
 
     // Enable actions on radio buttons
@@ -53,17 +53,18 @@ $(function () {
         $("#add_comment").hide();
     });
 
-    // capture click event on overlay placed behind prefix menu
-    $(".prefix_menu_overlay").click(function(e) {
-        $(".prefix_menu").hide();
-        $(".prefix_menu_overlay").hide();
-    });
-
     // Capture click events on default prefix type display.
     $('#default_prefix_type').click(function () {
         $('#default_prefix_type').hide();
         $('#prefix_type_selection').slideDown();
     });
+
+    // capture click event in VRF input field, display VRF selector
+    $('input[name="prefix_vrf_btn"]').click(
+        function(evt) {
+            showVRFSelectorMenu(clickPrefixVRFSelector, $('input[name="prefix_vrf_btn"]'));
+        }
+    );
 
     // catch submit actions
     $('#prefix_data_form').submit(prefixFormSubmit);

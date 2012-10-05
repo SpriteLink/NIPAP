@@ -4,7 +4,7 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from nipapwww.lib.base import BaseController, render
-from pynipap import Schema, Pool, Prefix, NipapNonExistentError
+from pynipap import VRF, Pool, Prefix, NipapNonExistentError
 
 log = logging.getLogger(__name__)
 
@@ -13,29 +13,16 @@ class PrefixController(BaseController):
     def index(self):
         """ Index page
 
-            If schema is set, redirect to prefix list.
-            Otherwise, redirect to schema selection page.
+            Redirect to prefix list.
         """
 
-        if 'schema' not in request.params:
-            redirect(url(controller = 'schema', action = 'list'))
-
-        redirect(url(controller = 'prefix', action = 'list', schema = request.params['schema']))
+        redirect(url(controller = 'prefix', action = 'list'))
 
 
 
     def list(self):
         """ Prefix list.
         """
-
-        # Handle schema in session.
-        if 'schema' in request.params:
-            try:
-                c.schema = Schema.get(int(request.params['schema']))
-            except NipapNonExistentError, e:
-                redirect(url(controller = 'schema', action = 'list'))
-        else:
-            redirect(url(controller = 'schema', action = 'list'))
 
         c.search_opt_parent = "all"
         c.search_opt_child = "none"
@@ -47,13 +34,6 @@ class PrefixController(BaseController):
     def add(self):
         """ Add a prefix.
         """
-
-        # make sure we have a schema
-        try:
-            c.schema = Schema.get(int(request.params['schema']))
-            c.pools = Pool.list(c.schema)
-        except (KeyError, NipapNonExistentError), e:
-            redirect(url(controller = 'schema', action = 'list'))
 
         # pass prefix to template - if we have any
         if 'prefix' in request.params:
@@ -72,14 +52,8 @@ class PrefixController(BaseController):
         """ Edit a prefix.
         """
 
-        # make sure we have a schema
-        try:
-            c.schema = Schema.get(int(request.params['schema']))
-        except (KeyError, NipapNonExistentError), e:
-            redirect(url(controller = 'schema', action = 'list'))
-
         # find prefix
-        c.prefix = Prefix.get(c.schema, int(id))
+        c.prefix = Prefix.get(int(id))
 
         # we got a HTTP POST - edit object
         if request.method == 'POST':
@@ -109,7 +83,8 @@ class PrefixController(BaseController):
             if request.params['prefix_vrf'].strip() == '':
                 c.prefix.vrf = None
             else:
-                c.prefix.vrf = request.params['prefix_vrf']
+                # TODO: handle non-existent VRF...
+                c.prefix.vrf = VRF.list({ 'rt': request.params['prefix_vrf'] })[0]
 
             if request.params.get('prefix_monitor') != None:
                 c.prefix.monitor = True
@@ -118,7 +93,7 @@ class PrefixController(BaseController):
 
             c.prefix.alarm_priority = request.params['prefix_alarm_priority']
             c.prefix.save()
-            redirect(url(controller='prefix', action='list', schema=c.schema.id))
+            redirect(url(controller='prefix', action='list'))
 
 
         return render('/prefix_edit.html')
@@ -128,17 +103,11 @@ class PrefixController(BaseController):
         """ Remove a prefix.
         """
 
-        # make sure we have a schema
-        try:
-            c.schema = Schema.get(int(request.params['schema']))
-        except (KeyError, NipapNonExistentError), e:
-            redirect(url(controller = 'schema', action = 'list'))
-
         # find prefix
-        c.prefix = Prefix.get(c.schema, int(id))
+        c.prefix = Prefix.get(int(id))
 
         if 'confirmed' not in request.params:
             return render('/prefix_remove_confirm.html')
 
         c.prefix.remove()
-        redirect(url(controller='prefix', action='list', schema=c.schema.id))
+        redirect(url(controller='prefix', action='list'))

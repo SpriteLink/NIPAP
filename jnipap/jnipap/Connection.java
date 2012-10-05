@@ -16,6 +16,7 @@ import jnipap.MissingInputException;
 import jnipap.NonExistentException;
 import jnipap.DuplicateException;
 import jnipap.ConnectionException;
+import jnipap.InvalidParameterException;
 
 /**
  * A class containing a connection to the NIPAP XML-RPC server
@@ -170,9 +171,9 @@ public class Connection {
 				case 1120:
 					return new InvalidParameterException(e.getMessage());
 				case 1130:
-					return new IllegalArgumentException(e.getMessage());
+					return new InvalidParameterException(e.getMessage());
 				case 1200:
-					return new IllegalArgumentException(e.getMessage());
+					return new InvalidParameterException(e.getMessage());
 				case 1300:
 					return new NonExistentException(e.getMessage());
 				case 1400:

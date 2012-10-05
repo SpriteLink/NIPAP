@@ -49,7 +49,7 @@ db:
 	createuser -S -D -R $(DB_USER)
 	createdb -O $(DB_USER) $(DB_NAME)
 	-createlang -d $(DB_NAME) plpgsql
-	psql -q -c "ALTER USER $(DB_USER) ENCRYPTED PASSWORD '$(DB_PASS)'"
+	-psql -q -c "ALTER USER $(DB_USER) ENCRYPTED PASSWORD '$(DB_PASS)'"
 # TODO: The ip4r extension needs to be added to the newly created
 # 	database.  How do we do that?
 

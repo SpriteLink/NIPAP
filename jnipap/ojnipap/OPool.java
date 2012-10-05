@@ -9,7 +9,6 @@ import java.sql.SQLException;
 
 import oracle.sql.STRUCT;
 
-import jnipap.Schema;
 import jnipap.Pool;
 
 /**
@@ -22,7 +21,6 @@ public class OPool extends jnipap.Pool implements SQLData {
 		// Read data from stream
 		id = Helpers.integerOrNull(stream.readBigDecimal());
 		name = stream.readString();
-		schema = (jnipap.Schema)OSchema.fromSTRUCT((STRUCT)stream.readObject());
 		description = stream.readString();
 		default_type = stream.readString();
 		ipv4_default_prefix_length = Helpers.integerOrNull(stream.readBigDecimal());
@@ -35,7 +33,6 @@ public class OPool extends jnipap.Pool implements SQLData {
 		// Write data to stream
 		stream.writeBigDecimal(Helpers.bigDecOrNull(id));
 		stream.writeString(Helpers.strOrNull(name));
-		stream.writeObject((OSchema)schema);
 		stream.writeString(Helpers.strOrNull(description));
 		stream.writeString(Helpers.strOrNull(default_type));
 		stream.writeBigDecimal(Helpers.bigDecOrNull(ipv4_default_prefix_length));
@@ -67,7 +64,6 @@ public class OPool extends jnipap.Pool implements SQLData {
 		Object[] val = input.getAttributes();
 		p.id = Helpers.integerOrNull((BigDecimal)val[0]);
 		p.name = (String)val[1];
-		p.schema = (jnipap.Schema)OSchema.fromSTRUCT((STRUCT)val[2]);
 		p.description = (String)val[3];
 		p.default_type = (String)val[4];
 		p.ipv4_default_prefix_length = Helpers.integerOrNull((BigDecimal)val[5]);

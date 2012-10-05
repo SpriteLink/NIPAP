@@ -67,11 +67,6 @@
         $('input[name="search_opt_parent"]').change(performPrefixSearch);
         $('input[name="search_opt_child"]').change(performPrefixSearch);
 
-        // capture click event on overlay placed behind prefix menu
-        $(".popup_menu_overlay").click(function(e) {
-            hidePopupMenu();
-        });
-
         // set focus
         $("#query_string").focus();
 
@@ -94,7 +89,7 @@
 <div id="search_box">
 	{{ nipap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
 	<div style="position: absolute; right: 20px; top: 55px;">
-		{{ nipap.button('Add prefix', color='red', url=h.url(controller = 'prefix', action = 'add', schema = c.schema.id)) }}
+		{{ nipap.button('Add prefix', color='red', url=h.url(controller = 'prefix', action = 'add')) }}
 	</div>
 </div>
 

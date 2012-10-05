@@ -170,7 +170,7 @@
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Prefix options</h3>
-			<form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add", schema=c.schema.id) }}">
+			<form method="post" id="prefix_data_form" action="{{ h.url(controller="prefix", action="add") }}">
 
 			<div class="option" style="display: none;" id="prefix-row">
 				<dl>
@@ -277,7 +277,8 @@
                         VRF
 					</dt>
 					<dd>
-						<input type="text" name="prefix_vrf" size=10>
+                        <input type="button" name="prefix_vrf_btn" value="None">
+                        <input type="hidden" name="prefix_vrf" value="">
 					</dd>
 				</dl>
 			</div>

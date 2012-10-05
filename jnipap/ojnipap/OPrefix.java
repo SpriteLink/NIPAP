@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import oracle.sql.STRUCT;
 
 import jnipap.Connection;
-import jnipap.Schema;
+import jnipap.VRF;
 import jnipap.Pool;
 import jnipap.Prefix;
 
@@ -22,7 +22,7 @@ public class OPrefix extends jnipap.Prefix implements SQLData {
 		// Read data from stream
 		id = Helpers.integerOrNull(stream.readBigDecimal());
 		family = Helpers.integerOrNull(stream.readBigDecimal());
-		schema = (jnipap.Schema)OSchema.fromSTRUCT((STRUCT)stream.readObject());
+		vrf = (jnipap.VRF)OVRF.fromSTRUCT((STRUCT)stream.readObject());
 		prefix = stream.readString();
 		display_prefix = stream.readString();
 		description = stream.readString();
@@ -47,7 +47,7 @@ public class OPrefix extends jnipap.Prefix implements SQLData {
 		// Write data to stream
 		stream.writeBigDecimal(Helpers.bigDecOrNull(id));
 		stream.writeBigDecimal(Helpers.bigDecOrNull(family));
-		stream.writeObject((OSchema)schema);
+		stream.writeObject((OVRF)vrf);
 		stream.writeString(Helpers.strOrNull(prefix));
 		stream.writeString(Helpers.strOrNull(display_prefix));
 		stream.writeString(Helpers.strOrNull(description));

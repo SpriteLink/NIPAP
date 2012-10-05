@@ -7,7 +7,6 @@
 /**
  * Global variables...
  */
-var schema_id = 0;
 
 /*
  * The prefix_list variable is used to keep a copy of all the prefixes
@@ -16,17 +15,25 @@ var schema_id = 0;
  * whether the prefix has children or not. These values are allowed:
  *  -2: We have no clue
  *  -1: At least one, but might be more (used for parent prefixes which
- *	  was received when a prefix further down was requested including
- *	  parents)
+ *      was received when a prefix further down was requested including
+ *      parents)
  *   0: No children
  *  >0: Has children
  */
-var prefix_list = Object();
+var prefix_list = new Object();
 var pool_list = new Object();
-var indent_head = Object();
+var indent_head = new Object();
+var selected_vrfs = new Object();
+var vrf_list = {
+	'null': {
+		'id': null,
+		'rt': null,
+		'name': null
+	}
+};
 
 // Object for storing statistics
-var stats = Object();
+var stats = new Object();
 
 // current options - mostly used for prefix addition on
 // the prefix add and pool edit pages.
@@ -48,8 +55,14 @@ var current_query = {
 	'parents_depth': 0,
 	'children_depth': 0
 };
+var current_vrf_query = {
+	'query_string': ''
+};
 var query_id = 0;
 var newest_query = 0;
+
+// place to store current VRF selector callback function
+var curVRFCallback = null;
 
 var offset = 0;
 var outstanding_nextpage = 0;
@@ -330,6 +343,7 @@ function prefixSearchKey() {
  * Perform a search operation
  */
 function performPrefixSearch(explicit) {
+
 	if (explicit != true) {
 		explicit = false;
 	}
@@ -347,14 +361,19 @@ function performPrefixSearch(explicit) {
 	var search_q = {
 		'query_id': query_id,
 		'query_string': $('#query_string').val(),
-		'schema': schema_id,
 		'parents_depth': optToDepth($('input[name="search_opt_parent"]:checked').val()),
 		'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
 		'include_all_parents': 'true',
 		'include_all_children': 'false',
 		'max_result': 50,
-		'offset': 0
+		'offset': 0,
+		'vrf_filter': []
 	}
+
+	// Find what VRFs has been added to VRF filter
+	$.each(selected_vrfs, function(k, v) {
+		search_q.vrf_filter.push(String(v.id));
+	});
 
 	// Skip search if it's equal to the currently displayed search
 	if (
@@ -536,7 +555,7 @@ function showPrefix(prefix, reference, offset) {
 	} else if (prefix_link_type == 'add_to_pool') {
 
 		prefix_prefix.html('<a href="/pool/add_prefix/' + pool_id + '?prefix=' +
-			prefix.id + '&schema=' + schema_id + '" onClick="addToPool(' + prefix.id +
+			prefix.id + '" onClick="addToPool(' + prefix.id +
 			'); return false;">' + prefix.display_prefix + '</a>');
 
 	// Or edit prefix
@@ -589,17 +608,6 @@ function showPrefix(prefix, reference, offset) {
 		prefix_order_id.html(prefix.order_id);
 	}
 
-	// Add VRF
-	prefix_row.append('<div id="prefix_vrf' + prefix.id + '">');
-	var prefix_vrf = $('#prefix_vrf' + prefix.id);
-	prefix_vrf.addClass('prefix_column');
-	prefix_vrf.addClass('prefix_vrf');
-	if (prefix.vrf == null || prefix.vrf == '') {
-		prefix_vrf.html("&nbsp;");
-	} else {
-		prefix_vrf.html(prefix.vrf);
-	}
-
 	// Add node
 	prefix_row.append('<div id="prefix_node' + prefix.id + '">');
 	var prefix_node = $('#prefix_node' + prefix.id);
@@ -649,25 +657,26 @@ function prefixRemoved(prefix) {
 /*
  * Build a popup menu
  */
-function getPopupMenu(button, name_prefix, data_id) {
+function getPopupMenu(ref, title, data_id) {
 
-	// Add prefix menu
-	var name = 'popupmenu_' + name + '_' + data_id;
+	// Add popup menu
+	var name = 'popupmenu_' + data_id;
 	$('body').append('<div id="' + name + '">');
 	var menu = $('#' + name);
 	menu.addClass("popup_menu");
-	menu.html("<h3>" + name_prefix + " menu</h3>");
+	menu.html("<h3>" + title + "</h3>");
 
 	// show overlay
-	$('body').append('<div class="popup_menu_overlay"></div>');
-	$(".popup_menu_overlay").click(function() { hidePopupMenu() });
-	$(".popup_menu_overlay").show();
+	$('body').append('<div class="popup_overlay"></div>');
+	$(".popup_overlay").click(function() { hidePopupMenu() });
+	$(".popup_overlay").show();
 
 	// Set menu position
-	menu.css('top', button.offset().top + button.height() + 5 + 'px');
-	menu.css('left', button.offset().left + 'px');
+	menu.css('top', ref.offset().top + ref.height() + 5 + 'px');
+	menu.css('left', ref.offset().left + 'px');
 
 	return menu;
+
 }
 
 /*
@@ -677,7 +686,7 @@ function showPrefixMenu(prefix_id) {
 
 	// Add prefix menu
 	var button = $('#prefix_button' + prefix_id);
-	var menu = getPopupMenu(button, 'prefix', prefix_id);
+	var menu = getPopupMenu(button, 'prefix menu', prefix_id);
 
 	// Add different manu entries depending on where the prefix list is displayed
 	if (prefix_link_type == 'select') {
@@ -686,14 +695,13 @@ function showPrefixMenu(prefix_id) {
 		// Add to pool (Add prefix to pool on edit pool page)
 	} else {
 		// ordinary prefix list
-		menu.append('<a href="/prefix/edit/' + prefix_id + '?schema=' + schema_id + '">Edit</a>');
-		menu.append('<a id="prefix_remove' + prefix_id + '" href="/prefix/remove/' + prefix_id + '?schema=' + schema_id + '">Remove</a>');
+		menu.append('<a href="/prefix/edit/' + prefix_id + '">Edit</a>');
+		menu.append('<a id="prefix_remove' + prefix_id + '" href="/prefix/remove/' + prefix_id + '">Remove</a>');
 		$('#prefix_remove' + prefix_id).click(function(e) {
 			e.preventDefault();
 			var dialog = showDialogYesNo('Really remove prefix?', 'Are you sure you want to remove the prefix ' + prefix_list[prefix_id].display_prefix + '?',
 				function () {
 					var data = {
-						'schema': schema_id,
 						'id': prefix_id
 					};
 					$.getJSON('/xhr/remove_prefix', data, prefixRemoved);
@@ -706,15 +714,279 @@ function showPrefixMenu(prefix_id) {
 		});
 	}
 
-
-	// show overlay
-	$(".prefix_menu_overlay").show();
-
-	// Set menu position
-	var button_pos = $('#prefix_button' + prefix_id).position();
-	menu.css('top', button_pos.top + $('#prefix_button' + prefix_id).height() + 5 + 'px');
-	menu.css('left', button_pos.left + 'px');
 	menu.slideDown('fast');
+
+}
+
+/*
+ * Show VRF selector menu
+ *
+ * The function passed in parameter 'callback' will be called as
+ * callback(vrf_list) when the user has finished selecting VRFs.
+ */
+function showVRFSelectorMenu(callback, pl_ref) {
+
+	// As we can not pass the callback all the way until the result from
+	// getJSON query is received, we store it in a globa variable...
+	curVRFCallback = callback;
+
+	// Create a generic popup menu and make it a selector
+	menu = getPopupMenu(pl_ref, "Select VRF", '');
+	menu.addClass('selector');
+
+	// Add search filter
+	menu.append('<div class="selector_filterbar"></div>');
+	menu.children('.selector_filterbar').append('<input type="text" class="selector_search_string" name="vrf_search_string">');
+	$('input[name="vrf_search_string"]').keyup(vrfSearchKey);
+
+	menu.append('<div class="selector_result"></div>');
+	clearVRFSelectorSearch();
+
+	// Set focus to text box, after all other processing is done
+	setTimeout(function() { $('input[name="vrf_search_string"]').focus(); }, 0);
+
+	menu.slideDown('fast');
+
+}
+
+/*
+ * Wrapper for pacing our searches somewhat
+ *
+ * 200ms works out to be a pretty good delay for a fast typer
+ *
+ * TODO: merge with prefixSearchKey
+ */
+function vrfSearchKey() {
+	clearTimeout(search_key_timeout);
+	search_key_timeout = setTimeout("performVRFSelectorSearch()", 200);
+}
+
+/*
+ * Perform VRF selector search operation
+ */
+function performVRFSelectorSearch() {
+
+	// Skip search if query string empty
+	if (jQuery.trim($('input[name="vrf_search_string"]').val()).length < 1) {
+		clearVRFSelectorSearch();
+		return true;
+	}
+
+	// Keep track of search timing
+	stats.vrf_query_sent = new Date().getTime();
+
+	var search_q = {
+		'query_id': query_id,
+		'query_string': $('input[name="vrf_search_string"]').val(),
+		'max_result': 10,
+		'offset': 0
+	}
+
+	// Skip search if it's equal to the currently displayed search
+	if (search_q.query_string == current_vrf_query.query_string) {
+		return true;
+	}
+
+	current_vrf_query = search_q;
+	query_id += 1;
+	offset = 0;
+
+	$('.selector_result').empty();
+	showLoadingIndicator($('.selector_result'));
+	$.getJSON("/xhr/smart_search_vrf", current_vrf_query, receiveVRFSelector);
+
+}
+
+/*
+ * Clear VRF selector search
+ */
+function clearVRFSelectorSearch() {
+
+	// empty search box and selected vrfs
+	$('input[name="vrf_search_string"]').val('');
+	$('.selector_result').empty();
+
+	addVRFToSelectList({ 'id': null, 'rt': 'No VRF' }, $('.selector_result'));
+
+	// add selected VRFs to selectedbar
+	$.each(selected_vrfs, function (k, v) {
+
+		if (v.id != null) {
+			addVRFToSelectList(v, $('.selector_result'));
+		}
+
+	});
+
+}
+
+/*
+ * Add single VRF to displayed list of selected vrfs
+ */
+function addVRFToSelectList(vrf, elem) {
+
+	elem.append('<a href="#" id="vrf_filter_entry_' + String(vrf.id) + '" ' +
+		'data-vrf_id="' + String(vrf.id) + '" data-vrf_rt="' + vrf.rt + '">' +
+			'<div class="selector_tick">&nbsp;</div>' +
+			( vrf.id == null ? 'No VRF' : vrf.rt ) +
+		'</a>');
+
+	// display tick
+	if (selected_vrfs.hasOwnProperty(String(vrf.id))) {
+		elem.children('#vrf_filter_entry_' + String(vrf.id)).children('.selector_tick').html('&#10003;');
+	}
+
+	$("#vrf_filter_entry_" + String(vrf.id)).click(curVRFCallback);
+
+}
+
+/*
+ * Receive VRF selector search result
+ *
+ * Receive search result and display in destined container.
+ */
+function receiveVRFSelector(result) {
+
+	// Boilerplate... statistics, handle errors...
+	stats.response_received = new Date().getTime();
+
+	if (! ('query_id' in result.search_options)) {
+		showDialogNotice("Error", 'No query_id');
+		return;
+	}
+	if (parseInt(result.search_options.query_id) < parseInt(newest_query)) {
+		return;
+	}
+	newest_query = parseInt(result.search_options.query_id);
+
+	// Error?
+	if ('error' in result) {
+		showDialogNotice("Error", result.message);
+		return;
+	}
+
+	// place VRFs in VRF container
+	var vrf_cont = $('.selector_result');
+	vrf_cont.empty();
+	if (result.result.length > 0) {
+		for (i = 0; i < result.result.length; i++) {
+
+			var vrf = result.result[i];
+
+			// Add to global list of current VRFs
+			vrf_list[vrf.id] = vrf;
+
+			addVRFToSelectList(vrf, vrf_cont);
+		}
+	} else {
+		vrf_cont.append('<div style="padding: 10px;">No VRF found</div>');
+	}
+
+}
+
+/*
+ * Run when a VRF is selected for a prefix
+ */
+function clickPrefixVRFSelector(evt) {
+
+	// update VRF input field with selected VRF
+	var vrf_id = evt.target.getAttribute('data-vrf_id');
+	$('input[name="prefix_vrf"]').val(vrf_id);
+	if (vrf_id == 'null') {
+		$('input[name="prefix_vrf_btn"]').val('None');
+	} else {
+		$('input[name="prefix_vrf_btn"]').val(evt.target.getAttribute('data-vrf_rt'));
+	}
+
+	hidePopupMenu();
+	evt.preventDefault();
+
+}
+
+/*
+ * Run when a VRF is selected for filtering
+ */
+function clickFilterVRFSelector(evt) {
+
+	var vrf_id = evt.target.getAttribute('data-vrf_id');
+
+	// Find VRF object - it should be in vrf_list
+	var vrf = vrf_list[vrf_id];
+	if (vrf_id == 'null') {
+		var disp_vrf = 'No VRF';
+	} else {
+		var disp_vrf = vrf.rt;
+	}
+
+	if (!selected_vrfs.hasOwnProperty(String(vrf.id))) {
+
+		// Clicked a VRF which was not previously selected - add to filter list
+		$.getJSON('/xhr/add_current_vrf', { 'vrf_id': String(vrf.id) }, function() {});
+		selected_vrfs[String(vrf.id)] = vrf;
+
+		// show tick mark
+		$('#vrf_filter_entry_' + String(vrf.id)).children('.selector_tick').html('&#10003;');
+
+	} else {
+
+		// Clicked a VRF which was selected - remove from filter list
+		delete selected_vrfs[String(vrf.id)];
+		$.getJSON('/xhr/del_current_vrf', { 'vrf_id': String(vrf.id) });
+
+		// remove tick mark
+		$('#vrf_filter_entry_' + String(vrf.id)).children('.selector_tick').html('&nbsp;');
+
+	}
+
+	drawVRFHeader();
+	performPrefixSearch(true);
+
+	$('.selector_selectedbar').show();
+	evt.preventDefault();
+
+}
+
+/*
+ * Draw the VRF page header
+ */
+function drawVRFHeader() {
+
+	// Any VRFs before?
+	var full_vrf = $("#full_vrf_filter_entry").attr('data-vrf');
+
+	var n = 0;
+	var full_vrf_active = selected_vrfs.hasOwnProperty(full_vrf);
+	$.each(selected_vrfs, function (k, v) {
+
+		// Do we need to replace the fully displayed VRF?
+		if (n == 0 && !full_vrf_active) {
+			$("#full_vrf_filter_entry").html(v.rt == null ? 'No VRF' : v.rt);
+			$("#full_vrf_filter_entry").attr('data-vrf', String(v.rt));
+		}
+
+		n++;
+
+	});
+
+	if (n == 0) {
+		$("#full_vrf_filter_entry").html("");
+		$("#full_vrf_filter_entry").attr('data-vrf', '');
+	} else if (n == 1) {
+		$("#extra_vrf_filter_entry").hide();
+	} else {
+		$('#vrf_filter_entry_more').html(n - 1);
+		$("#extra_vrf_filter_entry").show();
+	}
+
+}
+
+/*
+ * Receive list of currently selected VRFs
+ */
+function receiveCurrentVRFs(data) {
+
+	jQuery.extend(selected_vrfs, data);
+	jQuery.extend(vrf_list, data);
+	drawVRFHeader();
 
 }
 
@@ -724,7 +996,7 @@ function showPrefixMenu(prefix_id) {
  */
 function hidePopupMenu() {
 	$(".popup_menu").remove();
-	$(".popup_menu_overlay").hide();
+	$(".popup_overlay").hide();
 }
 
 
@@ -733,22 +1005,26 @@ function hidePopupMenu() {
  * Plots prefixes and adds them to list.
  */
 function receivePrefixList(search_result) {
-	stats.response_received = new Date().getTime();
 
-	if (! ('query_id' in search_result.search_options)) {
-		showDialogNotice("Error", 'No query_id');
-		return;
-	}
-	if (parseInt(search_result.search_options.query_id) < parseInt(newest_query)) {
-		return;
-	}
-	newest_query = parseInt(search_result.search_options.query_id);
+	stats.response_received = new Date().getTime();
 
 	// Error?
 	if ('error' in search_result) {
 		showDialogNotice("Error", search_result.message);
 		return;
 	}
+
+	if (! ('query_id' in search_result.search_options)) {
+		showDialogNotice("Error", 'No query_id in response');
+		return;
+	}
+
+	// If we receive a result older than the one we display, ignore the
+	// received result.
+	if (parseInt(search_result.search_options.query_id) < parseInt(newest_query)) {
+		return;
+	}
+	newest_query = parseInt(search_result.search_options.query_id);
 
 	/*
 	 * Interpretation list
@@ -760,6 +1036,7 @@ function receivePrefixList(search_result) {
 		var interp = search_result.interpretation[key];
 		var text = '<b>' + interp.string + ':</b> ' + interp.interpretation;
 		var tooltip = '';
+
 		if (interp.interpretation == 'unclosed quote') {
 			text += ', please close quote!';
 			tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';
@@ -927,7 +1204,6 @@ function optToDepth(opt) {
 
 /*
  * Insert a list of prefixes
- *
  */
 function insertPrefixList(pref_list) {
 
@@ -950,7 +1226,8 @@ function insertPrefixList(pref_list) {
 
 		// This should only happen when adding the very first prefix to a completely empty list
 		// Add it manually so we have a starting point
-		showPrefix(prefix, $("#prefix_list"), null);
+		var c = insertVRFContainer(prefix.vrf);
+		showPrefix(prefix, c, null);
 		prev_prefix = prefix;
 		prefix_list[prefix.id] = prefix;
 
@@ -995,6 +1272,15 @@ function insertPrefix(prefix, prev_prefix) {
 	var main_container = null;
 	var reference = null;
 	var offset = null;
+
+	// Changing VRF - create new VRF container and add prefix to it
+	if (prefix.vrf != prev_prefix.vrf) {
+
+		var c = insertVRFContainer(prefix.vrf);
+		showPrefix(prefix, c, null);
+		return;
+
+	}
 
 	if (prefix.indent > prev_prefix.indent) {
 		// Indent level incresed
@@ -1145,6 +1431,34 @@ function insertPrefix(prefix, prev_prefix) {
 
 
 /*
+ * Add a container in the prefix list for one VRF
+ */
+function insertVRFContainer(vrf) {
+
+	if (vrf == null) {
+		var vrf_s = 'No VRF';
+		var vrf_id = 'null';
+	} else {
+		var vrf_s = vrf;
+		var vrf_id = vrf.replace(':', '_');
+	}
+
+	if ($('#preflist_prefix_panel_' + vrf_id).length == 0) {
+		$("#prefix_list").append('<div class="preflist_vrf_container" id="preflist_vrf_container_' + vrf_id + '">' +
+			'<div class="preflist_vrf_panel">' + vrf_s + '</div>' +
+			'<div class="preflist_prefix_panel" id="preflist_prefix_panel_' + vrf_id + '"></div>' +
+			'</div>');
+	} else {
+		log("ERROR: insertVRFContainer called for VRF '" + vrf_s +
+			" (DOM ID '" + vrf_id + "')' which already has container.");
+	}
+
+	return $('#preflist_prefix_panel_' + vrf_id);
+
+}
+
+
+/*
  * Add a container for hidden prefixes
  *
  * Use the options 'relative' and 'offset' to determine where to place the
@@ -1197,7 +1511,6 @@ function collapseClick(id) {
 
 		// Yes, ask server for prefix list
 		var data = {
-			'schema': schema_id,
 			'id': id,
 			'include_parents': false,
 			'include_children': false,
@@ -1579,7 +1892,6 @@ function prefixFormSubmit(e) {
 
 	// create prefix data object
 	var prefix_data = {
-		'schema': schema_id,
 		'description': $('input[name="prefix_description"]').val(),
 		'comment': $('textarea[name="prefix_comment"]').val(),
 		'node': $('input[name="prefix_node"]').val(),

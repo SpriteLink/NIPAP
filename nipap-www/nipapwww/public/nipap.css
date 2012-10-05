@@ -73,6 +73,45 @@ a.menu_link:hover {
     background-color: #444444;
 }
 
+/*
+ * Things related to the VRF prefix search filter
+ */
+.vrf_filter_entry {
+    float: left;
+    font-size: 10pt;
+    font-weight: bold;
+    color: #cccccc;
+    line-height: 37px;
+    padding-left: 5px;
+}
+
+#extra_vrf_filter_entry {
+    display: none;
+}
+
+/*
+ * An add-button
+ */
+a.add_btn {
+    display: block;
+    text-decoration: none;
+    font-size: 16pt;
+    font-weight: bold;
+    width: 20px;
+    height: 20px;
+    float: left;
+    text-align: center;
+    color: #cccccc;
+    margin-top: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+}
+
+a.add_btn:hover {
+    text-decoration: none;
+    background-color: #444444;
+}
+
 .content_outer {
     padding: 0px;
     margin: 0px;
@@ -113,34 +152,6 @@ a.menu_link:hover {
 
     font-weight: bold;
     color: #555555;
-}
-
-#schema_selector {
-    display: none;
-    height: 480px;
-    width: 640px;
-    z-index: 1;
-    border: 2px solid #000000;
-    border-radius: 15px;
-    -moz-border-radius: 15px 15px 15px 15px;
-    -webkit-border-radius: 15px;
-    position: fixed;
-    background-color: #ffffff;
-}
-
-#schema_title {
-    float: left;
-    padding: 0;
-    margin: 0;
-}
-
-a.schema_title {
-    color: #ffffff;
-    text-decoration: none;
-}
-
-a.schema_title:hover {
-    color: #dd4b39;
 }
 
 #search_box {
@@ -407,6 +418,22 @@ tbody.listing > tr:hover {
     background-color: #ebf2fc;
 }
 
+.preflist_vrf_container {
+	display: table-row;
+}
+
+.preflist_vrf_panel {
+	width: 150px;
+	display: table-cell;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.preflist_prefix_panel {
+	display: table-cell;
+	padding-bottom: 15px;
+}
+
 .prefix_hidden_container {
     display: none;
 }
@@ -539,10 +566,6 @@ tbody.listing > tr:hover {
     width: 150px;
 }
 
-.prefix_vrf {
-    width: 60px;
-}
-
 .prefix_order_id {
     width: 80px;
 }
@@ -566,6 +589,9 @@ tbody.listing > tr:hover {
     margin: 2px;
 }
 
+/*
+ * A popup menu
+ */
 .popup_menu {
     position: absolute;
     z-index: 20;
@@ -615,7 +641,11 @@ tbody.listing > tr:hover {
     text-shadow: 0 0 2px hsla(0, 0%, 0%, 0.6);
 }
 
-.popup_menu_overlay {
+/*
+ * An overlay which covers the entire page. Placed behind popup menu to catch
+ * click events.
+ */
+.popup_overlay {
     display: none;
     z-index: 10;
     opacity: 0.0;
@@ -624,6 +654,45 @@ tbody.listing > tr:hover {
     left: 0px;
     width: 100%;
     height: 100%;
+}
+
+/*
+ * selector - a popup menu used to select things
+ */
+.selector { }
+
+.selector > div > a {
+    display: block;
+    padding: 5px;
+    text-decoration: none;
+    color: hsl(0, 0%, 40%);
+    border-top: 1px solid hsl(0, 0%, 93%);
+    font-size: 11px;
+	font-weight: bold;
+}
+
+.selector > div > a:hover {
+    background-color: hsl(210, 53%, 51%);
+    color: #ffffff;
+    text-shadow: 0 0 2px hsla(0, 0%, 0%, 0.6);
+}
+
+.selector_search_string {
+	width: 200px;
+}
+
+.selector_result { }
+
+.selector_filterbar {
+	background-color: #F8F8F8;
+	padding: 10px;
+	border-top: 1px solid #DDD;
+	border-bottom: 1px solid #DDD;
+}
+
+.selector_tick {
+	width: 16px;
+	float: left;
 }
 
 .minibutton {

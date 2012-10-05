@@ -267,84 +267,84 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
 
     #
-    # SCHEMA FUNCTIONS
+    # VRF FUNCTIONS
     #
-    def xmlrpc_add_schema(self, args):
-        """ Add a new network schema.
+    def xmlrpc_add_vrf(self, args):
+        """ Add a new VRF.
 
             Valid keys in the `args`-struct:
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
             * `attr` [struct]
-                Schema attributes.
+                VRF attributes.
 
-            Returns the schema ID.
+            Returns the internal database ID for the VRF.
         """
 
         try:
-            return self.nipap.add_schema(args.get('auth'), args.get('attr'))
+            return self.nipap.add_vrf(args.get('auth'), args.get('attr'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_remove_schema(self, args):
-        """ Removes a schema.
+    def xmlrpc_remove_vrf(self, args):
+        """ Removes a VRF.
 
             Valid keys in the `args`-struct:
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                A schema spec.
+            * `vrf` [struct]
+                A VRF spec.
         """
 
         try:
-            self.nipap.remove_schema(args.get('auth'), args.get('schema'))
+            self.nipap.remove_vrf(args.get('auth'), args.get('vrf'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_list_schema(self, args):
-        """ List schemas.
+    def xmlrpc_list_vrf(self, args):
+        """ List VRFs.
 
             Valid keys in the `args`-struct:
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Specifies schema attributes to match (optional).
+            * `vrf` [struct]
+                Specifies VRF attributes to match (optional).
 
-            Returns a list of structs matching the schema spec.
+            Returns a list of structs matching the VRF spec.
         """
 
         try:
-            return self.nipap.list_schema(args.get('auth'), args.get('schema'))
+            return self.nipap.list_vrf(args.get('auth'), args.get('vrf'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_edit_schema(self, args):
-        """ Edit a schema.
+    def xmlrpc_edit_vrf(self, args):
+        """ Edit a VRF.
 
             Valid keys in the `args`-struct:
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                A schema spec specifying which schema(s) to edit.
+            * `vrf` [struct]
+                A VRF spec specifying which VRF(s) to edit.
             * `attr` [struct]
-                Schema attributes.
+                VRF attributes.
         """
 
         try:
-            self.nipap.edit_schema(args.get('auth'), args.get('schema'), args.get('attr'))
+            self.nipap.edit_vrf(args.get('auth'), args.get('vrf'), args.get('attr'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_search_schema(self, args):
-        """ Search for schemas.
+    def xmlrpc_search_vrf(self, args):
+        """ Search for VRFs.
 
             Valid keys in the `args`-struct:
 
@@ -361,12 +361,12 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.search_schema(args.get('auth'), args.get('query'), args.get('search_options'))
+            return self.nipap.search_vrf(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
-    def xmlrpc_smart_search_schema(self, args):
+    def xmlrpc_smart_search_vrf(self, args):
         """ Perform a smart search.
 
             Valid keys in the `args`-struct:
@@ -384,7 +384,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.smart_search_schema(args.get('auth'), args.get('query_string'), args.get('search_options'))
+            return self.nipap.smart_search_vrf(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -399,8 +399,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `attr` [struct]
                 Attributes which will be set on the new pool.
 
@@ -408,7 +406,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.add_pool(args.get('auth'), args.get('schema'), args.get('attr'))
+            return self.nipap.add_pool(args.get('auth'), args.get('attr'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -420,14 +418,12 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `pool` [struct]
                 Specifies what pool(s) to remove.
         """
 
         try:
-            self.nipap.remove_pool(args.get('auth'), args.get('schema'), args.get('pool'))
+            self.nipap.remove_pool(args.get('auth'), args.get('pool'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -439,8 +435,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `pool` [struct]
                 Specifies pool attributes which will be matched.
 
@@ -448,7 +442,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.list_pool(args.get('auth'), args.get('schema'), args.get('pool'))
+            return self.nipap.list_pool(args.get('auth'), args.get('pool'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -460,8 +454,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `pool` [struct]
                 Specifies pool attributes to match.
             * `attr` [struct]
@@ -469,7 +461,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.edit_pool(args.get('auth'), args.get('schema'), args.get('pool'), args.get('attr'))
+            return self.nipap.edit_pool(args.get('auth'), args.get('pool'), args.get('attr'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -481,8 +473,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `query` [struct]
                 A struct specifying the search query.
             * `search_options` [struct]
@@ -494,7 +484,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.search_pool(args.get('auth'), args.get('schema'), args.get('query'), args.get('search_options'))
+            return self.nipap.search_pool(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -506,8 +496,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `query` [string]
                 The search string.
             * `search_options` [struct]
@@ -519,7 +507,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.smart_search_pool(args.get('auth'), args.get('schema'), args.get('query_string'), args.get('search_options'))
+            return self.nipap.smart_search_pool(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -536,8 +524,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `attr` [struct]
                 Attributes to set on the new prefix.
             * `args` [srgs]
@@ -548,7 +534,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.add_prefix(args.get('auth'), args.get('schema'), args.get('attr'), args.get('args'))
+            return self.nipap.add_prefix(args.get('auth'), args.get('attr'), args.get('args'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -561,8 +547,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `prefix` [struct]
                 Prefix attributes to match.
 
@@ -570,7 +554,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.list_prefix(args.get('auth'), args.get('schema'), args.get('prefix'))
+            return self.nipap.list_prefix(args.get('auth'), args.get('prefix') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -583,8 +567,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `prefix` [struct]
                 Prefix attributes which describes what prefix(es) to edit.
             * `attr` [struct]
@@ -592,7 +574,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.edit_prefix(args.get('auth'), args.get('schema'), args.get('prefix'), args.get('attr'))
+            return self.nipap.edit_prefix(args.get('auth'), args.get('prefix'), args.get('attr'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -605,14 +587,12 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `prefix` [struct]
                 Attributes used to select what prefix to remove.
         """
 
         try:
-            return self.nipap.remove_prefix(args.get('auth'), args.get('schema'), args.get('prefix'), args.get('recursive'))
+            return self.nipap.remove_prefix(args.get('auth'), args.get('prefix'), args.get('recursive'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -625,8 +605,6 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `query` [struct]
                 A struct specifying the search query.
             * `search_options` [struct]
@@ -638,7 +616,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.search_prefix(args.get('auth'), args.get('schema'), args.get('query'), args.get('search_options'))
+            return self.nipap.search_prefix(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -651,20 +629,23 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `query` [string]
                 The search string.
             * `search_options` [struct]
                 Options for the search query, such as limiting the number
                 of results returned.
+            * `extra_query` [struct]
+                Extra search terms, will be AND:ed together with what is
+                extracted from the query string.
 
             Returns a struct containing search result, interpretation of the
             query string and the search options used.
         """
 
         try:
-            return self.nipap.smart_search_prefix(args.get('auth'), args.get('schema'), args.get('query_string'), args.get('search_options'))
+            return self.nipap.smart_search_prefix(args.get('auth'),
+                    args.get('query_string'), args.get('search_options') or {},
+                    args.get('extra_query'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -677,14 +658,141 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `schema` [struct]
-                Schema to work in.
             * `args` [struct]
                 Arguments for the find_free_prefix-function such as what prefix
                 or pool to allocate from.
         """
 
         try:
-            return self.nipap.find_free_prefix(args.get('auth'), args.get('schema'), args.get('args'))
+            return self.nipap.find_free_prefix(args.get('auth'), args.get('args'))
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    #
+    # ASN FUNCTIONS
+    #
+    def xmlrpc_add_asn(self, args):
+        """ Add a new ASN.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `attr` [struct]
+                ASN attributes.
+
+            Returns the ASN.
+        """
+
+        try:
+            return self.nipap.add_asn(args.get('auth'), args.get('attr'))
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    def xmlrpc_remove_asn(self, args):
+        """ Removes an ASN.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `asn` [integer]
+                An ASN.
+        """
+
+        try:
+            self.nipap.remove_asn(args.get('auth'), args.get('asn'))
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    def xmlrpc_list_asn(self, args):
+        """ List ASNs.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `asn` [struct]
+                Specifies ASN attributes to match (optional).
+
+            Returns a list of ASNs matching the ASN spec as a list of structs.
+        """
+
+        try:
+            return self.nipap.list_asn(args.get('auth'), args.get('asn') or {})
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    def xmlrpc_edit_asn(self, args):
+        """ Edit an ASN.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `asn` [integer]
+                An integer specifying which ASN to edit.
+            * `attr` [struct]
+                ASN attributes.
+        """
+
+        try:
+            self.nipap.edit_asn(args.get('auth'), args.get('asn'), args.get('attr'))
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    def xmlrpc_search_asn(self, args):
+        """ Search ASNs.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `query` [struct]
+                A struct specifying the search query.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing search result and the search options
+            used.
+        """
+
+        try:
+            return self.nipap.search_asn(args.get('auth'), args.get('query'), args.get('search_options') or {})
+        except nipap.NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+    def xmlrpc_smart_search_asn(self, args):
+        """ Perform a smart search among ASNs.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `query_string` [string]
+                The search string.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing search result, interpretation of the
+            search string and the search options used.
+        """
+
+        try:
+            return self.nipap.smart_search_asn(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))

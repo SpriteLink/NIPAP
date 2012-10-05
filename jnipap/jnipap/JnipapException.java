@@ -92,7 +92,7 @@ class ValueException extends JnipapException {
 /**
  * The requested addition/change viloates unique constraints
  *
- * For example, create a schema with a name of an already existing one.
+ * For example, when creating a VRF which already exists.
  */
 class DuplicateException extends JnipapException {
 
@@ -139,7 +139,7 @@ class AuthFailedException extends JnipapException {
 }
 
 /**
- * Thrown when ivalid parameters were sent
+ * Thrown when invalid parameters were received
  */
 class InvalidParameterException extends JnipapException {
 

@@ -51,7 +51,6 @@
             // Capture submit form event
             $('form[name="prefix_form"]').submit(function(e) {
                 var data = {
-                    'schema': {{ c.schema.id }},
                     'prefix': $('input[name="prefix_prefix"]').val(),
                     'description': $('input[name="prefix_description"]').val(),
                     'node': $('input[name="prefix_node"]').val(),
@@ -86,6 +85,13 @@
             $('input[name="prefix_monitor"]').change(prefixMonitorToggled);
             prefixMonitorToggled();
 
+            // capture click event in VRF input field, display VRF selector
+            $('input[name="prefix_vrf_btn"]').click(
+                function(evt) {
+                    showVRFSelectorMenu(clickPrefixVRFSelector, $('input[name="prefix_vrf_btn"]'));
+                }
+            );
+
         });
 
     </script>
@@ -103,7 +109,7 @@ Prefix administration &mdash;&gt; edit prefix
 
 -->
 <div id="prefix_data_container">
-<form method="post" name="prefix_form" action="{{ h.url(controller="prefix", action="edit", id=c.prefix.id, schema=c.schema.id) }}">
+<form method="post" name="prefix_form" action="{{ h.url(controller="prefix", action="edit", id=c.prefix.id) }}">
     <div class="options-group">
         <div class="options-content">
             <h3 class="options-group-heading">Properties of {{ c.prefix.type }} {{ c.prefix.prefix }}</h3>
@@ -186,7 +192,8 @@ Prefix administration &mdash;&gt; edit prefix
                         VRF
                     </dt>
                     <dd>
-                        <input type="text" name="prefix_vrf" value="{{ c.prefix.vrf or '' }}">
+                        <input type="button" name="prefix_vrf_btn" value="{{ c.prefix.vrf.rt or 'None' }}">
+                        <input type="hidden" name="prefix_vrf" value="{{ c.prefix.vrf.id }}">
                     </dd>
                 </dl>
             </div>

@@ -11,13 +11,13 @@ import java.sql.SQLException;
 import oracle.sql.ArrayDescriptor;
 import oracle.sql.ARRAY;
 
-import jnipap.Schema;
+import jnipap.VRF;
 import jnipap.Pool;
 import jnipap.Prefix;
 import jnipap.Connection;
 import jnipap.JnipapException;
 
-import ojnipap.OSchema;
+import ojnipap.OVRF;
 import ojnipap.OPool;
 import ojnipap.OConnection;
 import ojnipap.OAddPrefixOptions;
@@ -25,60 +25,60 @@ import ojnipap.OAddPrefixOptions;
 public class API {
 
 	/**
-	 * Get a schema from ID
+	 * Get a VRF from ID
 	 *
 	 * @param conn Connection object
-	 * @param id Schema ID to search for
-	 * @return Schema with id `id`
+	 * @param id VRF ID to search for
+	 * @return VRF with id `id`
 	 */
-	public static OSchema getSchema(OConnection conn, int id) throws JnipapException {
+	public static OVRF getVRF(OConnection conn, int id) throws JnipapException {
 
-		Schema s = Schema.get((jnipap.Connection)conn, new Integer(id));
+		VRF s = VRF.get((jnipap.Connection)conn, new Integer(id));
 		return toSQLObj(s);
 
 	}
 
 	/**
-	 * Get a list of schemas
+	 * Get a list of VRFs
 	 *
-	 * Returns a list of all schemas.
+	 * Returns a list of all VRFs.
 	 *
 	 * @param conn Connection object
-	 * @return All OSchema objects
+	 * @return All OVRF objects
 	 */
-	public static ARRAY listSchema(OConnection conn) throws JnipapException {
+	public static ARRAY listVRF(OConnection conn) throws JnipapException {
 
 		HashMap args = new HashMap();
-		List result = Schema.list((Connection)conn, args);
+		List result = VRF.list((Connection)conn, args);
 
-		OSchema[] ret = new OSchema[result.size()];
+		OVRF[] ret = new OVRF[result.size()];
 		for (int i = 0; i < result.size(); i++) {
-			ret[i] = toSQLObj((Schema)result.get(i));
+			ret[i] = toSQLObj((VRF)result.get(i));
 		}
 
-		return getARRAY("NIPAP_SCHEMA_TBL", (Object)ret);
+		return getARRAY("NIPAP_VRF_TBL", (Object)ret);
 
 	}
 
 	/**
-	 * Perform a smart schema search
+	 * Perform a smart VRF search
 	 *
 	 * @param conn Connection object
 	 * @param query Search string
-	 * @return Matching schemas
+	 * @return Matching VRFs
 	 */
-	public static ARRAY searchSchema(OConnection conn, String query) throws JnipapException {
+	public static ARRAY searchVRF(OConnection conn, String query) throws JnipapException {
 
-		Map result = Schema.search((Connection)conn, query, new HashMap());
-		List raw_schemas = (List)result.get("result");
+		Map result = VRF.search((Connection)conn, query, new HashMap());
+		List raw_vrfs = (List)result.get("result");
 
-		OSchema[] ret = new OSchema[raw_schemas.size()];
+		OVRF[] ret = new OVRF[raw_vrfs.size()];
 
-		for (int i = 0; i < raw_schemas.size(); i++) {
-			ret[i] = toSQLObj((Schema)raw_schemas.get(i));
+		for (int i = 0; i < raw_vrfs.size(); i++) {
+			ret[i] = toSQLObj((VRF)raw_vrfs.get(i));
 		}
 
-		return getARRAY("NIPAP_SCHEMA_TBL", (Object)ret);
+		return getARRAY("NIPAP_VRF_TBL", (Object)ret);
 
 	}
 
@@ -86,13 +86,12 @@ public class API {
 	 * Get a pool from ID
 	 *
 	 * @param conn Connection object
-	 * @param schema Schema to work in
 	 * @param id Pool ID to search for
-	 * @return Pool with ID 'id' in schema 'schema'
+	 * @return Pool with ID 'id'
 	 */
-	public static OPool getPool(OConnection conn, OSchema schema, int id) throws JnipapException {
+	public static OPool getPool(OConnection conn, int id) throws JnipapException {
 
-		Pool p = Pool.get((Connection)conn, (Schema)schema, new Integer(id));
+		Pool p = Pool.get((Connection)conn, new Integer(id));
 		return toSQLObj(p);
 
 	}
@@ -100,16 +99,15 @@ public class API {
 	/**
 	 * List pools
 	 *
-	 * Returns a list of all pools in a schema.
+	 * Returns a list of all pools.
 	 *
 	 * @param conn Connection object
-	 * @param schema Schema to work in
-	 * @param All pools in schema `schema`
+	 * @param All pools
 	 */
-	public static ARRAY listPool(OConnection conn, OSchema schema) throws JnipapException {
+	public static ARRAY listPool(OConnection conn) throws JnipapException {
 
 		Map pool_spec = new HashMap();
-		List result = Pool.list((Connection)conn, (Schema)schema, pool_spec);
+		List result = Pool.list((Connection)conn, pool_spec);
 
 		OPool[] ret = new OPool[result.size()];
 		for (int i = 0; i < result.size(); i++) {
@@ -124,13 +122,12 @@ public class API {
 	 * Perform a smart pool search
 	 *
 	 * @param conn Connection object
-	 * @param schema Schema to work in
 	 * @param query Search string
 	 * @return List of search results
 	 */
-	public static ARRAY searchPool(OConnection conn, OSchema schema, String query) throws JnipapException {
+	public static ARRAY searchPool(OConnection conn, String query) throws JnipapException {
 
-		Map result = Pool.search((Connection)conn, (Schema)schema, query, new HashMap());
+		Map result = Pool.search((Connection)conn, query, new HashMap());
 		List raw_pools = (List)result.get("result");
 
 		OPool[] ret = new OPool[raw_pools.size()];
@@ -148,13 +145,12 @@ public class API {
 	 * Get a prefix from ID
 	 *
 	 * @param conn Connection object
-	 * @param schema Schema to work in
 	 * @param id Prefix ID to search for
-	 * @return Prefix with id 'id' in schema 'schema'
+	 * @return Prefix with id 'id'
 	 */
-	public static OPrefix getPrefix(OConnection conn, OSchema schema, int id) throws JnipapException {
+	public static OPrefix getPrefix(OConnection conn, int id) throws JnipapException {
 
-		Prefix p = Prefix.get((jnipap.Connection)conn, (Schema)schema, new Integer(id));
+		Prefix p = Prefix.get((jnipap.Connection)conn, new Integer(id));
 		return toSQLObj(p);
 
 	}
@@ -163,14 +159,13 @@ public class API {
 	 * Perform a smart prefix search
 	 *
 	 * @param conn Connection object
-	 * @param schema Schema to work in
 	 * @param query Search string
 	 * @param search_options A map of search options
 	 * @return List of search results
 	 */
-	public static ARRAY searchPrefix(OConnection conn, OSchema schema, String query, OSearchOptions search_options) throws JnipapException {
+	public static ARRAY searchPrefix(OConnection conn, String query, OSearchOptions search_options) throws JnipapException {
 
-		Map result = Prefix.search((jnipap.Connection)conn, (Schema)schema, query, search_options);
+		Map result = Prefix.search((jnipap.Connection)conn, query, search_options);
 		List raw_prefixes = (List)result.get("result");
 
 		OPrefix[] ret = new OPrefix[raw_prefixes.size()];
@@ -187,13 +182,12 @@ public class API {
 	 * Perform a smart prefix search
 	 *
 	 * @param conn Connection object
-	 * @param schema Schema to work in
 	 * @param query Search string
 	 * @return List of search results
 	 */
-	public static ARRAY searchPrefix(OConnection conn, OSchema schema, String query) throws JnipapException {
+	public static ARRAY searchPrefix(OConnection conn, String query) throws JnipapException {
 
-		return searchPrefix(conn, schema, query, new OSearchOptions());
+		return searchPrefix(conn, query, new OSearchOptions());
 
 	}
 
@@ -204,12 +198,11 @@ public class API {
 	 * `query`. The search is performed using the `equals` operator.
 	 *
 	 * @param conn Connection object
-	 * @param schema Schema to search in
 	 * @param query String to search
 	 * @param search_options Search options such as limiting the number of results
-	 * @return An array of OSchema objects matching the search query
+	 * @return An array of OPrefix objects matching the search query
 	 */
-	public static ARRAY searchPrefixExtKey(OConnection conn, OSchema schema, String query, OSearchOptions search_options) throws JnipapException {
+	public static ARRAY searchPrefixExtKey(OConnection conn, String query, OSearchOptions search_options) throws JnipapException {
 
 		// Build search query map
 		HashMap search_query = new HashMap();
@@ -218,7 +211,7 @@ public class API {
 		search_query.put("val2", query);
 
 		// Perform search
-		Map result = Prefix.search((jnipap.Connection)conn, (Schema)schema, search_query, search_options);
+		Map result = Prefix.search((jnipap.Connection)conn, search_query, search_options);
 
 		// Extract & convert data
 		List raw_prefixes = (List)result.get("result");
@@ -293,18 +286,18 @@ public class API {
 	}
 
 	/**
-	 * Convert Schema to SQLData version
+	 * Convert VRF to SQLData version
 	 *
-	 * @param s Schema to convert
-	 * @return SQLData-compliant schema object
+	 * @param v VRF to convert
+	 * @return SQLData-compliant VRF object
 	 */
-	private static OSchema toSQLObj(Schema s) {
+	private static OVRF toSQLObj(VRF v) {
 
-		OSchema sqlobj = new OSchema();
-		sqlobj.id = s.id;
-		sqlobj.name = s.name;
-		sqlobj.description = s.description;
-		sqlobj.vrf = s.vrf;
+		OVRF sqlobj = new OVRF();
+		sqlobj.id = v.id;
+		sqlobj.rt = v.rt;
+		sqlobj.name = v.name;
+		sqlobj.description = v.description;
 
 		return sqlobj;
 
@@ -321,7 +314,6 @@ public class API {
 		OPool sqlobj = new OPool();
 		sqlobj.id = p.id;
 		sqlobj.name = p.name;
-		sqlobj.schema = toSQLObj(p.schema);
 		sqlobj.description = p.description;
 		sqlobj.default_type = p.default_type;
 		sqlobj.ipv4_default_prefix_length = p.ipv4_default_prefix_length;
@@ -341,8 +333,8 @@ public class API {
 
 		OPrefix sqlobj = new OPrefix();
 		sqlobj.id = p.id;
-		if (p.schema != null) {
-			sqlobj.schema = toSQLObj(p.schema);
+		if (p.vrf != null) {
+			sqlobj.vrf = toSQLObj(p.vrf);
 		}
 		sqlobj.prefix = p.prefix;
 		sqlobj.display_prefix = p.display_prefix;
