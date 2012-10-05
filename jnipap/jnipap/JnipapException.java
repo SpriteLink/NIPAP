@@ -139,7 +139,7 @@ class AuthFailedException extends JnipapException {
 }
 
 /**
- * Thrown when ivalid parameters were sent
+ * Thrown when invalid parameters were received
  */
 class InvalidParameterException extends JnipapException {
 
