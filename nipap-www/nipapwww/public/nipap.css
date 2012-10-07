@@ -423,7 +423,7 @@ tbody.listing > tr:hover {
 }
 
 .preflist_vrf_panel {
-	width: 150px;
+	width: 100px;
 	display: table-cell;
 	font-size: 14px;
 	font-weight: bold;
