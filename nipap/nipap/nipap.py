@@ -1843,15 +1843,33 @@ class Nipap:
             args = {}
 
         # Handle Pool - find correct one and remove bad pool keys
-        pool = None
         if 'pool_id' in attr or 'pool_name' in attr:
             if 'pool_id' in attr:
-                pool = self._get_pool(auth, { 'id': attr['pool_id'] })
+                if attr['pool_id'] is None:
+                    pool = {
+                        'id': None,
+                        'name': None
+                    }
+                else:
+                    pool = self._get_pool(auth, { 'id': attr['pool_id'] })
+
             else:
-                pool = self._get_pool(auth, { 'name': attr['pool_name'] })
-                del(attr['pool_name'])
+                if attr['pool_name'] is None:
+                    pool = {
+                        'id': None,
+                        'name': None
+                    }
+                else:
+                    pool = self._get_pool(auth, { 'name': attr['pool_name'] })
 
             attr['pool_id'] = pool['id']
+
+        else:
+            pool = {
+                'id': None,
+                'name': None
+            }
+
 
         # Handle VRF - find the correct one and remove bad VRF keys.
         vrf = self._get_vrf(auth, attr)
@@ -1919,12 +1937,11 @@ class Nipap:
         sql, params = self._sql_expand_insert(audit_params)
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
-        if pool is not None:
-            audit_params = {
-                'pool_id': pool['id'],
-                'pool_name': pool['name'],
-                'description': 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
-            }
+        if pool['id'] is not None:
+            audit_params['pool_id'] = pool['id']
+            audit_params['pool_name'] = pool['name']
+            audit_params['description'] = 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
+
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 

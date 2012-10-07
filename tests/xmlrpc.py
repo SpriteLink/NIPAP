@@ -173,7 +173,7 @@ class NipapXmlTest(unittest.TestCase):
             s.add_prefix({ 'auth': ad, 'attr': attr })
 
         attr['prefix'] = '1.3.3.0/24'
-        with self.assertRaisesRegexp(xmlrpclib.Fault, "Either description or host must be specified."):
+        with self.assertRaisesRegexp(xmlrpclib.Fault, "Either description or node must be specified."):
             s.add_prefix({ 'auth': ad, 'attr': attr })
 
         attr['description'] = 'test prefix'
