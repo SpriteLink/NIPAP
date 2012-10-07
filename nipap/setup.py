@@ -24,7 +24,8 @@ setup(
 				('/usr/sbin/', ['nipapd', 'nipap-passwd']),
 				('/usr/share/nipap/sql/', [
 					'sql/functions.plsql',
-					'sql/ip_net.plsql'
+					'sql/ip_net.plsql',
+					'sql/clean.plsql'
 				])
 	],
     classifiers = [
