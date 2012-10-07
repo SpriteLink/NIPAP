@@ -1,3 +1,9 @@
+nipap (0.11.0-1) stable; urgency=low
+
+  * Schemas removed from NIPAP and replaced with VRFs
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 08 Oct 2012 01:16:04 +0200
+
 nipap (0.10.0-1) stable; urgency=low
 
   * Added a fancy floating header to the prefix search page

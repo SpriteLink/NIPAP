@@ -1,3 +1,7 @@
+Version 0.11.0
+--------------
+ * Schemas removed from NIPAP and replaced with VRFs
+
 Version 0.10.0
 -------------
  * Added a fancy floating header to the prefix search page
