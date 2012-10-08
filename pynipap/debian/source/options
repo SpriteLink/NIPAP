@@ -1,2 +1,2 @@
 # Keep a few files out of the debian package
-extend-diff-ignore = "(^|/)(Makefile)$"
+extend-diff-ignore = "(^|/)(Makefile|MANIFEST)$"

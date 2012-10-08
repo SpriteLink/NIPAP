@@ -1,3 +1,9 @@
+pynipap (0.11.0-2) stable; urgency=low
+
+  * Added MANIFEST to list of ignored files.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 08 Oct 2012 03:38:31 +0200
+
 pynipap (0.11.0-1) stable; urgency=low
 
   * Schemas removed from NIPAP and replaced with VRFs
