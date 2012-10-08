@@ -78,7 +78,7 @@
 		<tr id="vrf_row{{ vrf.id }}" data-vrf-id="{{vrf.id}}">
 			<td style="padding-left: 30px;">{{ vrf.rt }}</a></td>
 			<td>{{ vrf.name or '' }}</td>
-			<td>{{ vrf.description }}</td>
+			<td>{{ vrf.description or '' }}</td>
 			<td>
 				<div id="vrf_button{{vrf.id}}" class="minibutton">
 					<div class="popup_button_icon">&nbsp;</div>
