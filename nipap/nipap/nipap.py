@@ -814,7 +814,7 @@ class Nipap:
 
         # sanity check - do we have all attributes?
         req_attr = [ ]
-        allowed_attr = [ 'vrf', 'name', 'description' ]
+        allowed_attr = [ 'rt', 'name', 'description' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
         # get list of VRFs which will be changed before changing them
@@ -839,7 +839,7 @@ class Nipap:
                 'authenticated_as': auth.authenticated_as,
                 'full_name': auth.full_name,
                 'authoritative_source': auth.authoritative_source,
-                'description': 'Edited VRF %s attr: %s' % (v['vrf'], str(attr))
+                'description': 'Edited VRF %s attr: %s' % (v['rt'], str(attr))
             }
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
