@@ -959,7 +959,7 @@ class Nipap:
             where, opt = self._expand_vrf_query(query)
             sql += " AND " + where
 
-        sql += " ORDER BY name LIMIT " + str(search_options['max_result'])
+        sql += " ORDER BY rt LIMIT " + str(search_options['max_result'])
         self._execute(sql, opt)
 
         result = list()
@@ -1731,24 +1731,24 @@ class Nipap:
 
             # val1 is variable, val2 is string.
             prefix_attr = dict()
-            prefix_attr['id'] = 'id'
-            prefix_attr['prefix'] = 'prefix'
-            prefix_attr['description'] = 'description'
+            prefix_attr['id'] = 'inp.id'
+            prefix_attr['prefix'] = 'inp.prefix'
+            prefix_attr['description'] = 'inp.description'
             prefix_attr['pool_id'] = 'pool.id'
             prefix_attr['pool_name'] = 'pool.name'
-            prefix_attr['family'] = 'family'
-            prefix_attr['comment'] = 'comment'
-            prefix_attr['type'] = 'type'
-            prefix_attr['node'] = 'node'
-            prefix_attr['country'] = 'country'
-            prefix_attr['order_id'] = 'order_id'
-            prefix_attr['vrf_id'] = 'vrf.id'
+            prefix_attr['family'] = 'inp.family'
+            prefix_attr['comment'] = 'inp.comment'
+            prefix_attr['type'] = 'inp.type'
+            prefix_attr['node'] = 'inp.node'
+            prefix_attr['country'] = 'inp.country'
+            prefix_attr['order_id'] = 'inp.order_id'
+            prefix_attr['vrf_id'] = 'inp.vrf_id'
             prefix_attr['vrf_rt'] = 'vrf.rt'
             prefix_attr['vrf_name'] = 'vrf.name'
-            prefix_attr['external_key'] = 'external_key'
-            prefix_attr['authoritative_source'] = 'authoritative_source'
-            prefix_attr['alarm_priority'] = 'alarm_priority'
-            prefix_attr['monitor'] = 'monitor'
+            prefix_attr['external_key'] = 'inp.external_key'
+            prefix_attr['authoritative_source'] = 'inp.authoritative_source'
+            prefix_attr['alarm_priority'] = 'inp.alarm_priority'
+            prefix_attr['monitor'] = 'inp.monitor'
 
             if query['val1'] not in prefix_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
@@ -2669,8 +2669,9 @@ class Nipap:
             )
             JOIN ip_net_vrf AS vrf ON (p1.vrf_id = vrf.id)
             LEFT JOIN ip_net_pool AS pool ON (p1.pool_id = pool.id)
-            WHERE p2.prefix IN (
-                SELECT prefix FROM ip_net_plan WHERE """ + where + """
+            WHERE p2.id IN (
+                SELECT inp.id FROM ip_net_plan AS inp JOIN ip_net_vrf AS vrf ON inp.vrf_id = vrf.id LEFT JOIN ip_net_pool AS pool ON inp.pool_id = pool.id
+                    WHERE """ + where + """
                 ORDER BY prefix
                 LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
             ) ORDER BY vrf.rt, p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf_rt NULLS FIRST, prefix"
