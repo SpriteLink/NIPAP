@@ -12,9 +12,21 @@ from nipap_cli.command import Command, CommandError
 from pynipap import NipapError
 
 
+
+class NullHandler(logging.Handler):
+    """ A NULL logging handler
+
+        Discards all log messages passed to it.
+    """
+
+    def emit(self, record):
+        pass
+
+
+
 if __name__ == '__main__':
     logger = logging.getLogger()
-    nullh = logging.NullHandler()
+    nullh = NullHandler()
     logger.addHandler(nullh)
 
     try:
