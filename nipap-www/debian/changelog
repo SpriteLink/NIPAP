@@ -1,3 +1,10 @@
+nipap-www (0.11.1-1) stable; urgency=low
+
+  * Bugfix; limit prefix search to VRF now works and is fast
+  * NIPAP cli now works in Python < 2.7
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 10 Oct 2012 09:39:34 +0200
+
 nipap-www (0.11.0-1) stable; urgency=low
 
   * Schemas removed from NIPAP and replaced with VRFs

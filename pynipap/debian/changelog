@@ -1,3 +1,10 @@
+pynipap (0.11.1-1) stable; urgency=low
+
+  * Bugfix; limit prefix search to VRF now works and is fast
+  * NIPAP cli now works in Python < 2.7
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 10 Oct 2012 09:40:16 +0200
+
 pynipap (0.11.0-2) stable; urgency=low
 
   * Added MANIFEST to list of ignored files.
