@@ -47,6 +47,15 @@
 
 
         $(function() {
+			// handle the comment input field
+			if ($("input[name='prefix_comment']").val() == '') {
+				$("input[name='prefix_comment']").hide();
+				$('#add_comment').show();
+				$('#add_comment').click(function() {
+					$("input[name='prefix_comment']").slideDown();
+					$("#add_comment").hide();
+				});
+			}
 
             // Capture submit form event
             $('form[name="prefix_form"]').submit(function(e) {
@@ -140,7 +149,24 @@ Prefix administration &mdash;&gt; edit prefix
                         Description
                     </dt>
                     <dd>
-                        <input type="text" name="prefix_description" value="{{ c.prefix.description or '' }}">
+						<input type="text" name="prefix_description" style="width: 80%;" class="tooltip" title="A brief description of the prefix." value="{{ c.prefix.description or '' }}">
+                    </dd>
+                </dl>
+            </div>
+
+            <div class="rule"></div>
+
+            <div class="option">
+                <dl>
+                    <dt>
+                        Comment
+                    </dt>
+                    <dd>
+						{% if c.prefix.comment %}
+                        <input type="text" name="prefix_comment" value="{{ c.prefix.comment or '' }}">
+						{% else %}
+						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer; display: none;">add comment</span><input type="text" name="prefix_comment" style="width: 80%;">
+						{% endif %}
                     </dd>
                 </dl>
             </div>
@@ -166,7 +192,7 @@ Prefix administration &mdash;&gt; edit prefix
                         Country
                     </dt>
                     <dd>
-                        <input type="text" name="prefix_country" value="{{ c.prefix.country or '' }}" class="tooltip" title="Two-letter country code according to <a href='http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements ISO-3166-1'">
+                        <input type="text" name="prefix_country" value="{{ c.prefix.country or '' }}" class="tooltip" title="Two-letter country code according to ISO-3166-1'">
                     </dd>
                 </dl>
             </div>
@@ -179,7 +205,7 @@ Prefix administration &mdash;&gt; edit prefix
                         Order ID
                     </dt>
                     <dd>
-                        <input type="text" name="prefix_order_id" value="{{ c.prefix.order_id or '' }}">
+                        <input type="text" name="prefix_order_id" value="{{ c.prefix.order_id or '' }}" size=10>
                     </dd>
                 </dl>
             </div>
@@ -216,19 +242,6 @@ Prefix administration &mdash;&gt; edit prefix
                             <input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high"{% if c.prefix.alarm_priority == 'high' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
                             <label for="radio-prefix-alarm-prio-high">high</label>
                         </span>
-                    </dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        Comment
-                    </dt>
-                    <dd>
-                        <input type="text" name="prefix_comment" value="{{ c.prefix.comment or '' }}">
                     </dd>
                 </dl>
             </div>
