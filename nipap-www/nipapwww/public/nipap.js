@@ -351,6 +351,8 @@ function performPrefixSearch(explicit) {
 	// Skip search if query string empty
 	if (jQuery.trim($('#query_string').val()).length < 1) {
 		clearPrefixSearch();
+		// update URL
+		setSearchPrefixURI(explicit);
 		return true;
 	}
 	end_of_result = 0;
