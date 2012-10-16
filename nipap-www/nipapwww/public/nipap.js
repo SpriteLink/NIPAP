@@ -1928,6 +1928,25 @@ function prefixFormSubmit(e) {
 		prefix_data.from_prefix = new Array(cur_opts.from_prefix.prefix);
 		prefix_data.prefix_length = $('input[name="prefix_length_prefix"]').val();
 
+		// validate the prefix-length
+		if (prefix_data.prefix_length == '') {
+			showDialogNotice('Invalid prefix-length', 'You must set a prefix-length.');
+			return;
+		} else if (prefix_data.prefix_length % 1 !== 0) {
+			showDialogNotice('Invalid prefix-length', 'Prefix-length must be an integer.');
+			return;
+		} else if (prefix_list[cur_opts.from_prefix.id].family == 4) {
+			if (prefix_data.prefix_length < 1 || prefix_data.prefix_length > 32) {
+				showDialogNotice('Invalid prefix-length', 'Prefix-length for IPv4 must be an integer between 1 and 32.');
+				return;
+			}
+		} else if (prefix_list[cur_opts.from_prefix.id].family == 6) {
+			if (prefix_data.prefix_length < 1 || prefix_data.prefix_length > 128) {
+				showDialogNotice('Invalid prefix-length', 'Prefix-length for IPv6 must be an integer between 1 and 128.');
+				return;
+			}
+		}
+
 	} else {
 
 		prefix_data.prefix = $('input[name="prefix_prefix"]').val();
