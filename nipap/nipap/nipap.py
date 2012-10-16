@@ -1842,6 +1842,10 @@ class Nipap:
         if args is None:
             args = {}
 
+        # attr must be a dict!
+        if type(attr) != dict:
+            raise NipapInputError("'attr' must be a dict")
+
         # Handle Pool - find correct one and remove bad pool keys
         if 'pool_id' in attr or 'pool_name' in attr:
             if 'pool_id' in attr:
