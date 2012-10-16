@@ -422,7 +422,7 @@ function setSearchPrefixURI(explicit) {
 
 	url_str += url.attr('path');
 
-	if (url.attr('query') != null) {
+	if (url.attr('query') != null && url.attr('query') != '') {
 		url_str += '?' + url.attr('query');
 	}
 
