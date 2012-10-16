@@ -181,6 +181,85 @@ $_$ LANGUAGE plpgsql;
 
 
 --
+-- Helper to sort VRF RTs
+--
+-- RTs are tricky to sort since they exist in two formats and have the classic
+-- sorted-as-string-problem;
+--
+--      199:456
+--     1234:456
+--  1.3.3.7:456
+--
+CREATE OR REPLACE FUNCTION vrf_rt_order(arg_rt text) RETURNS bigint AS $_$
+DECLARE
+	part_one text;
+	part_two text;
+	ip text;
+BEGIN
+	BEGIN
+		part_one := split_part(arg_rt, ':', 1)::bigint;
+	EXCEPTION WHEN others THEN
+		ip := split_part(arg_rt, ':', 1);
+		part_one := (split_part(ip, '.', 1)::bigint << 24) +
+					(split_part(ip, '.', 2)::bigint << 16) +
+					(split_part(ip, '.', 3)::bigint << 8) +
+					(split_part(ip, '.', 4)::bigint);
+	END;
+
+	part_two := split_part(arg_rt, ':', 2);
+
+	RETURN (part_one::bigint << 32) + part_two::bigint;
+END;
+$_$ LANGUAGE plpgsql IMMUTABLE STRICT;
+
+
+
+--
+-- Trigger function to validate VRF input, prominently the RT attribute which
+-- needs to follow the allowed formats
+--
+CREATE OR REPLACE FUNCTION tf_ip_net_vrf_iu_before() RETURNS trigger AS $_$
+DECLARE
+	rt_part_one text;
+	rt_part_two text;
+	ip text;
+BEGIN
+	-- make sure we only have two fields delimited by a colon
+	IF (SELECT COUNT(1) FROM regexp_matches(NEW.rt, '(:)', 'g')) != 1 THEN
+		RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+	END IF;
+
+	-- check first part
+	BEGIN
+		-- either it's a integer (AS number)
+		rt_part_one := split_part(NEW.rt, ':', 1)::bigint;
+	EXCEPTION WHEN others THEN
+		BEGIN
+			-- or an IPv4 address
+			ip := host(split_part(NEW.rt, ':', 1)::inet);
+			rt_part_one := (split_part(ip, '.', 1)::bigint << 24) +
+						(split_part(ip, '.', 2)::bigint << 16) +
+						(split_part(ip, '.', 3)::bigint << 8) +
+						(split_part(ip, '.', 4)::bigint);
+		EXCEPTION WHEN others THEN
+			RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+		END;
+	END;
+
+	-- check part two
+	BEGIN
+		rt_part_two := split_part(NEW.rt, ':', 2)::bigint;
+	EXCEPTION WHEN others THEN
+		RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+	END;
+
+	RETURN NEW;
+END;
+$_$ LANGUAGE plpgsql;
+
+
+
+--
 -- Trigger function to keep data consistent in the ip_net_plan table with
 -- regards to prefix type and similar. This function handles INSERTs and
 -- UPDATEs.

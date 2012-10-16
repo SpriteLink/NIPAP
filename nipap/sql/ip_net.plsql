@@ -159,6 +159,18 @@ CREATE INDEX ip_net_log__prefix__index ON ip_net_log(prefix_id);
 CREATE INDEX ip_net_log__pool__index ON ip_net_log(pool_id);
 
 
+
+--
+-- Triggers for sanity checking on ip_net_vrf table.
+--
+CREATE TRIGGER trigger_ip_net_vrf__iu_before
+	BEFORE UPDATE OR INSERT
+	ON ip_net_vrf
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_vrf_iu_before();
+
+
+
 --
 -- Triggers for consistency checking and updating indent level on ip_net_plan
 -- table.
