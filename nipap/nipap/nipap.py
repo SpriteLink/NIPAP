@@ -755,7 +755,7 @@ class Nipap:
         if len(params) > 0:
             sql += " AND " + where
 
-        sql += " ORDER BY rt"
+        sql += " ORDER BY vrf_rt_order(rt) NULLS FIRST"
 
         self._execute(sql, params)
 
@@ -959,7 +959,7 @@ class Nipap:
             where, opt = self._expand_vrf_query(query)
             sql += " AND " + where
 
-        sql += " ORDER BY rt LIMIT " + str(search_options['max_result'])
+        sql += " ORDER BY vrf_rt_order(rt) NULLS FIRST LIMIT " + str(search_options['max_result'])
         self._execute(sql, opt)
 
         result = list()
@@ -2672,9 +2672,9 @@ class Nipap:
             WHERE p2.id IN (
                 SELECT inp.id FROM ip_net_plan AS inp JOIN ip_net_vrf AS vrf ON inp.vrf_id = vrf.id LEFT JOIN ip_net_pool AS pool ON inp.pool_id = pool.id
                     WHERE """ + where + """
-                ORDER BY prefix
+                ORDER BY vrf_rt_order(vrf.rt) NULLS FIRST, prefix
                 LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
-            ) ORDER BY vrf.rt, p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf_rt NULLS FIRST, prefix"
+            ) ORDER BY vrf.rt, p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf_rt_order(vrf_rt) NULLS FIRST, prefix"
 
         self._execute(sql, opt)
 
