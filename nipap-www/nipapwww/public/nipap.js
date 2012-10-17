@@ -212,7 +212,6 @@ function displaySearchHelp() {
 
 	var c = '';
 
-	d = showDialog('search_help', 'Searching', c, 800);
 	c += '<div class="dialog_text" style="padding: 15px;">' +
 		"Searching is the primary method of navigating the many thousand of prefixes that NIPAP is built to handle. It's very similar to how popular search engines, such as Google, Yahoo or Bing, are used." +
 		"<h4>Matching text</h4>Just as with any search engine, you can enter a word or multiple words to match the text information associated with a prefix, that is the description or comment field. Each word is treated as a search 'term' and all search terms are joined together by the boolean operator AND. That means that searching for <i>'<b>foo bar</b>'</i> will be interpreted as a search for <i>'<b>foo</b>'</i> and <i>'<b>bar</b>'</i>. Any match must contain both the word <i>'<b>foo</b>'</i> and the word <i>'<b>bar</b>'</i>, though not necessarily in that order. <i>'<b>bar foo</b>'</i> will match, just as <i>'<b>foo</b> test test <b>bar</b>'</i> will match." +
@@ -222,6 +221,7 @@ function displaySearchHelp() {
 		   "<br/><br/>To list all addresses inside 172.16.0.0/24:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;172.16.0.0/24" +
 		   "<br/><br/>To match prefixes with 'TEST-ROUTER-1' in description or comment and that are somewhere in the network 10.0.0.0/8:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.0/8 TEST-ROUTER-1" +
 		   '<br/><br/></div>';
+	d = showDialog('search_help', 'Searching', c, 800);
 
 	return false;
 }
