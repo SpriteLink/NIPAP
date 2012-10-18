@@ -315,6 +315,7 @@ function collapseGroup(id) {
  * Clear all state related to prefix search
  */
 function clearPrefixSearch() {
+	$('#search_stats').empty();
 	$('#prefix_list').empty();
 	$('#search_interpret_container').empty();
 	$('#search_result_help').show();
