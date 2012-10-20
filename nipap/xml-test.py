@@ -5,6 +5,7 @@ import xmlrpclib
 
 import optparse
 import time
+import sys
 
 parser = optparse.OptionParser()
 parser.add_option('-p', '--port', dest='port', type='int', default='1337', help="TCP port")
@@ -31,7 +32,8 @@ remove_query = {
 			}
 		}
 #server.remove_schema(remove_query)
-print server.list_vrf({ 'auth': ad, 'vrf': {} })
+print server.list_vrf({ 'auth': ad })
+sys.exit(0)
 #print server.add_vrf({ 'auth': { 'authoritative_source': 'kll' },
 #        'attr': {
 #            'vrf': '1257:124',
