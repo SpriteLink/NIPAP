@@ -751,7 +751,9 @@ class Nipap:
         sql = "SELECT * FROM ip_net_vrf WHERE id > 0"
 
         params = list()
-        where, params = self._expand_vrf_spec(spec)
+        # no spec lists all VRFs
+        if spec is not None and not {}:
+            where, params = self._expand_vrf_spec(spec)
         if len(params) > 0:
             sql += " AND " + where
 
