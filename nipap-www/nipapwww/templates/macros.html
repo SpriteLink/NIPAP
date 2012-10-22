@@ -42,68 +42,6 @@
 					</td>
 					<td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td>
 				</tr>
-				<tr>
-					<td class="opt_left">
-						Display options
-					</td>
-					<td class="opt_right">
-						<table>
-							<tr>
-								<td style="text-align: right; padding: 0; margin: 0;">
-									Include parent:
-								</td>
-								<td style="padding: 0; margin: 0;">
-
-								{% if search_opt_parent == 'none' %}
-									<input type="radio" name="search_opt_parent{{ id_suffix }}" value="none" checked>none</input>
-								{% else %}
-									<input type="radio" name="search_opt_parent{{ id_suffix }}" value="none">none</input>
-								{% endif %}
-
-								{% if search_opt_parent == 'immediate' %}
-									<input type="radio" name="search_opt_parent{{ id_suffix }}" value="immediate" checked>immediate</input>
-								{% else %}
-									<input type="radio" name="search_opt_parent{{ id_suffix }}" value="immediate">immediate</input>
-								{% endif %}
-
-								{% if search_opt_parent == 'all' %}
-									<input type="radio" name="search_opt_parent{{ id_suffix }}" value="all" checked>all</input>
-								{% else %}
-									<input type="radio" name="search_opt_parent{{ id_suffix }}" value="all">all</input>
-								{% endif %}
-
-								</td>
-							</tr>
-							<tr>
-								<td style="text-align: right; padding: 0; margin: 0;">
-									Include children:
-								</td>
-								<td style="padding: 0; margin: 0;">
-
-								{% if search_opt_child == 'none' %}
-									<input type="radio" name="search_opt_child{{ id_suffix }}" value="none" checked>none
-								{% else %}
-									<input type="radio" name="search_opt_child{{ id_suffix }}" value="none">none
-								{% endif %}
-
-								{% if search_opt_child == 'immediate' %}
-									<input type="radio" name="search_opt_child{{ id_suffix }}" value="immediate" checked>immediate
-								{% else %}
-									<input type="radio" name="search_opt_child{{ id_suffix }}" value="immediate">immediate
-								{% endif %}
-
-								{% if search_opt_child == 'all' %}
-									<input type="radio" name="search_opt_child{{ id_suffix }}" value="all" checked>all
-								{% else %}
-									<input type="radio" name="search_opt_child{{ id_suffix }}" value="all">all
-								{% endif %}
-
-								</td>
-							</tr>
-						</table>
-
-					</td>
-				</tr>
 			</table>
         </div>
     </center>
