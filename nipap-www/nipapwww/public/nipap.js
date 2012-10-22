@@ -315,11 +315,11 @@ function collapseGroup(id) {
  * Clear all state related to prefix search
  */
 function clearPrefixSearch() {
+	$('#search_interpretation').empty();
 	$('#search_stats').empty();
 	$('#prefix_list').empty();
-	$('#search_interpret_container').empty();
-	$('#search_result_help').show();
 	$('#fixed_prefix_header').css('visibility', 'hidden');
+	$('#search_result_help').show();
 	$('#nextpage').hide();
 	query_id += 1;
 
@@ -1013,7 +1013,8 @@ function receivePrefixList(search_result) {
 
 	// Error?
 	if ('error' in search_result) {
-		showDialogNotice("Error", search_result.message);
+		$('#search_interpretation').html('<font color="#DD4B39"><b>Invalid search query: </b>' + search_result.message + '</font>');
+		hideLoadingIndicator();
 		return;
 	}
 
@@ -1021,6 +1022,9 @@ function receivePrefixList(search_result) {
 		showDialogNotice("Error", 'No query_id in response');
 		return;
 	}
+
+	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left tooltip" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" title="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
+	$('#search_interpretation_text').tipTip({delay: 100});
 
 	// If we receive a result older than the one we display, ignore the
 	// received result.
