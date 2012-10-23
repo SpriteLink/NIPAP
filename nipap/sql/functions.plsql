@@ -391,6 +391,14 @@ BEGIN
 		PERFORM calc_indent(OLD.vrf_id, OLD.prefix, -1);
 	ELSIF TG_OP = 'INSERT' THEN
 		PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
+	ELSIF TG_OP = 'UPDATE' THEN
+		-- only act on changes to the prefix
+		IF OLD.prefix != NEW.prefix THEN
+			-- "restore" indent where the old prefix was
+			PERFORM calc_indent(NEW.vrf_id, OLD.prefix, -1);
+			-- and add indent where the new one is
+			PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
+		END IF;
 	ELSE
 		-- nothing!
 	END IF;
