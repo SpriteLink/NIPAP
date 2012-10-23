@@ -43,6 +43,10 @@ if __name__ == '__main__':
 
     try:
         cmd.exe(cmd.arg, cmd.exe_options)
+    except KeyboardInterrupt:
+        sys.exit(130)
+    except (IOError, OSError):
+        sys.exit(141)
     except NipapError, e:
         print >> sys.stderr, "Command failed:\n  %s" % e.message
         sys.exit(1)
