@@ -1713,6 +1713,9 @@ class Nipap:
         else:
             col_prefix = table_name + "."
 
+        if 'val1' not in query or 'val2' not in query:
+            raise NipapInputError("'val1' and 'val2' must be set")
+
         if type(query['val1']) == dict and type(query['val2']) == dict:
             # Sub expression, recurse! This is used for boolean operators: AND OR
             # add parantheses
