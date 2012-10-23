@@ -1,3 +1,9 @@
+Version 0.12.0
+--------------
+ * VRF RT now verified; must match xx:yy or x.y.z.x:aa
+ * VRF RT:s now sorted as one would expect
+ * Various bugfixes
+
 Version 0.11.1
 --------------
  * Bugfix; limit prefix search to VRF now works and is fast

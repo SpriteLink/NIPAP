@@ -1,3 +1,11 @@
+nipap-www (0.12.0-1) stable; urgency=low
+
+  * VRF RT now verified; must match xx:yy or x.y.z.x:aa
+  * VRF RT:s now sorted as one would expect
+  * Various bugfixes
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 23 Oct 2012 16:41:52 +0200
+
 nipap-www (0.11.1-1) stable; urgency=low
 
   * Bugfix; limit prefix search to VRF now works and is fast
