@@ -74,8 +74,8 @@ def get_vrf(arg = None, opts = None, abort = False):
         try:
             vrf_rt = cfg.get('global', 'default_vrf')
         except ConfigParser.NoOptionError:
-            print >> sys.stderr, "Please define a default VRF in your .nipaprc"
-            sys.exit(1)
+            # default to all VRFs
+            vrf_rt = 'all'
     else:
         vrf_rt = arg
 
