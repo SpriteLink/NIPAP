@@ -879,7 +879,7 @@ class Prefix(Pynipap):
 
 
 
-    def remove(self):
+    def remove(self, recursive = False):
         """ Remove the prefix.
         """
 
@@ -887,6 +887,7 @@ class Prefix(Pynipap):
             self._xmlrpc.connection.remove_prefix(
                 {
                     'prefix': { 'id': self.id },
+                    'recursive': recursive,
                     'auth': self._auth_opts.options
                 })
         except xmlrpclib.Fault, f:
