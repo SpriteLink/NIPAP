@@ -261,8 +261,11 @@ def list_prefix(arg, opts):
         if p.display == False:
             continue
 
+        vrf = None
+        if p.vrf is not None:
+            vrf = p.vrf.rt
         try:
-            print "%-29s %-2s %-19s %-14s %-40s" % (
+            print "%-10s %-29s %-2s %-19s %-14s %-40s" % (vrf,
                 "".join("  " for i in range(p.indent)) + p.display_prefix,
                 p.type[0].upper(), p.node, p.order_id, p.description
             )
