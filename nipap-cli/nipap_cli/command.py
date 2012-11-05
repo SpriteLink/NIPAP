@@ -125,6 +125,10 @@ class Command:
                 if 'exec' in val:
                     self.exe = val['exec']
 
+                # simple bool options, save value
+                if 'type' in val and val['type'] == 'bool':
+                    self.exe_options[key] = True
+
                 # Elements wich takes arguments need special attention
                 if 'argument' in val:
 
