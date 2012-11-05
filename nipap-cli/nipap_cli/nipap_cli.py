@@ -525,6 +525,9 @@ def remove_pool(arg, opts):
 def remove_prefix(arg, opts):
     """ Remove prefix
     """
+    recursive = False
+    if opts.get('recursive') is True:
+        recursive = True
 
     spec = { 'prefix': arg }
     v = get_vrf(opts.get('vrf'), abort=True)
@@ -536,17 +539,49 @@ def remove_prefix(arg, opts):
         print >> sys.stderr, "No prefix %s found." % arg
         sys.exit(1)
 
+    # figure out VRF
     p = res[0]
     if p.vrf is None:
         vrf = None
     else:
         vrf = p.vrf.rt
 
-    res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, vrf))
+    if recursive is True:
+        # recursive delete
 
-    if res == 'y':
-        p.remove()
-        print "Prefix %s removed." % p.prefix
+        # get affected prefixes
+        query = {
+                'val1': 'prefix',
+                'operator': 'contained_within_equals',
+                'val2': p.prefix
+            }
+        pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
+        if len(pres['result']) <= 1:
+            res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, vrf))
+        else:
+            print "Recursively deleting %s will delete the following prefixes:" % p.prefix
+
+            i = 0
+            for rp in pres['result']:
+                print "%-29s %-2s %-19s %-14s %-40s" % ("".join("  " for i in
+                    range(rp.indent)) + rp.display_prefix,
+                    rp.type[0].upper(), rp.node, rp.order_id, rp.description)
+                i += 1
+                if i > 10:
+                    print ".. and %s other prefixes" % (len(pres['result']) - 10)
+                    break
+
+            res = raw_input("Do you really want to recursively remove %s prefixes in VRF %s? [y/n]: " % (len(pres['result']), vrf))
+    else:
+        # non recursive delete
+        res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, vrf))
+
+    if res.lower() == 'y' or res.lower() == 'yes':
+        p.remove(recursive = recursive)
+        if recursive is True:
+            print "Prefix %s and %s other prefixes removed." % (p.prefix, (len(pres['result']) - 1))
+        else:
+            print "Prefix %s removed." % p.prefix
     else:
         print "Operation canceled."
 
@@ -1078,6 +1113,9 @@ cmds = {
                                 'complete': complete_vrf,
                             }
                         },
+                        'recursive': {
+                            'type': 'bool'
+                        }
                     }
                 },
 
