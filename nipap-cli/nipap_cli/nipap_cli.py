@@ -530,7 +530,10 @@ def remove_prefix(arg, opts):
         recursive = True
 
     spec = { 'prefix': arg }
-    v = get_vrf(opts.get('vrf'), abort=True)
+    if opts.get('vrf') is None:
+        v = get_vrf('none', abort=True)
+    else:
+        v = get_vrf(opts.get('vrf'), abort=True)
     spec['vrf_rt'] = v.rt
 
     res = Prefix.list(spec)
