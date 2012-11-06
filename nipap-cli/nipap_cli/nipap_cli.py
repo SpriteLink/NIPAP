@@ -313,8 +313,8 @@ def add_prefix(arg, opts):
     if 'from-prefix' in opts:
         args['from-prefix'] = [ opts['from-prefix'], ]
 
-    if 'prefix-length' in opts:
-        args['prefix_length'] = int(opts['prefix-length'])
+    if 'prefix_length' in opts:
+        args['prefix_length'] = int(opts['prefix_length'])
 
     if 'family' in opts:
         family = opts['family']
@@ -943,7 +943,7 @@ cmds = {
                                 'content_type': unicode,
                             }
                         },
-                        'prefix-length': {
+                        'prefix_length': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
