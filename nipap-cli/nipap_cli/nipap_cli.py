@@ -334,10 +334,11 @@ def add_prefix(arg, opts):
 
     if p.vrf is None:
         vrf_rt = 'none'
+        print "Prefix %s added to the global VRF." % (p.display_prefix)
     else:
-        vrf_rt = p.vrf.rt
+        print "Prefix %s added to VRF '%s' (%s) " % (p.display_prefix,
+                p.vrf.name, p.vrf.rt)
 
-    print "Prefix %s added to VRF %s." % (p.display_prefix, vrf_rt)
 
 
 
