@@ -252,6 +252,7 @@ BEGIN
 	EXCEPTION WHEN others THEN
 		RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
 	END;
+	NEW.rt := rt_part_one::text || ':' || rt_part_two::text;
 
 	RETURN NEW;
 END;
