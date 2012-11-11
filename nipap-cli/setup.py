@@ -23,9 +23,9 @@ setup(
     keywords = ['nipap_cli', ],
     requires = ['pynipap', ],
     data_files = [
-#				('/etc/skel/', ['.nipaprc']),
-#				('/usr/bin/', ['helper-nipap', 'nipap']),
-#                ('/usr/share/doc/nipap-cli/', ['bash_complete', 'nipaprc'])
+				('/etc/skel/', ['.nipaprc']),
+				('/usr/bin/', ['helper-nipap', 'nipap']),
+                ('/usr/share/doc/nipap-cli/', ['bash_complete', 'nipaprc'])
     ],
     classifiers = [
         'Development Status :: 4 - Beta',
