@@ -68,11 +68,85 @@ class Command:
         """
 
         self.inp_cmd = inp_cmd
-        self.parse_cmd(tree, inp_cmd)
+        self.parse_cmd(tree)
 
 
 
-    def parse_cmd(self, tree, inp_cmd):
+    def _examine_key(self, key_name, key_val, p, i, option_parsing):
+        """ Examine the current matching key
+
+            Extracts information, such as function to execute and command
+            options, from the current key (passed to function as 'key_name' and
+            'key_val').
+        """
+
+        # if the element we reached has an executable registered, save it!
+        if 'exec' in key_val:
+            self.exe = key_val['exec']
+
+        # simple bool options, save value
+        if 'type' in key_val and key_val['type'] == 'bool':
+            self.exe_options[key_name] = True
+
+        # Elements wich takes arguments need special attention
+        if 'argument' in key_val:
+
+            # is there an argument (the next element)?
+            if len(self.inp_cmd) > i+1:
+
+                self.key = { 'argument': key_val['argument'] }
+
+                # there is - save it
+                if key_val['type'] == 'option':
+                    self.exe_options[key_name] = self.inp_cmd[i+1]
+                else:
+                    self.arg = self.inp_cmd[i+1]
+
+                # Validate the argument if possible
+                if 'validator' in key_val['argument']:
+                    self.key_complete = key_val['argument']['validator'](self.inp_cmd[i+1])
+
+                else:
+                    self.key_complete = True
+
+                # if there are sub parameters, add them
+                if 'params' in key_val:
+                    self.params = key_val['params']
+
+                # If we reached a command without parameters (which
+                # should be the end of the command), unset the params
+                # dict.
+                elif key_val['type'] == 'command':
+                    self.params = None
+
+                # if the command is finished (there is an element after the argument) and
+                # there is an exec_immediately-function, execute it now
+                if 'exec_immediately' in key_val and len(self.inp_cmd) > i+2:
+                    key_val['exec_immediately'](self.inp_cmd[i+1], self.exe_options)
+                    # clear exe_options as these were options for exec_immediately
+                    self.exe_options = {}
+
+                i += 1
+
+            else:
+                # if there is no next element, let key_complete be true
+                # and set params to the option argument
+                self.params = { 'argument': key_val['argument'] }
+
+            if option_parsing and p == key_name:
+                del self.params[key_name]
+
+        # otherwise we are handling a command without arguments
+        else:
+            self.params = key_val.get('params')
+            if self.exe is not None:
+                option_parsing = True
+
+        return i, option_parsing
+
+
+
+    def parse_cmd(self, tree, inp_cmd = None):
         """ Extract command and options from string.
 
             The tree argument should contain a specifically formatted dict
@@ -91,13 +165,16 @@ class Command:
         self.exe_options = {}
 
         self.params = tree['params']
-        self.key = {}
+        self.key = tree['params']
         option_parsing = False
+
+        if inp_cmd != None:
+            self.inp_cmd = inp_cmd
 
         # iterate the list of inputted commands
         i = 0
-        while i < len(inp_cmd):
-            p = inp_cmd[i]
+        while i < len(self.inp_cmd):
+            p = self.inp_cmd[i]
             self.key = {}
 
             # Find which of the valid commands matches the current element of inp_cmd
@@ -111,7 +188,7 @@ class Command:
 
                         # If we have an exact match, make sure that
                         # is the only element in self.key
-                        if p == param and len(inp_cmd) > i+1:
+                        if p == param and len(self.inp_cmd) > i+1:
                             self.key_complete = True
                             self.key = { param: content }
                             break
@@ -119,69 +196,17 @@ class Command:
             else:
                 raise InvalidCommand('ran out of parameters; command too long')
 
-            for key, val in self.key.items():
+            # Note that there are two reasons self.key can contain entries:
+            # 1) The current string (p) contained something and matched a param
+            # 2) The current string (p) is empty and matches all params
+            # If p is empty we don't really have a match but still need to
+            # have data in self.key to show all possible completions at this
+            # level. Therefore, we skip the command matching stuff when
+            # len(p) == 0
 
-                # if the element we reached has an executable registered, save it!
-                if 'exec' in val:
-                    self.exe = val['exec']
-
-                # simple bool options, save value
-                if 'type' in val and val['type'] == 'bool':
-                    self.exe_options[key] = True
-
-                # Elements wich takes arguments need special attention
-                if 'argument' in val:
-
-                    # is there an argument (the next element)?
-                    if len(inp_cmd) > i+1:
-
-                        self.key = { 'argument': val['argument'] }
-
-                        # there is - save it
-                        if val['type'] == 'option':
-                            self.exe_options[key] = inp_cmd[i+1]
-                        else:
-                            self.arg = inp_cmd[i+1]
-
-                        # Validate the argument if possible
-                        if 'validator' in val['argument']:
-                            self.key_complete = val['argument']['validator'](inp_cmd[i+1])
-
-                        else:
-                            self.key_complete = True
-
-                        # if there are sub parameters, add them
-                        if 'params' in val:
-                            self.params = val['params']
-
-                        # If we reached a command without parameters (which
-                        # should be the end of the command), unset the params
-                        # dict.
-                        elif val['type'] == 'command':
-                            self.params = None
-
-                        # if the command is finished (there is an element after the argument) and
-                        # there is an exec_immediately-function, execute it now
-                        if 'exec_immediately' in val and len(inp_cmd) > i+2:
-                            val['exec_immediately'](inp_cmd[i+1], self.exe_options)
-                            # clear exe_options as these were options for exec_immediately
-                            self.exe_options = {}
-
-                        i += 1
-
-                    else:
-                        # if there is no next element, let key_complete be true
-                        # and set params to the option argument
-                        self.params = { 'argument': val['argument'] }
-
-                    if option_parsing and p == key:
-                        del self.params[key]
-
-                # otherwise we are handling a command without arguments
-                else:
-                    self.params = val.get('params')
-                    if self.exe is not None:
-                        option_parsing = True
+            if len(p) != 0 and len(self.key) == 1:
+                key, val = self.key.items()[0]
+                i, option_parsing = self._examine_key(key, val, p, i, option_parsing)
 
             i += 1
 

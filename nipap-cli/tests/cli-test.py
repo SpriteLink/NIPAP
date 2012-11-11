@@ -146,6 +146,7 @@ example_tree = {
 
 
 class CliCheck(unittest.TestCase):
+
     def cli_test(self, cmd_tree, command):
         """ A small helper function to test CLI parsing
         """
@@ -164,23 +165,23 @@ class CliCheck(unittest.TestCase):
         # Fix by setting self.key = tree['params'] in command.py
         self.assertEqual(self.cli_test(example_tree, ()),
                 (None, None, {},
-                    set(['a', 'b', 'c'])
+                    set(['a', 'b', 'ca', 'cb', 'd'])
                 )
             )
 
         # here the command should be none, but we get test_b returned
         # XXX: commented out to avoid test failure...
         # TODO: Fix this!
-#        self.assertEqual(self.cli_test(example_tree, ('',)),
-#                (None, None, {},
-#                    set(['a', 'b', 'c'])
-#                )
-#            )
+        self.assertEqual(self.cli_test(example_tree, ('',)),
+                (None, None, {},
+                    set(['a', 'b', 'ca', 'cb', 'd'])
+                )
+            )
 
         # test that command and argument gets set correctly
         self.assertEqual(self.cli_test(example_tree, ('a', 'INPUT TEXT', '')),
                 (test_a, 'INPUT TEXT', {},
-                    set(['a_option1'])
+                    set(['a_option1', 'a_option2', 'a_optaon3'])
                 )
             )
 
