@@ -467,6 +467,7 @@ def view_prefix(arg, opts):
     print "  %-15s : %s" % ("VRF", vrf)
     print "  %-15s : %s" % ("Description", p.description)
     print "  %-15s : %s" % ("Node", p.node)
+    print "  %-15s : %s" % ("Country", p.country)
     print "  %-15s : %s" % ("Order", p.order_id)
     print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
     print "  %-15s : %s" % ("Monitor", p.monitor)
