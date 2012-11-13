@@ -20,7 +20,10 @@ from command import Command
 
 
 # definitions
-valid_countries = [ 'DE', 'EE', 'NL', 'SE', 'US' ] # test test, fill up! :)
+valid_countries = [
+    'AT', 'DE', 'DK', 'EE', 'FI', 'FR',
+    'GB', 'HR', 'LT', 'LV', 'KZ', 'NL',
+    'RU', 'SE', 'US' ] # test test, fill up! :)
 valid_prefix_types = [ 'host', 'reservation', 'assignment' ]
 valid_families = [ 'ipv4', 'ipv6' ]
 valid_bools = [ 'true', 'false' ]
