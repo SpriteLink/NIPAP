@@ -24,9 +24,9 @@
             // Capture submit form event
             $('form[name="vrf_form"]').submit(function(e) {
                 var data = {
-                    'rt': $('input[name="vrf"]').val()
+                    'rt': $('input[name="vrf"]').val(),
                     'name': $('input[name="name"]').val(),
-                    'description': $('input[name="description"]').val(),
+                    'description': $('input[name="description"]').val()
                 };
 
                 $.getJSON('{{ h.url(controller="xhr", action="edit_vrf", id=c.edit_vrf.id) }}', data, vrfEdited);
