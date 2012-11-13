@@ -56,7 +56,7 @@ def setup_connection():
 def get_vrf(arg = None, opts = None, abort = False):
     """ Returns VRF to work in
 
-        Returns a pynipap.Schema object representing the VRF we are working
+        Returns a pynipap.VRF object representing the VRF we are working
         in. If there is a VRF set globally, return this. If not, fetch the
         VRF named 'arg'. If 'arg' is None, fetch the default_vrf
         attribute from the config file and return this VRF.
@@ -241,7 +241,7 @@ def list_prefix(arg, opts):
     if arg is None:
         arg = ''
 
-    v = get_vrf(opts.get('vrf'), abort=True)
+    v = get_vrf(opts.get('vrf_rt'), abort=True)
 
     if v.rt == 'all':
         vrf_q = None
@@ -293,12 +293,12 @@ def add_prefix(arg, opts):
     p.comment = opts.get('comment')
     p.monitor = _str_to_bool(opts.get('monitor'))
 
-    if 'vrf' in opts:
-        if opts['vrf'] != 'none':
+    if 'vrf_rt' in opts:
+        if opts['vrf_rt'] != 'none':
             try:
-                p.vrf = VRF.list({ 'rt': opts['vrf'] })[0]
+                p.vrf = VRF.list({ 'rt': opts['vrf_rt'] })[0]
             except IndexError:
-                print >> sys.stderr, "Could not find VRF %s" % str(opts['vrf'])
+                print >> sys.stderr, "Could not find VRFi with RT %s" % str(opts['vrf_rt'])
                 sys.exit(1)
 
     args = {}
@@ -679,11 +679,11 @@ def modify_prefix(arg, opts):
     if 'monitor' in opts:
         p.monitor = _str_to_bool(opts['monitor'])
 
-    if 'vrf' in opts:
+    if 'vrf_rt' in opts:
         try:
-            p.vrf = VRF.list({ 'rt': opts['vrf'] })[0]
+            p.vrf = VRF.list({ 'rt': opts['vrf_rt'] })[0]
         except IndexError:
-            print >> sys.stderr, "VRF %s not found." % opts['vrf']
+            print >> sys.stderr, "VRF %s not found." % opts['vrf_rt']
             sys.exit(1)
 
     try:
@@ -929,7 +929,7 @@ cmds = {
                                 'content_type': unicode,
                             }
                         },
-                        'vrf': {
+                        'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
@@ -981,7 +981,7 @@ cmds = {
                         'description': 'Prefix',
                     },
                     'params': {
-                        'vrf': {
+                        'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
@@ -1002,7 +1002,7 @@ cmds = {
                         'description': 'Prefix to edit',
                     },
                     'params': {
-                        'vrf': {
+                        'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
@@ -1071,7 +1071,7 @@ cmds = {
                                         'content_type': unicode,
                                     }
                                 },
-                                'vrf': {
+                                'vrf_rt': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
@@ -1110,7 +1110,7 @@ cmds = {
                         'description': 'Remove address'
                     },
                     'params': {
-	                    'vrf': {
+	                    'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
