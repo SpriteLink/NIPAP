@@ -628,7 +628,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
             * `auth` [struct]
                 Authentication options passed to the :class:`AuthFactory`.
-            * `query` [string]
+            * `query_string` [string]
                 The search string.
             * `search_options` [struct]
                 Options for the search query, such as limiting the number
