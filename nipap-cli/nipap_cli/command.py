@@ -52,6 +52,10 @@ class Command:
     """
     inp_cmd = []
 
+    """ Set when we're scooping up all unknown arguments
+    """
+    _scoop_rest_arguments = False
+
 
 
     def __init__(self, tree, inp_cmd):
@@ -105,7 +109,6 @@ class Command:
                 # Validate the argument if possible
                 if 'validator' in key_val['argument']:
                     self.key_complete = key_val['argument']['validator'](self.inp_cmd[i+1])
-
                 else:
                     self.key_complete = True
 
@@ -136,8 +139,16 @@ class Command:
             if option_parsing and p == key_name:
                 del self.params[key_name]
 
+
         # otherwise we are handling a command without arguments
         else:
+
+            # Rest arguments?
+            if 'rest_argument' in key_val:
+
+                self._scoop_rest_arguments = True
+                self.arg = []
+
             self.params = key_val.get('params')
             if self.exe is not None:
                 option_parsing = True
@@ -167,6 +178,7 @@ class Command:
         self.params = tree['params']
         self.key = tree['params']
         option_parsing = False
+        self._scoop_rest_arguments = False
 
         if inp_cmd != None:
             self.inp_cmd = inp_cmd
@@ -192,6 +204,12 @@ class Command:
                             self.key_complete = True
                             self.key = { param: content }
                             break
+
+                    else:
+                        # if we are in scoop-rest-mode, place non-matching
+                        # elements in argument-array
+                        if self._scoop_rest_arguments:
+                            self.arg.append(p)
 
             else:
                 raise InvalidCommand('ran out of parameters; command too long')

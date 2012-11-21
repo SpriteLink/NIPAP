@@ -117,6 +117,11 @@ example_tree = {
             },
             'cb': {
                 'type': 'command',
+                'rest_arguments': {
+                    'type': 'value',
+                    'content_type': unicode,
+                    'description': 'test rest argument'
+                },
                 'params': {
                     'cb_a': {
                         'type': 'command',
@@ -271,7 +276,13 @@ class CliCheck(unittest.TestCase):
 
 
 
+    def test_rest_argument(self):
+        """ Test rest arguments
+        """
 
+        self.assertEqual(self.cli_test(example_tree, ('cb', 'asdf', 'cb_a', 'test', 'FOO')),
+            (test_c, ['FOO', 'BAR', 'FOO'], { 'cb_a': 'test' }, set())
+        )
 
 
 if __name__ == '__main__':
