@@ -15,9 +15,9 @@ to integrate with other systems.
 Features in short:
  * Very fast and scalable to hundreds of thousands of prefixes
  * A stylish and intuitive web interface
- * CLI for the hardcore user
  * Native support for IPv6 (full feature parity with IPv4)
- * Support for VRFs through the use of "schemas", allowing overlapping prefixes
+ * CLI for the hardcore user
+ * Native VRF support, allowing overlapping prefixes in different VRFs
  * Very powerful search function
  * Integrated audit log
  * IP address request system for automatically assigning suitable prefixes
