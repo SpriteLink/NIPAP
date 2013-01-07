@@ -1738,7 +1738,7 @@ class Nipap:
             prefix_attr['description'] = 'inp.description'
             prefix_attr['pool_id'] = 'pool.id'
             prefix_attr['pool_name'] = 'pool.name'
-            prefix_attr['family'] = 'inp.family'
+            prefix_attr['family'] = 'family(inp.prefix)'
             prefix_attr['comment'] = 'inp.comment'
             prefix_attr['type'] = 'inp.type'
             prefix_attr['node'] = 'inp.node'
