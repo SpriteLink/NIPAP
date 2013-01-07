@@ -192,11 +192,13 @@ class Command:
             # Find which of the valid commands matches the current element of inp_cmd
             if self.params is not None:
                 self.key_complete = False
+                match = False
                 for param, content in self.params.items():
 
                     # match string to command
                     if string.find(param, p) == 0:
                         self.key[param] = content
+                        match = True
 
                         # If we have an exact match, make sure that
                         # is the only element in self.key
@@ -205,11 +207,10 @@ class Command:
                             self.key = { param: content }
                             break
 
-                    else:
-                        # if we are in scoop-rest-mode, place non-matching
-                        # elements in argument-array
-                        if self._scoop_rest_arguments:
-                            self.arg.append(p)
+                # if we are in scoop-rest-mode, place elements not matching
+                # anything in argument-array
+                if not match and self._scoop_rest_arguments:
+                    self.arg.append(p)
 
             else:
                 raise InvalidCommand('ran out of parameters; command too long')

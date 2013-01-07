@@ -102,14 +102,20 @@ example_tree = {
                         'exec': test_c,
                         'params': {
                             'ca_a_option1': {
-                                'type': 'value',
-                                'content_type': unicode,
-                                'description': 'Text'
+                                'type': 'option',
+                                'argument': {
+                                    'type': 'value',
+                                    'content_type': unicode,
+                                    'description': 'Text'
+                                },
                             },
                             'ca_a_option2': {
-                                'type': 'value',
-                                'content_type': unicode,
-                                'description': 'Text'
+                                'type': 'option',
+                                'argument': {
+                                    'type': 'value',
+                                    'content_type': unicode,
+                                    'description': 'Text'
+                                }
                             }
                         }
                     }
@@ -117,25 +123,31 @@ example_tree = {
             },
             'cb': {
                 'type': 'command',
-                'rest_arguments': {
-                    'type': 'value',
-                    'content_type': unicode,
-                    'description': 'test rest argument'
-                },
                 'params': {
                     'cb_a': {
                         'type': 'command',
                         'exec': test_c,
+                        'rest_argument': {
+                            'type': 'value',
+                            'content_type': unicode,
+                            'description': 'test rest argument'
+                        },
                         'params': {
                             'cb_a_option1': {
-                                'type': 'value',
-                                'content_type': unicode,
-                                'description': 'Text'
+                                'type': 'option',
+                                'argument': {
+                                    'type': 'value',
+                                    'content_type': unicode,
+                                    'description': 'Text'
+                                },
                             },
                             'cb_a_option2': {
-                                'type': 'value',
-                                'content_type': unicode,
-                                'description': 'Text'
+                                'type': 'option',
+                                'argument': {
+                                    'type': 'value',
+                                    'content_type': unicode,
+                                    'description': 'Text'
+                                },
                             }
                         }
                     }
@@ -280,8 +292,11 @@ class CliCheck(unittest.TestCase):
         """ Test rest arguments
         """
 
-        self.assertEqual(self.cli_test(example_tree, ('cb', 'asdf', 'cb_a', 'test', 'FOO')),
-            (test_c, ['FOO', 'BAR', 'FOO'], { 'cb_a': 'test' }, set())
+        self.assertEqual(
+            self.cli_test(
+                example_tree, ('cb', 'cb_a', 'FOO', 'cb_a_option1', 'BAR', 'HAR')
+            ),
+            (test_c, ['FOO', 'HAR'], { 'cb_a_option1': 'BAR' }, set())
         )
 
 
