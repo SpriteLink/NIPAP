@@ -239,10 +239,9 @@ def list_prefix(arg, opts):
     """ List prefixes matching 'arg'
     """
 
-    # default to empty search string instead of None, which would only be
-    # casted to string anyway, so the smart_search would be for 'None'
-    if arg is None:
-        arg = ''
+    search_string = ''
+    if type(arg) == list or type(arg) == tuple:
+        search_string = ' '.join(arg)
 
     v = get_vrf(opts.get('vrf_rt'), abort=True)
 
@@ -255,9 +254,9 @@ def list_prefix(arg, opts):
             'val2': v.rt
         }
 
-    res = Prefix.smart_search(arg, { 'parents_depth': -1, 'max_result': 1200 }, vrf_q)
+    res = Prefix.smart_search(search_string, { 'parents_depth': -1, 'max_result': 1200 }, vrf_q)
     if len(res['result']) == 0:
-        print "No addresses matching '%s' found." % arg
+        print "No addresses matching '%s' found." % search_string
         return
 
     for p in res['result']:
@@ -978,7 +977,7 @@ cmds = {
                 'list': {
                     'type': 'command',
                     'exec': list_prefix,
-                    'argument': {
+                    'rest_argument': {
                         'type': 'value',
                         'content_type': unicode,
                         'description': 'Prefix',
