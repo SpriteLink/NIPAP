@@ -437,7 +437,7 @@ def view_prefix(arg, opts):
 
     q = { 'operator': 'equals', 'val1': 'prefix', 'val2': arg }
 
-    v = get_vrf(opts.get('vrf'), abort=True)
+    v = get_vrf(opts.get('vrf_rt'), abort=True)
     if v.rt != 'all':
         q = {
             'operator': 'and',
@@ -534,10 +534,10 @@ def remove_prefix(arg, opts):
         recursive = True
 
     spec = { 'prefix': arg }
-    if opts.get('vrf') is None:
+    if opts.get('vrf_rt') is None:
         v = get_vrf('none', abort=True)
     else:
-        v = get_vrf(opts.get('vrf'), abort=True)
+        v = get_vrf(opts.get('vrf_rt'), abort=True)
     spec['vrf_rt'] = v.rt
 
     res = Prefix.list(spec)
@@ -561,7 +561,21 @@ def remove_prefix(arg, opts):
                 'val1': 'prefix',
                 'operator': 'contained_within_equals',
                 'val2': p.prefix
+        }
+
+        # add VRF to query if we have one
+        if 'vrf_rt' in spec:
+            vrf_q = {
+                'val1': 'vrf_rt',
+                'operator': 'equals',
+                'val2': spec['vrf_rt']
             }
+            query = {
+                'val1': query,
+                'operator': 'and',
+                'val2': vrf_q
+            }
+
         pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
         if len(pres['result']) <= 1:
             res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, vrf))
@@ -1136,7 +1150,7 @@ cmds = {
                         'description': 'Address to view'
                     },
                     'children': {
-	                    'vrf': {
+	                    'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
