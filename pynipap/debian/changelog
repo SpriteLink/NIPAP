@@ -1,3 +1,10 @@
+pynipap (0.13.0-1) stable; urgency=low
+
+  * Added recursive option to prefix remove function in CLI client
+  * Lots of smaller fixes to CLI client
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 10 Jan 2013 10:58:42 +0100
+
 pynipap (0.12.0-1) stable; urgency=low
 
   * VRF RT now verified; must match xx:yy or x.y.z.x:aa
