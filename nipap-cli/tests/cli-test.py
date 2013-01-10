@@ -42,125 +42,123 @@ def complete_a_option1(arg):
 
 
 example_tree = {
-        'type': 'command',
-        'params': {
-            'a': {
-                'type': 'command',
-                'exec': test_a,
-                'argument': {
-                    'type': 'value',
-                    'content_type': unicode,
-                    'description': 'Text'
+    'type': 'command',
+    'children': {
+        'a': {
+            'type': 'command',
+            'exec': test_a,
+            'argument': {
+                'type': 'value',
+                'content_type': unicode,
+                'description': 'Text'
+            },
+            'children': {
+                'a_option1': {
+                    'type': 'option',
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'A_Option1',
+                        'complete': complete_a_option1
+                    }
                 },
-                'params': {
-                    'a_option1': {
-                        'type': 'option',
-                        'argument': {
-                            'type': 'value',
-                            'content_type': unicode,
-                            'description': 'A_Option1',
-                            'complete': complete_a_option1
-                        }
-                    },
-                    'a_option2': {
-                        'type': 'option',
-                        'argument': {
-                            'type': 'value',
-                            'content_type': unicode,
-                            'description': 'A_Option2'
-                        }
-                    },
-                    'a_optaon3': {
-                        'type': 'option',
-                        'argument': {
-                            'type': 'value',
-                            'content_type': unicode,
-                            'description': 'A_Option3'
-                        }
+                'a_option2': {
+                    'type': 'option',
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'A_Option2'
                     }
-                }
-            },
-            'b': {
-                'type': 'command',
-                'exec': test_b,
-                'argument': {
-                    'type': 'value',
-                    'content_type': unicode,
-                    'description': 'Text'
                 },
-                'params': {
-                    'b_bool1': {
-                        'type': 'bool'
+                'a_optaon3': {
+                    'type': 'option',
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'A_Option3'
                     }
                 }
-            },
-            'ca': {
-                'type': 'command',
-                'params': {
-                    'ca_a': {
-                        'type': 'command',
-                        'exec': test_c,
-                        'params': {
-                            'ca_a_option1': {
-                                'type': 'option',
-                                'argument': {
-                                    'type': 'value',
-                                    'content_type': unicode,
-                                    'description': 'Text'
-                                },
-                            },
-                            'ca_a_option2': {
-                                'type': 'option',
-                                'argument': {
-                                    'type': 'value',
-                                    'content_type': unicode,
-                                    'description': 'Text'
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            'cb': {
-                'type': 'command',
-                'params': {
-                    'cb_a': {
-                        'type': 'command',
-                        'exec': test_c,
-                        'rest_argument': {
-                            'type': 'value',
-                            'content_type': unicode,
-                            'description': 'test rest argument'
-                        },
-                        'params': {
-                            'cb_a_option1': {
-                                'type': 'option',
-                                'argument': {
-                                    'type': 'value',
-                                    'content_type': unicode,
-                                    'description': 'Text'
-                                },
-                            },
-                            'cb_a_option2': {
-                                'type': 'option',
-                                'argument': {
-                                    'type': 'value',
-                                    'content_type': unicode,
-                                    'description': 'Text'
-                                },
-                            }
-                        }
-                    }
-                }
-            },
-            'd': {
-                'type': 'command',
-                'exec': test_c
             }
+        },
+        'b': {
+            'type': 'command',
+            'exec': test_b,
+            'argument': {
+                'type': 'value',
+                'content_type': unicode,
+                'description': 'Text'
+            },
+            'children': {
+                'b_bool1': {
+                    'type': 'bool'
+                }
+            }
+        },
+        'ca': {
+            'type': 'command',
+            'children': {
+                'ca_a': {
+                    'type': 'command',
+                    'exec': test_c,
+                    'children': {
+                        'ca_a_option1': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'Text'
+                            },
+                        },
+                        'ca_a_option2': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'Text'
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        'cb': {
+            'type': 'command',
+            'children': {
+                'cb_a': {
+                    'type': 'command',
+                    'exec': test_c,
+                    'rest_argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'test rest argument'
+                    },
+                    'children': {
+                        'cb_a_option1': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'Text'
+                            },
+                        },
+                        'cb_a_option2': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'Text'
+                            },
+                        }
+                    }
+                }
+            }
+        },
+        'd': {
+            'type': 'command',
+            'exec': test_c
         }
     }
-
-
+}
 
 class CliCheck(unittest.TestCase):
 
@@ -179,7 +177,7 @@ class CliCheck(unittest.TestCase):
         """
 
         # Complete empty command. Should return a list of the entries at the lowest level, but does not.
-        # Fix by setting self.key = tree['params'] in command.py
+        # Fix by setting self.key = tree['children'] in command.py
         self.assertEqual(self.cli_test(example_tree, ()),
                 (None, None, {},
                     set(['a', 'b', 'ca', 'cb', 'd'])

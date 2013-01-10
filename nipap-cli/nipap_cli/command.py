@@ -30,7 +30,7 @@ class Command:
 
     """ Contains the next valid values
     """
-    params = {}
+    children = {}
 
 
     """ Pointer to function to execute
@@ -113,14 +113,14 @@ class Command:
                     self.key_complete = True
 
                 # if there are sub parameters, add them
-                if 'params' in key_val:
-                    self.params = key_val['params']
+                if 'children' in key_val:
+                    self.children = key_val['children']
 
                 # If we reached a command without parameters (which
-                # should be the end of the command), unset the params
+                # should be the end of the command), unset the children
                 # dict.
                 elif key_val['type'] == 'command':
-                    self.params = None
+                    self.children = None
 
                 # if the command is finished (there is an element after the argument) and
                 # there is an exec_immediately-function, execute it now
@@ -133,11 +133,11 @@ class Command:
 
             else:
                 # if there is no next element, let key_complete be true
-                # and set params to the option argument
-                self.params = { 'argument': key_val['argument'] }
+                # and set children to the option argument
+                self.children = { 'argument': key_val['argument'] }
 
             if option_parsing and p == key_name:
-                del self.params[key_name]
+                del self.children[key_name]
 
 
         # otherwise we are handling a command without arguments
@@ -149,7 +149,7 @@ class Command:
                 self._scoop_rest_arguments = True
                 self.arg = []
 
-            self.params = key_val.get('params')
+            self.children = key_val.get('children')
             if self.exe is not None:
                 option_parsing = True
 
@@ -175,8 +175,8 @@ class Command:
         self.arg = None
         self.exe_options = {}
 
-        self.params = tree['params']
-        self.key = tree['params']
+        self.children = tree['children']
+        self.key = tree['children']
         option_parsing = False
         self._scoop_rest_arguments = False
 
@@ -190,10 +190,10 @@ class Command:
             self.key = {}
 
             # Find which of the valid commands matches the current element of inp_cmd
-            if self.params is not None:
+            if self.children is not None:
                 self.key_complete = False
                 match = False
-                for param, content in self.params.items():
+                for param, content in self.children.items():
 
                     # match string to command
                     if string.find(param, p) == 0:
@@ -217,7 +217,7 @@ class Command:
 
             # Note that there are two reasons self.key can contain entries:
             # 1) The current string (p) contained something and matched a param
-            # 2) The current string (p) is empty and matches all params
+            # 2) The current string (p) is empty and matches all children
             # If p is empty we don't really have a match but still need to
             # have data in self.key to show all possible completions at this
             # level. Therefore, we skip the command matching stuff when
@@ -261,7 +261,7 @@ class Command:
 
         nval = []
 
-        for k, v in self.params.items():
+        for k, v in self.children.items():
 
             # if we have reached a value, try to fetch valid completions
             if v['type'] == 'value':

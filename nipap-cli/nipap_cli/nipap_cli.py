@@ -852,15 +852,15 @@ def complete_vrf_virtual(arg):
 """
 cmds = {
     'type': 'command',
-    'params': {
+    'children': {
         'address': {
             'type': 'command',
-            'params': {
+            'children': {
                 # add
                 'add': {
                     'type': 'command',
                     'exec': add_prefix,
-                    'params': {
+                    'children': {
                         'comment': {
                             'type': 'option',
                             'argument': {
@@ -982,7 +982,7 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Prefix',
                     },
-                    'params': {
+                    'children': {
                         'vrf_rt': {
                             'type': 'option',
                             'argument': {
@@ -1003,7 +1003,7 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Prefix to edit',
                     },
-                    'params': {
+                    'children': {
                         'vrf_rt': {
                             'type': 'option',
                             'argument': {
@@ -1017,7 +1017,7 @@ cmds = {
                         'set': {
                             'type': 'command',
                             'exec': modify_prefix,
-                            'params': {
+                            'children': {
                                 'comment': {
                                     'type': 'option',
                                     'argument': {
@@ -1111,7 +1111,7 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Remove address'
                     },
-                    'params': {
+                    'children': {
 	                    'vrf_rt': {
                             'type': 'option',
                             'argument': {
@@ -1135,7 +1135,7 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Address to view'
                     },
-                    'params': {
+                    'children': {
 	                    'vrf': {
                             'type': 'option',
                             'argument': {
@@ -1152,13 +1152,13 @@ cmds = {
         # VRF commands
         'vrf': {
             'type': 'command',
-            'params': {
+            'children': {
 
                 # add
                 'add': {
                     'type': 'command',
                     'exec': add_vrf,
-                    'params': {
+                    'children': {
                         'rt': {
                             'type': 'option',
                             'argument': {
@@ -1191,7 +1191,7 @@ cmds = {
                 'list': {
                     'type': 'command',
                     'exec': list_vrf,
-                    'params': {
+                    'children': {
                         'rt': {
                             'type': 'option',
                             'argument': {
@@ -1254,11 +1254,11 @@ cmds = {
                         'description': 'VRF',
                         'complete': complete_vrf,
                     },
-                    'params': {
+                    'children': {
                         'set': {
                             'type': 'command',
                             'exec': modify_vrf,
-                            'params': {
+                            'children': {
                                 'rt': {
                                     'type': 'option',
                                     'argument': {
@@ -1294,13 +1294,13 @@ cmds = {
         # pool commands
         'pool': {
             'type': 'command',
-            'params': {
+            'children': {
 
                 # add
                 'add': {
                     'type': 'command',
                     'exec': add_pool,
-                    'params': {
+                    'children': {
                         'default-type': {
                             'type': 'option',
                             'argument': {
@@ -1349,7 +1349,7 @@ cmds = {
                 'list': {
                     'type': 'command',
                     'exec': list_pool,
-                    'params': {
+                    'children': {
                         'default-type': {
                             'type': 'option',
                             'argument': {
@@ -1415,11 +1415,11 @@ cmds = {
                         'description': 'Pool name',
                         'complete': complete_pool_name,
                     },
-                    'params': {
+                    'children': {
                         'set': {
                             'type': 'command',
                             'exec': modify_pool,
-                            'params': {
+                            'children': {
                                 'default-type': {
                                     'type': 'option',
                                     'argument': {
