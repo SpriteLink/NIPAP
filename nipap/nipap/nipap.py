@@ -1289,7 +1289,7 @@ class Nipap:
         for row in self._curs_pg:
             p = dict(row)
 
-            # Make sure that prefixes is an array, even if there are no prefixes
+            # Make sure that prefixes is a list, even if there are no prefixes
             if p['prefixes'] == None:
                 p['prefixes'] = []
             res.append(p)
@@ -2764,6 +2764,13 @@ class Nipap:
                 'search_options': search_options,
                 'result': []
             }
+
+        # Handle empty search.
+        # We need something to iterate over, but shlex.split() returns
+        # zero-element list for an empty string, so we have to append one
+        # manually
+        if len(query_str_parts) == 0:
+            query_str_parts.append({ 'string': '' })
 
         # go through parts and add to query_parts list
         query_parts = list()
