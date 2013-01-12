@@ -23,6 +23,8 @@ server = xmlrpclib.Server(server_url, allow_none=1);
 
 ad = { 'authoritative_source': 'nipap' }
 
+print server.smart_search_prefix({ 'auth': ad, 'query_string': None })
+
 remove_query = {
 		'auth': {
 			'authoritative_source': 'kll'

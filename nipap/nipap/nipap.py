@@ -1008,6 +1008,9 @@ class Nipap:
 
         self._logger.debug("smart_search_vrf query string: %s" % query_str)
 
+        if query_str is None:
+            raise NipapValueError("'query_string' must not be None")
+
         # find query parts
         # XXX: notice the ugly workarounds for shlex not supporting Unicode
         query_str_parts = []
@@ -1568,6 +1571,9 @@ class Nipap:
         """
 
         self._logger.debug("smart_search_pool query string: %s" % query_str)
+
+        if query_str is None:
+            raise NipapValueError("'query_string' must not be None")
 
         # find query parts
         # XXX: notice the ugly workarounds for shlex not supporting Unicode
@@ -2760,6 +2766,9 @@ class Nipap:
 
         self._logger.debug("smart_search_prefix query string: %s" % query_str)
 
+        if query_str is None:
+            raise NipapValueError("'query_string' must not be None")
+
         # find query parts
         # XXX: notice the ugly workarounds for shlex not supporting Unicode
         query_str_parts = []
@@ -3285,6 +3294,9 @@ class Nipap:
         """
 
         self._logger.debug("smart_search_asn called; query_str: %s" % query_str)
+
+        if query_str is None:
+            raise NipapValueError("'query_string' must not be None")
 
         # find query parts
         # XXX: notice the ugly workarounds for shlex not supporting Unicode
