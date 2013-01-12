@@ -1027,6 +1027,13 @@ class Nipap:
                 'result': []
             }
 
+        # Handle empty search.
+        # We need something to iterate over, but shlex.split() returns
+        # zero-element list for an empty string, so we have to append one
+        # manually
+        if len(query_str_parts) == 0:
+            query_str_parts.append({ 'string': '' })
+
         # go through parts and add to query_parts list
         query_parts = list()
         for query_str_part in query_str_parts:
@@ -1580,6 +1587,13 @@ class Nipap:
                 'search_options': search_options,
                 'result': []
             }
+
+        # Handle empty search.
+        # We need something to iterate over, but shlex.split() returns
+        # zero-element list for an empty string, so we have to append one
+        # manually
+        if len(query_str_parts) == 0:
+            query_str_parts.append({ 'string': '' })
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -3290,6 +3304,13 @@ class Nipap:
                 'search_options': search_options,
                 'result': []
             }
+
+        # Handle empty search.
+        # We need something to iterate over, but shlex.split() returns
+        # zero-element list for an empty string, so we have to append one
+        # manually
+        if len(query_str_parts) == 0:
+            query_str_parts.append({ 'string': '' })
 
         # go through parts and add to query_parts list
         query_parts = list()
