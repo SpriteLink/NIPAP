@@ -981,6 +981,9 @@ class Nipap:
                 Search string
             * `search_options` [options_dict]
                 Search options. See :func:`search_vrf`.
+            * `extra_query` [dict_to_sql]
+                Extra search terms, will be AND:ed together with what is
+                extracted from the query string.
 
             Return a dict with three elements:
                 * :attr:`interpretation` - How the query string was interpreted.
@@ -1552,6 +1555,9 @@ class Nipap:
                 Search string
             * `search_options` [options_dict]
                 Search options. See :func:`search_pool`.
+            * `extra_query` [dict_to_sql]
+                Extra search terms, will be AND:ed together with what is
+                extracted from the query string.
 
             Return a dict with three elements:
                 * :attr:`interpretation` - How the query string was interpreted.
@@ -3283,6 +3289,9 @@ class Nipap:
                 Search string
             * `search_options` [options_dict]
                 Search options. See :func:`search_asn`.
+            * `extra_query` [dict_to_sql]
+                Extra search terms, will be AND:ed together with what is
+                extracted from the query string.
 
             Return a dict with three elements:
                 * :attr:`interpretation` - How the query string was interpreted.
