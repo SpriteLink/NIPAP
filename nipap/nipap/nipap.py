@@ -415,13 +415,29 @@ class Nipap:
 
             # this is a duplicate key error
             if e.pgcode == "23505":
+                # figure out which column it is and retrieve the database
+                # description for that column
                 m = re.match(r'.*"([^"]+)"', e.pgerror)
                 if m is None:
                     raise NipapDuplicateError("Objects primary keys already exist")
                 cursor = self._con_pg.cursor()
                 cursor.execute("SELECT obj_description(oid) FROM pg_class WHERE relname = %(relname)s", { 'relname': m.group(1) })
+                column_desc = '<unknown>'
                 for desc in cursor:
-                    raise NipapDuplicateError("Duplicate value for '" + str(desc[0]) + "', the value you have inputted is already in use.")
+                    column_desc = str(desc[0])
+
+                # figure out the value for the duplicate value
+                column_value = None
+                try:
+                    m = re.match(r'.*=\(([^)]+)\) already exists.', e.pgerror.splitlines()[1])
+                    if m is not None:
+                        column_value = m.group(1)
+                except:
+                    pass
+                else:
+                    raise NipapDuplicateError("Duplicate value for '" + column_desc + "', the value '" + column_value + "' is already in use.")
+
+                raise NipapDuplicateError("Duplicate value for '" + column_desc + "', the value you have inputted is already in use.")
 
             raise NipapError(str(e))
 
