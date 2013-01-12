@@ -972,7 +972,7 @@ class Nipap:
 
 
 
-    def smart_search_vrf(self, auth, query_str, search_options = {}):
+    def smart_search_vrf(self, auth, query_str, search_options = {}, extra_query = None):
         """ Perform a smart search on VRF list.
 
             * `auth` [BaseAuth]
@@ -1080,6 +1080,12 @@ class Nipap:
                     'val2': query
                 }
 
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
+            }
 
         self._logger.debug("smart_search_vrf; query expanded to: %s" % str(query))
 
@@ -1537,7 +1543,7 @@ class Nipap:
 
 
 
-    def smart_search_pool(self, auth, query_str, search_options = {}):
+    def smart_search_pool(self, auth, query_str, search_options = {}, extra_query = None):
         """ Perform a smart search on pool list.
 
             * `auth` [BaseAuth]
@@ -1636,6 +1642,12 @@ class Nipap:
                     'val2': query
                 }
 
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
+            }
 
         self._logger.debug("Expanded to: %s" % str(query))
 
@@ -2929,7 +2941,6 @@ class Nipap:
                 'val2': extra_query
             }
 
-
         self._logger.debug("Expanded to: %s" % str(query))
 
         search_result = self.search_prefix(auth, query, search_options)
@@ -3263,7 +3274,7 @@ class Nipap:
 
 
 
-    def smart_search_asn(self, auth, query_str, search_options = {}):
+    def smart_search_asn(self, auth, query_str, search_options = {}, extra_query = None):
         """ Perform a smart search operation among AS numbers
 
             * `auth` [BaseAuth]
@@ -3368,6 +3379,13 @@ class Nipap:
                     'val1': query_part,
                     'val2': query
                 }
+
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
+            }
 
         self._logger.debug("Expanded to: %s" % str(query))
 
