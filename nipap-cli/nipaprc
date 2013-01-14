@@ -22,6 +22,6 @@ password = guest
 # The string "%search_string%" will be replaced by the current search string.
 #complete_node_cmd = node list %search_string%
 
-# A default schema which will be used when no schema is set in the command
+# A default VRF which will be used when no VRF is set in the command
 # argument.
-default_schema = test
+default_vrf = none
