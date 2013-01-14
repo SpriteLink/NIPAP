@@ -18,6 +18,7 @@ Features in short:
  * Native support for IPv6 (full feature parity with IPv4)
  * CLI for the hardcore user
  * Native VRF support, allowing overlapping prefixes in different VRFs
+ * Support for documenting individual hosts
  * Very powerful search function
  * Integrated audit log
  * IP address request system for automatically assigning suitable prefixes
