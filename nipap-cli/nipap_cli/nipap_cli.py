@@ -192,25 +192,32 @@ def list_pool(arg, opts):
     """
 
     query = _expand_list_query(opts)
-    res = Pool.search(query)
-    if len(res['result']) > 0:
-        print "%-19s %-39s %-14s %-8s" % (
-            "Name", "Description", "Default type", "4 / 6"
-        )
-        print "-----------------------------------------------------------------------------------"
-    else:
-        print "No matching pools found"
+    offset = 0
+    limit = 100
+    while True:
+        res = Pool.search(query, { 'offset': offset, 'max_result': limit })
+        if len(res['result']) == 0:
+            print "No matching pools found"
+            return
+        elif offset == 0:
+            print "%-19s %-39s %-14s %-8s" % (
+                "Name", "Description", "Default type", "4 / 6"
+            )
+            print "-----------------------------------------------------------------------------------"
 
-    for p in res['result']:
-        if len(str(p.description)) > 38:
-            desc = p.description[0:34] + "..."
-        else:
-            desc = p.description
-        print "%-19s %-39s %-14s %-2s / %-3s" % (
-            p.name, desc, p.default_type,
-            str(p.ipv4_default_prefix_length),
-            str(p.ipv6_default_prefix_length)
-        )
+        for p in res['result']:
+            if len(str(p.description)) > 38:
+                desc = p.description[0:34] + "..."
+            else:
+                desc = p.description
+            print "%-19s %-39s %-14s %-2s / %-3s" % (
+                p.name, desc, p.default_type,
+                str(p.ipv4_default_prefix_length),
+                str(p.ipv6_default_prefix_length)
+            )
+        if len(res['result']) < limit:
+            break
+        offset += limit
 
 
 
@@ -219,19 +226,28 @@ def list_vrf(arg, opts):
     """
 
     query = _expand_list_query(opts)
-    res = VRF.search(query)
-    if len(res['result']) > 0:
-        print "%-16s %-22s %-40s" % ("VRF", "Name", "Description")
-        print "--------------------------------------------------------------------------------"
-    else:
-        print "No matching VRFs found."
 
-    for v in res['result']:
-        if len(str(v.description)) > 40:
-            desc = v.description[0:37] + "..."
-        else:
-            desc = v.description
-        print "%-16s %-22s %-40s" % (v.rt, v.name, desc)
+    offset = 0
+    limit = 100
+    while True:
+        res = VRF.search(query, { 'offset': offset, 'max_result': limit })
+        if len(res['result']) == 0:
+            print "No matching VRFs found."
+            return
+        elif offset == 0:
+            print "%-16s %-22s %-40s" % ("VRF", "Name", "Description")
+            print "--------------------------------------------------------------------------------"
+
+        for v in res['result']:
+            if len(str(v.description)) > 40:
+                desc = v.description[0:37] + "..."
+            else:
+                desc = v.description
+            print "%-16s %-22s %-40s" % (v.rt, v.name, desc)
+
+        if len(res['result']) < limit:
+            break
+        offset += limit
 
 
 
@@ -254,25 +270,40 @@ def list_prefix(arg, opts):
             'val2': v.rt
         }
 
-    res = Prefix.smart_search(search_string, { 'parents_depth': -1, 'max_result': 1200 }, vrf_q)
-    if len(res['result']) == 0:
-        print "No addresses matching '%s' found." % search_string
-        return
 
-    for p in res['result']:
-        if p.display == False:
-            continue
+    offset = 0
+    # small initial limit for "instant" result
+    limit = 50
+    while True:
+        res = Prefix.smart_search(search_string, { 'parents_depth': -1,
+            'offset': offset, 'max_result': limit }, vrf_q)
 
-        vrf = None
-        if p.vrf is not None:
-            vrf = p.vrf.rt
-        try:
-            print "%-10s %-29s %-2s %-19s %-14s %-40s" % (vrf,
-                "".join("  " for i in range(p.indent)) + p.display_prefix,
-                p.type[0].upper(), p.node, p.order_id, p.description
-            )
-        except UnicodeEncodeError, e:
-            print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
+        if len(res['result']) == 0:
+            print "No addresses matching '%s' found." % search_string
+            return
+
+        for p in res['result']:
+            if p.display == False:
+                continue
+
+            vrf = None
+            if p.vrf is not None:
+                vrf = p.vrf.rt
+            try:
+                print "%-10s %-29s %-2s %-19s %-14s %-40s" % (vrf,
+                    "".join("  " for i in range(p.indent)) + p.display_prefix,
+                    p.type[0].upper(), p.node, p.order_id, p.description
+                )
+            except UnicodeEncodeError, e:
+                print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
+
+        if len(res['result']) < limit:
+            break
+        offset += limit
+
+        # let consecutive limit be higher to tax the XML-RPC backend less
+        limit = 200
+
 
 
 
@@ -380,7 +411,7 @@ def add_pool(arg, opts):
         print >> sys.stderr, "Could not add pool to NIPAP: %s" % e.message
         sys.exit(1)
 
-    print "Pool %s created with id %s" % (p.name, p.id)
+    print "Pool '%s' created with id %s" % (p.name, p.id)
 
 
 

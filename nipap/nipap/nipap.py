@@ -977,7 +977,7 @@ class Nipap:
             where, opt = self._expand_vrf_query(query)
             sql += " AND " + where
 
-        sql += " ORDER BY vrf_rt_order(rt) NULLS FIRST LIMIT " + str(search_options['max_result'])
+        sql += " ORDER BY vrf_rt_order(rt) NULLS FIRST LIMIT " + str(search_options['max_result']) + " OFFSET " + str(search_options['offset'])
         self._execute(sql, opt)
 
         result = list()
