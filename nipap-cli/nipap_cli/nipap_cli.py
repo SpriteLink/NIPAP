@@ -225,6 +225,8 @@ def list_vrf(arg, opts):
     """ List VRFs matching a search criteria
     """
 
+    if 'rt' in opts:
+        opts['rt'] = '^' + opts['rt'] + '$'
     query = _expand_list_query(opts)
 
     offset = 0
