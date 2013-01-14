@@ -192,25 +192,32 @@ def list_pool(arg, opts):
     """
 
     query = _expand_list_query(opts)
-    res = Pool.search(query)
-    if len(res['result']) > 0:
-        print "%-19s %-39s %-14s %-8s" % (
-            "Name", "Description", "Default type", "4 / 6"
-        )
-        print "-----------------------------------------------------------------------------------"
-    else:
-        print "No matching pools found"
+    offset = 0
+    limit = 100
+    while True:
+        res = Pool.search(query, { 'offset': offset, 'max_result': limit })
+        if len(res['result']) == 0:
+            print "No matching pools found"
+            return
+        elif offset == 0:
+            print "%-19s %-39s %-14s %-8s" % (
+                "Name", "Description", "Default type", "4 / 6"
+            )
+            print "-----------------------------------------------------------------------------------"
 
-    for p in res['result']:
-        if len(str(p.description)) > 38:
-            desc = p.description[0:34] + "..."
-        else:
-            desc = p.description
-        print "%-19s %-39s %-14s %-2s / %-3s" % (
-            p.name, desc, p.default_type,
-            str(p.ipv4_default_prefix_length),
-            str(p.ipv6_default_prefix_length)
-        )
+        for p in res['result']:
+            if len(str(p.description)) > 38:
+                desc = p.description[0:34] + "..."
+            else:
+                desc = p.description
+            print "%-19s %-39s %-14s %-2s / %-3s" % (
+                p.name, desc, p.default_type,
+                str(p.ipv4_default_prefix_length),
+                str(p.ipv6_default_prefix_length)
+            )
+        if len(res['result']) < limit:
+            break
+        offset += limit
 
 
 
@@ -404,7 +411,7 @@ def add_pool(arg, opts):
         print >> sys.stderr, "Could not add pool to NIPAP: %s" % e.message
         sys.exit(1)
 
-    print "Pool %s created with id %s" % (p.name, p.id)
+    print "Pool '%s' created with id %s" % (p.name, p.id)
 
 
 
