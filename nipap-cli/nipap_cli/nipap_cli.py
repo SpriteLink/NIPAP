@@ -254,25 +254,40 @@ def list_prefix(arg, opts):
             'val2': v.rt
         }
 
-    res = Prefix.smart_search(search_string, { 'parents_depth': -1, 'max_result': 1200 }, vrf_q)
-    if len(res['result']) == 0:
-        print "No addresses matching '%s' found." % search_string
-        return
 
-    for p in res['result']:
-        if p.display == False:
-            continue
+    offset = 0
+    # small initial limit for "instant" result
+    limit = 50
+    while True:
+        res = Prefix.smart_search(search_string, { 'parents_depth': -1,
+            'offset': offset, 'max_result': limit }, vrf_q)
 
-        vrf = None
-        if p.vrf is not None:
-            vrf = p.vrf.rt
-        try:
-            print "%-10s %-29s %-2s %-19s %-14s %-40s" % (vrf,
-                "".join("  " for i in range(p.indent)) + p.display_prefix,
-                p.type[0].upper(), p.node, p.order_id, p.description
-            )
-        except UnicodeEncodeError, e:
-            print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
+        if len(res['result']) == 0:
+            print "No addresses matching '%s' found." % search_string
+            return
+
+        for p in res['result']:
+            if p.display == False:
+                continue
+
+            vrf = None
+            if p.vrf is not None:
+                vrf = p.vrf.rt
+            try:
+                print "%-10s %-29s %-2s %-19s %-14s %-40s" % (vrf,
+                    "".join("  " for i in range(p.indent)) + p.display_prefix,
+                    p.type[0].upper(), p.node, p.order_id, p.description
+                )
+            except UnicodeEncodeError, e:
+                print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
+
+        if len(res['result']) < limit:
+            break
+        offset += limit
+
+        # let consecutive limit be higher to tax the XML-RPC backend less
+        limit = 200
+
 
 
 
