@@ -239,7 +239,7 @@ def list_vrf(arg, opts):
             print "--------------------------------------------------------------------------------"
 
         for v in res['result']:
-            if len(str(v.description)) > 40:
+            if len(unicode(v.description)) > 40:
                 desc = v.description[0:37] + "..."
             else:
                 desc = v.description
