@@ -219,19 +219,28 @@ def list_vrf(arg, opts):
     """
 
     query = _expand_list_query(opts)
-    res = VRF.search(query)
-    if len(res['result']) > 0:
-        print "%-16s %-22s %-40s" % ("VRF", "Name", "Description")
-        print "--------------------------------------------------------------------------------"
-    else:
-        print "No matching VRFs found."
 
-    for v in res['result']:
-        if len(str(v.description)) > 40:
-            desc = v.description[0:37] + "..."
-        else:
-            desc = v.description
-        print "%-16s %-22s %-40s" % (v.rt, v.name, desc)
+    offset = 0
+    limit = 100
+    while True:
+        res = VRF.search(query, { 'offset': offset, 'max_result': limit })
+        if len(res['result']) == 0:
+            print "No matching VRFs found."
+            return
+        elif offset == 0:
+            print "%-16s %-22s %-40s" % ("VRF", "Name", "Description")
+            print "--------------------------------------------------------------------------------"
+
+        for v in res['result']:
+            if len(str(v.description)) > 40:
+                desc = v.description[0:37] + "..."
+            else:
+                desc = v.description
+            print "%-16s %-22s %-40s" % (v.rt, v.name, desc)
+
+        if len(res['result']) < limit:
+            break
+        offset += limit
 
 
 
