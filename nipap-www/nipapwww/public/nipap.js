@@ -1254,15 +1254,20 @@ function insertPrefixList(pref_list) {
 			insertPrefix(prefix, prev_prefix);
 		}
 
+		// If the current prefix was not added to a hidden container and the
+		// last prefix was added to a hidden container, unhide if there are not
+		// very many prefixes in it
+		// check if current prefix is not hidden
+		if (!$("#prefix_entry" + prefix.id).parent().hasClass("prefix_hidden_container")) {
+			// was the last prefix
+			var p_parent = $("#prefix_entry" + prev_prefix.id).parent();
+			if (parseInt(p_parent.find('.prefix_entry').length) < 4) {
+				unhide( p_parent.attr('data-prefix-id') );
+			}
+		}
+
 		prev_prefix = prefix;
 
-	}
-
-	// If the last prefix was added to a hidden container, unhide
-	// if there are not very many prefixes in it
-	var p_parent = $("#prefix_entry" + prev_prefix.id).parent();
-	if (parseInt(p_parent.find('.prefix_entry').length) < 4) {
-		unhide( p_parent.attr('data-prefix-id') );
 	}
 
 }
@@ -1290,7 +1295,7 @@ function insertPrefix(prefix, prev_prefix) {
 	}
 
 	if (prefix.indent > prev_prefix.indent) {
-		// Indent level incresed
+		// Indent level increased
 
 		main_container = $("#collapse" + prev_prefix.id);
 
