@@ -349,18 +349,6 @@ function performPrefixSearch(explicit) {
 		explicit = false;
 	}
 
-	// Skip search if query string empty
-	if (jQuery.trim($('#query_string').val()).length < 1) {
-		clearPrefixSearch();
-		// update URL
-		setSearchPrefixURI(explicit);
-		return true;
-	}
-	end_of_result = 0;
-
-	// Keep track of search timing
-	stats.query_sent = new Date().getTime();
-
 	var search_q = {
 		'query_id': query_id,
 		'query_string': $('#query_string').val(),
@@ -387,6 +375,18 @@ function performPrefixSearch(explicit) {
 		return true;
 	}
 
+	// Skip search if query string empty
+	if (explicit == false && jQuery.trim($('#query_string').val()).length < 1) {
+		clearPrefixSearch();
+		// update URL
+		setSearchPrefixURI(explicit);
+		return true;
+	}
+
+	end_of_result = 0;
+
+	// Keep track of search timing
+	stats.query_sent = new Date().getTime();
 
 	current_query = search_q;
 	query_id += 1;
