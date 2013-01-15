@@ -19,7 +19,7 @@ Features in short:
  * CLI for the hardcore user
  * Native VRF support, allowing overlapping prefixes in different VRFs
  * Support for documenting individual hosts
- * Very powerful search function
+ * Very powerful search function (featuring regexp)
  * Integrated audit log
  * IP address request system for automatically assigning suitable prefixes
  * XML-RPC middleware, allowing easy integration with other applications or writing
