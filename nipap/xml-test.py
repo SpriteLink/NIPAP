@@ -23,7 +23,13 @@ server = xmlrpclib.Server(server_url, allow_none=1);
 
 ad = { 'authoritative_source': 'nipap' }
 
-print server.smart_search_prefix({ 'auth': ad, 'query_string': None })
+#res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True } })
+#res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True, 'root_prefix': '1.0.4.0/24' } })
+res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True, 'root_prefix': '1.0.4./24' } })
+for p in res['result']:
+    print p['prefix'], p['match']
+
+sys.exit(0)
 
 remove_query = {
 		'auth': {

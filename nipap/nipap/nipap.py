@@ -2625,6 +2625,15 @@ class Nipap:
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
+        # root_prefix
+        if 'root_prefix' not in search_options:
+            search_options['root_prefix'] = None
+        else:
+            try:
+                IPy.IP(search_options['root_prefix'], make_net = True)
+            except ValueError, e:
+                raise NipapValueError("Invalid value for option 'root_prefix'. Only IP prefixes allowed.")
+
         self._logger.debug('search_prefix search_options: %s' % str(search_options))
 
         # translate search options to SQL
@@ -2647,6 +2656,11 @@ class Nipap:
             where_children = ''
         else:
             where_children = children_selector
+
+        if search_options['root_prefix']:
+            where_root_prefix = " AND iprange(p1.prefix) <<= iprange('%s') " % (search_options['root_prefix'])
+        else:
+            where_root_prefix = ''
 
         display = '(p1.prefix << p2.display_prefix OR p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (parents_selector, children_selector)
 
@@ -2731,6 +2745,7 @@ class Nipap:
                     -- Join in all neighbors to the matched prefix
                     (iprange(p1.prefix) << iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
                 )
+                """ + where_root_prefix + """
             )
             JOIN ip_net_vrf AS vrf ON (p1.vrf_id = vrf.id)
             LEFT JOIN ip_net_pool AS pool ON (p1.pool_id = pool.id)
