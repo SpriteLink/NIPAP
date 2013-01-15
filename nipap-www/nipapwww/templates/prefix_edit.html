@@ -45,6 +45,33 @@
 
         }
 
+        function performPrefixEdit() {
+
+           var data = {
+               'prefix': $('input[name="prefix_prefix"]').val(),
+               'description': $('input[name="prefix_description"]').val(),
+               'node': $('input[name="prefix_node"]').val(),
+               'country': $('input[name="prefix_country"]').val(),
+               'order_id': $('input[name="prefix_order_id"]').val(),
+               'vrf': $('input[name="prefix_vrf"]').val(),
+               'comment': $('input[name="prefix_comment"]').val(),
+               'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val()
+           };
+
+           if ($('input[name="prefix_monitor"]').is(':checked')) {
+               data.monitor = 'true';
+           } else {
+               data.monitor = 'false';
+           }
+
+           if ('{{ c.prefix.type }}' != 'host') {
+               data.type = $('input[name="prefix_type"]:checked').val();
+           }
+
+           $.getJSON('{{ h.url(controller="xhr", action="edit_prefix", id=c.prefix.id) }}', data, prefixEdited);
+
+        }
+
 
         $(function() {
 			// handle the comment input field
@@ -59,28 +86,17 @@
 
             // Capture submit form event
             $('form[name="prefix_form"]').submit(function(e) {
-                var data = {
-                    'prefix': $('input[name="prefix_prefix"]').val(),
-                    'description': $('input[name="prefix_description"]').val(),
-                    'node': $('input[name="prefix_node"]').val(),
-                    'country': $('input[name="prefix_country"]').val(),
-                    'order_id': $('input[name="prefix_order_id"]').val(),
-                    'vrf': $('input[name="prefix_vrf"]').val(),
-                    'comment': $('input[name="prefix_comment"]').val(),
-                    'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val()
-                };
-
-                if ($('input[name="prefix_monitor"]').is(':checked')) {
-                    data.monitor = 'true';
-                } else {
-                    data.monitor = 'false';
-                }
-
-                if ('{{ c.prefix.type }}' != 'host') {
-                    data.type = $('input[name="prefix_type"]:checked').val();
-                }
-
-                $.getJSON('{{ h.url(controller="xhr", action="edit_prefix", id=c.prefix.id) }}', data, prefixEdited);
+            {% if c.prefix.authoritative_source != 'nipap' %}
+                dialog = showDialogYesNo(
+                    'Confirm prefix edit',
+                    'The prefix {{ c.prefix.prefix }} is managed by ' +
+                        '\'{{ c.prefix.authoritative_source }}\'.<br><br>' +
+                        'Are you sure you want to edit it?',
+                    function() { performPrefixEdit(); $(this).dialog("close"); }
+                );
+            {% else%}
+                performPrefixEdit();
+            {% endif %}
 
                 // prevent default action ("ordinary" HTTP POST)
                 e.preventDefault();

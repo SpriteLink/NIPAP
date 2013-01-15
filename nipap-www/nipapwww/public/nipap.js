@@ -131,13 +131,14 @@ function showDialogNotice(title, msg) {
 /*
  * Show general confirm dialog
  */
-function showDialogYesNo(title, msg, target) {
+function showDialogYesNo(title, msg, target_yes) {
 	var dialog = $('<div>' + msg + '</div>')
 		.dialog({
 			autoOpen: false,
 			resizable: false,
 			show: 'fade',
 			hide: 'fade',
+            width: 400,
 			open: function() {
 				$('.ui-widget-overlay').hide().fadeIn('fast');
 				$(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar").addClass("ui-dialog-question");
@@ -156,7 +157,7 @@ function showDialogYesNo(title, msg, target) {
 				{
 					style: 'margin: 10px; width: 50px;',
 					text: "Yes",
-					click: target,
+					click: target_yes,
 				},
 				{
 					style: 'margin: 10px; width: 50px;',
@@ -641,7 +642,7 @@ function showPrefix(prefix, reference, offset) {
 }
 
 /*
- * Function which is ran when a prefix has been removed
+ * Function which is run when a prefix has been removed
  */
 function prefixRemoved(prefix) {
 
@@ -700,21 +701,55 @@ function showPrefixMenu(prefix_id) {
 		// ordinary prefix list
 		menu.append('<a href="/prefix/edit/' + prefix_id + '">Edit</a>');
 		menu.append('<a id="prefix_remove' + prefix_id + '" href="/prefix/remove/' + prefix_id + '">Remove</a>');
+
+        // Create prefix remove dialog text and actions dependent on
+        // authoritative source of prefix
+        auth_src = prefix_list[prefix_id].authoritative_source;
+        if (auth_src == 'nipap') {
+
+            confirmation_text = 'Are you sure you want to remove the prefix ' +
+                prefix_list[prefix_id].display_prefix + '?';
+
+            confirmation_action = function() {
+				$.getJSON('/xhr/remove_prefix', { 'id': prefix_id }, prefixRemoved);
+
+				hidePopupMenu();
+				dialog.dialog('close');
+
+			}
+
+        } else {
+
+            confirmation_text = 'Prefix ' + prefix_list[prefix_id].prefix + ' is managed by \'' +
+                auth_src + '\'.<br>' +
+                'Are you sure you want to remove it?<br><br>' +
+                'Enter the name of the managing system to continue:<br>' +
+                '<input type="text" id="confirm_prefix_remove" style="width: 95%;">' +
+                '<div id="auth_src_mismatch" style="display: none; color: red;">System names did not match.</div>';
+
+            confirmation_action = function() {
+
+                if ($('#confirm_prefix_remove').val().toLowerCase() == auth_src.toLowerCase()) {
+
+                    // User entered correct auth scr, remove prefix
+				    $.getJSON('/xhr/remove_prefix', { 'id': prefix_id }, prefixRemoved);
+
+				    hidePopupMenu();
+				    $(this).dialog('close');
+
+                } else {
+
+                    // Wrong auth src entered
+                    $('#auth_src_mismatch').fadeIn();
+
+                }
+            }
+        }
+
 		$('#prefix_remove' + prefix_id).click(function(e) {
 			e.preventDefault();
-			var dialog = showDialogYesNo('Really remove prefix?', 'Are you sure you want to remove the prefix ' + prefix_list[prefix_id].display_prefix + '?',
-				function () {
-					var data = {
-						'id': prefix_id
-					};
-					$.getJSON('/xhr/remove_prefix', data, prefixRemoved);
-
-					hidePopupMenu();
-					dialog.dialog('close');
-
-				});
-
-		});
+			var dialog = showDialogYesNo('Really remove prefix?', confirmation_text, confirmation_action);
+        });
 	}
 
 	menu.slideDown('fast');
