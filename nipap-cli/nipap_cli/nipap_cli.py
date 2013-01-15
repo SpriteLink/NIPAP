@@ -163,7 +163,7 @@ def _expand_list_query(opts):
         # standard case
         operator = 'regex_match'
         val1 = key
-        val2 = "^%s" % val
+        val2 = "%s" % val
 
         query_parts.append({
             'operator': operator,
