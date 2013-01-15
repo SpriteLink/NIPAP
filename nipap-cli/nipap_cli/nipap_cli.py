@@ -529,7 +529,12 @@ def remove_pool(arg, opts):
 def remove_prefix(arg, opts):
     """ Remove prefix
     """
+
+    # set up some basic variables
+    remove_confirmed = False
+    auth_src = set()
     recursive = False
+
     if opts.get('recursive') is True:
         recursive = True
 
@@ -552,6 +557,9 @@ def remove_prefix(arg, opts):
         vrf = None
     else:
         vrf = p.vrf.rt
+
+    if p.authoritative_source != 'nipap':
+        auth_src.add(p.authoritative_source)
 
     if recursive is True:
         # recursive delete
@@ -579,30 +587,88 @@ def remove_prefix(arg, opts):
         pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
         if len(pres['result']) <= 1:
             res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, vrf))
+
+            if res.lower() in [ 'y', 'yes' ]:
+                remove_confirmed = True
+
         else:
             print "Recursively deleting %s will delete the following prefixes:" % p.prefix
 
+            # Iterate prefixes to print a few of them and check the prefixes'
+            # authoritative source
             i = 0
             for rp in pres['result']:
-                print "%-29s %-2s %-19s %-14s %-40s" % ("".join("  " for i in
-                    range(rp.indent)) + rp.display_prefix,
-                    rp.type[0].upper(), rp.node, rp.order_id, rp.description)
-                i += 1
-                if i > 10:
-                    print ".. and %s other prefixes" % (len(pres['result']) - 10)
-                    break
+                if i <= 10:
+                    print "%-29s %-2s %-19s %-14s %-40s" % ("".join("  " for i in
+                        range(rp.indent)) + rp.display_prefix,
+                        rp.type[0].upper(), rp.node, rp.order_id, rp.description)
 
-            res = raw_input("Do you really want to recursively remove %s prefixes in VRF %s? [y/n]: " % (len(pres['result']), vrf))
+                if i == 10:
+                    print ".. and %s other prefixes" % (len(pres['result']) - 10)
+
+                if rp.authoritative_source != 'nipap':
+                    auth_src.add(rp.authoritative_source)
+
+                i += 1
+
+            if len(auth_src) == 0:
+                # Simple case; all prefixes were added from NIPAP
+                res = raw_input("Do you really want to recursively remove %s prefixes in VRF %s? [y/n]: " % (len(pres['result']), vrf))
+
+                if res.lower() in [ 'y', 'yes' ]:
+                    remove_confirmed = True
+
+            else:
+                # we have prefixes with authoritative source != nipap
+                auth_src = list(auth_src)
+                plural = ""
+
+                # format prompt depending on how many different sources we have
+                if len(auth_src) == 1:
+                    systems = "'%s'" % auth_src[0]
+                    prompt = "Enter the name of the managing system to continue or anything else to abort: "
+
+                else:
+                    systems = ", ".join("'%s'" % x for x in auth_src[1:]) + " and '%s'" % auth_src[0]
+                    plural = "s"
+                    prompt = "Enter the name of the last managing system to continue or anything else to abort: "
+
+                print ("Prefix %s in VRF %s contains prefixes managed by the system%s %s. " +
+                    "Are you sure you want to remove them? ") % (p.prefix, vrf, plural, systems)
+                res = raw_input(prompt)
+
+                # Did the user provide the correct answer?
+                if res.lower() == auth_src[0].lower():
+                    remove_confirmed = True
+                else:
+                    print "System names did not match."
+
     else:
         # non recursive delete
-        res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, vrf))
+        if len(auth_src) > 0:
+            auth_src = list(auth_src)
+            print ("Prefix %s in VRF %s is managed by the system '%s'. " +
+                "Are you sure you want to remove it? ") % (p.prefix, vrf, auth_src[0])
+            res = raw_input("Enter the name of the managing system to continue or anything else to abort: ")
 
-    if res.lower() == 'y' or res.lower() == 'yes':
+            if res.lower() == auth_src[0].lower():
+                remove_confirmed = True
+
+            else:
+                print "System names did not match."
+
+        else:
+            res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, vrf))
+            if res.lower() in [ 'y', 'yes' ]:
+                remove_confirmed = True
+
+    if remove_confirmed is True:
         p.remove(recursive = recursive)
         if recursive is True:
             print "Prefix %s and %s other prefixes removed." % (p.prefix, (len(pres['result']) - 1))
         else:
             print "Prefix %s removed." % p.prefix
+
     else:
         print "Operation canceled."
 
@@ -701,6 +767,21 @@ def modify_prefix(arg, opts):
         except IndexError:
             print >> sys.stderr, "VRF %s not found." % opts['vrf_rt']
             sys.exit(1)
+
+    # Promt user if prefix has authoritative source != nipap
+    if p.authoritative_source.lower() != 'nipap':
+
+        vrf = 'none'
+        if p.vrf is not None:
+            vrf = p.vrf.rt
+
+        res = raw_input("Prefix %s in VRF %s is managed by system '%s'. Are you sure you want to modify it? [y/n]: " %
+            (p.prefix, vrf, p.authoritative_source))
+
+        # If the user declines, short-circuit...
+        if res.lower() not in [ 'y', 'yes' ]:
+            print "Operation aborted."
+            return
 
     try:
         p.save()
