@@ -862,6 +862,10 @@ class Prefix(Pynipap):
 
         # Old object, edit
         else:
+
+            # Add authoritative source to data
+            data['authoritative_source'] = self.authoritative_source
+
             try:
                 # save
                 self._xmlrpc.connection.edit_prefix(
