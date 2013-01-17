@@ -1,3 +1,11 @@
+nipap-www (0.14.0-1) stable; urgency=low
+
+  * Varous fixes to the CLI client
+  * Authoritative source honored in CLI client and web UI
+  * Feature parity in smart_search_* API functions
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 17 Jan 2013 21:22:12 +0100
+
 nipap-www (0.13.0-1) stable; urgency=low
 
   * Added recursive option to prefix remove function in CLI client
