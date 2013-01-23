@@ -147,7 +147,7 @@
 import xmlrpclib
 import logging
 
-__version__		= "0.13.0"
+__version__		= "0.14.0"
 __author__		= "Kristian Larsson, Lukas Garberg"
 __author_email__= "kll@tele2.net, lukas@spritelink.net"
 __copyright__	= "Copyright 2011, Kristian Larsson, Lukas Garberg"
@@ -861,6 +861,10 @@ class Prefix(Pynipap):
 
         # Old object, edit
         else:
+
+            # Add authoritative source to data
+            data['authoritative_source'] = self.authoritative_source
+
             try:
                 # save
                 self._xmlrpc.connection.edit_prefix(

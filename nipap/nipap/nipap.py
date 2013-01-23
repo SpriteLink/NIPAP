@@ -1,7 +1,7 @@
 # vim: et ts=4 :
 
 """ NIPAP API
-    ===============
+    =========
 
     This module contains the Nipap class which provides most of the logic in NIPAP
     apart from that contained within the PostgreSQL database.
@@ -2031,8 +2031,6 @@ class Nipap:
 
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
-
-        attr['authoritative_source'] = auth.authoritative_source
 
         # Handle Pool - find correct one and remove bad pool keys
         pool = None
