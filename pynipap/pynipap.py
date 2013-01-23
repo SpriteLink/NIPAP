@@ -32,7 +32,7 @@
 
     General usage
     -------------
-    pynipap has been designed to be very simple to use and rapid to get about using.
+    pynipap has been designed to be simple to use.
 
     Preparations
     ^^^^^^^^^^^^
@@ -54,7 +54,8 @@
     NIPAP has a authentication system which is somewhat involved, see the main
     NIPAP documentation.
 
-    The URL, including the user credentials, is set in the pynipap module variable `xmlrpc_uri` as so::
+    The URL, including the user credentials, is set in the pynipap module
+    variable `xmlrpc_uri` as so::
 
         pynipap.xmlrpc_uri = "http://user:pass@127.0.0.1:9002"
 
