@@ -668,7 +668,7 @@ class Prefix(Pynipap):
 
         try:
             prefix = Prefix.list({'id': id})[0]
-        except KeyError:
+        except IndexError:
             raise NipapNonExistentError('no prefix with ID ' + str(id) + ' found')
 
         _cache['Prefix'][id] = prefix
