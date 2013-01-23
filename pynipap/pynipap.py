@@ -146,8 +146,6 @@
 """
 import xmlrpclib
 import logging
-import sys
-import os
 
 __version__		= "0.13.0"
 __author__		= "Kristian Larsson, Lukas Garberg"
