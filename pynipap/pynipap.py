@@ -294,8 +294,8 @@ class VRF(Pynipap):
                     'vrf': vrf,
                     'auth': AuthOptions().options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
 
         res = list()
         for v in vrf_list:
@@ -334,7 +334,7 @@ class VRF(Pynipap):
 
         try:
             vrf = VRF.list({ 'id': id })[0]
-        except IndexError, e:
+        except IndexError:
             raise NipapNonExistentError('no VRF with ID ' + str(id) + ' found')
 
         _cache['VRF'][id] = vrf
@@ -355,8 +355,8 @@ class VRF(Pynipap):
                     'search_options': search_opts,
                     'auth': AuthOptions().options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         result = dict()
         result['result'] = []
         result['search_options'] = search_result['search_options']
@@ -380,8 +380,8 @@ class VRF(Pynipap):
                     'search_options': search_options,
                     'auth': AuthOptions().options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         result = dict()
         result['interpretation'] = smart_result['interpretation']
         result['search_options'] = smart_result['search_options']
@@ -411,8 +411,8 @@ class VRF(Pynipap):
                         'attr': data,
                         'auth': self._auth_opts.options
                     })
-            except xmlrpclib.Fault, f:
-                raise _fault_to_exception(f)
+            except xmlrpclib.Fault as xml_fault:
+                raise _fault_to_exception(xml_fault)
 
         else:
             # Old object, edit
@@ -423,8 +423,8 @@ class VRF(Pynipap):
                         'attr': data,
                         'auth': self._auth_opts.options
                     })
-            except xmlrpclib.Fault, f:
-                raise _fault_to_exception(f)
+            except xmlrpclib.Fault as xml_fault:
+                raise _fault_to_exception(xml_fault)
 
         _cache['VRF'][self.id] = self
 
@@ -440,8 +440,8 @@ class VRF(Pynipap):
                     'vrf': { 'id': self.id },
                     'auth': self._auth_opts.options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         if self.id in _cache['VRF']:
             del(_cache['VRF'][self.id])
 
@@ -478,8 +478,8 @@ class Pool(Pynipap):
                         'attr': data,
                         'auth': self._auth_opts.options
                     })
-            except xmlrpclib.Fault, f:
-                raise _fault_to_exception(f)
+            except xmlrpclib.Fault as xml_fault:
+                raise _fault_to_exception(xml_fault)
 
         else:
             # Old object, edit
@@ -490,8 +490,8 @@ class Pool(Pynipap):
                         'attr': data,
                         'auth': self._auth_opts.options
                     })
-            except xmlrpclib.Fault, f:
-                raise _fault_to_exception(f)
+            except xmlrpclib.Fault as xml_fault:
+                raise _fault_to_exception(xml_fault)
 
         _cache['Pool'][self.id] = self
 
@@ -507,8 +507,8 @@ class Pool(Pynipap):
                     'pool': { 'id': self.id },
                     'auth': self._auth_opts.options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         if self.id in _cache['Pool']:
             del(_cache['Pool'][self.id])
 
@@ -527,7 +527,7 @@ class Pool(Pynipap):
 
         try:
             pool = Pool.list({'id': id})[0]
-        except KeyError, e:
+        except KeyError:
             raise NipapNonExistentError('no pool with ID ' + str(id) + ' found')
 
         _cache['Pool'][id] = pool
@@ -548,8 +548,8 @@ class Pool(Pynipap):
                     'search_options': search_opts,
                     'auth': AuthOptions().options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         result = dict()
         result['result'] = []
         result['search_options'] = search_result['search_options']
@@ -574,8 +574,8 @@ class Pool(Pynipap):
                     'search_options': search_options,
                     'auth': AuthOptions().options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         result = dict()
         result['interpretation'] = smart_result['interpretation']
         result['search_options'] = smart_result['search_options']
@@ -619,8 +619,8 @@ class Pool(Pynipap):
                     'pool': spec,
                     'auth': AuthOptions().options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         res = list()
         for pool in pool_list:
             p = Pool.from_dict(pool)
@@ -668,7 +668,7 @@ class Prefix(Pynipap):
 
         try:
             prefix = Prefix.list({'id': id})[0]
-        except KeyError, e:
+        except KeyError:
             raise NipapNonExistentError('no prefix with ID ' + str(id) + ' found')
 
         _cache['Prefix'][id] = prefix
@@ -698,8 +698,8 @@ class Prefix(Pynipap):
         xmlrpc = XMLRPCConnection()
         try:
             find_res = xmlrpc.connection.find_free_prefix(q)
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         pass
 
         return find_res
@@ -719,8 +719,8 @@ class Prefix(Pynipap):
                     'search_options': search_opts,
                     'auth': AuthOptions().options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         result = dict()
         result['result'] = []
         result['search_options'] = search_result['search_options']
@@ -746,8 +746,8 @@ class Prefix(Pynipap):
                     'auth': AuthOptions().options,
                     'extra_query': extra_query
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         result = dict()
         result['interpretation'] = smart_result['interpretation']
         result['search_options'] = smart_result['search_options']
@@ -772,8 +772,8 @@ class Prefix(Pynipap):
                     'prefix': spec,
                     'auth': AuthOptions().options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         res = list()
         for pref in pref_list:
             p = Prefix.from_dict(pref)
@@ -837,8 +837,8 @@ class Prefix(Pynipap):
                         'args': x_args,
                         'auth': self._auth_opts.options
                     })
-            except xmlrpclib.Fault, f:
-                raise _fault_to_exception(f)
+            except xmlrpclib.Fault as xml_fault:
+                raise _fault_to_exception(xml_fault)
 
             # fetch data which is set by NIPAP
             try:
@@ -847,8 +847,8 @@ class Prefix(Pynipap):
                         'prefix': { 'id': self.id },
                         'auth': self._auth_opts.options
                     })[0]
-            except xmlrpclib.Fault, f:
-                raise _fault_to_exception(f)
+            except xmlrpclib.Fault as xml_fault:
+                raise _fault_to_exception(xml_fault)
             except IndexError:
                 raise NipapNonExistantError('Added prefix not found.')
             self.prefix = p['prefix']
@@ -870,8 +870,8 @@ class Prefix(Pynipap):
                         'auth': self._auth_opts.options
                     })
 
-            except xmlrpclib.Fault, f:
-                raise _fault_to_exception(f)
+            except xmlrpclib.Fault as xml_fault:
+                raise _fault_to_exception(xml_fault)
 
         # update cache
         _cache['Prefix'][self.id] = self
@@ -889,8 +889,8 @@ class Prefix(Pynipap):
                     'recursive': recursive,
                     'auth': self._auth_opts.options
                 })
-        except xmlrpclib.Fault, f:
-            raise _fault_to_exception(f)
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
         if self.id in _cache['Prefix']:
             del(_cache['Prefix'][self.id])
 
