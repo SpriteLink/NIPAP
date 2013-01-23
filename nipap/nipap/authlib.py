@@ -513,7 +513,7 @@ class SqliteAuth(BaseAuth):
     def list_users(self):
         """ List all users.
         """
-        sql = "SELECT * FROM user ORDER BY username";
+        sql = "SELECT * FROM user ORDER BY username"
         self._db_curs.execute(sql)
         users = list()
         for row in self._db_curs:

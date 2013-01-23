@@ -1,4 +1,3 @@
-# vim: et :
 """ XML-RPC glue class
     ==================
 
@@ -94,7 +93,7 @@ class NipapXMLRPC:
         # behave as we want (ie, reload the configuration file) we need to
         # install a custom handler
         import signal
-        signal.signal(signal.SIGHUP, self._sigHup)
+        signal.signal(signal.SIGHUP, self._sighup)
 
         # setup twisted logging
         log.defaultObserver.stop()
@@ -129,8 +128,8 @@ class NipapXMLRPC:
 
 
 
-    def _sigHup(self, num, frame):
-        """ Customer signal handler for SIGHUP
+    def _sighup(self, num, frame):
+        """ Custom signal handler for SIGHUP
         """
         self.logger.info("Received SIGHUP - reloading configuration")
         self._cfg.read_file()
@@ -796,3 +795,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
             return self.nipap.smart_search_asn(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
+# vim: et :

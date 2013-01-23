@@ -1,13 +1,10 @@
-# vim: et ts=4 :
-
 """ NIPAP API
     =========
 
-    This module contains the Nipap class which provides most of the logic in NIPAP
-    apart from that contained within the PostgreSQL database.
+    This module contains the Nipap class which provides most of the logic in
+    NIPAP apart from that contained within the PostgreSQL database.
 
     NIPAP contains three types of objects: VRFs, prefixes and pools.
-
 
     VRF
     ------
@@ -29,8 +26,8 @@
     * :func:`~Nipap.add_vrf` - Create a new VRF.
     * :func:`~Nipap.edit_vrf` - Edit a VRF.
     * :func:`~Nipap.remove_vrf` - Remove a VRF.
-    * :func:`~Nipap.search_vrf` - Search VRFs from a specifically formatted dict.
-    * :func:`~Nipap.smart_search_vrf` - Search VRFs from arbitarly formatted string.
+    * :func:`~Nipap.search_vrf` - Search VRFs based on a formatted dict.
+    * :func:`~Nipap.smart_search_vrf` - Search VRFs based on a query string.
 
 
     Prefix
@@ -57,13 +54,13 @@
     * :attr:`pool_name` - Name of pool, if the prefix belongs to a pool.
     * :attr:`type` - Prefix type, string 'reservation', 'assignment' or 'host'.
     * :attr:`indent` - Depth in prefix tree. Set by NIPAP.
-    * :attr:`country` - Country where the prefix resides (two-letter country code).
+    * :attr:`country` - Two letter country code where the prefix resides.
     * :attr:`order_id` - Order identifier.
     * :attr:`external_key` - A field for use by external systems which needs to
         store references to its own dataset.
     * :attr:`authoritative_source` - String identifying which system last
         modified the prefix.
-    * :attr:`alarm_priority` - String 'low', 'medium' or 'high'. Used by netwatch.
+    * :attr:`alarm_priority` - String 'low', 'medium' or 'high'.
     * :attr:`monitor` - A boolean specifying whether the prefix should be
         monitored or not.
     * :attr:`display` - Only set by the :func:`~Nipap.search_prefix` and
@@ -73,11 +70,11 @@
     Prefix functions
     ^^^^^^^^^^^^^^^^
     * :func:`~Nipap.list_prefix` - Return a list of prefixes.
-    * :func:`~Nipap.add_prefix` - Add a prefix. The prefix itself can be selected by Nipap.
+    * :func:`~Nipap.add_prefix` - Add a prefix, more or less automatically.
     * :func:`~Nipap.edit_prefix` - Edit a prefix.
     * :func:`~Nipap.remove_prefix` - Remove a prefix.
-    * :func:`~Nipap.search_prefix` - Search prefixes from a specifically formatted dict.
-    * :func:`~Nipap.smart_search_prefix` - Search prefixes from arbitarly formatted string.
+    * :func:`~Nipap.search_prefix` - Search prefixes based on a formatted dict.
+    * :func:`~Nipap.smart_search_prefix` - Search prefixes based on a string.
 
 
     Pool
@@ -103,8 +100,8 @@
     * :func:`~Nipap.add_pool` - Add a pool.
     * :func:`~Nipap.edit_pool` - Edit a pool.
     * :func:`~Nipap.remove_pool` - Remove a pool.
-    * :func:`~Nipap.search_pool` - Search pools from a specifically formatted dict.
-    * :func:`~Nipap.smart_search_pool` - Search pools from arbitarly formatted string.
+    * :func:`~Nipap.search_pool` - Search pools based on a formatted dict.
+    * :func:`~Nipap.smart_search_pool` - Search pools based on a string.
 
     ASN
     ---
@@ -121,8 +118,8 @@
     * :func:`~Nipap.add_asn` - Add an ASN.
     * :func:`~Nipap.edit_asn` - Edit an ASN.
     * :func:`~Nipap.remove_asn` - Remove an ASN.
-    * :func:`~Nipap.search_asn` - Search ASNs from specifically formatted dict.
-    * :func:`~Nipap.smart_search_asn` - Search ASNs from arbitarly formatted string.
+    * :func:`~Nipap.search_asn` - Search ASNs based on a formatted dict.
+    * :func:`~Nipap.smart_search_asn` - Search ASNs based on a string.
 
 
     The 'spec'
@@ -256,7 +253,8 @@ class Nipap:
     def _register_inet(self, oid=None, conn_or_curs=None):
         """Create the INET type and an Inet adapter."""
         from psycopg2 import extensions as _ext
-        if not oid: oid = 869
+        if not oid:
+            oid = 869
         _ext.INET = _ext.new_type((oid, ), "INET",
                 lambda data, cursor: data and Inet(data) or None)
         _ext.register_type(_ext.INET, self._con_pg)
@@ -270,7 +268,7 @@ class Nipap:
 
         try:
             socket.inet_aton(ip)
-        except:
+        except socket.error:
             return False
         return True
 
@@ -282,7 +280,7 @@ class Nipap:
 
         try:
             socket.inet_pton(socket.AF_INET6, ip)
-        except:
+        except socket.error:
             return False
         return True
 
@@ -305,7 +303,7 @@ class Nipap:
             # a prefix!
             try:
                 pl = int(parts[1])
-            except:
+            except ValueError:
                 # if casting parts[1] to int failes, this is not a prefix..
                 return None
 
@@ -421,7 +419,11 @@ class Nipap:
                 if m is None:
                     raise NipapDuplicateError("Objects primary keys already exist")
                 cursor = self._con_pg.cursor()
-                cursor.execute("SELECT obj_description(oid) FROM pg_class WHERE relname = %(relname)s", { 'relname': m.group(1) })
+                cursor.execute("""  SELECT
+                                        obj_description(oid)
+                                    FROM pg_class
+                                    WHERE relname = %(relname)s""",
+                                { 'relname': m.group(1) })
                 column_desc = '<unknown>'
                 for desc in cursor:
                     column_desc = str(desc[0])
@@ -624,7 +626,7 @@ class Nipap:
             try:
                 where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NoSuchOperatorError("No such operator %s" % str(query['operator']))
+                raise NipapNoSuchOperatorError("No such operator %s" % str(query['operator']))
 
             opt += opt1
             opt += opt2
@@ -1173,7 +1175,7 @@ class Nipap:
             try:
                 where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NoSuchOperatorError("No such operator %s" % str(query['operator']))
+                raise NipapNoSuchOperatorError("No such operator %s" % str(query['operator']))
 
             opt += opt1
             opt += opt2
@@ -1633,23 +1635,23 @@ class Nipap:
         query_parts = list()
         for query_str_part in query_str_parts:
 
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'name or description'
-                query_parts.append({
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'regex_match',
-                        'val1': 'name',
-                        'val2': query_str_part['string']
-                    },
-                    'val2': {
-                        'operator': 'regex_match',
-                        'val1': 'description',
-                        'val2': query_str_part['string']
-                    }
-                })
+            self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
+            query_str_part['interpretation'] = 'text'
+            query_str_part['operator'] = 'regex'
+            query_str_part['attribute'] = 'name or description'
+            query_parts.append({
+                'operator': 'or',
+                'val1': {
+                    'operator': 'regex_match',
+                    'val1': 'name',
+                    'val2': query_str_part['string']
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'description',
+                    'val2': query_str_part['string']
+                }
+            })
 
         # Sum all query parts to one query
         query = {}
@@ -1781,7 +1783,7 @@ class Nipap:
             try:
                 where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NoSuchOperatorError("No such operator %s" % str(query['operator']))
+                raise NipapNoSuchOperatorError("No such operator %s" % str(query['operator']))
 
             opt += opt1
             opt += opt2
@@ -2998,7 +3000,7 @@ class Nipap:
             try:
                 where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NoSuchOperatorError("No such operator %s" % str(query['operator']))
+                raise NipapNoSuchOperatorError("No such operator %s" % str(query['operator']))
 
             opt += opt1
             opt += opt2
@@ -3485,3 +3487,5 @@ class NipapDuplicateError(NipapError):
     """
 
     error_code = 1400
+
+# vim: et ts=4 :
