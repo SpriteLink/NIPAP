@@ -2633,6 +2633,10 @@ class Nipap:
                 IPy.IP(search_options['parent_prefix'], make_net = True)
             except ValueError, e:
                 raise NipapValueError("Invalid value for option 'parent_prefix'. Only IP prefixes allowed.")
+            try:
+                parent_prefix = self.list_prefix(auth, { 'id': search_options['parent_prefix'] })[0]
+            except IndexError:
+                raise NipapNonExistentError("Parent prefix %s can not be found" % search_options['parent_prefix'])
 
         self._logger.debug('search_prefix search_options: %s' % str(search_options))
 
@@ -2658,7 +2662,10 @@ class Nipap:
             where_children = children_selector
 
         if search_options['parent_prefix']:
-            where_parent_prefix = " AND iprange(p1.prefix) <<= iprange('%s') " % (search_options['parent_prefix'])
+            vrf_id = 0
+            if parent_prefix['vrf_id']:
+                vrf_id = parent_prefix['vrf_id']
+            where_parent_prefix = " AND p1.vrf_id = %s AND iprange(p1.prefix) <<= iprange('%s') AND p1.indent <= %s " % (vrf_id, parent_prefix['prefix'], parent_prefix['indent'] + 1)
         else:
             where_parent_prefix = ''
 
@@ -3450,6 +3457,14 @@ class NipapInputError(NipapError):
     """
 
     error_code = 1100
+
+
+class NipapNonExistentError(NipapError):
+    """
+    """
+    # TODO: determine error code for this
+    error_code = 999
+
 
 
 class NipapMissingInputError(NipapInputError):
