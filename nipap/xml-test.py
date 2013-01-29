@@ -25,8 +25,8 @@ ad = { 'authoritative_source': 'nipap' }
 
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True } })
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True, 'root_prefix': '1.0.4.0/24' } })
-res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1',
-'search_options': { 'include_all_parents': True, 'parent_prefix': 11963 } })
+#res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True, 'parent_prefix': 11963 } })
+res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True, 'parent_prefix': 'bajs' } })
 for p in res['result']:
     print "".join(" " for i in xrange(p['indent'])), p['prefix'], p['match']
 

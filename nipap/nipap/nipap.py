@@ -2630,9 +2630,11 @@ class Nipap:
             search_options['parent_prefix'] = None
         else:
             try:
-                IPy.IP(search_options['parent_prefix'], make_net = True)
-            except ValueError, e:
-                raise NipapValueError("Invalid value for option 'parent_prefix'. Only IP prefixes allowed.")
+                _ = int(search_options['parent_prefix'])
+            except ValueError:
+                raise NipapValueError(
+                    "Invalid value '%s' for option 'parent_prefix'. Must be the ID of a prefix."
+                        % search_options['parent_prefix'])
             try:
                 parent_prefix = self.list_prefix(auth, { 'id': search_options['parent_prefix'] })[0]
             except IndexError:
