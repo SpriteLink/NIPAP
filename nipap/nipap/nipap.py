@@ -3459,14 +3459,6 @@ class NipapInputError(NipapError):
     error_code = 1100
 
 
-class NipapNonExistentError(NipapError):
-    """
-    """
-    # TODO: determine error code for this
-    error_code = 999
-
-
-
 class NipapMissingInputError(NipapInputError):
     """ Missing input.
 
