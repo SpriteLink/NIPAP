@@ -714,7 +714,7 @@ function showPrefixMenu(prefix_id) {
 				$.getJSON('/xhr/remove_prefix', { 'id': prefix_id }, prefixRemoved);
 
 				hidePopupMenu();
-				dialog.dialog('close');
+				$(this).dialog('close');
 
 			}
 
