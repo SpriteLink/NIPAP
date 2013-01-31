@@ -40,6 +40,29 @@ class XhrController(BaseController):
 
 
 
+    @classmethod
+    def extract_pool_attr(cls, req):
+        """ Extract pool attributes from arbitary dict.
+        """
+
+        attr = {}
+        if 'id' in request.params:
+            attr['id'] = int(request.params['id'])
+        if 'name' in request.params:
+            attr['name'] = request.params['name']
+        if 'description' in request.params:
+            attr['description'] = request.params['description']
+        if 'default_type' in request.params:
+            attr['default_type'] = request.params['default_type']
+        if 'ipv4_default_prefix_length' in request.params:
+            attr['ipv4_default_prefix_length'] = int(request.params['ipv4_default_prefix_length'])
+        if 'ipv6_default_prefix_length' in request.params:
+            attr['ipv6_default_prefix_length'] = int(request.params['ipv6_default_prefix_length'])
+
+        return attr
+
+
+
     def index(self):
         # TODO: write a function which lists the available XHR functions?
         return 'Hello World'
@@ -147,8 +170,11 @@ class XhrController(BaseController):
         """ List pools and return JSON encoded result.
         """
 
+        # fetch attributes from request.params
+        attr = XhrController.extract_pool_attr(request.params)
+
         try:
-            pools = Pool.list()
+            pools = Pool.list(attr)
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 

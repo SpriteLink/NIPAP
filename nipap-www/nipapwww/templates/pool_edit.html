@@ -11,11 +11,19 @@
     var indent_head = Array();
     prefix_link_type = 'add_too_pool';
     var pool_id = {{ c.pool.id }};
+    var prefix = null;
 
     /*
      * Is run when a prefix is selected in the list.
      */
     function addToPool(prefix_id) {
+
+        // Verify that prefix is not already member of a pool
+        if (prefix_list[prefix_id].pool != null) {
+            prefix = prefix_list[prefix_id];
+            $.getJSON('/xhr/list_pool', { id: pool_id }, showPrefixInPoolDialog);
+            return;
+        }
 
         // set prefix's pool attribute in NIPAP
         data = new Object();
@@ -25,6 +33,18 @@
         $('input[name="pool_exp_method_1"]').removeAttr('checked');
         clearPrefixSearch();
 
+    }
+
+    /*
+     * Display a dialog informing the user that the prefix which was selected
+     * is already in a pool.
+     */
+    function showPrefixInPoolDialog(data) {
+        showDialogNotice(
+            "Prefix already in pool",
+            "The prefix " + prefix.display_prefix +
+                " is already allocated to the pool \"" + data[0].name + "\"."
+        );
     }
 
 
