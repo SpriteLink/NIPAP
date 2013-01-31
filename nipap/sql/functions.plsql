@@ -278,7 +278,11 @@ BEGIN
 	-- those stay the same, we don't need to run the rest of the sanity
 	-- checks.
 	IF TG_OP = 'UPDATE' THEN
-		-- we need to nest cause plpgsql is stupid :(
+		-- don't allow changing VRF
+		IF OLD.vrf_id != NEW.vrf_id THEN
+			RAISE EXCEPTION '1200:Changing VRF is not allowed';
+		END IF;
+		-- if prefix and type is same, quick return!
 		IF OLD.type = NEW.type AND OLD.prefix = NEW.prefix THEN
 			RETURN NEW;
 		END IF;
@@ -345,7 +349,7 @@ BEGIN
 		ELSE
 			IF OLD.type != NEW.type THEN
 				-- FIXME: better exception code
-				RAISE EXCEPTION '1200:Changing type is disallowed';
+				RAISE EXCEPTION '1200:Changing type is not allowed';
 			END IF;
 		END IF;
 	END IF;
@@ -369,7 +373,7 @@ BEGIN
 			-- FIXME: optimize with this, what is improvement?
 			-- IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix LIMIT 1) > 0 THEN
 			IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix AND vrf_id = OLD.vrf_id) > 0 THEN
-				RAISE EXCEPTION '1200:Disallowed delete, prefix (%) contains hosts.', OLD.prefix;
+				RAISE EXCEPTION '1200:Prohibited delete, prefix (%) contains hosts.', OLD.prefix;
 			END IF;
 		END IF;
 		-- everything else is allowed
