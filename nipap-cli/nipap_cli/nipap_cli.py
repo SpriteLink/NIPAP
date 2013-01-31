@@ -336,6 +336,10 @@ def add_prefix(arg, opts):
                 print >> sys.stderr, "Could not find VRF with RT %s" % str(opts['vrf_rt'])
                 sys.exit(1)
 
+    if 'from-pool' not in opts and 'from-prefix' not in opts and 'prefix' not in opts:
+        print >> sys.stderr, "ERROR: 'prefix', 'from-pool' or 'from-prefix' must be specified."
+        sys.exit(1)
+
     args = {}
     if 'from-pool' in opts:
         res = Pool.list({ 'name': opts['from-pool'] })
@@ -360,12 +364,27 @@ def add_prefix(arg, opts):
 
         args['family'] = family
 
-    # try to automatically figure out type for new prefix
-    # don't do auto-type when requesting from a pool
+    # try to automatically figure out type for new prefix except for when
+    # requesting from a pool
     if 'from-pool' not in opts:
         # get a list of prefixes that contain this prefix
-        # TODO: Add VRF to query
-        res = Prefix.search({ 'val1': 'prefix', 'operator': 'contains', 'val2': opts.get('prefix') }, { })
+        vrf_id = 0
+        if p.vrf:
+            vrf_id = p.vrf.id or 0
+        auto_type_query = {
+                'val1': {
+                    'val1'      : 'prefix',
+                    'operator'  : 'contains',
+                    'val2'      : opts.get('prefix')
+                    },
+                'operator': 'and',
+                'val2': {
+                    'val1'      : 'vrf_id',
+                    'operator'  : 'equals',
+                    'val2'      : vrf_id
+                    }
+            }
+        res = Prefix.search(auto_type_query, { })
 
         # no results, ie the requested prefix is a top level prefix
         if len(res['result']) == 0:
@@ -373,6 +392,7 @@ def add_prefix(arg, opts):
                 print >> sys.stderr, "ERROR: Type of prefix must be specified ('assignment' or 'reservation')."
                 sys.exit(1)
         else:
+            # last prefix in list will be the parent of the new prefix
             parent = res['result'][-1]
             if parent.type == 'assignment':
                 if p.type is None:
