@@ -278,7 +278,11 @@ BEGIN
 	-- those stay the same, we don't need to run the rest of the sanity
 	-- checks.
 	IF TG_OP = 'UPDATE' THEN
-		-- we need to nest cause plpgsql is stupid :(
+		-- don't allow changing VRF
+		IF OLD.vrf_id != NEW.vrf_id THEN
+			RAISE EXCEPTION '1200:Changing VRF is disallowed';
+		END IF;
+		-- if prefix and type is same, quick return!
 		IF OLD.type = NEW.type AND OLD.prefix = NEW.prefix THEN
 			RETURN NEW;
 		END IF;
