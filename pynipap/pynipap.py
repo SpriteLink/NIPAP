@@ -824,6 +824,7 @@ class Prefix(Pynipap):
             x_args = {}
             if 'from-pool' in args:
                 x_args['from-pool'] = { 'id': args['from-pool'].id }
+            if 'family' in args:
                 x_args['family'] = args['family']
             if 'from-prefix' in args:
                 x_args['from-prefix'] = args['from-prefix']

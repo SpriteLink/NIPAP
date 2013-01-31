@@ -2220,7 +2220,9 @@ class Nipap:
                 raise NipapInputError("specify 'from-pool' OR 'from-prefix'")
             if 'family' not in args:
                 raise NipapMissingInputError("'family' must be specified with 'from-pool' mode")
-            if int(args['family']) != 4 and int(args['family']) != 6:
+            try:
+                assert int(args['family']) in [ 4, 6 ]
+            except (TypeError, AssertionError):
                 raise NipapValueError("incorrect family specified, must be 4 or 6")
 
         elif 'from-prefix' in args:
