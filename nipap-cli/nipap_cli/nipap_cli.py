@@ -364,9 +364,15 @@ def add_prefix(arg, opts):
 
         args['family'] = family
 
-    # try to automatically figure out type for new prefix except for when
-    # requesting from a pool
-    if 'from-pool' not in opts:
+    # set type to default type of pool unless already set
+    if 'from-pool' in args:
+        if p.type is None:
+            p.type = args['from-pool'].default_type
+
+    else:
+        # try to automatically figure out type for new prefix when not
+        # allocating from a pool
+
         # get a list of prefixes that contain this prefix
         vrf_id = 0
         if p.vrf:
