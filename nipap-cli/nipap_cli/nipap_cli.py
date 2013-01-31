@@ -333,7 +333,7 @@ def add_prefix(arg, opts):
             try:
                 p.vrf = VRF.list({ 'rt': opts['vrf_rt'] })[0]
             except IndexError:
-                print >> sys.stderr, "Could not find VRFi with RT %s" % str(opts['vrf_rt'])
+                print >> sys.stderr, "Could not find VRF with RT %s" % str(opts['vrf_rt'])
                 sys.exit(1)
 
     args = {}
@@ -360,11 +360,31 @@ def add_prefix(arg, opts):
 
         args['family'] = family
 
+    # try to automatically figure out type for new prefix
+    # don't do auto-type when requesting from a pool
+    if 'from-pool' not in opts:
+        # get a list of prefixes that contain this prefix
+        # TODO: Add VRF to query
+        res = Prefix.search({ 'val1': 'prefix', 'operator': 'contains', 'val2': opts.get('prefix') }, { })
+
+        # no results, ie the requested prefix is a top level prefix
+        if len(res['result']) == 0:
+            if p.type is None:
+                print >> sys.stderr, "ERROR: Type of prefix must be specified ('assignment' or 'reservation')."
+                sys.exit(1)
+        else:
+            parent = res['result'][-1]
+            if parent.type == 'assignment':
+                if p.type is None:
+                    print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically setting type 'host' for new prefix."
+                else:
+                    print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix."
+                p.type = 'host'
 
     try:
         p.save(args)
-    except NipapError, e:
-        print >> sys.stderr, "Could not add prefix to NIPAP: %s" % e.message
+    except NipapError as exc:
+        print >> sys.stderr, "Could not add prefix to NIPAP: %s" % exc.message
         sys.exit(1)
 
     if p.vrf is None:
@@ -527,7 +547,7 @@ def remove_vrf(arg, opts):
     v = res[0]
 
     print "RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description)
-    print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL IT'S ADDRESSES"
+    print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL ITS ADDRESSES"
     res = raw_input("Do you really want to remove the VRF %s? [y/n]: " % v.rt)
 
     if res == 'y':
