@@ -376,7 +376,7 @@ def add_prefix(arg, opts):
         # get a list of prefixes that contain this prefix
         vrf_id = 0
         if p.vrf:
-            vrf_id = p.vrf.id or 0
+            vrf_id = p.vrf.id
         auto_type_query = {
                 'val1': {
                     'val1'      : 'prefix',
