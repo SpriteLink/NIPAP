@@ -38,7 +38,7 @@
 		<div class="option">
 			<dl>
 				<dt>
-				Default type
+					Default type
 				</dt>
 				<dd>
 					<input id="radio-default-type-reservation" class="tooltip" title="Reservation are for reserving a network for later assigning as specific assignments" type="radio" name="default_type" value="reservation" {% if c.pool is defined %}{% if c.pool.default_type == 'reservation' %} checked{% endif %}{% endif %}>
@@ -74,6 +74,21 @@
 				</dt>
 				<dd>
 					<input type="text" name="ipv6_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv6_default_prefix_length or '' }}{% endif %}" class="tooltip" title="The default IPv6 prefix length of prefixes assigned from this pool. Should be an integer value, for example 64 or 112.">
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt>
+					Implied VRF
+				</dt>
+				<dd>
+					<span class="tooltip" title="The implied VRF is the VRF to which members of this pool belong.">
+						{% if c.pool is defined %}{{ c.pool.vrf.rt or '' }} - {{ c.pool.vrf.name or '' }}{% endif %}
+					</span>
 				</dd>
 			</dl>
 		</div>
