@@ -496,15 +496,24 @@ def view_pool(arg, opts):
         return
 
     p = res[0]
+
+    if p.vrf is None:
+        vrf_rt = p.vrf
+        vrf_name = p.vrf
+    else:
+        vrf_rt = p.vrf.rt
+        vrf_name = p.vrf.name
+
     print  "-- Pool "
-    print "  %-15s : %d" % ("ID", p.id)
-    print "  %-15s : %s" % ("Name", p.name)
-    print "  %-15s : %s" % ("Description", p.description)
-    print "  %-15s : %s" % ("Default type", p.default_type)
-    print "  %-15s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
+    print "  %-22s : %d" % ("ID", p.id)
+    print "  %-22s : %s" % ("Name", p.name)
+    print "  %-22s : %s" % ("Description", p.description)
+    print "  %-22s : %s" % ("Default type", p.default_type)
+    print "  %-22s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name)
+    print "  %-22s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
     print "\n-- Prefixes in pool"
 
-    res = Prefix.list({ 'pool': p.id})
+    res = Prefix.list({ 'pool_id': p.id})
     for pref in res:
         print "  %s" % pref.display_prefix
 

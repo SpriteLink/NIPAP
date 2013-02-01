@@ -1553,7 +1553,7 @@ class Nipap:
 
         self._logger.debug('search_pool search_options: %s' % str(search_options))
 
-        where, opt = self._expand_pool_query(query)
+        where, opt = self._expand_pool_query(query, 'po')
         sql = """SELECT DISTINCT (po.id),
                         po.id,
                         po.name,
@@ -1572,7 +1572,7 @@ class Nipap:
                 FROM ip_net_pool AS po
                 LEFT OUTER JOIN ip_net_plan AS inp ON (inp.pool_id = po.id)
                 LEFT OUTER JOIN ip_net_vrf AS vrf ON (vrf.id = inp.vrf_id)
-                WHERE """ + where + """ ORDER BY name
+                WHERE """ + where + """ ORDER BY po.name
                 LIMIT """ + str(search_options['max_result']) + """ OFFSET """ + str(search_options['offset'])
 
         self._execute(sql, opt)

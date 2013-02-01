@@ -603,6 +603,8 @@ class Pool(Pynipap):
         p.default_type = parm['default_type']
         p.ipv4_default_prefix_length = parm['ipv4_default_prefix_length']
         p.ipv6_default_prefix_length = parm['ipv6_default_prefix_length']
+        if parm['vrf_id'] is not None:
+            p.vrf = VRF.get(parm['vrf_id'])
         return p
 
 
