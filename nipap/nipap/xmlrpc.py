@@ -506,7 +506,9 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.smart_search_pool(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
+            return self.nipap.smart_search_pool(args.get('auth'),
+                    args.get('query_string'), args.get('search_options') or {},
+                    args.get('extra_query', {}))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 

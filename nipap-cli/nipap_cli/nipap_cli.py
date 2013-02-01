@@ -191,17 +191,31 @@ def list_pool(arg, opts):
     """ List pools matching a search criteria
     """
 
-    query = _expand_list_query(opts)
+    search_string = ''
+    if type(arg) == list or type(arg) == tuple:
+        search_string = ' '.join(arg)
+
+    v = get_vrf(opts.get('vrf_rt'), abort=True)
+
+    if v.rt == 'all':
+        vrf_q = None
+    else:
+        vrf_q = {
+            'operator': 'equals',
+            'val1': 'vrf_rt',
+            'val2': v.rt
+        }
+
     offset = 0
     limit = 100
     while True:
-        res = Pool.search(query, { 'offset': offset, 'max_result': limit })
+        res = Pool.smart_search(search_string, { 'offset': offset, 'max_result': limit }, vrf_q)
         if len(res['result']) == 0:
             print "No matching pools found"
             return
         elif offset == 0:
-            print "%-19s %-39s %-14s %-8s" % (
-                "Name", "Description", "Default type", "4 / 6"
+            print "%-19s %-39s %-14s %-11s %s" % (
+                "Name", "Description", "Default type", "4 / 6", "Implied VRF"
             )
             print "-----------------------------------------------------------------------------------"
 
@@ -210,10 +224,16 @@ def list_pool(arg, opts):
                 desc = p.description[0:34] + "..."
             else:
                 desc = p.description
-            print "%-19s %-39s %-14s %-2s / %-3s" % (
+
+            vrf_rt = None
+            if p.vrf:
+                vrf_rt = p.vrf.rt
+
+            print "%-19s %-39s %-14s %-4s / %-4s %s" % (
                 p.name, desc, p.default_type,
                 str(p.ipv4_default_prefix_length),
-                str(p.ipv6_default_prefix_length)
+                str(p.ipv6_default_prefix_length),
+                vrf_rt
             )
         if len(res['result']) < limit:
             break
@@ -1532,6 +1552,11 @@ cmds = {
                 'list': {
                     'type': 'command',
                     'exec': list_pool,
+                    'rest_argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Pool',
+                    },
                     'children': {
                         'default-type': {
                             'type': 'option',
@@ -1572,6 +1597,15 @@ cmds = {
                                 'type': 'value',
                                 'content_type': int,
                                 'descripton': 'Default IPv6 prefix length'
+                            }
+                        },
+                        'vrf_rt': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'descripton': 'The implied VRF of the pool',
+                                'complete': complete_vrf_virtual
                             }
                         }
                     }

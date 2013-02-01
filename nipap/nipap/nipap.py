@@ -1186,10 +1186,11 @@ class Nipap:
 
             # val1 is variable, val2 is string.
             pool_attr = dict()
-            pool_attr['id'] = 'id'
-            pool_attr['name'] = 'name'
-            pool_attr['description'] = 'description'
-            pool_attr['default_type'] = 'default_type'
+            pool_attr['id'] = 'po.id'
+            pool_attr['name'] = 'po.name'
+            pool_attr['description'] = 'po.description'
+            pool_attr['default_type'] = 'po.default_type'
+            pool_attr['vrf_rt'] = 'vrf.rt'
 
             if query['val1'] not in pool_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
@@ -1553,7 +1554,7 @@ class Nipap:
 
         self._logger.debug('search_pool search_options: %s' % str(search_options))
 
-        where, opt = self._expand_pool_query(query, 'po')
+        where, opt = self._expand_pool_query(query)
         sql = """SELECT DISTINCT (po.id),
                         po.id,
                         po.name,

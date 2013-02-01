@@ -563,7 +563,7 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, query_string, search_options={}):
+    def smart_search(cls, query_string, search_options={}, extra_query = None):
         """ Perform a smart pool search.
         """
 
@@ -573,7 +573,8 @@ class Pool(Pynipap):
                 {
                     'query_string': query_string,
                     'search_options': search_options,
-                    'auth': AuthOptions().options
+                    'auth': AuthOptions().options,
+                    'extra_query': extra_query
                 })
         except xmlrpclib.Fault as xml_fault:
             raise _fault_to_exception(xml_fault)
