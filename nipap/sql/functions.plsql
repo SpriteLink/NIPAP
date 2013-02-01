@@ -115,6 +115,7 @@ BEGIN
 				SELECT set_masklen(broadcast(covering_prefix) + 1, arg_wanted_prefix_len) INTO current_prefix;
 				CONTINUE;
 			END IF;
+
 			-- prefix must not contain any breakouts, that would mean it's not empty, ie not free
 			IF EXISTS (SELECT 1 FROM ip_net_plan WHERE vrf_id = arg_vrf AND iprange(prefix) <<= iprange(current_prefix::cidr)) THEN
 				SELECT broadcast(current_prefix) + 1 INTO current_prefix;
@@ -282,8 +283,8 @@ BEGIN
 		IF OLD.vrf_id != NEW.vrf_id THEN
 			RAISE EXCEPTION '1200:Changing VRF is not allowed';
 		END IF;
-		-- if prefix and type is same, quick return!
-		IF OLD.type = NEW.type AND OLD.prefix = NEW.prefix THEN
+		-- if prefix, type and pool is the same, quick return!
+		IF OLD.type = NEW.type AND OLD.prefix = NEW.prefix AND OLD.pool_id = NEW.pool_id THEN
 			RETURN NEW;
 		END IF;
 	END IF;
@@ -334,7 +335,15 @@ BEGIN
 			END IF;
 			NEW.display_prefix := NEW.prefix;
 		ELSE
-			RAISE EXCEPTION 'Unknown prefix type';
+			RAISE EXCEPTION '1200:Unknown prefix type';
+		END IF;
+
+		-- is the new prefix part of a pool?
+		IF NEW.pool_id IS NOT NULL THEN
+			-- if so, make sure all prefixes in that pool belong to the same VRF
+			IF NEW.vrf_id != (SELECT vrf_id FROM ip_net_plan WHERE pool_id = NEW.pool_id) THEN
+				RAISE EXCEPTION '1200:Member prefixes of the specified pool are in a different VRF. All prefixes in a pool must be in the same VRF.';
+			END IF;
 		END IF;
 	END IF;
 
@@ -348,7 +357,6 @@ BEGIN
 			END IF;
 		ELSE
 			IF OLD.type != NEW.type THEN
-				-- FIXME: better exception code
 				RAISE EXCEPTION '1200:Changing type is not allowed';
 			END IF;
 		END IF;
