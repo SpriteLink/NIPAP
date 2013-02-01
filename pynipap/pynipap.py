@@ -456,6 +456,7 @@ class Pool(Pynipap):
     default_type = None
     ipv4_default_prefix_length = None
     ipv6_default_prefix_length = None
+    vrf = None
 
 
     def save(self):
