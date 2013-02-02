@@ -1268,7 +1268,7 @@ function insertPrefixList(pref_list) {
 
 		// This should only happen when adding the very first prefix to a completely empty list
 		// Add it manually so we have a starting point
-		var c = insertVRFContainer(prefix.vrf);
+		var c = insertVRFContainer(prefix.vrf_rt);
 		showPrefix(prefix, c, null);
 		prev_prefix = prefix;
 		prefix_list[prefix.id] = prefix;
@@ -1321,9 +1321,9 @@ function insertPrefix(prefix, prev_prefix) {
 	var offset = null;
 
 	// Changing VRF - create new VRF container and add prefix to it
-	if (prefix.vrf != prev_prefix.vrf) {
+	if (prefix.vrf_id != prev_prefix.vrf_id) {
 
-		var c = insertVRFContainer(prefix.vrf);
+		var c = insertVRFContainer(prefix.vrf_rt);
 		showPrefix(prefix, c, null);
 		return;
 
@@ -2035,6 +2035,7 @@ function selectPrefix(prefix_id) {
 		} else {
 			maxpreflen = 128;
 		}
+
 		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' + maxpreflen+ '>');
 		$('.tooltip').tipTip({delay: 100});
 
@@ -2046,7 +2047,17 @@ function selectPrefix(prefix_id) {
 		$('#radio-prefix-type-host').attr('checked', 'checked');
 	}
 
-	// set prefix's pool attribute in NIPAP
+    // If selected prefix is in a VRF, default to place the one we are about to
+    // add in the same VRF.
+    if (prefix_list[prefix_id].vrf_rt == null) {
+        $("input[name = prefix_vrf_btn]").val('None');
+        $("input[name = prefix_vrf]").val(null);
+    } else {
+        $("input[name = prefix_vrf_btn]").val(prefix_list[prefix_id].vrf_rt);
+        $("input[name = prefix_vrf]").val(prefix_list[prefix_id].vrf_id);
+    }
+
+	// Lead the user to the next step in the process
 	$('#prefix_data_container').show();
 	$('#prefix_length_prefix_container').show();
 

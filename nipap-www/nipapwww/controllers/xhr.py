@@ -686,9 +686,16 @@ class NipapJSONEncoder(json.JSONEncoder):
             }
 
         elif isinstance(obj, Pool):
+
+            if obj.vrf is None:
+                vrf = None
+            else:
+                vrf = obj.vrf.id
+
             return {
                 'id': obj.id,
                 'name': obj.name,
+                'vrf': vrf,
                 'description': obj.description,
                 'default_type': obj.default_type,
                 'ipv4_default_prefix_length': obj.ipv4_default_prefix_length,
@@ -703,14 +710,17 @@ class NipapJSONEncoder(json.JSONEncoder):
                 pool = obj.pool.id
 
             if obj.vrf is None:
-                vrf = None
+                vrf_rt = None
+                vrf_id = None
             else:
-                vrf = obj.vrf.rt
+                vrf_rt = obj.vrf.rt
+                vrf_id = obj.vrf.id
 
             return {
                 'id': obj.id,
                 'family': obj.family,
-                'vrf': vrf,
+                'vrf_rt': vrf_rt,
+                'vrf_id': vrf_id,
                 'prefix': obj.prefix,
                 'display_prefix': obj.display_prefix,
                 'description': obj.description,
