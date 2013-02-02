@@ -1893,6 +1893,15 @@ function selectPool(id) {
 		$('#radio-prefix-type-host').attr('checked', true);
 	}
 
+    // Set prefix VRF to pool's implied VRF (if available)
+    if (cur_opts.pool.vrf_rt == null) {
+        $("input[name = prefix_vrf_btn]").val('None');
+        $("input[name = prefix_vrf]").val(null);
+    } else {
+        $("input[name = prefix_vrf_btn]").val(cur_opts.pool.vrf_rt);
+        $("input[name = prefix_vrf]").val(cur_opts.pool.vrf_id);
+    }
+
 	// show pool name and description
 	$('#selected_pool_desc').html(pool_list[id].name + ' &mdash; ' + pool_list[id].description);
 	if (pool_list[id].default_type != null) {
