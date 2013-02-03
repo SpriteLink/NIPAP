@@ -342,7 +342,7 @@ BEGIN
 		IF NEW.pool_id IS NOT NULL THEN
 			-- if so, make sure all prefixes in that pool belong to the same VRF
 			IF NEW.vrf_id != (SELECT vrf_id FROM ip_net_plan WHERE pool_id = NEW.pool_id) THEN
-				RAISE EXCEPTION '1200:Member prefixes of the specified pool are in a different VRF. All prefixes in a pool must be in the same VRF.';
+				RAISE EXCEPTION '1200:Change not allowed. All member prefixes of a pool must be in a the same VRF.';
 			END IF;
 		END IF;
 	END IF;
