@@ -1931,7 +1931,9 @@ class Nipap:
         if type(attr) != dict:
             raise NipapInputError("'attr' must be a dict")
 
-        # Handle Pool - find correct one and remove bad pool keys
+        # handle pool attributes - find correct one and remove bad pool keys
+        # note how this is not related to from-pool but is merely the pool
+        # attributes if this prefix is to be part of a pool
         if 'pool_id' in attr or 'pool_name' in attr:
             if 'pool_id' in attr:
                 if attr['pool_id'] is None:
@@ -1959,18 +1961,9 @@ class Nipap:
                 'name': None
             }
 
-
-        # Handle VRF - find the correct one and remove bad VRF keys.
-        vrf = self._get_vrf(auth, attr)
-        if 'vrf_rt' in attr:
-            del(attr['vrf_rt'])
-        if 'vrf_name' in attr:
-            del(attr['vrf_name'])
-        attr['vrf_id'] = vrf['id']
-
         attr['authoritative_source'] = auth.authoritative_source
 
-        # sanity checks
+        # sanity checks for manual prefix vs from-pool vs from-prefix
         if 'prefix' in attr:
             if 'from-pool' in args or 'from-prefix' in args:
                 raise NipapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
@@ -1978,21 +1971,58 @@ class Nipap:
         else:
             if ('from-pool' not in args and 'from-prefix' not in args) or ('from-pool' in args and 'from-prefix' in args):
                 raise NipapExtraneousInputError("specify 'prefix' or 'from-prefix' or 'from-pool'")
-            if vrf['id'] == 0:
-                v = None
+
+        # VRF handling for manually specified prefix
+        if 'prefix' in attr:
+            # handle VRF - find the correct one and remove bad VRF keys
+            vrf = self._get_vrf(auth, attr)
+            if 'vrf_rt' in attr:
+                del(attr['vrf_rt'])
+            if 'vrf_name' in attr:
+                del(attr['vrf_name'])
+            attr['vrf_id'] = vrf['id']
+
+        # VRF handling for allocation from pool or parent prefix
+        if 'from-pool' in args or 'from-prefix' in args:
+            # did we get a VRF from the client?
+            if 'vrf_id' in attr or 'vrf_rt' in attr or 'vrf_name' in attr:
+                # look up and remove bad VRF related keys
+                if 'vrf_rt' in attr:
+                    del(attr['vrf_rt'])
+                if 'vrf_name' in attr:
+                    del(attr['vrf_name'])
+                attr['vrf_id'] = vrf['id']
+
+            if 'from-pool' in args:
+                from_pool = self._get_pool(auth, args['from-pool'])
+                # set default type from pool if missing
+                if 'type' not in attr:
+                    attr['type'] = from_pool['default_type']
+                # set implied VRF of pool if missing
+                if 'vrf_id' not in attr:
+                    attr['vrf_id'] = from_pool['vrf_id']
+
+                # make sure VRF aligns with pool implied VRF
+                if attr['vrf_id'] != from_pool['vrf_id']:
+                    raise NipapInputError("VRF must be the same as the pools implied VRF")
+
+            if 'from-prefix' in args:
+                parent_prefix = self.list_prefix(auth, args['from-prefix'])[0]
+                # TODO: what now?
+
+            # VRF fiddling
+            if attr['vrf_id'] == 0:
+                vrf = None
             else:
-                v = vrf
-            res = self.find_free_prefix(auth, v, args)
+                vrf = self._get_vrf(auth, attr)
+
+            # get a new prefix
+            res = self.find_free_prefix(auth, vrf, args)
             if res != []:
                 attr['prefix'] = res[0]
             else:
                 # TODO: Raise other exception?
                 raise NipapNonExistentError("no free prefix found")
-
-        # If assigning from pool and missing prefix type, set default
-        if 'from-pool' in args and 'type' not in attr:
-            pool = self._get_pool(auth, args['from-pool'])
-            attr['type'] = pool['default_type']
 
         # do we have all attributes?
         req_attr = [ 'prefix', 'authoritative_source' ]
