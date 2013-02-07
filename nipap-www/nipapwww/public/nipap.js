@@ -1632,6 +1632,12 @@ function showAllocContainer(e) {
 		$('#prefix_length_prefix_container').hide();
 		$("html,body").animate({ scrollTop: $("#prefix_data_container").offset().top - 50}, 700);
 
+        // Reset VRF display and enable VRF selector
+        $("#prefix_vrf_display").html('');
+        $("#prefix_vrf_display").hide();
+        $("#prefix_vrf_display").attr('title', '');
+        $("input[name = prefix_vrf_btn]").show();
+
 		$('#default_prefix_type').hide();
 		$('#prefix_type_selection').show();
 
@@ -1894,13 +1900,20 @@ function selectPool(id) {
 	}
 
     // Set prefix VRF to pool's implied VRF (if available)
+    var vrf_text = "";
     if (cur_opts.pool.vrf_rt == null) {
-        $("input[name = prefix_vrf_btn]").val('None');
+        vrf_text = 'None';
         $("input[name = prefix_vrf]").val(null);
     } else {
-        $("input[name = prefix_vrf_btn]").val(cur_opts.pool.vrf_rt);
+        vrf_text = cur_opts.pool.vrf_rt;
         $("input[name = prefix_vrf]").val(cur_opts.pool.vrf_id);
     }
+
+    $("#prefix_vrf_display").html(vrf_text);
+    $("input[name = prefix_vrf_btn]").hide();
+    $("#prefix_vrf_display").attr('title', 'VRF ' + vrf_text + ' taken from pool\'s implied VRF.');
+    $("#prefix_vrf_display").tipTip();
+    $("#prefix_vrf_display").show();
 
 	// show pool name and description
 	$('#selected_pool_desc').html(pool_list[id].name + ' &mdash; ' + pool_list[id].description);
@@ -2056,15 +2069,23 @@ function selectPrefix(prefix_id) {
 		$('#radio-prefix-type-host').attr('checked', 'checked');
 	}
 
-    // If selected prefix is in a VRF, default to place the one we are about to
-    // add in the same VRF.
+    // Set VRF to the same as the prefix we're allocating from
+
+    // Set prefix VRF to pool's implied VRF (if available)
+    var vrf_text = "";
     if (prefix_list[prefix_id].vrf_rt == null) {
-        $("input[name = prefix_vrf_btn]").val('None');
+        vrf_text = 'None';
         $("input[name = prefix_vrf]").val(null);
     } else {
-        $("input[name = prefix_vrf_btn]").val(prefix_list[prefix_id].vrf_rt);
+        vrf_text = prefix_list[prefix_id].vrf_rt;
         $("input[name = prefix_vrf]").val(prefix_list[prefix_id].vrf_id);
     }
+
+    $("#prefix_vrf_display").html(vrf_text);
+    $("input[name = prefix_vrf_btn]").hide();
+    $("#prefix_vrf_display").attr('title', 'VRF ' + vrf_text + ' taken from parent prefix (' + prefix_list[prefix_id].display_prefix + ').');
+    $("#prefix_vrf_display").tipTip();
+    $("#prefix_vrf_display").show();
 
 	// Lead the user to the next step in the process
 	$('#prefix_data_container').show();
