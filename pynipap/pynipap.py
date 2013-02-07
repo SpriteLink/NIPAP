@@ -863,6 +863,8 @@ class Prefix(Pynipap):
             self.authoritative_source = p['authoritative_source']
             self.alarm_priority = p['alarm_priority']
             self.monitor = p['monitor']
+            if p['vrf_id'] is not None:
+                self.vrf = VRF.get(p['vrf_id'])
 
         # Old object, edit
         else:
