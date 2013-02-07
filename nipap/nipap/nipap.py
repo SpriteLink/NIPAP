@@ -1986,7 +1986,8 @@ class Nipap:
         if 'from-pool' in args or 'from-prefix' in args:
             # did we get a VRF from the client?
             if 'vrf_id' in attr or 'vrf_rt' in attr or 'vrf_name' in attr:
-                # look up and remove bad VRF related keys
+                # handle VRF - find the correct one and remove bad VRF keys
+                vrf = self._get_vrf(auth, attr)
                 if 'vrf_rt' in attr:
                     del(attr['vrf_rt'])
                 if 'vrf_name' in attr:
@@ -1998,6 +1999,7 @@ class Nipap:
                 # set default type from pool if missing
                 if 'type' not in attr:
                     attr['type'] = from_pool['default_type']
+
                 # set implied VRF of pool if missing
                 if 'vrf_id' not in attr:
                     attr['vrf_id'] = from_pool['vrf_id']
@@ -2007,6 +2009,14 @@ class Nipap:
                     raise NipapInputError("VRF must be the same as the pools implied VRF")
 
             if 'from-prefix' in args:
+                # handle VRF - find the correct one and remove bad VRF keys
+                vrf = self._get_vrf(auth, attr)
+                if 'vrf_rt' in attr:
+                    del(attr['vrf_rt'])
+                if 'vrf_name' in attr:
+                    del(attr['vrf_name'])
+                attr['vrf_id'] = vrf['id']
+
                 parent_prefix = self.list_prefix(auth, args['from-prefix'])[0]
                 # TODO: what now?
 
