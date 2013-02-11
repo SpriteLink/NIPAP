@@ -28,6 +28,9 @@ def get_data_files():
             ('/usr/share/man/man8/', 'nipapd.8.gz')
         ]
 
+    return files
+
+
 long_desc = open('README.rst').read()
 short_desc = long_desc.split('\n')[0].split(' - ')[1].strip()
 
