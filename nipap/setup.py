@@ -1,8 +1,32 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+import subprocess
+import sys
 
 import nipap
+
+
+# return all the extra data files
+def get_data_files():
+    # generate man pages using rst2man
+    try:
+        subprocess.call(["rst2man", "nipapd.man.rst", "nipapd.8"])
+        subprocess.call(["gzip", "-f", "-9", "nipapd.8"])
+    except OSError as exc:
+        print >> sys.stderr, "rst2man failed to run:", str(exc)
+        sys.exit(1)
+
+    files = [
+            ('/etc/nipap/', ['local_auth.db', 'nipap.conf']),
+            ('/usr/sbin/', ['nipapd', 'nipap-passwd']),
+            ('/usr/share/nipap/sql/', [
+                'sql/functions.plsql',
+                'sql/ip_net.plsql',
+                'sql/clean.plsql'
+                ]),
+            ('/usr/share/man/man8/', 'nipapd.8.gz')
+        ]
 
 long_desc = open('README.rst').read()
 short_desc = long_desc.split('\n')[0].split(' - ')[1].strip()
@@ -19,15 +43,7 @@ setup(
     packages = ['nipap'],
     keywords = ['nipap'],
     requires = ['twisted', 'ldap', 'sqlite3', 'IPy', 'psycopg2'],
-    data_files = [
-				('/etc/nipap/', ['local_auth.db', 'nipap.conf']),
-				('/usr/sbin/', ['nipapd', 'nipap-passwd']),
-				('/usr/share/nipap/sql/', [
-					'sql/functions.plsql',
-					'sql/ip_net.plsql',
-					'sql/clean.plsql'
-				])
-	],
+    data_files = get_data_files(),
     classifiers = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
