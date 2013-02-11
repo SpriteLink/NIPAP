@@ -25,7 +25,7 @@ def get_data_files():
                 'sql/ip_net.plsql',
                 'sql/clean.plsql'
                 ]),
-            ('/usr/share/man/man8/', 'nipapd.8.gz')
+            ('/usr/share/man/man8/', ['nipapd.8.gz'])
         ]
 
     return files
