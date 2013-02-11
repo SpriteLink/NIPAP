@@ -17,7 +17,7 @@ By default nipapd will fork off into the background and listen to TCP port 1337 
 
 Options
 -------
-nipapd accepts the following command-line arguments.
+nipapd accepts the following command-line arguments. These and more options are available in the configuration file nipap.conf, which typically resides in /etc/nipap/nipap.conf. On debian-like systems, /etc/default/nipapd is used to control the startup of nipapd in the init script.
 
     -h, --help                      show a help message
     -d, --debug                     enable debugging
