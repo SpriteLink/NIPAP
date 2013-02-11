@@ -1,6 +1,16 @@
+Version 0.15.0
+--------------
+ * Improve bfcache support
+ * All prefixes in a pool must now be in the same VRF (database check)
+   and it is now prohibited to change VRF on a prefix
+ * New 'implied VRF' attribute of pools. Prefixes allocated from a pool
+   will automatically be in the implied VRF of the pool and have the default
+   type of the prefix
+ * Various small CLI and WWW UI bug fixes
+
 Version 0.14.0
 --------------
- * Varous fixes to the CLI client
+ * Various fixes to the CLI client
  * Authoritative source honored in CLI client and web UI
  * Feature parity in smart_search_* API functions
 
