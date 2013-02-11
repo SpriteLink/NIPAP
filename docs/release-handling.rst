@@ -22,7 +22,7 @@ Version numbering
 -----------------
 Version numbering of NIPAP is in the form of major.minor.patch. Major releases
 are milestones for when a number of large improvements have been implemented
-and are stable while minor releases will increment for most features. Patch
+and are stable while minor releases will increment for most new features. Patch
 releases will only include smaller bug fixes or other similarily small changes.
 
 Major releases should generally be released after a number of features have
