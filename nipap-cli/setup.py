@@ -1,14 +1,41 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+import subprocess
+import sys
 
 import nipap_cli
 
-# This is a bloody hack to circumvent a lack of feature with Python distutils.
-# Files specified in the data_files list cannot be renamed upon installation
-# and we don't want to keep two copies of the .nipaprc file in git
-import shutil
-shutil.copyfile('nipaprc', '.nipaprc')
+# return all the extra data files
+def get_data_files():
+
+    # This is a bloody hack to circumvent a lack of feature with Python distutils.
+    # Files specified in the data_files list cannot be renamed upon installation
+    # and we don't want to keep two copies of the .nipaprc file in git
+    import shutil
+    shutil.copyfile('nipaprc', '.nipaprc')
+
+    # generate man pages using rst2man
+    try:
+        subprocess.call(["rst2man", "nipap.man.rst", "nipap.1"])
+        subprocess.call(["gzip", "-f", "-9", "nipap.1"])
+    except OSError as exc:
+        print >> sys.stderr, "rst2man failed to run:", str(exc)
+        sys.exit(1)
+
+    files = [
+            ('/etc/nipap/', ['local_auth.db', 'nipap.conf']),
+            ('/usr/sbin/', ['nipapd', 'nipap-passwd']),
+            ('/usr/share/nipap/sql/', [
+                'sql/functions.plsql',
+                'sql/ip_net.plsql',
+                'sql/clean.plsql'
+                ]),
+            ('/usr/share/man/man1/', 'nipap.1.gz')
+        ]
+
+    return files
+
 
 setup(
     name = 'nipap-cli',
