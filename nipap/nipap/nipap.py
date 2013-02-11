@@ -722,15 +722,21 @@ class Nipap:
 
         self._logger.debug("remove_vrf called; spec: %s" % str(spec))
 
-        v4spec = spec.copy()
-        v4spec['prefix'] = '0.0.0.0/0'
-        v6spec = spec.copy()
-        v6spec['prefix'] = '::/0'
-        self.remove_prefix(auth, spec = v4spec, recursive = True)
-        self.remove_prefix(auth, spec = v6spec, recursive = True)
-
         # get list of VRFs to remove before removing them
         vrfs = self.list_vrf(auth, spec)
+
+        # remove prefixes in VRFs
+        for vrf in vrfs:
+            v4spec = {
+                'prefix': '0.0.0.0/0',
+                'vrf_id': vrf['id']
+            }
+            v6spec = {
+                'prefix': '::/0',
+                'vrf_id': vrf['id']
+            }
+            self.remove_prefix(auth, spec = v4spec, recursive = True)
+            self.remove_prefix(auth, spec = v6spec, recursive = True)
 
         where, params = self._expand_vrf_spec(spec)
         sql = "DELETE FROM ip_net_vrf WHERE %s" % where
@@ -746,7 +752,7 @@ class Nipap:
                 'authenticated_as': auth.authenticated_as,
                 'full_name': auth.full_name,
                 'authoritative_source': auth.authoritative_source,
-                'description': 'Removed vrf %s' % v['vrf']
+                'description': 'Removed vrf %s' % v['rt']
             }
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
