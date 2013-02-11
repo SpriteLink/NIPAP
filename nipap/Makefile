@@ -41,5 +41,5 @@ upload:
 
 clean:
 	$(PYTHON) setup.py clean
-	rm -rf build/ MANIFEST dist/ debian/tmp debian/nipap-common debian/$(PROJECT) debian/files .pc/
+	rm -rf build/ MANIFEST dist/ debian/tmp debian/nipap-common debian/$(PROJECT) debian/files .pc/ nipapd.8.gz
 	find . -name '*.pyc' -delete
