@@ -63,12 +63,6 @@ class XhrController(BaseController):
 
 
 
-    def index(self):
-        # TODO: write a function which lists the available XHR functions?
-        return 'Hello World'
-
-
-
     def list_vrf(self):
         """ List VRFs and return JSON encoded result.
         """
@@ -649,6 +643,7 @@ class XhrController(BaseController):
             session['current_vrfs'][vrf_id] = { 'id': vrf.id, 'rt': vrf.rt, 'name': vrf.name }
             session.save()
 
+        return json.dumps(session.get('current_vrfs', {}))
 
 
     def del_current_vrf(self):
@@ -661,6 +656,7 @@ class XhrController(BaseController):
 
             session.save()
 
+        return json.dumps(session.get('current_vrfs', {}))
 
 
     def get_current_vrfs(self):

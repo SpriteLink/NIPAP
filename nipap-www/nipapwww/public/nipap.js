@@ -748,6 +748,7 @@ function showPrefixMenu(prefix_id) {
 
 		$('#prefix_remove' + prefix_id).click(function(e) {
 			e.preventDefault();
+			hidePopupMenu();
 			var dialog = showDialogYesNo('Really remove prefix?', confirmation_text, confirmation_action);
         });
 	}
