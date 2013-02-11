@@ -7,18 +7,6 @@
 
     prefix_link_type = 'edit';
 
-    $(function() {
-        $(document).ready(function() {
-            var div = $('#floating_prefix_header');
-            var start = $('#fixed_prefix_header').offset().top;
-
-            $.event.add(window, "scroll", function() {
-                var p = $(window).scrollTop();
-                $(div).css('visibility', ((p)>start) ? 'visible' : 'hidden');
-            });
-        });
-    });
-
     /*
      * Handles the query passed in the URL, if any.
      */
@@ -42,21 +30,31 @@
             $('input[name="search_opt_child"][value="' + decodeURIComponent($.url().fparam('search_opt_child')) + '"]').attr('checked', true);
         }
 
-        // explicit
-        if ($.url().fparam('explicit') == 'true') {
-            var explicit = true;
-        } else {
-            var explicit = false;
-        }
-
-        performPrefixSearch(explicit);
-
     }
 
     /*
      * Things to do on page load.
      */
     $(function () {
+
+        // register function for pageshow event
+        $(window).on('pageshow', function(event) {
+            // hide open popup menus
+            hidePopupMenu();
+            // populate data from URL
+            handleUrlQuery();
+        });
+
+        // the floating column header
+        $(document).ready(function() {
+            var div = $('#floating_prefix_header');
+            var start = $('#fixed_prefix_header').offset().top;
+
+            $.event.add(window, "scroll", function() {
+                var p = $(window).scrollTop();
+                $(div).css('visibility', ((p)>start) ? 'visible' : 'hidden');
+            });
+        });
 
         // register events
         $("form").submit(function(e) {
@@ -72,12 +70,20 @@
 
         handleUrlQuery();
 
-		// automagic scrolling
-		$(window).scroll(function(){
-			if ($(window).scrollTop() >= $(document).height() - ($(window).height() * 3)){
-				performPrefixNextPage();
-			}
-		});
+        // explicit search or not
+        if ($.url().fparam('explicit') == 'true') {
+            var explicit = true;
+        } else {
+            var explicit = false;
+        }
+        performPrefixSearch(explicit);
+
+        // automagic scrolling
+        $(window).scroll(function(){
+            if ($(window).scrollTop() >= $(document).height() - ($(window).height() * 3)){
+                performPrefixNextPage();
+            }
+        });
 
     });
 
@@ -87,10 +93,10 @@
 
 {% block menu %}
 <div id="search_box">
-	{{ nipap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
-	<div style="position: absolute; right: 20px; top: 55px;">
-		{{ nipap.button('Add prefix', color='red', url=h.url(controller = 'prefix', action = 'add')) }}
-	</div>
+    {{ nipap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
+    <div style="position: absolute; right: 20px; top: 55px;">
+        {{ nipap.button('Add prefix', color='red', url=h.url(controller = 'prefix', action = 'add')) }}
+    </div>
 </div>
 
 {% endblock %}
