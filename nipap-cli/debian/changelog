@@ -1,3 +1,15 @@
+nipap-cli (0.15.0-1) stable; urgency=low
+
+  * Improve bfcache support
+  * All prefixes in a pool must now be in the same VRF (database check)
+    and it is now prohibited to change VRF on a prefix
+  * New 'implied VRF' attribute of pools. Prefixes allocated from a pool
+    will automatically be in the implied VRF of the pool and have the default
+    type of the prefix
+  * Various small CLI and WWW UI bug fixes
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 12 Feb 2013 14:30:27 +0100
+
 nipap-cli (0.14.0-1) stable; urgency=low
 
   * Varous fixes to the CLI client

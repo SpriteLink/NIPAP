@@ -34,9 +34,9 @@ nipapwww/lib/helpers.py
 nipapwww/model/__init__.py
 nipapwww/public/datatable.css
 nipapwww/public/favicon.ico
-nipapwww/public/jquery-1.6.1.min.js
-nipapwww/public/jquery-ui-1.8.13.custom.css
-nipapwww/public/jquery-ui-1.8.13.custom.min.js
+nipapwww/public/jquery-1.9.1.min.js
+nipapwww/public/jquery-ui-1.10.0.custom.css
+nipapwww/public/jquery-ui-1.10.0.custom.min.js
 nipapwww/public/jquery.dataTables.min.js
 nipapwww/public/jquery.tipTip.minified.js
 nipapwww/public/jquery.url.js
@@ -67,7 +67,7 @@ nipapwww/public/images/ui-icons_2e83ff_256x240.png
 nipapwww/public/images/ui-icons_454545_256x240.png
 nipapwww/public/images/ui-icons_888888_256x240.png
 nipapwww/public/images/ui-icons_cd0a0a_256x240.png
-nipapwww/templates/2
+nipapwww/templates/.pool_form.html.swp
 nipapwww/templates/base.html
 nipapwww/templates/login.html
 nipapwww/templates/macros.html
