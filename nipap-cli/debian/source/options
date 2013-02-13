@@ -1,2 +1,2 @@
 # Don't store "changes" made to Makefile
-extend-diff-ignore = "(^|/)(Makefile|cli-test.py|MANIFEST)$"
+extend-diff-ignore = "(^|/)(Makefile|cli-test.py|MANIFEST|nipap.man.rst)$"
