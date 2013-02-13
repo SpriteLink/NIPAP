@@ -1007,16 +1007,23 @@ function clickFilterVRFSelector(evt) {
 function drawVRFHeader() {
 
 	// Any VRFs before?
-	var full_vrf = $("#full_vrf_filter_entry").attr('data-vrf');
+	var first_vrf = $("#first_vrf_filter_entry").attr('data-vrf');
 
 	var n = 0;
-	var full_vrf_active = selected_vrfs.hasOwnProperty(full_vrf);
+	var first_vrf_active = selected_vrfs.hasOwnProperty(first_vrf);
+	var second_vrf_active = selected_vrfs.hasOwnProperty(first_vrf);
 	$.each(selected_vrfs, function (k, v) {
 
-		// Do we need to replace the fully displayed VRF?
-		if (n == 0 && !full_vrf_active) {
-			$("#full_vrf_filter_entry").html(v.rt == null ? 'No VRF' : v.rt);
-			$("#full_vrf_filter_entry").attr('data-vrf', String(v.rt));
+		// Do we need to replace the first displayed VRF?
+		if (n == 0 && !first_vrf_active) {
+			$("#first_vrf_filter_entry").html(v.rt == null ? 'No VRF' : v.rt);
+			$("#first_vrf_filter_entry").attr('data-vrf', String(v.rt));
+		}
+
+		// Do we need to replace the second displayed VRF?
+		if (n == 1 && !second_vrf_active) {
+			$("#second_vrf_filter_entry").html(' and ' + (v.rt == null ? 'No VRF' : v.rt));
+			$("#second_vrf_filter_entry").attr('data-vrf', String(v.rt));
 		}
 
 		n++;
@@ -1024,12 +1031,18 @@ function drawVRFHeader() {
 	});
 
 	if (n == 0) {
-		$("#full_vrf_filter_entry").html("");
-		$("#full_vrf_filter_entry").attr('data-vrf', '');
+		$("#first_vrf_filter_entry").html("");
+		$("#first_vrf_filter_entry").attr('data-vrf', '');
+		$("#second_vrf_filter_entry").hide()
 	} else if (n == 1) {
+		$("#second_vrf_filter_entry").hide()
+		$("#extra_vrf_filter_entry").hide();
+	} else if (n == 2) {
+		$("#second_vrf_filter_entry").show();
 		$("#extra_vrf_filter_entry").hide();
 	} else {
-		$('#vrf_filter_entry_more').html(n - 1);
+		$("#second_vrf_filter_entry").hide()
+		$('#extra_vrf_filter_entry').html('and ' + (n - 1) + ' more');
 		$("#extra_vrf_filter_entry").show();
 	}
 
