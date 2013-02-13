@@ -2023,17 +2023,14 @@ class Nipap:
                     del(attr['vrf_name'])
                 attr['vrf_id'] = vrf['id']
 
-                parent_prefix = self.list_prefix(auth, args['from-prefix'])[0]
-                # TODO: what now?
-
             # VRF fiddling
             if attr['vrf_id'] == 0:
-                vrf = None
+                ffp_vrf = None
             else:
-                vrf = self._get_vrf(auth, attr)
+                ffp_vrf = self._get_vrf(auth, attr)
 
             # get a new prefix
-            res = self.find_free_prefix(auth, vrf, args)
+            res = self.find_free_prefix(auth, ffp_vrf, args)
             if res != []:
                 attr['prefix'] = res[0]
             else:
