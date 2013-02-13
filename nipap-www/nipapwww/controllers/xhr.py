@@ -640,7 +640,8 @@ class XhrController(BaseController):
             else:
                 vrf = VRF.get(int(vrf_id))
 
-            session['current_vrfs'][vrf_id] = { 'id': vrf.id, 'rt': vrf.rt, 'name': vrf.name }
+            session['current_vrfs'][vrf_id] = { 'id': vrf.id, 'rt': vrf.rt,
+                    'name': vrf.name, 'description': vrf.description }
             session.save()
 
         return json.dumps(session.get('current_vrfs', {}))
