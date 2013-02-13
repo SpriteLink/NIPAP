@@ -862,7 +862,6 @@ function clearVRFSelectorSearch() {
  * Add single VRF to displayed list of selected vrfs
  */
 function addVRFToSelectList(vrf, elem) {
-	console.log("addVRFToSelectList");
 
 	elem.append('<a href="#" style="max-width: 400px;" id="vrf_filter_entry_' + String(vrf.id) + '" ' +
 		'data-vrf_id="' + String(vrf.id) + '" data-vrf_rt="' + vrf.rt + '">' +
