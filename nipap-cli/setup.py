@@ -18,7 +18,6 @@ def get_data_files():
     # generate man pages using rst2man
     try:
         subprocess.call(["rst2man", "nipap.man.rst", "nipap.1"])
-        subprocess.call(["gzip", "-f", "-9", "nipap.1"])
     except OSError as exc:
         print >> sys.stderr, "rst2man failed to run:", str(exc)
         sys.exit(1)
@@ -27,7 +26,7 @@ def get_data_files():
             ('/etc/skel/', ['.nipaprc']),
             ('/usr/bin/', ['helper-nipap', 'nipap']),
             ('/usr/share/doc/nipap-cli/', ['bash_complete', 'nipaprc']),
-            ('/usr/share/man/man1/', 'nipap.1.gz')
+            ('/usr/share/man/man1/', ['nipap.1'])
         ]
 
     return files
