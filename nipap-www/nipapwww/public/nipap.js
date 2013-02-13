@@ -766,7 +766,7 @@ function showPrefixMenu(prefix_id) {
 function showVRFSelectorMenu(callback, pl_ref) {
 
 	// As we can not pass the callback all the way until the result from
-	// getJSON query is received, we store it in a globa variable...
+	// getJSON query is received, we store it in a global variable
 	curVRFCallback = callback;
 
 	// Create a generic popup menu and make it a selector
@@ -862,16 +862,18 @@ function clearVRFSelectorSearch() {
  * Add single VRF to displayed list of selected vrfs
  */
 function addVRFToSelectList(vrf, elem) {
+	console.log("addVRFToSelectList");
 
-	elem.append('<a href="#" id="vrf_filter_entry_' + String(vrf.id) + '" ' +
+	elem.append('<a href="#" style="max-width: 400px;" id="vrf_filter_entry_' + String(vrf.id) + '" ' +
 		'data-vrf_id="' + String(vrf.id) + '" data-vrf_rt="' + vrf.rt + '">' +
-			'<div class="selector_tick">&nbsp;</div>' +
-			( vrf.id == null ? 'No VRF' : vrf.rt ) +
-		'</a>');
+			'<div><div class="selector_tick">&nbsp;</div>' +
+			( vrf.id == null ? 'No VRF' : (vrf.rt + '&nbsp;-&nbsp;' + vrf.name) ) + '</div>' +
+			'<div class="selector_entry_description" style="padding-top: 5px; padding-left: 15px; font-weight: normal; font-size: 9pt;">' +
+			( vrf.id == null || vrf.description == null ? '' : vrf.description ) + '</div></a>');
 
 	// display tick
 	if (selected_vrfs.hasOwnProperty(String(vrf.id))) {
-		elem.children('#vrf_filter_entry_' + String(vrf.id)).children('.selector_tick').html('&#10003;');
+		elem.children('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&#10003;');
 	}
 
 	$("#vrf_filter_entry_" + String(vrf.id)).click(curVRFCallback);
@@ -927,13 +929,21 @@ function receiveVRFSelector(result) {
  */
 function clickPrefixVRFSelector(evt) {
 
+	var tgt = evt.target;
+	while (true) {
+		if (tgt.hasAttribute('data-vrf_id')) {
+			break
+		}
+		tgt = tgt.parentElement;
+	}
+	var vrf_id = tgt.getAttribute('data-vrf_id');
+
 	// update VRF input field with selected VRF
-	var vrf_id = evt.target.getAttribute('data-vrf_id');
 	$('input[name="prefix_vrf"]').val(vrf_id);
 	if (vrf_id == 'null') {
 		$('input[name="prefix_vrf_btn"]').val('None');
 	} else {
-		$('input[name="prefix_vrf_btn"]').val(evt.target.getAttribute('data-vrf_rt'));
+		$('input[name="prefix_vrf_btn"]').val(tgt.getAttribute('data-vrf_rt'));
 	}
 
 	hidePopupMenu();
@@ -942,11 +952,18 @@ function clickPrefixVRFSelector(evt) {
 }
 
 /*
- * Run when a VRF is selected for filtering
+ * Run when a VRF is selected for filtering in the VRF selector
  */
 function clickFilterVRFSelector(evt) {
 
-	var vrf_id = evt.target.getAttribute('data-vrf_id');
+	var tgt = evt.target;
+	while (true) {
+		if (tgt.hasAttribute('data-vrf_id')) {
+			break
+		}
+		tgt = tgt.parentElement;
+	}
+	var vrf_id = tgt.getAttribute('data-vrf_id');
 
 	// Find VRF object - it should be in vrf_list
 	var vrf = vrf_list[vrf_id];
@@ -963,7 +980,7 @@ function clickFilterVRFSelector(evt) {
 		selected_vrfs[String(vrf.id)] = vrf;
 
 		// show tick mark
-		$('#vrf_filter_entry_' + String(vrf.id)).children('.selector_tick').html('&#10003;');
+		$('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&#10003;');
 
 	} else {
 
@@ -972,7 +989,7 @@ function clickFilterVRFSelector(evt) {
 		$.getJSON('/xhr/del_current_vrf', { 'vrf_id': String(vrf.id) });
 
 		// remove tick mark
-		$('#vrf_filter_entry_' + String(vrf.id)).children('.selector_tick').html('&nbsp;');
+		$('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&nbsp;');
 
 	}
 

@@ -667,8 +667,10 @@ tbody.listing > tr:hover {
     text-decoration: none;
     color: hsl(0, 0%, 40%);
     border-top: 1px solid hsl(0, 0%, 93%);
-    font-size: 11px;
-	font-weight: bold;
+    font-size: 9pt;
+    font-weight: bold;
+    padding-right: 15px;
+    max-width: 400px;
 }
 
 .selector > div > a:hover {
@@ -678,26 +680,34 @@ tbody.listing > tr:hover {
 }
 
 .selector_search_string {
-	width: 200px;
+    width: 100%;
 }
 
 .selector_result { }
 
 .selector_filterbar {
-	background-color: #F8F8F8;
-	padding: 10px;
-	border-top: 1px solid #DDD;
-	border-bottom: 1px solid #DDD;
+    background-color: #F8F8F8;
+    padding: 10px;
+    padding-right: 15px;
+    border-top: 1px solid #DDD;
+    border-bottom: 1px solid #DDD;
 }
 
 .selector_tick {
-	width: 16px;
-	float: left;
+    width: 16px;
+    float: left;
+}
+
+.selector_entry_description {
+    padding-top: 5px;
+    padding-left: 15px;
+    font-weight: normal;
+    font-size: 9pt;
 }
 
 .minibutton {
-	width: 23px;
-	height: 16px;
+    width: 23px;
+    height: 16px;
     cursor: pointer;
     border: 1px solid #D4D4D4;
     border-radius: 3px;
