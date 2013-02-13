@@ -346,7 +346,14 @@ function prefixSearchKey() {
  */
 function performPrefixSearch(explicit) {
 
-	if (explicit != true) {
+	// on null value, try to get it from the URI (ie a previous search)
+	if (explicit === null) {
+		explicit = decodeURIComponent($.url().fparam('explicit'));
+		// fallback to non-explicit search
+		if (explicit === null) {
+			explicit = false;
+		}
+	} else if (explicit != true) {
 		explicit = false;
 	}
 
@@ -993,7 +1000,11 @@ function clickFilterVRFSelector(evt) {
 	}
 
 	drawVRFHeader();
-	performPrefixSearch(true);
+	// Don't perform search if we are not on the prefix list page (ie, there is
+	// no '#query_string' element) or if the query string is empty
+	if ($('#query_string').length > 0 && $('#query_string').val() != '') {
+		performPrefixSearch(null);
+	}
 
 	$('.selector_selectedbar').show();
 	evt.preventDefault();
