@@ -12,7 +12,6 @@ def get_data_files():
     # generate man pages using rst2man
     try:
         subprocess.call(["rst2man", "nipapd.man.rst", "nipapd.8"])
-        subprocess.call(["gzip", "-f", "-9", "nipapd.8"])
     except OSError as exc:
         print >> sys.stderr, "rst2man failed to run:", str(exc)
         sys.exit(1)
@@ -25,7 +24,7 @@ def get_data_files():
                 'sql/ip_net.plsql',
                 'sql/clean.plsql'
                 ]),
-            ('/usr/share/man/man8/', ['nipapd.8.gz'])
+            ('/usr/share/man/man8/', ['nipapd.8'])
         ]
 
     return files
