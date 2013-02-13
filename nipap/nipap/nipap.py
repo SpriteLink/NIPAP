@@ -401,7 +401,7 @@ class Nipap:
             except:
                 raise NipapError(e)
 
-            text = str(e).split(":", 1)[1]
+            text = str(e).splitlines()[0].split(":", 1)[1]
 
             if code == '1200':
                 raise NipapValueError(text)
