@@ -7,6 +7,7 @@ import logging.handlers
 import optparse
 import os
 import sys
+import ConfigParser
 
 import nipap.xmlrpc
 from nipap.nipapconfig import NipapConfig
@@ -33,7 +34,7 @@ if __name__ == '__main__':
         'foreground': 'false',
         'pid_file': None,
         'listen': '127.0.0.1',
-        'port': 1337,
+        'port': '1337',
         'db_host': 'localhost',
         'db_name': 'nipap',
         'db_port': None,
@@ -66,7 +67,11 @@ if __name__ == '__main__':
         except AttributeError:
             continue
 
-        cfg.set('nipapd', val.dest, str(eval("options." + val.dest)))
+        try:
+            cfg.set('nipapd', val.dest, str(eval("options." + val.dest)))
+        except ConfigParser.NoSectionError as exc:
+            print >> sys.stderr, "The configuration file contains errors:", exc
+            sys.exit(1)
 
 
     if not cfg.getboolean('nipapd', 'foreground'):
@@ -99,7 +104,7 @@ if __name__ == '__main__':
     import twisted
     try:
         nipapxml.run()
-    except Exception, exc:
+    except Exception as exc:
         logger.error(exc)
         sys.exit(1)
 
