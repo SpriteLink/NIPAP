@@ -430,7 +430,7 @@ def add_prefix(arg, opts):
     try:
         p.save(args)
     except NipapError as exc:
-        print >> sys.stderr, "Could not add prefix to NIPAP: %s" % exc.message
+        print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
         sys.exit(1)
 
     if p.vrf is None:
@@ -454,8 +454,8 @@ def add_vrf(arg, opts):
 
     try:
         v.save()
-    except pynipap.NipapError, e:
-        print >> sys.stderr, "Could not add VRF to NIPAP: %s" % e.message
+    except pynipap.NipapError as exc:
+        print >> sys.stderr, "Could not add VRF to NIPAP: %s" % str(exc)
         sys.exit(1)
 
     print "Added VRF %s with id %d" % (v.rt, v.id)
@@ -475,8 +475,8 @@ def add_pool(arg, opts):
 
     try:
         p.save()
-    except pynipap.NipapError, e:
-        print >> sys.stderr, "Could not add pool to NIPAP: %s" % e.message
+    except pynipap.NipapError as exc:
+        print >> sys.stderr, "Could not add pool to NIPAP: %s" % str(exc)
         sys.exit(1)
 
     print "Pool '%s' created with id %s" % (p.name, p.id)
@@ -893,8 +893,8 @@ def modify_prefix(arg, opts):
 
     try:
         p.save()
-    except NipapError, e:
-        print >> sys.stderr, "Could not save prefix changes: %s" % e.message
+    except NipapError as exc:
+        print >> sys.stderr, "Could not save prefix changes: %s" % str(exc)
         sys.exit(1)
 
     print "Prefix %s saved." % p.display_prefix
@@ -1709,8 +1709,8 @@ if __name__ == '__main__':
 
     try:
         cmd = Command(cmds, sys.argv[1::])
-    except ValueError, e:
-        print >> sys.stderr, "Error: %s" % e.message
+    except ValueError as exc:
+        print >> sys.stderr, "Error: %s" % str(exc)
         sys.exit(1)
 
     # execute command
@@ -1721,7 +1721,7 @@ if __name__ == '__main__':
 
     try:
         cmd.exe(cmd.arg, cmd.exe_options)
-    except NipapError, e:
-        print >> sys.stderr, "Command failed:\n  %s" % e.message
+    except NipapError as exc:
+        print >> sys.stderr, "Command failed:\n  %s" % str(exc)
         sys.exit(1)
 

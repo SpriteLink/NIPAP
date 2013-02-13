@@ -31,8 +31,8 @@ if __name__ == '__main__':
 
     try:
         cmd = Command(nipap_cli.cmds, sys.argv[1::])
-    except (ValueError, CommandError, NipapError), e:
-        print >> sys.stderr, "Error: %s" % e.message
+    except (ValueError, CommandError, NipapError) as exc:
+        print >> sys.stderr, "Error: %s" % str(exc)
         sys.exit(1)
 
     # execute command
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         sys.exit(130)
     except (IOError, OSError):
         sys.exit(141)
-    except NipapError, e:
-        print >> sys.stderr, "Command failed:\n  %s" % e.message
+    except NipapError as exc:
+        print >> sys.stderr, "Command failed:\n  %s" % str(exc)
         sys.exit(1)
 
