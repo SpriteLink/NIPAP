@@ -423,6 +423,8 @@ def add_prefix(arg, opts):
             if parent.type == 'assignment':
                 if p.type is None:
                     print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically setting type 'host' for new prefix."
+                elif p.type == 'host':
+                    pass
                 else:
                     print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix." % p.type
                 p.type = 'host'
