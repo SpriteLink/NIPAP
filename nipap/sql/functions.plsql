@@ -260,6 +260,21 @@ END;
 $_$ LANGUAGE plpgsql;
 
 
+--
+-- Trigger function to keep data consistent in the ip_net_vrf table with
+-- regards to prefix type and similar. This function handles DELETE operations.
+--
+CREATE OR REPLACE FUNCTION tf_ip_net_vrf_d_before() RETURNS trigger AS $_$
+BEGIN
+	-- block delete of default VRF with id 0
+	IF OLD.id = 0 THEN
+		RAISE EXCEPTION '1200:Prohibited delete of default VRF (id=0).';
+	END IF;
+
+	RETURN OLD;
+END;
+$_$ LANGUAGE plpgsql;
+
 
 --
 -- Trigger function to keep data consistent in the ip_net_plan table with

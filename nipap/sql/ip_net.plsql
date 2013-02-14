@@ -169,6 +169,12 @@ CREATE TRIGGER trigger_ip_net_vrf__iu_before
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_vrf_iu_before();
 
+CREATE TRIGGER trigger_ip_net_vrf__d_before
+	BEFORE DELETE
+	ON ip_net_vrf
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_vrf_d_before();
+
 
 
 --
