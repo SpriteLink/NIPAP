@@ -2107,7 +2107,7 @@ function selectPrefix(prefix_id) {
 		$('#radio-prefix-type-assignment').attr('disabled', 'disabled');
 		$('#radio-prefix-type-host').removeAttr('disabled');
 
-		$('#radio-prefix-type-host').attr('checked', 'checked');
+		$('#radio-prefix-type-host').prop('checked', true);
 	}
 
     // Set VRF to the same as the prefix we're allocating from
