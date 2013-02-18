@@ -16,18 +16,18 @@ all:
 	@echo "make debrepo - Create Packages.gz file suitable for github apt repo"
 
 source:
-	for PROJ in $(SUBPROJ); do
-		cd $$PROJ; make source; cd ..
+	for PROJ in $(SUBPROJ); do \
+		cd $$PROJ; make source; cd ..; \
 	done
 
 install:
-	for PROJ in $(SUBPROJ); do
-		cd $$PROJ; make install; cd ..
+	for PROJ in $(SUBPROJ); do \
+		cd $$PROJ; make install; cd ..; \
 	done
 
 buildrpm:
 	for PROJ in $(SUBPROJ); do \
-		cd $$PROJ; make buildrpm; cd .. \
+		cd $$PROJ; make buildrpm; cd ..; \
 	done
 
 builddeb:
