@@ -37,8 +37,8 @@ Examples
 To start nipapd in the background using default values, type:
     $ nipapd
 
-To start nipapd in the foreground with a specific port, e.g. 1234 and with no PID file, typically for development:
-    $ nipapd -f -p 1234 --no-pid-file
+To start nipapd in the foreground with debug logging, running on a specific port, e.g. 1234 and with no PID file, typically for development:
+    $ nipapd -d -f -p 1234 --no-pid-file
 
 Copyright
 ---------

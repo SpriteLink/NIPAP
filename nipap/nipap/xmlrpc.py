@@ -78,7 +78,6 @@ class NipapXMLRPC:
             log_stream = logging.StreamHandler()
             log_stream.setFormatter(logging.Formatter("%(asctime)s: %(levelname)-8s %(message)s"))
             self.root_logger.addHandler(log_stream)
-            self.root_logger.setLevel(logging.DEBUG)
 
         if self._cfg.getboolean('nipapd', 'debug'):
             self.root_logger.setLevel(logging.DEBUG)

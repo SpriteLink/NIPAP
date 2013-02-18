@@ -320,8 +320,63 @@ class NipapXmlTest(unittest.TestCase):
 
 
 
-    def test_prefix_from_pool_vrf(self):
+    def test_prefix_from_pool(self):
         """ Add a prefix from a pool
+        """
+
+        # Add a pool
+        pool_attr = {
+            'name'          : 'pool_1',
+            'description'   : 'Test pool #1',
+            'default_type'  : 'assignment',
+            'ipv4_default_prefix_length' : 24
+        }
+        pool_id = s.add_pool({ 'auth': ad, 'attr': pool_attr })
+
+        # Add prefix to pool
+        parent_prefix_attr = {
+                'prefix': '1.3.0.0/16',
+                'type': 'reservation',
+                'description': 'FOO',
+                'pool_id': pool_id
+            }
+        s.add_prefix({ 'auth': ad, 'attr': parent_prefix_attr })
+
+        args = { 'from-pool': { 'name': 'pool_1' },
+                'family': 4 }
+        prefix_attr = {
+                'description': 'BAR'
+                }
+        expected = {
+                'prefix': '1.3.0.0/24',
+                'display_prefix': '1.3.0.0/24',
+                'description': 'BAR',
+                'type': 'assignment',
+                'comment': None,
+                'country': None,
+                'monitor': None,
+                'node': None,
+                'order_id': None,
+                'pool_id': None,
+                'pool_name': None,
+                'vrf_id': 0,
+                'vrf_rt': None,
+                'vrf_name': None,
+                'external_key': None,
+                'family': 4,
+                'indent': 1,
+                'alarm_priority': None,
+                'authoritative_source': 'nipap'
+                }
+        child_id = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
+        #expected['id'] = child_id
+        #p = s.list_prefix({ 'auth': ad, 'attr': { 'id': child_id } })[1]
+        #self.assertEquals(p, expected)
+
+
+
+    def test_prefix_from_pool_vrf(self):
+        """ Add a prefix from a pool in a VRF
         """
 
         # Add a VRF
@@ -335,7 +390,7 @@ class NipapXmlTest(unittest.TestCase):
         # Add a pool
         pool_attr = {
             'name'          : 'pool_1',
-            'description'   : 'Test pool #1',
+            'description'   : 'Test pool for from-pool test',
             'default_type'  : 'assignment',
             'ipv4_default_prefix_length' : 24
         }

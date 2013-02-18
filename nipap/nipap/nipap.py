@@ -807,6 +807,8 @@ class Nipap:
         # find VRF from attributes vrf, vrf_id or vrf_name
         vrf = []
         if prefix + 'id' in spec:
+            if spec[prefix + 'id'] == 0:
+                return { 'id': 0, 'rt': None, 'name': None }
             vrf = self.list_vrf(auth, { 'id': spec[prefix + 'id'] })
         elif prefix + 'rt' in spec:
             vrf = self.list_vrf(auth, { 'rt': spec[prefix + 'rt'] })
