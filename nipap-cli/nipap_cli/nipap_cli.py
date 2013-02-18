@@ -397,11 +397,14 @@ def add_prefix(arg, opts):
         vrf_id = 0
         if p.vrf:
             vrf_id = p.vrf.id
+        # prefix must be a CIDR network, ie no bits set in host part, so we
+        # remove the prefix length part of the prefix as then the backend will
+        # assume all bits being set
         auto_type_query = {
                 'val1': {
                     'val1'      : 'prefix',
                     'operator'  : 'contains',
-                    'val2'      : opts.get('prefix')
+                    'val2'      : opts.get('prefix').split('/')[0]
                     },
                 'operator': 'and',
                 'val2': {
@@ -428,6 +431,12 @@ def add_prefix(arg, opts):
                 else:
                     print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix." % p.type
                 p.type = 'host'
+
+                # fiddle prefix length to all bits set
+                if parent.family == 4:
+                    p.prefix = p.prefix.split('/')[0] + '/32'
+                else:
+                    p.prefix = p.prefix.split('/')[0] + '/128'
 
     try:
         p.save(args)
