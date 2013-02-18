@@ -1,0 +1,27 @@
+language: python
+python:
+  - 2.7
+
+# do the SQL cakewalk
+before_install:
+    - sudo bash utilities/install-ip4r.sh
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq python-docutils
+    - sudo apt-get install -qq python-pysqlite2 python-twisted-web python-psycopg2 python-ipy python-ldap
+
+# get the python stuff installed
+install:
+    - pip install --use-mirrors psycopg2 ipy twisted python-ldap pysqlite
+    - sudo make install
+    - sudo cp nipap/nipap.conf nipap/local_auth.db /etc/nipap/
+
+script:
+    - cd nipap
+    - sudo ./nipapd --no-pid-file
+    - cd ../tests
+    - nosetests xmlrpc.py
+
+notifications:
+  irc:
+      channels:
+           - "irc.freenode.org#NIPAP"
