@@ -807,6 +807,8 @@ class Nipap:
         # find VRF from attributes vrf, vrf_id or vrf_name
         vrf = []
         if prefix + 'id' in spec:
+            if spec[prefix + 'id'] == 0:
+                return { 'id': 0, 'rt': None, 'name': None }
             vrf = self.list_vrf(auth, { 'id': spec[prefix + 'id'] })
         elif prefix + 'rt' in spec:
             vrf = self.list_vrf(auth, { 'rt': spec[prefix + 'rt'] })
@@ -2013,6 +2015,8 @@ class Nipap:
                 # make sure VRF aligns with pool implied VRF
                 if attr['vrf_id'] != from_pool['vrf_id']:
                     raise NipapInputError("VRF must be the same as the pools implied VRF")
+
+                vrf = self._get_vrf(auth, attr)
 
             if 'from-prefix' in args:
                 # handle VRF - find the correct one and remove bad VRF keys
