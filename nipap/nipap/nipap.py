@@ -1319,11 +1319,7 @@ class Nipap:
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
-                        CASE
-                            WHEN vrf.id = 0
-                                THEN NULL
-                            ELSE vrf.id
-                        END AS vrf_id,
+                        vrf.id AS vrf_id,
                         vrf.rt AS vrf_rt,
                         vrf.name AS vrf_name,
                         (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool_id=po.id ORDER BY prefix) AS a) AS prefixes
@@ -1570,11 +1566,7 @@ class Nipap:
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
-                        CASE
-                            WHEN vrf.id = 0
-                                THEN NULL
-                            ELSE vrf.id
-                        END AS vrf_id,
+                        vrf.id AS vrf_id,
                         vrf.rt AS vrf_rt,
                         vrf.name AS vrf_name,
                         (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool_id=po.id ORDER BY prefix) AS a) AS prefixes
@@ -2028,10 +2020,7 @@ class Nipap:
                 attr['vrf_id'] = vrf['id']
 
             # VRF fiddling
-            if attr['vrf_id'] == 0:
-                ffp_vrf = None
-            else:
-                ffp_vrf = self._get_vrf(auth, attr)
+            ffp_vrf = self._get_vrf(auth, attr)
 
             # get a new prefix
             res = self.find_free_prefix(auth, ffp_vrf, args)
@@ -2404,11 +2393,7 @@ class Nipap:
 
         sql = """SELECT
             inp.id,
-            CASE
-                WHEN vrf.id = 0
-                    THEN NULL
-                ELSE vrf.id
-            END AS vrf_id,
+            vrf.id AS vrf_id,
             vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,
             family(prefix) AS family,
