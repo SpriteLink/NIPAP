@@ -48,8 +48,11 @@ class NipapXmlTest(unittest.TestCase):
         self.auth.authenticated_as = 'unittest'
         self.auth.full_name = 'Unit test'
 
+        # have to delete hosts before we can delete the rest
         self.nipap._execute("DELETE FROM ip_net_plan WHERE masklen(prefix) = 32")
+        # the rest
         self.nipap._execute("DELETE FROM ip_net_plan")
+        # delete all except for the default VRF with id 0
         self.nipap._execute("DELETE FROM ip_net_vrf WHERE id > 0")
         self.nipap._execute("DELETE FROM ip_net_pool")
         self.nipap._execute("DELETE FROM ip_net_asn")
@@ -230,6 +233,7 @@ class NipapXmlTest(unittest.TestCase):
         self.assertEqual(s.list_prefix({ 'auth': ad }), expected_list)
 
 
+
     def test_prefix_add_vrf(self):
         """ Test adding prefixes to VRF
         """
@@ -313,6 +317,70 @@ class NipapXmlTest(unittest.TestCase):
 
         vrf_pref = s.list_prefix({ 'auth': ad, 'prefix': { 'id': expected['id'] } })[0]
         self.assertEqual(vrf_pref, expected, 'Prefix added with VRF name reference not equal')
+
+
+
+    def test_prefix_from_pool_vrf(self):
+        """ Add a prefix from a pool
+        """
+
+        # Add a VRF
+        vrf_attr = {
+            'name'          : 'vrf_1',
+            'description'   : 'Test VRF #1',
+            'rt'            : '123:123'
+        }
+        vrf_id = s.add_vrf({ 'auth': ad, 'attr': vrf_attr })
+
+        # Add a pool
+        pool_attr = {
+            'name'          : 'pool_1',
+            'description'   : 'Test pool #1',
+            'default_type'  : 'assignment',
+            'ipv4_default_prefix_length' : 24
+        }
+        pool_id = s.add_pool({ 'auth': ad, 'attr': pool_attr })
+
+        # Add prefix to pool
+        parent_prefix_attr = {
+                'prefix': '1.3.0.0/16',
+                'vrf_rt': '123:123',
+                'type': 'reservation',
+                'description': 'FOO',
+                'pool_id': pool_id
+            }
+        s.add_prefix({ 'auth': ad, 'attr': parent_prefix_attr })
+
+        args = { 'from-pool': { 'name': 'pool_1' },
+                'family': 4 }
+        prefix_attr = {
+                'description': 'BAR'
+                }
+        expected = {
+                'prefix': '1.3.0.0/24',
+                'display_prefix': '1.3.0.0/24',
+                'description': 'BAR',
+                'type': 'assignment',
+                'comment': None,
+                'country': None,
+                'monitor': None,
+                'node': None,
+                'order_id': None,
+                'pool_id': None,
+                'pool_name': None,
+                'vrf_id': vrf_id,
+                'vrf_rt': '123:123',
+                'vrf_name': 'vrf_1',
+                'external_key': None,
+                'family': 4,
+                'indent': 1,
+                'alarm_priority': None,
+                'authoritative_source': 'nipap'
+                }
+        child_id = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
+        expected['id'] = child_id
+        p = s.list_prefix({ 'auth': ad, 'attr': { 'id': child_id } })[1]
+        self.assertEquals(p, expected)
 
 
 
