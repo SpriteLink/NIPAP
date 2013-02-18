@@ -209,7 +209,7 @@ class NipapXmlTest(unittest.TestCase):
                 'pool_id': None,
                 'vrf_rt': None,
                 'vrf_name': None,
-                'vrf_id': None
+                'vrf_id': 0
             }
         expected.update(attr)
         self.assertEqual(s.list_prefix({ 'auth': ad }), [expected])
@@ -255,7 +255,7 @@ class NipapXmlTest(unittest.TestCase):
                 'order_id': None,
                 'pool_id': None,
                 'pool_name': None,
-                'vrf_id': None,
+                'vrf_id': 0,
                 'vrf_rt': None,
                 'vrf_name': None
             }
