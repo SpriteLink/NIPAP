@@ -335,7 +335,8 @@ class NipapXmlTest(unittest.TestCase):
                     'text', 'string': 'F'}],
                 'search_options': {'include_all_children':
                 False, 'max_result': 50, 'include_all_parents': False,
-                'parents_depth': 0, 'offset': 0, 'children_depth': 0},
+                'parents_depth': 0, 'offset': 0, 'children_depth': 0,
+                'parent_prefix': None },
                 'result': [
                     {'comment': None,
                         'external_key': None,
@@ -546,6 +547,9 @@ class NipapXmlTest(unittest.TestCase):
         expected = attr2.copy()
         expected['id'] = res
         expected['prefixes'] = []
+        expected['vrf_id'] = None
+        expected['vrf_rt'] = None
+        expected['vrf_name'] = None
 
         self.assertEquals(s.list_pool({ 'auth': ad, 'pool': { 'id': res } })[0], expected)
 
