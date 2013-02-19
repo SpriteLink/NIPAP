@@ -852,6 +852,9 @@ class Nipap:
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())
 
+        if len(attr) == 0:
+            raise NipapInputError("'attr' must not be empty.")
+
         sql = "UPDATE ip_net_vrf SET " + update
         sql += " WHERE " + where
 

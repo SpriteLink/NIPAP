@@ -112,12 +112,13 @@ class NipapXmlTest(unittest.TestCase):
             s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': { 'id': 1337 } })
 
         # empty attribute list
-        # TODO: fix this.. currently breaks NIPAP
-        #s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': {} })
-        #res = s.list_vrf({ 'auth': ad, 'vrf': spec })
-        #self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
-        #res = res[0]
-        #self.assertEqual(res, attr, 'VRF changed after empty edit_vrf operation')
+        with self.assertRaisesRegexp(xmlrpclib.Fault, "'attr' must not be empty."):
+            s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': {} })
+        res = s.list_vrf({ 'auth': ad, 'vrf': spec })
+        self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
+        res = res[0]
+        del(res['id'])
+        self.assertEqual(res, attr, 'VRF changed after empty edit_vrf operation')
 
         # valid change
         attr['rt'] = '65000:1234'
