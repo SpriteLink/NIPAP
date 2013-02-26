@@ -444,7 +444,7 @@ def add_prefix(arg, opts):
         print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
         sys.exit(1)
 
-    if p.vrf is None:
+    if p.vrf.rt is None:
         vrf_rt = 'none'
         print "Prefix %s added to the global VRF." % (p.display_prefix)
     else:
@@ -528,12 +528,8 @@ def view_pool(arg, opts):
 
     p = res[0]
 
-    if p.vrf is None:
-        vrf_rt = p.vrf
-        vrf_name = p.vrf
-    else:
-        vrf_rt = p.vrf.rt
-        vrf_name = p.vrf.name
+    vrf_rt = p.vrf.rt
+    vrf_name = p.vrf.name
 
     print  "-- Pool "
     print "  %-22s : %d" % ("ID", p.id)
@@ -575,10 +571,7 @@ def view_prefix(arg, opts):
         return
 
     p = res['result'][0]
-    if p.vrf is None:
-        vrf = p.vrf
-    else:
-        vrf = p.vrf.rt
+    vrf = p.vrf.rt
 
     print  "-- Address "
     print "  %-15s : %s" % ("Prefix", p.prefix)
@@ -670,12 +663,8 @@ def remove_prefix(arg, opts):
         print >> sys.stderr, "No prefix %s found." % arg
         sys.exit(1)
 
-    # figure out VRF
     p = res[0]
-    if p.vrf is None:
-        vrf = None
-    else:
-        vrf = p.vrf.rt
+    vrf = p.vrf.rt
 
     if p.authoritative_source != 'nipap':
         auth_src.add(p.authoritative_source)

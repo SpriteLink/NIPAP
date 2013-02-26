@@ -772,14 +772,14 @@ class Nipap:
 
         self._logger.debug("list_vrf called; spec: %s" % str(spec))
 
-        sql = "SELECT * FROM ip_net_vrf WHERE id > 0"
+        sql = "SELECT * FROM ip_net_vrf"
 
         params = list()
         # no spec lists all VRFs
         if spec is not None and not {}:
             where, params = self._expand_vrf_spec(spec)
         if len(params) > 0:
-            sql += " AND " + where
+            sql += " WHERE " + where
 
         sql += " ORDER BY vrf_rt_order(rt) NULLS FIRST"
 
@@ -807,8 +807,9 @@ class Nipap:
         # find VRF from attributes vrf, vrf_id or vrf_name
         vrf = []
         if prefix + 'id' in spec:
-            if spec[prefix + 'id'] == 0:
-                return { 'id': 0, 'rt': None, 'name': None }
+            # if None, mangle it to being 0, ie our default VRF
+            if spec[prefix + 'id'] is None:
+                spec[prefix + 'id'] = 0
             vrf = self.list_vrf(auth, { 'id': spec[prefix + 'id'] })
         elif prefix + 'rt' in spec:
             vrf = self.list_vrf(auth, { 'rt': spec[prefix + 'rt'] })
@@ -982,13 +983,13 @@ class Nipap:
         self._logger.debug('search_vrf called; query: %s search_options: %s' % (str(query), str(search_options)))
 
         opt = None
-        sql = """ SELECT * FROM ip_net_vrf WHERE id > 0 """
+        sql = """ SELECT * FROM ip_net_vrf"""
 
         # add where clause if we have any search terms
         if query != {}:
 
             where, opt = self._expand_vrf_query(query)
-            sql += " AND " + where
+            sql += " WHERE " + where
 
         sql += " ORDER BY vrf_rt_order(rt) NULLS FIRST LIMIT " + str(search_options['max_result']) + " OFFSET " + str(search_options['offset'])
         self._execute(sql, opt)
@@ -2739,11 +2740,7 @@ class Nipap:
         sql = """
     SELECT
         id,
-        CASE
-            WHEN vrf_id = 0
-                THEN NULL
-            ELSE vrf_id
-        END AS vrf_id,
+        vrf_id,
         vrf_rt,
         vrf_name,
         family,

@@ -480,7 +480,7 @@ class NipapXmlTest(unittest.TestCase):
                         'node': None,
                         'description': 'FOO',
                         'order_id': None,
-                        'vrf_id': None,
+                        'vrf_id': 0,
                         'vrf_rt': None,
                         'vrf_name': None,
                         'pool_id': None,

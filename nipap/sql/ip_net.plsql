@@ -30,7 +30,7 @@ CREATE TABLE ip_net_vrf (
 CREATE UNIQUE INDEX ip_net_vrf__unique_vrf__index ON ip_net_vrf ((''::TEXT)) WHERE rt IS NULL;
 CREATE UNIQUE INDEX ip_net_vrf__unique_name__index ON ip_net_vrf ((''::TEXT)) WHERE name IS NULL;
 --
-INSERT INTO ip_net_vrf (id, rt, name) VALUES (0, NULL, NULL);
+INSERT INTO ip_net_vrf (id, rt, name, description) VALUES (0, NULL, 'default', 'The default VRF, typically the Internet.');
 
 CREATE UNIQUE INDEX ip_net_vrf__rt__index ON ip_net_vrf (rt) WHERE rt IS NOT NULL;
 CREATE UNIQUE INDEX ip_net_vrf__name__index ON ip_net_vrf (name) WHERE name IS NOT NULL;
