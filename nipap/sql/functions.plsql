@@ -225,35 +225,42 @@ DECLARE
 	rt_part_two text;
 	ip text;
 BEGIN
-	-- make sure we only have two fields delimited by a colon
-	IF (SELECT COUNT(1) FROM regexp_matches(NEW.rt, '(:)', 'g')) != 1 THEN
-		RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
-	END IF;
+	-- don't allow setting an RT for VRF id 0
+	IF NEW.id = 0 THEN
+		IF NEW.rt IS NOT NULL THEN
+			RAISE EXCEPTION 'Invalid input for column rt, must be NULL for VRF id 0';
+		END IF;
+	ELSE -- make sure all VRF except for VRF id 0 has a proper RT
+		-- make sure we only have two fields delimited by a colon
+		IF (SELECT COUNT(1) FROM regexp_matches(NEW.rt, '(:)', 'g')) != 1 THEN
+			RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+		END IF;
 
-	-- check first part
-	BEGIN
-		-- either it's a integer (AS number)
-		rt_part_one := split_part(NEW.rt, ':', 1)::bigint;
-	EXCEPTION WHEN others THEN
+		-- check first part
 		BEGIN
-			-- or an IPv4 address
-			ip := host(split_part(NEW.rt, ':', 1)::inet);
-			rt_part_one := (split_part(ip, '.', 1)::bigint << 24) +
-						(split_part(ip, '.', 2)::bigint << 16) +
-						(split_part(ip, '.', 3)::bigint << 8) +
-						(split_part(ip, '.', 4)::bigint);
+			-- either it's a integer (AS number)
+			rt_part_one := split_part(NEW.rt, ':', 1)::bigint;
+		EXCEPTION WHEN others THEN
+			BEGIN
+				-- or an IPv4 address
+				ip := host(split_part(NEW.rt, ':', 1)::inet);
+				rt_part_one := (split_part(ip, '.', 1)::bigint << 24) +
+							(split_part(ip, '.', 2)::bigint << 16) +
+							(split_part(ip, '.', 3)::bigint << 8) +
+							(split_part(ip, '.', 4)::bigint);
+			EXCEPTION WHEN others THEN
+				RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+			END;
+		END;
+
+		-- check part two
+		BEGIN
+			rt_part_two := split_part(NEW.rt, ':', 2)::bigint;
 		EXCEPTION WHEN others THEN
 			RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
 		END;
-	END;
-
-	-- check part two
-	BEGIN
-		rt_part_two := split_part(NEW.rt, ':', 2)::bigint;
-	EXCEPTION WHEN others THEN
-		RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
-	END;
-	NEW.rt := rt_part_one::text || ':' || rt_part_two::text;
+		NEW.rt := rt_part_one::text || ':' || rt_part_two::text;
+	END IF;
 
 	RETURN NEW;
 END;

@@ -54,6 +54,8 @@ class NipapXmlTest(unittest.TestCase):
         self.nipap._execute("DELETE FROM ip_net_plan")
         # delete all except for the default VRF with id 0
         self.nipap._execute("DELETE FROM ip_net_vrf WHERE id > 0")
+        # set default info for VRF 0
+        self.nipap._execute("UPDATE ip_net_vrf SET name = 'default', description = 'The default VRF, typically the Internet.' WHERE id = 0")
         self.nipap._execute("DELETE FROM ip_net_pool")
         self.nipap._execute("DELETE FROM ip_net_asn")
 
@@ -76,11 +78,25 @@ class NipapXmlTest(unittest.TestCase):
 
         self.assertGreater(attr['id'], 0)
 
-        self.assertEqual(s.list_vrf({ 'auth': ad, 'vrf': {} }), [ attr, ])
+        self.assertEqual(s.list_vrf({ 'auth': ad, 'vrf': { 'id': attr['id'] } }), [ attr, ])
 
         attr['rt'] = '123:abc'
         with self.assertRaisesRegexp(xmlrpclib.Fault, '.'): # TODO: specify exception string
             s.add_vrf({ 'auth': ad, 'attr': attr })
+
+
+
+    def test_vrf_edit_default(self):
+        """ Edit the default VRF and verify the change
+        """
+        # try to set an RT, which should fail on the default VRF
+        with self.assertRaisesRegexp(xmlrpclib.Fault, 'Invalid input for column rt, must be NULL for VRF id 0'):
+            s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': { 'rt': '123:456a' }})
+
+        s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': { 'name': 'FOO', 'description': 'BAR' }})
+        res = s.list_vrf({ 'auth': ad, 'vrf': { } })[0]
+        del(res['id'])
+        self.assertEqual(res, { 'rt': None, 'name': 'FOO', 'description': 'BAR' }, 'VRF change incorrect')
 
 
 
@@ -209,8 +225,8 @@ class NipapXmlTest(unittest.TestCase):
                 'pool_name': None,
                 'pool_id': None,
                 'vrf_rt': None,
-                'vrf_name': None,
-                'vrf_id': 0
+                'vrf_id': 0,
+                'vrf_name': 'default'
             }
         expected.update(attr)
         self.assertEqual(s.list_prefix({ 'auth': ad }), [expected])
@@ -362,7 +378,7 @@ class NipapXmlTest(unittest.TestCase):
                 'pool_name': None,
                 'vrf_id': 0,
                 'vrf_rt': None,
-                'vrf_name': None,
+                'vrf_name': 'default',
                 'external_key': None,
                 'family': 4,
                 'indent': 1,
@@ -482,7 +498,7 @@ class NipapXmlTest(unittest.TestCase):
                         'order_id': None,
                         'vrf_id': 0,
                         'vrf_rt': None,
-                        'vrf_name': None,
+                        'vrf_name': 'default',
                         'pool_id': None,
                         'pool_name': None,
                         'alarm_priority': None,
