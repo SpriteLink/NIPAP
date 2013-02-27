@@ -794,6 +794,28 @@ function showVRFSelectorMenu(callback, pl_ref) {
 
 	menu.slideDown('fast');
 
+	//
+	// send a search query for the default VRF
+
+	// Keep track of search timing
+	stats.vrf_query_sent = new Date().getTime();
+
+	var search_q = {
+		'query_id': query_id,
+		'query_string': $('input[name="vrf_search_string"]').val(),
+		'max_result': 10,
+		'offset': 0,
+		'vrf_id': 0
+	}
+
+	current_vrf_query = search_q;
+	query_id += 1;
+	offset = 0;
+
+	$('.selector_result').empty();
+	showLoadingIndicator($('.selector_result'));
+	$.getJSON("/xhr/smart_search_vrf", current_vrf_query, receiveVRFSelector);
+
 }
 
 /*
@@ -852,8 +874,6 @@ function clearVRFSelectorSearch() {
 	// empty search box and selected vrfs
 	$('input[name="vrf_search_string"]').val('');
 	$('.selector_result').empty();
-
-	addVRFToSelectList({ 'id': null, 'rt': 'No VRF' }, $('.selector_result'));
 
 	// add selected VRFs to selectedbar
 	$.each(selected_vrfs, function (k, v) {
