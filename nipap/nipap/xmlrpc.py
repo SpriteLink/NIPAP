@@ -382,7 +382,9 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            return self.nipap.smart_search_vrf(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
+            return self.nipap.smart_search_vrf(args.get('auth'),
+                    args.get('query_string'), args.get('search_options', {}),
+                    args.get('extra_query'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
