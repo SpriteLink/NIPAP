@@ -191,6 +191,7 @@ class NipapXmlTest(unittest.TestCase):
     def test_prefix_add(self):
         """ Add a prefix and list
         """
+        # check that some error / sanity checking is there
         attr = {}
         with self.assertRaisesRegexp(xmlrpclib.Fault, "specify 'prefix' or 'from-prefix' or 'from-pool'"):
             s.add_prefix({ 'auth': ad, 'attr': attr })
@@ -205,9 +206,11 @@ class NipapXmlTest(unittest.TestCase):
 
         attr['type'] = 'assignment'
 
+        # add 1.3.3.0/24
         attr['id'] = s.add_prefix({ 'auth': ad, 'attr': attr })
         self.assertGreater(attr['id'], 0)
 
+        # what we expect the above prefix to look like
         expected = {
                 'alarm_priority': None,
                 'authoritative_source': 'nipap',
@@ -236,17 +239,54 @@ class NipapXmlTest(unittest.TestCase):
                 'type': 'host'
             }
         args = { 'from-prefix': ['1.3.3.0/24'], 'prefix_length': 32 }
+        # add a host in 1.3.3.0/24
         res = s.add_prefix({ 'auth': ad, 'attr': attr, 'args': args })
 
+        # copy expected from 1.3.3.0/24 since we expect most things to look the
+        # same for the new prefix (1.3.3.1/32) from 1.3.3.0/24
         expected_host = expected.copy()
         expected_host.update(attr)
         expected_host['id'] = res
         expected_host['prefix'] = '1.3.3.1/32'
         expected_host['display_prefix'] = '1.3.3.1/24'
         expected_host['indent'] = 1
+
+        # build list of expected
         expected_list = []
         expected_list.append(expected)
         expected_list.append(expected_host)
+
+        # add another prefix, try with vrf_id = None
+        attr['vrf_id'] = None
+        res = s.add_prefix({ 'auth': ad, 'attr': attr, 'args': args })
+        # update expected list
+        expected_host2 = expected_host.copy()
+        expected_host2['id'] = res
+        expected_host2['prefix'] = '1.3.3.2/32'
+        expected_host2['display_prefix'] = '1.3.3.2/24'
+        expected_list.append(expected_host2)
+
+        # add another prefix, this time completely without VRF info
+        del(attr['vrf_id'])
+        res = s.add_prefix({ 'auth': ad, 'attr': attr, 'args': args })
+        # update expected list
+        expected_host3 = expected_host.copy()
+        expected_host3['id'] = res
+        expected_host3['prefix'] = '1.3.3.3/32'
+        expected_host3['display_prefix'] = '1.3.3.3/24'
+        expected_list.append(expected_host3)
+
+        # add another prefix, based on VRF name
+        attr['vrf_name'] = 'default'
+        res = s.add_prefix({ 'auth': ad, 'attr': attr, 'args': args })
+        # update expected list
+        expected_host4 = expected_host.copy()
+        expected_host4['id'] = res
+        expected_host4['prefix'] = '1.3.3.4/32'
+        expected_host4['display_prefix'] = '1.3.3.4/24'
+        expected_list.append(expected_host4)
+
+        # make sure the result looks like we expect it too! :D
         self.assertEqual(s.list_prefix({ 'auth': ad }), expected_list)
 
 
