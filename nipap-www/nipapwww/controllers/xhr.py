@@ -85,6 +85,7 @@ class XhrController(BaseController):
         """
 
         search_options = {}
+        extra_query = None
 
         if 'query_id' in request.params:
             search_options['query_id'] = request.params['query_id']
@@ -95,9 +96,16 @@ class XhrController(BaseController):
         if 'offset' in request.params:
             search_options['offset'] = request.params['offset']
 
+        if 'vrf_id' in request.params:
+            extra_query = {
+                    'val1': 'id',
+                    'operator': 'equals',
+                    'val2': request.params['vrf_id']
+                }
+
         try:
             result = VRF.smart_search(request.params['query_string'],
-                search_options
+                search_options, extra_query
                 )
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
