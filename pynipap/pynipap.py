@@ -371,7 +371,6 @@ class VRF(Pynipap):
     def smart_search(cls, query_string, search_options={}, extra_query = None):
         """ Perform a smart VRF search.
         """
-        print "bajs!", extra_query
 
         xmlrpc = XMLRPCConnection()
         try:

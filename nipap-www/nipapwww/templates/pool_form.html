@@ -88,7 +88,7 @@
 				</dt>
 				<dd>
 					<span class="tooltip" title="The implied VRF is the VRF to which prefixes that are members of this pool belong.">
-						{% if c.pool is defined %}{{ c.pool.vrf.rt or '' }} - {{ c.pool.vrf.name or '' }}{% endif %}
+						{% if c.pool is defined %}{% if c.pool.vrf.rt != None %}{{ c.pool.vrf.rt or '' }} - {% endif %}{{ c.pool.vrf.name or '' }}{% endif %}
 					</span>
 				</dd>
 			</dl>

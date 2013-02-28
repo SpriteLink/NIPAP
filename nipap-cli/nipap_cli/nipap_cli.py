@@ -226,14 +226,16 @@ def list_pool(arg, opts):
                 desc = p.description
 
             vrf_rt = None
+            vrf_name = None
             if p.vrf:
                 vrf_rt = p.vrf.rt
+                vrf_name = p.vrf.name
 
             print "%-19s %-39s %-13s %-2s / %-3s  %s" % (
                 p.name, desc, p.default_type,
-                str(p.ipv4_default_prefix_length),
-                str(p.ipv6_default_prefix_length),
-                vrf_rt
+                str(p.ipv4_default_prefix_length or '-'),
+                str(p.ipv6_default_prefix_length or '-'),
+                vrf_rt or vrf_name
             )
         if len(res['result']) < limit:
             break
@@ -528,8 +530,11 @@ def view_pool(arg, opts):
 
     p = res[0]
 
-    vrf_rt = p.vrf.rt
-    vrf_name = p.vrf.name
+    vrf_rt = None
+    vrf_name = None
+    if p.vrf:
+        vrf_rt = p.vrf.rt
+        vrf_name = p.vrf.name
 
     print  "-- Pool "
     print "  %-22s : %d" % ("ID", p.id)
