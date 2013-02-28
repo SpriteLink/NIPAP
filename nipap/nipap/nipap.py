@@ -2779,7 +2779,7 @@ class Nipap:
             ELSE -2
         END AS children
     FROM (
-        SELECT DISTINCT ON(vrf.rt, p1.prefix) p1.id,
+        SELECT DISTINCT ON(vrf_rt_order(vrf.rt), p1.prefix) p1.id,
             p1.prefix,
             p1.display_prefix,
             p1.description,
@@ -2832,7 +2832,7 @@ class Nipap:
                 LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
                 )
                 """ + where_parent_prefix + """
-            ORDER BY vrf.rt, p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf_rt_order(vrf_rt) NULLS FIRST, prefix"
+            ORDER BY vrf_rt_order(vrf.rt) NULLS FIRST, p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf_rt_order(vrf_rt) NULLS FIRST, prefix"
 
         self._execute(sql, opt)
 
