@@ -1,3 +1,25 @@
+nipap (0.16.0-1) stable; urgency=low
+
+  * Fix: from-prefix was completely broken in 0.15.0 and is now working again
+  * Fix: pretty bad backend bug that didn't correctly order results rendering
+    broken output
+  * Fix: VRF removal bug - now possible to remove VRFs
+  * The prefix search now supports Unicode characters though it requires
+    Python 2.7.3
+  * The 'default VRF' (RT = None), typically the Internet, is now visible and
+    not hidden as before
+  * CLI automatically sets type (based on pool default type) and prefix
+    length for new allocations from pools
+  * VRF selector improved
+  * man pages for nipapd and the CLI
+  * Allow growing a prefix, ie changing prefix-length to a shorter (bigger)
+    one
+  * New jQuery (1.9.1) and jQuery UI (1.10.0) which solves some UI bugs
+  * Various small CLI and WWW UI bug fixes
+  * NIPAP is now checked by Travis-CI - quality++
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 28 Feb 2013 22:46:16 +0100
+
 nipap (0.15.0-1) stable; urgency=low
 
   * Improve bfcache support
