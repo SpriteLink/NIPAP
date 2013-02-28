@@ -692,8 +692,12 @@ class NipapJSONEncoder(json.JSONEncoder):
 
         elif isinstance(obj, Pool):
 
-            vrf_id = obj.vrf.id
-            vrf_rt = obj.vrf.rt
+            if obj.vrf is None:
+                vrf_id = None
+                vrf_rt = None
+            else:
+                vrf_id = obj.vrf.id
+                vrf_rt = obj.vrf.rt
 
             return {
                 'id': obj.id,
