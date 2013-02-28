@@ -161,6 +161,7 @@
     Classes
     -------
 """
+import exceptions
 import logging
 import psycopg2
 import psycopg2.extras
@@ -270,6 +271,8 @@ class Nipap:
             socket.inet_aton(ip)
         except socket.error:
             return False
+        except exceptions.UnicodeEncodeError:
+            return False
         return True
 
 
@@ -280,7 +283,9 @@ class Nipap:
 
         try:
             socket.inet_pton(socket.AF_INET6, ip)
-        except socket.error:
+        except socket.error, UnicodeEncodeError:
+            return False
+        except exceptions.UnicodeEncodeError:
             return False
         return True
 
@@ -1045,11 +1050,10 @@ class Nipap:
             raise NipapValueError("'query_string' must not be None")
 
         # find query parts
-        # XXX: notice the ugly workarounds for shlex not supporting Unicode
         query_str_parts = []
         try:
-            for part in shlex.split(query_str.encode('utf-8')):
-                query_str_parts.append({ 'string': part.decode('utf-8') })
+            for part in shlex.split(query_str):
+                query_str_parts.append({ 'string': part })
         except:
             return {
                 'interpretation': [
