@@ -1052,7 +1052,7 @@ class Nipap:
         # find query parts
         query_str_parts = []
         try:
-            for part in shlex.split():
+            for part in shlex.split(query_str):
                 query_str_parts.append({ 'string': part })
         except:
             return {
