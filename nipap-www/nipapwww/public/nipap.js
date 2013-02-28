@@ -55,11 +55,9 @@ var current_query = {
 	'parents_depth': 0,
 	'children_depth': 0
 };
-var current_vrf_query = {
-	'query_string': ''
-};
 var query_id = 0;
-var newest_query = 0;
+var newest_prefix_query = 0;
+var newest_vrf_query = 0;
 
 // place to store current VRF selector callback function
 var curVRFCallback = null;
@@ -787,34 +785,14 @@ function showVRFSelectorMenu(callback, pl_ref) {
 	$('input[name="vrf_search_string"]').keyup(vrfSearchKey);
 
 	menu.append('<div class="selector_result"></div>');
-	clearVRFSelectorSearch();
 
 	// Set focus to text box, after all other processing is done
 	setTimeout(function() { $('input[name="vrf_search_string"]').focus(); }, 0);
 
 	menu.slideDown('fast');
 
-	//
-	// send a search query for the default VRF
-
-	// Keep track of search timing
-	stats.vrf_query_sent = new Date().getTime();
-
-	var search_q = {
-		'query_id': query_id,
-		'query_string': $('input[name="vrf_search_string"]').val(),
-		'max_result': 10,
-		'offset': 0,
-		'vrf_id': 0
-	}
-
-	current_vrf_query = search_q;
-	query_id += 1;
-	offset = 0;
-
-	$('.selector_result').empty();
-	showLoadingIndicator($('.selector_result'));
-	$.getJSON("/xhr/smart_search_vrf", current_vrf_query, receiveVRFSelector);
+	// and do a search to display the default VRF at least
+	performVRFSelectorSearch();
 
 }
 
@@ -835,12 +813,6 @@ function vrfSearchKey() {
  */
 function performVRFSelectorSearch() {
 
-	// Skip search if query string empty
-	if (jQuery.trim($('input[name="vrf_search_string"]').val()).length < 1) {
-		clearVRFSelectorSearch();
-		return true;
-	}
-
 	// Keep track of search timing
 	stats.vrf_query_sent = new Date().getTime();
 
@@ -851,38 +823,18 @@ function performVRFSelectorSearch() {
 		'offset': 0
 	}
 
-	// Skip search if it's equal to the currently displayed search
-	if (search_q.query_string == current_vrf_query.query_string) {
-		return true;
+	// Search for vrf id 0 on empty search as to display the default VRF if no
+	// other search is performed
+	if (jQuery.trim($('input[name="vrf_search_string"]').val()).length < 1) {
+		search_q['vrf_id'] = 0;
 	}
 
-	current_vrf_query = search_q;
 	query_id += 1;
 	offset = 0;
 
 	$('.selector_result').empty();
 	showLoadingIndicator($('.selector_result'));
-	$.getJSON("/xhr/smart_search_vrf", current_vrf_query, receiveVRFSelector);
-
-}
-
-/*
- * Clear VRF selector search
- */
-function clearVRFSelectorSearch() {
-
-	// empty search box and selected vrfs
-	$('input[name="vrf_search_string"]').val('');
-	$('.selector_result').empty();
-
-	// add selected VRFs to selectedbar
-	$.each(selected_vrfs, function (k, v) {
-
-		if (v.id != null) {
-			addVRFToSelectList(v, $('.selector_result'));
-		}
-
-	});
+	$.getJSON("/xhr/smart_search_vrf", search_q, receiveVRFSelector);
 
 }
 
@@ -891,12 +843,12 @@ function clearVRFSelectorSearch() {
  */
 function addVRFToSelectList(vrf, elem) {
 
-	elem.append('<a href="#" style="max-width: 400px;" id="vrf_filter_entry_' + String(vrf.id) + '" ' +
+	elem.append('<a href="#" style="width: 100%;" id="vrf_filter_entry_' + String(vrf.id) + '" ' +
 		'data-vrf_id="' + String(vrf.id) + '" data-vrf_rt="' + vrf.rt + '">' +
 			'<div><div class="selector_tick">&nbsp;</div>' +
-			( vrf.id == null ? 'No VRF' : (vrf.rt + '&nbsp;-&nbsp;' + vrf.name) ) + '</div>' +
+			( vrf.id == 0 ? vrf.name : (vrf.rt + '&nbsp;-&nbsp;' + vrf.name) ) + '</div>' +
 			'<div class="selector_entry_description" style="padding-top: 5px; padding-left: 15px; font-weight: normal; font-size: 9pt;">' +
-			( vrf.id == null || vrf.description == null ? '' : vrf.description ) + '</div></a>');
+			( vrf.description == null ? '' : vrf.description ) + '</div></a>');
 
 	// display tick
 	if (selected_vrfs.hasOwnProperty(String(vrf.id))) {
@@ -921,10 +873,10 @@ function receiveVRFSelector(result) {
 		showDialogNotice("Error", 'No query_id');
 		return;
 	}
-	if (parseInt(result.search_options.query_id) < parseInt(newest_query)) {
+	if (parseInt(result.search_options.query_id) < parseInt(newest_vrf_query)) {
 		return;
 	}
-	newest_query = parseInt(result.search_options.query_id);
+	newest_vrf_query = parseInt(result.search_options.query_id);
 
 	// Error?
 	if ('error' in result) {
@@ -994,11 +946,6 @@ function clickFilterVRFSelector(evt) {
 
 	// Find VRF object - it should be in vrf_list
 	var vrf = vrf_list[vrf_id];
-	if (vrf_id == 'null') {
-		var disp_vrf = 'No VRF';
-	} else {
-		var disp_vrf = vrf.rt;
-	}
 
 	if (!selected_vrfs.hasOwnProperty(String(vrf.id))) {
 
@@ -1047,13 +994,13 @@ function drawVRFHeader() {
 
 		// Do we need to replace the first displayed VRF?
 		if (n == 0 && !first_vrf_active) {
-			$("#first_vrf_filter_entry").html(v.rt == null ? 'No VRF' : v.rt);
+			$("#first_vrf_filter_entry").html(v.rt == null ? v.name : v.rt);
 			$("#first_vrf_filter_entry").attr('data-vrf', String(v.rt));
 		}
 
 		// Do we need to replace the second displayed VRF?
 		if (n == 1 && !second_vrf_active) {
-			$("#second_vrf_filter_entry").html(' and ' + (v.rt == null ? 'No VRF' : v.rt));
+			$("#second_vrf_filter_entry").html(' and ' + (v.rt == null ? v.name : v.rt));
 			$("#second_vrf_filter_entry").attr('data-vrf', String(v.rt));
 		}
 
@@ -1125,10 +1072,10 @@ function receivePrefixList(search_result) {
 
 	// If we receive a result older than the one we display, ignore the
 	// received result.
-	if (parseInt(search_result.search_options.query_id) < parseInt(newest_query)) {
+	if (parseInt(search_result.search_options.query_id) < parseInt(newest_prefix_query)) {
 		return;
 	}
-	newest_query = parseInt(search_result.search_options.query_id);
+	newest_prefix_query = parseInt(search_result.search_options.query_id);
 
 	/*
 	 * Interpretation list
@@ -1954,11 +1901,11 @@ function selectPool(id) {
 
 	// Set default type
 	if (cur_opts.pool.default_type == 'reservation') {
-		$('#radio-prefix-type-reservation').attr('checked', true);
+		$('#radio-prefix-type-reservation').prop('checked', true);
 	} else if (cur_opts.pool.default_type == 'assignment') {
-		$('#radio-prefix-type-assignment').attr('checked', true);
+		$('#radio-prefix-type-assignment').prop('checked', true);
 	} else if (cur_opts.pool.default_type == 'host') {
-		$('#radio-prefix-type-host').attr('checked', true);
+		$('#radio-prefix-type-host').prop('checked', true);
 	}
 
     // Set prefix VRF to pool's implied VRF (if available)

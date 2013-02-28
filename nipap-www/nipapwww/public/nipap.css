@@ -687,6 +687,7 @@ tbody.listing > tr:hover {
 
 .selector_filterbar {
     background-color: #F8F8F8;
+    width: 400px;
     padding: 10px;
     padding-right: 15px;
     border-top: 1px solid #DDD;
