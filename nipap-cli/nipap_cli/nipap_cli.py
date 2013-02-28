@@ -214,7 +214,7 @@ def list_pool(arg, opts):
             print "No matching pools found"
             return
         elif offset == 0:
-            print "%-19s %-39s %-14s %-11s %s" % (
+            print "%-19s %-39s %-13s  %-8s  %s" % (
                 "Name", "Description", "Default type", "4 / 6", "Implied VRF"
             )
             print "-----------------------------------------------------------------------------------"
@@ -229,7 +229,7 @@ def list_pool(arg, opts):
             if p.vrf:
                 vrf_rt = p.vrf.rt
 
-            print "%-19s %-39s %-14s %-4s / %-4s %s" % (
+            print "%-19s %-39s %-13s %-2s / %-3s  %s" % (
                 p.name, desc, p.default_type,
                 str(p.ipv4_default_prefix_length),
                 str(p.ipv6_default_prefix_length),
