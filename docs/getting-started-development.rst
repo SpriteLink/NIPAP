@@ -63,7 +63,7 @@ virtualenv.
 
 Reach Ballmer peak and code moar
 ----------------------------------
-As has been `empirically proven http://xkcd.com/323/`, a moderate BAC will
+As has been `empirically proven <http://xkcd.com/323/>`_, a moderate BAC will
 vastly improve programming ability. The developers of NIPAP recommend Belgian
 Trappiste or a nice stout or an IPA or a whisky or a light lager or really,
 anything you like. It's important you like it. Now code moar!
