@@ -3,7 +3,8 @@ NIPAP
 NIPAP is the Neat IP Address Planner - a system built for managing large
 amounts of IP addresses.
 
-Travis-CI build status: 
+Travis-CI build status:
+
 .. image:: https://travis-ci.org/SpriteLink/NIPAP.png
         :target: https://travis-ci.org/SpriteLink/NIPAP
 
