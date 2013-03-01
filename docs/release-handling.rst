@@ -88,4 +88,7 @@ NEWS file into the Debian changelog (see previous chapten "NEWS / Changelog"
 for more information). Make sure the formatting aligns and save the file.
 
 After having built packages for the new version, tag the git repo with the new
-version number; git tag vX.Y.Z
+version number;
+  git tag vX.Y.Z
+And for pushing to git:
+  git push origin refs/tags/vX.Y.Z
