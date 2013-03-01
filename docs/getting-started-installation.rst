@@ -1,5 +1,5 @@
-Getting started - sysadmin version
-----------------------------------
+Getting started for sysadmins
+-----------------------------
 This will walk you through the setup process to get NIPAP running. With no
 prior experience it should take about 15 minutes to get NIPAP running,
 including installing all prerequisites.
