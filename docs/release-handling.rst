@@ -86,3 +86,6 @@ increment the -x number.
 When dch launches an editor for editing the changelog. Copy the content of the
 NEWS file into the Debian changelog (see previous chapten "NEWS / Changelog"
 for more information). Make sure the formatting aligns and save the file.
+
+After having built packages for the new version, tag the git repo with the new
+version number; git tag vX.Y.Z
