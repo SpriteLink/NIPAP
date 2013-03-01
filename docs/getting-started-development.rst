@@ -60,3 +60,13 @@ And go back and run paster::
 If you just run paster you will not utilize the python installed in the
 virtualenv and will thus not have access to the pynipap installed in the
 virtualenv.
+
+Reach Ballmer peak and code moar
+----------------------------------
+As has been `empirically proven http://xkcd.com/323/`, a moderate BAC will
+vastly improve programming ability. The developers of NIPAP recommend Belgian
+Trappiste or a nice stout or an IPA or a whisky or a light lager or really,
+anything you like. It's important you like it. Now code moar!
+
+.. image:: mustcodemoar.jpg
+        :alt: Must code MOAR!
