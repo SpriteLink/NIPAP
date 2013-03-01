@@ -399,6 +399,12 @@ def add_prefix(arg, opts):
         vrf_id = 0
         if p.vrf:
             vrf_id = p.vrf.id
+
+        if 'from-prefix' in args:
+            parent_prefix = args['from-prefix'][0]
+        else:
+            parent_prefix = opts.get('prefix').split('/')[0]
+
         # prefix must be a CIDR network, ie no bits set in host part, so we
         # remove the prefix length part of the prefix as then the backend will
         # assume all bits being set
@@ -406,7 +412,7 @@ def add_prefix(arg, opts):
                 'val1': {
                     'val1'      : 'prefix',
                     'operator'  : 'contains',
-                    'val2'      : opts.get('prefix').split('/')[0]
+                    'val2'      : parent_prefix
                     },
                 'operator': 'and',
                 'val2': {
@@ -425,7 +431,11 @@ def add_prefix(arg, opts):
         else:
             # last prefix in list will be the parent of the new prefix
             parent = res['result'][-1]
+
+            # if the parent is an assignment, we can assume the new prefix to be
+            # a host and act accordingly
             if parent.type == 'assignment':
+                # automatically set type
                 if p.type is None:
                     print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically setting type 'host' for new prefix."
                 elif p.type == 'host':
@@ -434,11 +444,20 @@ def add_prefix(arg, opts):
                     print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix." % p.type
                 p.type = 'host'
 
-                # fiddle prefix length to all bits set
-                if parent.family == 4:
-                    p.prefix = p.prefix.split('/')[0] + '/32'
-                else:
-                    p.prefix = p.prefix.split('/')[0] + '/128'
+                # if it's a manually specified prefix
+                if 'prefix' in opts:
+                    # fiddle prefix length to all bits set
+                    if parent.family == 4:
+                        p.prefix = p.prefix.split('/')[0] + '/32'
+                    else:
+                        p.prefix = p.prefix.split('/')[0] + '/128'
+
+                # for from-prefix, we set prefix_length to host length
+                elif 'from-prefix' in opts:
+                    if parent.family == 4:
+                        args['prefix_length'] = 32
+                    else:
+                        args['prefix_length'] = 128
 
     try:
         p.save(args)
