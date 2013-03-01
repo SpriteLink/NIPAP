@@ -34,4 +34,20 @@ no more difficult than running:
     cd nipap-www
     paster serve --reload development.ini
 
-It does require that you have the required dependencies installed and reachable for
+It does require that you have the required dependencies installed and reachable
+for paster to work properly. The easiest way of accomplishing this, especially
+if you intend on doing development in pynipap (the python client library), is
+to use virtualenv. Set up a new virtualenv by doing:
+  virtualenv --system-site-packages venv
+Activate it
+  . venv/bin/activate
+Install pynipap in your virtualenv
+  cd ../pynipap
+  python setup.py install
+And go back and run paster
+  cd ../nipap-www/
+  python `which paster` serve --reload development.ini
+
+If you just run paster you will not utilize the python installed in the
+virtualenv and will thus not have access to the pynipap installed in the
+virtualenv.
