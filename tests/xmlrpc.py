@@ -459,6 +459,42 @@ class NipapXmlTest(unittest.TestCase):
         self.assertEqual(s.list_prefix({ 'auth': ad }), expected_list)
 
 
+
+    def test_prefix_add_to_pool(self):
+        """ Test adding prefixes to a pool
+        """
+        # Add a pool
+        pool_attr = {
+            'name'          : 'pool_1',
+            'description'   : 'Test pool #1',
+            'default_type'  : 'assignment',
+            'ipv4_default_prefix_length' : 24
+        }
+        pool_id = s.add_pool({ 'auth': ad, 'attr': pool_attr })
+
+        # Add prefix to pool
+        prefix_attr = {
+                'prefix': '1.3.0.0/16',
+                'type': 'reservation',
+                'description': 'FOO',
+                'pool_id': pool_id
+            }
+        s.add_prefix({ 'auth': ad, 'attr': prefix_attr })
+
+        # Add prefix to pool
+        prefix_attr = {
+                'prefix': '1.4.0.0/16',
+                'type': 'reservation',
+                'description': 'FOO',
+                'pool_name': 'pool_1'
+            }
+        s.add_prefix({ 'auth': ad, 'attr': prefix_attr })
+
+        res = s.list_pool({ 'auth': ad, 'pool': { 'id': pool_id } })
+        self.assertEquals(res[0]['prefixes'], ['1.3.0.0/16', '1.4.0.0/16'])
+
+
+
     def test_prefix_from_pool(self):
         """ Add a prefix from a pool
         """
