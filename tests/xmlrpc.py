@@ -377,6 +377,88 @@ class NipapXmlTest(unittest.TestCase):
 
 
 
+    def test_prefix_node(self):
+        """ Test node constraints
+
+            Setting the node value is not allowed for all prefix types. Make
+            sure the constraints are working correctly.
+        """
+        expected = {
+                'alarm_priority': None,
+                'authoritative_source': 'nipap',
+                'comment': None,
+                'country': None,
+                'type': 'assignment',
+                'description': 'test prefix',
+                'display_prefix': '1.3.2.0/24',
+                'external_key': None,
+                'family': 4,
+                'indent': 0,
+                'monitor': None,
+                'node': None,
+                'order_id': None,
+                'pool_name': None,
+                'pool_id': None,
+                'vrf_rt': None,
+                'vrf_id': 0,
+                'vrf_name': 'default'
+            }
+        expected_list = []
+
+        attr = {}
+        attr['prefix'] = '1.3.2.0/24'
+        attr['description'] = 'test prefix'
+        attr['type'] = 'assignment'
+        # add an assignment which we need later on
+        res = s.add_prefix({ 'auth': ad, 'attr': attr })
+        exp1 = expected.copy()
+        exp1.update(attr)
+        exp1['id'] = res
+
+        attr['prefix'] = '1.3.3.0/24'
+
+        # set node
+        attr['node'] = 'test'
+
+        # node value is not allowed at all for prefixes of type reservation
+        attr['type'] = 'reservation'
+        with self.assertRaisesRegexp(xmlrpclib.Fault, "Not allowed to set 'node' value for prefixes of type 'reservation'."):
+            s.add_prefix({ 'auth': ad, 'attr': attr })
+
+        # node value is only allowed for assignments when prefix-length is max
+        # (/24 for IPv4 or /128 for IPv6).
+        attr['type'] = 'assignment'
+        with self.assertRaisesRegexp(xmlrpclib.Fault, "Not allowed to set 'node' value for prefixes of type 'assignment' which do not have all bits set in netmask."):
+            s.add_prefix({ 'auth': ad, 'attr': attr })
+
+        # correct prefix length
+        attr['prefix'] = '1.3.3.0/32'
+        res = s.add_prefix({ 'auth': ad, 'attr': attr })
+
+        exp2 = expected.copy()
+        exp2.update(attr)
+        exp2['id'] = res
+        exp2['display_prefix'] = '1.3.3.0'
+
+        # let's add a host too
+        attr['type'] = 'host'
+        attr['prefix'] = '1.3.2.1/32'
+        res = s.add_prefix({ 'auth': ad, 'attr': attr })
+
+        exp3 = expected.copy()
+        exp3.update(attr)
+        exp3['id'] = res
+        exp3['display_prefix'] = '1.3.2.1/24'
+        exp3['indent'] = 1
+
+        # note the non-intuitive order
+        expected_list.append(exp1)
+        expected_list.append(exp3)
+        expected_list.append(exp2)
+
+        self.assertEqual(s.list_prefix({ 'auth': ad }), expected_list)
+
+
     def test_prefix_from_pool(self):
         """ Add a prefix from a pool
         """

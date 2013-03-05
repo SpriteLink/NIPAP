@@ -371,6 +371,24 @@ BEGIN
 				RAISE EXCEPTION '1200:Change not allowed. All member prefixes of a pool must be in a the same VRF.';
 			END IF;
 		END IF;
+
+		-- Only allow setting node on prefixes of type host or typ assignment
+		-- and when the prefix length is the maximum prefix length for the
+		-- address family. The case for assignment is when a /32 is used as a
+		-- loopback address or similar in which case it is registered as an
+		-- assignment and should be able to have a node specified.
+		IF NEW.node IS NOT NULL THEN
+			IF NEW.type = 'host' THEN
+				-- all good
+			ELSIF NEW.type = 'reservation' THEN
+				RAISE EXCEPTION '1200:Not allowed to set ''node'' value for prefixes of type ''reservation''.';
+			ELSE
+				-- not a /32 or /128, so do not allow
+				IF masklen(NEW.prefix) != i_max_pref_len THEN
+					RAISE EXCEPTION '1200:Not allowed to set ''node'' value for prefixes of type ''assignment'' which do not have all bits set in netmask.';
+				END IF;
+			END IF;
+		END IF;
 	END IF;
 
 	-- only allow specific cases for changing the type of prefix
