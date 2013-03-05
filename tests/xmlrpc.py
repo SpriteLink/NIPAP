@@ -498,7 +498,7 @@ class NipapXmlTest(unittest.TestCase):
             }
         p_id = s.add_prefix({ 'auth': ad, 'attr': prefix_attr })
         # modify prefix so that it's part of pool
-#        s.edit_prefix({ 'auth': ad, 'prefix': { 'id': p_id }, 'attr': { 'pool_id': pool_id } })
+        s.edit_prefix({ 'auth': ad, 'prefix': { 'id': p_id }, 'attr': { 'pool_id': pool_id } })
 
         # add a prefix
         prefix_attr = {
@@ -508,12 +508,11 @@ class NipapXmlTest(unittest.TestCase):
             }
         p_id = s.add_prefix({ 'auth': ad, 'attr': prefix_attr })
         # modify prefix so that it's part of pool
-#        s.edit_prefix({ 'auth': ad, 'prefix': { 'id': p_id }, 'attr': { 'pool_name': 'pool_1' } })
+        s.edit_prefix({ 'auth': ad, 'prefix': { 'id': p_id }, 'attr': { 'pool_name': 'pool_1' } })
 
         res = s.list_pool({ 'auth': ad, 'pool': { 'id': pool_id } })
-        self.assertEquals(res[0]['prefixes'], ['1.3.0.0/16', '1.4.0.0/16'])
-#        self.assertEquals(res[0]['prefixes'], ['1.3.0.0/16', '1.4.0.0/16',
-#        '1.5.0.0/16', '1.6.0.0/16'])
+        self.assertEquals(res[0]['prefixes'], ['1.3.0.0/16', '1.4.0.0/16',
+        '1.5.0.0/16', '1.6.0.0/16'])
 
 
 
