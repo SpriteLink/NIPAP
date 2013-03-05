@@ -1959,7 +1959,11 @@ class Nipap:
                         'name': None
                     }
                 else:
+                    # resolve pool name to pool id
                     pool = self._get_pool(auth, { 'name': attr['pool_name'] })
+
+                # and delete the pool_name attr
+                del(attr['pool_name'])
 
             attr['pool_id'] = pool['id']
 
