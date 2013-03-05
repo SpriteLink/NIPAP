@@ -884,9 +884,25 @@ function receiveVRFSelector(result) {
 		return;
 	}
 
-	// place VRFs in VRF container
+	// empty VRF container
 	var vrf_cont = $('.selector_result');
 	vrf_cont.empty();
+
+	// If it's a search for the default VRF, ie empty search, then display the
+	// currently selected VRFs. For other search, we don't show the currently
+	// selected to avoid cluttering the result list.
+	if (result.interpretation.length == 1 && result.interpretation[0].string == '') {
+		// add selected VRFs to the selectedbar
+		$.each(selected_vrfs, function (k, v) {
+			// except for the default VRF, since that will already be included
+			// in the search result
+			if (k != 0) {
+				addVRFToSelectList(v, $('.selector_result'));
+			}
+		});
+	}
+
+	// place search result in VRF container
 	if (result.result.length > 0) {
 		for (i = 0; i < result.result.length; i++) {
 
