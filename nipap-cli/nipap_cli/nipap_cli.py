@@ -876,6 +876,8 @@ def modify_prefix(arg, opts):
 
     p = res[0]
 
+    if 'prefix' in opts:
+        p.prefix = opts['prefix']
     if 'description' in opts:
         p.description = opts['description']
     if 'comment' in opts:
@@ -1295,6 +1297,14 @@ cmds = {
                                 },
                                 'order': {
                                     'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    }
+                                },
+                                'prefix': {
+                                    'type': 'option',
+                                    'content_type': unicode,
                                     'argument': {
                                         'type': 'value',
                                         'content_type': unicode,
