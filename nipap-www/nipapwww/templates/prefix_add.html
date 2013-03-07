@@ -77,6 +77,10 @@ $(function () {
     $('input[name="search_opt_child"]').change(performPrefixSearch);
     $("#query_string").keyup(prefixSearchKey);
 
+	// enable/disable node FQDN input if needed
+	enableNodeInput();
+	$('input[name="prefix_prefix"]').keyup(enableNodeInput);
+
 });
 </script>
 {% endblock %}
