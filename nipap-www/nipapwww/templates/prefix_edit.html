@@ -20,31 +20,6 @@
 
         }
 
-
-        /*
-         * Is run to determine if the node FQDN field should be enabled or not.
-         */
-        function enableNodeFQDNEdit() {
-
-            // Disable for reservations
-            if ('{{ c.prefix.type }}' == 'reservation') {
-                $('input[name="prefix_node"]').attr('disabled', true);
-
-            // disable for assignments not not of max prefix length
-            } else if ('{{ c.prefix.type }}' == 'assignment') {
-
-                if (hasMaxPreflen({ 'prefix': $('input[name="prefix_prefix"]').val(), 'family': {{ c.prefix.family }} })) {
-                    $('input[name="prefix_node"]').removeAttr('disabled');
-                } else {
-                    $('input[name="prefix_node"]').attr('disabled', true);
-                }
-
-            } else {
-                $('input[name="prefix_node"]').removeAttr('disabled');
-            }
-
-        }
-
         function performPrefixEdit() {
 
            var data = {
@@ -103,9 +78,9 @@
 
             });
 
-            // disable node FQDN input if needed
-            enableNodeFQDNEdit();
-            $('input[name="prefix_prefix"]').keyup(enableNodeFQDNEdit);
+            // enable/disable node FQDN input if needed
+            enableNodeInput();
+            $('input[name="prefix_prefix"]').keyup(enableNodeInput);
 
             $('input[name="prefix_monitor"]').change(prefixMonitorToggled);
             prefixMonitorToggled();
@@ -195,7 +170,7 @@ Prefix administration &mdash;&gt; edit prefix
                         Node&nbsp;FQDN
                     </dt>
                     <dd>
-                        <input type="text" name="prefix_node" value="{{ c.prefix.node or '' }}" class="tooltip" title="FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'"{% if c.prefix.type == 'reservation' %} disabled{% endif %}>
+                        <input type="text" name="prefix_node" value="{{ c.prefix.node or '' }}" class="tooltip" title="FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'" disabled>
                     </dd>
                 </dl>
             </div>

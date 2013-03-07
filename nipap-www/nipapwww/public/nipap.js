@@ -1678,7 +1678,7 @@ function showAllocContainer(e) {
 	// Re-evaluate node FQDN field when prefix length is changed. The same
 	// thing for the prefix_length_prefix field is done in the selectPrefix
 	// function. From some reason it can not be done here...
-	$('input[name="prefix_length_pool"]').keyup(enableNodeFQDN);
+	$('input[name="prefix_length_pool"]').keyup(enableNodeInput);
 
 }
 
@@ -1706,7 +1706,7 @@ function prefixTypeToggled(e) {
 
 	// enables/disables monitor and node FQDN options
 	enableMonitor();
-	enableNodeFQDN();
+	enableNodeInput();
 
 }
 
@@ -1728,15 +1728,19 @@ function enableMonitor() {
 
 
 /*
- * Function which determines whether the Node FQDN input element should
- * be enabled or not.
+ * Function which determines whether the Node input element should be enabled
+ * or not. It is only available when the prefix in question is configured on a
+ * node, ie the prefix is a /32 or /128.
+ *
+ * It's called from the prefix add and prefix edit page and as these pages look
+ * somewhat different we need to account for some stuff.
  */
-function enableNodeFQDN() {
+function enableNodeInput() {
 
 	/*
-	 * Generally, the node fqdn option should only be available for host
-	 * prefixes. However, there is one exception: loopbacks, which are defined
-	 * as assignments with max prefix length.
+	 * Generally, the node option should only be available for host prefixes.
+	 * However, there is one exception: loopbacks, which are defined as
+	 * assignments with max prefix length.
 	 */
 
 	 // See if prefix type is set
@@ -1756,8 +1760,7 @@ function enableNodeFQDN() {
 		/*
 		 * Assignment - more tricky case!
 		 *
-		 * Enable if prefix length is max prefix length - not very easy to
-		 * find!
+		 * Enable if prefix length is max prefix length.
 		 *
 		 * If we add a prefix from a pool, we have the length in an input
 		 * field. Also the family can be fetched from an input field.
@@ -1766,9 +1769,18 @@ function enableNodeFQDN() {
 		 * length from the prefix length field and the family from the selected
 		 * prefix
 		 *
-		 * If we add manually, we can extract the prefix from the prefix the
-		 * user has typed in. But the family? Look for : in the prefix? :S
+		 * If we add manually, we use a super-regex to determine if it is a
+		 * host prefix or not!
 		 */
+
+		/* A bit of a hack as this function is used from multiple pages. When
+		 * adding a new prefix the alloc_method is already set but on the
+		 * prefix edit page, we don't have a alloc_method and so we set it to
+		 * 'manual' to kind of emulate the same behaviour.
+		 */
+		if (typeof(alloc_method) === undefined) {
+			alloc_method = 'manual';
+		}
 
 		if (alloc_method == 'from-pool') {
 
@@ -1796,20 +1808,20 @@ function enableNodeFQDN() {
 
 		} else if (alloc_method == 'manual') {
 
-			// tricky case - enable
-			$('input[name="prefix_node"]').removeAttr('disabled');
-
-		} else {
-
-			// not set - enable
-			$('input[name="prefix_node"]').removeAttr('disabled');
+			// check if what has been inputted in the prefix input is a host
+			// prefix or not - see http://jsfiddle.net/AJEzQ/
+			if (/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/32)?$|^((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|:)))(\/128)?$/.test($('input[name="prefix_prefix"]').val())) {
+				$('input[name="prefix_node"]').removeAttr('disabled');
+			} else {
+				$('input[name="prefix_node"]').attr('disabled', true);
+			}
 
 		}
 
 	 } else {
 
-		// not set - enable
-		$('input[name="prefix_node"]').removeAttr('disabled');
+		// not set - disable
+		$('input[name="prefix_node"]').attr('disabled', true);
 
 	 }
 
@@ -1851,7 +1863,7 @@ function changeFamily() {
 
 	}
 
-	enableNodeFQDN();
+	enableNodeInput();
 
 	// TODO: set prefix length in prefix input
 
@@ -1955,6 +1967,9 @@ function selectPool(id) {
 	changeFamily();
 	$('#length_info_row').css('display', 'block');
 	$('#length_edit_row').css('display', 'inline-block');
+
+	// enable/disable the Node input
+	enableNodeInput();
 
 	$("html,body").animate({ scrollTop: $("#length_info_row").offset().top - 50}, 700);
 	$("#length_info_row").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
@@ -2125,7 +2140,7 @@ function selectPrefix(prefix_id) {
 	// Enable keyup action on prefix length input field.
 	// From some reason needs to be done here and not when the page is loaded,
 	// where it is done for the prefix length field for pools.
-	$('input[name="prefix_length_prefix"]').keyup(enableNodeFQDN);
+	$('input[name="prefix_length_prefix"]').keyup(enableNodeInput);
 	enableMonitor();
 
 }

@@ -191,6 +191,9 @@
         $('#radio-prefix-type-host').remove();
         $('#label-prefix-type-host').remove();
 
+		// enable/disable the Node input
+		enableNodeInput();
+
        // Capture submit form event
        $('form[name="pool_form"]').submit(function(e) {
            var data = {
