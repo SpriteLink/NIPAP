@@ -11,6 +11,13 @@
     var indent_head = Array();
     prefix_link_type = 'add_too_pool';
     var pool_id = {{ c.pool.id }};
+    {% if c.pool.vrf is none %}
+    var implied_vrf_id = null;
+    var implied_vrf_rt = null;
+    {% else %}
+    var implied_vrf_id = {{ c.pool.vrf.id }};
+    var implied_vrf_rt = '{{ c.pool.vrf.rt }}';
+    {% endif %}
     var prefix = null;
 
     /*
@@ -178,6 +185,13 @@
             $("input[name='prefix_comment']").slideDown();
             $("#add_comment").hide();
         });
+
+        // capture click event in VRF input field, display VRF selector
+        $('input[name="prefix_vrf_btn"]').click(
+            function(evt) {
+                showVRFSelectorMenu(clickPrefixVRFSelector, $('input[name="prefix_vrf_btn"]'));
+            }
+        );
 
         // catch submit actions
         $('#prefix_data_form').submit(prefixFormSubmit);

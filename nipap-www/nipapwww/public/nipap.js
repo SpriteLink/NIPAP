@@ -1657,14 +1657,34 @@ function showAllocContainer(e) {
 		$('#prefix_length_prefix_container').hide();
 		$("html,body").animate({ scrollTop: $("#prefix_data_container").offset().top - 50}, 700);
 
-        // Reset VRF display and enable VRF selector
-        $("#prefix_vrf_display").html('');
-        $("#prefix_vrf_display").hide();
-        $("#prefix_vrf_display").attr('title', '');
-        $("input[name = prefix_vrf_btn]").show();
+		// VRF handling of manually added prefixes differ between add prefix
+		// and add prefix too pool-pages. When adding a prefix to a pool, even
+		// manually added prefixes can have the VRF set on beforehand. Check
+		// ugly global variable to see what we're currently doing.
+		if (prefix_link_type = 'add_too_pool') {
 
-		$('#default_prefix_type').hide();
-		$('#prefix_type_selection').show();
+			// Do we have an implied VRF set?
+			if (implied_vrf_id == null) {
+
+				resetPrefixVRFDisplay();
+
+			} else {
+
+				// Set prefix VRF to pool's implied VRF (if available)
+				$("input[name = prefix_vrf]").val(implied_vrf_id);
+				$("#prefix_vrf_display").html(implied_vrf_rt);
+				$("input[name = prefix_vrf_btn]").hide();
+				$("#prefix_vrf_display").attr('title', 'VRF ' + implied_vrf_rt + ' taken from pool\'s implied VRF.');
+				$("#prefix_vrf_display").tipTip();
+				$("#prefix_vrf_display").show();
+
+			}
+
+		} else {
+
+			resetPrefixVRFDisplay();
+
+		}
 
 	}
 
@@ -1682,6 +1702,21 @@ function showAllocContainer(e) {
 
 }
 
+/*
+ * Reset the VRF display on add prefix pages
+ */
+function resetPrefixVRFDisplay() {
+
+	// Reset VRF display and enable VRF selector
+	$("#prefix_vrf_display").html('');
+	$("#prefix_vrf_display").hide();
+	$("#prefix_vrf_display").attr('title', '');
+	$("input[name = prefix_vrf_btn]").show();
+
+	$('#default_prefix_type').hide();
+	$('#prefix_type_selection').show();
+
+}
 
 
 /*

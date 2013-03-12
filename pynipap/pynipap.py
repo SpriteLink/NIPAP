@@ -887,6 +887,9 @@ class Prefix(Pynipap):
 
         # update cache
         _cache['Prefix'][self.id] = self
+        if self.pool is not None:
+            if self.pool.id in _cache['Pool']:
+                del _cache['Pool'][self.pool.id]
 
 
 
@@ -903,8 +906,13 @@ class Prefix(Pynipap):
                 })
         except xmlrpclib.Fault as xml_fault:
             raise _fault_to_exception(xml_fault)
+
+        # update cache
         if self.id in _cache['Prefix']:
             del(_cache['Prefix'][self.id])
+        if self.pool is not None:
+            if self.pool.id in _cache['Pool']:
+                del _cache['Pool'][self.pool.id]
 
 
 
