@@ -383,6 +383,8 @@ class XhrController(BaseController):
             search_options['max_result'] = request.params['max_result']
         if 'offset' in request.params:
             search_options['offset'] = request.params['offset']
+        if 'parent_prefix' in request.params:
+            search_options['parent_prefix'] = request.params['parent_prefix']
         if 'vrf_filter[]' in request.params:
             vrf_filter_parts = []
 

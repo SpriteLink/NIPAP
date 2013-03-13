@@ -1176,13 +1176,19 @@ function receivePrefixList(search_result) {
 
 /*
  * Receive a prefix list update.
- *
- * This function assumes that the first element in the result set it is passed
- * contains a prefix which already is displayed in the prefix list.
  */
 function receivePrefixListUpdate(search_result, link_type) {
 
 	pref_list = search_result.result;
+
+	// If we got result from a search-operation with a parent_prefix set, we're
+	// not guaranteed a result list which is guaranteed to begin with a prefix
+	// which we've already received.
+	if (search_result.search_options.parent_prefix == null) {
+		if (!prefix_list.hasOwnProperty(pref_list[0].id)) {
+			pref_list.unshift(prefix_list[search_result.search_options.parent_prefix]);
+		}
+	}
 
 	// Zero result elements. Should not happen as we at least always should
 	// get the prefix we select to list, even if it has no children.
@@ -1581,16 +1587,18 @@ function collapseClick(id) {
 	// Determine if we need to fetch data
 	if (prefix_list[id].children < 0) {
 
-		// Yes, ask server for prefix list
-		var data = {
-			'id': id,
-			'include_parents': false,
-			'include_children': false,
-			'parents_depth': 0,
-			'children_depth': 1,
-			'max_result': 1000
-		};
-		$.getJSON("/xhr/search_prefix", data, receivePrefixListUpdate);
+		var search_q = jQuery.extend({}, current_query);
+		search_q.query_id = query_id;
+		search_q.parent_prefix = id;
+		search_q.include_parents = false;
+		search_q.include_children = false;
+		search_q.children_depth = 1;
+		search_q.parents_depth = 0;
+		search_q.max_result = 1000;
+
+		query_id += 1;
+
+		$.getJSON("/xhr/smart_search_prefix", search_q, receivePrefixListUpdate);
 
 	} else {
 		toggleGroup(id);
