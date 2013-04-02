@@ -562,6 +562,49 @@ class Nipap:
 
 
 
+
+    def _get_updated_rows(self, function):
+        """ Get rows updated by last update query
+
+            * `function` [function]
+                Function to use for searching (one of the search_* functions).
+
+            Helper function used to fetch all rows which was updated by the
+            latest UPDATE ... RETURNING id query.
+        """
+
+        # Get dicts for all rows which were edited by building a query for
+        # search_*. Each row returned from UPDATE ... RETURNING id gives us one
+        # query part (qp) which then are combined to one big query for the
+        # search_* API call.
+        qps = []
+        for row in self._curs_pg:
+            qps.append(
+                {
+                    'operator': 'equals',
+                    'val1': 'id',
+                    'val2': row['id']
+                }
+            )
+
+        # We can have zero modified rows. Deal with it.
+        updated = []
+        if len(qps) > 0:
+            q = qps[0]
+
+            for qp in qps[1:]:
+                q = {
+                    'operator': 'or',
+                    'val1': q,
+                    'val2': qp
+                }
+
+            updated = function(auth, pool_q, { 'max_result': 10000 })['result']
+
+        return updated
+
+
+
     #
     # VRF functions
     #
@@ -681,7 +724,7 @@ class Nipap:
 
             Add a VRF based on the values stored in the `attr` dict.
 
-            Returns the internal database ID of the added VRF.
+            Returns a dict describing the VRF which was added.
         """
 
         self._logger.debug("add_vrf called; attr: %s" % str(attr))
@@ -695,23 +738,24 @@ class Nipap:
 
         self._execute(sql, params)
         vrf_id = self._lastrowid()
+        vrf = self.list_vrf(auth, { 'id': vrf_id })[0]
 
         # write to audit table
         audit_params = {
-            'vrf_id': vrf_id,
-            'vrf_rt': attr['rt'],
-            'vrf_name': attr['name'],
+            'vrf_id': vrf['id'],
+            'vrf_rt': vrf['rt'],
+            'vrf_name': vrf['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added VRF %s with attr: %s' % (attr['rt'], str(attr))
+            'description': 'Added VRF %s with attr: %s' % (vrf['rt'], str(vrf))
         }
 
         sql, params = self._sql_expand_insert(audit_params)
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
-        return vrf_id
+        return vrf
 
 
     def remove_vrf(self, auth, spec):
@@ -863,8 +907,10 @@ class Nipap:
 
         sql = "UPDATE ip_net_vrf SET " + update
         sql += " WHERE " + where
+        sql += " RETURNING id"
 
         self._execute(sql, params)
+        updated_vrfs = self._get_updated_rows(self.search_vrf)
 
         # write to audit table
         for v in vrfs:
@@ -880,6 +926,8 @@ class Nipap:
             }
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
+        return updated_vrfs
 
 
 
@@ -1240,7 +1288,7 @@ class Nipap:
             * `attr` [pool_attr]
                 A dict containing the attributes the new pool should have.
 
-            Returns ID of the added pool.
+            Returns a dict describing the pool which was added.
         """
 
         self._logger.debug("add_pool called; attrs: %s" % str(attr))
@@ -1254,21 +1302,22 @@ class Nipap:
 
         self._execute(sql, params)
         pool_id = self._lastrowid()
+        pool = self.list_pool(auth, { 'id': pool_id })[0]
 
         # write to audit table
         audit_params = {
-            'pool_id': pool_id,
-            'pool_name': attr['name'],
+            'pool_id': pool['id'],
+            'pool_name': pool['name'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added pool %s with attr: %s' % (attr['name'], str(attr))
+            'description': 'Added pool %s with attr: %s' % (pool['name'], str(attr))
         }
         sql, params = self._sql_expand_insert(audit_params)
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
-        return pool_id
+        return pool
 
 
 
@@ -1442,8 +1491,11 @@ class Nipap:
 
         sql = "UPDATE ip_net_pool SET " + update
         sql += " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND " + where
+        sql += " RETURNING id"
 
         self._execute(sql, params)
+
+        updated_pools = self._get_updated_rows(self.search_pool)
 
         # write to audit table
         audit_params = {
@@ -1459,6 +1511,8 @@ class Nipap:
 
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
+        return updated_pools
 
 
 
@@ -1904,7 +1958,7 @@ class Nipap:
             * `args` [add_prefix_args]
                 Arguments explaining how the prefix should be allocated.
 
-            Returns ID of the added prefix.
+            Returns a dict describing the prefix which was added.
 
             Prefixes can be added in three ways; manually, from a pool or
             from a prefix.
@@ -2057,19 +2111,20 @@ class Nipap:
 
         self._execute(sql, params)
         prefix_id = self._lastrowid()
+        prefix = self.list_prefix(auth, { 'id': prefix_id })[0]
 
         # write to audit table
         audit_params = {
-            'vrf_id': vrf['id'],
-            'vrf_rt': vrf['rt'],
-            'vrf_name': vrf['name'],
-            'prefix_id': prefix_id,
-            'prefix_prefix': attr['prefix'],
+            'vrf_id': prefix['vrf_id'],
+            'vrf_rt': prefix['vrf_rt'],
+            'vrf_name': prefix['vrf_name'],
+            'prefix_id': prefix['id'],
+            'prefix_prefix': prefix['prefix'],
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added prefix %s with attr: %s' % (attr['prefix'], str(attr))
+            'description': 'Added prefix %s with attr: %s' % (prefix['prefix'], str(attr))
         }
         sql, params = self._sql_expand_insert(audit_params)
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -2077,12 +2132,12 @@ class Nipap:
         if pool['id'] is not None:
             audit_params['pool_id'] = pool['id']
             audit_params['pool_name'] = pool['name']
-            audit_params['description'] = 'Pool %s expanded with prefix %s' % (pool['name'], attr['prefix'])
+            audit_params['description'] = 'Pool %s expanded with prefix %s in VRF %s' % (pool['name'], prefix['prefix'], str(prefix['vrf_rt']))
 
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
-        return prefix_id
+        return prefix
 
 
 
@@ -2158,8 +2213,10 @@ class Nipap:
         params = dict(params2.items() + params1.items())
 
         sql = "UPDATE ip_net_plan SET " + update + " WHERE " + where
+        sql += " RETURNING id"
 
         self._execute(sql, params)
+        updated_prefixes = self._get_updated_rows(self.search_prefix)
 
         # write to audit table
         audit_params = {
@@ -2218,6 +2275,8 @@ class Nipap:
 
                     sql, params = self._sql_expand_insert(audit_params2)
                     self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
+        return updated_prefixes
 
 
 
@@ -3205,6 +3264,8 @@ class Nipap:
                 AAA options.
             * `attr` [asn_attr]
                 ASN attributes.
+
+            Returns a dict describing the ASN which was added.
         """
 
         self._logger.debug("add_asn called; attr: %s" % str(attr))
@@ -3216,8 +3277,9 @@ class Nipap:
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_asn " + insert
-
         self._execute(sql, params)
+
+        asn = self.list_asn(auth, { 'asn': attr['asn'] })[0]
 
         # write to audit table
         audit_params = {
@@ -3231,7 +3293,7 @@ class Nipap:
         sql, params = self._sql_expand_insert(audit_params)
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
-        return int(attr['asn'])
+        return asn
 
 
 
@@ -3258,8 +3320,12 @@ class Nipap:
         params = dict(params2.items() + params1.items())
 
         sql = "UPDATE ip_net_asn SET " + update + " WHERE " + where
+        sql += " RETURNING *"
 
         self._execute(sql, params)
+        updated_asns = []
+        for row in self._curs_pg:
+            updated_asns.append(dict(row))
 
         # write to audit table
         for a in asns:
@@ -3273,6 +3339,8 @@ class Nipap:
 
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
+
+        return updated_asns
 
 
 
