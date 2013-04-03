@@ -563,7 +563,7 @@ class Nipap:
 
 
 
-    def _get_updated_rows(self, function):
+    def _get_updated_rows(self, auth, function):
         """ Get rows updated by last update query
 
             * `function` [function]
@@ -599,7 +599,7 @@ class Nipap:
                     'val2': qp
                 }
 
-            updated = function(auth, pool_q, { 'max_result': 10000 })['result']
+            updated = function(auth, q, { 'max_result': 10000 })['result']
 
         return updated
 
@@ -910,7 +910,7 @@ class Nipap:
         sql += " RETURNING id"
 
         self._execute(sql, params)
-        updated_vrfs = self._get_updated_rows(self.search_vrf)
+        updated_vrfs = self._get_updated_rows(auth, self.search_vrf)
 
         # write to audit table
         for v in vrfs:
@@ -1491,11 +1491,11 @@ class Nipap:
 
         sql = "UPDATE ip_net_pool SET " + update
         sql += " FROM ip_net_pool AS po WHERE ip_net_pool.id = po.id AND " + where
-        sql += " RETURNING id"
+        sql += " RETURNING po.id AS id"
 
         self._execute(sql, params)
 
-        updated_pools = self._get_updated_rows(self.search_pool)
+        updated_pools = self._get_updated_rows(auth, self.search_pool)
 
         # write to audit table
         audit_params = {
@@ -2216,7 +2216,7 @@ class Nipap:
         sql += " RETURNING id"
 
         self._execute(sql, params)
-        updated_prefixes = self._get_updated_rows(self.search_prefix)
+        updated_prefixes = self._get_updated_rows(auth, self.search_prefix)
 
         # write to audit table
         audit_params = {
