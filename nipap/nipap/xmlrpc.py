@@ -336,7 +336,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            self.nipap.edit_vrf(args.get('auth'), args.get('vrf'), args.get('attr'))
+            return self.nipap.edit_vrf(args.get('auth'), args.get('vrf'), args.get('attr'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
@@ -747,7 +747,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         """
 
         try:
-            self.nipap.edit_asn(args.get('auth'), args.get('asn'), args.get('attr'))
+            return self.nipap.edit_asn(args.get('auth'), args.get('asn'), args.get('attr'))
         except nipap.NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
