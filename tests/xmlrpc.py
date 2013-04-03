@@ -74,11 +74,14 @@ class NipapXmlTest(unittest.TestCase):
         attr['name'] = 'test'
 
         attr['description'] = 'my test vrf'
-        attr['id'] = s.add_vrf({ 'auth': ad, 'attr': attr })
+        vrf = s.add_vrf({ 'auth': ad, 'attr': attr })
 
-        self.assertGreater(attr['id'], 0)
+        self.assertGreater(vrf['id'], 0)
 
-        self.assertEqual(s.list_vrf({ 'auth': ad, 'vrf': { 'id': attr['id'] } }), [ attr, ])
+        ref = attr.copy()
+        ref['id'] = vrf['id']
+        self.assertEqual(vrf, ref)
+        self.assertEqual(s.list_vrf({ 'auth': ad, 'vrf': { 'id': vrf['id'] } }), [ ref, ])
 
         attr['rt'] = '123:abc'
         with self.assertRaisesRegexp(xmlrpclib.Fault, '.'): # TODO: specify exception string
@@ -93,10 +96,10 @@ class NipapXmlTest(unittest.TestCase):
         with self.assertRaisesRegexp(xmlrpclib.Fault, 'Invalid input for column rt, must be NULL for VRF id 0'):
             s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': { 'rt': '123:456a' }})
 
-        s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': { 'name': 'FOO', 'description': 'BAR' }})
-        res = s.list_vrf({ 'auth': ad, 'vrf': { } })[0]
-        del(res['id'])
-        self.assertEqual(res, { 'rt': None, 'name': 'FOO', 'description': 'BAR' }, 'VRF change incorrect')
+        res_edit = s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': { 'name': 'FOO', 'description': 'BAR' }})
+        res_list = s.list_vrf({ 'auth': ad, 'vrf': { } })[0]
+        del(res_list['id'])
+        self.assertEqual(res_list, { 'rt': None, 'name': 'FOO', 'description': 'BAR' }, 'VRF change incorrect')
 
 
 
@@ -109,7 +112,7 @@ class NipapXmlTest(unittest.TestCase):
             'description': 'VRF 65000:123'
         }
         spec = { 'rt': '65000:123' }
-        s.add_vrf({ 'auth': ad, 'attr': attr })
+        vrf = s.add_vrf({ 'auth': ad, 'attr': attr })
 
         # omitting VRF spec
         with self.assertRaisesRegexp(xmlrpclib.Fault, 'vrf specification must be a dict'):
@@ -162,7 +165,8 @@ class NipapXmlTest(unittest.TestCase):
             'name': '65k:1235',
             'description': 'Virtual Routing and Forwarding instance 65000:123'
         }
-        attr['id'] = s.add_vrf({ 'auth': ad, 'attr': attr })
+        vrf = s.add_vrf({ 'auth': ad, 'attr': attr })
+        attr['id'] = vrf['id']
 
         # equal match
         q = {
@@ -207,7 +211,8 @@ class NipapXmlTest(unittest.TestCase):
         attr['type'] = 'assignment'
 
         # add 1.3.3.0/24
-        attr['id'] = s.add_prefix({ 'auth': ad, 'attr': attr })
+        prefix = s.add_prefix({ 'auth': ad, 'attr': attr })
+        attr['id'] = prefix['id']
         self.assertGreater(attr['id'], 0)
 
         # what we expect the above prefix to look like
@@ -246,7 +251,7 @@ class NipapXmlTest(unittest.TestCase):
         # same for the new prefix (1.3.3.1/32) from 1.3.3.0/24
         expected_host = expected.copy()
         expected_host.update(attr)
-        expected_host['id'] = res
+        expected_host['id'] = res['id']
         expected_host['prefix'] = '1.3.3.1/32'
         expected_host['display_prefix'] = '1.3.3.1/24'
         expected_host['indent'] = 1
@@ -261,7 +266,7 @@ class NipapXmlTest(unittest.TestCase):
         res = s.add_prefix({ 'auth': ad, 'attr': attr, 'args': args })
         # update expected list
         expected_host2 = expected_host.copy()
-        expected_host2['id'] = res
+        expected_host2['id'] = res['id']
         expected_host2['prefix'] = '1.3.3.2/32'
         expected_host2['display_prefix'] = '1.3.3.2/24'
         expected_list.append(expected_host2)
@@ -271,7 +276,7 @@ class NipapXmlTest(unittest.TestCase):
         res = s.add_prefix({ 'auth': ad, 'attr': attr, 'args': args })
         # update expected list
         expected_host3 = expected_host.copy()
-        expected_host3['id'] = res
+        expected_host3['id'] = res['id']
         expected_host3['prefix'] = '1.3.3.3/32'
         expected_host3['display_prefix'] = '1.3.3.3/24'
         expected_list.append(expected_host3)
@@ -281,7 +286,7 @@ class NipapXmlTest(unittest.TestCase):
         res = s.add_prefix({ 'auth': ad, 'attr': attr, 'args': args })
         # update expected list
         expected_host4 = expected_host.copy()
-        expected_host4['id'] = res
+        expected_host4['id'] = res['id']
         expected_host4['prefix'] = '1.3.3.4/32'
         expected_host4['display_prefix'] = '1.3.3.4/24'
         expected_list.append(expected_host4)
@@ -322,16 +327,18 @@ class NipapXmlTest(unittest.TestCase):
             'rt': '123:4567',
             'name': 'test_prefix_add_vrf1',
         }
-        vrf_attr['id'] = s.add_vrf({ 'auth': ad, 'attr': vrf_attr })
+        vrf = s.add_vrf({ 'auth': ad, 'attr': vrf_attr })
+        vrf_attr['id'] = vrf['id']
 
         # add prefix to VRF by specifying ID
         vrf_pref_attr = {
             'prefix': '1.3.3.0/24',
-            'vrf_id': vrf_attr['id'],
+            'vrf_id': vrf['id'],
             'type': 'assignment',
             'description': 'Test prefix 1.3.3.0/24 in vrf 123:4567'
         }
-        expected['id'] = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr })
+        prefix = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr })
+        expected['id'] = prefix['id']
         expected['vrf_rt'] = vrf_attr['rt']
         expected['vrf_name'] = vrf_attr['name']
         expected['display_prefix'] = '1.3.3.0/24'
@@ -347,7 +354,8 @@ class NipapXmlTest(unittest.TestCase):
             'type': 'host',
             'description': 'Test host 1.3.3.1/32 in vrf 123:4567'
         }
-        expected['id'] = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr, 'args': args })
+        prefix = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr, 'args': args })
+        expected['id'] = prefix['id']
         expected['vrf_id'] = vrf_attr['id']
         expected['vrf_name'] = vrf_attr['name']
         expected['display_prefix'] = '1.3.3.1/24'
@@ -364,7 +372,8 @@ class NipapXmlTest(unittest.TestCase):
             'type': 'host',
             'description': 'Test host 1.3.3.2/32 in vrf 123:4567'
         }
-        expected['id'] = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr, 'args': args })
+        prefix = s.add_prefix({ 'auth': ad, 'attr': vrf_pref_attr, 'args': args })
+        expected['id'] = prefix['id']
         expected['vrf_rt'] = vrf_attr['rt']
         expected['vrf_id'] = vrf_attr['id']
         expected['display_prefix'] = '1.3.3.2/24'
@@ -413,7 +422,7 @@ class NipapXmlTest(unittest.TestCase):
         res = s.add_prefix({ 'auth': ad, 'attr': attr })
         exp1 = expected.copy()
         exp1.update(attr)
-        exp1['id'] = res
+        exp1['id'] = res['id']
 
         attr['prefix'] = '1.3.3.0/24'
 
@@ -437,7 +446,7 @@ class NipapXmlTest(unittest.TestCase):
 
         exp2 = expected.copy()
         exp2.update(attr)
-        exp2['id'] = res
+        exp2['id'] = res['id']
         exp2['display_prefix'] = '1.3.3.0'
 
         # let's add a host too
@@ -447,7 +456,7 @@ class NipapXmlTest(unittest.TestCase):
 
         exp3 = expected.copy()
         exp3.update(attr)
-        exp3['id'] = res
+        exp3['id'] = res['id']
         exp3['display_prefix'] = '1.3.2.1/24'
         exp3['indent'] = 1
 
@@ -470,14 +479,14 @@ class NipapXmlTest(unittest.TestCase):
             'default_type'  : 'assignment',
             'ipv4_default_prefix_length' : 24
         }
-        pool_id = s.add_pool({ 'auth': ad, 'attr': pool_attr })
+        pool = s.add_pool({ 'auth': ad, 'attr': pool_attr })
 
         # Add prefix to pool
         prefix_attr = {
                 'prefix': '1.3.0.0/16',
                 'type': 'reservation',
                 'description': 'FOO',
-                'pool_id': pool_id
+                'pool_id': pool['id']
             }
         s.add_prefix({ 'auth': ad, 'attr': prefix_attr })
 
@@ -496,9 +505,9 @@ class NipapXmlTest(unittest.TestCase):
                 'type': 'reservation',
                 'description': 'FOO'
             }
-        p_id = s.add_prefix({ 'auth': ad, 'attr': prefix_attr })
+        prefix = s.add_prefix({ 'auth': ad, 'attr': prefix_attr })
         # modify prefix so that it's part of pool
-        s.edit_prefix({ 'auth': ad, 'prefix': { 'id': p_id }, 'attr': { 'pool_id': pool_id } })
+        s.edit_prefix({ 'auth': ad, 'prefix': { 'id': prefix['id'] }, 'attr': { 'pool_id': pool['id'] } })
 
         # add a prefix
         prefix_attr = {
@@ -506,11 +515,11 @@ class NipapXmlTest(unittest.TestCase):
                 'type': 'reservation',
                 'description': 'FOO'
             }
-        p_id = s.add_prefix({ 'auth': ad, 'attr': prefix_attr })
+        prefix = s.add_prefix({ 'auth': ad, 'attr': prefix_attr })
         # modify prefix so that it's part of pool
-        s.edit_prefix({ 'auth': ad, 'prefix': { 'id': p_id }, 'attr': { 'pool_name': 'pool_1' } })
+        s.edit_prefix({ 'auth': ad, 'prefix': { 'id': prefix['id'] }, 'attr': { 'pool_name': 'pool_1' } })
 
-        res = s.list_pool({ 'auth': ad, 'pool': { 'id': pool_id } })
+        res = s.list_pool({ 'auth': ad, 'pool': { 'id': pool['id'] } })
         self.assertEquals(res[0]['prefixes'], ['1.3.0.0/16', '1.4.0.0/16',
         '1.5.0.0/16', '1.6.0.0/16'])
 
@@ -527,14 +536,14 @@ class NipapXmlTest(unittest.TestCase):
             'default_type'  : 'assignment',
             'ipv4_default_prefix_length' : 24
         }
-        pool_id = s.add_pool({ 'auth': ad, 'attr': pool_attr })
+        pool = s.add_pool({ 'auth': ad, 'attr': pool_attr })
 
         # Add prefix to pool
         parent_prefix_attr = {
                 'prefix': '1.3.0.0/16',
                 'type': 'reservation',
                 'description': 'FOO',
-                'pool_id': pool_id
+                'pool_id': pool['id']
             }
         s.add_prefix({ 'auth': ad, 'attr': parent_prefix_attr })
 
@@ -564,9 +573,9 @@ class NipapXmlTest(unittest.TestCase):
                 'alarm_priority': None,
                 'authoritative_source': 'nipap'
                 }
-        child_id = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
-        #expected['id'] = child_id
-        #p = s.list_prefix({ 'auth': ad, 'attr': { 'id': child_id } })[1]
+        child = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
+        #expected['id'] = child['id']
+        #p = s.list_prefix({ 'auth': ad, 'attr': { 'id': child['id'] } })[1]
         #self.assertEquals(p, expected)
 
 
@@ -581,7 +590,7 @@ class NipapXmlTest(unittest.TestCase):
             'description'   : 'Test VRF #1',
             'rt'            : '123:123'
         }
-        vrf_id = s.add_vrf({ 'auth': ad, 'attr': vrf_attr })
+        vrf = s.add_vrf({ 'auth': ad, 'attr': vrf_attr })
 
         # Add a pool
         pool_attr = {
@@ -590,7 +599,7 @@ class NipapXmlTest(unittest.TestCase):
             'default_type'  : 'assignment',
             'ipv4_default_prefix_length' : 24
         }
-        pool_id = s.add_pool({ 'auth': ad, 'attr': pool_attr })
+        pool = s.add_pool({ 'auth': ad, 'attr': pool_attr })
 
         # Add prefix to pool
         parent_prefix_attr = {
@@ -598,7 +607,7 @@ class NipapXmlTest(unittest.TestCase):
                 'vrf_rt': '123:123',
                 'type': 'reservation',
                 'description': 'FOO',
-                'pool_id': pool_id
+                'pool_id': pool['id']
             }
         s.add_prefix({ 'auth': ad, 'attr': parent_prefix_attr })
 
@@ -619,7 +628,7 @@ class NipapXmlTest(unittest.TestCase):
                 'order_id': None,
                 'pool_id': None,
                 'pool_name': None,
-                'vrf_id': vrf_id,
+                'vrf_id': vrf['id'],
                 'vrf_rt': '123:123',
                 'vrf_name': 'vrf_1',
                 'external_key': None,
@@ -628,9 +637,9 @@ class NipapXmlTest(unittest.TestCase):
                 'alarm_priority': None,
                 'authoritative_source': 'nipap'
                 }
-        child_id = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
-        expected['id'] = child_id
-        p = s.list_prefix({ 'auth': ad, 'attr': { 'id': child_id } })[1]
+        child = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
+        expected['id'] = child['id']
+        p = s.list_prefix({ 'auth': ad, 'attr': { 'id': child['id'] } })[1]
         self.assertEquals(p, expected)
 
 
@@ -665,7 +674,7 @@ class NipapXmlTest(unittest.TestCase):
                         'family': 4,
                         'prefix': '1.3.3.0/24',
                         'authoritative_source': 'nipap',
-                        'id': p1,
+                        'id': p1['id'],
                         'display_prefix': '1.3.3.0/24',
                         'monitor': None,
                         'children': -2,
@@ -701,7 +710,7 @@ class NipapXmlTest(unittest.TestCase):
         }
 
         # add ASN
-        self.assertEqual(s.add_asn({ 'auth': ad, 'attr': attr}), 1, "add_asn did not return correct ASN.")
+        self.assertEqual(s.add_asn({ 'auth': ad, 'attr': attr}), attr, "add_asn did not return correct ASN.")
 
         # make sure that it got added
         asn = s.list_asn({ 'auth': ad, 'asn': { 'asn': 1 } })
@@ -725,7 +734,7 @@ class NipapXmlTest(unittest.TestCase):
         }
 
         asn = s.add_asn({ 'auth': ad, 'attr': attr })
-        s.remove_asn({ 'auth': ad, 'asn': { 'asn': asn } })
+        s.remove_asn({ 'auth': ad, 'asn': { 'asn': asn['asn'] } })
         self.assertEquals(0, len(s.list_asn({ 'auth': ad, 'asn': { 'asn': 2 } })), "Removed ASN still in database")
 
 
@@ -831,7 +840,7 @@ class NipapXmlTest(unittest.TestCase):
 
         res = s.add_pool({ 'auth': ad, 'attr': attr })
         expected = attr.copy()
-        expected['id'] = res
+        expected['id'] = res['id']
         expected['prefixes'] = []
         expected['vrf_id'] = None
         expected['vrf_rt'] = None
@@ -867,16 +876,16 @@ class NipapXmlTest(unittest.TestCase):
         }
 
         res = s.add_pool({ 'auth': ad, 'attr': attr })
-        s.edit_pool({ 'auth': ad, 'pool': { 'id': res }, 'attr': attr2 })
+        s.edit_pool({ 'auth': ad, 'pool': { 'id': res['id'] }, 'attr': attr2 })
 
         expected = attr2.copy()
-        expected['id'] = res
+        expected['id'] = res['id']
         expected['prefixes'] = []
         expected['vrf_id'] = None
         expected['vrf_rt'] = None
         expected['vrf_name'] = None
 
-        self.assertEquals(s.list_pool({ 'auth': ad, 'pool': { 'id': res } })[0], expected)
+        self.assertEquals(s.list_pool({ 'auth': ad, 'pool': { 'id': res['id'] } })[0], expected)
 
 
     def test_search_pool(self):
