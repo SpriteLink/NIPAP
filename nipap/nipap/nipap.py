@@ -49,7 +49,7 @@
     * :attr:`vrf_name` - Name of VRF which the prefix belongs to.
     * :attr:`description` - A short description of the prefix.
     * :attr:`comment` - A longer text describing the prefix and its use.
-    * :attr:`node` - FQDN of node the prefix is assigned to, if type is host.
+    * :attr:`node` - Name of the node on which the address is configured.
     * :attr:`pool_id` - ID of pool, if the prefix belongs to a pool.
     * :attr:`pool_name` - Name of pool, if the prefix belongs to a pool.
     * :attr:`type` - Prefix type, string 'reservation', 'assignment' or 'host'.

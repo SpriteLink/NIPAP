@@ -78,7 +78,7 @@
 
             });
 
-            // enable/disable node FQDN input if needed
+            // enable/disable node input if needed
             enableNodeInput();
             $('input[name="prefix_prefix"]').keyup(enableNodeInput);
 
@@ -167,10 +167,10 @@ Prefix administration &mdash;&gt; edit prefix
             <div class="option">
                 <dl>
                     <dt>
-                        Node&nbsp;FQDN
+                        Node
                     </dt>
                     <dd>
-                        <input type="text" name="prefix_node" value="{{ c.prefix.node or '' }}" class="tooltip" title="FQDN (Fully Qualified Domain Name) of the node where the prefix is in use, e.g. 'amsterdam-router-1.example.com'" disabled>
+						<input type="text" name="prefix_node" value="{{ c.prefix.node or '' }}" class="tooltip" title="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured.">
                     </dd>
                 </dl>
             </div>

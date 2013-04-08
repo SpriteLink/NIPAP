@@ -1703,7 +1703,7 @@ function showAllocContainer(e) {
 	$('#radio-prefix-type-assignment').removeAttr('checked');
 	$('#radio-prefix-type-host').removeAttr('checked');
 
-	// Re-evaluate node FQDN field when prefix length is changed. The same
+	// Re-evaluate node field when prefix length is changed. The same
 	// thing for the prefix_length_prefix field is done in the selectPrefix
 	// function. From some reason it can not be done here...
 	$('input[name="prefix_length_pool"]').keyup(enableNodeInput);
@@ -1747,7 +1747,7 @@ function prefixMonitorToggled() {
  */
 function prefixTypeToggled(e) {
 
-	// enables/disables monitor and node FQDN options
+	// enables/disables monitor and node options
 	enableMonitor();
 	enableNodeInput();
 
