@@ -29,7 +29,15 @@ function prefixAdded(data) {
 }
 
 
+/*
+ * Things to do on page load.
+ */
 $(function () {
+	// register function for pageshow event
+	$(window).on('pageshow', function(event) {
+		// reset radio button for prefix allocation method
+		$('input[name="prefix_alloc_method"]').removeAttr('checked');
+	});
 
     $.getJSON('{{ h.url(controller="xhr", action="list_pool") }}', populatePoolTable);
     $('#prefix-alloc-method_container').show();
