@@ -4,7 +4,8 @@ Version 0.17.0
    edit_* operations
  * Prefixes expanded in web UI now uses search query to correctly set 'match'
    attribute on prefixes
- * Fixed a few web UI and CLI bugs/annoyancies
+ * Restructuring of Java client library
+ * Various improvements to web UI and CLI, including fixing a few bugs/annoyances
 
 Version 0.16.1
 --------------
