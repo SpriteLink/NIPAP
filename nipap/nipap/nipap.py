@@ -2798,8 +2798,8 @@ class Nipap:
             if parent_prefix['vrf_id']:
                 vrf_id = parent_prefix['vrf_id']
             query_parent_prefix = " (p1.vrf_id = %s AND iprange(p1.prefix) <<= iprange('%s') AND p1.indent <= %s) " % (vrf_id, parent_prefix['prefix'], parent_prefix['indent'] + 1)
-            join_parent_prefix = " AND %s" % query_parent_prefix
-            where_parent_prefix = " OR %s" % query_parent_prefix
+            join_parent_prefix = " OR %s" % query_parent_prefix
+            where_parent_prefix = " AND %s" % query_parent_prefix
         else:
             join_parent_prefix = ''
             where_parent_prefix = ''
