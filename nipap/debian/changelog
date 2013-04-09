@@ -1,3 +1,9 @@
+nipap (0.16.1-1) stable; urgency=low
+
+  * Fix: Currently selected VRFs now shown in VRF selector (again)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 09 Apr 2013 22:23:06 +0200
+
 nipap (0.16.0-1) stable; urgency=low
 
   * Fix: from-prefix was completely broken in 0.15.0 and is now working again
