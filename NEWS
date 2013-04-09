@@ -1,3 +1,7 @@
+Version 0.16.1
+--------------
+ * Fix: Currently selected VRFs now shown in VRF selector (again)
+
 Version 0.16.0
 --------------
  * Fix: from-prefix was completely broken in 0.15.0 and is now working again
