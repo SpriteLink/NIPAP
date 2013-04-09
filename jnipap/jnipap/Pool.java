@@ -21,6 +21,7 @@ public class Pool extends Jnipap {
 	public String default_type; // Some kind of enum?
 	public Integer ipv4_default_prefix_length;
 	public Integer ipv6_default_prefix_length;
+	public VRF vrf;
 
 	/**
 	 * Save object to NIPAP
@@ -49,27 +50,28 @@ public class Pool extends Jnipap {
 		params.add(args);
 
 		// Create new or modify old?
-		String cmd;
+		Map pool;
 		if (this.id == null) {
 
 			// ID null - create new pool
-			cmd = "add_pool";
+			pool = (Map)conn.execute("add_pool", params);
 
 		} else {
 
 			// Pool exists - modify existing.
 			args.put("pool", pool_spec);
-			cmd = "edit_pool";
+			Object[] result = (Object[])conn.execute("edit_pool", params);
+
+			if (result.length != 1) {
+				throw new JnipapException("Pool edit returned " + result.length + " entries, should be 1.");
+			}
+
+			pool = (Map)result[0];
 
 		}
 
-		// perform operation
-		Integer result = (Integer)conn.execute(cmd, params);
-
-		// If we added a new pool, fetch and set ID
-		if (this.id == null) {
-			this.id = result;
-		}
+		// Update pool object with new data
+		Pool.fromMap(conn, pool, this);
 
 	}
 
@@ -262,12 +264,26 @@ public class Pool extends Jnipap {
 	 * Helper function for creating objects of data received over XML-RPC
 	 *
 	 * @param input Map with pool attributes
-	 * @param conn Connection with auth options
 	 * @return Pool object
 	 */
 	public static Pool fromMap(Connection conn, Map input) throws JnipapException {
 
-		Pool pool = new Pool();
+		return Pool.fromMap(conn, input, new Pool());
+
+	}
+
+	/**
+	 * Create pool object from map of pool attributes
+	 *
+	 * Updates a Pool object with attributes from a Map as received over
+	 * XML-RPC
+	 *
+	 * @param conn Connection object
+	 * @param input Map with pool attributes
+	 * @param pool Pool object to populate with attributes from map
+	 * @return Pool object
+	 */
+	public static Pool fromMap(Connection conn,Map input, Pool pool) throws JnipapException {
 
 		pool.id = (Integer)input.get("id");
 		pool.name = (String)input.get("name");
@@ -276,7 +292,54 @@ public class Pool extends Jnipap {
 		pool.ipv4_default_prefix_length = (Integer)input.get("ipv4_default_prefix_length");
 		pool.ipv6_default_prefix_length = (Integer)input.get("ipv6_default_prefix_length");
 
+		// If VRF is not null, fetch VRF object
+		if (input.get("vrf_id") != null) {
+			pool.vrf = VRF.get(conn, (Integer)input.get("vrf_id"));
+		}
+
 		return pool;
+
+	}
+
+	/**
+	 * Compute hash of VRF
+	 */
+	public int hashCode() {
+
+		int hash = super.hashCode();
+		hash = hash * 31 + (name == null ? 0 : name.hashCode());
+		hash = hash * 31 + (description == null ? 0 : description.hashCode());
+		hash = hash * 31 + (default_type == null ? 0 : default_type.hashCode());
+		hash = hash * 31 + (ipv4_default_prefix_length == null ? 0 : ipv4_default_prefix_length.hashCode());
+		hash = hash * 31 + (ipv6_default_prefix_length == null ? 0 : ipv6_default_prefix_length.hashCode());
+		hash = hash * 31 + (vrf == null ? 0 : vrf.hashCode());
+
+		return hash;
+
+	}
+
+	/**
+	 * Verify equality
+	 */
+	public boolean equals(Object other) {
+
+		if (!super.equals(other)) return false;
+		Pool pool = (Pool)other;
+
+		return (
+			(name == pool.name || (name != null && name.equals(pool.name))) &&
+			(description == pool.description ||
+				(description != null && description.equals(pool.description))) &&
+			(default_type == pool.default_type ||
+				(default_type != null && default_type.equals(pool.default_type))) &&
+			(ipv4_default_prefix_length == pool.ipv4_default_prefix_length ||
+				(ipv4_default_prefix_length != null &&
+					ipv4_default_prefix_length.equals(pool.ipv4_default_prefix_length))) &&
+			(ipv6_default_prefix_length == pool.ipv6_default_prefix_length ||
+				(ipv6_default_prefix_length != null &&
+					ipv6_default_prefix_length.equals(pool.ipv6_default_prefix_length))) &&
+			(vrf == pool.vrf || (vrf != null && vrf.equals(pool.vrf)))
+		);
 
 	}
 

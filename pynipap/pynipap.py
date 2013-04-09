@@ -250,7 +250,7 @@ class Pynipap:
 
         # Only possible if we have ID numbers set
         if self.id is None or other.id is None:
-            return false
+            return False
 
         return self.id == other.id
 
@@ -305,19 +305,22 @@ class VRF(Pynipap):
 
 
     @classmethod
-    def from_dict(cls, parm):
+    def from_dict(cls, parm, vrf = None):
         """ Create new VRF-object from dict.
 
             Suitable for creating objects from XML-RPC data.
             All available keys must exist.
         """
 
-        v = VRF()
-        v.id = parm['id']
-        v.rt = parm['rt']
-        v.name = parm['name']
-        v.description = parm['description']
-        return v
+        if vrf is None:
+            vrf = VRF()
+
+        vrf.id = parm['id']
+        vrf.rt = parm['rt']
+        vrf.name = parm['name']
+        vrf.description = parm['description']
+
+        return vrf
 
 
 
@@ -407,7 +410,7 @@ class VRF(Pynipap):
         if self.id is None:
             # New object, create
             try:
-                self.id = self._xmlrpc.connection.add_vrf(
+                vrf = self._xmlrpc.connection.add_vrf(
                     {
                         'attr': data,
                         'auth': self._auth_opts.options
@@ -418,7 +421,7 @@ class VRF(Pynipap):
         else:
             # Old object, edit
             try:
-                self._xmlrpc.connection.edit_vrf(
+                vrfs = self._xmlrpc.connection.edit_vrf(
                     {
                         'vrf': { 'id': self.id },
                         'attr': data,
@@ -426,6 +429,13 @@ class VRF(Pynipap):
                     })
             except xmlrpclib.Fault as xml_fault:
                 raise _fault_to_exception(xml_fault)
+
+            if len(vrfs) != 1:
+                raise NipapError('VRF edit returned %d entries, should be 1.' % len(vrfs))
+            vrf = vrfs[0]
+
+        # Refresh object data with attributes from add/edit operation
+        VRF.from_dict(vrf, self)
 
         _cache['VRF'][self.id] = self
 
@@ -475,7 +485,7 @@ class Pool(Pynipap):
         if self.id is None:
             # New object, create
             try:
-                self.id = self._xmlrpc.connection.add_pool(
+                pool = self._xmlrpc.connection.add_pool(
                     {
                         'attr': data,
                         'auth': self._auth_opts.options
@@ -486,7 +496,7 @@ class Pool(Pynipap):
         else:
             # Old object, edit
             try:
-                self._xmlrpc.connection.edit_pool(
+                pools = self._xmlrpc.connection.edit_pool(
                     {
                         'pool': { 'id': self.id },
                         'attr': data,
@@ -494,6 +504,13 @@ class Pool(Pynipap):
                     })
             except xmlrpclib.Fault as xml_fault:
                 raise _fault_to_exception(xml_fault)
+
+            if len(pools) != 1:
+                raise NipapError('Pool edit returned %d entries, should be 1.' % len(pools))
+            pool = pools[0]
+
+        # Refresh object data with attributes from add/edit operation
+        Pool.from_dict(pool, self)
 
         _cache['Pool'][self.id] = self
 
@@ -592,23 +609,26 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def from_dict(cls, parm):
+    def from_dict(cls, parm, pool = None):
         """ Create new Pool-object from dict.
 
             Suitable for creating objects from XML-RPC data.
             All available keys must exist.
         """
 
-        p = Pool()
-        p.id = parm['id']
-        p.name = parm['name']
-        p.description = parm['description']
-        p.default_type = parm['default_type']
-        p.ipv4_default_prefix_length = parm['ipv4_default_prefix_length']
-        p.ipv6_default_prefix_length = parm['ipv6_default_prefix_length']
+        if pool is None:
+            pool = Pool()
+
+        pool.id = parm['id']
+        pool.name = parm['name']
+        pool.description = parm['description']
+        pool.default_type = parm['default_type']
+        pool.ipv4_default_prefix_length = parm['ipv4_default_prefix_length']
+        pool.ipv6_default_prefix_length = parm['ipv6_default_prefix_length']
         if parm['vrf_id'] is not None:
-            p.vrf = VRF.get(parm['vrf_id'])
-        return p
+            pool.vrf = VRF.get(parm['vrf_id'])
+
+        return pool
 
 
 
@@ -837,7 +857,7 @@ class Prefix(Pynipap):
                 x_args['prefix_length'] = args['prefix_length']
 
             try:
-                self.id = self._xmlrpc.connection.add_prefix(
+                prefix = self._xmlrpc.connection.add_prefix(
                     {
                         'attr': data,
                         'args': x_args,
@@ -845,27 +865,6 @@ class Prefix(Pynipap):
                     })
             except xmlrpclib.Fault as xml_fault:
                 raise _fault_to_exception(xml_fault)
-
-            # fetch data which is set by NIPAP
-            try:
-                p = self._xmlrpc.connection.list_prefix(
-                    {
-                        'prefix': { 'id': self.id },
-                        'auth': self._auth_opts.options
-                    })[0]
-            except xmlrpclib.Fault as xml_fault:
-                raise _fault_to_exception(xml_fault)
-            except IndexError:
-                raise NipapNonExistantError('Added prefix not found.')
-            self.prefix = p['prefix']
-            self.indent = p['indent']
-            self.family = p['family']
-            self.display_prefix = p['display_prefix']
-            self.authoritative_source = p['authoritative_source']
-            self.alarm_priority = p['alarm_priority']
-            self.monitor = p['monitor']
-            if p['vrf_id'] is not None:
-                self.vrf = VRF.get(p['vrf_id'])
 
         # Old object, edit
         else:
@@ -875,7 +874,7 @@ class Prefix(Pynipap):
 
             try:
                 # save
-                self._xmlrpc.connection.edit_prefix(
+                prefixes = self._xmlrpc.connection.edit_prefix(
                     {
                         'prefix': { 'id': self.id },
                         'attr': data,
@@ -884,6 +883,13 @@ class Prefix(Pynipap):
 
             except xmlrpclib.Fault as xml_fault:
                 raise _fault_to_exception(xml_fault)
+
+            if len(prefixes) != 1:
+                raise NipapError('Prefix edit returned %d entries, should be 1.' % len(prefixes))
+            prefix = prefixes[0]
+
+        # Refresh object data with attributes from add/edit operation
+        Prefix.from_dict(prefix, self)
 
         # update cache
         _cache['Prefix'][self.id] = self
@@ -917,40 +923,42 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def from_dict(cls, pref):
+    def from_dict(cls, pref, prefix = None):
         """ Create a Prefix object from a dict.
 
             Suitable for creating Prefix objects from XML-RPC input.
         """
 
-        p = Prefix()
-        p.id = pref['id']
-        if pref['vrf_id'] is not None: # VRF is not mandatory
-            p.vrf = VRF.get(pref['vrf_id'])
-        p.family = pref['family']
-        p.prefix = pref['prefix']
-        p.display_prefix = pref['display_prefix']
-        p.description = pref['description']
-        p.comment = pref['comment']
-        p.node = pref['node']
-        if pref['pool_id'] is not None: # Pool is not mandatory
-            p.pool = Pool.get(pref['pool_id'])
-        p.type = pref['type']
-        p.indent = pref['indent']
-        p.country = pref['country']
-        p.order_id = pref['order_id']
-        p.external_key = pref['external_key']
-        p.authoritative_source = pref['authoritative_source']
-        p.alarm_priority = pref['alarm_priority']
-        p.monitor = pref['monitor']
-        if 'match' in pref:
-            p.match = pref['match']
-        if 'display' in pref:
-            p.display = pref['display']
-        if 'children' in pref:
-            p.children = pref['children']
+        if prefix is None:
+            prefix = Prefix()
 
-        return p
+        prefix.id = pref['id']
+        if pref['vrf_id'] is not None: # VRF is not mandatory
+            prefix.vrf = VRF.get(pref['vrf_id'])
+        prefix.family = pref['family']
+        prefix.prefix = pref['prefix']
+        prefix.display_prefix = pref['display_prefix']
+        prefix.description = pref['description']
+        prefix.comment = pref['comment']
+        prefix.node = pref['node']
+        if pref['pool_id'] is not None: # Pool is not mandatory
+            prefix.pool = Pool.get(pref['pool_id'])
+        prefix.type = pref['type']
+        prefix.indent = pref['indent']
+        prefix.country = pref['country']
+        prefix.order_id = pref['order_id']
+        prefix.external_key = pref['external_key']
+        prefix.authoritative_source = pref['authoritative_source']
+        prefix.alarm_priority = pref['alarm_priority']
+        prefix.monitor = pref['monitor']
+        if 'match' in pref:
+            prefix.match = pref['match']
+        if 'display' in pref:
+            prefix.display = pref['display']
+        if 'children' in pref:
+            prefix.children = pref['children']
+
+        return prefix
 
 
 

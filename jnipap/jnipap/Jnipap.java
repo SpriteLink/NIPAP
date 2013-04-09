@@ -27,6 +27,31 @@ abstract public class Jnipap {
 	 */
 	abstract public void remove(Connection auth) throws JnipapException;
 
+	/**
+	 * Compute hash of NIPAP object
+	 */
+	public int hashCode() {
+
+		int hash = 1;
+		hash = hash * 31 + (id == null ? 0 : id.hashCode());
+
+		return hash;
+
+	}
+
+	/**
+	 * Compute equality
+	 */
+	public boolean equals(Object other) {
+
+		if (other == this) return true;
+		if (other == null) return false;
+		if (getClass() != other.getClass()) return false;
+		Jnipap jnipap = (Jnipap)other;
+
+		return (id == jnipap.id || id.equals(jnipap.id));
+
+	}
 
 	/**
 	 * Add value to hash map unless null.

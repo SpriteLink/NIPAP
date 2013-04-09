@@ -47,27 +47,28 @@ public class VRF extends Jnipap {
 		params.add(args);
 
 		// Create new or modify old?
-		String cmd;
+		Map vrf;
 		if (this.id == null) {
 
 			// ID null - create new VRF
-			cmd = "add_vrf";
+			vrf = (Map)conn.execute("add_vrf", params);
 
 		} else {
 
 			// VRF exists - modify existing.
 			args.put("vrf", vrf_spec);
-			cmd = "edit_vrf";
+			Object[] result = (Object[])conn.execute("edit_vrf", params);
+
+			if (result.length != 1) {
+				throw new JnipapException("VRF edit returned " + result.length + " entries, should be 1.");
+			}
+
+			vrf = (Map)result[0];
 
 		}
 
-		// perform operation
-		Integer result = (Integer)conn.execute(cmd, params);
-
-		// If we added a new VRF, fetch and set ID
-		if (this.id == null) {
-			this.id = result;
-		}
+		// Update VRF object with new data
+		VRF.fromMap(vrf, this);
 
 	}
 
@@ -263,7 +264,21 @@ public class VRF extends Jnipap {
 	 */
 	public static VRF fromMap(Map input) {
 
-		VRF vrf = new VRF();
+		return VRF.fromMap(input, new VRF());
+
+	}
+
+	/**
+	 * Update VRF object from map of VRF attributes
+	 *
+	 * Updates a VRF object with attributes from a Map as received over
+	 * XML-RPC
+	 *
+	 * @param input Map with VRF attributes
+	 * @param vrf VRF object to populate with attributes from map
+	 * @return VRF object
+	 */
+	public static VRF fromMap(Map input, VRF vrf) {
 
 		vrf.id = (Integer)input.get("id");
 		vrf.rt = (String)input.get("rt");
@@ -271,6 +286,37 @@ public class VRF extends Jnipap {
 		vrf.description = (String)input.get("description");
 
 		return vrf;
+
+	}
+
+	/**
+	 * Compute hash of VRF
+	 */
+	public int hashCode() {
+
+		int hash = super.hashCode();
+		hash = hash * 31 + (rt == null ? 0 : rt.hashCode());
+		hash = hash * 31 + (name == null ? 0 : name.hashCode());
+		hash = hash * 31 + (description == null ? 0 : description.hashCode());
+
+		return hash;
+
+	}
+
+	/**
+	 * Verify equality
+	 */
+	public boolean equals(Object other) {
+
+		if (!super.equals(other)) return false;
+		VRF vrf = (VRF)other;
+
+		return (
+			(rt == vrf.rt || (rt != null && rt.equals(vrf.rt))) &&
+			(name == vrf.name || (name != null && name.equals(vrf.name))) &&
+			(description == vrf.description ||
+				(description != null && description.equals(vrf.description)))
+		);
 
 	}
 

@@ -67,8 +67,8 @@ public class Prefix extends Jnipap {
 		params.add(args);
 
 		// perform operation
-		id = (Integer)conn.execute("add_prefix", params);
-		updateInstance(conn);
+		Map pref = (Map)conn.execute("add_prefix", params);
+		Prefix.fromMap(conn, pref, this);
 
 	}
 
@@ -101,13 +101,14 @@ public class Prefix extends Jnipap {
 		params.add(args);
 
 		// perform operation
-		id = (Integer)conn.execute("add_prefix", params);
-		updateInstance(conn);
+		Map pref = (Map)conn.execute("add_prefix", params);
+		Prefix.fromMap(conn, pref, this);
 
 	}
 
 	/**
-	 * Save changes made to existing prefix OR create new fully defined (not assigned from pool or other prefix) prefix
+	 * Save changes made to existing prefix OR create new fully defined (not
+	 * assigned from pool or other prefix) prefix
 	 */
 	public void save(Connection conn) throws JnipapException {
 
@@ -123,10 +124,12 @@ public class Prefix extends Jnipap {
 		params.add(args);
 
 		// Create new or modify old?
+		Map pref;
 		if (id == null) {
 
 			// ID null - create new prefix
-			id = (Integer)conn.execute("add_prefix", params);
+			pref = (Map)conn.execute("add_prefix", params);
+
 
 		} else {
 
@@ -134,30 +137,18 @@ public class Prefix extends Jnipap {
 			HashMap prefix_spec = new HashMap();
 			prefix_spec.put("id", id);
 			args.put("prefix", prefix_spec);
-			conn.execute("edit_prefix", params);
+
+			Object[] result = (Object[])conn.execute("edit_prefix", params);
+
+			if (result.length != 1) {
+				throw new JnipapException("Prefix edit returned " + result.length + " entries, should be 1.");
+			}
+
+			pref = (Map)result[0];
 
 		}
 
-		updateInstance(conn);
-
-	}
-
-	/**
-	 * Fetch current data from NIPAP and update instance
-	 */
-	private void updateInstance(Connection conn) throws JnipapException {
-
-		// Get new prefix data
-		Prefix p = Prefix.get(conn, id);
-
-		// assign data which might have changed
-		prefix = p.prefix;
-		display_prefix = p.display_prefix;
-		indent = p.indent;
-		family = p.family;
-		authoritative_source = p.authoritative_source;
-		alarm_priority = p.alarm_priority;
-		monitor = p.monitor;
+		Prefix.fromMap(conn, pref, this);
 
 	}
 
@@ -391,7 +382,22 @@ public class Prefix extends Jnipap {
 	 */
 	public static Prefix fromMap(Connection conn, Map input) throws JnipapException {
 
-		Prefix prefix = new Prefix();
+		return Prefix.fromMap(conn, input, new Prefix());
+
+	}
+
+	/**
+	 * Create prefix object from map of prefix attributes
+	 *
+	 * Update a Prefix object with attributes from map as received over
+	 * XML-RPC.
+	 *
+	 * @param input Map with prefix attributes
+	 * @param conn Connection with auth options
+	 * @param prefix Prefix object to populate with attributes from map
+	 * @return Prefix object
+	 */
+	public static Prefix fromMap(Connection conn, Map input, Prefix prefix) throws JnipapException {
 
 		prefix.id = (Integer)input.get("id");
 		prefix.family = (Integer)input.get("family");
@@ -423,6 +429,97 @@ public class Prefix extends Jnipap {
 		}
 
 		return prefix;
+
+	}
+
+	/**
+	 * Compute hash of prefix
+	 */
+	public int hashCode() {
+
+		int hash = super.hashCode();
+		hash = hash * 31 + (family == null ? 0 : family.hashCode());
+		hash = hash * 31 + (vrf == null ? 0 : vrf.hashCode());
+		hash = hash * 31 + (prefix == null ? 0 : prefix.hashCode());
+		hash = hash * 31 + (display_prefix == null ? 0 : display_prefix.hashCode());
+		hash = hash * 31 + (description == null ? 0 : description.hashCode());
+		hash = hash * 31 + (comment == null ? 0 : comment.hashCode());
+		hash = hash * 31 + (node == null ? 0 : node.hashCode());
+		hash = hash * 31 + (pool == null ? 0 : pool.hashCode());
+		hash = hash * 31 + (type == null ? 0 : type.hashCode());
+		hash = hash * 31 + (indent == null ? 0 : indent.hashCode());
+		hash = hash * 31 + (country == null ? 0 : country.hashCode());
+		hash = hash * 31 + (order_id == null ? 0 : order_id.hashCode());
+		hash = hash * 31 + (external_key == null ? 0 : external_key.hashCode());
+		hash = hash * 31 +
+			(authoritative_source == null ? 0 : authoritative_source.hashCode());
+		hash = hash * 31 + (alarm_priority == null ? 0 : alarm_priority.hashCode());
+		hash = hash * 31 + (monitor == null ? 0 : monitor.hashCode());
+		hash = hash * 31 + (display == null ? 0 : display.hashCode());
+		hash = hash * 31 + (match == null ? 0 : match.hashCode());
+		hash = hash * 31 + (children == null ? 0 : children.hashCode());
+
+		return hash;
+
+	}
+
+	/**
+	 * Verify equality
+	 */
+	public boolean equals(Object other) {
+
+		if (!super.equals(other)) return false;
+		Prefix pref = (Prefix)other;
+
+		return (
+			(family == pref.family ||
+				(family != null && family.equals(pref.family))) &&
+			(vrf == pref.vrf ||
+				(vrf != null && vrf.equals(pref.vrf))) &&
+			(description == pref.description ||
+				(description != null &&
+					description.equals(pref.description))) &&
+			(prefix == pref.prefix ||
+				(prefix != null && prefix.equals(pref.prefix))) &&
+			(display_prefix == pref.display_prefix ||
+				(display_prefix != null &&
+					display_prefix.equals(pref.display_prefix))) &&
+			(description == pref.description ||
+				(description != null &&
+					description.equals(pref.description))) &&
+			(comment == pref.comment ||
+				(comment != null &&
+					comment.equals(pref.comment))) &&
+			(node == pref.node ||
+				(node != null && node.equals(pref.node))) &&
+			(pool == pref.pool ||
+				(pool != null && pool.equals(pref.pool))) &&
+			(type == pref.type ||
+				(type != null && type.equals(pref.type))) &&
+			(indent == pref.indent ||
+				(indent != null && indent.equals(pref.indent))) &&
+			(country == pref.country ||
+				(country != null && country.equals(pref.country))) &&
+			(order_id == pref.order_id ||
+				(order_id != null && order_id.equals(pref.order_id))) &&
+			(external_key == pref.external_key ||
+				(external_key != null &&
+					external_key.equals(pref.external_key))) &&
+			(authoritative_source == pref.authoritative_source ||
+				(authoritative_source != null &&
+					authoritative_source.equals(pref.authoritative_source))) &&
+			(alarm_priority == pref.alarm_priority ||
+				(alarm_priority != null &&
+					alarm_priority.equals(pref.alarm_priority))) &&
+			(monitor == pref.monitor ||
+				(monitor != null && monitor.equals(pref.monitor))) &&
+			(display == pref.display ||
+				(display != null && display.equals(pref.display))) &&
+			(match == pref.match ||
+				(match != null && match.equals(pref.match))) &&
+			(children == pref.children ||
+				(children != null && children.equals(pref.children)))
+		);
 
 	}
 
