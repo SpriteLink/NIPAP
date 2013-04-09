@@ -1,3 +1,11 @@
+Version 0.17.0
+--------------
+ * NIPAP backend now returns full object instead of only ID after add_* and
+   edit_* operations
+ * Prefixes expanded in web UI now uses search query to correctly set 'match'
+   attribute on prefixes
+ * Fixed a few web UI and CLI bugs/annoyancies
+
 Version 0.16.1
 --------------
  * Fix: Currently selected VRFs now shown in VRF selector (again)
