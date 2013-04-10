@@ -1,3 +1,15 @@
+nipap-www (0.17.0-1) stable; urgency=low
+
+  * NIPAP backend now returns full object instead of only ID after add_* and
+    edit_* operations
+  * Prefixes expanded in web UI now uses search query to correctly set 'match'
+    attribute on prefixes
+  * Restructuring of Java client library
+  * Various improvements to web UI and CLI, including fixing a few
+    bugs/annoyances
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 10 Apr 2013 09:08:12 +0200
+
 nipap-www (0.16.1-1) stable; urgency=low
 
   * Fix: Currently selected VRFs now shown in VRF selector (again)

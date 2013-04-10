@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nipap-www',
-    version='0.16.1',
+    version='0.17.0',
     description='web frontend for NIPAP',
     author='Kristian Larsson, Lukas Garberg',
     author_email='kll@tele2.net, lukas@spritelink.net',
