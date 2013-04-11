@@ -39,6 +39,15 @@ class TestHelper:
         n._execute("DELETE FROM ip_net_asn")
 
 
+    def add_prefix(self, prefix, type, description):
+        p = Prefix()
+        p.prefix = prefix
+        p.type = type
+        p.description = description
+        p.save()
+        return p
+
+
 
 
 class TestParentPrefix(unittest.TestCase):
@@ -102,6 +111,47 @@ class TestParentPrefix(unittest.TestCase):
         p.description = description
         p.save()
         return p
+
+
+
+class TestPrefixIndent(unittest.TestCase):
+    """ Test prefix indent calculation
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+
+    def test_prefix_edit(self):
+        """ Verify indent is correct after prefix edit
+        """
+        th = TestHelper()
+        # add a few prefixes
+        p1 = th.add_prefix('192.168.0.0/16', 'reservation', 'test')
+        p2 = th.add_prefix('192.168.0.0/24', 'reservation', 'test')
+        p3 = th.add_prefix('192.168.1.0/24', 'reservation', 'test')
+
+        # now edit the "middle prefix" so that it now covers 192.168.1.0/24
+        p3.prefix = '192.168.0.0/20'
+        p3.save()
+
+        expected = []
+        # expected result is a list of list, each row is a prefix, first value is prefix, next is indent level
+        # notice how p2 and p3 switch places efter the edit
+        expected.append([p1.prefix, 0])
+        expected.append([p3.prefix, 1])
+        expected.append([p2.prefix, 2])
+
+        res = Prefix.smart_search('0.0.0.0/0', {})
+        result = []
+        for prefix in res['result']:
+            result.append([prefix.prefix, prefix.indent])
+
+        self.assertEqual(expected, result)
+
 
 
 if __name__ == '__main__':
