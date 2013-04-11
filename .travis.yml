@@ -20,6 +20,7 @@ script:
     - sudo ./nipapd --no-pid-file
     - cd ../tests
     - nosetests xmlrpc.py
+    - nosetests nipaptest.py
 
 notifications:
   irc:
