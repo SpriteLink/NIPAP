@@ -2797,12 +2797,11 @@ class Nipap:
             vrf_id = 0
             if parent_prefix['vrf_id']:
                 vrf_id = parent_prefix['vrf_id']
-            query_parent_prefix = " (p1.vrf_id = %s AND iprange(p1.prefix) <<= iprange('%s') AND p1.indent <= %s) " % (vrf_id, parent_prefix['prefix'], parent_prefix['indent'] + 1)
-            join_parent_prefix = " OR %s" % query_parent_prefix
-            where_parent_prefix = " AND %s" % query_parent_prefix
+            where_parent_prefix = " WHERE (p1.vrf_id = %s AND iprange(p1.prefix) <<= iprange('%s') AND p1.indent <= %s) " % (vrf_id, parent_prefix['prefix'], parent_prefix['indent'] + 1)
+            left_join = 'LEFT OUTER'
         else:
-            join_parent_prefix = ''
             where_parent_prefix = ''
+            left_join = ''
 
         display = '(p1.prefix << p2.display_prefix OR p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (parents_selector, children_selector)
 
@@ -2869,36 +2868,37 @@ class Nipap:
             (""" + display + """) AS display,
             CASE WHEN p1.prefix = p2.prefix THEN true ELSE false END AS match
             FROM ip_net_plan AS p1
-            JOIN ip_net_plan AS p2 ON
+            -- possible set LEFT OUTER JOIN, if we are doing a parent_prefix operation
+            """ + left_join + """ JOIN ip_net_plan AS p2 ON
             (
                 (
                     (p1.vrf_id = p2.vrf_id)
                     AND
                     (
-                        -- Join in the parents which were requested
+                        -- Join in the parents (p1) of matching prefixes (p2)
                         (iprange(p1.prefix) >>= iprange(p2.prefix) """ + where_parents + """)
                         OR
-                        -- Join in the children which were requested
+                        -- Join in the children (p1) of matching prefixes (p2)
                         (iprange(p1.prefix) << iprange(p2.prefix) """ + where_children + """)
                         OR
-                        -- Join in all neighbors to the matched prefix
+                        -- Join in all neighbors (p1) of matching prefixes (p2)
                         (iprange(p1.prefix) << iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
                     )
                 )
-                -- Join on the parent_prefix in addition to having it in the
-                -- WHERE part of the query as this speeds up the JOIN tremendously
-                """ + join_parent_prefix + """
+                -- set match conditions for p2
+                AND p2.id IN (
+                    SELECT inp.id FROM ip_net_plan AS inp JOIN ip_net_vrf AS vrf ON inp.vrf_id = vrf.id LEFT JOIN ip_net_pool AS pool ON inp.pool_id = pool.id
+                        WHERE """ + where + """
+                    ORDER BY vrf_rt_order(vrf.rt) NULLS FIRST, prefix
+                    LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
+                )
             )
             JOIN ip_net_vrf AS vrf ON (p1.vrf_id = vrf.id)
             LEFT JOIN ip_net_pool AS pool ON (p1.pool_id = pool.id)
-            WHERE p2.id IN (
-                SELECT inp.id FROM ip_net_plan AS inp JOIN ip_net_vrf AS vrf ON inp.vrf_id = vrf.id LEFT JOIN ip_net_pool AS pool ON inp.pool_id = pool.id
-                    WHERE """ + where + """
-                ORDER BY vrf_rt_order(vrf.rt) NULLS FIRST, prefix
-                LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
-                )
-                """ + where_parent_prefix + """
+            -- possible set where conditions, if we are doing a parent_prefix operation
+            """ + where_parent_prefix + """
             ORDER BY vrf_rt_order(vrf.rt) NULLS FIRST, p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf_rt_order(vrf_rt) NULLS FIRST, prefix"
+
 
         self._execute(sql, opt)
 
