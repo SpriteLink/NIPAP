@@ -5,6 +5,7 @@ import unittest
 import sys
 sys.path.insert(0, '..')
 sys.path.insert(0, '../pynipap')
+sys.path.insert(0, '../nipap')
 
 import nipap.nipap
 from nipap.authlib import SqliteAuth
