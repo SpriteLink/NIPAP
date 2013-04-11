@@ -19,6 +19,28 @@ o = AuthOptions({
         'authoritative_source': 'nipap'
         })
 
+
+class TestHelper:
+
+    @classmethod
+    def clear_database(cls):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = nipap.nipap.Nipap()
+
+        # have to delete hosts before we can delete the rest
+        n._execute("DELETE FROM ip_net_plan WHERE masklen(prefix) = 32")
+        # the rest
+        n._execute("DELETE FROM ip_net_plan")
+        # delete all except for the default VRF with id 0
+        n._execute("DELETE FROM ip_net_vrf WHERE id > 0")
+        # set default info for VRF 0
+        n._execute("UPDATE ip_net_vrf SET name = 'default', description = 'The default VRF, typically the Internet.' WHERE id = 0")
+        n._execute("DELETE FROM ip_net_pool")
+        n._execute("DELETE FROM ip_net_asn")
+
+
+
+
 class TestParentPrefix(unittest.TestCase):
     """ Test parent prefix related stuff
     """
@@ -26,19 +48,7 @@ class TestParentPrefix(unittest.TestCase):
     def setUp(self):
         """ Test setup, which essentially means to empty the database
         """
-        self.cfg = NipapConfig('/etc/nipap/nipap.conf')
-        self.nipap = nipap.nipap.Nipap()
-
-        # have to delete hosts before we can delete the rest
-        self.nipap._execute("DELETE FROM ip_net_plan WHERE masklen(prefix) = 32")
-        # the rest
-        self.nipap._execute("DELETE FROM ip_net_plan")
-        # delete all except for the default VRF with id 0
-        self.nipap._execute("DELETE FROM ip_net_vrf WHERE id > 0")
-        # set default info for VRF 0
-        self.nipap._execute("UPDATE ip_net_vrf SET name = 'default', description = 'The default VRF, typically the Internet.' WHERE id = 0")
-        self.nipap._execute("DELETE FROM ip_net_pool")
-        self.nipap._execute("DELETE FROM ip_net_asn")
+        TestHelper.clear_database()
 
 
 
