@@ -2836,6 +2836,7 @@ class Nipap:
                 THEN 0
             WHEN type = 'assignment'
                 THEN CASE
+                    -- TODO: shouldn't this be > 0 ?
                     WHEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) > 1
                         -- do not include the parent prefix in count
                         THEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) - 1
