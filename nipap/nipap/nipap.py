@@ -2836,7 +2836,15 @@ class Nipap:
                 THEN 0
             WHEN type = 'assignment'
                 THEN CASE
-                    -- TODO: shouldn't this be > 0 ?
+                    -- for all assignments, count number of children.
+                    --
+                    -- the inner query either returns no children or all
+                    -- children for an assignment, so if we have more than one
+                    -- (the parent assignment) we know we have all children
+                    -- and can count them.
+                    --
+                    -- display_prefix casted to cidr throws away the host bits
+                    -- and in effect is the number of children of an assignment
                     WHEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) > 1
                         -- do not include the parent prefix in count
                         THEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) - 1
