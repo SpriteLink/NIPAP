@@ -209,8 +209,11 @@ class Command:
 
                 # if we are in scoop-rest-mode, place elements not matching
                 # anything in argument-array
-                if not match and self._scoop_rest_arguments:
-                    self.arg.append(p)
+                if not match:
+                    if self._scoop_rest_arguments:
+                        self.arg.append(p)
+                    else:
+                        raise InvalidCommand("Invalid argument: " + p)
 
             else:
                 raise InvalidCommand('ran out of parameters; command too long')
