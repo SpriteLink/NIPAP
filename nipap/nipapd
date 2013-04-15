@@ -21,8 +21,13 @@ if __name__ == '__main__':
     parser.add_option("-c", "--config", dest="config_file", type="string", default="/etc/nipap/nipap.conf", help="read configuration from file CONFIG_FILE")
     parser.add_option("-P", "--pid-file", type="string", help="write a PID file to PID_FILE")
     parser.add_option("--no-pid-file", action="store_true", default=False, help="turn off writing PID file (overrides config file)")
+    parser.add_option("--version", action="store_true", help="display version information and exit")
 
     (options, args) = parser.parse_args()
+
+    if options.version:
+        print "nipapd version:", nipap.__version__
+        sys.exit(0)
 
     logger = logging.getLogger()
     nullh = logging.FileHandler('/dev/null')
