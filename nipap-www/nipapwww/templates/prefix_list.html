@@ -48,9 +48,9 @@
         // the floating column header
         $(document).ready(function() {
             var div = $('#floating_prefix_header');
-            var start = $('#fixed_prefix_header').offset().top;
 
             $.event.add(window, "scroll", function() {
+                var start = $('#fixed_prefix_header').offset().top;
                 var p = $(window).scrollTop();
                 $(div).css('visibility', ((p)>start) ? 'visible' : 'hidden');
             });
