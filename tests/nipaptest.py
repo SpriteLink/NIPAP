@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, '..')
 sys.path.insert(0, '../pynipap')
 sys.path.insert(0, '../nipap')
+sys.path.insert(0, '../nipap-cli')
 
 import nipap.nipap
 from nipap.authlib import SqliteAuth
@@ -188,6 +189,24 @@ class TestCountryCodeValue(unittest.TestCase):
 
         # output should be capitalized
         self.assertEqual('SE', p.country)
+
+
+
+class TestCli(unittest.TestCase):
+    """ CLI tests
+    """
+
+    def test_extra_args(self):
+        """ Extra arg should raise exception
+        """
+        from nipap_cli.command import Command, InvalidCommand
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+
+        # 'FOO' should not be there and should raise an exception
+        with self.assertRaisesRegexp(InvalidCommand, 'Invalid argument:'):
+            cmd = Command(nipap_cli.cmds, ['address', 'modify', '1.3.3.1/32', 'vrf_rt', 'none', 'set', 'FOO' ])
+
 
 
 if __name__ == '__main__':
