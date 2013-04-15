@@ -1179,6 +1179,12 @@ function receivePrefixList(search_result) {
  */
 function receivePrefixListUpdate(search_result, link_type) {
 
+	// Error?
+	if ('error' in search_result) {
+		showDialogNotice("Error", prefix.message);
+		return;
+	}
+
 	pref_list = search_result.result;
 
 	// If we got result from a search-operation with a parent_prefix set, we're

@@ -442,9 +442,13 @@ class Nipap:
                 except:
                     pass
                 else:
-                    raise NipapDuplicateError("Duplicate value for '" + column_desc + "', the value '" + column_value + "' is already in use.")
+                    raise NipapDuplicateError("Duplicate value for '" +
+                        str(column_desc) + "', the value '" +
+                        str(column_value) + "' is already in use.")
 
-                raise NipapDuplicateError("Duplicate value for '" + column_desc + "', the value you have inputted is already in use.")
+                raise NipapDuplicateError("Duplicate value for '" +
+                    str(column_desc) +
+                    "', the value you have inputted is already in use.")
 
             raise NipapError(str(e))
 
