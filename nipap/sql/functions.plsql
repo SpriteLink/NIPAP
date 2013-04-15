@@ -406,6 +406,21 @@ BEGIN
 		END IF;
 	END IF;
 
+	-- Check country code- value needs to be a two letter country code
+	-- according to ISO 3166-1 alpha-2
+	--
+	-- We do not check that the actual value is in ISO 3166-1, because that
+	-- would entail including a full listing of country codes which we do not want
+	-- as we risk including an outdated one. We don't want to force users to
+	-- upgrade merely to get a new ISO 3166-1 list.
+	IF TG_OP = 'INSERT' OR OLD.country != NEW.country THEN
+		NEW.country = upper(NEW.country);
+		IF NEW.country !~ '^[A-Z]{2}$' THEN
+			RAISE EXCEPTION '1200: Please enter a two letter country code according to ISO 3166-1 alpha-2';
+		END IF;
+	END IF;
+
+	-- all is well, return
 	RETURN NEW;
 END;
 $_$ LANGUAGE plpgsql;

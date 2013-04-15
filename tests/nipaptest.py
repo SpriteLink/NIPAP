@@ -60,7 +60,6 @@ class TestParentPrefix(unittest.TestCase):
         TestHelper.clear_database()
 
 
-
     def test_parent_prefix(self):
         """ Verify that listing with parent_prefix returns match for 'foo'
         """
@@ -79,7 +78,6 @@ class TestParentPrefix(unittest.TestCase):
             result.append([prefix.prefix, prefix.match])
 
         self.assertEqual(expected, result)
-
 
 
     def test_parent_prefix2(self):
@@ -124,7 +122,6 @@ class TestPrefixIndent(unittest.TestCase):
         TestHelper.clear_database()
 
 
-
     def test_prefix_edit(self):
         """ Verify indent is correct after prefix edit
         """
@@ -152,6 +149,45 @@ class TestPrefixIndent(unittest.TestCase):
 
         self.assertEqual(expected, result)
 
+
+
+class TestCountryCodeValue(unittest.TestCase):
+    """ Test sanity for country value - should be ISO 3166-1 alpha-2 compliant
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_country_code_length(self):
+        """ Make sure only two character country codes are allowed
+        """
+        p = Prefix()
+        p.prefix = '1.3.3.0/24'
+        p.type = 'assignment'
+        # try to input one character - should fail
+        p.country = 'a'
+        with self.assertRaisesRegexp(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
+            p.save()
+
+        # try to input three character - should fail
+        p.country = 'aaa'
+        with self.assertRaisesRegexp(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
+            p.save()
+
+        # try to input a number character - should fail
+        p.country = 'a1'
+        with self.assertRaisesRegexp(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
+            p.save()
+
+        # try to input two character - should succeed
+        p.country = 'se'
+        p.save()
+
+        # output should be capitalized
+        self.assertEqual('SE', p.country)
 
 
 if __name__ == '__main__':
