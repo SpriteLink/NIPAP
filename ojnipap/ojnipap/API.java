@@ -374,7 +374,7 @@ public class API {
 		try {
 			oconn = DriverManager.getConnection("jdbc:default:connection:");
 			desc = ArrayDescriptor.createDescriptor(type_name, oconn);
-			ret = new ARRAY(desc, oconn, (Object)data);
+			ret = new ARRAY(desc, oconn, data);
 		} catch(SQLException e) {
 			throw new JnipapException(e.toString());
 		}

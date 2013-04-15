@@ -31,7 +31,7 @@ public class OVRF extends jnipap.VRF implements SQLData {
 	public void readSQL(SQLInput stream, String typeName) throws SQLException {
 		
 		// Read data from stream
-		id = Helpers.integerOrNull((BigDecimal)stream.readBigDecimal());
+		id = Helpers.integerOrNull(stream.readBigDecimal());
 		rt = stream.readString();
 		name = stream.readString();
 		description = stream.readString();
