@@ -4,7 +4,7 @@
 """
 import logging
 
-from pylons import request, session, url, tmpl_context
+from pylons import request, session, url, tmpl_context as c
 from pylons.controllers import WSGIController
 from pylons.controllers.util import redirect
 from pylons.templating import render_jinja2 as render
@@ -25,7 +25,7 @@ class BaseController(WSGIController):
         """
 
         # Add version to template context
-        tmpl_context.version = nipapwww.__version__
+        c.www_version = nipapwww.__version__
 
         # set authentication options
         o = AuthOptions(
