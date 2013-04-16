@@ -1,20 +1,20 @@
 from setuptools import setup, find_packages
-#from distutils.core import setup
+import nipapwww
 
 setup(
     name='nipap-www',
-    version='0.17.0',
+    version=nipapwww.__version__,
     description='web frontend for NIPAP',
-    author='Kristian Larsson, Lukas Garberg',
-    author_email='kll@tele2.net, lukas@spritelink.net',
-    url='http://SpriteLink.github.com/NIPAP',
+    author=nipapwww.__author__,
+    author_email=nipapwww.__author_email__,
+    url=nipapwww.__url__,
     install_requires=[
         "Pylons>=1.0",
         "Jinja2",
         "pynipap",
         "nipap"
     ],
-    license='MIT',
+    license=nipapwww.__license__,
 #    setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
