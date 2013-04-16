@@ -888,3 +888,22 @@ tbody.listing > tr:hover {
     margin-top: 30px;
     margin-bottom: 30px;
 }
+
+/*
+ * Display version in bottom-left corner
+ */
+.version {
+    font-size: 10px;
+    color: #777777;
+    text-align: center;
+    padding-left: 7px;
+    padding-right: 7px;
+    display: -moz-inline-stack;
+    display: inline-block;
+    zoom: 1;
+    *display: inline;
+    position: fixed;
+    left: 0px;
+    bottom: 0px;
+    z-index: 2;
+}

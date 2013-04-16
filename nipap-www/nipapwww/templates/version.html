@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-title">Version</div>
+
+<div class="options-group">
+	<div class="options-content">
+
+		<h3 class="options-group-heading">Version information</h3>
+
+		<div class="option">
+			<dl>
+				<dt>
+					nipap-www
+				</dt>
+				<dd>
+					{{ c.www_version }}
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt>
+					pynipap
+				</dt>
+				<dd>
+					{{ c.pynipap_version }}
+				</dd>
+			</dl>
+		</div>
+    </div>
+</div>
+
+{% endblock %}
