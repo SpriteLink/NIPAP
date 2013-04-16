@@ -47,7 +47,7 @@ Object operations
 
 Bugs / Caveats
 ==============
-Not all operations supported by the NIPAP backend are possible to perform through the CLI, for example expanding or shrinking a pool. That needs to be done through the interface.
+Not all operations supported by the NIPAP backend are possible to perform through the CLI, for example expanding or shrinking a pool. That needs to be done through the web interface.
 
 Examples
 ========
