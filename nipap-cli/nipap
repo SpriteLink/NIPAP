@@ -7,7 +7,8 @@
 import logging
 import sys
 
-from nipap_cli import nipap_cli
+import nipap_cli
+import nipap_cli.nipap_cli
 from nipap_cli.command import Command, CommandError
 from pynipap import NipapError
 
@@ -29,8 +30,20 @@ if __name__ == '__main__':
     nullh = NullHandler()
     logger.addHandler(nullh)
 
+    import optparse
+    parser = optparse.OptionParser()
+    parser.add_option("--version", action="store_true", help="display version information and exit")
+
+    (options, args) = parser.parse_args()
+
+    if options.version:
+        import pynipap
+        print "nipap CLI client version:", nipap_cli.__version__
+        print "pynipap version", pynipap.__version__
+        sys.exit(0)
+
     try:
-        cmd = Command(nipap_cli.cmds, sys.argv[1::])
+        cmd = Command(nipap_cli.nipap_cli.cmds, sys.argv[1::])
     except (ValueError, CommandError, NipapError) as exc:
         print >> sys.stderr, "Error: %s" % str(exc)
         sys.exit(1)
