@@ -247,6 +247,8 @@ def list_vrf(arg, opts):
     """ List VRFs matching a search criteria
     """
 
+    # rt is a regexp match on the VRF RT but as most people don't expect to see
+    # 123:123 in the result when searching for '123:1', we anchor it per default
     if 'rt' in opts:
         opts['rt'] = '^' + opts['rt'] + '$'
     query = _expand_list_query(opts)
