@@ -4,12 +4,13 @@
 """
 import logging
 
-from pylons import request, session, url
+from pylons import request, session, url, tmpl_context
 from pylons.controllers import WSGIController
 from pylons.controllers.util import redirect
 from pylons.templating import render_jinja2 as render
 
 from pynipap import AuthOptions
+import nipapwww
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +23,9 @@ class BaseController(WSGIController):
         """ Perform actions before action method is invoked.
             Deals with authentication.
         """
+
+        # Add version to template context
+        tmpl_context.version = nipapwww.__version__
 
         # set authentication options
         o = AuthOptions(
