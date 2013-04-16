@@ -136,7 +136,7 @@ class Command:
                 # and set children to the option argument
                 self.children = { 'argument': key_val['argument'] }
 
-            if option_parsing and p == key_name:
+            if option_parsing and p == key_name and key_name in self.children:
                 del self.children[key_name]
 
 

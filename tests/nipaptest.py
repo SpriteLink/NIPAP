@@ -209,6 +209,22 @@ class TestCli(unittest.TestCase):
 
 
 
+class TestNipapHelper(unittest.TestCase):
+    """ Test sanity for country value - should be ISO 3166-1 alpha-2 compliant
+    """
+    def test_test1(self):
+        from nipap_cli.command import Command, InvalidCommand
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+
+        cmd = Command(nipap_cli.cmds, ['vrf', 'list', 'nam'])
+        self.assertEqual(['name'], sorted(cmd.complete()))
+
+        cmd = Command(nipap_cli.cmds, ['vrf', 'list', 'name'])
+        self.assertEqual(['name'], sorted(cmd.complete()))
+
+
+
 if __name__ == '__main__':
 
     # set up logging
