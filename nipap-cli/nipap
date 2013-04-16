@@ -39,7 +39,23 @@ if __name__ == '__main__':
     if options.version:
         import pynipap
         print "nipap CLI client version:", nipap_cli.__version__
-        print "pynipap version", pynipap.__version__
+        print "pynipap version:", pynipap.__version__
+
+        nipapd_version = 'unknown'
+        try:
+            pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
+                    'username': nipap_cli.nipap_cli.cfg.get('global', 'username'),
+                    'password': nipap_cli.nipap_cli.cfg.get('global', 'password'),
+                    'hostname': nipap_cli.nipap_cli.cfg.get('global', 'hostname'),
+                    'port'    : nipap_cli.nipap_cli.cfg.get('global', 'port')
+                }
+            ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
+            nipapd_version = pynipap.nipapd_version()
+        except:
+            pass
+
+        print "nipapd version:", nipapd_version
+
         sys.exit(0)
 
     try:
