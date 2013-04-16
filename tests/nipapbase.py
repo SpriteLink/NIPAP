@@ -6,7 +6,7 @@ import unittest
 import sys
 sys.path.insert(0, '../nipap/')
 
-import nipap.nipap
+from nipap.backend import Nipap, NipapError, NipapInputError, NipapMissingInputError, NipapExtraneousInputError, NipapValueError
 from nipap.authlib import SqliteAuth
 from nipap.nipapconfig import NipapConfig
 
@@ -21,7 +21,7 @@ class NipapTest(unittest.TestCase):
         """
 
         cfg = NipapConfig('/etc/nipap/nipap.conf')
-        self.nipap = nipap.nipap.Nipap()
+        self.nipap = Nipap()
 
         # create dummy auth object
         # As the authentication is performed before the query hits the Nipap
@@ -152,11 +152,11 @@ class NipapTest(unittest.TestCase):
                 'crap': 'this is just some crap'
                 }
         # missing everything
-        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap.add_schema, self.auth, { })
+        self.assertRaises(NipapMissingInputError, self.nipap.add_schema, self.auth, { })
         # missing description
-        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap.add_schema, self.auth, { 'name': 'crapson' })
+        self.assertRaises(NipapMissingInputError, self.nipap.add_schema, self.auth, { 'name': 'crapson' })
         # have required and extra crap
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap.add_schema, self.auth, attrs)
+        self.assertRaises(NipapExtraneousInputError, self.nipap.add_schema, self.auth, attrs)
 
 
 
@@ -168,23 +168,23 @@ class NipapTest(unittest.TestCase):
             the separately.
         """
         # wrong type
-        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_schema_spec, 'string')
+        self.assertRaises(NipapInputError, self.nipap._expand_schema_spec, 'string')
         # wrong type
-        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_schema_spec, 1)
+        self.assertRaises(NipapInputError, self.nipap._expand_schema_spec, 1)
         # wrong type
-        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_schema_spec, [])
+        self.assertRaises(NipapInputError, self.nipap._expand_schema_spec, [])
         # missing keys
-        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap._expand_schema_spec, { })
+        self.assertRaises(NipapMissingInputError, self.nipap._expand_schema_spec, { })
         # crap key
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_schema_spec, { 'crap': self.schema_attrs['name'] })
+        self.assertRaises(NipapExtraneousInputError, self.nipap._expand_schema_spec, { 'crap': self.schema_attrs['name'] })
         # required keys and extra crap
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_schema_spec, { 'name': self.schema_attrs['name'], 'crap': 'crap' })
+        self.assertRaises(NipapExtraneousInputError, self.nipap._expand_schema_spec, { 'name': self.schema_attrs['name'], 'crap': 'crap' })
         # proper key but incorrect value (int vs string)
-        self.assertRaises(nipap.nipap.NipapValueError, self.nipap._expand_schema_spec, { 'id': '3' })
+        self.assertRaises(NipapValueError, self.nipap._expand_schema_spec, { 'id': '3' })
         # proper key but incorrect value (int vs string)
-        self.assertRaises(nipap.nipap.NipapValueError, self.nipap._expand_schema_spec, { 'name': 3 })
+        self.assertRaises(NipapValueError, self.nipap._expand_schema_spec, { 'name': 3 })
         # both id and name
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_schema_spec, { 'id': 3, 'name': '3' })
+        self.assertRaises(NipapExtraneousInputError, self.nipap._expand_schema_spec, { 'id': 3, 'name': '3' })
         # proper key - id
         where, params = self.nipap._expand_schema_spec({ 'id': 3 })
         self.assertEqual(where, 'id = %(spec_id)s', "Improperly expanded WHERE clause")
@@ -208,7 +208,7 @@ class NipapTest(unittest.TestCase):
                 'crap': 'this is just some crap'
                 }
         # spec is tested elsewhere, just test attrs part
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap.edit_schema, self.auth, { 'name': self.schema_attrs['name'] }, crap_attrs)
+        self.assertRaises(NipapExtraneousInputError, self.nipap.edit_schema, self.auth, { 'name': self.schema_attrs['name'] }, crap_attrs)
 
 
 
@@ -217,7 +217,7 @@ class NipapTest(unittest.TestCase):
 
         """
         # TODO: what do we really expect?
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap.list_schema, self.auth, { 'crap': 'crap crap' })
+        self.assertRaises(NipapExtraneousInputError, self.nipap.list_schema, self.auth, { 'crap': 'crap crap' })
 
 
 
@@ -232,7 +232,7 @@ class NipapTest(unittest.TestCase):
                 'description': 'Testing dupe'
                 }
         self.nipap.add_schema(self.auth, schema_attrs)
-        self.assertRaises(nipap.nipap.NipapDuplicateError, self.nipap.add_schema, self.auth, schema_attrs)
+        self.assertRaises(NipapDuplicateError, self.nipap.add_schema, self.auth, schema_attrs)
 
 
 
@@ -279,23 +279,23 @@ class NipapTest(unittest.TestCase):
         schema = {'id': self.schema_attrs['id']}
 
         # wrong type
-        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_pool_spec, 'string')
+        self.assertRaises(NipapInputError, self.nipap._expand_pool_spec, 'string')
         # wrong type
-        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_pool_spec, 1)
+        self.assertRaises(NipapInputError, self.nipap._expand_pool_spec, 1)
         # wrong type
-        self.assertRaises(nipap.nipap.NipapInputError, self.nipap._expand_pool_spec, [])
+        self.assertRaises(NipapInputError, self.nipap._expand_pool_spec, [])
         # missing keys
-        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap._expand_pool_spec, { })
+        self.assertRaises(NipapMissingInputError, self.nipap._expand_pool_spec, { })
         # crap key
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_pool_spec, { 'crap': self.pool_attrs['name'] })
+        self.assertRaises(NipapExtraneousInputError, self.nipap._expand_pool_spec, { 'crap': self.pool_attrs['name'] })
         # required keys and extra crap
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_pool_spec, { 'id': self.pool_attrs['id'], 'schema': self.schema_attrs['id'], 'crap': 'crap' })
+        self.assertRaises(NipapExtraneousInputError, self.nipap._expand_pool_spec, { 'id': self.pool_attrs['id'], 'schema': self.schema_attrs['id'], 'crap': 'crap' })
         # proper key but incorrect value (int vs string)
-        self.assertRaises(nipap.nipap.NipapValueError, self.nipap._expand_pool_spec, { 'id': '3', 'schema': self.schema_attrs['id'] })
+        self.assertRaises(NipapValueError, self.nipap._expand_pool_spec, { 'id': '3', 'schema': self.schema_attrs['id'] })
         # proper key but incorrect value (int vs string)
-        self.assertRaises(nipap.nipap.NipapValueError, self.nipap._expand_pool_spec, { 'name': 3, 'schema': self.schema_attrs['id'] })
+        self.assertRaises(NipapValueError, self.nipap._expand_pool_spec, { 'name': 3, 'schema': self.schema_attrs['id'] })
         # both id and name
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap._expand_pool_spec, { 'id': 3, 'name': '3', 'schema': self.schema_attrs['id'] })
+        self.assertRaises(NipapExtraneousInputError, self.nipap._expand_pool_spec, { 'id': 3, 'name': '3', 'schema': self.schema_attrs['id'] })
         # proper key - id
         where, params = self.nipap._expand_pool_spec({ 'id': 3, 'schema': self.schema_attrs['id'] })
         self.assertEqual(where, 'po.id = %(spec_id)s AND po.schema = %(spec_schema)s', "Improperly expanded WHERE clause")
@@ -357,7 +357,7 @@ class NipapTest(unittest.TestCase):
                 'default_type': 'assignment',
                 'description': 'A simple test pool with correct name!'
                 }
-        self.assertRaises(nipap.nipap.NipapInputError, self.nipap.edit_pool, self.auth, schema, spec, attrs)
+        self.assertRaises(NipapInputError, self.nipap.edit_pool, self.auth, schema, spec, attrs)
 
 
 
@@ -495,7 +495,7 @@ class NipapTest(unittest.TestCase):
         self.nipap.add_schema(self.auth, { 'name': 'testtest', 'description': 'another test schema!' })
         # pass different schemas in attr and args
         # TODO: Find something similar?
-        #self.assertRaises(nipap.nipap.NipapInputError, self.nipap.add_prefix, schema, { 'authoritative_source': 'nipap-test', 'description': 'tjong' }, { 'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
+        #self.assertRaises(NipapInputError, self.nipap.add_prefix, schema, { 'authoritative_source': 'nipap-test', 'description': 'tjong' }, { 'from-prefix': ['10.0.0.0/24'], 'prefix_length': 30 })
 
 
 
@@ -638,40 +638,40 @@ class NipapTest(unittest.TestCase):
         self.nipap.add_prefix(self.auth, schema, prefix_attrs)
 
         # no schema, should raise error!
-        self.assertRaises(nipap.nipap.NipapInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': ['100.0.0.0/16'] })
+        self.assertRaises(NipapInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': ['100.0.0.0/16'] })
 
         # incorrect from-prefix type, string instead of list of strings (looking like an IP address)
-        self.assertRaises(nipap.nipap.NipapInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': '100.0.0.0/16' })
+        self.assertRaises(NipapInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': '100.0.0.0/16' })
 
         # missing prefix_length
-        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16' ], 'count': 1 })
+        self.assertRaises(NipapMissingInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16' ], 'count': 1 })
 
         # try giving both IPv4 and IPv6 in from-prefix which shouldn't work
-        self.assertRaises(nipap.nipap.NipapInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16', '2a00:800::0/25' ], 'prefix_length': 24, 'count': 1 })
+        self.assertRaises(NipapInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16', '2a00:800::0/25' ], 'prefix_length': 24, 'count': 1 })
 
         # try giving non-integer as wanted prefix length
-        self.assertRaises(nipap.nipap.NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': '24', 'count': 1 })
+        self.assertRaises(NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': '24', 'count': 1 })
 
         # try giving to high a number as wanted prefix length for IPv4
-        self.assertRaises(nipap.nipap.NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 35, 'count': 1 })
+        self.assertRaises(NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 35, 'count': 1 })
 
         # try giving to high a number as wanted prefix length for IPv6
-        self.assertRaises(nipap.nipap.NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '2a00:800::1/25'], 'prefix_length': 150, 'count': 1 })
+        self.assertRaises(NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '2a00:800::1/25'], 'prefix_length': 150, 'count': 1 })
 
         # try giving a high number for result count (max is 1000)
-        self.assertRaises(nipap.nipap.NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 30, 'count': 55555 })
+        self.assertRaises(NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-prefix': [ '100.0.0.0/16'], 'prefix_length': 30, 'count': 55555 })
 
         # don't pass 'family', which is required when specifying 'from-pool'
-        self.assertRaises(nipap.nipap.NipapMissingInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1 })
+        self.assertRaises(NipapMissingInputError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1 })
 
         # pass crap as family, wrong type even
         self.assertRaises(ValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1, 'family': 'crap' })
 
         # pass 7 as family
-        self.assertRaises(nipap.nipap.NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1, 'family': 7 })
+        self.assertRaises(NipapValueError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': self.pool_attrs['name'] }, 'prefix_length': 24, 'count': 1, 'family': 7 })
 
         # pass non existent pool
-        self.assertRaises(nipap.nipap.NipapNonExistentError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': 'crap' }, 'prefix_length': 24, 'count': 1, 'family': 4 })
+        self.assertRaises(NipapNonExistentError, self.nipap.find_free_prefix, self.auth, schema, { 'from-pool': { 'name': 'crap' }, 'prefix_length': 24, 'count': 1, 'family': 4 })
 
 
 
@@ -770,10 +770,10 @@ class NipapTest(unittest.TestCase):
         self.assertEqual(data, p, "Prefix data incorrect after edit.")
 
         # create a collision
-        self.assertRaises(nipap.nipap.NipapError, self.nipap.edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'prefix': data['prefix']})
+        self.assertRaises(NipapError, self.nipap.edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'prefix': data['prefix']})
 
         # try to change schema - disallowed
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap_edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'schema': self.schema_attrs2['id']})
+        self.assertRaises(NipapExtraneousInputError, self.nipap_edit_prefix, self.auth, schema, {'id': self.prefix_attrs2['id']}, {'schema': self.schema_attrs2['id']})
 
 
 
@@ -789,7 +789,7 @@ class NipapTest(unittest.TestCase):
         self.assertEqual(self.nipap.add_asn(self.auth, data), 1, "add_asn did not return correct ASN.")
         asn = self.nipap.list_asn(self.auth, { 'asn': 1 })[0]
         self.assertEquals(data, asn, "ASN in database not equal to what was added.")
-        self.assertRaises(nipap.nipap.NipapDuplicateError, self.nipap.add_asn, self.auth, data)
+        self.assertRaises(NipapDuplicateError, self.nipap.add_asn, self.auth, data)
 
 
     def test_remove_asn(self):
@@ -819,7 +819,7 @@ class NipapTest(unittest.TestCase):
         asn = self.nipap.add_asn(self.auth, data)
         self.nipap.edit_asn(self.auth, data['asn'], { 'name': 'b0rk' })
         self.assertEquals(self.nipap.list_asn(self.auth, { 'asn': 3 })[0]['name'], 'b0rk', "Edited ASN still has it's old name.")
-        self.assertRaises(nipap.nipap.NipapExtraneousInputError, self.nipap.edit_asn, self.auth, {'asn': 3}, {'asn': 4, 'name': 'Test ASN #4'})
+        self.assertRaises(NipapExtraneousInputError, self.nipap.edit_asn, self.auth, {'asn': 3}, {'asn': 4, 'name': 'Test ASN #4'})
 
 
 

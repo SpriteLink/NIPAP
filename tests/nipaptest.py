@@ -8,7 +8,7 @@ sys.path.insert(0, '../pynipap')
 sys.path.insert(0, '../nipap')
 sys.path.insert(0, '../nipap-cli')
 
-import nipap.nipap
+from nipap.backend import Nipap
 from nipap.authlib import SqliteAuth
 from nipap.nipapconfig import NipapConfig
 
@@ -26,7 +26,7 @@ class TestHelper:
     @classmethod
     def clear_database(cls):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
-        n = nipap.nipap.Nipap()
+        n = Nipap()
 
         # have to delete hosts before we can delete the rest
         n._execute("DELETE FROM ip_net_plan WHERE masklen(prefix) = 32")
