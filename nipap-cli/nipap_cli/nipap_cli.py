@@ -82,9 +82,9 @@ def get_vrf(arg = None, opts = None, abort = False):
     else:
         vrf_rt = arg
 
-    if vrf_rt == 'none':
+    if vrf_rt.lower() == 'none':
         vrf = VRF()
-    elif vrf_rt == 'all':
+    elif vrf_rt.lower() == 'all':
         vrf = VRF()
         vrf.rt = 'all'
     else:
