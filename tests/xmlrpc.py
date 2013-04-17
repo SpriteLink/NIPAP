@@ -6,7 +6,7 @@ import unittest
 import sys
 sys.path.append('../nipap/')
 
-import nipap.nipap
+from nipap.backend import Nipap
 from nipap.authlib import SqliteAuth
 from nipap.nipapconfig import NipapConfig
 
@@ -39,7 +39,7 @@ class NipapXmlTest(unittest.TestCase):
 
         # NIPAP
         self.cfg = NipapConfig('/etc/nipap/nipap.conf')
-        self.nipap = nipap.nipap.Nipap()
+        self.nipap = Nipap()
 
         # create dummy auth object
         # As the authentication is performed before the query hits the Nipap

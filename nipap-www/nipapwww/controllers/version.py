@@ -15,5 +15,9 @@ class VersionController(BaseController):
         """ Display NIPAP version info
         """
         c.pynipap_version = pynipap.__version__
+        try:
+            c.nipapd_version = pynipap.nipapd_version()
+        except:
+            c.nipapd_version = 'unknown'
 
         return render('/version.html')

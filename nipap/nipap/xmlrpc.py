@@ -32,6 +32,7 @@ import logging
 import xmlrpclib
 from nipapconfig import NipapConfig
 
+from backend import Nipap, NipapError
 import nipap
 from authlib import AuthFactory, AuthError
 
@@ -150,7 +151,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Initialising NIPAP Protocol")
 
-        self.nipap = nipap.Nipap()
+        self.nipap = Nipap()
         self._auth_fact = AuthFactory()
 
 
@@ -264,6 +265,17 @@ class NipapProtocol(xmlrpc.XMLRPC):
             "argument 'message', I will return it to you")
 
 
+
+    def xmlrpc_version(self, args):
+        """ Returns nipapd version
+
+            Returns a string.
+        """
+
+        return nipap.__version__
+
+
+
     #
     # VRF FUNCTIONS
     #
@@ -282,7 +294,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.add_vrf(args.get('auth'), args.get('attr'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -299,7 +311,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             self.nipap.remove_vrf(args.get('auth'), args.get('vrf'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -318,7 +330,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.list_vrf(args.get('auth'), args.get('vrf'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -337,7 +349,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.edit_vrf(args.get('auth'), args.get('vrf'), args.get('attr'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -360,7 +372,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.search_vrf(args.get('auth'), args.get('query'), args.get('search_options') or {})
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -385,7 +397,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
             return self.nipap.smart_search_vrf(args.get('auth'),
                     args.get('query_string'), args.get('search_options', {}),
                     args.get('extra_query'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -407,7 +419,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.add_pool(args.get('auth'), args.get('attr'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -424,7 +436,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             self.nipap.remove_pool(args.get('auth'), args.get('pool'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -443,7 +455,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.list_pool(args.get('auth'), args.get('pool'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -462,7 +474,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.edit_pool(args.get('auth'), args.get('pool'), args.get('attr'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -485,7 +497,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.search_pool(args.get('auth'), args.get('query'), args.get('search_options') or {})
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -510,7 +522,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
             return self.nipap.smart_search_pool(args.get('auth'),
                     args.get('query_string'), args.get('search_options') or {},
                     args.get('extra_query', {}))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -537,7 +549,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.add_prefix(args.get('auth'), args.get('attr'), args.get('args'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -557,7 +569,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.list_prefix(args.get('auth'), args.get('prefix') or {})
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -577,7 +589,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.edit_prefix(args.get('auth'), args.get('prefix'), args.get('attr'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -595,7 +607,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.remove_prefix(args.get('auth'), args.get('prefix'), args.get('recursive'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -619,7 +631,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.search_prefix(args.get('auth'), args.get('query'), args.get('search_options') or {})
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -648,7 +660,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
             return self.nipap.smart_search_prefix(args.get('auth'),
                     args.get('query_string'), args.get('search_options') or {},
                     args.get('extra_query'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -667,7 +679,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.find_free_prefix(args.get('auth'), args.get('args'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -690,7 +702,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.add_asn(args.get('auth'), args.get('attr'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -708,7 +720,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             self.nipap.remove_asn(args.get('auth'), args.get('asn'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -728,7 +740,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.list_asn(args.get('auth'), args.get('asn') or {})
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -748,7 +760,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.edit_asn(args.get('auth'), args.get('asn'), args.get('attr'))
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -772,7 +784,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.search_asn(args.get('auth'), args.get('query'), args.get('search_options') or {})
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 
@@ -796,7 +808,7 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
         try:
             return self.nipap.smart_search_asn(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
-        except nipap.NipapError, e:
+        except NipapError, e:
             return xmlrpclib.Fault(e.error_code, str(e))
 
 

@@ -962,6 +962,21 @@ class Prefix(Pynipap):
 
 
 
+def nipapd_version():
+    """ Get version of nipapd we're connected to.
+    """
+
+    xmlrpc = XMLRPCConnection()
+    try:
+        return xmlrpc.connection.version(
+            {
+                'auth': AuthOptions().options
+            })
+    except xmlrpclib.Fault as xml_fault:
+        raise _fault_to_exception(xml_fault)
+
+
+
 #
 # Define exceptions
 #
