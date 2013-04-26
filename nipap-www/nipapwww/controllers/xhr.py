@@ -168,6 +168,21 @@ class XhrController(BaseController):
 
 
 
+    def remove_vrf(self):
+        """ Remove a VRF.
+        """
+
+        try:
+            vrf = VRF.get(int(request.params['id']))
+            vrf.remove()
+
+        except NipapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(vrf, cls=NipapJSONEncoder)
+
+
+
     def list_pool(self):
         """ List pools and return JSON encoded result.
         """
@@ -267,6 +282,21 @@ class XhrController(BaseController):
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(p, cls=NipapJSONEncoder)
+
+
+
+    def remove_pool(self):
+        """ Remove a pool.
+        """
+
+        try:
+            pool = Pool.get(int(request.params['id']))
+            pool.remove()
+
+        except NipapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(pool, cls=NipapJSONEncoder)
 
 
 
@@ -619,21 +649,6 @@ class XhrController(BaseController):
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(p, cls=NipapJSONEncoder)
-
-
-
-    def remove_vrf(self):
-        """ Remove a VRF.
-        """
-
-        try:
-            vrf = VRF.get(int(request.params['id']))
-            vrf.remove()
-
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
-
-        return json.dumps(vrf, cls=NipapJSONEncoder)
 
 
 

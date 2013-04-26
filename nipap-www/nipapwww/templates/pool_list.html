@@ -24,6 +24,48 @@
                     }
                 ]
             });
+
+            $(".minibutton").each(function() {
+                $(this).click(function(e) {
+                    var tr = $(this).parent().parent();
+                    var pool_id = tr.attr('data-pool-id');
+                    var pool_name = tr.children('td:first').text();
+                    var menu = getPopupMenu($(this), 'Pool', pool_id);
+
+                    menu.append('<a href="/pool/edit/' + pool_id + '">Edit</a>');
+                    menu.append('<a id="pool_remove' + pool_id + '" href="/pool/remove/' + pool_id + '">Remove</a>');
+
+                    $('#pool_remove' + pool_id).click(function(e) {
+                        e.preventDefault();
+                        var dialog = showDialogYesNo('Really remove pool?', 'Are you sure you want to remove the pool "' + pool_name + '"?',
+                        function () {
+                            var data = {
+                                'id': pool_id
+                            };
+                            $.getJSON('/xhr/remove_pool', data, poolRemoved);
+
+                            hidePopupMenu();
+                            dialog.dialog('close');
+
+                        });
+                    });
+
+                    menu.slideDown('fast');
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+
+            /*
+             * Callback function after a pool has been removed
+             */
+            function poolRemoved(pool) {
+                if ('error' in pool) {
+                    showDialogNotice('Error', pool.message);
+                    return;
+                }
+                $('#pool_row' + pool.id).remove();
+            }
             
         });
     </script>
@@ -52,14 +94,15 @@
 		</thead>
 		<tbody class="listing">
 			{% for pool in c.pools %}
-			<tr>
+			<tr id="pool_row{{ pool.id }}" data-pool-id="{{pool.id}}">
 				<td style="padding-left: 30px;">{{ pool.name }}</td>
 				<td>{{ pool.description or '' }}</td>
 				<td>{{ pool.default_type }}</td>
 				<td>{{ pool.ipv4_default_prefix_length or '-' }} / {{ pool.ipv6_default_prefix_length or '-' }}</td>
 				<td>
-					<a href="{{ h.url(controller = 'pool', action = 'edit', id = pool.id) }}">edit</a> | 
-					<a href="{{ h.url(controller = 'pool', action = 'remove', id = pool.id) }}" onclick="showDialogYesNo('Remove {{ pool.name  }}?', 'Are you sure you want to remove {{ pool.name }}? You cannot undo this.', function () { window.location.href = '{{ h.url(controller="pool", action="remove", id=pool.id) }}'; }); return false;">del</a>
+				    <div id="pool_button{{pool.id}}" class="minibutton">
+						<div class="popup_button_icon">&nbsp;</div>
+				    </div>
 				</td>
 			</tr>
 			{% endfor %}
