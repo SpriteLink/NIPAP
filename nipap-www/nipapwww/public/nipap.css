@@ -901,9 +901,13 @@ tbody.listing > tr:hover {
     display: -moz-inline-stack;
     display: inline-block;
     zoom: 1;
-    *display: inline;
+    display: inline;
     position: fixed;
     left: 0px;
     bottom: 0px;
     z-index: 2;
+}
+
+.version > a {
+    color: #777777;
 }
