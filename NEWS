@@ -1,3 +1,10 @@
+Version 0.18.0
+--------------
+ * Constraints for country code added to database backend
+ * Added LICENSE file
+ * Various smaller improvements to WWW UI and CLI client
+ * Version information reachable from CLI and web UI
+
 Version 0.17.0
 --------------
  * NIPAP backend now returns full object instead of only ID after add_* and

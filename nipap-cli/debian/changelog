@@ -1,3 +1,12 @@
+nipap-cli (0.18.0-1) stable; urgency=low
+
+  * Constraints for country code added to database backend
+  * Added LICENSE file
+  * Various smaller improvements to WWW UI and CLI client
+  * Version information reachable from CLI and web UI
+
+ -- Lukas Garberg <lukas@spritelink.net>  Fri, 03 May 2013 13:43:40 +0200
+
 nipap-cli (0.17.0-1) stable; urgency=low
 
   * NIPAP backend now returns full object instead of only ID after add_* and

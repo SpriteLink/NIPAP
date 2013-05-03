@@ -25,6 +25,7 @@ nipapwww/controllers/auth.py
 nipapwww/controllers/error.py
 nipapwww/controllers/pool.py
 nipapwww/controllers/prefix.py
+nipapwww/controllers/version.py
 nipapwww/controllers/vrf.py
 nipapwww/controllers/xhr.py
 nipapwww/lib/__init__.py
@@ -79,6 +80,7 @@ nipapwww/templates/prefix_add_containers.html
 nipapwww/templates/prefix_edit.html
 nipapwww/templates/prefix_list.html
 nipapwww/templates/prefix_remove_confirm.html
+nipapwww/templates/version.html
 nipapwww/templates/vrf_add.html
 nipapwww/templates/vrf_edit.html
 nipapwww/templates/vrf_form.html
@@ -89,5 +91,6 @@ nipapwww/tests/functional/__init__.py
 nipapwww/tests/functional/test_auth.py
 nipapwww/tests/functional/test_pool.py
 nipapwww/tests/functional/test_prefix.py
+nipapwww/tests/functional/test_version.py
 nipapwww/tests/functional/test_vrf.py
 nipapwww/tests/functional/test_xhr.py
