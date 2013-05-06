@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+
+import SocketServer
+
+import pynipap
+from pynipap import Prefix, VRF, NipapError
+
+__version__ = '0.18.0'
+
+
+def format_line(key, value):
+    """ Format  a single key, value pair in a whois looking format
+    """
+    if value is None:
+        return ''
+
+    return "%-20s %s\n" % (key + ':', value)
+
+
+def format_prefix(p):
+    """ Format a pynipap Prefix object into a whois looking format
+    """
+    if p.family == 4:
+        res = format_line("inetnum", p.prefix)
+    else:
+        res = format_line("inet6num", p.prefix)
+    res += format_line('vrf-rt', p.vrf.rt)
+    res += format_line('vrf-name', p.vrf.name)
+    res += format_line('descr', p.description)
+    res += format_line('comment', p.comment)
+    res += format_line('country', p.country)
+    res += format_line('order', p.order_id)
+    res += format_line('node', p.node)
+    res += format_line('monitor', p.monitor)
+    res += format_line('alarm-priority', p.alarm_priority)
+    return res
+
+
+def format_vrf(vrf):
+    """ Format a pynipap VRF object into a whois looking format
+    """
+    res = format_line('vrf', vrf.name)
+    res += format_line('rt', vrf.rt)
+    res += format_line('descr', vrf.description)
+    return res
+
+
+
+class WhoisServer(SocketServer.BaseRequestHandler):
+    def handle(self):
+        """ Called for every connection
+        """
+        # receive data
+        query = ''
+        while True:
+            data = self.request.recv(1024)
+            query += data
+            if len(data) < 1024:
+                break
+
+        query = query.strip()
+
+        # respond!
+        total_hits = 0
+        response = '% This is the NIPAP whois query service.\n\n'
+
+        # respond with VRFs
+        res = VRF.smart_search(query, { })
+        if len(res['result']) > 0:
+            total_hits += len(res['result'])
+            response += '% VRFs matching\n'
+            for p in res['result']:
+                response += format_vrf(p)
+                response += '\n'
+
+        # respond with prefixes
+        res = Prefix.smart_search(query, { })
+        if len(res['result']) > 0:
+            total_hits += len(res['result'])
+            for p in res['result']:
+                response += format_prefix(p)
+                response += '\n'
+
+        if total_hits == 0:
+            response += "%ERROR:101: no entries found\n"
+            response += "%\n"
+            response += "% No entries found in source NIPAP.\n"
+
+        response += "\n%% This query was served by the NIPAP whois server version %s\n" % __version__
+        self.request.send(response)
+
+
+
+if __name__ == '__main__':
+    pynipap.xmlrpc_uri = 'http://test@local:test@127.0.0.1:1337'
+    ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
+
+    import optparse
+    parser = optparse.OptionParser()
+    parser.add_option("-p", "--port", type=int, default=43, help="Port to listen to")
+
+    (options, args) = parser.parse_args()
+
+    server = SocketServer.ForkingTCPServer(('0.0.0.0', options.port), WhoisServer)
+    server.serve_forever()
