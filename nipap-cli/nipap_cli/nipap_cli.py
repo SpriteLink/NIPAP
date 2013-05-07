@@ -27,7 +27,7 @@ valid_countries = [
 valid_prefix_types = [ 'host', 'reservation', 'assignment' ]
 valid_families = [ 'ipv4', 'ipv6' ]
 valid_bools = [ 'true', 'false' ]
-valid_priorities = [ 'low', 'medium', 'high' ]
+valid_priorities = [ 'warning', 'low', 'medium', 'high', 'critical' ]
 
 
 # evil global vars
