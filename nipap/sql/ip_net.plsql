@@ -6,7 +6,7 @@
 
 CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
 
-CREATE TYPE priority_3step AS ENUM ('low', 'medium', 'high');
+CREATE TYPE priority_5step AS ENUM ('warning', 'low', 'medium', 'high', 'critical');
 
 
 CREATE TABLE ip_net_asn (
@@ -84,7 +84,7 @@ CREATE TABLE ip_net_plan (
 	order_id text,
 	external_key text,
 	authoritative_source text NOT NULL DEFAULT 'nipap',
-	alarm_priority priority_3step,
+	alarm_priority priority_5step,
 	monitor boolean
 );
 
