@@ -60,7 +60,8 @@
         store references to its own dataset.
     * :attr:`authoritative_source` - String identifying which system last
         modified the prefix.
-    * :attr:`alarm_priority` - String 'low', 'medium' or 'high'.
+    * :attr:`alarm_priority` - String 'warning', 'low', 'medium', 'high' or
+        'critical'.
     * :attr:`monitor` - A boolean specifying whether the prefix should be
         monitored or not.
     * :attr:`display` - Only set by the :func:`~Nipap.search_prefix` and
