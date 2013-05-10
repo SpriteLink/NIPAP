@@ -22,8 +22,7 @@ def get_data_files():
             ('/usr/sbin/', ['nipapd', 'nipap-passwd']),
             ('/usr/share/nipap/sql/', [
                 'sql/functions.plsql',
-                'sql/ip_net.plsql',
-                'sql/clean.plsql'
+                'sql/ip_net.plsql'
                 ]),
             ('/usr/share/man/man8/', ['nipapd.8']),
             ('/usr/share/man/man1/', ['nipap-passwd.1'])
