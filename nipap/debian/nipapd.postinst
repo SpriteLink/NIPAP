@@ -10,6 +10,32 @@ DB_USER='nipap'
 DB_PASS=`</dev/urandom tr -dc [:alpha:] | head -c16`
 DB_NAME='nipap'
 
+
+POSTGRES_INSTALLED=0
+NIPAP_DB_EXISTS=0
+NIPAP_DB_VERSION=0
+
+# determine if postgres is installed
+su postgres -c 'psql --version' > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+	POSTGRES_INSTALLED=1
+
+	# does the NIPAP database exist?
+	if [ "`su postgres -c "psql -c '\l+'" | awk -F"|" '{ if ($1~/^ *nipap *$/) { gsub(/^ */, "", $1); gsub(/ *$/, "", $1); print $1 } }'`" = "nipap" ]; then
+		NIPAP_DB_EXISTS=1
+
+		# figure out version of db
+		DB_COMMENT=`su postgres -c "psql -c '\l+'" | awk -F"|" '{ if ($1~/^ *nipap *$/) { print $9 } }'`
+		echo "$DB_COMMENT" | grep "schema version: [0-9]\+$" > /dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			# seems to be a DB comment with proper version
+			NIPAP_DB_VERSION=`echo $DB_COMMENT | sed 's/.*schema version: //'`
+		fi
+	fi
+fi
+
+
+
 case "$1" in
 	configure)
 		# start
@@ -20,8 +46,8 @@ case "$1" in
 			sed -i -e 's/RUN=.*/RUN=no/' /etc/default/nipapd
 		fi
 
-		# if nipap.conf already exists..
-		if [ -e /etc/nipap/nipap.conf ]; then
+		# if database already exists
+		if [ "$NIPAP_DB_EXISTS" = "1" ]; then
 			# do the upgrade dance...
 			# TODO: add it!
 			echo -n
