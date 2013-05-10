@@ -13,7 +13,8 @@ before_install:
 install:
     - pip install --use-mirrors psycopg2 ipy twisted python-ldap pysqlite
     - sudo make install
-    - sudo cp nipap/nipap.conf nipap/local_auth.db /etc/nipap/
+    - sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf
+    - sudo cp nipap/local_auth.db /etc/nipap/
     - cp nipap-cli/nipaprc ~/.nipaprc
 
 script:
