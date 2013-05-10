@@ -103,7 +103,7 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 # ----------------------
 #
 [www]
-xmlrpc_uri = %XMLRPC_URI
+xmlrpc_uri = http://test@local:test@127.0.0.1:1337
 
 # welcome_message allows the display of a custom message on the login page of
 # the web interface, it might contain hints about what credentials to use or
