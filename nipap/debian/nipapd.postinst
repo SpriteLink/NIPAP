@@ -1,0 +1,45 @@
+#!/bin/sh
+
+#set -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+PSQL='sudo postgres psql'
+DB_USER='nipap'
+DB_PASS=`</dev/urandom tr -dc [:alpha:] | head -c16`
+DB_NAME='nipap'
+
+case "$1" in
+	configure)
+		# start
+		db_get nipapd/startup
+		if [ "$RET" = "true" ]; then
+			sed -i -e 's/RUN=.*/RUN=yes/' /etc/default/nipapd
+		else
+			sed -i -e 's/RUN=.*/RUN=no/' /etc/default/nipapd
+		fi
+
+		# if nipap.conf already exists..
+		if [ -e /etc/nipap/nipap.conf ]; then
+			# do the upgrade dance...
+			# TODO: add it!
+			echo -n
+
+		else
+			# first time setup
+			db_get nipapd/autoconf
+			if [ "$RET" = "true" ]; then
+				sudo -u postgres createuser -S -D -R -w $DB_USER >/dev/null 2>&1
+				sudo -u postgres psql -q -c "ALTER USER $DB_USER ENCRYPTED PASSWORD '$DB_PASS'" >/dev/null 2>&1
+				sudo -u postgres createdb -O $DB_USER $DB_NAME >/dev/null 2>&1
+				sudo -u postgres createlang -d $DB_NAME plpgsql >/dev/null 2>&1
+				sudo -u postgres psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql >/dev/null 2>&1
+				sudo -u postgres psql -q -d $DB_NAME -f /usr/share/nipap/sql/ip_net.plsql >/dev/null 2>&1
+
+				cat /etc/nipap/nipap.conf.dist | sed -e "s/db_user *= *[^ ]\+/db_user = $DB_USER /" -e "s/db_name *= *[^ ]\+/db_name = $DB_NAME /" -e "s/db_pass *= *[^ ]\+/db_pass = $DB_PASS /" > /etc/nipap/nipap.conf
+			fi
+		fi
+
+		;;
+esac
