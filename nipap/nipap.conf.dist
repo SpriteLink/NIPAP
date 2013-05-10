@@ -40,7 +40,7 @@
 
 listen = 127.0.0.1              ; IP address to listen on; defaults to
                                 ; 127.0.0.1. Use 0.0.0.0 to listen on all
-                                ; addresses (change requires restart
+                                ; addresses (change requires restart)
 port = 1337                     ; XML-RPC listen port (change requires restart)
 
 foreground = false              ; run in foreground, won't work with init script
@@ -92,18 +92,19 @@ type = SqliteAuth
 db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 
 # example backend for LDAP
-[auth.backends.ldap1]
-type = LdapAuth
-
-basedn = dc=test,dc=com                ; base DN
-uri = ldaps://ldap.test.com            ; LDAP server URI
+#[auth.backends.ldap1]
+#type = LdapAuth
+#
+#basedn = dc=test,dc=com                ; base DN
+#uri = ldaps://ldap.test.com            ; LDAP server URI
 
 #
 # Options for the WWW UI
 # ----------------------
 #
 [www]
-xmlrpc_uri = http://test@local:test@127.0.0.1:1337
+xmlrpc_uri = %XMLRPC_URI
+
 # welcome_message allows the display of a custom message on the login page of
 # the web interface, it might contain hints about what credentials to use or
 # just greet the user.

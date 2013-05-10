@@ -18,7 +18,7 @@ def get_data_files():
         sys.exit(1)
 
     files = [
-            ('/etc/nipap/', ['local_auth.db', 'nipap.conf']),
+            ('/etc/nipap/', ['local_auth.db', 'nipap.conf.dist']),
             ('/usr/sbin/', ['nipapd', 'nipap-passwd']),
             ('/usr/share/nipap/sql/', [
                 'sql/functions.plsql',
