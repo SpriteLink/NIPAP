@@ -4,6 +4,8 @@
 --
 --------------------------------------------
 
+COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 1';
+
 CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
 
 CREATE TYPE priority_5step AS ENUM ('warning', 'low', 'medium', 'high', 'critical');

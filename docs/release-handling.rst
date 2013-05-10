@@ -92,3 +92,6 @@ version number;
   git tag vX.Y.Z
 And for pushing to git:
   git push origin refs/tags/vX.Y.Z
+
+Don't forget to update the version number of the SQL schema file if changes has
+been made to tables or indices. It's in the comment on the database.
