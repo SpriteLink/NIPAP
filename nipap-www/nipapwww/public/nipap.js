@@ -450,7 +450,7 @@ function setSearchPrefixURI(explicit) {
 /*
  * Called when next page of results is requested by the user.
  */
-function performPrefixNextPage () {
+function performPrefixNextPage() {
 	if (outstanding_nextpage == 1 || end_of_result == 1 ||
 		jQuery.trim($('#query_string').val()).length < 1) {
 		return;
@@ -464,6 +464,7 @@ function performPrefixNextPage () {
 
 	query_id += 1;
 
+	showLoadingIndicator($('#prefix_list'));
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixListNextPage);
 
 }
@@ -1164,6 +1165,12 @@ function receivePrefixList(search_result) {
 	log('Rendering took ' + (stats.finished - stats.response_received) + ' milliseconds');
 	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
 
+	// Page full?
+	if (!pageFilled()) {
+		// Nope. Perform a nextPage()
+		performPrefixNextPage();
+	}
+
 	// less than max_result means we reached the end of the result set
 	if (search_result.result.length < search_result.search_options.max_result) {
 		end_of_result = 1;
@@ -1171,6 +1178,7 @@ function receivePrefixList(search_result) {
 	} else {
 		$('#nextpage').show();
 	}
+
 }
 
 
@@ -1240,6 +1248,7 @@ function receivePrefixListUpdate(search_result, link_type) {
  */
 function receivePrefixListNextPage(search_result) {
 
+	hideLoadingIndicator();
 	pref_list = search_result.result;
 
 	// Zero result elements. Should not happen as we at least always should
@@ -1264,6 +1273,12 @@ function receivePrefixListNextPage(search_result) {
 	insertPrefixList(pref_list);
 	outstanding_nextpage = 0;
 
+	// Page full?
+	if (!pageFilled()) {
+		// Nope. Perform a nextPage()
+		performPrefixNextPage();
+	}
+
 }
 
 
@@ -1278,6 +1293,25 @@ function optToDepth(opt) {
 		case 'all': return -1;
 		default: return 0;
 	}
+
+}
+
+/*
+ * Check if the prefix list fills the entire page
+ */
+function pageFilled() {
+
+	// Do we still have space left on the screen?
+	// get current visible part of screen
+	var w_height = $(window).height();
+	var w_top = $(window).scrollTop();
+	var w_bottom = w_top + w_height;
+
+	// get location of element
+	e_top = $(".prefix_list").offset().top;
+	e_bottom = e_top + $(".prefix_list").height();
+
+	return e_bottom > w_bottom;
 
 }
 
