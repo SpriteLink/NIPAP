@@ -38,7 +38,9 @@ def load_environment(global_conf, app_conf):
     
 
     # Create the Jinja2 Environment
-    jinja2_env = Environment(loader=FileSystemLoader(paths['templates']))
+    jinja2_env = Environment(autoescape=True,
+            extensions=['jinja2.ext.autoescape'],
+            loader=FileSystemLoader(paths['templates']))
     config['pylons.app_globals'].jinja2_env = jinja2_env
 
     # CONFIGURATION OPTIONS HERE (note: all config options will override
