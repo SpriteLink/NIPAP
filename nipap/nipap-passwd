@@ -57,11 +57,11 @@ if __name__ == '__main__':
             sys.exit(1)
 
         a.add_user(options.add_user, options.password, options.name, options.trusted)
-        print "Added user %s" % options.add_user
+        print "Added user %s to database %s" % (options.add_user, cfg.get('auth.backends.local','db_path'))
 
     elif options.delete_user:
         a.remove_user(options.delete_user)
-        print "User %s deleted from %s" % (options.delete_user, cfg.get('auth', 'db_path'))
+        print "User %s deleted from database %s" % (options.delete_user, cfg.get('auth.backends.local', 'db_path'))
 
     else:
         parser.print_help()
