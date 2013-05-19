@@ -69,6 +69,7 @@ case "$1" in
 				sudo -u postgres psql -q -d $DB_NAME -f /usr/share/nipap/sql/ip_net.plsql >/dev/null 2>&1
 
 				# change ownership for tables
+				# TODO: since we depend on postgresql 9.1, we can use GRANT ALL ON ALL TABLES TO $DB_USER instead
 				for table in `sudo -u postgres psql -qAt -c "SELECT tablename FROM pg_tables WHERE schemaname = 'public';" $DB_NAME`; do
 					sudo -u postgres psql -c "ALTER TABLE $table OWNER TO $DB_USER" $DB_NAME >/dev/null 2>&1;
 				done
