@@ -5,7 +5,6 @@
 # Source debconf library.
 . /usr/share/debconf/confmodule
 
-PSQL='sudo postgres psql'
 DB_USER='nipap'
 DB_PASS=`</dev/urandom tr -dc [:alpha:] | head -c16`
 DB_NAME='nipap'
@@ -57,29 +56,21 @@ case "$1" in
 			db_get nipapd/autoconf
 			if [ "$RET" = "true" ]; then
 				# setup new user
-				sudo -u postgres createuser -S -D -R -w $DB_USER >/dev/null 2>&1
-				sudo -u postgres psql -q -c "ALTER USER $DB_USER ENCRYPTED PASSWORD '$DB_PASS'" >/dev/null 2>&1
+				su -c "createuser -S -D -R -w $DB_USER" postgres >/dev/null 2>&1
+				su -c "psql -q -c \"ALTER USER $DB_USER ENCRYPTED PASSWORD '$DB_PASS'\"" postgres >/dev/null 2>&1
 				# create database and install plpgsql
-				sudo -u postgres createdb -O $DB_USER $DB_NAME >/dev/null 2>&1
-				sudo -u postgres createlang -d $DB_NAME plpgsql >/dev/null 2>&1
+				su -c "createdb -O $DB_USER $DB_NAME" postgres >/dev/null 2>&1
+				su -c "createlang -d $DB_NAME plpgsql" postgres >/dev/null 2>&1
 				# load ip4r
-				sudo -u postgres psql -q -d $DB_NAME -c "CREATE EXTENSION ip4r" >/dev/null 2>&1
+				su -c "psql -q -d $DB_NAME -c 'CREATE EXTENSION ip4r'" postgres >/dev/null 2>&1
 				# load NIPAP database structure
-				sudo -u postgres psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql >/dev/null 2>&1
-				sudo -u postgres psql -q -d $DB_NAME -f /usr/share/nipap/sql/ip_net.plsql >/dev/null 2>&1
+				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
+				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/ip_net.plsql" postgres >/dev/null 2>&1
 
-				# change ownership for tables
-				for table in `sudo -u postgres psql -qAt -c "SELECT tablename FROM pg_tables WHERE schemaname = 'public';" $DB_NAME`; do
-					sudo -u postgres psql -c "ALTER TABLE $table OWNER TO $DB_USER" $DB_NAME >/dev/null 2>&1;
-				done
-				# change ownership for sequences
-				for table in `sudo -u postgres psql -qAt -c "SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public';" $DB_NAME`; do
-					sudo -u postgres psql -c "ALTER TABLE $table OWNER TO $DB_USER" $DB_NAME >/dev/null 2>&1;
-				done
-				# change ownership for views
-				for table in `sudo -u postgres psql -qAt -c "SELECT table_name FROM information_schema.views WHERE table_schema = 'public';" $DB_NAME`; do
-					sudo -u postgres psql -c "ALTER TABLE $table OWNER TO $DB_USER" $DB_NAME >/dev/null 2>&1;
-				done
+				# grant necessary privileges on tables, views, sequences and functions to NIPAP db user
+				su -c "psql -q -d $DB_NAME -c 'GRANT SELECT, UPDATE, INSERT, DELETE ON ALL TABLES IN SCHEMA public TO nipap'" postgres >/dev/null 2>&1
+				su -c "psql -q -d $DB_NAME -c 'GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public TO nipap'" postgres >/dev/null 2>&1
+				su -c "psql -q -d $DB_NAME -c 'GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO $DB_USER'" postgres >/dev/null 2>&1
 
 				# update nipap.conf with database credentials
 				cat /etc/nipap/nipap.conf.dist | sed -e "s/db_user *= *[^ ]\+/db_user = $DB_USER /" -e "s/db_name *= *[^ ]\+/db_name = $DB_NAME /" -e "s/db_pass *= *[^ ]\+/db_pass = $DB_PASS /" > /etc/nipap/nipap.conf
