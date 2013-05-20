@@ -318,6 +318,9 @@ public class API {
 		sqlobj.default_type = p.default_type;
 		sqlobj.ipv4_default_prefix_length = p.ipv4_default_prefix_length;
 		sqlobj.ipv6_default_prefix_length = p.ipv6_default_prefix_length;
+		if (p.vrf != null) {
+			sqlobj.vrf = toSQLObj(p.vrf);
+		}
 
 		return sqlobj;
 
