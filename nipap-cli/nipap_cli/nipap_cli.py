@@ -636,7 +636,7 @@ def remove_vrf(arg, opts):
     res = raw_input("Do you really want to remove the VRF %s? [y/n]: " % v.rt)
 
     if res == 'y':
-        s.remove()
+        v.remove()
         print "VRF %s removed." % v.rt
     else:
         print "Operation canceled."
