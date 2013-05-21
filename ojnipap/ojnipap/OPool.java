@@ -25,7 +25,7 @@ public class OPool extends jnipap.Pool implements SQLData {
 		default_type = stream.readString();
 		ipv4_default_prefix_length = Helpers.integerOrNull(stream.readBigDecimal());
 		ipv6_default_prefix_length = Helpers.integerOrNull(stream.readBigDecimal());
-		vrf = (jnipap.VRF)OVRF.fromSTRUCT((STRUCT)stream.readObject());
+		vrf = OVRF.fromSTRUCT((STRUCT)stream.readObject());
 
 	}
 
@@ -62,16 +62,16 @@ public class OPool extends jnipap.Pool implements SQLData {
 		}
 
 		// Create new OPool object from the STRUCT data
-		Object[] val = input.getAttributes();
-
 		OPool p = new OPool();
+
+		Object[] val = input.getAttributes();
 		p.id = Helpers.integerOrNull((BigDecimal)val[0]);
 		p.name = (String)val[1];
-		p.description = (String)val[3];
-		p.default_type = (String)val[4];
-		p.ipv4_default_prefix_length = Helpers.integerOrNull((BigDecimal)val[5]);
-		p.ipv6_default_prefix_length = Helpers.integerOrNull((BigDecimal)val[6]);
-		p.vrf = (jnipap.VRF)OVRF.fromSTRUCT((STRUCT)val[7]);
+		p.description = (String)val[2];
+		p.default_type = (String)val[3];
+		p.ipv4_default_prefix_length = Helpers.integerOrNull((BigDecimal)val[4]);
+		p.ipv6_default_prefix_length = Helpers.integerOrNull((BigDecimal)val[5]);
+		p.vrf = (jnipap.VRF)OVRF.fromSTRUCT((STRUCT)val[6]);
 
 		return p;
 

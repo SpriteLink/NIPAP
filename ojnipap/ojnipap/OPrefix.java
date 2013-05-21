@@ -22,13 +22,13 @@ public class OPrefix extends jnipap.Prefix implements SQLData {
 		// Read data from stream
 		id = Helpers.integerOrNull(stream.readBigDecimal());
 		family = Helpers.integerOrNull(stream.readBigDecimal());
-		vrf = (jnipap.VRF)OVRF.fromSTRUCT((STRUCT)stream.readObject());
+		vrf = OVRF.fromSTRUCT((STRUCT)stream.readObject());
 		prefix = stream.readString();
 		display_prefix = stream.readString();
 		description = stream.readString();
 		comment = stream.readString();
 		node = stream.readString();
-		pool = (jnipap.Pool)OPool.fromSTRUCT((STRUCT)stream.readObject());
+		pool = OPool.fromSTRUCT((STRUCT)stream.readObject());
 		type = stream.readString();
 		indent = Helpers.integerOrNull(stream.readBigDecimal());
 		country = stream.readString();
