@@ -240,8 +240,8 @@ public class API {
 	 */
 	public static OPrefix addPrefix(OConnection conn, OPrefix pref, OPool pool, OAddPrefixOptions opts) throws JnipapException {
 
-		pref.save((jnipap.Connection)conn, pool, opts);
-		return pref;
+		pref.save(conn, pool, opts);
+		return toSQLObj(pref);
 
 	}
 
@@ -262,7 +262,7 @@ public class API {
 	public static OPrefix addPrefix(OConnection conn, OPrefix pref, OPrefix from_pref, OAddPrefixOptions opts) throws JnipapException {
 
 		pref.save(conn, from_pref, opts);
-		return pref;
+		return toSQLObj(pref);
 
 	}
 
@@ -281,7 +281,7 @@ public class API {
 	public static OPrefix addPrefix(OConnection conn, OPrefix pref) throws JnipapException {
 
 		pref.save(conn);
-		return pref;
+		return toSQLObj(pref);
 
 	}
 

@@ -174,7 +174,7 @@ public class Prefix extends Jnipap {
 
 		// Pool assigned?
 		if (this.pool != null) {
-			attr.put("pool", this.pool.id);
+			attr.put("pool_id", this.pool.id);
 		}
 
 		// VRF assigned?
@@ -419,8 +419,8 @@ public class Prefix extends Jnipap {
 		prefix.children = (Integer)input.get("children");
 
 		// If pool is not null, fetch pool object
-		if (input.get("pool") != null) {
-			prefix.pool = Pool.get(conn, (Integer)input.get("pool"));
+		if (input.get("pool_id") != null) {
+			prefix.pool = Pool.get(conn, (Integer)input.get("pool_id"));
 		}
 
 		// If VRF is not null, fetch VRF object
