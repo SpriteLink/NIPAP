@@ -80,7 +80,7 @@ with -1. Ie, if you want to release 1.0.0, set that in the Python file and use
 1.0.0-1 for dch. The -1 is the version of the debian package for non-native
 packages. Non-native packages are all packages that are not exlusively packaged
 for debian. If you want to release a new debian release, for example if you
-made changes to the actual packagin but not the source of the project, just
+made changes to the actual packaging but not the source of the project, just
 increment the -x number.
 
 When dch launches an editor for editing the changelog. Copy the content of the

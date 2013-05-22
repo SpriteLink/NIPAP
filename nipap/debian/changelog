@@ -1,3 +1,11 @@
+nipap (0.18.0-2) precise; urgency=low
+
+  * Updated dependencies for nipapd to include postgresql-9.1-ip4r >= 2.0
+  * Let nipapd depend on Python 2.7, since we need that for Unicode
+  * Let nipapd depend on PostgreSQL 9.1
+
+ -- Kristian Larsson <kll@lingloi320.tele2.net>  Wed, 22 May 2013 08:59:32 +0200
+
 nipap (0.18.0-1) stable; urgency=low
 
   * Constraints for country code added to database backend
