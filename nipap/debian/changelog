@@ -1,3 +1,9 @@
+nipap (0.18.1-1) precise; urgency=low
+
+  * Looks like a version bump was necessary after all
+
+ -- Kristian Larsson <kll@lingloi320.tele2.net>  Wed, 22 May 2013 09:32:20 +0200
+
 nipap (0.18.0-2) precise; urgency=low
 
   * Updated dependencies for nipapd to include postgresql-9.1-ip4r >= 2.0
