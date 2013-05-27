@@ -392,9 +392,6 @@ function performPrefixSearch(explicit) {
 
 	end_of_result = 0;
 
-	// Keep track of search timing
-	stats.query_sent = new Date().getTime();
-
 	current_query = search_q;
 	query_id += 1;
 	offset = 0;
@@ -406,6 +403,10 @@ function performPrefixSearch(explicit) {
 	}
 
 	showLoadingIndicator($('#prefix_list'));
+
+	// Keep track of search timing
+	stats.query_sent = new Date().getTime();
+
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixList);
 
 	// add search options to URL
@@ -465,6 +466,10 @@ function performPrefixNextPage() {
 	query_id += 1;
 
 	showLoadingIndicator($('#prefix_list'));
+
+	// Keep track of search timing
+	stats.query_sent = new Date().getTime();
+
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixListNextPage);
 
 }
@@ -1187,6 +1192,9 @@ function receivePrefixList(search_result) {
  */
 function receivePrefixListUpdate(search_result, link_type) {
 
+	stats.response_received = new Date().getTime();
+	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
+
 	// Error?
 	if ('error' in search_result) {
 		showDialogNotice("Error", prefix.message);
@@ -1248,6 +1256,8 @@ function receivePrefixListUpdate(search_result, link_type) {
  */
 function receivePrefixListNextPage(search_result) {
 
+	stats.response_received = new Date().getTime();
+	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
 	hideLoadingIndicator();
 	pref_list = search_result.result;
 
@@ -1635,8 +1645,12 @@ function collapseClick(id) {
 		search_q.children_depth = 1;
 		search_q.parents_depth = 0;
 		search_q.max_result = 1000;
+		search_q.offset = 0;
 
 		query_id += 1;
+
+		// Keep track of search timing
+		stats.query_sent = new Date().getTime();
 
 		$.getJSON("/xhr/smart_search_prefix", search_q, receivePrefixListUpdate);
 
