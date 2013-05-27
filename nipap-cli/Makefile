@@ -43,5 +43,5 @@ clean:
 	$(PYTHON) setup.py clean
 	rm -rf build/ MANIFEST dist/ debian/tmp debian/$(PROJECT) debian/files \
 	.pc/ debian/$(PROJECT).debhelper.log debian/$(PROJECT).postinst.debhelper \
-	debian/$(PROJECT).prerm.debhelper debian/$(PROJECT).substvars
+	debian/$(PROJECT).prerm.debhelper debian/$(PROJECT).substvars nipap.1
 	find . -name '*.pyc' -delete
