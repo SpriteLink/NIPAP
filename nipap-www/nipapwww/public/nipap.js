@@ -1826,7 +1826,7 @@ function enableMonitor() {
 
 /*
  * Function which determines whether the Node input element should be enabled
- * or not. It is only available when the prefix in question is configured on a
+ * or not. It is only available when the prefix in question is configured as a
  * node, ie the prefix is a /32 or /128.
  *
  * It's called from the prefix add and prefix edit page and as these pages look
@@ -1875,7 +1875,7 @@ function enableNodeInput() {
 		 * prefix edit page, we don't have a alloc_method and so we set it to
 		 * 'manual' to kind of emulate the same behaviour.
 		 */
-		if (typeof(alloc_method) === undefined) {
+		if (typeof(alloc_method) == "undefined") {
 			alloc_method = 'manual';
 		}
 
