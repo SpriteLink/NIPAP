@@ -490,9 +490,12 @@ class SqliteAuth(BaseAuth):
             (username, pwd_salt, pwd_hash, full_name, trusted)
             VALUES
             (?, ?, ?, ?, ?)'''
-        self._db_curs.execute(sql, (username, salt,
+        try:
+            self._db_curs.execute(sql, (username, salt,
                 self._gen_hash(password, salt), full_name, trusted))
-        self._db_conn.commit()
+            self._db_conn.commit()
+        except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
+		raise AuthError(error)
 
 
 
