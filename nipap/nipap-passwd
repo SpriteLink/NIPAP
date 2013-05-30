@@ -55,10 +55,16 @@ if __name__ == '__main__':
         if not options.name:
             print "Please specify name with --name"
             sys.exit(1)
-
-        a.add_user(options.add_user, options.password, options.name, options.trusted)
-        print "Added user %s to database %s" % (options.add_user, cfg.get('auth.backends.local','db_path'))
-
+        try:
+			a.add_user(options.add_user, options.password, options.name, options.trusted)
+			print "Added user %s to database %s" % (options.add_user, cfg.get('auth.backends.local','db_path'))
+        except nipap.authlib.AuthError as e:
+            if str(e) == 'attempt to write a readonly database':
+				print "You do not have sufficient rights to write to database: %s" % (cfg.get('auth.backends.local','db_path'))
+            elif str(e) == 'column username is not unique':
+				print "User: '%s', already exist in the database: %s " % (options.add_user, cfg.get('auth.backends.local','db_path'))
+            else:
+				print e
     elif options.delete_user:
         a.remove_user(options.delete_user)
         print "User %s deleted from database %s" % (options.delete_user, cfg.get('auth.backends.local', 'db_path'))
