@@ -479,7 +479,6 @@ class XhrController(BaseController):
 
         # Sanitize input parameters
         if 'vrf' in request.params:
-
             try:
                 if request.params['vrf'] is None or len(request.params['vrf']) == 0:
                     p.vrf = None
