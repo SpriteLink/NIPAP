@@ -572,7 +572,10 @@ class XhrController(BaseController):
                 p.type = request.params['type'].strip()
 
             if 'description' in request.params:
-                p.description = request.params['description'].strip()
+                if request.params['description'].strip() == '':
+                    p.description = None
+                else:
+                    p.description = request.params['description'].strip()
 
             if 'comment' in request.params:
                 if request.params['comment'].strip() == '':
