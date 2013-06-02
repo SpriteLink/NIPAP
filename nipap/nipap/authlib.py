@@ -495,7 +495,7 @@ class SqliteAuth(BaseAuth):
                 self._gen_hash(password, salt), full_name, trusted))
             self._db_conn.commit()
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
-		raise AuthError(error)
+            raise AuthError(error)
 
 
 
@@ -507,8 +507,11 @@ class SqliteAuth(BaseAuth):
         """
 
         sql = '''DELETE FROM user WHERE username = ?'''
-        self._db_curs.execute(sql, (username, ))
-        self._db_conn.commit()
+        try:
+            self._db_curs.execute(sql, (username, ))
+            self._db_conn.commit()
+        except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
+            raise AuthError(error)
         return self._db_curs.rowcount
 
 
