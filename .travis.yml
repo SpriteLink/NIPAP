@@ -4,10 +4,13 @@ python:
 
 # do the SQL cakewalk
 before_install:
-    - sudo bash utilities/install-ip4r.sh
+    - echo "deb http://spritelink.github.io/NIPAP/repos/apt stable main extra" | sudo tee /etc/apt/sources.list.d/nipap.list
     - sudo apt-get update -qq
-    - sudo apt-get install -qq python-docutils
-    - sudo apt-get install -qq python-pysqlite2 python-twisted-web python-psycopg2 python-ipy python-ldap
+    - sudo apt-get install -qq -y --force-yes nipapd
+    - echo "set nipapd/autoconf true" | sudo debconf-communicate
+    - echo "set nipapd/startup false" | sudo debconf-communicate
+    - sudo dpkg-reconfigure nipapd
+    - sudo apt-get install -qq python-pysqlite2 python-twisted-web python-psycopg2 python-ipy python-ldap python-docutils
 
 # get the python stuff installed
 install:
