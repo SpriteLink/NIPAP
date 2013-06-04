@@ -1048,7 +1048,7 @@ def complete_vrf(arg):
         'operator': 'regex_match',
         'val1': 'rt',
         'val2':  search_string
-        })
+        }, { 'max_result': 100000 } )
 
     ret = []
 
