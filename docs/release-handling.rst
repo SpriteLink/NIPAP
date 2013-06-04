@@ -69,9 +69,11 @@ The different packages are first built as Python easy_install / distutils
 packages which are later mangled into a debian package. To roll a new version
 there are thus two places that need updating; the first is where easy_install
 gets its version number. You can look into setup.py and see the version line.
-For nipapd/nipap-common it is imported from the nipap library and stored in a
-variable called __version__, you'll find it in nipap/__init__.py. For pynipap,
-it is directly in the pynipap.py file.
+
+See the following files for version info:
+nipap/nipap/__init__.py
+pynipap/pynipap.py
+nipap-www/nipapwww/__init__.py
 
 To roll a new release, update the Python file with the new version number
 according to the above instructions. After that, run 'dch -v <version>', where
@@ -97,3 +99,15 @@ Don't forget to update the version number of the SQL schema file if changes has
 been made to tables or indices. It's in the comment on the database. The same
 goes for nipap/debian/nipapd.config which also needs the version of the
 database file.
+
+
+Rolling the deb repo
+--------------------
+To update the deb repo, first build the packages;
+  make all
+
+Then add them to the repo. For the testing repo, it's:
+  make debrepo-testing
+
+While for the stable repo, it's:
+  make debrepo
