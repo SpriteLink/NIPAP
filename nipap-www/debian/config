@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+# TODO: we should really try to determine if nipapd is installed on this
+# machine here, but as packages are not yet guaranteed to be unpacked in the
+# config stage we cannot determine if nipapd is or is going to be installed by
+# looking if files exists. Can we ask apt?

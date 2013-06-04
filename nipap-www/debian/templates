@@ -1,0 +1,12 @@
+Template: nipap-www/autouser
+Type: boolean
+Default: false
+Description: Automatically create user for web interface?
+ The NIPAP backend daemon, nipapd, appears to be installed on this system.
+ Would you like to add a user to the local auth database of nipapd for the web
+ interface? The configuration file for the web interface will be updated with
+ the new user so that the web interface becomes functional.
+ .
+ Creating a user will get you up and running with the web interface. If you
+ answer No, you will need to manually create a user and configure the web
+ interface with those credentials.
