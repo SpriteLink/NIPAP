@@ -37,12 +37,22 @@ fi
 
 case "$1" in
 	configure)
-		# start
+		# create group / user for nipapd
+		if [ -z "`getent passwd nipap`" ]; then
+			adduser --quiet --system --group --no-create-home nipap
+		fi
+		# set ownership/permissions on the local auth
+		chown -f :nipap /etc/nipap/local_auth.db
+		chmod -f 0640 /etc/nipap/local_auth.db
+
+		# autostart
 		db_get nipapd/startup
 		if [ "$RET" = "true" ]; then
 			sed -i -e 's/RUN=.*/RUN=yes/' /etc/default/nipapd
+			update-rc.d nipapd defaults >/dev/null 2>&1
 		else
 			sed -i -e 's/RUN=.*/RUN=no/' /etc/default/nipapd
+			update-rc.d nipapd remove >/dev/null 2>&1
 		fi
 
 		# if database already exists
