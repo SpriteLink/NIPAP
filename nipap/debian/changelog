@@ -1,3 +1,9 @@
+nipap (0.19.1-1) precise; urgency=low
+
+  * Fix automatic start for nipapd on system startup
+
+ -- Kristian Larsson <kll@lingloi320.tele2.net>  Fri, 07 Jun 2013 15:33:37 +0200
+
 nipap (0.19.0-1) precise; urgency=low
 
   * nipapd now requires postgresql-9.1 for apt package installation as well as

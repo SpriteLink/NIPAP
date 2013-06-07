@@ -1,3 +1,7 @@
+Version 0.19.1
+--------------
+ * Fix automatic start of nipapd on system startup
+
 Version 0.19.0
 --------------
  * nipapd now requires postgresql-9.1 for apt package installation as well as
