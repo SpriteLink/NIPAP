@@ -56,7 +56,7 @@ debug = false                   ; enable debug logging
 
 syslog = true                   ; log to syslog
 
-pid_file = /var/run/nipapd.pid  ; pid file, default is to not write one
+pid_file = /var/run/nipap/nipapd.pid
 
 #
 # - Database Connection -

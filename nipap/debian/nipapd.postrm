@@ -7,4 +7,6 @@ if [ "$1" = "purge" ] ; then
 	# remove nipap user and group
 	deluser nipap > /dev/null 2>&1
 	delgroup nipap > /dev/null 2>&1
+
+	exit 0
 fi

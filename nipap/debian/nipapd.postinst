@@ -41,7 +41,13 @@ case "$1" in
 		if [ -z "`getent passwd nipap`" ]; then
 			adduser --quiet --system --group --no-create-home nipap
 		fi
-		# set ownership/permissions on the local auth
+		# create dir for pid file
+		if [ ! -d /var/run/nipap/ ]; then
+			mkdir /var/run/nipap
+			chown -f nipap:nipap /var/run/nipap
+		fi
+
+		# set ownership/permissions on the local auth db
 		chown -f :nipap /etc/nipap/local_auth.db
 		chmod -f 0640 /etc/nipap/local_auth.db
 
@@ -83,7 +89,7 @@ case "$1" in
 				su -c "psql -q -d $DB_NAME -c 'GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO $DB_USER'" postgres >/dev/null 2>&1
 
 				# update nipap.conf with database credentials
-				cat /etc/nipap/nipap.conf.dist | sed -e "s/db_user *= *[^ ]\+/db_user = $DB_USER /" -e "s/db_name *= *[^ ]\+/db_name = $DB_NAME /" -e "s/db_pass *= *[^ ]\+/db_pass = $DB_PASS /" > /etc/nipap/nipap.conf
+				cat /etc/nipap/nipap.conf.dist | sed -e "s/#user *= *[^ ]\+/user = nipap/" -e "s/db_host *= *[^ ]\+/db_host = ''/" -e "s/db_user *= *[^ ]\+/db_user = $DB_USER /" -e "s/db_name *= *[^ ]\+/db_name = $DB_NAME /" -e "s/db_pass *= *[^ ]\+/db_pass = $DB_PASS /" > /etc/nipap/nipap.conf
 			fi
 		fi
 
