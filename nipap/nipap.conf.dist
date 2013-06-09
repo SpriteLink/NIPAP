@@ -38,6 +38,14 @@
 #
 [nipapd]
 
+# Run nipapd as a different user, ie drop privileges from root to the specified
+# user and group. If no user is specified, nipapd will run as the user who
+# started it (typically root). If only user but no group is specified, the
+# value for user will be used for group as well.
+#user = nipap
+#group = nipap
+
+
 listen = 127.0.0.1              ; IP address to listen on.
 # The default is to listen to 127.0.0.1. Use 0.0.0.0 to listen on all addresses
 # (change requires restart).
@@ -58,7 +66,7 @@ pid_file = /var/run/nipapd.pid  ; pid file, default is to not write one
 #
 
 db_host = localhost            ; database hostname
-# The default is to connect to via IP to localhost. This is preferred over
+# The default is to connect via IP to localhost. This is preferred over
 # connecting over a UNIX socket as it supports MD5 authentication.
 # "" (ie, empty string without quotes), is a special case which means to
 # connect over a UNIX socket but be aware that authentication needs to be done
