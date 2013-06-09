@@ -380,10 +380,6 @@ class Nipap:
         except psycopg2.InternalError, e:
             self._con_pg.rollback()
 
-            # FIXME: move logging
-            estr = "Internal database error: %s" % e
-            self._logger.error(estr)
-
             # NOTE: psycopg2 is unable to differentiate between exceptions
             # thrown by stored procedures and certain other database internal
             # exceptions, thus we do not know if the exception in question is
@@ -412,6 +408,8 @@ class Nipap:
             if code == '1200':
                 raise NipapValueError(text)
 
+            estr = "Internal database error: %s" % e
+            self._logger.error(estr)
             raise NipapError(str(e))
 
         except psycopg2.IntegrityError, e:
