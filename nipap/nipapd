@@ -11,11 +11,11 @@ import ConfigParser
 
 import nipap.xmlrpc
 from nipap.nipapconfig import NipapConfig
+from nipap.backend import NipapError
 
 def drop_privileges(uid_name='nobody', gid_name='nogroup'):
     if os.getuid() != 0:
-        # We're not root so, like, whatever dude
-        return
+        raise NipapError("non-root user cannot drop privileges")
 
     import pwd, grp
     # Get the uid/gid from the name
@@ -110,6 +110,10 @@ if __name__ == '__main__':
             run_group = cfg.get('nipapd', 'user')
         try:
             drop_privileges(run_user, run_group)
+        except NipapError:
+            print >> sys.stderr, ("nipapd is configured to drop privileges and run as user '%s' and group '%s', \n"
+                        "but was not started as root and can therefore not drop privileges") % (run_user, run_group)
+            sys.exit(1)
         except KeyError:
             print >> sys.stderr, "Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group)
             sys.exit(1)
