@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ "$1" = "purge" ] ; then
+	# clean up rc.d
+	update-rc.d nipapd remove >/dev/null
+
+	# remove nipap user and group
+	deluser nipap > /dev/null 2>&1
+	delgroup nipap > /dev/null 2>&1
+fi
