@@ -14,7 +14,7 @@ set -e
 DAEMON=/usr/sbin/nipapd
 CONFIGFILE=/etc/nipap/nipap.conf
 NAME=NIPAPd
-PIDFILE=/var/run/nipapd.pid
+PIDFILE=/var/run/nipap/nipapd.pid
 
 . /lib/lsb/init-functions
 
