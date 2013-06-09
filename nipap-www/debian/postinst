@@ -19,13 +19,14 @@ fi
 
 db_get nipap-www/autouser
 if [ "$RET" = "true" ]; then
-	echo "Adding new user!!!"
 	# check if www-user already exists, if not, create it and configure it in
 	# the nipap.conf configuration file, provided that it exists
 	if [ `nipap-passwd -l | awk "{ if (\\$1~/^$WWW_USER$/) { print \\$1 } }" | wc -l` = "0" ]; then
-		nipap-passwd -a $WWW_USER -p $WWW_PASS -n "$WWW_NAME"
+		nipap-passwd -a $WWW_USER -p $WWW_PASS -n "$WWW_NAME" > /dev/null 2>&1
 		if [ -e /etc/nipap/nipap.conf ]; then
 			sed -i -e "s/http:\/\/[^:]\+:[^@]\+@/http:\/\/$WWW_USER@local:$WWW_PASS@/" /etc/nipap/nipap.conf
 		fi
 	fi
 fi
+
+echo 0
