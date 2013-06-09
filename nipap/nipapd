@@ -12,6 +12,27 @@ import ConfigParser
 import nipap.xmlrpc
 from nipap.nipapconfig import NipapConfig
 
+def drop_privileges(uid_name='nobody', gid_name='nogroup'):
+    if os.getuid() != 0:
+        # We're not root so, like, whatever dude
+        return
+
+    import pwd, grp
+    # Get the uid/gid from the name
+    uid = pwd.getpwnam(uid_name).pw_uid
+    gid = grp.getgrnam(gid_name).gr_gid
+
+    # Remove group privileges
+    os.setgroups([])
+
+    # Try setting the new uid/gid
+    os.setgid(gid)
+    os.setuid(uid)
+
+    # Ensure a very conservative umask
+    old_umask = os.umask(077)
+
+
 if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option("-d", "--debug", action="store_true", dest="debug", help="enable debugging")
@@ -46,7 +67,9 @@ if __name__ == '__main__':
         'db_user': 'nipap',
         'db_pass': 'papin',
         'db_sslmode': 'require',
-        'auth_cache_timeout': '3600'
+        'auth_cache_timeout': '3600',
+        'user': None,
+        'group': None
     }
 
     try:
@@ -76,6 +99,19 @@ if __name__ == '__main__':
             cfg.set('nipapd', val.dest, str(eval("options." + val.dest)))
         except ConfigParser.NoSectionError as exc:
             print >> sys.stderr, "The configuration file contains errors:", exc
+            sys.exit(1)
+
+    # drop privileges
+    if cfg.get('nipapd', 'user') is not None:
+        run_user = cfg.get('nipapd', 'user')
+        if cfg.get('nipapd', 'group') is not None:
+            run_group = cfg.get('nipapd', 'group')
+        else:
+            run_group = cfg.get('nipapd', 'user')
+        try:
+            drop_privileges(run_user, run_group)
+        except KeyError:
+            print >> sys.stderr, "Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group)
             sys.exit(1)
 
 
