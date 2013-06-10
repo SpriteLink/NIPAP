@@ -1,4 +1,9 @@
 #!/usr/bin/python
+""" Example script for CSV export
+
+    This script likely need to be modified to meet your needs but can act as a
+    starting point for the less experienced.
+"""
 
 import os
 import csv
@@ -32,7 +37,6 @@ class Export:
             sys.exit(1)
 
         for p in res['result']:
-            print p.vrf.rt
             writer.writerow([p.vrf.rt, p.display_prefix, p.type, p.node, p.order_id, p.description])
 
 
