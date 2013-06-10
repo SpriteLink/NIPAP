@@ -607,6 +607,32 @@ class Nipap:
         return updated
 
 
+    def _get_query_parts(self, query_str, search_options = {}):
+        """ Split a query string into its parts
+        """
+        if query_str is None:
+            raise NipapValueError("'query_string' must not be None")
+
+        # find query parts
+        query_str_parts = []
+        try:
+            for part in shlex.split(query_str):
+                query_str_parts.append({ 'string': part })
+        except ValueError as exc:
+            if str(exc) == 'No closing quotation':
+                raise NipapValueError(str(exc))
+
+        # Handle empty search.
+        # We need something to iterate over, but shlex.split() returns
+        # zero-element list for an empty string, so we have to append one
+        # manually
+        if len(query_str_parts) == 0:
+            query_str_parts.append({ 'string': '' })
+
+        return query_str_parts
+
+
+
 
     #
     # VRF functions
@@ -1689,16 +1715,10 @@ class Nipap:
 
         self._logger.debug("smart_search_pool query string: %s" % query_str)
 
-        if query_str is None:
-            raise NipapValueError("'query_string' must not be None")
-
         # find query parts
-        # XXX: notice the ugly workarounds for shlex not supporting Unicode
-        query_str_parts = []
         try:
-            for part in shlex.split(query_str.encode('utf-8')):
-                query_str_parts.append({ 'string': part.decode('utf-8') })
-        except:
+            query_str_parts = self._get_query_parts(query_str)
+        except NipapValueError:
             return {
                 'interpretation': [
                     {
@@ -1710,13 +1730,6 @@ class Nipap:
                 'search_options': search_options,
                 'result': []
             }
-
-        # Handle empty search.
-        # We need something to iterate over, but shlex.split() returns
-        # zero-element list for an empty string, so we have to append one
-        # manually
-        if len(query_str_parts) == 0:
-            query_str_parts.append({ 'string': '' })
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -2971,16 +2984,10 @@ class Nipap:
 
         self._logger.debug("smart_search_prefix query string: %s" % query_str)
 
-        if query_str is None:
-            raise NipapValueError("'query_string' must not be None")
-
         # find query parts
-        # XXX: notice the ugly workarounds for shlex not supporting Unicode
-        query_str_parts = []
         try:
-            for part in shlex.split(query_str.encode('utf-8')):
-                query_str_parts.append({ 'string': part.decode('utf-8') })
-        except:
+            query_str_parts = self._get_query_parts(query_str)
+        except NipapValueError:
             return {
                 'interpretation': [
                     {
@@ -2992,13 +2999,6 @@ class Nipap:
                 'search_options': search_options,
                 'result': []
             }
-
-        # Handle empty search.
-        # We need something to iterate over, but shlex.split() returns
-        # zero-element list for an empty string, so we have to append one
-        # manually
-        if len(query_str_parts) == 0:
-            query_str_parts.append({ 'string': '' })
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -3511,16 +3511,10 @@ class Nipap:
 
         self._logger.debug("smart_search_asn called; query_str: %s" % query_str)
 
-        if query_str is None:
-            raise NipapValueError("'query_string' must not be None")
-
         # find query parts
-        # XXX: notice the ugly workarounds for shlex not supporting Unicode
-        query_str_parts = []
         try:
-            for part in shlex.split(query_str.encode('utf-8')):
-                query_str_parts.append({ 'string': part.decode('utf-8') })
-        except:
+            query_str_parts = self._get_query_parts(query_str)
+        except NipapValueError:
             return {
                 'interpretation': [
                     {
@@ -3532,13 +3526,6 @@ class Nipap:
                 'search_options': search_options,
                 'result': []
             }
-
-        # Handle empty search.
-        # We need something to iterate over, but shlex.split() returns
-        # zero-element list for an empty string, so we have to append one
-        # manually
-        if len(query_str_parts) == 0:
-            query_str_parts.append({ 'string': '' })
 
         # go through parts and add to query_parts list
         query_parts = list()
