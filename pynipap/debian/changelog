@@ -1,3 +1,19 @@
+pynipap (0.20.0-1) precise; urgency=low
+
+  * For Debian, nipapd now runs per default as the nipap user which
+    allows nipapd to connect to PostgreSQL via a UNIX socket instead of over
+    TCP. This means the installation is now truly zero touch as the postgres
+    configuration does not need to be modified.
+  * For Debian the pid file location has moved
+  * nipapd supports dropping privileges to a non-root user
+  * Fix for incorrect Web UI prefix rendering that would not display all
+    prefixes or break the collapse functionality
+  * Fix logging in nipapd for certain SQL queries
+  * Added prefix help on more pages in the web UI
+  * Fix for VRF tab completion
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Jun 2013 12:32:28 +0200
+
 pynipap (0.19.0-1) precise; urgency=low
 
   * nipapd now requires postgresql-9.1 for apt package installation as well as
