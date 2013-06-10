@@ -32,6 +32,7 @@ fi
 running() {
 	if [ $(flock -xn $PIDFILE -c 'echo 1') ]; then 
 		echo -n
+		rm -f $PIDFILE > /dev/null 2>&1
 	else
 		cat $PIDFILE
 	fi

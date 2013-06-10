@@ -1,3 +1,7 @@
+Version 0.20.1
+--------------
+ * Fix for nipapd init script
+
 Version 0.20.0
 --------------
  * For Debian, nipapd now runs per default as the nipap user which

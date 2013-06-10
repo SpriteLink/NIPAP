@@ -1,3 +1,9 @@
+nipap (0.20.1-1) precise; urgency=low
+
+  * Fix for nipapd init script
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Jun 2013 14:07:21 +0200
+
 nipap (0.20.0-1) precise; urgency=low
 
   * For Debian, nipapd now runs per default as the nipap user which
