@@ -73,6 +73,7 @@ gets its version number. You can look into setup.py and see the version line.
 See the following files for version info:
 nipap/nipap/__init__.py
 pynipap/pynipap.py
+nipap-cli/nipap_cli/__init__.py
 nipap-www/nipapwww/__init__.py
 
 To roll a new release, update the Python file with the new version number
