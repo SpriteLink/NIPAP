@@ -1,3 +1,17 @@
+Version 0.20.0
+--------------
+ * For Debian, nipapd now runs per default as the nipap user which
+   allows nipapd to connect to PostgreSQL via a UNIX socket instead of over
+   TCP. This means the installation is now truly zero touch as the postgres
+   configuration does not need to be modified.
+ * For Debian the pid file location has moved
+ * nipapd supports dropping privileges to a non-root user
+ * Fix for incorrect Web UI prefix rendering that would not display all
+   prefixes or break the collapse functionality
+ * Fix logging in nipapd for certain SQL queries
+ * Added prefix help on more pages in the web UI
+ * Fix for VRF tab completion
+
 Version 0.19.1
 --------------
  * Fix automatic start of nipapd on system startup
