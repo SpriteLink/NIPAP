@@ -64,7 +64,7 @@ var curVRFCallback = null;
 
 var offset = 0;
 var outstanding_nextpage = 0;
-var end_of_result = 0;
+var end_of_result = 1;
 
 var search_key_timeout = 0;
 
@@ -328,6 +328,8 @@ function clearPrefixSearch() {
 		'parents_depth': 0,
 		'children_depth': 0
 	};
+
+	end_of_result = 1;
 }
 
 /*
@@ -452,10 +454,13 @@ function setSearchPrefixURI(explicit) {
  * Called when next page of results is requested by the user.
  */
 function performPrefixNextPage() {
-	if (outstanding_nextpage == 1 || end_of_result == 1 ||
-		jQuery.trim($('#query_string').val()).length < 1) {
+
+	// Skip nextpage if we're already performing one or we've reached the end
+	// of the result.
+	if (outstanding_nextpage == 1 || end_of_result == 1) {
 		return;
 	}
+
 	outstanding_nextpage = 1;
 
 	offset += 49;
