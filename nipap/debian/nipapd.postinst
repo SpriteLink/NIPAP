@@ -49,7 +49,7 @@ case "$1" in
 
 		# set ownership/permissions on the local auth db
 		chown -f :nipap /etc/nipap/local_auth.db
-		chmod -f 0640 /etc/nipap/local_auth.db
+		chmod -f 0644 /etc/nipap/local_auth.db
 
 		# autostart
 		db_get nipapd/startup
