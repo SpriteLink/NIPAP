@@ -41,11 +41,6 @@ case "$1" in
 		if [ -z "`getent passwd nipap`" ]; then
 			adduser --quiet --system --group --no-create-home nipap
 		fi
-		# create dir for pid file
-		if [ ! -d /var/run/nipap/ ]; then
-			mkdir /var/run/nipap
-			chown -f nipap:nipap /var/run/nipap
-		fi
 
 		# set ownership/permissions on the local auth db
 		chown -f :nipap /etc/nipap/local_auth.db
@@ -93,5 +88,11 @@ case "$1" in
 			fi
 		fi
 
+		db_stop
+
+		# finally start nipapd
+		invoke-rc.d nipapd start
 		;;
 esac
+
+exit 0

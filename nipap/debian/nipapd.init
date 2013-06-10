@@ -15,6 +15,7 @@ DAEMON=/usr/sbin/nipapd
 CONFIGFILE=/etc/nipap/nipap.conf
 NAME=NIPAPd
 PIDFILE=/var/run/nipap/nipapd.pid
+PIDDIR=`dirname $PIDFILE`
 
 . /lib/lsb/init-functions
 
@@ -30,11 +31,17 @@ if [ "$RUN" != "yes" ]; then
 fi
 
 running() {
-	if [ $(flock -xn $PIDFILE -c 'echo 1') ]; then 
+	# create dir for PID file if it doesn't exist
+	if [ ! -d "$PIDDIR" ]; then
+		mkdir "$PIDDIR"
+		chown nipap:nipap $PIDDIR
+	fi
+
+	if [ $(flock -xn $PIDFILE -c 'echo 1' 2> /dev/null) ]; then
 		echo -n
 		rm -f $PIDFILE > /dev/null 2>&1
 	else
-		cat $PIDFILE
+		cat $PIDFILE || echo -n
 	fi
 }
 
