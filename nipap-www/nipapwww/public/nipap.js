@@ -1276,15 +1276,14 @@ function receivePrefixListNextPage(search_result) {
 		end_of_result = 1;
 		outstanding_nextpage = 0;
 		$('#nextpage').hide();
-		return;
 
 	}
 
 	insertPrefixList(pref_list);
 	outstanding_nextpage = 0;
 
-	// Page full?
-	if (!pageFilled()) {
+	// Page full or end of search result reached?
+	if (!pageFilled() && end_of_result == 0) {
 		// Nope. Perform a nextPage()
 		performPrefixNextPage();
 	}
@@ -1349,7 +1348,7 @@ function insertPrefixList(pref_list) {
 
 		// This should only happen when adding the very first prefix to a completely empty list
 		// Add it manually so we have a starting point
-		var c = insertVRFContainer(prefix.vrf_rt);
+		var c = getVRFContainer(prefix.vrf_rt);
 		showPrefix(prefix, c, null);
 		prev_prefix = prefix;
 		prefix_list[prefix.id] = prefix;
@@ -1404,7 +1403,7 @@ function insertPrefix(prefix, prev_prefix) {
 	// Changing VRF - create new VRF container and add prefix to it
 	if (prefix.vrf_id != prev_prefix.vrf_id) {
 
-		var c = insertVRFContainer(prefix.vrf_rt);
+		var c = getVRFContainer(prefix.vrf_rt);
 		showPrefix(prefix, c, null);
 		return;
 
@@ -1458,13 +1457,25 @@ function insertPrefix(prefix, prev_prefix) {
 	} else if (prefix.indent < prev_prefix.indent) {
 		// Indent level decreased
 
-		/* Find the collapse container which the previous prefix was placed
-		 * into. As it might be placed in a hidden container, we might need to
-		 * go two steps down in the DOM tree.
+		/*
+		 * Find the collapse container in which the previous prefix was placed.
 		 */
-		main_container = $("#prefix_entry" + prev_prefix.id).parent();
-		if (main_container.hasClass('prefix_hidden_container')) {
+		main_container = $("#prefix_entry" + prev_prefix.id);
+		for (i = prev_prefix.indent - prefix.indent; i > 0; i--) {
 			main_container = main_container.parent();
+
+			// Safety net - stop iterating if we reached the VRF container
+			// which is the highest level.
+			if (main_container === getVRFContainer(prefix.vrf_rt)) {
+				break;
+			}
+
+			// The previous prefix on our level might have been placed into a
+			// hidden container. If so, get it's parent.
+			if (main_container.hasClass('prefix_hidden_container')) {
+				main_container = main_container.parent();
+			}
+
 		}
 
 		// OK. Match or no match?
@@ -1557,11 +1568,13 @@ function insertPrefix(prefix, prev_prefix) {
 
 }
 
-
 /*
- * Add a container in the prefix list for one VRF
+ * Returns a prefix container for a VRF
+ *
+ * Creates a new container if it does not exists, otherwise returns the
+ * existing one.
  */
-function insertVRFContainer(vrf) {
+function getVRFContainer(vrf) {
 
 	if (vrf == null) {
 		var vrf_s = 'No VRF';
@@ -1576,9 +1589,6 @@ function insertVRFContainer(vrf) {
 			'<div class="preflist_vrf_panel">' + vrf_s + '</div>' +
 			'<div class="preflist_prefix_panel" id="preflist_prefix_panel_' + vrf_id + '"></div>' +
 			'</div>');
-	} else {
-		log("ERROR: insertVRFContainer called for VRF '" + vrf_s +
-			" (DOM ID '" + vrf_id + "')' which already has container.");
 	}
 
 	return $('#preflist_prefix_panel_' + vrf_id);
