@@ -1,3 +1,10 @@
+nipap-www (0.20.2) precise; urgency=low
+
+  * Fix for nipapd postinst and init script related to the pid file
+  * Fix web UI bug where more results would not be automatically fetched
+
+ -- Kristian Larsson <kll@spritelink.net>  Thu, 20 Jun 2013 13:32:06 +0200
+
 nipap-www (0.20.0-1) precise; urgency=low
 
   * For Debian, nipapd now runs per default as the nipap user which
