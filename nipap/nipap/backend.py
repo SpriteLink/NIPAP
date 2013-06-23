@@ -3040,10 +3040,10 @@ class Nipap:
             elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('.')) == 4:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
                 query_str_part['interpretation'] = 'IPv4 address'
-                query_str_part['operator'] = 'equals'
+                query_str_part['operator'] = 'contains_equals'
                 query_str_part['attribute'] = 'prefix'
                 query_parts.append({
-                    'operator': 'equals',
+                    'operator': 'contains_equals',
                     'val1': 'prefix',
                     'val2': query_str_part['string']
                 })
@@ -3069,10 +3069,10 @@ class Nipap:
             elif self._get_afi(query_str_part['string']) == 6:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 address")
                 query_str_part['interpretation'] = 'IPv6 address'
-                query_str_part['operator'] = 'equals'
+                query_str_part['operator'] = 'contains_equals'
                 query_str_part['attribute'] = 'prefix'
                 query_parts.append({
-                    'operator': 'equals',
+                    'operator': 'contains_equals',
                     'val1': 'prefix',
                     'val2': query_str_part['string']
                 })

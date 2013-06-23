@@ -1134,6 +1134,9 @@ function receivePrefixList(search_result) {
 				text += '<b>' + interp.string + '</b>';
 				tooltip = 'Prefix must be contained within ' + interp.string;
 			}
+		} else if (interp.attribute == 'prefix' && interp.operator == 'contains_equals') {
+			var text = '<b>' + interp.string + ':</b> ' + 'Prefix that contains ' + interp.string;
+			tooltip = "The prefix must contain or be equal to " + interp.string;
 		} else if (interp.attribute == 'prefix' && interp.operator == 'equals') {
 			text += ' equal to <b>' + interp.string + '</b>';
 			tooltip = "The " + interp.interpretation + " must equal " + interp.string;
