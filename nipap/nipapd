@@ -50,6 +50,10 @@ if __name__ == '__main__':
         print "nipapd version:", nipap.__version__
         sys.exit(0)
 
+    # set logging format
+    LOG_FORMAT = "%(asctime)s: %(module)-10s %(levelname)-8s %(message)s"
+    logging.basicConfig(format=LOG_FORMAT)
+
     logger = logging.getLogger()
     nullh = logging.FileHandler('/dev/null')
     logger.addHandler(nullh)
@@ -79,7 +83,6 @@ if __name__ == '__main__':
             print >> sys.stderr, "The specified configuration file ('" + options.config_file + "') does not exist"
             sys.exit(1)
         # if no config file is specified, we'll live with our defaults
-
 
     # Go through list of optparse options and set the config object to
     # their values.
@@ -118,13 +121,9 @@ if __name__ == '__main__':
             print >> sys.stderr, "Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group)
             sys.exit(1)
 
-
     if not cfg.getboolean('nipapd', 'foreground'):
         import nipap.daemon
         ret = nipap.daemon.createDaemon()
-
-    # init our XML-RPC daemon
-    nipapxml = nipap.xmlrpc.NipapXMLRPC(root_logger = logger)
 
     # pid file handling
     if cfg.get('nipapd', 'pid_file') and not options.no_pid_file:
@@ -144,11 +143,52 @@ if __name__ == '__main__':
         lf.write('%d\n' % os.getpid())
         lf.flush()
 
+    from nipap.flask_xmlrpc import app as nipapxml
 
-    # run XML-RPC daemon
-    import twisted
+    # logging
+    if cfg.getboolean('nipapd', 'debug'):
+        logger.setLevel(logging.DEBUG)
+        nipapxml.logger.setLevel(logging.DEBUG)
+
+    from tornado.netutil import bind_sockets
+    from tornado.httpserver import HTTPServer
+    from tornado.wsgi import WSGIContainer
+    import tornado.process
+    from tornado.ioloop import IOLoop
+
+    if cfg.getboolean('nipapd', 'syslog'):
+        log_syslog = logging.handlers.SysLogHandler(address = '/dev/log')
+        log_syslog.setFormatter(logging.Formatter("%(levelname)-8s %(message)s"))
+        logger.addHandler(log_syslog)
+        nipapxml.logger.addHandler(log_syslog)
+
+    # pre-fork if we are not running in foreground
+    if not cfg.get('nipapd', 'foreground'):
+        # default is to fork as many processes as there are cores
+        tornado.process.fork_processes(None)
+
+    http_server = HTTPServer(WSGIContainer(nipapxml))
+    if cfg.get('nipapd', 'listen') is None or cfg.get('nipapd', 'listen') == '':
+        sockets = bind_sockets(cfg.get('nipapd', 'port'))
+    else:
+        sockets = []
+        for entry in cfg.get('nipapd', 'listen').split(','):
+            if len(entry.split('+')) > 1:
+                address = entry.split('+')[0]
+                port = int(entry.split('+')[1])
+            else:
+                address = entry
+                port = int(cfg.get('nipapd', 'port'))
+            socket = bind_sockets(port, address)
+            sockets = sockets + socket
+
+    http_server.add_sockets(sockets)
+
+    # start Tornado
     try:
-        nipapxml.run()
+        IOLoop.instance().start()
+    except KeyboardInterrupt:
+        sys.exit(0)
     except Exception as exc:
         logger.error(exc)
         sys.exit(1)

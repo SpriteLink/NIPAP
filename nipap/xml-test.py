@@ -30,16 +30,22 @@ query = {
 
 res = server.search_tag({ 'auth': ad, 'query': query })
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': '', 'search_options': { 'include_all_parents': True } })
+#res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'foo', 'search_options': { 'include_all_parents': True } })
+#res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'foo', 'search_options': { 'include_all_parents': True } })
+#res = server.add_prefix({ 'spec': { 'prefix': '2.0.0.0/8' } })
+#print res
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True, 'root_prefix': '1.0.4.0/24' } })
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'THISWILLNEVERMATCH', 'search_options': { 'include_all_parents': True, 'parent_prefix': 11963 } })
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True, 'parent_prefix': 'bajs' } })
 
 for p in res['result']:
     print p
+#for p in res:
+#    print res[p]
     #print "".join(" " for i in xrange(p['indent'])), p['prefix'], p['match']
 
 #res = server.list_pool({ 'auth': ad, 'pool': { 'id': 1003 } })
-print res
+#res = server.version()
 
 sys.exit(0)
 
