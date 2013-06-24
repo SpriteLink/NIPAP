@@ -1542,20 +1542,28 @@ function insertPrefix(prefix, prev_prefix) {
 			// switching into a non-match from a match, so we should display a "expand downwards" arrow
 			// create new hidden container in previous prefix's parent (the collapse container)
 
-			// does container already exist?
+			// Does container already exist?
 			var next = $("#prefix_entry" + prev_prefix.id).next();
 			if (next.length == 0) {
 				// create new if there is no next element or the next element is not a hidden container
 				reference = addHiddenContainer(prefix, $("#prefix_entry" + prev_prefix.id), 'after');
 				offset = null;
 			} else {
-				// there are elements after the previous one. Is it a collapse container?
+				// There are elements after the previous one. Is it a hidden container?
 				if (next.hasClass('prefix_hidden_container')) {
 					reference = next;
 					offset = 'prepend';
 				} else {
-					// next element was no collapse container. Add new before next element.
-					reference = addHiddenContainer(prefix, next, 'before');
+					// Next element wasn't hidden container. Add new before next prefix element.
+					// As next element was not a hidden container, it can be either a prefix
+					// entry or a collapse container.
+					// Add before prefix entry and after collapse container.
+					if (next.hasClass('prefix-entry')) {
+						offset = 'before';
+					} else {
+						offset = 'after';
+					}
+					reference = addHiddenContainer(prefix, next, offset);
 					offset = null;
 				}
 			}
