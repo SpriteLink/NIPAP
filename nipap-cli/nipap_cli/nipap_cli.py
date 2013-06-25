@@ -861,7 +861,51 @@ def modify_pool(arg, opts):
 
     print "Pool %s saved." % p.name
 
+def shrink_pool(arg, opts):
+    """ Shrink a pool with the ranges set in opts
+    """
+    res = Pool.list({ 'name': arg })
+    if len(res) < 1:
+        print >> sys.stderr, "No pool with name %s found." % arg
+        sys.exit(1)
 
+    p = res[0]
+
+    res = Prefix.list({'prefix': opts['prefix'], 'pool_id': p.id})
+
+    if len(res) == 0:
+        print >> sys.stderr, "Pool %s does not contain %s." % (p.name,
+            opts['prefix'])
+        sys.exit(1)
+
+    res[0].pool = undef
+    res[0].save()
+    print "Prefix %s removed from pool %s." % (res[0].name, p.name)
+
+def expand_pool(arg, opts):
+    """ Expand a pool with the ranges set in opts
+    """
+    res = Pool.list({ 'name': arg })
+    if len(res) < 1:
+        print >> sys.stderr, "No pool with name %s found." % arg
+        sys.exit(1)
+
+    p = res[0]
+
+    res = Prefix.list({'prefix': opts['prefix']})
+    if len(res) == 0:
+        print >> sys.stderr, "No prefix found matching %s." % opts['prefix']
+        sys.exit(1)
+    elif res[0].pool:
+        if res[0].pool == p:
+            print >> sys.stderr, "Prefix %s is already assigned to that pool." % opts['prefix']
+        else:
+            print >> sys.stderr, "Prefix %s is already assigned to a different pool (%s)." % (opts['prefix'], res[0].pool.name)
+        sys.exit(1)
+
+    res[0].pool = p
+    res[0].save()
+    print "Prefix %s added to pool %s." % (res[0].prefix, p.name)
 
 def modify_prefix(arg, opts):
     """ Modify the prefix 'arg' with the options 'opts'
@@ -1656,6 +1700,45 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
+                    }
+                },
+
+                # resize
+                'resize': {
+                    'type': 'command',
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Pool name',
+                        'complete': complete_pool_name,
+                    },
+                    'children': {
+                        'expand': {
+                            'type': 'option',
+                            'exec': expand_pool,
+                            'children': {
+                                'prefix': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    }
+                                },
+                            },
+                        },
+                        'shrink': {
+                            'type': 'command',
+                            'exec': shrink_pool,
+                            'children': {
+                                'prefix': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    }
+                                },
+                            },
+                        }
                     }
                 },
 
