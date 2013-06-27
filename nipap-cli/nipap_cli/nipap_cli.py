@@ -897,6 +897,10 @@ def resize_pool(arg, opts):
         res[0].pool = None
         res[0].save()
         print "Prefix %s removed from pool %s." % (res[0].prefix, p.name)
+    else:
+        print >> sys.stderr, "Please supply a prefix to add or remove to %s" % (
+            p.name)
+        sys.exit(1)
 
 def modify_prefix(arg, opts):
     """ Modify the prefix 'arg' with the options 'opts'
