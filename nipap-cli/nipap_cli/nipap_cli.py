@@ -861,7 +861,46 @@ def modify_pool(arg, opts):
 
     print "Pool %s saved." % p.name
 
+def resize_pool(arg, opts):
+    """ Expand or shrink a pool with the ranges set in opts
+    """
+    res = Pool.list({ 'name': arg })
+    if len(res) < 1:
+        print >> sys.stderr, "No pool with name %s found." % arg
+        sys.exit(1)
 
+    p = res[0]
+
+    if 'add' in opts:
+        res = Prefix.list({'prefix': opts['add']})
+        if len(res) == 0:
+            print >> sys.stderr, "No prefix found matching %s." % opts['add']
+            sys.exit(1)
+        elif res[0].pool:
+            if res[0].pool == p:
+                print >> sys.stderr, "Prefix %s is already assigned to that pool." % opts['add']
+            else:
+                print >> sys.stderr, "Prefix %s is already assigned to a different pool (%s)." % (opts['add'], res[0].pool.name)
+            sys.exit(1)
+
+        res[0].pool = p
+        res[0].save()
+        print "Prefix %s added to pool %s." % (res[0].prefix, p.name)
+    elif 'remove' in opts:
+        res = Prefix.list({'prefix': opts['remove'], 'pool_id': p.id})
+
+        if len(res) == 0:
+            print >> sys.stderr, "Pool %s does not contain %s." % (p.name,
+                opts['remove'])
+            sys.exit(1)
+
+        res[0].pool = None
+        res[0].save()
+        print "Prefix %s removed from pool %s." % (res[0].prefix, p.name)
+    else:
+        print >> sys.stderr, "Please supply a prefix to add or remove to %s" % (
+            p.name)
+        sys.exit(1)
 
 def modify_prefix(arg, opts):
     """ Modify the prefix 'arg' with the options 'opts'
@@ -1656,6 +1695,35 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
+                    }
+                },
+
+                # resize
+                'resize': {
+                    'type': 'command',
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Pool name',
+                        'complete': complete_pool_name,
+                    },
+                    'children': {
+                        'add': {
+                            'type': 'option',
+                            'exec': resize_pool,
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
+                        'remove': {
+                            'type': 'option',
+                            'exec': resize_pool,
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        }
                     }
                 },
 
