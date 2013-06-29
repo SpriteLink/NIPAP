@@ -33,6 +33,7 @@ valid_priorities = [ 'warning', 'low', 'medium', 'high', 'critical' ]
 # evil global vars
 vrf = None
 cfg = None
+pool = None
 
 
 
@@ -53,6 +54,27 @@ def setup_connection():
         sys.exit(1)
 
     ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
+
+
+
+def get_pool(arg = None, opts = None, abort = False):
+    """ Returns pool to work with
+
+        Returns a pynipap.Pool object representing the pool we are working with.
+    """
+    # yep, global variables are evil
+    global pool
+
+    try:
+        pool = Pool.list({ 'name': arg })[0]
+    except IndexError:
+        if abort:
+            print >> sys.stderr, "Pool %s not found." % str(vrf_rt)
+            sys.exit(1)
+        else:
+            pool = None
+
+    return pool
 
 
 
@@ -1028,6 +1050,20 @@ def complete_family(arg):
 
 
 
+def complete_pool_members(arg):
+    """ Complete member prefixes of pool
+    """
+    # pool should already be globally set
+    res = []
+    for member in Prefix.list({ 'pool_id': pool.id }):
+        #res.append(member.prefix[0:5])
+        res.append('abc/def')
+        res.append('ghi/jkl')
+
+    return _complete_string(arg, res)
+
+
+
 def complete_prefix_type(arg):
     """ Complete NIPAP prefix type
     """
@@ -1718,6 +1754,7 @@ cmds = {
                 # resize
                 'resize': {
                     'type': 'command',
+                    'exec_immediately': get_pool,
                     'argument': {
                         'type': 'value',
                         'content_type': unicode,
@@ -1739,6 +1776,7 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
+                                'complete': complete_pool_members,
                             }
                         }
                     }
