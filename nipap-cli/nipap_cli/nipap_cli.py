@@ -33,6 +33,7 @@ valid_priorities = [ 'warning', 'low', 'medium', 'high', 'critical' ]
 # evil global vars
 vrf = None
 cfg = None
+pool = None
 
 
 
@@ -53,6 +54,27 @@ def setup_connection():
         sys.exit(1)
 
     ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
+
+
+
+def get_pool(arg = None, opts = None, abort = False):
+    """ Returns pool to work with
+
+        Returns a pynipap.Pool object representing the pool we are working with.
+    """
+    # yep, global variables are evil
+    global pool
+
+    try:
+        pool = Pool.list({ 'name': arg })[0]
+    except IndexError:
+        if abort:
+            print >> sys.stderr, "Pool %s not found." % str(vrf_rt)
+            sys.exit(1)
+        else:
+            pool = None
+
+    return pool
 
 
 
@@ -863,6 +885,60 @@ def modify_pool(arg, opts):
 
 
 
+def grow_pool(arg, opts):
+    """ Expand a pool with the ranges set in opts
+    """
+    if not pool:
+        print >> sys.stderr, "No pool with name %s found." % arg
+        sys.exit(1)
+
+    if not 'add' in opts:
+        print >> sys.stderr, "Please supply a prefix to add to pool %s" % pool.name
+        sys.exit(1)
+
+    res = Prefix.list({'prefix': opts['add']})
+    if len(res) == 0:
+        print >> sys.stderr, "No prefix found matching %s." % opts['add']
+        sys.exit(1)
+    elif res[0].pool:
+        if res[0].pool == pool:
+            print >> sys.stderr, "Prefix %s is already assigned to that pool." % opts['add']
+        else:
+            print >> sys.stderr, "Prefix %s is already assigned to a different pool (%s)." % (opts['add'], res[0].pool.name)
+        sys.exit(1)
+
+    res[0].pool = pool
+    res[0].save()
+    print "Prefix %s added to pool %s." % (res[0].prefix, pool.name)
+
+
+
+def shrink_pool(arg, opts):
+    """ Shrink a pool by removing the ranges in opts from it
+    """
+    if not pool:
+        print >> sys.stderr, "No pool with name %s found." % arg
+        sys.exit(1)
+
+    if 'remove' in opts:
+        res = Prefix.list({'prefix': opts['remove'], 'pool_id': pool.id})
+
+        if len(res) == 0:
+            print >> sys.stderr, "Pool %s does not contain %s." % (pool.name,
+                opts['remove'])
+            sys.exit(1)
+
+        res[0].pool = None
+        res[0].save()
+        print "Prefix %s removed from pool %s." % (res[0].prefix, pool.name)
+    else:
+        print >> sys.stderr, "Please supply a prefix to add or remove to %s:" % (
+            pool.name)
+        for pref in Prefix.list({'pool_id': pool.id}):
+            print "  %s" % pref.prefix
+
+
+
 def modify_prefix(arg, opts):
     """ Modify the prefix 'arg' with the options 'opts'
     """
@@ -969,6 +1045,18 @@ def complete_family(arg):
     """ Complete inet family ("ipv4", "ipv6")
     """
     return _complete_string(arg, valid_families)
+
+
+
+def complete_pool_members(arg):
+    """ Complete member prefixes of pool
+    """
+    # pool should already be globally set
+    res = []
+    for member in Prefix.list({ 'pool_id': pool.id }):
+        res.append(member.prefix[0:5])
+
+    return _complete_string(arg, res)
 
 
 
@@ -1656,6 +1744,37 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
+                    }
+                },
+
+                # resize
+                'resize': {
+                    'type': 'command',
+                    'exec_immediately': get_pool,
+                    'argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Pool name',
+                        'complete': complete_pool_name,
+                    },
+                    'children': {
+                        'add': {
+                            'type': 'option',
+                            'exec': grow_pool,
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
+                        'remove': {
+                            'type': 'option',
+                            'exec': shrink_pool,
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_pool_members,
+                            }
+                        }
                     }
                 },
 
