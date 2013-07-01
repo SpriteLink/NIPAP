@@ -6,6 +6,7 @@
 <script>
 
     prefix_link_type = 'edit';
+    current_page = 'prefix_list';
 
     /*
      * Handles the query passed in the URL, if any.
@@ -39,21 +40,21 @@
 
         // register function for pageshow event
         $(window).on('pageshow', function(event) {
+
             // hide open popup menus
             hidePopupMenu();
+
             // populate data from URL
             handleUrlQuery();
         });
 
         // the floating column header
-        $(document).ready(function() {
-            var div = $('#floating_prefix_header');
+        var div = $('#floating_prefix_header');
 
-            $.event.add(window, "scroll", function() {
-                var start = $('#fixed_prefix_header').offset().top;
-                var p = $(window).scrollTop();
-                $(div).css('visibility', ((p)>start) ? 'visible' : 'hidden');
-            });
+        $.event.add(window, "scroll", function() {
+            var start = $('#fixed_prefix_header').offset().top;
+            var p = $(window).scrollTop();
+            $(div).css('visibility', ((p)>start) ? 'visible' : 'hidden');
         });
 
         // register events
@@ -76,7 +77,6 @@
         } else {
             var explicit = false;
         }
-        performPrefixSearch(explicit);
 
         // automagic scrolling
         $(window).scroll(function(){

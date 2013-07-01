@@ -4,6 +4,11 @@
  *
  *********************************************************************/
 
+/*
+ * Settings
+ */
+var PREFIX_BATCH_SIZE = 50;
+
 /**
  * Global variables...
  */
@@ -46,6 +51,7 @@ var cur_opts = new Object();
  * state in a global variable...
  */
 var prefix_link_type = 'edit';
+var current_page = null;
 
 // Max prefix lengths for different address families
 var max_prefix_length = [32, 128];
@@ -365,7 +371,7 @@ function performPrefixSearch(explicit) {
 		'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
 		'include_all_parents': 'true',
 		'include_all_children': 'false',
-		'max_result': 50,
+		'max_result': PREFIX_BATCH_SIZE,
 		'offset': 0,
 		'vrf_filter': []
 	}
@@ -463,7 +469,7 @@ function performPrefixNextPage() {
 
 	outstanding_nextpage = 1;
 
-	offset += 49;
+	offset += PREFIX_BATCH_SIZE - 1;
 
 	current_query.query_id = query_id;
 	current_query.offset = offset;
@@ -1061,6 +1067,12 @@ function receiveCurrentVRFs(data) {
 	jQuery.extend(selected_vrfs, data);
 	jQuery.extend(vrf_list, data);
 	drawVRFHeader();
+
+	// Now that we have loaded the selected VRFs, perform prefix search if we
+	// are on the prefix list page.
+	if (current_page == 'prefix_list') {
+		performPrefixSearch(true);
+	}
 
 }
 
