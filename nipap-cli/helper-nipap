@@ -26,7 +26,7 @@ if __name__ == '__main__':
     comp = []
 
     try:
-        cmd = Command(nipap_cli.cmds, sys.argv[1::])
+        cmd = Command(nipap_cli.cmds, sys.argv[1+sys.argv.index('nipap')::])
         comp = sorted(cmd.complete())
     except (NipapError, InvalidCommand):
         # handle errors silently
