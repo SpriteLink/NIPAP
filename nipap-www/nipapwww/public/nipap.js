@@ -346,23 +346,16 @@ function clearPrefixSearch() {
  */
 function prefixSearchKey() {
 	clearTimeout(search_key_timeout);
-	search_key_timeout = setTimeout("performPrefixSearch()", 200);
+	search_key_timeout = setTimeout(function() { performPrefixSearch(false) }, 200);
 }
 
 /*
  * Perform a search operation
  */
-function performPrefixSearch(explicit) {
+function performPrefixSearch(force_explicit) {
 
-	// on null value, try to get it from the URI (ie a previous search)
-	if (explicit === null) {
-		if (decodeURIComponent($.url().fparam('explicit')) == 'true') {
-			explicit = true;
-		} else {
-			explicit = false;
-		}
-	} else if (explicit != true) {
-		explicit = false;
+	if (force_explicit !== undefined) {
+		explicit = force_explicit;
 	}
 
 	var search_q = {
@@ -395,7 +388,7 @@ function performPrefixSearch(explicit) {
 	if (explicit == false && jQuery.trim($('#query_string').val()).length < 1) {
 		clearPrefixSearch();
 		// update URL
-		setSearchPrefixURI(explicit);
+		setSearchPrefixURI();
 		return true;
 	}
 
@@ -419,7 +412,7 @@ function performPrefixSearch(explicit) {
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixList);
 
 	// add search options to URL
-	setSearchPrefixURI(explicit);
+	setSearchPrefixURI();
 
 }
 
@@ -427,7 +420,7 @@ function performPrefixSearch(explicit) {
 /*
  * Extract search options and add to URI
  */
-function setSearchPrefixURI(explicit) {
+function setSearchPrefixURI() {
 
 	var url = $.url();
 	var url_str = "";
@@ -1004,8 +997,8 @@ function clickFilterVRFSelector(evt) {
 	drawVRFHeader();
 	// Don't perform search if we are not on the prefix list page (ie, there is
 	// no '#query_string' element) or if the query string is empty
-	if ($('#query_string').length > 0 && $('#query_string').val() != '') {
-		performPrefixSearch(null);
+	if (current_page == 'prefix_list' && $('#query_string').val() != '') {
+		performPrefixSearch(true);
 	}
 
 	$('.selector_selectedbar').show();
@@ -1072,7 +1065,7 @@ function receiveCurrentVRFs(data) {
 	// Now that we have loaded the selected VRFs, perform prefix search if we
 	// are on the prefix list page.
 	if (current_page == 'prefix_list') {
-		performPrefixSearch(null);
+		performPrefixSearch();
 	}
 
 }
