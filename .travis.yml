@@ -26,6 +26,7 @@ script:
     - cd ../tests
     - nosetests xmlrpc.py
     - nosetests nipaptest.py
+    - nosetests test_cli.py
 
 notifications:
   irc:
