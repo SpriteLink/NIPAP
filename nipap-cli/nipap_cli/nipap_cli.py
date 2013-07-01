@@ -69,7 +69,7 @@ def get_pool(arg = None, opts = None, abort = False):
         pool = Pool.list({ 'name': arg })[0]
     except IndexError:
         if abort:
-            print >> sys.stderr, "Pool %s not found." % str(vrf_rt)
+            print >> sys.stderr, "Pool %s not found." % str(arg)
             sys.exit(1)
         else:
             pool = None
