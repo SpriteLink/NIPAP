@@ -1243,7 +1243,7 @@ cmds = {
                                 'complete': complete_node,
                             }
                         },
-                        'order': {
+                        'order_id': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
@@ -1385,7 +1385,7 @@ cmds = {
                                         'complete': complete_node,
                                     }
                                 },
-                                'order': {
+                                'order_id': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
