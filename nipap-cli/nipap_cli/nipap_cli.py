@@ -1054,7 +1054,7 @@ def complete_pool_members(arg):
     # pool should already be globally set
     res = []
     for member in Prefix.list({ 'pool_id': pool.id }):
-        res.append(member.prefix[0:5])
+        res.append(member.prefix)
 
     return _complete_string(arg, res)
 
