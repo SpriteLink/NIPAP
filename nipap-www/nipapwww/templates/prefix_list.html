@@ -31,6 +31,28 @@
             $('input[name="search_opt_child"][value="' + decodeURIComponent($.url().fparam('search_opt_child')) + '"]').attr('checked', true);
         }
 
+        // explicit
+        if ($.url().fparam('explicit') != null) {
+            if (decodeURIComponent($.url().fparam('explicit')) == 'true') {
+                explicit = true;
+            } else {
+                explicit = false;
+            }
+        }
+
+    }
+
+    function onPageShowOrPopState() {
+
+        // hide open popup menus
+        hidePopupMenu();
+
+        // populate data from URL
+        handleUrlQuery();
+
+        // Perform prefix search
+        performPrefixSearch(null);
+
     }
 
     /*
@@ -38,14 +60,11 @@
      */
     $(function () {
 
-        // register function for pageshow event
-        $(window).on('pageshow', function(event) {
+        // register function for pageshow & popstate events
+        $(window).on('pageshow popstate', function(event) {
 
-            // hide open popup menus
-            hidePopupMenu();
+            onPageShowOrPopState();
 
-            // populate data from URL
-            handleUrlQuery();
         });
 
         // the floating column header
@@ -70,13 +89,7 @@
         $("#query_string").focus();
 
         handleUrlQuery();
-
-        // explicit search or not
-        if ($.url().fparam('explicit') == 'true') {
-            var explicit = true;
-        } else {
-            var explicit = false;
-        }
+        setSearchPrefixURI(false);
 
         // automagic scrolling
         $(window).scroll(function(){

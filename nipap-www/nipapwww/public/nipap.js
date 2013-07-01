@@ -71,6 +71,7 @@ var curVRFCallback = null;
 var offset = 0;
 var outstanding_nextpage = 0;
 var end_of_result = 1;
+var explicit = null;
 
 var search_key_timeout = 0;
 
@@ -355,9 +356,9 @@ function performPrefixSearch(explicit) {
 
 	// on null value, try to get it from the URI (ie a previous search)
 	if (explicit === null) {
-		explicit = decodeURIComponent($.url().fparam('explicit'));
-		// fallback to non-explicit search
-		if (explicit === null) {
+		if (decodeURIComponent($.url().fparam('explicit')) == 'true') {
+			explicit = true;
+		} else {
 			explicit = false;
 		}
 	} else if (explicit != true) {
@@ -451,7 +452,7 @@ function setSearchPrefixURI(explicit) {
 		encodeURIComponent($('input[name="search_opt_child"]:checked').val()) +
 		'&explicit=' + encodeURIComponent(explicit);
 
-	window.location.href = url_str;
+	history.pushState(null, null, url_str);
 
 }
 
@@ -1071,7 +1072,7 @@ function receiveCurrentVRFs(data) {
 	// Now that we have loaded the selected VRFs, perform prefix search if we
 	// are on the prefix list page.
 	if (current_page == 'prefix_list') {
-		performPrefixSearch(true);
+		performPrefixSearch(null);
 	}
 
 }
