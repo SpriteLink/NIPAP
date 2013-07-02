@@ -42,16 +42,13 @@
 
     }
 
-    function onPageShowOrPopState(popping_state) {
+    function onPageShowOrPopState() {
 
         // hide open popup menus
         hidePopupMenu();
 
         // populate data from URL
         handleUrlQuery();
-
-        // Perform prefix search
-        performPrefixSearch(null, popping_state);
 
     }
 
@@ -76,7 +73,10 @@
             if (initialPop) return;
 
             log('popstate');
-            onPageShowOrPopState(true);
+            onPageShowOrPopState();
+
+            // Perform prefix search
+            performPrefixSearch(null, false);
 
         });
 

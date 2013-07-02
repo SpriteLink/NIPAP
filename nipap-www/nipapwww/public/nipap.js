@@ -71,7 +71,7 @@ var curVRFCallback = null;
 var offset = 0;
 var outstanding_nextpage = 0;
 var end_of_result = 1;
-var explicit = null;
+var explicit = false;
 
 var search_key_timeout = 0;
 
@@ -365,7 +365,7 @@ function prefixSearchKey() {
  * popstate-event. This means that we should avoid updating
  * window.location.href and pushing a new state.
  */
-function performPrefixSearch(force_explicit, popping_state) {
+function performPrefixSearch(force_explicit, update_uri) {
 
 	if (force_explicit !== undefined && force_explicit !== null) {
 		explicit = force_explicit;
@@ -426,7 +426,7 @@ function performPrefixSearch(force_explicit, popping_state) {
 
     // add search options to URL unless the search operation was performed due
     // to a popstate-event
-    if (popping_state !== true) {
+    if (update_uri !== false) {
         setSearchPrefixURI();
     }
 
