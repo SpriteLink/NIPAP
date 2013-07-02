@@ -78,6 +78,11 @@ var search_key_timeout = 0;
 // store current container for inserting prefixes
 var container = null;
 
+// Keep track of whether we arrived at a 'popped state' or
+// ordinary page load
+var popped = null;
+var initialURL = null;
+
 /**
  * A general log function
  *
@@ -351,10 +356,18 @@ function prefixSearchKey() {
 
 /*
  * Perform a search operation
+ *
+ * The argument 'force_explicit' can be used to force an explicit search. The
+ * new valye will ve stored in the global 'explicit' variable.
+ *
+ * By setting the argument 'popping_state' to true we're telling
+ * performPrefixSearch that the search operation occurred due to a
+ * popstate-event. This means that we should avoid updating
+ * window.location.href and pushing a new state.
  */
-function performPrefixSearch(force_explicit) {
+function performPrefixSearch(force_explicit, popping_state) {
 
-	if (force_explicit !== undefined) {
+	if (force_explicit !== undefined && force_explicit !== null) {
 		explicit = force_explicit;
 	}
 
@@ -411,8 +424,11 @@ function performPrefixSearch(force_explicit) {
 
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixList);
 
-	// add search options to URL
-	setSearchPrefixURI();
+    // add search options to URL unless the search operation was performed due
+    // to a popstate-event
+    if (popping_state !== true) {
+        setSearchPrefixURI();
+    }
 
 }
 
@@ -445,7 +461,7 @@ function setSearchPrefixURI() {
 		encodeURIComponent($('input[name="search_opt_child"]:checked').val()) +
 		'&explicit=' + encodeURIComponent(explicit);
 
-	history.pushState(null, null, url_str);
+	history.pushState(true, null, url_str);
 
 }
 
@@ -995,8 +1011,8 @@ function clickFilterVRFSelector(evt) {
 	}
 
 	drawVRFHeader();
-	// Don't perform search if we are not on the prefix list page (ie, there is
-	// no '#query_string' element) or if the query string is empty
+	// Don't perform search if we are not on the prefix list page or if the
+	// query string is empty
 	if (current_page == 'prefix_list' && $('#query_string').val() != '') {
 		performPrefixSearch(true);
 	}

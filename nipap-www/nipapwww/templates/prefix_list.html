@@ -42,7 +42,7 @@
 
     }
 
-    function onPageShowOrPopState() {
+    function onPageShowOrPopState(popping_state) {
 
         // hide open popup menus
         hidePopupMenu();
@@ -51,7 +51,7 @@
         handleUrlQuery();
 
         // Perform prefix search
-        performPrefixSearch();
+        performPrefixSearch(null, popping_state);
 
     }
 
@@ -61,9 +61,22 @@
     $(function () {
 
         // register function for pageshow & popstate events
-        $(window).on('pageshow popstate', function(event) {
+        $(window).on('pageshow', function(evt) {
 
+            log('pageshow');
             onPageShowOrPopState();
+
+        });
+
+        $(window).on('popstate', function(evt) {
+            // Skip initial popstate which occurrs in Google Chrome when
+            // loading a page for the first time
+            var initialPop = !popped && location.href == initialURL;
+            popped = true;
+            if (initialPop) return;
+
+            log('popstate');
+            onPageShowOrPopState(true);
 
         });
 
@@ -89,7 +102,6 @@
         $("#query_string").focus();
 
         handleUrlQuery();
-        setSearchPrefixURI(false);
 
         // automagic scrolling
         $(window).scroll(function(){
