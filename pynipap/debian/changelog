@@ -1,3 +1,23 @@
+pynipap (0.21.0-1) precise; urgency=low
+
+  * CLI now supports pool resizing, ie growing or shrinking a pool by the
+    addition or removal of member prefixes. Code by Kai Storbeck <kai@xs4all.nl>
+  * Improve prefix smart search on addresses. The smart search for prefixes has
+    been modified so that IP addresses are matched with a
+    contains-or-equals-operator instead of just equals. Searching on an address
+    (e.g. 1.3.3.1) will thus return covering prefixes, such as 1.3.3.0/24 even
+    if 1.3.3.1 does not exist. This is great for searching on addresses and
+    getting the best matches even if there is no exact match.
+  * Fix Bash tab completion
+  * Fix bug in find_free_prefix method in XML-RPC API, thanks to Thomas Menari
+    <t@menari.eu>
+  * Fix CLI with regard to order_id argument to prefixes, thanks to GitHub user
+    dosomder
+  * Fix rendering bug in web UI
+  * There is now a small unit test for the CLI
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 02 Jul 2013 14:00:49 +0200
+
 pynipap (0.20.0-1) precise; urgency=low
 
   * For Debian, nipapd now runs per default as the nipap user which
