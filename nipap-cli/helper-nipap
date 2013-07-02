@@ -25,8 +25,18 @@ if __name__ == '__main__':
 
     comp = []
 
+    # tab completion haxx. it seems that sometimes the offset is different and
+    # so we try to search for 'nipap' to find the correct to start parsing
+    # command line stuff at. Since nipap could be called with a path, like
+    # './nipap', it won't always match and then we assume an offset of 2, which
+    # is correct in the majority of cases
     try:
-        cmd = Command(nipap_cli.cmds, sys.argv[1+sys.argv.index('nipap')::])
+        offset = 1 + sys.argv.index('nipap')
+    except:
+        offset = 2
+
+    try:
+        cmd = Command(nipap_cli.cmds, sys.argv[offset::])
         comp = sorted(cmd.complete())
     except (NipapError, InvalidCommand):
         # handle errors silently
