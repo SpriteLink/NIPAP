@@ -4,6 +4,11 @@
  *
  *********************************************************************/
 
+/*
+ * Settings
+ */
+var PREFIX_BATCH_SIZE = 50;
+
 /**
  * Global variables...
  */
@@ -46,6 +51,7 @@ var cur_opts = new Object();
  * state in a global variable...
  */
 var prefix_link_type = 'edit';
+var current_page = null;
 
 // Max prefix lengths for different address families
 var max_prefix_length = [32, 128];
@@ -65,11 +71,17 @@ var curVRFCallback = null;
 var offset = 0;
 var outstanding_nextpage = 0;
 var end_of_result = 1;
+var explicit = false;
 
 var search_key_timeout = 0;
 
 // store current container for inserting prefixes
 var container = null;
+
+// Keep track of whether we arrived at a 'popped state' or
+// ordinary page load
+var popped = null;
+var initialURL = null;
 
 /**
  * A general log function
@@ -339,23 +351,24 @@ function clearPrefixSearch() {
  */
 function prefixSearchKey() {
 	clearTimeout(search_key_timeout);
-	search_key_timeout = setTimeout("performPrefixSearch()", 200);
+	search_key_timeout = setTimeout(function() { performPrefixSearch(false) }, 200);
 }
 
 /*
  * Perform a search operation
+ *
+ * The argument 'force_explicit' can be used to force an explicit search. The
+ * new valye will ve stored in the global 'explicit' variable.
+ *
+ * By setting the argument 'popping_state' to true we're telling
+ * performPrefixSearch that the search operation occurred due to a
+ * popstate-event. This means that we should avoid updating
+ * window.location.href and pushing a new state.
  */
-function performPrefixSearch(explicit) {
+function performPrefixSearch(force_explicit, update_uri) {
 
-	// on null value, try to get it from the URI (ie a previous search)
-	if (explicit === null) {
-		explicit = decodeURIComponent($.url().fparam('explicit'));
-		// fallback to non-explicit search
-		if (explicit === null) {
-			explicit = false;
-		}
-	} else if (explicit != true) {
-		explicit = false;
+	if (force_explicit !== undefined && force_explicit !== null) {
+		explicit = force_explicit;
 	}
 
 	var search_q = {
@@ -365,7 +378,7 @@ function performPrefixSearch(explicit) {
 		'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
 		'include_all_parents': 'true',
 		'include_all_children': 'false',
-		'max_result': 50,
+		'max_result': PREFIX_BATCH_SIZE,
 		'offset': 0,
 		'vrf_filter': []
 	}
@@ -388,7 +401,7 @@ function performPrefixSearch(explicit) {
 	if (explicit == false && jQuery.trim($('#query_string').val()).length < 1) {
 		clearPrefixSearch();
 		// update URL
-		setSearchPrefixURI(explicit);
+		setSearchPrefixURI();
 		return true;
 	}
 
@@ -411,8 +424,11 @@ function performPrefixSearch(explicit) {
 
 	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixList);
 
-	// add search options to URL
-	setSearchPrefixURI(explicit);
+    // add search options to URL unless the search operation was performed due
+    // to a popstate-event
+    if (update_uri !== false) {
+        setSearchPrefixURI();
+    }
 
 }
 
@@ -420,7 +436,7 @@ function performPrefixSearch(explicit) {
 /*
  * Extract search options and add to URI
  */
-function setSearchPrefixURI(explicit) {
+function setSearchPrefixURI() {
 
 	var url = $.url();
 	var url_str = "";
@@ -445,7 +461,7 @@ function setSearchPrefixURI(explicit) {
 		encodeURIComponent($('input[name="search_opt_child"]:checked').val()) +
 		'&explicit=' + encodeURIComponent(explicit);
 
-	window.location.href = url_str;
+	history.pushState(true, null, url_str);
 
 }
 
@@ -463,7 +479,7 @@ function performPrefixNextPage() {
 
 	outstanding_nextpage = 1;
 
-	offset += 49;
+	offset += PREFIX_BATCH_SIZE - 1;
 
 	current_query.query_id = query_id;
 	current_query.offset = offset;
@@ -995,10 +1011,10 @@ function clickFilterVRFSelector(evt) {
 	}
 
 	drawVRFHeader();
-	// Don't perform search if we are not on the prefix list page (ie, there is
-	// no '#query_string' element) or if the query string is empty
-	if ($('#query_string').length > 0 && $('#query_string').val() != '') {
-		performPrefixSearch(null);
+	// Don't perform search if we are not on the prefix list page or if the
+	// query string is empty
+	if (current_page == 'prefix_list' && $('#query_string').val() != '') {
+		performPrefixSearch(true);
 	}
 
 	$('.selector_selectedbar').show();
@@ -1061,6 +1077,12 @@ function receiveCurrentVRFs(data) {
 	jQuery.extend(selected_vrfs, data);
 	jQuery.extend(vrf_list, data);
 	drawVRFHeader();
+
+	// Now that we have loaded the selected VRFs, perform prefix search if we
+	// are on the prefix list page.
+	if (current_page == 'prefix_list') {
+		performPrefixSearch();
+	}
 
 }
 
