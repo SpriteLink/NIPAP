@@ -6,8 +6,9 @@
     commands to for example bash.
 """
 
-import sys
 import os
+import shlex
+import sys
 from nipap_cli.command import Command, InvalidCommand
 from nipap_cli import nipap_cli
 from pynipap import NipapError
@@ -35,8 +36,14 @@ if __name__ == '__main__':
     except:
         offset = 2
 
+    # let shlex handle escaped whitespaces and similar
+    args = []
+    for arg in sys.argv[offset::]:
+        if arg != '': arg = shlex.split(arg)[0]
+        args.append(arg)
+
     try:
-        cmd = Command(nipap_cli.cmds, sys.argv[offset::])
+        cmd = Command(nipap_cli.cmds, args)
         comp = sorted(cmd.complete())
     except (NipapError, InvalidCommand):
         # handle errors silently
