@@ -100,6 +100,8 @@ class NipapCliTest(unittest.TestCase):
         ref['external_key'] = None
         ref['node'] = None
         ref['authoritative_source'] = 'nipap'
+        ref['inherited_tags'] = []
+        ref['tags'] = []
 
         self._run_cmd(cmd)
 

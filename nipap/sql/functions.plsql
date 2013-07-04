@@ -29,6 +29,58 @@ END;
 $_$ LANGUAGE plpgsql;
 
 
+--
+-- Remove duplicate elements from an array
+--
+CREATE OR REPLACE FUNCTION array_undup(ANYARRAY) RETURNS ANYARRAY AS $_$
+	SELECT ARRAY(
+		SELECT DISTINCT $1[i]
+		FROM generate_series(
+			array_lower($1,1),
+			array_upper($1,1)
+			) AS i
+		);
+$_$ LANGUAGE SQL;
+
+
+--
+-- calc_tags is an internal function that calculates the inherited_tags
+-- from parent prefixes to its children. It is called from a trigger function
+-- on the ip_net_plan table.
+--
+CREATE OR REPLACE FUNCTION calc_tags(arg_vrf integer, arg_prefix inet) RETURNS bool AS $_$
+DECLARE
+	i_indent integer;
+	new_inherited_tags text[];
+BEGIN
+	i_indent := (
+		SELECT indent+1
+		FROM ip_net_plan
+		WHERE vrf_id = arg_vrf
+			AND prefix = arg_prefix
+		);
+	-- set default if we don't have a parent prefix
+	IF i_indent IS NULL THEN
+		i_indent := 0;
+	END IF;
+
+	new_inherited_tags := (
+		SELECT array_undup(array_cat(inherited_tags, tags))
+		FROM ip_net_plan
+		WHERE vrf_id = arg_vrf
+			AND prefix = arg_prefix
+		);
+	-- set default if we don't have a parent prefix
+	IF new_inherited_tags IS NULL THEN
+		new_inherited_tags := '{}';
+	END IF;
+
+	UPDATE ip_net_plan SET inherited_tags = new_inherited_tags WHERE vrf_id = arg_vrf AND iprange(prefix ) << iprange(arg_prefix::cidr) AND indent = i_indent;
+
+	RETURN true;
+END;
+$_$ LANGUAGE plpgsql;
+
 
 --
 -- find_free_prefix finds one or more prefix(es) of a certain prefix-length
@@ -458,11 +510,28 @@ $_$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family_after() RETURNS trigger AS $$
 DECLARE
 	r RECORD;
+	parent_prefix cidr;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
 		PERFORM calc_indent(OLD.vrf_id, OLD.prefix, -1);
+
+		-- calc tags from parent of the deleted prefix to what is now the
+		-- direct children of the parent prefix
+		parent_prefix := (SELECT prefix FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND prefix >> OLD.prefix ORDER BY prefix DESC LIMIT 1);
+		IF parent_prefix IS NULL THEN
+			PERFORM calc_tags(OLD.vrf_id, OLD.prefix);
+		ELSE
+			PERFORM calc_tags(OLD.vrf_id, parent_prefix);
+		END IF;
 	ELSIF TG_OP = 'INSERT' THEN
 		PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
+
+		-- identify the parent and run calc_tags on it to inherit tags to
+		-- the new prefix from the parent
+		parent_prefix := (SELECT prefix FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix >> NEW.prefix ORDER BY prefix DESC LIMIT 1);
+		PERFORM calc_tags(NEW.vrf_id, parent_prefix);
+		-- now push tags from the new prefix to its children
+		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
 	ELSIF TG_OP = 'UPDATE' THEN
 		-- only act on changes to the prefix
 		IF OLD.prefix != NEW.prefix THEN
@@ -470,6 +539,11 @@ BEGIN
 			PERFORM calc_indent(NEW.vrf_id, OLD.prefix, -1);
 			-- and add indent where the new one is
 			PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
+		END IF;
+
+		-- only act on changes to the tag columns
+		IF OLD.tags != NEW.tags OR OLD.inherited_tags != NEW.inherited_tags THEN
+			PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
 		END IF;
 	ELSE
 		-- nothing!

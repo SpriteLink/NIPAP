@@ -257,13 +257,59 @@ class Pynipap:
 
 
     def __init__(self, id=None):
-        """ Creats logger and XML-RPC-connection.
+        """ Creates logger and XML-RPC-connection.
         """
 
         self._logger = logging.getLogger(self.__class__.__name__)
         self._xmlrpc = XMLRPCConnection()
         self._auth_opts = AuthOptions()
         self.id = id
+
+
+class Tag(Pynipap):
+    """ A Tag.
+    """
+
+    name = None
+    """ The Tag name
+    """
+
+    @classmethod
+    def from_dict(cls, tag = {}):
+        """ Create new Tag-object from dict.
+
+            Suitable for creating objects from XML-RPC data.
+            All available keys must exist.
+        """
+        l = Tag()
+        l.name = tag['name']
+        return l
+
+
+
+    @classmethod
+    def search(cls, query, search_opts={}):
+        """ Search VRFs.
+        """
+
+        xmlrpc = XMLRPCConnection()
+        try:
+            search_result = xmlrpc.connection.search_tag(
+                {
+                    'query': query,
+                    'search_options': search_opts,
+                    'auth': AuthOptions().options
+                })
+        except xmlrpclib.Fault as xml_fault:
+            raise _fault_to_exception(xml_fault)
+
+        result = dict()
+        result['result'] = []
+        result['search_options'] = search_result['search_options']
+        for xml_tag in search_result['result']:
+            result['result'].append(Tag.from_dict(xml_tag))
+
+        return result
 
 
 
@@ -680,6 +726,13 @@ class Prefix(Pynipap):
     children = -2
 
 
+    def __init__(self):
+        Pynipap.__init__(self)
+        self.inherited_tags = {}
+        self.tags = {}
+
+
+
     @classmethod
     def get(cls, id):
         """ Get the prefix with id 'id'.
@@ -815,6 +868,7 @@ class Prefix(Pynipap):
         data = {
             'description': self.description,
             'comment': self.comment,
+            'tags': [],
             'node': self.node,
             'type': self.type,
             'country': self.country,
@@ -823,6 +877,8 @@ class Prefix(Pynipap):
             'alarm_priority': self.alarm_priority,
             'monitor': self.monitor
         }
+        for tag_name in self.tags:
+            data['tags'].append(tag_name)
 
         if self.vrf is not None:
             if not isinstance(self.vrf, VRF):
@@ -951,6 +1007,17 @@ class Prefix(Pynipap):
         prefix.authoritative_source = pref['authoritative_source']
         prefix.alarm_priority = pref['alarm_priority']
         prefix.monitor = pref['monitor']
+
+        prefix.inherited_tags = {}
+        for tag_name in pref['inherited_tags']:
+            tag = Tag.from_dict({'name': tag_name })
+            prefix.inherited_tags[tag_name] = tag
+
+        prefix.tags = {}
+        for tag_name in pref['tags']:
+            tag = Tag.from_dict({'name': tag_name })
+            prefix.tags[tag_name] = tag
+
         if 'match' in pref:
             prefix.match = pref['match']
         if 'display' in pref:

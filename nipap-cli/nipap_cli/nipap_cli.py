@@ -5,17 +5,18 @@
 """
 
 
+import ConfigParser
+import csv
 import os
-import sys
+import pipes
 import re
 import shlex
-import pipes
-import subprocess
-import ConfigParser
 import string
+import subprocess
+import sys
 
 import pynipap
-from pynipap import VRF, Pool, Prefix, NipapError
+from pynipap import Pool, Prefix, Tag, VRF, NipapError
 from command import Command
 
 
@@ -348,10 +349,13 @@ def list_prefix(arg, opts):
             if p.vrf is not None:
                 vrf = p.vrf.rt
             try:
-                prefix_str = "%%-s %%-%ds %%-2s %%-19s %%-14s %%-40s" % min_indent
+                tags = '-'
+                if len(p.tags) > 0:
+                    tags = '#%d' % len(p.tags)
+                prefix_str = "%%-s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-40s" % min_indent
                 print prefix_str % (vrf,
                     "".join("  " for i in xrange(p.indent)) + p.display_prefix,
-                    p.type[0].upper(), p.node, p.order_id, p.description
+                    p.type[0].upper(), tags, p.node, p.order_id, p.description
                 )
             except UnicodeEncodeError, e:
                 print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
@@ -384,6 +388,7 @@ def add_prefix(arg, opts):
     p.alarm_priority = opts.get('alarm_priority')
     p.comment = opts.get('comment')
     p.monitor = _str_to_bool(opts.get('monitor'))
+    p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
 
     if 'vrf_rt' in opts:
         if opts['vrf_rt'] != 'none':
@@ -644,6 +649,12 @@ def view_prefix(arg, opts):
     print "  %-15s : %s" % ("Order", p.order_id)
     print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
     print "  %-15s : %s" % ("Monitor", p.monitor)
+    print "-- Tags"
+    for tag_name in p.tags:
+        print "  %s" % tag_name
+    print "-- Inherited Tags"
+    for tag_name in p.inherited_tags:
+        print "  %s" % tag_name
     print "-- Comment"
     print p.comment or ''
 
@@ -971,6 +982,13 @@ def modify_prefix(arg, opts):
         p.description = opts['description']
     if 'comment' in opts:
         p.comment = opts['comment']
+    if 'tags' in opts:
+        tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
+        p.tags = {}
+        for tag_name in tags:
+            tag = Tag()
+            tag.name = tag_name
+            p.tags[tag_name] = tag
     if 'node' in opts:
         p.node = opts['node']
     if 'type' in opts:
@@ -1056,6 +1074,27 @@ def complete_family(arg):
     """ Complete inet family ("ipv4", "ipv6")
     """
     return _complete_string(arg, valid_families)
+
+
+
+def complete_tags(arg):
+    """ Complete NIPAP prefix type
+    """
+    search_string = '^'
+    if arg is not None:
+        search_string += arg
+
+    res = Tag.search({
+        'operator': 'regex_match',
+        'val1': 'name',
+        'val2': search_string
+    })
+
+    ret = []
+    for t in res['result']:
+        ret.append(t.name)
+
+    return ret
 
 
 
@@ -1261,6 +1300,15 @@ cmds = {
                                 'content_type': unicode,
                             }
                         },
+                        'tags': {
+                            'type': 'option',
+                            'content_type': unicode,
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_tags,
+                            }
+                        },
                         'vrf_rt': {
                             'type': 'option',
                             'argument': {
@@ -1409,6 +1457,15 @@ cmds = {
                                     'argument': {
                                         'type': 'value',
                                         'content_type': unicode,
+                                    }
+                                },
+                                'tags': {
+                                    'type': 'option',
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'complete': complete_tags,
                                     }
                                 },
                                 'vrf_rt': {
