@@ -322,6 +322,7 @@ def list_prefix(arg, opts):
     offset = 0
     # small initial limit for "instant" result
     limit = 50
+    min_indent = 0
     while True:
         res = Prefix.smart_search(search_string, { 'parents_depth': -1,
             'offset': offset, 'max_result': limit }, vrf_q)
@@ -329,6 +330,15 @@ def list_prefix(arg, opts):
         if len(res['result']) == 0:
             print "No addresses matching '%s' found." % search_string
             return
+
+        # Guess the width of the prefix column by looking at the initial result
+        # set.
+        if offset == 0:
+            for p in res['result']:
+                indent = p.indent * 2 + len(p.prefix)
+                if indent > min_indent:
+                    min_indent = indent
+            min_indent += 15
 
         for p in res['result']:
             if p.display == False:
@@ -338,8 +348,9 @@ def list_prefix(arg, opts):
             if p.vrf is not None:
                 vrf = p.vrf.rt
             try:
-                print "%-10s %-29s %-2s %-19s %-14s %-40s" % (vrf,
-                    "".join("  " for i in range(p.indent)) + p.display_prefix,
+                prefix_str = "%%-s %%-%ds %%-2s %%-19s %%-14s %%-40s" % min_indent
+                print prefix_str % (vrf,
+                    "".join("  " for i in xrange(p.indent)) + p.display_prefix,
                     p.type[0].upper(), p.node, p.order_id, p.description
                 )
             except UnicodeEncodeError, e:
