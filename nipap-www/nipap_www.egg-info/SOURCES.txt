@@ -39,11 +39,15 @@ nipapwww/public/jquery-1.9.1.min.js
 nipapwww/public/jquery-ui-1.10.0.custom.css
 nipapwww/public/jquery-ui-1.10.0.custom.min.js
 nipapwww/public/jquery.dataTables.min.js
+nipapwww/public/jquery.tagit.css
 nipapwww/public/jquery.tipTip.minified.js
 nipapwww/public/jquery.url.js
 nipapwww/public/loading.gif
+nipapwww/public/minify.py
 nipapwww/public/nipap.css
 nipapwww/public/nipap.js
+nipapwww/public/tag-icon.png
+nipapwww/public/tag-it.min.js
 nipapwww/public/tipTip.css
 nipapwww/public/images/back_disabled.jpg
 nipapwww/public/images/back_enabled.jpg
