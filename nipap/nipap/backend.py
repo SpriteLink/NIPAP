@@ -1912,6 +1912,7 @@ class Nipap:
             prefix_attr['authoritative_source'] = 'inp.authoritative_source'
             prefix_attr['alarm_priority'] = 'inp.alarm_priority'
             prefix_attr['monitor'] = 'inp.monitor'
+            prefix_attr['vlan'] = 'inp.vlan'
 
             if query['val1'] not in prefix_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
@@ -2117,7 +2118,8 @@ class Nipap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool_id', 'node', 'type', 'country',
-            'order_id', 'vrf_id', 'alarm_priority', 'monitor', 'external_key' ]
+            'order_id', 'vrf_id', 'alarm_priority', 'monitor', 'external_key',
+            'vlan']
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('node' not in attr):
             raise NipapMissingInputError('Either description or node must be specified.')
@@ -2219,7 +2221,7 @@ class Nipap:
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool_id', 'node', 'type', 'country',
             'order_id', 'vrf_id', 'alarm_priority', 'monitor',
-            'external_key' ]
+            'external_key', 'vlan' ]
 
         self._check_attr(attr, [], allowed_attr)
 
@@ -2501,7 +2503,8 @@ class Nipap:
             inp.external_key,
             inp.authoritative_source,
             inp.alarm_priority,
-            inp.monitor
+            inp.monitor,
+            inp.vlan
             FROM ip_net_plan inp
             JOIN ip_net_vrf vrf ON (inp.vrf_id = vrf.id)
             LEFT JOIN ip_net_pool pool ON (inp.pool_id = pool.id) %s
@@ -2847,6 +2850,7 @@ class Nipap:
         authoritative_source,
         alarm_priority,
         monitor,
+        vlan,
         CASE
             WHEN type = 'host'
                 THEN 0
@@ -2885,6 +2889,7 @@ class Nipap:
             p1.authoritative_source,
             p1.alarm_priority,
             p1.monitor,
+            p1.vlan,
             vrf.id AS vrf_id,
             vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,

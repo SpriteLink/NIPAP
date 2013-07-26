@@ -467,6 +467,7 @@ class XhrController(BaseController):
             pool            ID of pool
             country         Country where the prefix is used
             order_id        Order identifier
+            vlan            VLAN ID
             alarm_priority  Alarm priority of prefix
             monitor         If the prefix should be monitored or not
 
@@ -527,6 +528,9 @@ class XhrController(BaseController):
                 p.monitor = True
             else:
                 p.monitor = False
+
+        if 'vlan' in request.params:
+            p.vlan = request.params['vlan']
 
         # arguments
         args = {}
@@ -629,6 +633,9 @@ class XhrController(BaseController):
                     return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.params['vrf']})
                 except NipapError, e:
                     return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+            if 'vlan' in request.params:
+                p.vlan = request.params['vlan']
 
             p.save()
 
@@ -759,7 +766,8 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'alarm_priority': obj.alarm_priority,
                 'display': obj.display,
                 'match': obj.match,
-				'children': obj.children
+				'children': obj.children,
+                'vlan': obj.vlan
             }
         else:
             return json.JSONEncoder.default(self, obj)

@@ -100,6 +100,7 @@ class NipapCliTest(unittest.TestCase):
         ref['external_key'] = None
         ref['node'] = None
         ref['authoritative_source'] = 'nipap'
+        ref['vlan'] = None
 
         self._run_cmd(cmd)
 

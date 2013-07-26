@@ -234,7 +234,8 @@ class NipapXmlTest(unittest.TestCase):
                 'pool_id': None,
                 'vrf_rt': None,
                 'vrf_id': 0,
-                'vrf_name': 'default'
+                'vrf_name': 'default',
+                'vlan': None
             }
         expected.update(attr)
         self.assertEqual(s.list_prefix({ 'auth': ad }), [expected])
@@ -319,7 +320,8 @@ class NipapXmlTest(unittest.TestCase):
                 'pool_name': None,
                 'vrf_id': 0,
                 'vrf_rt': None,
-                'vrf_name': None
+                'vrf_name': None,
+                'vlan': None
             }
 
         # add VRF
@@ -410,7 +412,8 @@ class NipapXmlTest(unittest.TestCase):
                 'pool_id': None,
                 'vrf_rt': None,
                 'vrf_id': 0,
-                'vrf_name': 'default'
+                'vrf_name': 'default',
+                'vlan': None
             }
         expected_list = []
 
@@ -635,7 +638,8 @@ class NipapXmlTest(unittest.TestCase):
                 'family': 4,
                 'indent': 1,
                 'alarm_priority': None,
-                'authoritative_source': 'nipap'
+                'authoritative_source': 'nipap',
+                'vlan': None
                 }
         child = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
         expected['id'] = child['id']
@@ -692,7 +696,8 @@ class NipapXmlTest(unittest.TestCase):
                         'alarm_priority': None,
                         'indent': 0,
                         'country': None,
-                        'display': True
+                        'display': True,
+                        'vlan': None
                         }
                     ]
             }

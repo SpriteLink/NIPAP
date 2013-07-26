@@ -678,6 +678,7 @@ class Prefix(Pynipap):
     display = True
     match = False
     children = -2
+    vlan = None
 
 
     @classmethod
@@ -821,7 +822,8 @@ class Prefix(Pynipap):
             'order_id': self.order_id,
             'external_key': self.external_key,
             'alarm_priority': self.alarm_priority,
-            'monitor': self.monitor
+            'monitor': self.monitor,
+            'vlan': self.vlan
         }
 
         if self.vrf is not None:
@@ -951,6 +953,7 @@ class Prefix(Pynipap):
         prefix.authoritative_source = pref['authoritative_source']
         prefix.alarm_priority = pref['alarm_priority']
         prefix.monitor = pref['monitor']
+        prefix.vlan = pref['vlan']
         if 'match' in pref:
             prefix.match = pref['match']
         if 'display' in pref:
