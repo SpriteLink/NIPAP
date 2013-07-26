@@ -650,10 +650,10 @@ def view_prefix(arg, opts):
     print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
     print "  %-15s : %s" % ("Monitor", p.monitor)
     print "-- Tags"
-    for tag_name in p.tags:
+    for tag_name in sorted(p.tags, key=lambda s: s.lower()):
         print "  %s" % tag_name
     print "-- Inherited Tags"
-    for tag_name in p.inherited_tags:
+    for tag_name in sorted(p.inherited_tags, key=lambda s: s.lower()):
         print "  %s" % tag_name
     print "-- Comment"
     print p.comment or ''

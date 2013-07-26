@@ -643,11 +643,20 @@ function showPrefix(prefix, reference, offset) {
 		prefix_tags.html("&nbsp;");
 	} else {
 		tags_html = 'Tags:<br/>';
-		for (var tag_name in prefix.tags) {
-			tags_html += "&nbsp;&nbsp;" + tag_name + "<br/>";
+		// XXX: so much code for so little
+		// convert objects to array, sort it and render
+		var tags = [];
+		for (var tag in prefix.tags) { tags.push(tag); }
+		var inherited_tags = [];
+		for (var tag in prefix.inherited_tags) { inherited_tags.push(tag); }
+		var sorted_tags = tags.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		var sorted_inherited_tags = inherited_tags.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+
+		for (var i = 0; i < sorted_tags.length; i++) {
+			tags_html += "&nbsp;&nbsp;" + sorted_tags[i] + "<br/>";
 		}
 		tags_html += 'Inherited tags:<br/>';
-		for (var tag_name in prefix.inherited_tags) {
+		for (var tag_name in sorted_inherited_tags) {
 			tags_html += "&nbsp;&nbsp;" + tag_name + "<br/>";
 		}
 		prefix_tags.addClass('tooltip');

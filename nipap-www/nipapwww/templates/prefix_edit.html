@@ -181,7 +181,7 @@ Prefix administration &mdash;&gt; edit prefix
                     </dt>
                     <dd>
                         <ul id="tags" style="font-size: 1.0em;">
-                            {% for tag in c.prefix.tags %}<li>{{ tag }}</li>{% endfor %}
+                            {% for tag in c.prefix.tags|sort() %}<li>{{ tag }}</li>{% endfor %}
                         </ul>
                     </dd>
                 </dl>
@@ -196,7 +196,7 @@ Prefix administration &mdash;&gt; edit prefix
                     </dt>
                     <dd>
                         <ul id="inherited_tags" style="font-size: 1.0em;">
-                            {% for tag in c.prefix.inherited_tags %}<li>{{ tag }}</li>{% endfor %}
+                            {% for tag in c.prefix.inherited_tags|sort() %}<li>{{ tag }}</li>{% endfor %}
                         </ul>
                     </dd>
                 </dl>
