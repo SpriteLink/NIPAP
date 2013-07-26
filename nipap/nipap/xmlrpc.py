@@ -813,4 +813,31 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
 
 
+    #
+    # TAG FUNCTIONS
+    #
+    def xmlrpc_search_tag(self, args):
+        """ Search Tags.
+
+            Valid keys in the `args`-struct:
+
+            * `auth` [struct]
+                Authentication options passed to the :class:`AuthFactory`.
+            * `query` [struct]
+                A struct specifying the search query.
+            * `search_options` [struct]
+                Options for the search query, such as limiting the number
+                of results returned.
+
+            Returns a struct containing search result and the search options
+            used.
+        """
+
+        try:
+            return self.nipap.search_tag(args.get('auth'), args.get('query'), args.get('search_options') or {})
+        except NipapError, e:
+            return xmlrpclib.Fault(e.error_code, str(e))
+
+
+
 # vim: et :

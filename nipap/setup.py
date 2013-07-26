@@ -21,6 +21,7 @@ def get_data_files():
             ('/etc/nipap/', ['local_auth.db', 'nipap.conf.dist']),
             ('/usr/sbin/', ['nipapd', 'nipap-passwd']),
             ('/usr/share/nipap/sql/', [
+                'sql/upgrade-1-2.plsql',
                 'sql/functions.plsql',
                 'sql/ip_net.plsql'
                 ]),

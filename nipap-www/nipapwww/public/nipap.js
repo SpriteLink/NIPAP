@@ -167,7 +167,7 @@ function showDialogYesNo(title, msg, target_yes) {
 				{
 					style: 'margin: 10px; width: 50px;',
 					text: "Yes",
-					click: target_yes,
+					click: target_yes
 				},
 				{
 					style: 'margin: 10px; width: 50px;',
@@ -633,6 +633,37 @@ function showPrefix(prefix, reference, offset) {
 	prefix_type_icon.addClass('tooltip');
 	prefix_type_icon.attr('title', prefix.type[0].toUpperCase() + prefix.type.slice(1));
 	prefix_type_icon.html(prefix.type[0].toUpperCase());
+
+	// Add tags
+	prefix_row.append('<div id="prefix_tags' + prefix.id + '">');
+	var prefix_tags = $('#prefix_tags' + prefix.id);
+	prefix_tags.addClass('prefix_column');
+	prefix_tags.addClass('prefix_tags');
+	if (prefix.tags == null || $.isEmptyObject(prefix.tags)) {
+		prefix_tags.html("&nbsp;");
+	} else {
+		tags_html = 'Tags:<br/>';
+		// XXX: so much code for so little
+		// convert objects to array, sort it and render
+		var tags = [];
+		for (var tag in prefix.tags) { tags.push(tag); }
+		var inherited_tags = [];
+		for (var tag in prefix.inherited_tags) { inherited_tags.push(tag); }
+		var sorted_tags = tags.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		var sorted_inherited_tags = inherited_tags.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+
+		for (var i = 0; i < sorted_tags.length; i++) {
+			tags_html += "&nbsp;&nbsp;" + sorted_tags[i] + "<br/>";
+		}
+		tags_html += 'Inherited tags:<br/>';
+		for (var tag_name in sorted_inherited_tags) {
+			tags_html += "&nbsp;&nbsp;" + tag_name + "<br/>";
+		}
+		prefix_tags.addClass('tooltip');
+		prefix_tags.prop('title', tags_html)
+		prefix_tags.html('<img src="/tag-icon.png">');
+		prefix_tags.tipTip({ delay: 100 });
+	}
 
 	// Add order number
 	prefix_row.append('<div id="prefix_order_id' + prefix.id + '">');
@@ -1140,6 +1171,9 @@ function receivePrefixList(search_result) {
 		if (interp.interpretation == 'unclosed quote') {
 			text += ', please close quote!';
 			tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';
+		} else if (interp.attribute == 'tag' && interp.operator == 'equals_any') {
+			text += ' must contain <b>' + interp.string + '</b>';
+			tooltip = "The tag(s) or inherited tag(s) must contain " + interp.string;
 		} else if (interp.attribute == 'prefix' && interp.operator == 'contained_within_equals') {
 			text += ' within ';
 
@@ -2148,12 +2182,14 @@ function prefixFormSubmit(e) {
 	var prefix_data = {
 		'description': $('input[name="prefix_description"]').val(),
 		'comment': $('textarea[name="prefix_comment"]').val(),
+		'inherited_tags': $('input[name="prefix_inherited_tags"]').val(),
+		'tags': $('input[name="prefix_tags"]').val(),
 		'node': $('input[name="prefix_node"]').val(),
 		'type': $('input[name="prefix_type"]:checked').val(),
 		'country': $('input[name="prefix_country"]').val(),
 		'order_id': $('input[name="prefix_order_id"]').val(),
 		'vrf': $('input[name="prefix_vrf"]').val(),
-		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
+		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val()
 	};
 
 	// make sure monitor is disabled for host prefixes

@@ -292,7 +292,7 @@ class LdapAuth(BaseAuth):
         self._ldap_uri = self._cfg.get('auth.backends.' + self.auth_backend, 'uri')
         self._ldap_basedn = self._cfg.get('auth.backends.' + self.auth_backend, 'basedn')
 
-        self._logger.debug('creating instance')
+        self._logger.debug('Creating Auth instance')
 
         self._logger.debug('LDAP URI: ' + self._ldap_uri)
         self._ldap_conn = ldap.initialize(self._ldap_uri)

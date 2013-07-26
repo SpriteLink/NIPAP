@@ -88,7 +88,9 @@ CREATE TABLE ip_net_plan (
 	authoritative_source text NOT NULL DEFAULT 'nipap',
 	alarm_priority priority_5step,
 	monitor boolean,
-	vlan integer
+	vlan integer,
+	tags text[] DEFAULT '{}',
+	inherited_tags text[] DEFAULT '{}'
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';

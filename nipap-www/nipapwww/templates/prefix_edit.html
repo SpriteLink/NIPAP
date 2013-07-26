@@ -30,8 +30,13 @@
                'order_id': $('input[name="prefix_order_id"]').val(),
                'vrf': $('input[name="prefix_vrf"]').val(),
                'comment': $('input[name="prefix_comment"]').val(),
+<<<<<<< HEAD
                'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
                'vlan': $('input[name="prefix_vlan"]').val()
+=======
+               'tags': $("#tags").tagit("assignedTags"),
+               'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val()
+>>>>>>> 190-add-labels
            };
 
            if ($('input[name="prefix_monitor"]').is(':checked')) {
@@ -43,6 +48,7 @@
            if ('{{ c.prefix.type }}' != 'host') {
                data.type = $('input[name="prefix_type"]:checked').val();
            }
+           data['tags'] = JSON.stringify($('#tags').tagit('assignedTags'));
 
            $.getJSON('{{ h.url(controller="xhr", action="edit_prefix", id=c.prefix.id) }}', data, prefixEdited);
 
@@ -92,6 +98,13 @@
                     showVRFSelectorMenu(clickPrefixVRFSelector, $('input[name="prefix_vrf_btn"]'));
                 }
             );
+
+            // tags
+            $("#tags").tagit({
+                allowSpaces: true,
+                removeConfirmation: true
+            });
+            $("#inherited_tags").tagit({ 'readOnly': true });
 
         });
 
@@ -163,6 +176,37 @@ Prefix administration &mdash;&gt; edit prefix
                     </dd>
                 </dl>
             </div>
+
+            <div class="rule"></div>
+
+            <div class="option">
+                <dl>
+                    <dt>
+                        Tags
+                    </dt>
+                    <dd>
+                        <ul id="tags" style="font-size: 1.0em;">
+                            {% for tag in c.prefix.tags|sort() %}<li>{{ tag }}</li>{% endfor %}
+                        </ul>
+                    </dd>
+                </dl>
+            </div>
+
+            <div class="rule"></div>
+
+            <div class="option">
+                <dl>
+                    <dt>
+                        Inherited Tags
+                    </dt>
+                    <dd>
+                        <ul id="inherited_tags" style="font-size: 1.0em;">
+                            {% for tag in c.prefix.inherited_tags|sort() %}<li>{{ tag }}</li>{% endfor %}
+                        </ul>
+                    </dd>
+                </dl>
+            </div>
+
 
             <div class="rule"></div>
 

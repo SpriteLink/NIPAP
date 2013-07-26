@@ -469,7 +469,6 @@ tbody.listing > tr:hover {
 }
 
 .prefix_column {
-    padding-right: 8px;
     display: table-cell;
     vertical-align: center;
 }
@@ -564,6 +563,11 @@ tbody.listing > tr:hover {
 
 .prefix_node {
     width: 150px;
+}
+
+.prefix_tags {
+	width: 26px;
+    vertical-align: middle;
 }
 
 .prefix_order_id {

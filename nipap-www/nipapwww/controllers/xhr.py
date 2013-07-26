@@ -8,7 +8,7 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from nipapwww.lib.base import BaseController, render
-from pynipap import VRF, Prefix, Pool, NipapError
+from pynipap import Tag, VRF, Prefix, Pool, NipapError
 
 log = logging.getLogger(__name__)
 
@@ -634,8 +634,13 @@ class XhrController(BaseController):
                 except NipapError, e:
                     return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
+<<<<<<< HEAD
             if 'vlan' in request.params:
                 p.vlan = request.params['vlan']
+=======
+            if 'tags' in request.params:
+                p.tags = json.loads(request.params['tags'])
+>>>>>>> 190-add-labels
 
             p.save()
 
@@ -701,6 +706,18 @@ class XhrController(BaseController):
         return json.dumps(session.get('current_vrfs', {}))
 
 
+    def list_tags(self):
+        """ List Tags and return JSON encoded result.
+        """
+
+        try:
+            tags = Tags.list()
+        except NipapError, e:
+            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+
+        return json.dumps(tags, cls=NipapJSONEncoder)
+
+
 
 class NipapJSONEncoder(json.JSONEncoder):
     """ A class used to encode NIPAP objects to JSON.
@@ -708,7 +725,12 @@ class NipapJSONEncoder(json.JSONEncoder):
 
     def default(self, obj):
 
-        if isinstance(obj, VRF):
+        if isinstance(obj, Tag):
+            return {
+                'name': obj.name
+            }
+
+        elif isinstance(obj, VRF):
             return {
                 'id': obj.id,
                 'rt': obj.rt,
@@ -755,6 +777,8 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'display_prefix': obj.display_prefix,
                 'description': obj.description,
                 'comment': obj.comment,
+                'inherited_tags': obj.inherited_tags,
+                'tags': obj.tags,
                 'node': obj.node,
                 'pool': pool,
                 'type': obj.type,

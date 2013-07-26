@@ -101,6 +101,8 @@ class NipapCliTest(unittest.TestCase):
         ref['node'] = None
         ref['authoritative_source'] = 'nipap'
         ref['vlan'] = None
+        ref['inherited_tags'] = []
+        ref['tags'] = []
 
         self._run_cmd(cmd)
 

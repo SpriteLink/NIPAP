@@ -22,14 +22,21 @@ server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': options.port
 server = xmlrpclib.Server(server_url, allow_none=1);
 
 ad = { 'authoritative_source': 'nipap' }
+query = {
+        'val1': 'name',
+        'operator': 'regex_match',
+        'val2': '(foo|b.*)'
+        }
 
-#res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True } })
+res = server.search_tag({ 'auth': ad, 'query': query })
+#res = server.smart_search_prefix({ 'auth': ad, 'query_string': '', 'search_options': { 'include_all_parents': True } })
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True, 'root_prefix': '1.0.4.0/24' } })
-res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'THISWILLNEVERMATCH', 'search_options': { 'include_all_parents': True, 'parent_prefix': 11963 } })
+#res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'THISWILLNEVERMATCH', 'search_options': { 'include_all_parents': True, 'parent_prefix': 11963 } })
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'test1', 'search_options': { 'include_all_parents': True, 'parent_prefix': 'bajs' } })
 
 for p in res['result']:
-    print "".join(" " for i in xrange(p['indent'])), p['prefix'], p['match']
+    print p
+    #print "".join(" " for i in xrange(p['indent'])), p['prefix'], p['match']
 
 #res = server.list_pool({ 'auth': ad, 'pool': { 'id': 1003 } })
 print res

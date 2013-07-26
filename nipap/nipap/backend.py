@@ -175,6 +175,7 @@ import IPy
 _operation_map = {
     'and': 'AND',
     'or': 'OR',
+    'equals_any': '= ANY',
     'equals': '=',
     'is': 'IS',
     'is_not': 'IS NOT',
@@ -1902,6 +1903,8 @@ class Nipap:
             prefix_attr['family'] = 'family(inp.prefix)'
             prefix_attr['comment'] = 'inp.comment'
             prefix_attr['type'] = 'inp.type'
+            prefix_attr['inherited_tags'] = 'inp.inherited_tags'
+            prefix_attr['tags'] = 'inp.tags'
             prefix_attr['node'] = 'inp.node'
             prefix_attr['country'] = 'inp.country'
             prefix_attr['order_id'] = 'inp.order_id'
@@ -1940,6 +1943,11 @@ class Nipap:
                         'col_prefix': col_prefix,
                         'operator': _operation_map[query['operator']]
                         }
+
+            elif query['operator'] in ('equals_any',):
+                where = str(" %%s = ANY (%s%s) " %
+                        ( col_prefix, prefix_attr[query['val1']])
+                        )
 
             elif query['operator'] in (
                     'like',
@@ -2117,7 +2125,7 @@ class Nipap:
         req_attr = [ 'prefix', 'authoritative_source' ]
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
-            'comment', 'pool_id', 'node', 'type', 'country',
+            'comment', 'pool_id', 'tags', 'node', 'type', 'country',
             'order_id', 'vrf_id', 'alarm_priority', 'monitor', 'external_key',
             'vlan']
         self._check_attr(attr, req_attr, allowed_attr)
@@ -2219,7 +2227,7 @@ class Nipap:
 
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
-            'comment', 'pool_id', 'node', 'type', 'country',
+            'comment', 'pool_id', 'tags', 'node', 'type', 'country',
             'order_id', 'vrf_id', 'alarm_priority', 'monitor',
             'external_key', 'vlan' ]
 
@@ -2492,6 +2500,8 @@ class Nipap:
             inp.prefix,
             inp.display_prefix,
             inp.description,
+            COALESCE(inp.inherited_tags, '{}') AS inherited_tags,
+            COALESCE(inp.tags, '{}') AS tags,
             inp.node,
             inp.comment,
             pool.id AS pool_id,
@@ -2839,6 +2849,8 @@ class Nipap:
         display_prefix::text AS display_prefix,
         description,
         comment,
+        inherited_tags,
+        tags,
         node,
         pool_id,
         pool_name,
@@ -2878,6 +2890,8 @@ class Nipap:
             p1.display_prefix,
             p1.description,
             p1.comment,
+            COALESCE(p1.inherited_tags, '{}') AS inherited_tags,
+            COALESCE(p1.tags, '{}') AS tags,
             p1.node,
             pool.id AS pool_id,
             pool.name AS pool_name,
@@ -3009,8 +3023,29 @@ class Nipap:
         query_parts = list()
         for query_str_part in query_str_parts:
 
+            # tags
+            if re.match('#', query_str_part['string']):
+                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
+                query_str_part['interpretation'] = '(inherited) tag'
+                query_str_part['attribute'] = 'tag'
+
+                query_str_part['operator'] = 'equals_any'
+                query_parts.append({
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'equals_any',
+                        'val1': 'tags',
+                        'val2': query_str_part['string'][1:]
+                    },
+                    'val2': {
+                        'operator': 'equals_any',
+                        'val1': 'inherited_tags',
+                        'val2': query_str_part['string'][1:]
+                    }
+                })
+
             # IPv4 prefix
-            if self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('/')) == 2:
+            elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('/')) == 2:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
                 query_str_part['interpretation'] = 'IPv4 prefix'
                 query_str_part['attribute'] = 'prefix'
@@ -3590,6 +3625,166 @@ class Nipap:
         search_result['interpretation'] = query_str_parts
 
         return search_result
+
+
+
+    #
+    # Tag functions
+    #
+
+    def _expand_tag_query(self, query, table_name = None):
+        """ Expand Tag query dict into a WHERE-clause.
+
+            If you need to prefix each column reference with a table
+            name, that can be supplied via the table_name argument.
+        """
+
+        where = str()
+        opt = list()
+
+        # handle table name, can be None
+        if table_name is None:
+            col_prefix = ""
+        else:
+            col_prefix = table_name + "."
+
+        if type(query['val1']) == dict and type(query['val2']) == dict:
+            # Sub expression, recurse! This is used for boolean operators: AND OR
+            # add parantheses
+
+            sub_where1, opt1 = self._expand_tag_query(query['val1'], table_name)
+            sub_where2, opt2 = self._expand_tag_query(query['val2'], table_name)
+            try:
+                where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
+            except KeyError:
+                raise NipapNoSuchOperatorError("No such operator %s" % str(query['operator']))
+
+            opt += opt1
+            opt += opt2
+
+        else:
+
+            # TODO: raise exception if someone passes one dict and one "something else"?
+
+            # val1 is variable, val2 is string.
+            tag_attr = dict()
+            tag_attr['name'] = 'name'
+
+            if query['val1'] not in tag_attr:
+                raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+
+            # workaround for handling equal matches of NULL-values
+            if query['operator'] == 'equals' and query['val2'] is None:
+                query['operator'] = 'is'
+            elif query['operator'] == 'not_equals' and query['val2'] is None:
+                query['operator'] = 'is_not'
+
+            # build where clause
+            if query['operator'] not in _operation_map:
+                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
+
+            where = str(" %s%s %s %%s " %
+                ( col_prefix, tag_attr[query['val1']],
+                _operation_map[query['operator']] )
+            )
+
+            opt.append(query['val2'])
+
+        return where, opt
+
+
+
+    def search_tag(self, auth, query, search_options = {}):
+        """ Search Tags for entries matching 'query'
+
+            * `auth` [BaseAuth]
+                AAA options.
+            * `query` [dict_to_sql]
+                How the search should be performed.
+            * `search_options` [options_dict]
+                Search options, see below.
+
+            Returns a list of dicts.
+
+            The `query` argument passed to this function is designed to be
+            able to specify how quite advanced search operations should be
+            performed in a generic format. It is internally expanded to a SQL
+            WHERE-clause.
+
+            The `query` is a dict with three elements, where one specifies the
+            operation to perform and the two other specifies its arguments. The
+            arguments can themselves be `query` dicts, to build more complex
+            queries.
+
+            The :attr:`operator` key specifies what operator should be used for the
+            comparison. Currently the following operators are supported:
+
+            * :data:`and` - Logical AND
+            * :data:`or` - Logical OR
+            * :data:`equals` - Equality; =
+            * :data:`not_equals` - Inequality; !=
+            * :data:`like` - SQL LIKE
+            * :data:`regex_match` - Regular expression match
+            * :data:`regex_not_match` - Regular expression not match
+
+            The :attr:`val1` and :attr:`val2` keys specifies the values which are subjected
+            to the comparison. :attr:`val1` can be either any prefix attribute or an
+            entire query dict. :attr:`val2` can be either the value you want to
+            compare the prefix attribute to, or an entire `query` dict.
+
+            The search options can also be used to limit the number of rows
+            returned or set an offset for the result.
+
+            The following options are available:
+                * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
+                * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
+        """
+
+        #
+        # sanitize search options and set default if option missing
+        #
+
+        # max_result
+        if 'max_result' not in search_options:
+            search_options['max_result'] = 50
+        else:
+            try:
+                search_options['max_result'] = int(search_options['max_result'])
+            except (ValueError, TypeError), e:
+                raise NipapValueError('Invalid value for option' +
+                    ''' 'max_result'. Only integer values allowed.''')
+
+        # offset
+        if 'offset' not in search_options:
+            search_options['offset'] = 0
+        else:
+            try:
+                search_options['offset'] = int(search_options['offset'])
+            except (ValueError, TypeError), e:
+                raise NipapValueError('Invalid value for option' +
+                    ''' 'offset'. Only integer values allowed.''')
+
+        self._logger.debug('search_tag search_options: %s' % str(search_options))
+
+        opt = None
+        sql = """ SELECT * FROM (SELECT DISTINCT unnest(tags) AS name FROM
+        ip_net_plan) AS a """
+
+        # add where clause if we have any search terms
+        if query != {}:
+
+            where, opt = self._expand_tag_query(query)
+            sql += " WHERE " + where
+
+        sql += " ORDER BY name LIMIT " + str(search_options['max_result'])
+        self._execute(sql, opt)
+
+        result = list()
+        for row in self._curs_pg:
+            result.append(dict(row))
+
+        return { 'search_options': search_options, 'result': result }
+
 
 
 

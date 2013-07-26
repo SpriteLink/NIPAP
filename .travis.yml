@@ -4,13 +4,20 @@ python:
 
 # do the SQL cakewalk
 before_install:
+    # we use our debian repo to get ip4r
     - echo "deb http://spritelink.github.io/NIPAP/repos/apt stable main extra" | sudo tee /etc/apt/sources.list.d/nipap.list
     - sudo apt-get update -qq
-    - sudo apt-get install -qq -y --force-yes nipapd
+    # install dependencies for building packages and build debian packages
+    - sudo apt-get install -qq -y --force-yes devscripts python-docutils
+    - make builddeb
+    # install dependencies for installing & running nipap
+    - sudo apt-get install -qq -y --force-yes python-pysqlite2 python-twisted-web python-psycopg2 python-ipy python-ldap python-docutils postgresql-9.1-ip4r
+    # install the newly built nipap packages
+    - sudo dpkg -i nipap*.deb python-pynipap*.deb
+    # populate answers to nipapd package install questions and reconfigure
     - echo "set nipapd/autoconf true" | sudo debconf-communicate
-    - echo "set nipapd/startup false" | sudo debconf-communicate
+    - echo "set nipapd/startup true" | sudo debconf-communicate
     - sudo dpkg-reconfigure nipapd
-    - sudo apt-get install -qq python-pysqlite2 python-twisted-web python-psycopg2 python-ipy python-ldap python-docutils
 
 # get the python stuff installed
 install:
@@ -21,9 +28,7 @@ install:
     - cp nipap-cli/nipaprc ~/.nipaprc
 
 script:
-    - cd nipap
-    - sudo ./nipapd --no-pid-file
-    - cd ../tests
+    - cd tests
     - nosetests xmlrpc.py
     - nosetests nipaptest.py
     - nosetests test_cli.py

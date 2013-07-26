@@ -227,11 +227,13 @@ class NipapXmlTest(unittest.TestCase):
                 'family': 4,
                 'id': 131,
                 'indent': 0,
+                'inherited_tags': [],
                 'monitor': None,
                 'node': None,
                 'order_id': None,
                 'pool_name': None,
                 'pool_id': None,
+                'tags': [],
                 'vrf_rt': None,
                 'vrf_id': 0,
                 'vrf_name': 'default',
@@ -321,7 +323,9 @@ class NipapXmlTest(unittest.TestCase):
                 'vrf_id': 0,
                 'vrf_rt': None,
                 'vrf_name': None,
-                'vlan': None
+                'vlan': None,
+                'inherited_tags': [],
+                'tags': []
             }
 
         # add VRF
@@ -388,6 +392,104 @@ class NipapXmlTest(unittest.TestCase):
 
 
 
+    def test_prefix_add_tags(self):
+        """ Verify tag inheritance works correctly
+        """
+        expected = []
+        expected_top = {
+                'alarm_priority': None,
+                'authoritative_source': 'nipap',
+                'comment': None,
+                'country': None,
+                'display_prefix': '1.0.0.0/8',
+                'external_key': None,
+                'family': 4,
+                'id': 131,
+                'indent': 0,
+                'monitor': None,
+                'node': None,
+                'order_id': None,
+                'pool_id': None,
+                'pool_name': None,
+                'vrf_id': 0,
+                'vrf_rt': None,
+                'vrf_name': 'default',
+                'inherited_tags': [],
+                'vlan': None
+            }
+
+        # add the "top" prefix - 1.0.0.0/8
+        attr = {
+                'prefix': '1.0.0.0/8',
+                'description': 'test prefix',
+                'type': 'reservation',
+                'tags': ['top']
+                }
+        prefix = s.add_prefix({ 'auth': ad, 'attr': attr })
+        expected_top.update(attr)
+        expected_top['id'] = prefix['id']
+
+        # add the "bottom" prefix 1.3.3.0/24
+        attr = {
+                'prefix': '1.3.3.0/24',
+                'description': 'test prefix',
+                'type': 'assignment',
+                'tags': ['bottom'],
+                }
+        prefix = s.add_prefix({ 'auth': ad, 'attr': attr })
+        expected_bottom = expected_top.copy()
+        expected_bottom.update(attr)
+        expected_bottom['id'] = prefix['id']
+        expected_bottom['display_prefix'] = '1.3.3.0/24'
+        expected_bottom['inherited_tags'] = ['top']
+        expected_bottom['indent'] = 1
+
+        # check the list is correct!
+        expected = [ expected_top, expected_bottom ]
+        self.assertEqual(s.list_prefix({ 'auth': ad }), expected)
+
+        # add the "middle" prefix 1.3.0.0/16
+        attr = {
+                'prefix': '1.3.0.0/16',
+                'description': 'test prefix',
+                'type': 'reservation',
+                'tags': ['middle'],
+                }
+        prefix = s.add_prefix({ 'auth': ad, 'attr': attr })
+        expected_middle = expected_top.copy()
+        expected_middle.update(attr)
+        expected_middle['id'] = prefix['id']
+        expected_middle['display_prefix'] = '1.3.0.0/16'
+        expected_middle['inherited_tags'] = ['top']
+        expected_middle['indent'] = 1
+
+        expected_bottom['inherited_tags'] = ['middle', 'top']
+        expected_bottom['indent'] = 2
+
+        # check the list is correct!
+        expected = [ expected_top, expected_middle, expected_bottom ]
+        self.assertEqual(s.list_prefix({ 'auth': ad }), expected)
+
+        # remove middle prefix
+        s.remove_prefix({ 'auth': ad, 'prefix': { 'id': expected_middle['id'] } })
+        expected_bottom['inherited_tags'] = ['top']
+        expected_bottom['indent'] = 1
+
+        # check the list is correct!
+        expected = [ expected_top, expected_bottom ]
+        self.assertEqual(s.list_prefix({ 'auth': ad }), expected)
+
+        # remove top prefix
+        s.remove_prefix({ 'auth': ad, 'prefix': { 'id': expected_top['id'] } })
+        expected_bottom['inherited_tags'] = []
+        expected_bottom['indent'] = 0
+
+        # check the list is correct!
+        expected = [ expected_bottom ]
+        self.assertEqual(s.list_prefix({ 'auth': ad }), expected)
+
+
+
     def test_prefix_node(self):
         """ Test node constraints
 
@@ -405,11 +507,13 @@ class NipapXmlTest(unittest.TestCase):
                 'external_key': None,
                 'family': 4,
                 'indent': 0,
+                'inherited_tags': [],
                 'monitor': None,
                 'node': None,
                 'order_id': None,
                 'pool_name': None,
                 'pool_id': None,
+                'tags': [],
                 'vrf_rt': None,
                 'vrf_id': 0,
                 'vrf_name': 'default',
@@ -639,7 +743,9 @@ class NipapXmlTest(unittest.TestCase):
                 'indent': 1,
                 'alarm_priority': None,
                 'authoritative_source': 'nipap',
-                'vlan': None
+                'vlan': None,
+                'inherited_tags': [],
+                'tags': []
                 }
         child = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
         expected['id'] = child['id']
@@ -649,7 +755,7 @@ class NipapXmlTest(unittest.TestCase):
 
 
     def test_prefix_smart_search(self):
-        """ Add a prefix and list
+        """ Test the prefix smart search
         """
         p1 = s.add_prefix({ 'auth': ad, 'attr': {
                 'prefix': '1.3.3.0/24',
@@ -697,7 +803,9 @@ class NipapXmlTest(unittest.TestCase):
                         'indent': 0,
                         'country': None,
                         'display': True,
-                        'vlan': None
+                        'vlan': None,
+                        'inherited_tags': [],
+                        'tags': []
                         }
                     ]
             }
