@@ -634,13 +634,11 @@ class XhrController(BaseController):
                 except NipapError, e:
                     return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-<<<<<<< HEAD
             if 'vlan' in request.params:
                 p.vlan = request.params['vlan']
-=======
+
             if 'tags' in request.params:
                 p.tags = json.loads(request.params['tags'])
->>>>>>> 190-add-labels
 
             p.save()
 
