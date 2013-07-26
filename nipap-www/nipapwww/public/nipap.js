@@ -2189,8 +2189,10 @@ function prefixFormSubmit(e) {
 		'country': $('input[name="prefix_country"]').val(),
 		'order_id': $('input[name="prefix_order_id"]').val(),
 		'vrf': $('input[name="prefix_vrf"]').val(),
-		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val()
+		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
+		'vlan': $('input[name="prefix_vlan"]').val()
 	};
+    prefix_data['tags'] = JSON.stringify($('#tags').tagit('assignedTags'));
 
 	// make sure monitor is disabled for host prefixes
 	if (prefix_data.type == 'host') {

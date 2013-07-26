@@ -89,6 +89,12 @@ $(function () {
 	enableNodeInput();
 	$('input[name="prefix_prefix"]').keyup(enableNodeInput);
 
+	// tags
+	$("#tags").tagit({
+		allowSpaces: true,
+		removeConfirmation: true
+	});
+
 });
 </script>
 {% endblock %}

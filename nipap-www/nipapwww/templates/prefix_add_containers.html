@@ -236,6 +236,21 @@
 			<div class="option">
 				<dl>
 					<dt>
+					Tags
+					</dt>
+					<dd>
+					<ul id="tags" style="font-size: 1.0em;">
+						{% for tag in c.prefix.tags|sort() %}<li>{{ tag }}</li>{% endfor %}
+					</ul>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
 						Node
 					</dt>
 					<dd>
@@ -281,6 +296,19 @@
                         <input type="button" name="prefix_vrf_btn" value="None">
                         <span id="prefix_vrf_display" class="tooltip" style="display: none;"></span>
                         <input type="hidden" name="prefix_vrf" value="">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+					VLAN
+					</dt>
+					<dd>
+					<input type="text" name="prefix_vlan" size=10>
 					</dd>
 				</dl>
 			</div>

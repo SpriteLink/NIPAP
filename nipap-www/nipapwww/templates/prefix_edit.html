@@ -32,8 +32,7 @@
                'comment': $('input[name="prefix_comment"]').val(),
                'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
                'vlan': $('input[name="prefix_vlan"]').val(),
-               'tags': $("#tags").tagit("assignedTags"),
-               'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val()
+               'tags': $("#tags").tagit("assignedTags")
            };
 
            if ($('input[name="prefix_monitor"]').is(':checked')) {

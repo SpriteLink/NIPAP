@@ -533,6 +533,9 @@ class XhrController(BaseController):
             if request.params['vlan'].strip() != '':
                 p.vlan = request.params['vlan']
 
+        if 'tags' in request.params:
+            p.tags = json.loads(request.params['tags'])
+
         # arguments
         args = {}
         if 'from_prefix[]' in request.params:
@@ -636,7 +639,8 @@ class XhrController(BaseController):
                     return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
             if 'vlan' in request.params:
-                p.vlan = request.params['vlan']
+                if request.params['vlan'].strip() != '':
+                    p.vlan = request.params['vlan']
 
             if 'tags' in request.params:
                 p.tags = json.loads(request.params['tags'])
