@@ -384,6 +384,7 @@ def add_prefix(arg, opts):
     p.alarm_priority = opts.get('alarm_priority')
     p.comment = opts.get('comment')
     p.monitor = _str_to_bool(opts.get('monitor'))
+    p.vlan = opts.get('vlan')
 
     if 'vrf_rt' in opts:
         if opts['vrf_rt'] != 'none':
@@ -642,6 +643,7 @@ def view_prefix(arg, opts):
     print "  %-15s : %s" % ("Node", p.node)
     print "  %-15s : %s" % ("Country", p.country)
     print "  %-15s : %s" % ("Order", p.order_id)
+    print "  %-15s : %s" % ("VLAN", p.vlan)
     print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
     print "  %-15s : %s" % ("Monitor", p.monitor)
     print "-- Comment"
@@ -979,6 +981,8 @@ def modify_prefix(arg, opts):
         p.country = opts['country']
     if 'order_id' in opts:
         p.order_id = opts['order_id']
+    if 'vlan' in opts:
+        p.vlan = opts['vlan']
     if 'alarm_priority' in opts:
         p.alarm_priority = opts['alarm_priority']
     if 'monitor' in opts:
@@ -1292,6 +1296,13 @@ cmds = {
                                 'complete': complete_bool,
                             }
                         },
+                        'vlan': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': int
+                            }
+                        },
                         'alarm_priority': {
                             'type': 'option',
                             'argument': {
@@ -1425,6 +1436,13 @@ cmds = {
                                         'type': 'value',
                                         'content_type': unicode,
                                         'complete': complete_bool,
+                                    }
+                                },
+                                'vlan': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': int
                                     }
                                 },
                                 'alarm_priority': {
