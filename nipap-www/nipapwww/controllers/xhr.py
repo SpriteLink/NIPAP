@@ -530,7 +530,8 @@ class XhrController(BaseController):
                 p.monitor = False
 
         if 'vlan' in request.params:
-            p.vlan = request.params['vlan']
+            if request.params['vlan'].strip() != '':
+                p.vlan = request.params['vlan']
 
         # arguments
         args = {}
