@@ -138,6 +138,7 @@ Prefix administration &mdash;&gt; edit prefix
                     <dd>
                         <input type="radio" id="prefix-type-res" name="prefix_type" value="reservation" class="tooltip" title="" {% if c.prefix.type == 'reservation' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="prefix-type-res">Reservation</label>
                         <input type="radio" id="prefix-type-ass" name="prefix_type" value="assignment" class="tooltip" title="" {% if c.prefix.type == 'assignment' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="prefix-type-ass">Assignment</label>
+                        <input type="radio" id="prefix-type-host" name="prefix_type" value="host" class="tooltip" title=""{% if c.prefix.type == 'host' %} checked{% endif %} disabled><label for="prefix-type-host">Host</label>
 						<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
                     </dd>
                 </dl>
