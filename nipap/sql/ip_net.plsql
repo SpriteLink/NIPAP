@@ -111,14 +111,14 @@ COMMENT ON COLUMN ip_net_plan.authoritative_source IS 'The authoritative source 
 COMMENT ON COLUMN ip_net_plan.alarm_priority IS 'Priority of alarms sent for this prefix to NetWatch.';
 COMMENT ON COLUMN ip_net_plan.monitor IS 'Whether the prefix should be monitored or not.';
 
-CREATE UNIQUE INDEX ip_net_plan__vrf_id_prefix__index ON ip_net_plan (vrf_id, prefix);
+CREATE UNIQUE INDEX ip_net_plan__vrf_id_prefix_type__index ON ip_net_plan (vrf_id, prefix, type);
 
 CREATE INDEX ip_net_plan__vrf_id__index ON ip_net_plan (vrf_id);
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 CREATE INDEX ip_net_plan__family__index ON ip_net_plan (family(prefix));
 CREATE INDEX ip_net_plan__prefix_iprange_index ON ip_net_plan USING gist(iprange(prefix));
 
-COMMENT ON INDEX ip_net_plan__vrf_id_prefix__index IS 'prefix';
+COMMENT ON INDEX ip_net_plan__vrf_id_prefix_type__index IS 'prefix';
 
 --
 -- Audit log table
