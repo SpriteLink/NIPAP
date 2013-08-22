@@ -743,9 +743,9 @@ class Prefix(Pynipap):
         """
 
         # cached?
-        if id in _cache['Prefix']:
-            log.debug('cache hit for prefix %d' % id)
-            return _cache['Prefix'][id]
+        #if id in _cache['Prefix']:
+        #    log.debug('cache hit for prefix %d' % id)
+        #    return _cache['Prefix'][id]
         log.debug('cache miss for prefix %d' % id)
 
         try:

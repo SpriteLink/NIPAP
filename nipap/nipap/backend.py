@@ -762,6 +762,9 @@ class Nipap:
         """
 
         self._logger.debug("add_vrf called; attr: %s" % str(attr))
+		
+        if auth.readonly is True:
+            raise NipapError('User %s does not have write permission!' % auth.username)
 
         # sanity check - do we have all attributes?
         req_attr = [ 'rt', 'name' ]
@@ -804,6 +807,9 @@ class Nipap:
         """
 
         self._logger.debug("remove_vrf called; spec: %s" % str(spec))
+		
+        if auth.readonly is True:
+            raise NipapError('User %s does not have write permission!' % auth.username)
 
         # get list of VRFs to remove before removing them
         vrfs = self.list_vrf(auth, spec)
@@ -923,6 +929,9 @@ class Nipap:
 
         self._logger.debug("edit_vrf called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
+				
+        if auth.readonly is True:
+            raise NipapError('User %s does not have write permission!' % auth.username)
 
         # sanity check - do we have all attributes?
         req_attr = [ ]
@@ -1326,6 +1335,9 @@ class Nipap:
         """
 
         self._logger.debug("add_pool called; attrs: %s" % str(attr))
+		
+        if auth.readonly is True:
+            raise NipapError('User %s does not have write permission!' % auth.username)
 
         # sanity check - do we have all attributes?
         req_attr = ['name', 'description', 'default_type']
@@ -1365,6 +1377,9 @@ class Nipap:
         """
 
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
+		
+        if auth.readonly is True:
+            raise NipapError('User %s does not have write permission!' % auth.username)
 
         # fetch list of pools to remove before they are removed
         pools = self.list_pool(auth, spec)
@@ -1511,6 +1526,9 @@ class Nipap:
 
         self._logger.debug("edit_pool called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
+				
+        if auth.readonly is True:
+            raise NipapError('User %s does not have write permission!' % auth.username)
 
         if ('id' not in spec and 'name' not in spec) or ( 'id' in spec and 'name' in spec ):
             raise NipapMissingInputError('''pool spec must contain either 'id' or 'name' ''')
@@ -2016,6 +2034,9 @@ class Nipap:
         """
 
         self._logger.debug("add_prefix called; attr: %s; args: %s" % (str(attr), str(args)))
+		
+        if auth.readonly is True:
+            raise NipapError('User %s does not have write permission!' % auth.username)
 
         # args defined?
         if args is None:
@@ -2191,6 +2212,9 @@ class Nipap:
 
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
+				
+        if auth.readonly is True:
+            raise NipapError('User %s does not have write permission!' % auth.username)
 
         # Handle Pool - find correct one and remove bad pool keys
         pool = None
@@ -2569,6 +2593,9 @@ class Nipap:
         """
 
         self._logger.debug("remove_prefix called; spec: %s" % str(spec))
+		
+        if auth.readonly is True:
+            raise NipapError('User %s does not have write permission!' % auth.username)
 
         # sanity check - do we have all attributes?
         if 'id' in spec:
