@@ -455,6 +455,10 @@ class SqliteAuth(BaseAuth):
             # this also means that a system and full_name can be specified
             if 'username' in self._auth_options:
                 self.username = self._auth_options['username']
+                _sql = '''SELECT * FROM user WHERE username = ?'''
+                self._db_curs.execute(sql, (self.username, ))
+                realuser = self._db_curs.fetchone()
+                self.readonly = bool(realuser['readonly'])
 
             # TODO: b0rk out if full_name is supplied and username not?
             if 'full_name' in self._auth_options:
