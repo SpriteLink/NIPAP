@@ -102,9 +102,9 @@ def requires_auth(f):
 class NipapXMLRPC:
     """ NIPAP XML-RPC API
     """
-
     def __init__(self):
         self.nip = Nipap()
+
 
 
     @requires_auth
@@ -131,6 +131,7 @@ class NipapXMLRPC:
             return args.get('message')
 
 
+
     @requires_auth
     def version(self):
         """ Returns nipapd version
@@ -138,6 +139,7 @@ class NipapXMLRPC:
             Returns a string.
         """
         return nipap.__version__
+
 
 
     #
@@ -156,11 +158,11 @@ class NipapXMLRPC:
 
             Returns the internal database ID for the VRF.
         """
-
         try:
             return self.nip.add_vrf(args.get('auth'), args.get('attr'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -174,11 +176,11 @@ class NipapXMLRPC:
             * `vrf` [struct]
                 A VRF spec.
         """
-
         try:
-            nip.remove_vrf(args.get('auth'), args.get('vrf'))
-        except NipapError, e:
+            self.nip.remove_vrf(args.get('auth'), args.get('vrf'))
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -194,11 +196,11 @@ class NipapXMLRPC:
 
             Returns a list of structs matching the VRF spec.
         """
-
         try:
             return self.nip.list_vrf(args.get('auth'), args.get('vrf'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -214,11 +216,11 @@ class NipapXMLRPC:
             * `attr` [struct]
                 VRF attributes.
         """
-
         try:
             return self.nip.edit_vrf(args.get('auth'), args.get('vrf'), args.get('attr'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -238,11 +240,11 @@ class NipapXMLRPC:
             Returns a struct containing search result and the search options
             used.
         """
-
         try:
             return self.nip.search_vrf(args.get('auth'), args.get('query'), args.get('search_options') or {})
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -262,13 +264,13 @@ class NipapXMLRPC:
             Returns a struct containing search result, interpretation of the
             search string and the search options used.
         """
-
         try:
             return self.nip.smart_search_vrf(args.get('auth'),
                     args.get('query_string'), args.get('search_options', {}),
                     args.get('extra_query'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     #
@@ -287,11 +289,11 @@ class NipapXMLRPC:
 
             Returns ID of created pool.
         """
-
         try:
             return self.nip.add_pool(args.get('auth'), args.get('attr'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -305,11 +307,11 @@ class NipapXMLRPC:
             * `pool` [struct]
                 Specifies what pool(s) to remove.
         """
-
         try:
-            nip.remove_pool(args.get('auth'), args.get('pool'))
-        except NipapError, e:
+            self.nip.remove_pool(args.get('auth'), args.get('pool'))
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -325,11 +327,11 @@ class NipapXMLRPC:
 
             Returns a list of structs describing the matching pools.
         """
-
         try:
             return self.nip.list_pool(args.get('auth'), args.get('pool'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -345,11 +347,11 @@ class NipapXMLRPC:
             * `attr` [struct]
                 Pool attributes to set.
         """
-
         try:
             return self.nip.edit_pool(args.get('auth'), args.get('pool'), args.get('attr'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -369,11 +371,11 @@ class NipapXMLRPC:
             Returns a struct containing search result and the search options
             used.
         """
-
         try:
             return self.nip.search_pool(args.get('auth'), args.get('query'), args.get('search_options') or {})
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -393,13 +395,13 @@ class NipapXMLRPC:
             Returns a struct containing search result, interpretation of the
             query string and the search options used.
         """
-
         try:
             return self.nip.smart_search_pool(args.get('auth'),
                     args.get('query_string'), args.get('search_options') or {},
                     args.get('extra_query', {}))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     #
@@ -421,11 +423,11 @@ class NipapXMLRPC:
 
             Returns ID of created prefix.
         """
-
         try:
             return self.nip.add_prefix(args.get('auth'), args.get('attr'), args.get('args'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -441,11 +443,11 @@ class NipapXMLRPC:
 
             Returns a list of structs describing the matching prefixes.
         """
-
         try:
             return self.nip.list_prefix(args.get('auth'), args.get('prefix') or {})
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -461,11 +463,11 @@ class NipapXMLRPC:
             * `attr` [struct]
                 Attribuets to set on the new prefix.
         """
-
         try:
             return self.nip.edit_prefix(args.get('auth'), args.get('prefix'), args.get('attr'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -479,11 +481,11 @@ class NipapXMLRPC:
             * `prefix` [struct]
                 Attributes used to select what prefix to remove.
         """
-
         try:
             return self.nip.remove_prefix(args.get('auth'), args.get('prefix'), args.get('recursive'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -503,11 +505,11 @@ class NipapXMLRPC:
             Returns a struct containing the search result together with the
             search options used.
         """
-
         try:
             return self.nip.search_prefix(args.get('auth'), args.get('query'), args.get('search_options') or {})
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -535,8 +537,9 @@ class NipapXMLRPC:
             return self.nip.smart_search_prefix(args.get('auth'),
                     args.get('query_string'), args.get('search_options') or {},
                     args.get('extra_query'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -558,6 +561,7 @@ class NipapXMLRPC:
             raise Fault(e.error_code, str(e))
 
 
+
     #
     # ASN FUNCTIONS
     #
@@ -577,8 +581,9 @@ class NipapXMLRPC:
 
         try:
             return self.nip.add_asn(args.get('auth'), args.get('attr'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -595,8 +600,9 @@ class NipapXMLRPC:
 
         try:
             self.nip.remove_asn(args.get('auth'), args.get('asn'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -615,8 +621,9 @@ class NipapXMLRPC:
 
         try:
             return self.nip.list_asn(args.get('auth'), args.get('asn') or {})
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -635,8 +642,9 @@ class NipapXMLRPC:
 
         try:
             return self.nip.edit_asn(args.get('auth'), args.get('asn'), args.get('attr'))
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -659,8 +667,9 @@ class NipapXMLRPC:
 
         try:
             return self.nip.search_asn(args.get('auth'), args.get('query'), args.get('search_options') or {})
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
+
 
 
     @requires_auth
@@ -683,7 +692,7 @@ class NipapXMLRPC:
 
         try:
             return self.nip.smart_search_asn(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
-        except NipapError, e:
+        except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 
 
