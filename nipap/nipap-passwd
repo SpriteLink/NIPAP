@@ -22,6 +22,7 @@ if __name__ == '__main__':
     parser.add_option('-p', '--password', dest='password', type='string', help='set user\'s password to PASSWORD')
     parser.add_option('-l', '--list', action='store_true', dest='list', help='list users')
     parser.add_option('-t', '--trusted', action='store_true', dest='trusted', default=False, help='mark user as trusted')
+    parser.add_option('-r', '--readonly', action='store_true', dest='readonly', default=False, help='set user to read only')
     parser.add_option('-n', '--name', dest='name', type='string', help='set user\'s name to NAME')
     parser.add_option('-c', '--config', dest='config', default='/etc/nipap/nipap.conf', type='string', help=
             'read configuration from CONFIG [default:/etc/nipap/nipap.conf]')
@@ -43,10 +44,10 @@ if __name__ == '__main__':
 
     if options.list:
         # print a nicely formatted list of users
-        header =  "%-20s %-25s %-7s" % ('username', 'real name', 'trusted')
+        header =  "%-20s %-25s %-7s %-7s" % ('username', 'real name', 'trusted', 'read only')
         print "%s\n%s" % (header,''.join('-' for x in range(len(header))))
         for u in a.list_users():
-            print "%-20s %-25s %-7d" % (u['username'], u['full_name'], int(u['trusted']))
+            print "%-20s %-25s %-7d %-7d" % (u['username'], u['full_name'], int(u['trusted']), int(u['readonly']))
 
     elif options.add_user:
         if not options.password:
@@ -56,7 +57,7 @@ if __name__ == '__main__':
             print "Please specify name with --name"
             sys.exit(1)
         try:
-            a.add_user(options.add_user, options.password, options.name, options.trusted)
+            a.add_user(options.add_user, options.password, options.name, options.trusted, options.readonly)
             print "Added user %s to database %s" % (options.add_user, cfg.get('auth.backends.local','db_path'))
         except nipap.authlib.AuthError as exc:
             if str(exc) == 'attempt to write a readonly database':
