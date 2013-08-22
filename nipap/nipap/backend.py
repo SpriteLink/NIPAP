@@ -2182,9 +2182,12 @@ class Nipap:
             versa, but only if they contain no child prefixes.
         """
 
-        self._logger.debug("edit_prefix called; spec: %s attr: %s" %
-                (str(spec), str(attr)))
+        self._logger.debug("edit_prefix called; spec: %s attr: %s readonly: %s" %
+                (str(spec), str(attr), str(auth.readonly)))
 
+        if(auth.readonly == 1)
+            raise NipapError("Can not edit prefix as readonly account")
+        
         # Handle Pool - find correct one and remove bad pool keys
         pool = None
         if 'pool_id' in attr or 'pool_name' in attr:
