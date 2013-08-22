@@ -199,6 +199,7 @@ class BaseAuth:
     authoritative_source = None
     auth_backend = None
     trusted = None
+    readonly = None
 
     _logger = None
     _auth_options = None
@@ -405,7 +406,8 @@ class SqliteAuth(BaseAuth):
             pwd_salt NOT NULL,
             pwd_hash NOT NULL,
             full_name,
-            trusted NOT NULL DEFAULT 0
+            trusted NOT NULL DEFAULT 0,
+            readonly NOT NULL DEFAULT 0
         )'''
         self._db_curs.execute(sql)
         self._db_conn.commit()
@@ -446,6 +448,7 @@ class SqliteAuth(BaseAuth):
         self.authenticated_as = self.username
         self._authenticated = True
         self.trusted = bool(user['trusted'])
+        self.readonly = bool(user['readonly'])
 
         if self.trusted:
             # user can impersonate other users
