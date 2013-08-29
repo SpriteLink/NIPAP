@@ -2601,7 +2601,7 @@ class Nipap:
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
             if p['pool_id'] is not None:
-                pool = self._get_pool(auth, { 'id': p['pool'] })
+                pool = self._get_pool(auth, { 'id': p['pool_id'] })
                 audit_params2 = {
                     'pool_id': pool['id'],
                     'pool_name': pool['name'],
