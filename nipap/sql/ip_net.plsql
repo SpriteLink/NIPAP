@@ -90,7 +90,9 @@ CREATE TABLE ip_net_plan (
 	monitor boolean,
 	vlan integer,
 	tags text[] DEFAULT '{}',
-	inherited_tags text[] DEFAULT '{}'
+	inherited_tags text[] DEFAULT '{}',
+	added timestamp with time zone DEFAULT NOW(),
+	last_modified timestamp with time zone DEFAULT NOW()
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
@@ -110,6 +112,11 @@ COMMENT ON COLUMN ip_net_plan.external_key IS 'Field for use by exernal systems 
 COMMENT ON COLUMN ip_net_plan.authoritative_source IS 'The authoritative source for information regarding this prefix';
 COMMENT ON COLUMN ip_net_plan.alarm_priority IS 'Priority of alarms sent for this prefix to NetWatch.';
 COMMENT ON COLUMN ip_net_plan.monitor IS 'Whether the prefix should be monitored or not.';
+COMMENT ON COLUMN ip_net_plan.vlan IS 'VLAN ID';
+COMMENT ON COLUMN ip_net_plan.tags IS 'Tags associated with the prefix';
+COMMENT ON COLUMN ip_net_plan.inherited_tags IS 'Tags inherited from parent (and grand-parent) prefixes';
+COMMENT ON COLUMN ip_net_plan.added IS 'The date and time when the prefix was added';
+COMMENT ON COLUMN ip_net_plan.last_modified IS 'The date and time when the prefix was last modified';
 
 CREATE UNIQUE INDEX ip_net_plan__vrf_id_prefix__index ON ip_net_plan (vrf_id, prefix);
 
@@ -192,15 +199,15 @@ CREATE TRIGGER trigger_ip_net_plan_prefix__iu_before
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_prefix_iu_before();
 
-CREATE TRIGGER trigger_ip_net_plan_prefix__d_before
-	BEFORE DELETE
+CREATE TRIGGER trigger_ip_net_plan_prefix__diu_before
+	BEFORE DELETE OR INSERT OR UPDATE
 	ON ip_net_plan
 	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_prefix_d_before();
+	EXECUTE PROCEDURE tf_ip_net_prefix_before();
 
 CREATE TRIGGER trigger_ip_net_plan_prefix__iu_after
 	AFTER DELETE OR INSERT OR UPDATE
 	ON ip_net_plan
 	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_prefix_family_after();
+	EXECUTE PROCEDURE tf_ip_net_prefix_after();
 

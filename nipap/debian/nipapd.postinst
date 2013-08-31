@@ -14,6 +14,9 @@ POSTGRES_INSTALLED=0
 NIPAP_DB_EXISTS=0
 NIPAP_DB_VERSION=0
 
+# the most current DB version and the one that we are about to install
+CURRENT_DB_VERSION=2
+
 # determine if postgres is installed
 su postgres -c 'psql --version' > /dev/null 2>&1
 if [ $? -eq 0 ]; then
@@ -59,8 +62,17 @@ case "$1" in
 		# if database already exists
 		if [ "$NIPAP_DB_EXISTS" = "1" ]; then
 			# do the upgrade dance...
-			# TODO: add it!
-			echo -n
+
+			# load latest NIPAP database functions
+			su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
+
+			# iterate through and upgrade in steps of one version at a time
+			for FROM_VERSION in `seq ${NIPAP_DB_VERSION} $((${CURRENT_DB_VERSION}-1))`; do
+				TO_VERSION=$((${FROM_VERSION}+1))
+				PSQL_FILE="upgrade-${FROM_VERSION}-${TO_VERSION}.plsql"
+
+				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/${PSQL_FILE}" postgres >/dev/null 2>&1
+			done
 
 		else
 			# first time setup

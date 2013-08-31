@@ -37,14 +37,18 @@ builddeb:
 
 debrepo:
 ifeq ($(CURBRANCH), $(shell echo -n 'gh-pages'))
+	debrepo-run
+else
+	@echo "Please switch to branch: gh-pages"
+	@echo "If you want to force the building of a debrepo, run 'make debrepo-run'"
+endif
+
+debrepo-run:
 	for CHANGEFILE in `ls *.changes`; do \
 		cd repos/apt; \
 		reprepro --ignore=wrongdistribution -Vb . include stable ../../$$CHANGEFILE; \
 		cd ../.. ; \
 	done
-else
-	@echo "Please switch to branch: gh-pages"
-endif
 
 clean:
 	rm -f *.deb

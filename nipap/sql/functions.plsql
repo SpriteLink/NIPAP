@@ -482,7 +482,7 @@ $_$ LANGUAGE plpgsql;
 -- Trigger function to keep data consistent in the ip_net_plan table with
 -- regards to prefix type and similar. This function handles DELETE operations.
 --
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_d_before() RETURNS trigger AS $_$
+CREATE OR REPLACE FUNCTION tf_ip_net_prefix_before() RETURNS trigger AS $_$
 BEGIN
 	-- prevent certain deletes to maintain DB integrity
 	IF TG_OP = 'DELETE' THEN
@@ -496,6 +496,8 @@ BEGIN
 			END IF;
 		END IF;
 		-- everything else is allowed
+	ELSIF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+		NEW.last_modified = NOW();
 	END IF;
 
 	RETURN OLD;
@@ -507,7 +509,7 @@ $_$ LANGUAGE plpgsql;
 -- Trigger function to make update the indent level when adding or removing
 -- prefixes.
 --
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_family_after() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION tf_ip_net_prefix_after() RETURNS trigger AS $$
 DECLARE
 	r RECORD;
 	parent_prefix cidr;
