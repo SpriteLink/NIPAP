@@ -56,7 +56,7 @@
     * :attr:`username` - Username to impersonate, requires authentication as \
         trusted user.
     * :attr:`full_name` - Full name of impersonated user.
-	* :attr:`readonly` - True or false if user can only read
+    * :attr:`readonly` - True or false if user can only read
 
     Classes
     -------
@@ -327,7 +327,7 @@ class LdapAuth(BaseAuth):
         self.authenticated_as = self.username
         self._authenticated = True
         self.trusted = False
-		self.readonly = False
+        self.readonly = False
 
         try:
             res = self._ldap_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, 'uid=' + self.username, ['cn'])

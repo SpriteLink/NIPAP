@@ -33,7 +33,7 @@ class BaseController(WSGIController):
                 'username': session.get('user'),
                 'full_name': session.get('full_name'),
                 'authoritative_source': 'nipap',
-				'readonly': session.get('readonly')
+                'readonly': session.get('readonly')
             })
 
 

@@ -44,7 +44,7 @@ class AuthController(BaseController):
         # Mark user as logged in
         session['user'] = auth.username
         session['full_name'] = auth.full_name
-		session['readonly'] = auth.readonly
+        session['readonly'] = auth.readonly
         session['current_vrfs'] = {}
         session.save()
 
