@@ -2182,12 +2182,9 @@ class Nipap:
             versa, but only if they contain no child prefixes.
         """
 
-        self._logger.debug("edit_prefix called; spec: %s attr: %s readonly: %s" %
-                (str(spec), str(attr), str(auth.readonly)))
+        self._logger.debug("edit_prefix called; spec: %s attr: %s" %
+                (str(spec), str(attr)))
 
-        if auth.readonly is True:
-            raise NipapError("Can not edit prefix as readonly account")
-        
         # Handle Pool - find correct one and remove bad pool keys
         pool = None
         if 'pool_id' in attr or 'pool_name' in attr:
@@ -2604,7 +2601,7 @@ class Nipap:
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
             if p['pool_id'] is not None:
-                pool = self._get_pool(auth, { 'id': p['pool'] })
+                pool = self._get_pool(auth, { 'id': p['pool_id'] })
                 audit_params2 = {
                     'pool_id': pool['id'],
                     'pool_name': pool['name'],
