@@ -446,6 +446,9 @@ class VRF(Pynipap):
     def save(self):
         """ Save changes made to object to NIPAP.
         """
+		
+		if self._auth_opts.options.readonly is True:
+			raise NipapError('User %s does not have write permissions' % str(self._auth_opts.options.username))
 
         data = {
             'rt': self.rt,
@@ -490,6 +493,9 @@ class VRF(Pynipap):
     def remove(self):
         """ Remove VRF.
         """
+		
+		if self._auth_opts.options.readonly is True:
+			raise NipapError('User %s does not have write permissions' % str(self._auth_opts.options.username))
 
         try:
             self._xmlrpc.connection.remove_vrf(
@@ -519,6 +525,9 @@ class Pool(Pynipap):
     def save(self):
         """ Save changes made to pool to NIPAP.
         """
+		
+		if self._auth_opts.options.readonly is True:
+			raise NipapError('User %s does not have write permissions' % str(self._auth_opts.options.username))
 
         data = {
             'name': self.name,
@@ -565,6 +574,9 @@ class Pool(Pynipap):
     def remove(self):
         """ Remove pool.
         """
+
+		if self._auth_opts.options.readonly is True:
+			raise NipapError('User %s does not have write permissions' % str(self._auth_opts.options.username))
 
         try:
             self._xmlrpc.connection.remove_pool(
@@ -865,6 +877,9 @@ class Prefix(Pynipap):
     def save(self, args = {}):
         """ Save prefix to NIPAP.
         """
+		
+		if self._auth_opts.options.readonly is True:
+			raise NipapError('User %s does not have write permissions' % str(self._auth_opts.options.username))
 
         data = {
             'description': self.description,
@@ -961,6 +976,9 @@ class Prefix(Pynipap):
         """ Remove the prefix.
         """
 
+		if self._auth_opts.options.readonly is True:
+			raise NipapError('User %s does not have write permissions' % str(self._auth_opts.options.username))
+		
         try:
             self._xmlrpc.connection.remove_prefix(
                 {

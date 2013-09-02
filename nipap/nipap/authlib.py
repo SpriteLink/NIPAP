@@ -56,6 +56,7 @@
     * :attr:`username` - Username to impersonate, requires authentication as \
         trusted user.
     * :attr:`full_name` - Full name of impersonated user.
+	* :attr:`readonly` - True or false if user can only read
 
     Classes
     -------
@@ -326,6 +327,7 @@ class LdapAuth(BaseAuth):
         self.authenticated_as = self.username
         self._authenticated = True
         self.trusted = False
+		self.readonly = False
 
         try:
             res = self._ldap_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, 'uid=' + self.username, ['cn'])
@@ -470,12 +472,12 @@ class SqliteAuth(BaseAuth):
         else:
             self.full_name = user['full_name']
 
-        self._logger.debug('successfully authenticated as %s, username %s, full_name %s' % (self.authenticated_as, self.username, self.full_name))
+        self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s' % (self.authenticated_as, self.username, self.full_name, str(self.readonly)))
         return self._authenticated
 
 
 
-    def add_user(self, username, password, full_name=None, trusted=False):
+    def add_user(self, username, password, full_name=None, trusted=False, readonly=False):
         """ Add user to SQLite database.
 
             * `username` [string]
@@ -486,6 +488,8 @@ class SqliteAuth(BaseAuth):
                 Full name of new user.
             * `trusted` [boolean]
                 Whether the new user should be trusted or not.
+			* `readonly` [boolean]
+				Whether the new user can only read or not
         """
 
         # generate salt
@@ -494,12 +498,12 @@ class SqliteAuth(BaseAuth):
 
 
         sql = '''INSERT INTO user
-            (username, pwd_salt, pwd_hash, full_name, trusted)
+            (username, pwd_salt, pwd_hash, full_name, trusted, readonly)
             VALUES
-            (?, ?, ?, ?, ?)'''
+            (?, ?, ?, ?, ?, ?)'''
         try:
             self._db_curs.execute(sql, (username, salt,
-                self._gen_hash(password, salt), full_name, trusted))
+                self._gen_hash(password, salt), full_name, trusted, readonly))
             self._db_conn.commit()
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
