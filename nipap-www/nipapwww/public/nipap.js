@@ -397,12 +397,20 @@ function performPrefixSearch(force_explicit, update_uri) {
 		return true;
 	}
 
-	// Skip search if query string empty
-	if (explicit == false && jQuery.trim($('#query_string').val()).length < 1) {
-		clearPrefixSearch();
-		// update URL
-		setSearchPrefixURI();
-		return true;
+	// If query string is empty
+	if (jQuery.trim($('#query_string').val()).length < 1) {
+		if (explicit == true) {
+			// If explicit, do a search with indent 0 to only display top level prefixes
+			search_q.children_depth = 0;
+			search_q.indent = 0;
+			console.log(search_q);
+		} else {
+			// Skip search if this is not an explicit query and query string is empty
+			clearPrefixSearch();
+			// update URL
+			setSearchPrefixURI();
+			return true;
+		}
 	}
 
 	end_of_result = 0;
@@ -1728,6 +1736,7 @@ function collapseClick(id) {
 		search_q.parents_depth = 0;
 		search_q.max_result = 1000;
 		search_q.offset = 0;
+		delete search_q.indent;
 
 		query_id += 1;
 
