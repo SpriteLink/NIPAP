@@ -1916,6 +1916,7 @@ class Nipap:
             prefix_attr['alarm_priority'] = 'inp.alarm_priority'
             prefix_attr['monitor'] = 'inp.monitor'
             prefix_attr['vlan'] = 'inp.vlan'
+            prefix_attr['indent'] = 'inp.indent'
 
             if query['val1'] not in prefix_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))

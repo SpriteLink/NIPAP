@@ -35,6 +35,8 @@ class XhrController(BaseController):
             attr['type'] = request.params['type']
         if 'country' in request.params:
             attr['country'] = request.params['country']
+        if 'indent' in request.params:
+            attr['indent'] = request.params['indent']
 
         return attr
 
@@ -388,6 +390,7 @@ class XhrController(BaseController):
         """
 
         search_options = {}
+        extra_query = None
         vrf_filter = None
 
         if 'query_id' in request.params:
@@ -441,10 +444,30 @@ class XhrController(BaseController):
                         }
                     }
 
+        if vrf_filter:
+            extra_query = vrf_filter
+
+        if 'indent' in request.params:
+            if extra_query:
+                extra_query = {
+                        'operator': 'and',
+                        'val1': extra_query,
+                        'val2': {
+                            'operator': 'equals',
+                            'val1': 'indent',
+                            'val2': request.params['indent']
+                        }
+                    }
+            else:
+                extra_query = {
+                    'operator': 'equals',
+                    'val1': 'indent',
+                    'val2': request.params['indent']
+                    }
+
         try:
             result = Prefix.smart_search(request.params['query_string'],
-                search_options, vrf_filter
-                )
+                search_options, extra_query)
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
