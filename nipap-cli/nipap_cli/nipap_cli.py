@@ -629,13 +629,24 @@ def view_prefix(arg, opts):
             }
         }
 
-    res = Prefix.search(q, {})
+    offset = 0
+    limit = 50
+    found = False
+    while not found:
+        res = Prefix.search(q, {'offset': offset, 'max_result': limit})
+        
+        if len(res['result']) == 0:
+            print "Address %s not found." % arg
+            return
+            
+        for p in res['result']:
+            if p.match:
+                found = True
+                break
+        offset += limit
+        #as in 'list_prefix'
+        limit = 200
 
-    if len(res['result']) == 0:
-        print "Address %s not found." % arg
-        return
-
-    p = res['result'][0]
     vrf = p.vrf.rt
 
     print  "-- Address "
