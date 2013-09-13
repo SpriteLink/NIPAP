@@ -615,27 +615,19 @@ def view_prefix(arg, opts):
     """ View a single prefix.
     """
 
-    q = { 'operator': 'equals', 'val1': 'prefix', 'val2': arg }
+    q = { 'prefix': arg }
 
     v = get_vrf(opts.get('vrf_rt'), abort=True)
     if v.rt != 'all':
-        q = {
-            'operator': 'and',
-            'val1': q,
-            'val2': {
-                'operator': 'equals',
-                'val1': 'vrf_rt',
-                'val2': v.rt
-            }
-        }
+        q['vrf_rt'] = v.rt
 
-    res = Prefix.search(q, {})
+    res = Prefix.list(q)
 
-    if len(res['result']) == 0:
+    if len(res) == 0:
         print "Address %s not found." % arg
         return
 
-    p = res['result'][0]
+    p = res[0]
     vrf = p.vrf.rt
 
     print  "-- Address "
