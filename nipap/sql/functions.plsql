@@ -472,6 +472,11 @@ BEGIN
 		END IF;
 	END IF;
 
+	-- update last modified timestamp
+	IF TG_OP = 'UPDATE' THEN
+		NEW.last_modified = NOW();
+	END IF;
+
 	-- all is well, return
 	RETURN NEW;
 END;
