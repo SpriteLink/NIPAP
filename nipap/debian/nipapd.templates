@@ -2,16 +2,15 @@ Template: nipapd/startup
 Type: boolean
 Default: false
 Description: Start nipapd automatically?
- Would you like nipapd to start on system boot?
- .
  The NIPAP backend daemon, nipapd, can be automatically started on system
- startup by inclusion in system startup scripts.
+ startup by inclusion in the system startup scripts.
 
 Template: nipapd/autoconf
 Type: boolean
 Default: false
 Description: Automatically set up the database for nipapd?
- Would you like to automatically set up the database structure for nipapd?
+ The database structure for nipapd can be setup automatically by this
+ installation.
  .
  A new PostgreSQL user (called 'nipap') will be created with a random password.
  The database structure (tables, functions, indices) for NIPAP will then be
@@ -26,9 +25,9 @@ Type: boolean
 Default: false
 Description: Upgrade database structure to new version?
  You are upgrading from an older version of nipapd and an old version of the
- NIPAP database structure has been found. Would you like to automatically
- upgrade to the latest version of the database structure?
+ NIPAP database structure has been found. The installation can try to
+ automatically upgrade to the latest version of the database structure.
  .
  WARNING: While this is designed and tested to be completely automatic and
  migrate all data to the new version, there is always a risk involved. It is
- recommended you back up your NIPAP database before proceeding.
+ recommended to back up your NIPAP database before proceeding.
