@@ -2803,25 +2803,20 @@ class Nipap:
         self._logger.debug('search_prefix search_options: %s' % str(search_options))
 
         # translate search options to SQL
-        if search_options['parents_depth'] >= 0:
-            parents_selector = 'AND p1.indent BETWEEN p2.indent - %d AND p1.indent' % search_options['parents_depth']
-        else:
-            parents_selector = ''
 
-        if search_options['children_depth'] >= 0:
-            children_selector = 'AND p1.indent BETWEEN p2.indent AND p2.indent + %d' % search_options['children_depth']
-        else:
-            children_selector = ''
-
-        if search_options['include_all_parents']:
+        if search_options['include_all_parents'] or search_options['parents_depth'] == -1:
             where_parents = ''
+        elif search_options['parents_depth'] >= 0:
+            where_parents = 'AND p1.indent BETWEEN p2.indent - %d AND p1.indent' % search_options['parents_depth']
         else:
-            where_parents = parents_selector
+            raise NipapValueError("Invalid value for option 'parents_depth'. Only integer values > -1 allowed.")
 
-        if search_options['include_all_children']:
+        if search_options['include_all_children'] or search_options['children_depth'] == -1:
             where_children = ''
+        elif search_options['children_depth'] >= 0:
+            where_children = 'AND p1.indent BETWEEN p2.indent AND p2.indent + %d' % search_options['children_depth']
         else:
-            where_children = children_selector
+            raise NipapValueError("Invalid value for option 'children_depth'. Only integer values > -1 allowed.")
 
         if search_options['parent_prefix']:
             vrf_id = 0
@@ -2833,7 +2828,7 @@ class Nipap:
             where_parent_prefix = ''
             left_join = ''
 
-        display = '(p1.prefix << p2.display_prefix OR p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (parents_selector, children_selector)
+        display = '(p1.prefix << p2.display_prefix OR p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (where_parents, where_children)
 
         where, opt = self._expand_prefix_query(query)
         sql = """
