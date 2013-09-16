@@ -146,6 +146,8 @@ class NipapProtocol(xmlrpc.XMLRPC):
 
     def __init__(self):
         xmlrpc.XMLRPC.__init__(self)
+        # Allow None values over XML-RPC. NULL values are not defined in the
+        # XML-RPC standard but is a addition supported by many implementations.
         self.allowNone = True
         self.request = None
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -158,7 +160,8 @@ class NipapProtocol(xmlrpc.XMLRPC):
     def render(self, request):
 
         request.content.seek(0, 0)
-        args, functionPath = xmlrpclib.loads(request.content.read())
+        args, functionPath = xmlrpclib.loads(request.content.read(),
+                use_datetime=True)
 
         # Authentication
         #

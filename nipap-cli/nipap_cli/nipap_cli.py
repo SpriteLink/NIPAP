@@ -643,6 +643,8 @@ def view_prefix(arg, opts):
     print "  %-15s : %s" % ("VLAN", p.vlan)
     print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
     print "  %-15s : %s" % ("Monitor", p.monitor)
+    print "  %-15s : %s" % ("Added", p.added)
+    print "  %-15s : %s" % ("Last modified", p.last_modified)
     print "-- Tags"
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
         print "  %s" % tag_name

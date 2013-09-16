@@ -221,7 +221,8 @@ class XMLRPCConnection:
         #if len(self.__shared_state) == 0:
 
         # creating new instance
-        self.connection = xmlrpclib.ServerProxy(xmlrpc_uri, allow_none=True)
+        self.connection = xmlrpclib.ServerProxy(xmlrpc_uri, allow_none=True,
+                use_datetime=True)
         self._logger = logging.getLogger(self.__class__.__name__)
 
 
@@ -725,6 +726,8 @@ class Prefix(Pynipap):
     match = False
     children = -2
     vlan = None
+    added = None
+    last_modified = None
 
 
     def __init__(self):
@@ -1010,6 +1013,8 @@ class Prefix(Pynipap):
         prefix.alarm_priority = pref['alarm_priority']
         prefix.monitor = pref['monitor']
         prefix.vlan = pref['vlan']
+        prefix.added = pref['added']
+        prefix.last_modified = pref['last_modified']
 
         prefix.inherited_tags = {}
         for tag_name in pref['inherited_tags']:

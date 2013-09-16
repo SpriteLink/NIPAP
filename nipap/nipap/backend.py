@@ -177,6 +177,10 @@ _operation_map = {
     'or': 'OR',
     'equals_any': '= ANY',
     'equals': '=',
+    'less': '<',
+    'less_or_equal': '<=',
+    'greater': '>',
+    'greater_or_equal': '>=',
     'is': 'IS',
     'is_not': 'IS NOT',
     'not_equals': '!=',
@@ -1917,6 +1921,8 @@ class Nipap:
             prefix_attr['monitor'] = 'inp.monitor'
             prefix_attr['vlan'] = 'inp.vlan'
             prefix_attr['indent'] = 'inp.indent'
+            prefix_attr['added'] = 'inp.added'
+            prefix_attr['last_modified'] = 'inp.last_modified'
 
             if query['val1'] not in prefix_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
@@ -2515,7 +2521,9 @@ class Nipap:
             inp.authoritative_source,
             inp.alarm_priority,
             inp.monitor,
-            inp.vlan
+            inp.vlan,
+            inp.added,
+            inp.last_modified
             FROM ip_net_plan inp
             JOIN ip_net_vrf vrf ON (inp.vrf_id = vrf.id)
             LEFT JOIN ip_net_pool pool ON (inp.pool_id = pool.id) %s
@@ -2648,6 +2656,10 @@ class Nipap:
             * :data:`or` - Logical OR
             * :data:`equals` - Equality; =
             * :data:`not_equals` - Inequality; !=
+            * :data:`less` - Less than; <
+            * :data:`less_or_equal` - Less than or equal to; <=
+            * :data:`greater` - Greater than; >
+            * :data:`greater_or_equal` - Greater than or equal to; >=
             * :data:`like` - SQL LIKE
             * :data:`regex_match` - Regular expression match
             * :data:`regex_not_match` - Regular expression not match
@@ -2859,6 +2871,8 @@ class Nipap:
         alarm_priority,
         monitor,
         vlan,
+        added,
+        last_modified,
         CASE
             WHEN type = 'host'
                 THEN 0
@@ -2900,6 +2914,8 @@ class Nipap:
             p1.alarm_priority,
             p1.monitor,
             p1.vlan,
+            p1.added,
+            p1.last_modified,
             vrf.id AS vrf_id,
             vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,
