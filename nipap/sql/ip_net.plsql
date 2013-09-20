@@ -199,11 +199,11 @@ CREATE TRIGGER trigger_ip_net_plan_prefix__iu_before
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_prefix_iu_before();
 
-CREATE TRIGGER trigger_ip_net_plan_prefix__diu_before
-	BEFORE DELETE OR INSERT OR UPDATE
+CREATE TRIGGER trigger_ip_net_plan_prefix__d_before
+	BEFORE DELETE
 	ON ip_net_plan
 	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_prefix_before();
+	EXECUTE PROCEDURE tf_ip_net_prefix_d_before();
 
 CREATE TRIGGER trigger_ip_net_plan_prefix__iu_after
 	AFTER DELETE OR INSERT OR UPDATE
