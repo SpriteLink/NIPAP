@@ -88,6 +88,7 @@ CREATE TABLE ip_net_plan (
 	authoritative_source text NOT NULL DEFAULT 'nipap',
 	alarm_priority priority_5step,
 	monitor boolean,
+	children integer,
 	vlan integer,
 	tags text[] DEFAULT '{}',
 	inherited_tags text[] DEFAULT '{}',
@@ -112,6 +113,7 @@ COMMENT ON COLUMN ip_net_plan.external_key IS 'Field for use by exernal systems 
 COMMENT ON COLUMN ip_net_plan.authoritative_source IS 'The authoritative source for information regarding this prefix';
 COMMENT ON COLUMN ip_net_plan.alarm_priority IS 'Priority of alarms sent for this prefix to NetWatch.';
 COMMENT ON COLUMN ip_net_plan.monitor IS 'Whether the prefix should be monitored or not.';
+COMMENT ON COLUMN ip_net_plan.children IS 'Number of direct sub-prefixes';
 COMMENT ON COLUMN ip_net_plan.vlan IS 'VLAN ID';
 COMMENT ON COLUMN ip_net_plan.tags IS 'Tags associated with the prefix';
 COMMENT ON COLUMN ip_net_plan.inherited_tags IS 'Tags inherited from parent (and grand-parent) prefixes';

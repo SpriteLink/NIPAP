@@ -18,6 +18,10 @@ CREATE TRIGGER trigger_ip_net_plan_prefix__before
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_prefix_before();
 
+-- add children
+ALTER TABLE ip_net_plan ADD COLUMN vlan integer;
+COMMENT ON COLUMN ip_net_plan.vlan IS 'Number of direct sub-prefixes';
+
 -- vlan support
 ALTER TABLE ip_net_plan ADD COLUMN vlan integer;
 COMMENT ON COLUMN ip_net_plan.vlan IS 'VLAN ID';
