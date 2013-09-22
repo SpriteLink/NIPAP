@@ -60,6 +60,43 @@ class NipapXmlTest(unittest.TestCase):
         self.nipap._execute("DELETE FROM ip_net_asn")
 
 
+    def _mangle_prefix_result(self, res):
+        """ Mangle prefix result for easier testing
+
+            We can never predict the values of things like the ID (okay, that
+            one is actually kind of doable) or the added and last_modified
+            timestamp. This function will make sure the values are present but
+            then strip them to make it easier to test against an expected
+            result.
+        """
+
+        if isinstance(res, list):
+            # res from list_prefix
+            for p in res:
+                self.assertIn('added', p)
+                self.assertIn('last_modified', p)
+                del(p['added'])
+                del(p['last_modified'])
+
+        elif isinstance(res, dict) and 'result' in res:
+            # res from smart search
+            for p in res['result']:
+                self.assertIn('added', p)
+                self.assertIn('last_modified', p)
+                del(p['added'])
+                del(p['last_modified'])
+
+        elif isinstance(res, dict):
+            # just one single prefix
+            self.assertIn('added', res)
+            self.assertIn('last_modified', res)
+            del(res['added'])
+            del(res['last_modified'])
+
+        return res
+
+
+
 
     def test_vrf_add_list(self):
         """ Add a VRF and verify result in database
@@ -240,7 +277,9 @@ class NipapXmlTest(unittest.TestCase):
                 'vlan': None
             }
         expected.update(attr)
-        self.assertEqual(s.list_prefix({ 'auth': ad }), [expected])
+        self.assertEqual(
+                self._mangle_prefix_result(s.list_prefix({ 'auth': ad })),
+                [expected])
 
         attr = {
                 'description': 'test for from-prefix 1.3.3.0/24',
@@ -295,7 +334,9 @@ class NipapXmlTest(unittest.TestCase):
         expected_list.append(expected_host4)
 
         # make sure the result looks like we expect it too! :D
-        self.assertEqual(s.list_prefix({ 'auth': ad }), expected_list)
+        self.assertEqual(
+                self._mangle_prefix_result(s.list_prefix({ 'auth': ad })),
+                expected_list)
 
 
 
@@ -352,6 +393,7 @@ class NipapXmlTest(unittest.TestCase):
         expected.update(vrf_pref_attr)
 
         vrf_pref = s.list_prefix({ 'auth': ad, 'prefix': { 'id': expected['id'] } })[0]
+        vrf_pref = self._mangle_prefix_result(vrf_pref)
         self.assertEqual(vrf_pref, expected, 'Prefix added with VRF ID reference not equal')
 
         # add prefix to VRF by specifying VRF
@@ -370,6 +412,7 @@ class NipapXmlTest(unittest.TestCase):
         expected.update(vrf_pref_attr)
 
         vrf_pref = s.list_prefix({ 'auth': ad, 'prefix': { 'id': expected['id'] } })[0]
+        vrf_pref = self._mangle_prefix_result(vrf_pref)
         self.assertEqual(vrf_pref, expected, 'Prefix added with VRF reference not equal')
 
         # add prefix to VRF by specifying VRF name
@@ -388,6 +431,7 @@ class NipapXmlTest(unittest.TestCase):
         expected.update(vrf_pref_attr)
 
         vrf_pref = s.list_prefix({ 'auth': ad, 'prefix': { 'id': expected['id'] } })[0]
+        vrf_pref = self._mangle_prefix_result(vrf_pref)
         self.assertEqual(vrf_pref, expected, 'Prefix added with VRF name reference not equal')
 
 
@@ -446,7 +490,9 @@ class NipapXmlTest(unittest.TestCase):
 
         # check the list is correct!
         expected = [ expected_top, expected_bottom ]
-        self.assertEqual(s.list_prefix({ 'auth': ad }), expected)
+        self.assertEqual(
+                self._mangle_prefix_result(s.list_prefix({ 'auth': ad })),
+                expected)
 
         # add the "middle" prefix 1.3.0.0/16
         attr = {
@@ -468,7 +514,9 @@ class NipapXmlTest(unittest.TestCase):
 
         # check the list is correct!
         expected = [ expected_top, expected_middle, expected_bottom ]
-        self.assertEqual(s.list_prefix({ 'auth': ad }), expected)
+        self.assertEqual(
+                self._mangle_prefix_result(s.list_prefix({ 'auth': ad })),
+                expected)
 
         # remove middle prefix
         s.remove_prefix({ 'auth': ad, 'prefix': { 'id': expected_middle['id'] } })
@@ -477,7 +525,9 @@ class NipapXmlTest(unittest.TestCase):
 
         # check the list is correct!
         expected = [ expected_top, expected_bottom ]
-        self.assertEqual(s.list_prefix({ 'auth': ad }), expected)
+        self.assertEqual(
+                self._mangle_prefix_result(s.list_prefix({ 'auth': ad })),
+                expected)
 
         # remove top prefix
         s.remove_prefix({ 'auth': ad, 'prefix': { 'id': expected_top['id'] } })
@@ -486,7 +536,9 @@ class NipapXmlTest(unittest.TestCase):
 
         # check the list is correct!
         expected = [ expected_bottom ]
-        self.assertEqual(s.list_prefix({ 'auth': ad }), expected)
+        self.assertEqual(
+                self._mangle_prefix_result(s.list_prefix({ 'auth': ad })),
+                expected)
 
 
 
@@ -572,7 +624,8 @@ class NipapXmlTest(unittest.TestCase):
         expected_list.append(exp3)
         expected_list.append(exp2)
 
-        self.assertEqual(s.list_prefix({ 'auth': ad }), expected_list)
+        res = self._mangle_prefix_result(s.list_prefix({ 'auth': ad }))
+        self.assertEqual(res, expected_list)
 
 
 
@@ -750,6 +803,7 @@ class NipapXmlTest(unittest.TestCase):
         child = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
         expected['id'] = child['id']
         p = s.list_prefix({ 'auth': ad, 'attr': { 'id': child['id'] } })[1]
+        p = self._mangle_prefix_result(p)
         self.assertEquals(p, expected)
 
 
@@ -809,6 +863,7 @@ class NipapXmlTest(unittest.TestCase):
                         }
                     ]
             }
+        res = self._mangle_prefix_result(res)
         self.assertEqual(res, expected)
 
 

@@ -62,6 +62,43 @@ class NipapCliTest(unittest.TestCase):
         self.nipap._execute("DELETE FROM ip_net_asn")
 
 
+
+    def _mangle_prefix_result(self, res):
+        """ Mangle prefix result for easier testing
+
+            We can never predict the values of things like the ID (okay, that
+            one is actually kind of doable) or the added and last_modified
+            timestamp. This function will make sure the values are present but
+            then strip them to make it easier to test against an expected
+            result.
+        """
+
+        if isinstance(res, list):
+            # res from list_prefix
+            for p in res:
+                self.assertIn('added', p)
+                self.assertIn('last_modified', p)
+                del(p['added'])
+                del(p['last_modified'])
+
+        elif isinstance(res, dict) and 'result' in res:
+            # res from smart search
+            for p in res['result']:
+                self.assertIn('added', p)
+                self.assertIn('last_modified', p)
+                del(p['added'])
+                del(p['last_modified'])
+
+        elif isinstance(res, dict):
+            # just one single prefix
+            self.assertIn('added', p)
+            self.assertIn('last_modified', p)
+            del(p['added'])
+            del(p['last_modified'])
+
+        return res
+
+
     def _run_cmd(self, cmd):
         """ Run a command
         """
@@ -106,7 +143,7 @@ class NipapCliTest(unittest.TestCase):
 
         self._run_cmd(cmd)
 
-        res = s.list_prefix({ 'auth': ad, 'spec': {} })
+        res = self._mangle_prefix_result(s.list_prefix({ 'auth': ad, 'spec': {} }))
         del(res[0]['id'])
 
         self.assertEqual(res, [ ref, ])
