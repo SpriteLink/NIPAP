@@ -1,3 +1,28 @@
+nipap-cli (0.22.0-1) precise; urgency=low
+
+  * Add support for Tags. Prefixes can be tagged with a tag for easier searching
+    and categorisation of prefixes.
+  * Add VLAN attributes to prefixes. There are no constraints on the VLAN
+    attribute apart from being an integer.
+  * The Web UI now displays "top level" prefixes on empty search. This means it
+    is typically easier to get an overview of addresses.
+  * CLI automatically adjusts column width for better rendering of wide
+    prefixes, ie typically IPv6.
+  * CLI tab completion has been fixed for entries needing escaping (such as
+    those containing a space).
+  * Web UI has improved support for going back & forward in prefix list.
+  * Bug fix to 'nipap address view' which could previously display the wrong
+    prefix under certain conditions.
+  * Add timestamp value for when prefix was added and last modified. These
+    values are available over the XML-RPC API and can be used as a filter to
+    only get prefixes modified since timestamp X which could ease integration
+    with external systems which need to stay in sync with NIPAP.
+  * Fix in debian/postinst to make www user trusted on install.
+  * Improve defaults in .nipaprc skeleton file.
+  * Various internal small fixes / refactoring.
+
+ -- Kristian Larsson <kll@spritelink.net>  Sun, 22 Sep 2013 13:17:10 +0200
+
 nipap-cli (0.21.0-1) precise; urgency=low
 
   * CLI now supports pool resizing, ie growing or shrinking a pool by the
