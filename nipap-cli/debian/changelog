@@ -1,4 +1,4 @@
-nipap-cli (0.22.0-2) precise; urgency=low
+nipap-cli (0.22.1-1) precise; urgency=low
 
   * Fix dependancy typo; pynipap => python-pynipap
 
