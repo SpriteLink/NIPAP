@@ -104,11 +104,18 @@ database file.
 
 Rolling the deb repo
 --------------------
-To update the deb repo, first build the packages;
+To update the deb repo, make sure you are on branch 'master' and then build the
+bebian packages with:
   make builddeb
 
-Then add them to the repo. For the testing repo, it's:
+Then checkout the 'gh-pages' branch and add them to the repo.
+For the testing repo, it's:
   make debrepo-testing
 
 While for the stable repo, it's:
   make debrepo
+
+Make sure the new files are added to git, commit and push.
+ git add repos
+ git commit -a -m "Add nipapd vX.Y.Z to debian STABLE|TEST repo"
+ git push
