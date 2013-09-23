@@ -9,6 +9,7 @@ CREATE TRIGGER trigger_ip_net_plan_prefix__iu_after
 	ON ip_net_plan
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_prefix_after();
+DROP FUNCTION tf_ip_net_prefix_family_after();
 
 -- add children
 ALTER TABLE ip_net_plan ADD COLUMN children integer;
