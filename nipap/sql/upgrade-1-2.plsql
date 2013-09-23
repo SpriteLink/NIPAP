@@ -11,8 +11,8 @@ CREATE TRIGGER trigger_ip_net_plan_prefix__iu_after
 	EXECUTE PROCEDURE tf_ip_net_prefix_after();
 
 -- add children
-ALTER TABLE ip_net_plan ADD COLUMN vlan integer;
-COMMENT ON COLUMN ip_net_plan.vlan IS 'Number of direct sub-prefixes';
+ALTER TABLE ip_net_plan ADD COLUMN children integer;
+COMMENT ON COLUMN ip_net_plan.children IS 'Number of direct sub-prefixes';
 
 -- vlan support
 ALTER TABLE ip_net_plan ADD COLUMN vlan integer;
