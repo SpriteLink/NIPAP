@@ -10,14 +10,6 @@ CREATE TRIGGER trigger_ip_net_plan_prefix__iu_after
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_prefix_after();
 
---
-DROP TRIGGER trigger_ip_net_plan_prefix__d_before ON ip_net_plan;
-CREATE TRIGGER trigger_ip_net_plan_prefix__before
-	BEFORE DELETE OR INSERT OR UPDATE
-	ON ip_net_plan
-	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_prefix_before();
-
 -- add children
 ALTER TABLE ip_net_plan ADD COLUMN vlan integer;
 COMMENT ON COLUMN ip_net_plan.vlan IS 'Number of direct sub-prefixes';
