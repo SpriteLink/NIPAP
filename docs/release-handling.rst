@@ -105,7 +105,7 @@ database file.
 Rolling the deb repo
 --------------------
 To update the deb repo, first build the packages;
-  make all
+  make builddeb
 
 Then add them to the repo. For the testing repo, it's:
   make debrepo-testing
