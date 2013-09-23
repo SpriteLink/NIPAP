@@ -1,3 +1,9 @@
+nipap-cli (0.22.0-2) precise; urgency=low
+
+  * Fix dependancy typo; pynipap => python-pynipap
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 23 Sep 2013 20:53:26 +0200
+
 nipap-cli (0.22.0-1) precise; urgency=low
 
   * Add support for Tags. Prefixes can be tagged with a tag for easier searching
