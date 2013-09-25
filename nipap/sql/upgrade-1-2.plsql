@@ -33,3 +33,5 @@ COMMENT ON COLUMN ip_net_plan.last_modified IS 'The date and time when the prefi
 -- set added column to timestamp of first audit entry
 UPDATE ip_net_plan inp SET added = (SELECT timestamp FROM ip_net_log inl WHERE inl.prefix_id = inp.id ORDER BY inl.timestamp DESC LIMIT 1);
 
+-- update database schema version
+COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 2';
