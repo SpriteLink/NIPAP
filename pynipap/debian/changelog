@@ -1,3 +1,9 @@
+pynipap (0.22.1-1) precise; urgency=low
+
+  * Fix debian repo build issue
+
+ -- Kristian Larsson <kll@spritelink.net>  Wed, 25 Sep 2013 09:50:12 +0200
+
 pynipap (0.22.0-1) precise; urgency=low
 
   * Add support for Tags. Prefixes can be tagged with a tag for easier searching

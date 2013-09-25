@@ -1,3 +1,7 @@
+Version 0.22.1
+--------------
+  * Fix debian repo build issue
+
 Version 0.22.0
 --------------
  * Add support for Tags. Prefixes can be tagged with a tag for easier searching
