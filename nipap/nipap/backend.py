@@ -570,7 +570,6 @@ class Nipap:
 
 
 
-
     def _get_updated_rows(self, auth, function):
         """ Get rows updated by last update query
 
@@ -596,7 +595,6 @@ class Nipap:
             )
 
         # We can have zero modified rows. Deal with it.
-        updated = []
         if len(qps) > 0:
             q = qps[0]
 
@@ -607,9 +605,14 @@ class Nipap:
                     'val2': qp
                 }
 
-            updated = function(auth, q, { 'max_result': 10000 })['result']
+        updated = []
+        for elem in function(auth, q, { 'max_result': 10000 })['result']:
+            # prefixes have a match-attribute which must be verified
+            if elem.get('match') in (None, True):
+                updated.append(elem)
 
         return updated
+
 
 
     def _get_query_parts(self, query_str, search_options = {}):
