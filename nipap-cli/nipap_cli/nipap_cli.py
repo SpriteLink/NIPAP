@@ -352,10 +352,11 @@ def list_prefix(arg, opts):
                 tags = '-'
                 if len(p.tags) > 0:
                     tags = '#%d' % len(p.tags)
-                prefix_str = "%%-s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-40s" % min_indent
+                prefix_str = "%%-s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-40s" % min_indent
                 print prefix_str % (vrf,
                     "".join("  " for i in xrange(p.indent)) + p.display_prefix,
-                    p.type[0].upper(), tags, p.node, p.order_id, p.description
+                    p.type[0].upper(), tags, p.node, p.order_id,
+                    p.customer_id, p.description
                 )
             except UnicodeEncodeError, e:
                 print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
@@ -385,6 +386,7 @@ def add_prefix(arg, opts):
     p.node = opts.get('node')
     p.country = opts.get('country')
     p.order_id = opts.get('order_id')
+    p.customer_id = opts.get('customer_id')
     p.alarm_priority = opts.get('alarm_priority')
     p.comment = opts.get('comment')
     p.monitor = _str_to_bool(opts.get('monitor'))
@@ -640,6 +642,7 @@ def view_prefix(arg, opts):
     print "  %-15s : %s" % ("Node", p.node)
     print "  %-15s : %s" % ("Country", p.country)
     print "  %-15s : %s" % ("Order", p.order_id)
+    print "  %-15s : %s" % ("Customer", p.customer_id)
     print "  %-15s : %s" % ("VLAN", p.vlan)
     print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
     print "  %-15s : %s" % ("Monitor", p.monitor)
@@ -773,9 +776,10 @@ def remove_prefix(arg, opts):
             i = 0
             for rp in pres['result']:
                 if i <= 10:
-                    print "%-29s %-2s %-19s %-14s %-40s" % ("".join("  " for i in
+                    print "%-29s %-2s %-19s %-14s %-14s %-40s" % ("".join("  " for i in
                         range(rp.indent)) + rp.display_prefix,
-                        rp.type[0].upper(), rp.node, rp.order_id, rp.description)
+                        rp.type[0].upper(), rp.node, rp.order_id,
+                        rp.customer_id, rp.description)
 
                 if i == 10:
                     print ".. and %s other prefixes" % (len(pres['result']) - 10)
@@ -993,6 +997,8 @@ def modify_prefix(arg, opts):
         p.country = opts['country']
     if 'order_id' in opts:
         p.order_id = opts['order_id']
+    if 'customer_id' in opts:
+        p.customer_id = opts['customer_id']
     if 'vlan' in opts:
         p.vlan = opts['vlan']
     if 'alarm_priority' in opts:
@@ -1298,6 +1304,13 @@ cmds = {
                                 'content_type': unicode,
                             }
                         },
+                        'customer_id': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
                         'tags': {
                             'type': 'option',
                             'content_type': unicode,
@@ -1450,6 +1463,13 @@ cmds = {
                                     }
                                 },
                                 'order_id': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    }
+                                },
+                                'customer_id': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',

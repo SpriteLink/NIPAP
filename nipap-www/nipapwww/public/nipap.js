@@ -684,6 +684,17 @@ function showPrefix(prefix, reference, offset) {
 		prefix_order_id.html(prefix.order_id);
 	}
 
+    // Add Customer ID
+	prefix_row.append('<div id="prefix_customer_id' + prefix.id + '">');
+	var prefix_customer_id = $('#prefix_customer_id' + prefix.id);
+	prefix_customer_id.addClass('prefix_column');
+	prefix_customer_id.addClass('prefix_customer_id');
+	if (prefix.customer_id == null || prefix.customer_id == '') {
+		prefix_customer_id.html("&nbsp;");
+	} else {
+		prefix_customer_id.html(prefix.customer_id);
+	}
+
 	// Add node
 	prefix_row.append('<div id="prefix_node' + prefix.id + '">');
 	var prefix_node = $('#prefix_node' + prefix.id);
@@ -2197,6 +2208,7 @@ function prefixFormSubmit(e) {
 		'type': $('input[name="prefix_type"]:checked').val(),
 		'country': $('input[name="prefix_country"]').val(),
 		'order_id': $('input[name="prefix_order_id"]').val(),
+		'customer_id': $('input[name="prefix_customer_id"]').val(),
 		'vrf': $('input[name="prefix_vrf"]').val(),
 		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
 		'vlan': $('input[name="prefix_vlan"]').val()

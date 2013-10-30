@@ -56,6 +56,7 @@
     * :attr:`indent` - Depth in prefix tree. Set by NIPAP.
     * :attr:`country` - Two letter country code where the prefix resides.
     * :attr:`order_id` - Order identifier.
+    * :attr:`customer_id` - Customer identifier.
     * :attr:`external_key` - A field for use by external systems which needs to
         store references to its own dataset.
     * :attr:`authoritative_source` - String identifying which system last
@@ -1915,6 +1916,7 @@ class Nipap:
             prefix_attr['node'] = 'inp.node'
             prefix_attr['country'] = 'inp.country'
             prefix_attr['order_id'] = 'inp.order_id'
+            prefix_attr['customer_id'] = 'inp.customer_id'
             prefix_attr['vrf_id'] = 'inp.vrf_id'
             prefix_attr['vrf_rt'] = 'vrf.rt'
             prefix_attr['vrf_name'] = 'vrf.name'
@@ -2136,8 +2138,8 @@ class Nipap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool_id', 'tags', 'node', 'type', 'country',
-            'order_id', 'vrf_id', 'alarm_priority', 'monitor', 'external_key',
-            'vlan']
+            'order_id', 'customer_id', 'vrf_id', 'alarm_priority', 
+            'monitor', 'external_key', 'vlan']
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('node' not in attr):
             raise NipapMissingInputError('Either description or node must be specified.')
@@ -2238,8 +2240,8 @@ class Nipap:
         allowed_attr = [
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool_id', 'tags', 'node', 'type', 'country',
-            'order_id', 'vrf_id', 'alarm_priority', 'monitor',
-            'external_key', 'vlan' ]
+            'order_id', 'customer_id', 'vrf_id', 'alarm_priority', 
+            'monitor', 'external_key', 'vlan' ]
 
         self._check_attr(attr, [], allowed_attr)
 
@@ -2520,6 +2522,7 @@ class Nipap:
             inp.indent,
             inp.country,
             inp.order_id,
+            inp.customer_id,
             inp.external_key,
             inp.authoritative_source,
             inp.alarm_priority,
@@ -2869,6 +2872,7 @@ class Nipap:
         indent,
         country,
         order_id,
+        customer_id,
         external_key,
         authoritative_source,
         alarm_priority,
@@ -2912,6 +2916,7 @@ class Nipap:
             p1.indent,
             p1.country,
             p1.order_id,
+            p1.customer_id,
             p1.external_key,
             p1.authoritative_source,
             p1.alarm_priority,
@@ -3138,7 +3143,7 @@ class Nipap:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as desc/comment")
                 query_str_part['interpretation'] = 'text'
                 query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'description or comment or node or order id'
+                query_str_part['attribute'] = 'description or comment or node or order_id or customer_id'
                 query_parts.append({
                     'operator': 'or',
                     'val1': {
@@ -3146,28 +3151,37 @@ class Nipap:
                         'val1': {
                             'operator': 'or',
                             'val1': {
-                                'operator': 'regex_match',
-                                'val1': 'comment',
-                                'val2': query_str_part['string']
-                            },
+                                'operator': 'or',
+                                'val1': {
+                                    'operator': 'regex_match',
+                                    'val1': 'comment',
+                                    'val2': query_str_part['string']
+                                    },
+                                'val2': {
+                                    'operator': 'regex_match',
+                                    'val1': 'description',
+                                    'val2': query_str_part['string']
+                                    }
+                                },
                             'val2': {
                                 'operator': 'regex_match',
-                                'val1': 'description',
+                                'val1': 'node',
                                 'val2': query_str_part['string']
-                            }
-                        },
+                                }
+                            },
                         'val2': {
                             'operator': 'regex_match',
-                            'val1': 'node',
+                            'val1': 'order_id',
                             'val2': query_str_part['string']
-                        }
-                    },
+                            },
+                        },
                     'val2': {
                         'operator': 'regex_match',
-                        'val1': 'order_id',
+                        'val1': 'customer_id',
                         'val2': query_str_part['string']
-                    }
-                })
+                        }
+                 
+                    })
 
         # Sum all query parts to one query
         query = {}

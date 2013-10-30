@@ -752,6 +752,7 @@ class NipapTest(unittest.TestCase):
             'description': 'foo',
             'comment': 'bar',
             'order_id': '0xBEEF',
+            'customer_id': 'CUST-EEF-DERP',
             'alarm_priority': 'low',
             'type': 'assignment',
             'node': 'TOK-CORE-1',

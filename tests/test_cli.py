@@ -117,7 +117,8 @@ class NipapCliTest(unittest.TestCase):
                 'country': 'AB',
                 'alarm_priority': 'high',
                 'monitor': 'true',
-                'order_id': '123'
+                'order_id': '123',
+                'customer_id': '66'
                 }
 
         cmd = [nipap_bin, 'address', 'add']

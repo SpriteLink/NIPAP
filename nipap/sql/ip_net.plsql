@@ -4,7 +4,7 @@
 --
 --------------------------------------------
 
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 1';
+COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 3';
 
 CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
 
@@ -84,6 +84,7 @@ CREATE TABLE ip_net_plan (
 	indent integer,
 	country text,
 	order_id text,
+	customer_id text,
 	external_key text,
 	authoritative_source text NOT NULL DEFAULT 'nipap',
 	alarm_priority priority_5step,
@@ -109,6 +110,7 @@ COMMENT ON COLUMN ip_net_plan.type IS 'Type is one of "reservation", "assignment
 COMMENT ON COLUMN ip_net_plan.indent IS 'Number of indents to properly render this prefix';
 COMMENT ON COLUMN ip_net_plan.country IS 'ISO3166-1 two letter country code';
 COMMENT ON COLUMN ip_net_plan.order_id IS 'Order identifier';
+COMMENT ON COLUMN ip_net_plan.customer_id IS 'Customer identifier';
 COMMENT ON COLUMN ip_net_plan.external_key IS 'Field for use by exernal systems which need references to its own dataset.';
 COMMENT ON COLUMN ip_net_plan.authoritative_source IS 'The authoritative source for information regarding this prefix';
 COMMENT ON COLUMN ip_net_plan.alarm_priority IS 'Priority of alarms sent for this prefix to NetWatch.';

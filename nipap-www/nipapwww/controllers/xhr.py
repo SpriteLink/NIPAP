@@ -490,6 +490,7 @@ class XhrController(BaseController):
             pool            ID of pool
             country         Country where the prefix is used
             order_id        Order identifier
+            customer_id     Customer identifier
             vlan            VLAN ID
             alarm_priority  Alarm priority of prefix
             monitor         If the prefix should be monitored or not
@@ -542,6 +543,10 @@ class XhrController(BaseController):
         if 'order_id' in request.params:
             if request.params['order_id'].strip() != '':
                 p.order_id = request.params['order_id'].strip()
+
+        if 'customer_id' in request.params:
+            if request.params['customer_id'].strip() != '':
+                p.customer_id = request.params['customer_id'].strip()
 
         if 'alarm_priority' in request.params:
             p.alarm_priority = request.params['alarm_priority'].strip()
@@ -648,6 +653,12 @@ class XhrController(BaseController):
                     p.order_id = None
                 else:
                     p.order_id = request.params['order_id'].strip()
+
+            if 'customer_id' in request.params:
+                if request.params['customer_id'].strip() == '':
+                    p.customer_id = None
+                else:
+                    p.customer_id = request.params['customer_id'].strip()
 
             if 'vrf' in request.params:
 
@@ -811,6 +822,7 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'indent': obj.indent,
                 'country': obj.country,
                 'order_id': obj.order_id,
+                'customer_id': obj.customer_id,
                 'authoritative_source': obj.authoritative_source,
                 'monitor': obj.monitor,
                 'alarm_priority': obj.alarm_priority,

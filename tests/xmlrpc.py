@@ -268,6 +268,7 @@ class NipapXmlTest(unittest.TestCase):
                 'monitor': None,
                 'node': None,
                 'order_id': None,
+                'customer_id': None,
                 'pool_name': None,
                 'pool_id': None,
                 'tags': [],
@@ -359,6 +360,7 @@ class NipapXmlTest(unittest.TestCase):
                 'monitor': None,
                 'node': None,
                 'order_id': None,
+                'customer_id': None,
                 'pool_id': None,
                 'pool_name': None,
                 'vrf_id': 0,
@@ -453,6 +455,7 @@ class NipapXmlTest(unittest.TestCase):
                 'monitor': None,
                 'node': None,
                 'order_id': None,
+                'customer_id': None,
                 'pool_id': None,
                 'pool_name': None,
                 'vrf_id': 0,
@@ -563,6 +566,7 @@ class NipapXmlTest(unittest.TestCase):
                 'monitor': None,
                 'node': None,
                 'order_id': None,
+                'customer_id': None,
                 'pool_name': None,
                 'pool_id': None,
                 'tags': [],
@@ -722,6 +726,7 @@ class NipapXmlTest(unittest.TestCase):
                 'monitor': None,
                 'node': None,
                 'order_id': None,
+                'customer_id': None,
                 'pool_id': None,
                 'pool_name': None,
                 'vrf_id': 0,
@@ -786,6 +791,7 @@ class NipapXmlTest(unittest.TestCase):
                 'monitor': None,
                 'node': None,
                 'order_id': None,
+                'customer_id': None,
                 'pool_id': None,
                 'pool_name': None,
                 'vrf_id': vrf['id'],
@@ -826,7 +832,7 @@ class NipapXmlTest(unittest.TestCase):
         res = s.smart_search_prefix({ 'auth': ad, 'query_string': 'F' })
         expected = {
                 'interpretation': [{'operator': 'regex', 'attribute':
-                    'description or comment or node or order id', 'interpretation':
+                    'description or comment or node or order_id or customer_id', 'interpretation':
                     'text', 'string': 'F'}],
                 'search_options': {'include_all_children':
                 False, 'max_result': 50, 'include_all_parents': False,
@@ -848,6 +854,7 @@ class NipapXmlTest(unittest.TestCase):
                         'node': None,
                         'description': 'FOO',
                         'order_id': None,
+                        'customer_id': None,
                         'vrf_id': 0,
                         'vrf_rt': None,
                         'vrf_name': 'default',
