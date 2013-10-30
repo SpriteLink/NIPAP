@@ -51,14 +51,29 @@ Not all operations supported by the NIPAP backend are possible to perform throug
 
 Examples
 ========
-List all prefixes in VRF 123:456 regexp matching '(core|backbone)' (ie, 'core' or 'backbone'):
-    $ nipap address list '(core|backbone)' vrf_rt 123:456
-
 List all VRFs:
     $ nipap vrf list
 
-Add a new IPv4 prefix from the pool 'test-linknets' with a prefix length of /31 and a description of 'BAZINGA-CORE-1 <-> FOO-CORE-2':
+Create a VRF:
+    $ nipap vrf add rt 123:456 name TEST-VRF
+
+Add a new prefix:
+    $ nipap address add prefix 192.0.2.0/24 type reservation description "My IP block from RIPE"
+
+Create a pool called 'test-linknets' with a default type of 'assignment' and default prefix-length of 30 and 112 for IPv4 and IPv6 respectively:
+    $ nipap pool add name test-linknets description "Link networks for my test network" default-type assignment ipv4_default_prefix_length 30 ipv6_default_prefix_length 112
+
+Add a new IPv4 prefix from the pool 'test-linknets'. The type will be set to 'assignment' as that is the default-type for this pool (created in previous example) and the prefix-length will be /30 as that is the default for IPv4.
+    $ nipap address add family ipv4 from-pool test-linknets description 'BAZINGA-CORE-1 <-> FOO-CORE-2'
+
+Add a new IPv4 prefix from the pool 'test-linknets' (created in a previous example) and override the default prefix-length with /31:
     $ nipap address add family ipv4 from-pool test-linknets prefix_length 31 description 'BAZINGA-CORE-1 <-> FOO-CORE-2'
+
+List all prefixes regexp matching '(core|backbone)' (ie, 'core' or 'backbone'):
+    $ nipap address list '(core|backbone)'
+
+Modify a prefix and set a new description:
+    $ nipap address modify 192.0.2.0/24 set description FOO
 
 Author
 =========
