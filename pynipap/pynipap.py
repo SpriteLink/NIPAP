@@ -147,7 +147,7 @@
 import xmlrpclib
 import logging
 
-__version__		= "0.22.3"
+__version__		= "0.22.4"
 __author__		= "Kristian Larsson, Lukas Garberg"
 __author_email__= "kll@tele2.net, lukas@spritelink.net"
 __copyright__	= "Copyright 2011, Kristian Larsson, Lukas Garberg"

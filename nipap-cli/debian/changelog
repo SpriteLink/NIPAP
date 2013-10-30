@@ -1,3 +1,9 @@
+nipap-cli (0.22.4-1) stable; urgency=low
+
+  * Added more usage examples to NIPAP CLI man page
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 30 Oct 2013 15:04:29 +0100
+
 nipap-cli (0.22.3-1) stable; urgency=low
 
   * Bugfix in edit_prefix API function
