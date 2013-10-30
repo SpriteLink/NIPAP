@@ -1,6 +1,14 @@
+Version 0.22.3
+--------------
+ * Bugfix in edit_prefix API function
+
+Version 0.22.2
+--------------
+ * Fix issue with SQL upgrade script
+
 Version 0.22.1
 --------------
-  * Fix debian repo build issue
+ * Fix debian repo build issue
 
 Version 0.22.0
 --------------

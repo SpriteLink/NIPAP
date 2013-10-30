@@ -1,3 +1,9 @@
+nipap (0.22.3-1) stable; urgency=low
+
+  * Bugfix in edit_prefix API function
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 23 Oct 2013 16:47:52 +0200
+
 nipap (0.22.2-1) precise; urgency=low
 
   * Fix issue with SQL upgrade script
