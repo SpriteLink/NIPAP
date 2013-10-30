@@ -309,6 +309,7 @@ def list_prefix(arg, opts):
         search_string = ' '.join(arg)
 
     v = get_vrf(opts.get('vrf_rt'), abort=True)
+    explicit = opts.get('explicit')
 
     if v.rt == 'all':
         vrf_q = None
@@ -344,6 +345,10 @@ def list_prefix(arg, opts):
         for p in res['result']:
             if p.display == False:
                 continue
+
+            if explicit:
+            	if p.display_prefix != search_string:
+            		continue
 
             vrf = None
             if p.vrf is not None:
@@ -1374,6 +1379,9 @@ cmds = {
                                 'description': 'VRF',
                                 'complete': complete_vrf_virtual,
                             },
+                        },
+                        'explicit': {
+                            'type': 'bool'
                         }
                     }
                 },
