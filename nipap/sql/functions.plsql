@@ -556,3 +556,44 @@ BEGIN
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+
+--
+-- Triggers for sanity checking on ip_net_vrf table.
+--
+CREATE TRIGGER trigger_ip_net_vrf__iu_before
+	BEFORE UPDATE OR INSERT
+	ON ip_net_vrf
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_vrf_iu_before();
+
+CREATE TRIGGER trigger_ip_net_vrf__d_before
+	BEFORE DELETE
+	ON ip_net_vrf
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_vrf_d_before();
+
+
+
+--
+-- Triggers for consistency checking and updating indent level on ip_net_plan
+-- table.
+--
+CREATE TRIGGER trigger_ip_net_plan_prefix__iu_before
+	BEFORE UPDATE OR INSERT
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_prefix_iu_before();
+
+CREATE TRIGGER trigger_ip_net_plan_prefix__d_before
+	BEFORE DELETE
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_prefix_d_before();
+
+CREATE TRIGGER trigger_ip_net_plan_prefix__iu_after
+	AFTER DELETE OR INSERT OR UPDATE
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_prefix_after();
+
