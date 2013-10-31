@@ -340,9 +340,9 @@ $_$ LANGUAGE plpgsql;
 -- regards to prefix type and similar. This function handles INSERTs and
 -- UPDATEs.
 --
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_iu_before() RETURNS trigger AS $_$
+CREATE OR REPLACE FUNCTION tf_ip_net_plan__prefix_iu_before() RETURNS trigger AS $_$
 DECLARE
-	parent RECORD;
+	new_parent RECORD;
 	child RECORD;
 	i_max_pref_len integer;
 BEGIN
@@ -357,6 +357,10 @@ BEGIN
 		IF OLD.vrf_id != NEW.vrf_id THEN
 			RAISE EXCEPTION '1200:Changing VRF is not allowed';
 		END IF;
+
+		-- update last modified timestamp
+		NEW.last_modified = NOW();
+
 		-- if prefix, type and pool is the same, quick return!
 		IF OLD.type = NEW.type AND OLD.prefix = NEW.prefix AND OLD.pool_id = NEW.pool_id THEN
 			RETURN NEW;
@@ -369,7 +373,7 @@ BEGIN
 		i_max_pref_len := 128;
 	END IF;
 	-- contains the parent prefix
-	SELECT * INTO parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
+	SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
 
 	-- check that type is correct on insert and update
 	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
@@ -377,18 +381,19 @@ BEGIN
 			IF masklen(NEW.prefix) != i_max_pref_len THEN
 				RAISE EXCEPTION '1200:Prefix of type host must have all bits set in netmask';
 			END IF;
-			IF parent.prefix IS NULL THEN
+			IF new_parent.prefix IS NULL THEN
 				RAISE EXCEPTION '1200:Prefix of type host must have a parent (covering) prefix of type assignment';
 			END IF;
-			IF parent.type != 'assignment' THEN
-				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''assignment''', parent.prefix, parent.type;
+			IF new_parent.type != 'assignment' THEN
+				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''assignment''', new_parent.prefix, new_parent.type;
 			END IF;
-			NEW.display_prefix := set_masklen(NEW.prefix::inet, masklen(parent.prefix));
+			NEW.display_prefix := set_masklen(NEW.prefix::inet, masklen(new_parent.prefix));
+
 		ELSIF NEW.type = 'assignment' THEN
-			IF parent.type IS NULL THEN
+			IF new_parent.type IS NULL THEN
 				-- all good
-			ELSIF parent.type != 'reservation' THEN
-				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
+			ELSIF new_parent.type != 'reservation' THEN
+				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', new_parent.prefix, new_parent.type;
 			END IF;
 
 			-- also check that the new prefix does not have any childs other than hosts
@@ -405,13 +410,15 @@ BEGIN
 				END IF;
 			END IF;
 			NEW.display_prefix := NEW.prefix;
+
 		ELSIF NEW.type = 'reservation' THEN
-			IF parent.type IS NULL THEN
+			IF new_parent.type IS NULL THEN
 				-- all good
-			ELSIF parent.type != 'reservation' THEN
-				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', parent.prefix, parent.type;
+			ELSIF new_parent.type != 'reservation' THEN
+				RAISE EXCEPTION '1200:Parent prefix (%) is of type % but must be of type ''reservation''', new_parent.prefix, new_parent.type;
 			END IF;
 			NEW.display_prefix := NEW.prefix;
+
 		ELSE
 			RAISE EXCEPTION '1200:Unknown prefix type';
 		END IF;
@@ -458,6 +465,15 @@ BEGIN
 		END IF;
 	END IF;
 
+	-- all is well, return
+	RETURN NEW;
+END;
+$_$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION tf_ip_net_plan__other__iu_before() RETURNS trigger AS $_$
+DECLARE
+BEGIN
 	-- Check country code- value needs to be a two letter country code
 	-- according to ISO 3166-1 alpha-2
 	--
@@ -465,19 +481,11 @@ BEGIN
 	-- would entail including a full listing of country codes which we do not want
 	-- as we risk including an outdated one. We don't want to force users to
 	-- upgrade merely to get a new ISO 3166-1 list.
-	IF TG_OP = 'INSERT' OR OLD.country != NEW.country THEN
-		NEW.country = upper(NEW.country);
-		IF NEW.country !~ '^[A-Z]{2}$' THEN
-			RAISE EXCEPTION '1200: Please enter a two letter country code according to ISO 3166-1 alpha-2';
-		END IF;
+	NEW.country = upper(NEW.country);
+	IF NEW.country !~ '^[A-Z]{2}$' THEN
+		RAISE EXCEPTION '1200: Please enter a two letter country code according to ISO 3166-1 alpha-2';
 	END IF;
 
-	-- update last modified timestamp
-	IF TG_OP = 'UPDATE' THEN
-		NEW.last_modified = NOW();
-	END IF;
-
-	-- all is well, return
 	RETURN NEW;
 END;
 $_$ LANGUAGE plpgsql;
@@ -489,18 +497,12 @@ $_$ LANGUAGE plpgsql;
 --
 CREATE OR REPLACE FUNCTION tf_ip_net_prefix_d_before() RETURNS trigger AS $_$
 BEGIN
-	-- prevent certain deletes to maintain DB integrity
-	IF TG_OP = 'DELETE' THEN
-		-- if an assignment contains hosts, we block the delete
-		IF OLD.type = 'assignment' THEN
-			-- contains one child prefix
-			-- FIXME: optimize with this, what is improvement?
-			-- IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix LIMIT 1) > 0 THEN
-			IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix AND vrf_id = OLD.vrf_id) > 0 THEN
-				RAISE EXCEPTION '1200:Prohibited delete, prefix (%) contains hosts.', OLD.prefix;
-			END IF;
+	-- if an assignment contains hosts, we block the delete
+	IF OLD.type = 'assignment' THEN
+		-- contains one child prefix
+		IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix AND vrf_id = OLD.vrf_id LIMIT 1) > 0 THEN
+			RAISE EXCEPTION '1200:Prohibited delete, prefix (%) contains hosts.', OLD.prefix;
 		END IF;
-		-- everything else is allowed
 	END IF;
 
 	RETURN OLD;
@@ -509,54 +511,145 @@ $_$ LANGUAGE plpgsql;
 
 
 --
+-- Trigger function to set indent and children on new prefix.
+--
+CREATE OR REPLACE FUNCTION tf_ip_net_plan__indent_children__iu_before() RETURNS trigger AS $_$
+DECLARE
+	new_parent record;
+BEGIN
+	SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix >> NEW.prefix ORDER BY prefix DESC LIMIT 1;
+
+	IF TG_OP = 'UPDATE' THEN
+		NEW.children := (SELECT COUNT(1) FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix << NEW.prefix AND prefix != OLD.prefix AND indent = COALESCE(new_parent.indent+1, 0));
+	ELSE
+		NEW.children := (SELECT COUNT(1) FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix << NEW.prefix AND indent = COALESCE(new_parent.indent+1, 0));
+	END IF;
+
+	RETURN NEW;
+END;
+$_$ LANGUAGE plpgsql;
+
+
+--
 -- Trigger function to make update the indent level when adding or removing
 -- prefixes.
 --
-CREATE OR REPLACE FUNCTION tf_ip_net_prefix_after() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION tf_ip_net_plan__indent_children__iud_after() RETURNS trigger AS $$
 DECLARE
-	r RECORD;
-	parent_prefix cidr;
+	old_parent record;
+	new_parent record;
 BEGIN
-	IF TG_OP = 'DELETE' THEN
+	IF TG_OP IN ('DELETE', 'UPDATE') THEN
 		PERFORM calc_indent(OLD.vrf_id, OLD.prefix, -1);
 
-		-- calc tags from parent of the deleted prefix to what is now the
-		-- direct children of the parent prefix
-		parent_prefix := (SELECT prefix FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND prefix >> OLD.prefix ORDER BY prefix DESC LIMIT 1);
-		IF parent_prefix IS NULL THEN
-			PERFORM calc_tags(OLD.vrf_id, OLD.prefix);
+		-- children calc
+		-- This only sets number of children prefixes for the old parent
+		-- prefix. Note how we have to explicitly filter out NEW.prefix as the
+		-- table has already been updated and we risk getting ourself as
+		-- old_parent.
+		IF TG_OP = 'UPDATE' THEN
+			SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND prefix >> OLD.prefix AND prefix != NEW.prefix ORDER BY prefix DESC LIMIT 1;
 		ELSE
-			PERFORM calc_tags(OLD.vrf_id, parent_prefix);
+			SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND prefix >> OLD.prefix ORDER BY prefix DESC LIMIT 1;
 		END IF;
-	ELSIF TG_OP = 'INSERT' THEN
+
+		IF old_parent.id IS NOT NULL THEN
+			UPDATE ip_net_plan SET children =
+					(SELECT COUNT(1)
+					FROM ip_net_plan
+					WHERE vrf_id = OLD.vrf_id
+						AND prefix << old_parent.prefix
+						AND indent = old_parent.indent+1)
+				WHERE id = old_parent.id;
+		END IF;
+	END IF;
+
+	IF TG_OP IN ('INSERT', 'UPDATE') THEN
+		-- calculation of children is dependent upon indent, so do indent first
 		PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
 
-		-- identify the parent and run calc_tags on it to inherit tags to
-		-- the new prefix from the parent
-		parent_prefix := (SELECT prefix FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix >> NEW.prefix ORDER BY prefix DESC LIMIT 1);
-		PERFORM calc_tags(NEW.vrf_id, parent_prefix);
-		-- now push tags from the new prefix to its children
-		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
-	ELSIF TG_OP = 'UPDATE' THEN
-		-- only act on changes to the prefix
-		IF OLD.prefix != NEW.prefix THEN
-			-- "restore" indent where the old prefix was
-			PERFORM calc_indent(NEW.vrf_id, OLD.prefix, -1);
-			-- and add indent where the new one is
-			PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
+		-- children calc
+		-- This only sets number of children prefixes for the new parent
+		-- prefix. The number of children for the prefix being modified is
+		-- calculated in the before trigger.
+		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix >> NEW.prefix ORDER BY prefix DESC LIMIT 1;
+		IF new_parent.id IS NOT NULL THEN
+			UPDATE ip_net_plan SET children =
+					(SELECT COUNT(1)
+					FROM ip_net_plan
+					WHERE vrf_id = NEW.vrf_id
+						AND prefix << new_parent.prefix
+						AND indent = new_parent.indent+1)
+				WHERE id = new_parent.id;
 		END IF;
-
-		-- only act on changes to the tag columns
-		IF OLD.tags != NEW.tags OR OLD.inherited_tags != NEW.inherited_tags THEN
-			PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
-		END IF;
-	ELSE
-		-- nothing!
 	END IF;
+
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
+
+--
+-- Trigger function to update inherited tags.
+--
+CREATE OR REPLACE FUNCTION tf_ip_net_plan__tags__iud_after() RETURNS trigger AS $$
+DECLARE
+	old_parent record;
+	new_parent record;
+BEGIN
+	IF TG_OP = 'DELETE' THEN
+		SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND prefix >> OLD.prefix ORDER BY prefix DESC LIMIT 1;
+
+		-- parent is NULL if we are top level
+		IF old_parent.id IS NULL THEN
+			-- calc tags from parent of the deleted prefix to what is now the
+			-- direct children of the parent prefix
+			-- tags
+			PERFORM calc_tags(OLD.vrf_id, OLD.prefix);
+		ELSE
+			-- tags
+			PERFORM calc_tags(OLD.vrf_id, old_parent.prefix);
+		END IF;
+
+	ELSIF TG_OP = 'INSERT' THEN
+		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix >> NEW.prefix ORDER BY prefix DESC LIMIT 1;
+
+		-- identify the parent and run calc_tags on it to inherit tags to
+		-- the new prefix from the parent
+		-- tag calculation
+		PERFORM calc_tags(NEW.vrf_id, new_parent.prefix);
+		-- now push tags from the new prefix to its children
+		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
+
+	ELSIF TG_OP = 'UPDATE' THEN
+		PERFORM calc_tags(OLD.vrf_id, OLD.prefix);
+		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
+	END IF;
+
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--
+-- Function used to remove all triggers during installation of new triggers
+--
+CREATE OR REPLACE FUNCTION clean_nipap_triggers() RETURNS bool AS $_$
+DECLARE
+	r record;
+BEGIN
+	FOR r IN (SELECT DISTINCT trigger_name FROM information_schema.triggers WHERE event_object_table = 'ip_net_vrf' AND trigger_schema NOT IN ('pg_catalog', 'information_schema')) LOOP
+		EXECUTE 'DROP TRIGGER ' || r.trigger_name || ' ON ip_net_vrf';
+	END LOOP;
+	FOR r IN (SELECT DISTINCT trigger_name FROM information_schema.triggers WHERE event_object_table = 'ip_net_plan' AND trigger_schema NOT IN ('pg_catalog', 'information_schema')) LOOP
+		EXECUTE 'DROP TRIGGER ' || r.trigger_name || ' ON ip_net_plan';
+	END LOOP;
+
+	RETURN true;
+END;
+$_$ LANGUAGE plpgsql;
+
+SELECT clean_nipap_triggers();
 
 --
 -- Triggers for sanity checking on ip_net_vrf table.
@@ -579,21 +672,85 @@ CREATE TRIGGER trigger_ip_net_vrf__d_before
 -- Triggers for consistency checking and updating indent level on ip_net_plan
 -- table.
 --
-CREATE TRIGGER trigger_ip_net_plan_prefix__iu_before
-	BEFORE UPDATE OR INSERT
+
+
+CREATE TRIGGER trigger_ip_net_plan__i_before
+	BEFORE INSERT
 	ON ip_net_plan
 	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_prefix_iu_before();
+	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_before();
 
+CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_before
+	BEFORE UPDATE OF vrf_id, prefix, type
+	ON ip_net_plan
+	FOR EACH ROW
+	WHEN (OLD.vrf_id != NEW.vrf_id
+		OR OLD.prefix != NEW.prefix
+		OR OLD.type != NEW.type)
+	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_before();
+
+-- check country code is correct
+CREATE TRIGGER trigger_ip_net_plan__other__i_before
+	BEFORE INSERT
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_plan__other__iu_before();
+
+CREATE TRIGGER trigger_ip_net_plan__other__u_before
+	BEFORE UPDATE OF country
+	ON ip_net_plan
+	FOR EACH ROW
+	WHEN (OLD.country != NEW.country)
+	EXECUTE PROCEDURE tf_ip_net_plan__other__iu_before();
+
+
+-- ip_net_plan - update indent and number of children
+CREATE TRIGGER trigger_ip_net_plan__indent_children__i_before
+	BEFORE INSERT
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_plan__indent_children__iu_before();
+
+CREATE TRIGGER trigger_ip_net_plan__indent_children__u_before
+	BEFORE UPDATE OF prefix
+	ON ip_net_plan
+	FOR EACH ROW
+	WHEN (OLD.prefix != NEW.prefix)
+	EXECUTE PROCEDURE tf_ip_net_plan__indent_children__iu_before();
+
+CREATE TRIGGER trigger_ip_net_plan__indent_children__id_after
+	AFTER INSERT OR DELETE
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_plan__indent_children__iud_after();
+
+CREATE TRIGGER trigger_ip_net_plan__indent_children__u_after
+	AFTER UPDATE OF prefix
+	ON ip_net_plan
+	FOR EACH ROW
+	WHEN (OLD.prefix != NEW.prefix)
+	EXECUTE PROCEDURE tf_ip_net_plan__indent_children__iud_after();
+
+
+-- update tags and inherited tags
+CREATE TRIGGER trigger_ip_net_plan__tags__id_after
+	AFTER INSERT OR DELETE
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_plan__tags__iud_after();
+
+CREATE TRIGGER trigger_ip_net_plan__tags__u_after
+	AFTER UPDATE OF prefix, tags, inherited_tags
+	ON ip_net_plan
+	FOR EACH ROW
+	WHEN (OLD.prefix != NEW.prefix
+		OR OLD.tags != NEW.tags
+		OR OLD.inherited_tags != NEW.inherited_tags)
+	EXECUTE PROCEDURE tf_ip_net_plan__tags__iud_after();
+
+--
 CREATE TRIGGER trigger_ip_net_plan_prefix__d_before
 	BEFORE DELETE
 	ON ip_net_plan
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_prefix_d_before();
-
-CREATE TRIGGER trigger_ip_net_plan_prefix__iu_after
-	AFTER DELETE OR INSERT OR UPDATE
-	ON ip_net_plan
-	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_prefix_after();
-

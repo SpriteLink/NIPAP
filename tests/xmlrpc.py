@@ -841,7 +841,7 @@ class NipapXmlTest(unittest.TestCase):
                         'id': p1['id'],
                         'display_prefix': '1.3.3.0/24',
                         'monitor': None,
-                        'children': -2,
+                        'children': 1,
                         'prefix_length': 24,
                         'type': 'assignment',
                         'match': True,
