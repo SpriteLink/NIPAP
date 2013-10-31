@@ -41,7 +41,7 @@ Object operations
 
 **list** list will list one or more object of the specified type, possibly filtered by certain options.
 
-**remove** remove an object.
+**remove** remove an object. When removing prefixes the **recursive** option can be specified to remove a prefix and all prefixes contained within that prefix.
 
 **view** is used to get detailed information about one particular object.
 
@@ -74,6 +74,9 @@ List all prefixes regexp matching '(core|backbone)' (ie, 'core' or 'backbone'):
 
 Modify a prefix and set a new description:
     $ nipap address modify 192.0.2.0/24 set description FOO
+
+Delete 192.0.2.0/24 and all prefixes within it:
+    $ nipap address remove 192.0.2.0/24 recursive
 
 Author
 =========
