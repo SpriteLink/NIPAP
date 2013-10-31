@@ -209,20 +209,10 @@ class XMLRPCConnection:
         if xmlrpc_uri is None:
             raise NipapError('XML-RPC URI not specified')
 
-
-        # Currently not used due to threading safety issues
-        # after the introduction of the config object above, the code below
-        # does not work at all anymore ;)
-        #self.__dict__ = self.__shared_state
-
-        #if len(self.__shared_state) == 0 and url is None:
-        #    raise Exception("Missing URL.")
-
-        #if len(self.__shared_state) == 0:
-
         # creating new instance
         self.connection = xmlrpclib.ServerProxy(xmlrpc_uri, allow_none=True,
                 use_datetime=True)
+
         self._logger = logging.getLogger(self.__class__.__name__)
 
 
@@ -234,9 +224,6 @@ class Pynipap:
         :py:class:Pool, :py:class:Prefix) extends this class.
     """
 
-    _xmlrpc = None
-    """ XML-RPC connection.
-    """
     _logger = None
     """ Logging instance for this object.
     """
@@ -262,9 +249,9 @@ class Pynipap:
         """
 
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._xmlrpc = XMLRPCConnection()
         self._auth_opts = AuthOptions()
         self.id = id
+
 
 
 class Tag(Pynipap):
@@ -448,6 +435,7 @@ class VRF(Pynipap):
         """ Save changes made to object to NIPAP.
         """
 
+        xmlrpc = XMLRPCConnection()
         data = {
             'rt': self.rt,
             'name': self.name,
@@ -457,7 +445,7 @@ class VRF(Pynipap):
         if self.id is None:
             # New object, create
             try:
-                vrf = self._xmlrpc.connection.add_vrf(
+                vrf = xmlrpc.connection.add_vrf(
                     {
                         'attr': data,
                         'auth': self._auth_opts.options
@@ -468,7 +456,7 @@ class VRF(Pynipap):
         else:
             # Old object, edit
             try:
-                vrfs = self._xmlrpc.connection.edit_vrf(
+                vrfs = xmlrpc.connection.edit_vrf(
                     {
                         'vrf': { 'id': self.id },
                         'attr': data,
@@ -492,8 +480,9 @@ class VRF(Pynipap):
         """ Remove VRF.
         """
 
+        xmlrpc = XMLRPCConnection()
         try:
-            self._xmlrpc.connection.remove_vrf(
+            xmlrpc.connection.remove_vrf(
                 {
                     'vrf': { 'id': self.id },
                     'auth': self._auth_opts.options
@@ -521,6 +510,7 @@ class Pool(Pynipap):
         """ Save changes made to pool to NIPAP.
         """
 
+        xmlrpc = XMLRPCConnection()
         data = {
             'name': self.name,
             'description': self.description,
@@ -532,7 +522,7 @@ class Pool(Pynipap):
         if self.id is None:
             # New object, create
             try:
-                pool = self._xmlrpc.connection.add_pool(
+                pool = xmlrpc.connection.add_pool(
                     {
                         'attr': data,
                         'auth': self._auth_opts.options
@@ -543,7 +533,7 @@ class Pool(Pynipap):
         else:
             # Old object, edit
             try:
-                pools = self._xmlrpc.connection.edit_pool(
+                pools = xmlrpc.connection.edit_pool(
                     {
                         'pool': { 'id': self.id },
                         'attr': data,
@@ -567,8 +557,9 @@ class Pool(Pynipap):
         """ Remove pool.
         """
 
+        xmlrpc = XMLRPCConnection()
         try:
-            self._xmlrpc.connection.remove_pool(
+            xmlrpc.connection.remove_pool(
                 {
                     'pool': { 'id': self.id },
                     'auth': self._auth_opts.options
@@ -763,6 +754,7 @@ class Prefix(Pynipap):
         """ Finds a free prefix.
         """
 
+        xmlrpc = XMLRPCConnection()
         q = {
             'args': args,
             'auth': AuthOptions().options
@@ -777,7 +769,6 @@ class Prefix(Pynipap):
             raise NipapValueError('vrf parameter must be instance of VRF class')
 
         # run XML-RPC query
-        xmlrpc = XMLRPCConnection()
         try:
             find_res = xmlrpc.connection.find_free_prefix(q)
         except xmlrpclib.Fault as xml_fault:
@@ -869,6 +860,7 @@ class Prefix(Pynipap):
         """ Save prefix to NIPAP.
         """
 
+        xmlrpc = XMLRPCConnection()
         data = {
             'description': self.description,
             'comment': self.comment,
@@ -918,7 +910,7 @@ class Prefix(Pynipap):
                 x_args['prefix_length'] = args['prefix_length']
 
             try:
-                prefix = self._xmlrpc.connection.add_prefix(
+                prefix = xmlrpc.connection.add_prefix(
                     {
                         'attr': data,
                         'args': x_args,
@@ -935,7 +927,7 @@ class Prefix(Pynipap):
 
             try:
                 # save
-                prefixes = self._xmlrpc.connection.edit_prefix(
+                prefixes = xmlrpc.connection.edit_prefix(
                     {
                         'prefix': { 'id': self.id },
                         'attr': data,
@@ -964,8 +956,9 @@ class Prefix(Pynipap):
         """ Remove the prefix.
         """
 
+        xmlrpc = XMLRPCConnection()
         try:
-            self._xmlrpc.connection.remove_prefix(
+            xmlrpc.connection.remove_prefix(
                 {
                     'prefix': { 'id': self.id },
                     'recursive': recursive,
