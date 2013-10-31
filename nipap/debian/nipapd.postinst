@@ -63,9 +63,6 @@ case "$1" in
 		if [ "$NIPAP_DB_EXISTS" = "1" ]; then
 			# do the upgrade dance...
 
-			# load latest NIPAP database functions
-			su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
-
 			# iterate through and upgrade in steps of one version at a time
 			for FROM_VERSION in `seq ${NIPAP_DB_VERSION} $((${CURRENT_DB_VERSION}-1))`; do
 				TO_VERSION=$((${FROM_VERSION}+1))
@@ -73,6 +70,9 @@ case "$1" in
 
 				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/${PSQL_FILE}" postgres >/dev/null 2>&1
 			done
+
+			# load latest NIPAP database functions
+			su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
 
 		else
 			# first time setup
@@ -87,8 +87,8 @@ case "$1" in
 				# load ip4r
 				su -c "psql -q -d $DB_NAME -c 'CREATE EXTENSION ip4r'" postgres >/dev/null 2>&1
 				# load NIPAP database structure
-				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
 				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/ip_net.plsql" postgres >/dev/null 2>&1
+				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
 
 				# grant necessary privileges on tables, views, sequences and functions to NIPAP db user
 				su -c "psql -q -d $DB_NAME -c 'GRANT SELECT, UPDATE, INSERT, DELETE ON ALL TABLES IN SCHEMA public TO nipap'" postgres >/dev/null 2>&1
