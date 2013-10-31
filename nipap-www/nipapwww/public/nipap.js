@@ -383,6 +383,8 @@ function performPrefixSearch(force_explicit, update_uri) {
 		'vrf_filter': []
 	}
 
+	query_id += 1;
+
 	// Find what VRFs has been added to VRF filter
 	$.each(selected_vrfs, function(k, v) {
 		search_q.vrf_filter.push(String(v.id));
@@ -406,6 +408,7 @@ function performPrefixSearch(force_explicit, update_uri) {
 			console.log(search_q);
 		} else {
 			// Skip search if this is not an explicit query and query string is empty
+			newest_prefix_query = query_id;
 			clearPrefixSearch();
 			// update URL
 			setSearchPrefixURI();
@@ -416,7 +419,6 @@ function performPrefixSearch(force_explicit, update_uri) {
 	end_of_result = 0;
 
 	current_query = search_q;
-	query_id += 1;
 	offset = 0;
 
 	$('#prefix_list').empty();
@@ -1143,27 +1145,11 @@ function receivePrefixList(search_result) {
 
 	stats.response_received = new Date().getTime();
 
-	// Error?
-	if ('error' in search_result) {
-		$('#search_interpretation').html('<font color="#DD4B39"><b>Invalid search query: </b>' + search_result.message + '</font>');
-		hideLoadingIndicator();
-		return;
-	}
-
-	if (! ('query_id' in search_result.search_options)) {
-		showDialogNotice("Error", 'No query_id in response');
-		return;
-	}
+	if (!verifyPrefixListResponse(search_result)) return;
+	newest_prefix_query = parseInt(search_result.search_options.query_id);
 
 	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left tooltip" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" title="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
 	$('#search_interpretation_text').tipTip({delay: 100});
-
-	// If we receive a result older than the one we display, ignore the
-	// received result.
-	if (parseInt(search_result.search_options.query_id) < parseInt(newest_prefix_query)) {
-		return;
-	}
-	newest_prefix_query = parseInt(search_result.search_options.query_id);
 
 	/*
 	 * Interpretation list
@@ -1236,11 +1222,9 @@ function receivePrefixList(search_result) {
 
 	}
 
-	stats.finished = new Date().getTime();
-
 	// Display search statistics
-	log('Rendering took ' + (stats.finished - stats.response_received) + ' milliseconds');
-	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
+	stats.finished = new Date().getTime();
+	showSearchStats(stats);
 
 	// Page full?
 	if (!pageFilled()) {
@@ -1265,13 +1249,9 @@ function receivePrefixList(search_result) {
 function receivePrefixListUpdate(search_result, link_type) {
 
 	stats.response_received = new Date().getTime();
-	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
 
-	// Error?
-	if ('error' in search_result) {
-		showDialogNotice("Error", prefix.message);
-		return;
-	}
+	if (!verifyPrefixListResponse(search_result)) return;
+	newest_prefix_query = parseInt(search_result.search_options.query_id);
 
 	pref_list = search_result.result;
 
@@ -1312,6 +1292,10 @@ function receivePrefixListUpdate(search_result, link_type) {
 
 	insertPrefixList(pref_list);
 
+	// Display search statistics
+	stats.finished = new Date().getTime();
+	showSearchStats(stats);
+
 	// As the user pressed the expand button, they probably want to see as much
 	// as possible of the prefix they expanded. Therefore, unhide all hidden
 	// prefixes.
@@ -1329,8 +1313,11 @@ function receivePrefixListUpdate(search_result, link_type) {
 function receivePrefixListNextPage(search_result) {
 
 	stats.response_received = new Date().getTime();
-	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
+
 	hideLoadingIndicator();
+	if (!verifyPrefixListResponse(search_result)) return;
+	newest_prefix_query = parseInt(search_result.search_options.query_id);
+
 	pref_list = search_result.result;
 
 	// Zero result elements. Should not happen as we at least always should
@@ -1354,12 +1341,47 @@ function receivePrefixListNextPage(search_result) {
 	insertPrefixList(pref_list);
 	outstanding_nextpage = 0;
 
+	// Display search statistics
+	stats.finished = new Date().getTime();
+	showSearchStats(stats);
+
 	// Page full or end of search result reached?
 	if (!pageFilled() && end_of_result == 0) {
 		// Nope. Perform a nextPage()
 		performPrefixNextPage();
 	}
 
+}
+
+/*
+ * Verify that response from smart_search_prefix is OK
+ */
+function verifyPrefixListResponse(search_result) {
+
+	// Error?
+	if ('error' in search_result) {
+		showDialogNotice("Error", prefix.message);
+		return false;
+	}
+
+	// If we receive a result older than the one we display, ignore the
+	// received result.
+	if (parseInt(search_result.search_options.query_id) < parseInt(newest_prefix_query)) {
+		log("Discarding result " + search_result.search_options.query_id + ", latest query is " + newest_prefix_query);
+		return false;
+	}
+
+	return true;
+
+}
+
+/*
+ * Display search statistics
+ */
+function showSearchStats(stats) {
+
+	$('#search_stats').html('Query took ' + (stats.response_received - stats.query_sent)/1000 + ' seconds.');
+	log('Rendering took ' + (stats.finished - stats.response_received) + ' milliseconds');
 }
 
 
