@@ -2413,12 +2413,12 @@ class Nipap:
             if pool_result == []:
                 raise NipapNonExistentError("Non-existent pool specified")
             for p in pool_result[0]['prefixes']:
-                if self._get_afi(p) == args['family']:
+                if self._get_afi(p) == int(args['family']):
                     prefixes.append(p)
             if len(prefixes) == 0:
-                raise NipapInputError('No prefixes of family %d in pool' % args['family'])
+                raise NipapInputError('No prefixes of family %s in pool' % str(args['family']))
             if 'prefix_length' not in args:
-                if args['family'] == 4:
+                if int(args['family']) == 4:
                     wpl = pool_result[0]['ipv4_default_prefix_length']
                 else:
                     wpl = pool_result[0]['ipv6_default_prefix_length']
@@ -2434,7 +2434,10 @@ class Nipap:
                 prefixes.append(prefix)
 
         if 'prefix_length' in args:
-            wpl = args['prefix_length']
+            try:
+                wpl = int(args['prefix_length'])
+            except ValueError:
+                raise NipapValueError("prefix length must be integer")
 
         # sanity check the wanted prefix length
         if afi == 4:
