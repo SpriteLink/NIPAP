@@ -49,7 +49,7 @@ class XhrController(BaseController):
 
         attr = {}
         if 'id' in request.params:
-            attr['id'] = int(request.params['id'])
+            attr['id'] = request.params['id']
         if 'name' in request.params:
             attr['name'] = request.params['name']
         if 'description' in request.params:
@@ -57,9 +57,9 @@ class XhrController(BaseController):
         if 'default_type' in request.params:
             attr['default_type'] = request.params['default_type']
         if 'ipv4_default_prefix_length' in request.params:
-            attr['ipv4_default_prefix_length'] = int(request.params['ipv4_default_prefix_length'])
+            attr['ipv4_default_prefix_length'] = request.params['ipv4_default_prefix_length']
         if 'ipv6_default_prefix_length' in request.params:
-            attr['ipv6_default_prefix_length'] = int(request.params['ipv6_default_prefix_length'])
+            attr['ipv6_default_prefix_length'] = request.params['ipv6_default_prefix_length']
 
         return attr
 
@@ -430,7 +430,7 @@ class XhrController(BaseController):
                 vrf_filter = {
                     'operator': 'equals',
                     'val1': 'vrf_id',
-                    'val2': int(vrf) if vrf != 'null' else None
+                    'val2': vrf if vrf != 'null' else None
                 }
 
                 for vrf in vrfs[1:]:
@@ -440,7 +440,7 @@ class XhrController(BaseController):
                         'val2': {
                             'operator': 'equals',
                             'val1': 'vrf_id',
-                            'val2': int(vrf) if vrf != 'null' else None
+                            'val2': vrf if vrf != 'null' else None
                         }
                     }
 
@@ -569,9 +569,9 @@ class XhrController(BaseController):
             except NipapError, e:
                 return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
         if 'family' in request.params:
-            args['family'] = int(request.params['family'])
+            args['family'] = request.params['family']
         if 'prefix_length' in request.params:
-            args['prefix_length'] = int(request.params['prefix_length'])
+            args['prefix_length'] = request.params['prefix_length']
 
         # manual allocation?
         if args == {}:
