@@ -230,7 +230,7 @@ The web server needs to be able to write to its cache, alter the permissions of
 also make sure no one else has access to it. For a typical Debian install of
 Apache httpd, the following should suffice::
 
-	chown www-data:www-data /var/cache/nipap-www
+	chown -R www-data:www-data /var/cache/nipap-www
 	chmod -R u=rwX /var/cache/nipap-www
 
 Now, restart Apache httpd and the NIPAP web UI should be up and running!
