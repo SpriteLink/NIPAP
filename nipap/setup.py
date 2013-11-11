@@ -22,6 +22,7 @@ def get_data_files():
             ('/usr/sbin/', ['nipapd', 'nipap-passwd']),
             ('/usr/share/nipap/sql/', [
                 'sql/upgrade-1-2.plsql',
+                'sql/upgrade-2-3.plsql',
                 'sql/functions.plsql',
                 'sql/ip_net.plsql'
                 ]),

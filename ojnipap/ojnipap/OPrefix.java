@@ -33,6 +33,7 @@ public class OPrefix extends jnipap.Prefix implements SQLData {
 		indent = Helpers.integerOrNull(stream.readBigDecimal());
 		country = stream.readString();
 		order_id = stream.readString();
+		customer_id = stream.readString();
 		external_key = stream.readString();
 		authoritative_source = stream.readString();
 		alarm_priority = stream.readString();
@@ -58,6 +59,7 @@ public class OPrefix extends jnipap.Prefix implements SQLData {
 		stream.writeBigDecimal(Helpers.bigDecOrNull(indent));
 		stream.writeString(Helpers.strOrNull(country));
 		stream.writeString(Helpers.strOrNull(order_id));
+		stream.writeString(Helpers.strOrNull(customer_id));
 		stream.writeString(Helpers.strOrNull(external_key));
 		stream.writeString(Helpers.strOrNull(authoritative_source));
 		stream.writeString(Helpers.strOrNull(alarm_priority));
