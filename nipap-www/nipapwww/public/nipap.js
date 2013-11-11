@@ -649,7 +649,7 @@ function showPrefix(prefix, reference, offset) {
 	var prefix_tags = $('#prefix_tags' + prefix.id);
 	prefix_tags.addClass('prefix_column');
 	prefix_tags.addClass('prefix_tags');
-	if (prefix.tags == null || $.isEmptyObject(prefix.tags)) {
+	if ((prefix.tags == null || $.isEmptyObject(prefix.tags)) && (prefix.inherited_tags == null || $.isEmptyObject(prefix.inherited_tags))) {
 		prefix_tags.html("&nbsp;");
 	} else {
 		tags_html = 'Tags:<br/>';
@@ -666,8 +666,8 @@ function showPrefix(prefix, reference, offset) {
 			tags_html += "&nbsp;&nbsp;" + sorted_tags[i] + "<br/>";
 		}
 		tags_html += 'Inherited tags:<br/>';
-		for (var tag_name in sorted_inherited_tags) {
-			tags_html += "&nbsp;&nbsp;" + tag_name + "<br/>";
+		for (var i = 0; i < sorted_inherited_tags.length; i++) {
+			tags_html += "&nbsp;&nbsp;" + sorted_inherited_tags[i] + "<br/>";
 		}
 		prefix_tags.addClass('tooltip');
 		prefix_tags.prop('title', tags_html)
