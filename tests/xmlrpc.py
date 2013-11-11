@@ -837,7 +837,7 @@ class NipapXmlTest(unittest.TestCase):
                 'search_options': {'include_all_children':
                 False, 'max_result': 50, 'include_all_parents': False,
                 'parents_depth': 0, 'offset': 0, 'children_depth': 0,
-                'parent_prefix': None },
+                'parent_prefix': None, 'include_neighbors': False },
                 'result': [
                     {'comment': None,
                         'external_key': None,
