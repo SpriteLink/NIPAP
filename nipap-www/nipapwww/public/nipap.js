@@ -349,6 +349,7 @@ function performPrefixSearch(force_explicit, update_uri) {
 		'children_depth': optToDepth($('input[name="search_opt_child"]:checked').val()),
 		'include_all_parents': 'true',
 		'include_all_children': 'false',
+		'include_neighbors': 'true',
 		'max_result': PREFIX_BATCH_SIZE,
 		'offset': 0,
 		'vrf_filter': []

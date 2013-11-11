@@ -2786,6 +2786,14 @@ class Nipap:
                 raise NipapValueError('Invalid value for option' +
                     ''' 'children_depth'. Only integer values allowed.''')
 
+        # include_neighbors
+        if 'include_neighbors' not in search_options:
+            search_options['include_neighbors'] = False
+        else:
+            if search_options['include_neighbors'] not in (True, False):
+                raise NipapValueError('Invalid value for option ' +
+                    "'include_neighbors'. Only true and false valid. Supplied value: '%s'" % str(search_options['include_neighbors']))
+
         # max_result
         if 'max_result' not in search_options:
             search_options['max_result'] = 50
@@ -2838,6 +2846,11 @@ class Nipap:
             where_children = 'AND p1.indent BETWEEN p2.indent AND p2.indent + %d' % search_options['children_depth']
         else:
             raise NipapValueError("Invalid value for option 'children_depth'. Only integer values > -1 allowed.")
+
+        if search_options['include_neighbors']:
+            include_neighbors = 'true'
+        else:
+            include_neighbors = 'false'
 
         if search_options['parent_prefix']:
             vrf_id = 0
@@ -2930,7 +2943,7 @@ class Nipap:
                         (iprange(p1.prefix) << iprange(p2.prefix) """ + where_children + """)
                         OR
                         -- Join in all neighbors (p1) of matching prefixes (p2)
-                        (iprange(p1.prefix) << iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
+                        (true = """ + include_neighbors + """ AND iprange(p1.prefix) << iprange(p2.display_prefix::cidr) AND p1.indent = p2.indent)
                     )
                 )
                 -- set match conditions for p2
