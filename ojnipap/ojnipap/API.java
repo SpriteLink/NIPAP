@@ -350,6 +350,7 @@ public class API {
 		sqlobj.indent = p.indent;
 		sqlobj.country = p.country;
 		sqlobj.order_id = p.order_id;
+		sqlobj.customer_id = p.customer_id;
 		sqlobj.external_key = p.external_key;
 		sqlobj.authoritative_source = p.authoritative_source;
 		sqlobj.alarm_priority = p.alarm_priority;

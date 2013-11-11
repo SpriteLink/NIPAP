@@ -37,7 +37,7 @@ class Export:
             sys.exit(1)
 
         for p in res['result']:
-            writer.writerow([p.vrf.rt, p.display_prefix, p.type, p.node, p.order_id, p.description])
+            writer.writerow([p.vrf.rt, p.display_prefix, p.type, p.node, p.order_id, p.customer_id, p.description])
 
 
 if __name__ == '__main__':

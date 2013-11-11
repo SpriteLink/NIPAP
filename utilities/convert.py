@@ -263,6 +263,7 @@ if __name__ == '__main__':
         p.type = r['type']
         p.country = r['country']
         p.order_id = r['order_id']
+        p.customer_id = r['customer_id']
         p.external_key = r['external_key']
         p.alarm_priority = r['alarm_priority']
         p.monitor = r['monitor']

@@ -31,6 +31,7 @@ public class Prefix extends Jnipap {
 	public Integer indent;
 	public String country;
 	public String order_id;
+	public String customer_id;
 	public String external_key;
 	public String authoritative_source;
 	public String alarm_priority;
@@ -167,6 +168,7 @@ public class Prefix extends Jnipap {
 		putUnlessNull(attr, "type", this.type);
 		putUnlessNull(attr, "country", this.country);
 		putUnlessNull(attr, "order_id", this.order_id);
+		putUnlessNull(attr, "customer_id", this.customer_id);
 		putUnlessNull(attr, "external_key", this.external_key);
 		putUnlessNull(attr, "alarm_priority", this.alarm_priority);
 		putUnlessNull(attr, "monitor", this.monitor);
@@ -410,6 +412,7 @@ public class Prefix extends Jnipap {
 		prefix.indent = (Integer)input.get("indent");
 		prefix.country = (String)input.get("country");
 		prefix.order_id = (String)input.get("order_id");
+		prefix.customer_id = (String)input.get("customer_id");
 		prefix.external_key = (String)input.get("external_key");
 		prefix.authoritative_source = (String)input.get("authoritative_source");
 		prefix.alarm_priority = (String)input.get("alarm_priority");
@@ -450,6 +453,7 @@ public class Prefix extends Jnipap {
 		hash = hash * 31 + (indent == null ? 0 : indent.hashCode());
 		hash = hash * 31 + (country == null ? 0 : country.hashCode());
 		hash = hash * 31 + (order_id == null ? 0 : order_id.hashCode());
+		hash = hash * 31 + (customer_id == null ? 0 : customer_id.hashCode());
 		hash = hash * 31 + (external_key == null ? 0 : external_key.hashCode());
 		hash = hash * 31 +
 			(authoritative_source == null ? 0 : authoritative_source.hashCode());
@@ -502,6 +506,8 @@ public class Prefix extends Jnipap {
 				(country != null && country.equals(pref.country))) &&
 			(order_id == pref.order_id ||
 				(order_id != null && order_id.equals(pref.order_id))) &&
+            (customer_id == pref.customer_id ||
+				(customer_id != null && customer_id.equals(pref.customer_id))) &&
 			(external_key == pref.external_key ||
 				(external_key != null &&
 					external_key.equals(pref.external_key))) &&

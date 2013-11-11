@@ -570,7 +570,7 @@ tbody.listing > tr:hover {
     vertical-align: middle;
 }
 
-.prefix_order_id {
+.prefix_order_id, .prefix_customer_id {
     width: 80px;
 }
 
