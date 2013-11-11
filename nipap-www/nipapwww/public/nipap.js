@@ -302,7 +302,6 @@ function clearPrefixSearch() {
 	$('#search_stats').empty();
 	$('#prefix_list').empty();
 	$('#fixed_prefix_header').css('visibility', 'hidden');
-	$('#search_result_help').show();
 	$('#nextpage').hide();
 	query_id += 1;
 
@@ -313,6 +312,7 @@ function clearPrefixSearch() {
 	};
 
 	end_of_result = 1;
+
 }
 
 /*
@@ -370,21 +370,9 @@ function performPrefixSearch(force_explicit, update_uri) {
 		return true;
 	}
 
-	// If query string is empty
+	// If query string is empty display top level prefixes
 	if (jQuery.trim($('#query_string').val()).length < 1) {
-		if (explicit == true) {
-			// If explicit, do a search with indent 0 to only display top level prefixes
-			search_q.children_depth = 0;
-			search_q.indent = 0;
-			console.log(search_q);
-		} else {
-			// Skip search if this is not an explicit query and query string is empty
-			newest_prefix_query = query_id;
-			clearPrefixSearch();
-			// update URL
-			setSearchPrefixURI();
-			return true;
-		}
+		clearPrefixSearch();
 	}
 
 	end_of_result = 0;
@@ -393,7 +381,6 @@ function performPrefixSearch(force_explicit, update_uri) {
 	offset = 0;
 
 	$('#prefix_list').empty();
-	$('#search_result_help').hide();
 	if (prefix_link_type == 'edit') {
 		$('#fixed_prefix_header').css('visibility', 'visible');
 	}
