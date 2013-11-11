@@ -675,6 +675,17 @@ function showPrefix(prefix, reference, offset) {
 		prefix_tags.tipTip({ delay: 100 });
 	}
 
+	// Add node
+	prefix_row.append('<div id="prefix_node' + prefix.id + '">');
+	var prefix_node = $('#prefix_node' + prefix.id);
+	prefix_node.addClass('prefix_column');
+	prefix_node.addClass('prefix_node');
+	if (prefix.node == null || prefix.node == '') {
+		prefix_node.html("&nbsp;");
+	} else {
+		prefix_node.html(prefix.node);
+	}
+
 	// Add order number
 	prefix_row.append('<div id="prefix_order_id' + prefix.id + '">');
 	var prefix_order_id = $('#prefix_order_id' + prefix.id);
@@ -695,17 +706,6 @@ function showPrefix(prefix, reference, offset) {
 		prefix_customer_id.html("&nbsp;");
 	} else {
 		prefix_customer_id.html(prefix.customer_id);
-	}
-
-	// Add node
-	prefix_row.append('<div id="prefix_node' + prefix.id + '">');
-	var prefix_node = $('#prefix_node' + prefix.id);
-	prefix_node.addClass('prefix_column');
-	prefix_node.addClass('prefix_node');
-	if (prefix.node == null || prefix.node == '') {
-		prefix_node.html("&nbsp;");
-	} else {
-		prefix_node.html(prefix.node);
 	}
 
 	// Add prefix description
