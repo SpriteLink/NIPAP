@@ -288,6 +288,110 @@ class TestCountryCodeValue(unittest.TestCase):
 
 
 
+class TestAddressListing(unittest.TestCase):
+    """
+    """
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+    def testPrefixInclusion(self):
+        """ Test prefix inclusion like include_neighbors, include_parents and include_children
+        """
+        th = TestHelper()
+        # add a few prefixes
+        p1 = th.add_prefix('192.168.0.0/16', 'reservation', 'root')
+        p2 = th.add_prefix('192.168.0.0/20', 'reservation', 'test')
+        p3 = th.add_prefix('192.168.0.0/24', 'reservation', 'foo')
+        p4 = th.add_prefix('192.168.1.0/24', 'reservation', 'test')
+        p5 = th.add_prefix('192.168.2.0/24', 'reservation', 'test')
+        p6 = th.add_prefix('192.168.32.0/20', 'reservation', 'bar')
+        p7 = th.add_prefix('192.168.32.0/24', 'assignment', 'test')
+        p8 = th.add_prefix('192.168.32.1/32', 'host', 'test')
+        p9 = th.add_prefix('192.168.32.2/32', 'host', 'xyz')
+        p10 = th.add_prefix('192.168.32.3/32', 'host', 'test')
+
+        expected = []
+        # expected result is a list where each row is a prefix
+        expected.append(p1.prefix)
+        expected.append(p2.prefix)
+        expected.append(p3.prefix)
+        expected.append(p4.prefix)
+        expected.append(p5.prefix)
+        expected.append(p6.prefix)
+        expected.append(p7.prefix)
+        expected.append(p8.prefix)
+        expected.append(p9.prefix)
+        expected.append(p10.prefix)
+        res = Prefix.smart_search('0.0.0.0/0', {})
+        result = []
+        for prefix in res['result']:
+            result.append(prefix.prefix)
+        self.assertEqual(expected, result)
+
+
+        expected = []
+        # expected result is a list where each row is a prefix
+        expected.append(p1.prefix)
+        res = Prefix.smart_search('root', {})
+        result = []
+        for prefix in res['result']:
+            result.append(prefix.prefix)
+        self.assertEqual(expected, result)
+
+        expected = []
+        # expected result is a list where each row is a prefix
+        expected.append(p3.prefix)
+        res = Prefix.smart_search('foo', {})
+        result = []
+        for prefix in res['result']:
+            result.append(prefix.prefix)
+        self.assertEqual(expected, result)
+
+        expected = []
+        # expected result is a list where each row is a prefix
+        expected.append(p1.prefix)
+        expected.append(p2.prefix)
+        expected.append(p3.prefix)
+        expected.append(p4.prefix)
+        expected.append(p5.prefix)
+        expected.append(p6.prefix)
+        expected.append(p7.prefix)
+        expected.append(p8.prefix)
+        expected.append(p9.prefix)
+        expected.append(p10.prefix)
+        res = Prefix.smart_search('root', { 'children_depth': -1 })
+        result = []
+        for prefix in res['result']:
+            result.append(prefix.prefix)
+        self.assertEqual(expected, result)
+
+        expected = []
+        # expected result is a list where each row is a prefix
+        expected.append(p1.prefix)
+        expected.append(p2.prefix)
+        expected.append(p3.prefix)
+        res = Prefix.smart_search('foo', { 'parents_depth': -1 })
+        result = []
+        for prefix in res['result']:
+            result.append(prefix.prefix)
+        self.assertEqual(expected, result)
+
+        expected = []
+        # expected result is a list where each row is a prefix
+        expected.append(p8.prefix)
+        expected.append(p9.prefix)
+        expected.append(p10.prefix)
+        res = Prefix.smart_search('xyz', { 'include_neighbors': True })
+        result = []
+        for prefix in res['result']:
+            result.append(prefix.prefix)
+        self.assertEqual(expected, result)
+
+
+
+
 class TestCli(unittest.TestCase):
     """ CLI tests
     """

@@ -367,6 +367,8 @@ class XhrController(BaseController):
             search_opts['children_depth'] = request.params['children_depth']
         if 'parents_depth' in request.params:
             search_opts['parents_depth'] = request.params['parents_depth']
+        if 'include_neighbors' in request.params:
+            search_opts['include_neighbors'] = request.params['include_neighbors']
         if 'max_result' in request.params:
             search_opts['max_result'] = request.params['max_result']
         if 'offset' in request.params:
@@ -412,6 +414,11 @@ class XhrController(BaseController):
             search_options['parents_depth'] = request.params['parents_depth']
         if 'children_depth' in request.params:
             search_options['children_depth'] = request.params['children_depth']
+        if 'include_neighbors' in request.params:
+            if request.params['include_neighbors'] == 'true':
+                search_options['include_neighbors'] = True
+            else:
+                search_options['include_neighbors'] = False
         if 'max_result' in request.params:
             search_options['max_result'] = request.params['max_result']
         if 'offset' in request.params:
