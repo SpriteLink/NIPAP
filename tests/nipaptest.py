@@ -152,6 +152,97 @@ class TestPrefixIndent(unittest.TestCase):
 
 
 
+class TestPrefixChildren(unittest.TestCase):
+    """ Test calculation of children prefixes
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_children1(self):
+        """ Add some prefixes and make sure number of children is correct
+        """
+        th = TestHelper()
+        # add a few prefixes
+        p1 = th.add_prefix('192.168.0.0/16', 'reservation', 'test')
+        p2 = th.add_prefix('192.168.0.0/20', 'reservation', 'test')
+        p3 = th.add_prefix('192.168.0.0/24', 'reservation', 'test')
+        p4 = th.add_prefix('192.168.1.0/24', 'reservation', 'test')
+        p5 = th.add_prefix('192.168.2.0/24', 'reservation', 'test')
+        p6 = th.add_prefix('192.168.32.0/20', 'reservation', 'test')
+        p7 = th.add_prefix('192.168.32.0/24', 'reservation', 'test')
+
+        expected = []
+        # expected result is a list of list, each row is a prefix, first value
+        # is prefix, next is number of children
+        expected.append([p1.prefix, 2])
+        expected.append([p2.prefix, 3])
+        expected.append([p3.prefix, 0])
+        expected.append([p4.prefix, 0])
+        expected.append([p5.prefix, 0])
+        expected.append([p6.prefix, 1])
+        expected.append([p7.prefix, 0])
+
+        res = Prefix.smart_search('0.0.0.0/0', {})
+        result = []
+        for prefix in res['result']:
+            result.append([prefix.prefix, prefix.children])
+
+        self.assertEqual(expected, result)
+
+        p5.prefix = '192.0.2.0/24'
+        p5.save()
+        expected = []
+        expected.append([p5.prefix, 0])
+        expected.append([p1.prefix, 2])
+        expected.append([p2.prefix, 2])
+        expected.append([p3.prefix, 0])
+        expected.append([p4.prefix, 0])
+        expected.append([p6.prefix, 1])
+        expected.append([p7.prefix, 0])
+        res = Prefix.smart_search('0.0.0.0/0', {})
+        result = []
+        for prefix in res['result']:
+            result.append([prefix.prefix, prefix.children])
+
+        self.assertEqual(expected, result)
+
+        p4.prefix = '192.168.0.0/21'
+        p4.save()
+        expected = []
+        expected.append([p5.prefix, 0])
+        expected.append([p1.prefix, 2])
+        expected.append([p2.prefix, 1])
+        expected.append([p4.prefix, 1])
+        expected.append([p3.prefix, 0])
+        expected.append([p6.prefix, 1])
+        expected.append([p7.prefix, 0])
+        res = Prefix.smart_search('0.0.0.0/0', {})
+        result = []
+        for prefix in res['result']:
+            result.append([prefix.prefix, prefix.children])
+
+        self.assertEqual(expected, result)
+
+        p1.remove()
+        expected = []
+        expected.append([p5.prefix, 0])
+        expected.append([p2.prefix, 1])
+        expected.append([p4.prefix, 1])
+        expected.append([p3.prefix, 0])
+        expected.append([p6.prefix, 1])
+        expected.append([p7.prefix, 0])
+        res = Prefix.smart_search('0.0.0.0/0', {})
+        result = []
+        for prefix in res['result']:
+            result.append([prefix.prefix, prefix.children])
+
+        self.assertEqual(expected, result)
+
+
 class TestCountryCodeValue(unittest.TestCase):
     """ Test sanity for country value - should be ISO 3166-1 alpha-2 compliant
     """
@@ -168,7 +259,12 @@ class TestCountryCodeValue(unittest.TestCase):
         p = Prefix()
         p.prefix = '1.3.3.0/24'
         p.type = 'assignment'
-        # try to input one character - should fail
+        # try to input one character - should fail - this will be a INSERT operation
+        p.country = 'a'
+        with self.assertRaisesRegexp(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
+            p.save()
+
+        # try to input one character - should fail - this will be an UPDATE operation
         p.country = 'a'
         with self.assertRaisesRegexp(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
             p.save()

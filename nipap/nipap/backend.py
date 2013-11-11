@@ -2883,27 +2883,7 @@ class Nipap:
         vlan,
         added,
         last_modified,
-        CASE
-            WHEN type = 'host'
-                THEN 0
-            WHEN type = 'assignment'
-                THEN CASE
-                    -- for all assignments, count number of children.
-                    --
-                    -- the inner query either returns no children or all
-                    -- children for an assignment, so if we have more than one
-                    -- (the parent assignment) we know we have all children
-                    -- and can count them.
-                    --
-                    -- display_prefix casted to cidr throws away the host bits
-                    -- and in effect is the number of children of an assignment
-                    WHEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) > 1
-                        -- do not include the parent prefix in count
-                        THEN COUNT(1) OVER (PARTITION BY display_prefix::cidr) - 1
-                    ELSE -2
-                END
-            ELSE -2
-        END AS children
+        children
     FROM (
         SELECT DISTINCT ON(vrf_rt_order(vrf.rt), p1.prefix) p1.id,
             p1.prefix,
@@ -2927,6 +2907,7 @@ class Nipap:
             p1.vlan,
             p1.added,
             p1.last_modified,
+            p1.children,
             vrf.id AS vrf_id,
             vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,

@@ -15,15 +15,7 @@ var PREFIX_BATCH_SIZE = 50;
 
 /*
  * The prefix_list variable is used to keep a copy of all the prefixes
- * currently in the displayed list. Before adding, they are given a new
- * attribute: children. It is used to save information regarding
- * whether the prefix has children or not. These values are allowed:
- *  -2: We have no clue
- *  -1: At least one, but might be more (used for parent prefixes which
- *      was received when a prefix further down was requested including
- *      parents)
- *   0: No children
- *  >0: Has children
+ * currently in the displayed list.
  */
 var prefix_list = new Object();
 var pool_list = new Object();
@@ -278,21 +270,6 @@ function ajaxErrorHandler(e, jqXHR, ajaxSettings, thrownError) {
  *********************************************************************/
 
 /*
- * Toggles a collapse group
- */
-function toggleGroup(id) {
-
-	var col = $('#collapse' + id);
-
-	if (col.css('display') == 'none') {
-		expandGroup(id);
-	} else {
-		collapseGroup(id);
-	}
-
-}
-
-/*
  * Expands a collapse group
  */
 function expandGroup(id) {
@@ -301,13 +278,7 @@ function expandGroup(id) {
 	var exp = $('#prefix_exp' + id);
 
 	col.slideDown();
-	if (prefix_list[id].children < 0) {
-		// there might be additional children, display a +!
-		exp.html('+');
-	} else {
-		exp.html('&ndash;');
-	}
-
+	exp.html('&ndash;');
 }
 
 /*
@@ -567,7 +538,7 @@ function showPrefix(prefix, reference, offset) {
 	prefix_exp.addClass("prefix_exp");
 
 	// If the prefixes has children (or we do not know), add expand button
-	if (prefix.children == 0 || hasMaxPreflen(prefix)) {
+	if (prefix.children == 0) {
 
 		// the prefix_indent container must contain _something_
 		prefix_exp.html('&nbsp;');
@@ -1283,22 +1254,6 @@ function receivePrefixListUpdate(search_result, link_type) {
 		log('Warning: no prefixes returned from list operation.');
 		return true;
 
-	// One result element (the prefix we searched for)
-	} else if (pref_list.length == 1) {
-
-		// remove expand button
-		$("#prefix_indent" + pref_list[0].id).html('&nbsp;');
-		prefix_list[pref_list[0].id].children = 0;
-		return true;
-
-	} else {
-
-		// If the result set we received contains more elements, we assume at
-		// least one of them is a child of the first element and set the number
-		// of children to 1. This is (probably) not the correct value, but will
-		// suffice for giving the right collapse behaviour.
-		prefix_list[pref_list[0].id].children = 1;
-
 	}
 
 	insertPrefixList(pref_list);
@@ -1541,12 +1496,6 @@ function insertPrefix(prefix, prev_prefix) {
 			 }
 		}
 
-		// We know (since we are one indent level below previous) that
-		// it has at least one child.
-		if (prev_prefix.children == -2) {
-			prev_prefix.children = -1;
-		}
-
 		// If prefix has children, do not hide it! Since we are one indent
 		// level under last, the previous prefix is our parent and clearly
 		// has children, thus unhide!
@@ -1757,9 +1706,9 @@ function addHiddenContainer(prefix, reference, offset) {
  */
 function collapseClick(id) {
 
-	// Determine if we need to fetch data
-	if (prefix_list[id].children < 0) {
+	var col = $('#collapse' + id);
 
+	if (col.css('display') == 'none') {
 		var search_q = jQuery.extend({}, current_query);
 		search_q.query_id = query_id;
 		search_q.parent_prefix = id;
@@ -1779,9 +1728,8 @@ function collapseClick(id) {
 		$.getJSON("/xhr/smart_search_prefix", search_q, receivePrefixListUpdate);
 
 	} else {
-		toggleGroup(id);
+		collapseGroup(id);
 	}
-
 }
 
 /*
