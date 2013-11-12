@@ -814,6 +814,44 @@ class NipapXmlTest(unittest.TestCase):
 
 
 
+    def test_prefix_edit_return(self):
+        """ Check return value of edit_prefix
+        """
+        p1 = s.add_prefix({ 'auth': ad, 'attr': {
+                'prefix': '1.3.3.0/24',
+                'type': 'assignment',
+                'description': 'FOO'
+            } })
+        p2 = s.add_prefix({ 'auth': ad, 'attr': {
+                'prefix': '1.3.3.1/32',
+                'type': 'host',
+                'description': 'child 1'
+            } })
+        p3 = s.add_prefix({ 'auth': ad, 'attr': {
+                'prefix': '1.3.3.2/32',
+                'type': 'host',
+                'description': 'child 2'
+            } })
+        p4 = s.add_prefix({ 'auth': ad, 'attr': {
+                'prefix': '1.3.3.3/32',
+                'type': 'host',
+                'description': 'child 3'
+            } })
+
+        ss_res = s.smart_search_prefix({ 'auth': ad, 'query_string': 'child 2'
+            })['result'][0]
+        edit_res = s.edit_prefix({ 'auth': ad,
+            'prefix': { 'prefix': '1.3.3.2/32' },
+            'attr': { 'description': 'Kid 2' } })[0]
+        del(edit_res['added'])
+        del(edit_res['last_modified'])
+        del(ss_res['added'])
+        del(ss_res['last_modified'])
+        ss_res['description'] = 'Kid 2'
+        self.assertEqual(ss_res, edit_res)
+
+
+
     def test_prefix_smart_search(self):
         """ Test the prefix smart search
         """
