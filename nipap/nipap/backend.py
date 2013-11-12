@@ -606,11 +606,7 @@ class Nipap:
                     'val2': qp
                 }
 
-        updated = []
-        for elem in function(auth, q, { 'max_result': 10000 })['result']:
-            # prefixes have a match-attribute which must be verified
-            if elem.get('match') in (None, True):
-                updated.append(elem)
+        updated = function(auth, q, { 'max_result': 10000 })['result']
 
         return updated
 
