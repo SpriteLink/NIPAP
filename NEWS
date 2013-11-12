@@ -1,3 +1,21 @@
+Version 0.23 - Goldfinger
+-------------------------
+ * Add 'Customer ID' attribute to prefixes. This can be used to store a
+   customer name or an ID referencing a customer database.
+ * Fix for Web UI rendering bug which led to incorrect prefixes being rendered.
+ * Fix for Web UI which would not display inherited tags in prefix list.
+ * The number of children (sub-prefixes) of a prefix is now precalculated and
+   stored in the database. Improves user experience and somewhat the speed of
+   prefix search queries.
+ * Limit number of connections held open by pynipap. When doing large amounts
+   of operations, such as importing data, pynipap would keep open connections
+   to the backend eventually running into the limit of open connections of the
+   backend. pynipap no longer keeps open connections for any extended period of
+   time.
+ * Fix for backend returning too many "context prefixes" on prefix search even
+   when asked not to.
+ * Some improved error handling for AJAX calls.
+
 Version 0.22.4
 --------------
  * Added more usage examples to NIPAP CLI man page
