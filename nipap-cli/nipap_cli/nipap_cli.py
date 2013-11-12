@@ -326,7 +326,8 @@ def list_prefix(arg, opts):
     min_indent = 0
     while True:
         res = Prefix.smart_search(search_string, { 'parents_depth': -1,
-            'offset': offset, 'max_result': limit }, vrf_q)
+            'include_neighbors': True, 'offset': offset, 'max_result': limit },
+            vrf_q)
 
         if len(res['result']) == 0:
             print "No addresses matching '%s' found." % search_string
