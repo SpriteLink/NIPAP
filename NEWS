@@ -2,6 +2,7 @@ Version 0.23 - Goldfinger
 -------------------------
  * Add 'Customer ID' attribute to prefixes. This can be used to store a
    customer name or an ID referencing a customer database.
+ * List top level prefixes by default in Web UI instead of empty result.
  * Fix for Web UI rendering bug which led to incorrect prefixes being rendered.
  * Fix for Web UI which would not display inherited tags in prefix list.
  * The number of children (sub-prefixes) of a prefix is now precalculated and
