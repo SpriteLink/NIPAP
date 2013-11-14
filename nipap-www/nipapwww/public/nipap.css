@@ -565,7 +565,7 @@ tbody.listing > tr:hover {
     width: 150px;
 }
 
-.prefix_tags {
+.prefix_tags, .prefix_comment {
 	width: 26px;
     vertical-align: middle;
 }
