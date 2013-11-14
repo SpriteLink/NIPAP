@@ -34,6 +34,7 @@ script:
     - nosetests test_cli.py
 
 notifications:
-  irc:
-      channels:
-           - "irc.freenode.org#NIPAP"
+    irc:
+        channels:
+            - "irc.freenode.org#NIPAP"
+        skip_join: true
