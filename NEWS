@@ -1,4 +1,4 @@
-Version 0.23 - Goldfinger
+Version 0.23.0 - Gargamel
 -------------------------
  * Add 'Customer ID' attribute to prefixes. This can be used to store a
    customer name or an ID referencing a customer database.

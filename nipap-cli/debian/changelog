@@ -1,3 +1,24 @@
+nipap-cli (0.23.0-1) stable; urgency=low
+
+  * Add 'Customer ID' attribute to prefixes. This can be used to store a
+    customer name or an ID referencing a customer database.
+  * List top level prefixes by default in Web UI instead of empty result.
+  * Fix for Web UI rendering bug which led to incorrect prefixes being rendered.
+  * Fix for Web UI which would not display inherited tags in prefix list.
+  * The number of children (sub-prefixes) of a prefix is now precalculated and
+    stored in the database. Improves user experience and somewhat the speed of
+    prefix search queries.
+  * Limit number of connections held open by pynipap. When doing large amounts
+    of operations, such as importing data, pynipap would keep open connections
+    to the backend eventually running into the limit of open connections of the
+    backend. pynipap no longer keeps open connections for any extended period of
+    time.
+  * Fix for backend returning too many "context prefixes" on prefix search even
+    when asked not to.
+  * Some improved error handling for AJAX calls.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 14 Nov 2013 14:10:20 +0100
+
 nipap-cli (0.22.4-1) stable; urgency=low
 
   * Added more usage examples to NIPAP CLI man page
