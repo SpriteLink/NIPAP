@@ -373,6 +373,8 @@ function performPrefixSearch(force_explicit, update_uri) {
 
 	// If query string is empty display top level prefixes
 	if (jQuery.trim($('#query_string').val()).length < 1) {
+		// indent = 0 makes sure we only get the top-level prefixes
+		search_q.indent = 0;
 		clearPrefixSearch();
 	}
 
