@@ -36,7 +36,9 @@ http://SpriteLink.github.com/NIPAP
 Getting started
 ---------------
 If you are running Ubuntu / Debian, add the followin repo:
-deb http://spritelink.github.com/NIPAP/repos/apt stable main
+
+   deb http://spritelink.github.io/NIPAP/repos/apt stable main
+
 And install nipapd for the backend, nipap-cli for the cli and/or nipap-www for
 the web pages.
 
