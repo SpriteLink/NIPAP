@@ -13,9 +13,7 @@ install:
     - sudo apt-get install -qq -y --force-yes devscripts python-docutils
     - make builddeb
     # install dependencies for installing & running nipap
-    - sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-ldap python-docutils postgresql-9.1-ip4r python-tornado python-flask
-    - sudo apt-get install -qq -y --force-yes python-stdeb
-    - sudo pypi-install Flask-XML-RPC
+    - sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-ldap python-docutils postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress
     # install the newly built nipap packages
     - sudo dpkg -i nipap*.deb python-pynipap*.deb
     # populate answers to nipapd package install questions and reconfigure
