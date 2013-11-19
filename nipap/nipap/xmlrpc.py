@@ -5,8 +5,10 @@ from functools import wraps
 from flask import Flask
 from flask import request, Response
 from flaskext.xmlrpc import XMLRPCHandler, Fault
+from flask.ext.compress import Compress
 
 app = Flask(__name__)
+Compress(app)
 
 handler = XMLRPCHandler('XMLRPC')
 handler.connect(app, '/RPC2')
