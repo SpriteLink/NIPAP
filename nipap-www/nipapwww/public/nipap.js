@@ -883,16 +883,17 @@ function performVRFSelectorSearch() {
  */
 function addVRFToSelectList(vrf, elem) {
 
-	elem.append('<a href="#" style="width: 100%;" id="vrf_filter_entry_' + String(vrf.id) + '" ' +
-		'data-vrf_id="' + String(vrf.id) + '" data-vrf_rt="' + vrf.rt + '">' +
+	elem.append('<a href="#" id="vrf_filter_entry_' + String(vrf.id) + '" ' +
+		'class="vrf_filter_entry" data-vrf_id="' + String(vrf.id) + '" data-vrf_rt="' + vrf.rt + '">' +
 			'<div><div class="selector_tick">&nbsp;</div>' +
 			( vrf.id == 0 ? vrf.name : (vrf.rt + '&nbsp;-&nbsp;' + vrf.name) ) + '</div>' +
 			'<div class="selector_entry_description" style="padding-top: 5px; padding-left: 15px; font-weight: normal; font-size: 9pt;">' +
-			( vrf.description == null ? '' : vrf.description ) + '</div></a>');
+			( vrf.description == null ? '' : vrf.description ) + '</div><div class="selector_x">&nbsp;</div></a>');
 
 	// display tick
 	if (selected_vrfs.hasOwnProperty(String(vrf.id))) {
 		elem.children('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&#10003;');
+		elem.children('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/remove-icon.png">');
 	}
 
 	$("#vrf_filter_entry_" + String(vrf.id)).click(curVRFCallback);

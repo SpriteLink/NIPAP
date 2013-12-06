@@ -76,8 +76,7 @@ a.menu_link:hover {
 /*
  * Things related to the VRF prefix search filter
  */
-.vrf_filter_entry {
-    float: left;
+.vrf_filter_heading {
     font-size: 10pt;
     font-weight: bold;
     color: #cccccc;
@@ -85,8 +84,8 @@ a.menu_link:hover {
     padding-left: 5px;
 }
 
-#extra_vrf_filter_entry {
-    display: none;
+.vrf_filter_entry {
+    position: relative;
 }
 
 /*
@@ -674,7 +673,6 @@ tbody.listing > tr:hover {
     font-size: 9pt;
     font-weight: bold;
     padding-right: 15px;
-    max-width: 400px;
 }
 
 .selector > div > a:hover {
@@ -701,6 +699,13 @@ tbody.listing > tr:hover {
 .selector_tick {
     width: 16px;
     float: left;
+}
+
+.selector_x {
+    position: absolute;
+    top: 5px;
+    right: 7px;
+    width: 16px;
 }
 
 .selector_entry_description {
