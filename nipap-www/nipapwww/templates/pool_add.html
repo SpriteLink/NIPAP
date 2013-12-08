@@ -2,51 +2,51 @@
 {% set page = 'pools' %}
 
 {% block head %}
-    <script>
+<script>
 
-        /*
-         * Run when pool addition is complete.
-         */
-        function poolAdded(data) {
+	/*
+	* Run when pool addition is complete.
+	*/
+	function poolAdded(data) {
 
-            if ('error' in data) {
-                showDialogNotice('Operation failed', data.message);
-            } else {
-                $('#pool_success_name').html(data.name);
-                $('#pool_success_container').show();
-                scrollItemVisible($("#pool_success_container"));
-                $("#pool_success_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#3d9400" }, 700).delay(200).animate({ backgroundColor: "#ccffcc" }, 1000);
-            }
+		if ('error' in data) {
+			showDialogNotice('Operation failed', data.message);
+			} else {
+			$('#pool_success_name').html(data.name);
+			$('#pool_success_container').show();
+			scrollItemVisible($("#pool_success_container"));
+			$("#pool_success_bg").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#3d9400" }, 700).delay(200).animate({ backgroundColor: "#ccffcc" }, 1000);
+		}
 
-        }
+	}
 
 
-        $(function() {
-            // Capture submit form event
-            $('form[name="pool_form"]').submit(function(e) {
-                var data = {
-                    'name': $('input[name="name"]').val(),
-                    'description': $('input[name="description"]').val(),
-                    'default_type': $('input[name="default_type"]:checked').val(),
-                    'ipv4_default_prefix_length': $('input[name="ipv4_default_prefix_length"]').val(),
-                    'ipv6_default_prefix_length': $('input[name="ipv6_default_prefix_length"]').val()
-                };
+	$(function() {
+		// Capture submit form event
+		$('form[name="pool_form"]').submit(function(e) {
+			var data = {
+				'name': $('input[name="name"]').val(),
+				'description': $('input[name="description"]').val(),
+				'default_type': $('input[name="default_type"]:checked').val(),
+				'ipv4_default_prefix_length': $('input[name="ipv4_default_prefix_length"]').val(),
+				'ipv6_default_prefix_length': $('input[name="ipv6_default_prefix_length"]').val()
+			};
 
-                $.getJSON('{{ h.url(controller="xhr", action="add_pool") }}', data, poolAdded);
+			$.getJSON('{{ h.url(controller="xhr", action="add_pool") }}', data, poolAdded);
 
-                // prevent default action ("ordinary" HTTP POST)
-                e.preventDefault();
+			// prevent default action ("ordinary" HTTP POST)
+			e.preventDefault();
 
-            });
-        });
+		});
+	});
 
-    </script>
+</script>
 {% endblock %}
 
 {% block content %}
 
 <div class="page-title">
-Pool administration &mdash;&gt; add pool
+	Pool administration &mdash;&gt; add pool
 </div>
 
 {% include 'pool_form.html' %}

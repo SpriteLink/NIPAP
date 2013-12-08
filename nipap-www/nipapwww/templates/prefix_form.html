@@ -1,7 +1,7 @@
 
 <!--
 
-    PREFIX DATA
+PREFIX DATA
 
 -->
 <div id="prefix_data_container" style="display: none;">
@@ -10,25 +10,25 @@
 			<h3 class="options-group-heading">Prefix options</h3>
 			<form method="post" id="prefix_form" action="{{ h.url(controller="prefix", action="add") }}">
 
-			<div class="option" style="display: none;" id="prefix-row">
-				<dl>
-					<dt>
+				<div class="option" style="display: none;" id="prefix-row">
+					<dl>
+						<dt>
 						Prefix <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
-					</dt>
-					<dd>
-					<input type="text" name="prefix_prefix" value="{{ c.prefix.prefix }}" class="tooltip" title="The prefix, i.e. 192.0.2.16/28">
-					</dd>
-				</dl>
-			</div>
+						</dt>
+						<dd>
+						<input type="text" name="prefix_prefix" value="{{ c.prefix.prefix }}" class="tooltip" title="The prefix, i.e. 192.0.2.16/28">
+						</dd>
+					</dl>
+				</div>
 
-			<div class="rule"></div>
+				<div class="rule"></div>
 
-			<div class="option">
-				<dl>
-					<dt>
+				<div class="option">
+					<dl>
+						<dt>
 						Type <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
-					</dt>
-					<dd>
+						</dt>
+						<dd>
 						<span id="default_prefix_type" style="display: none; cursor: pointer;">Default prefix type for pool is <b><span id="pool_prefix_type"></span></b>. Click to change.</span>
 						<span id="prefix_type_selection">
 							<input type="radio" id="prefix-type-res" name="prefix_type" value="reservation" class="tooltip" title="" {% if c.prefix.type == 'reservation' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="prefix-type-res">Reservation</label>
@@ -37,188 +37,188 @@
 							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
 							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
 						</span>
-					</dd>
-				</dl>
-			</div>
+						</dd>
+					</dl>
+				</div>
 
-			<div class="rule"></div>
+				<div class="rule"></div>
 
-			<div class="option">
-				<dl>
-					<dt>
+				<div class="option">
+					<dl>
+						<dt>
 						Description
-					</dt>
-					<dd>
+						</dt>
+						<dd>
 						<input type="text" name="prefix_description" style="width: 80%;" class="tooltip" title="A brief description of the prefix." value="{{ c.prefix.description or '' }}">
-					</dd>
-				</dl>
-			</div>
+						</dd>
+					</dl>
+				</div>
 
-			<div class="rule"></div>
+				<div class="rule"></div>
 
-			<div class="option" id="prefix_comment_container">
-				<dl>
-					<dt>
+				<div class="option" id="prefix_comment_container">
+					<dl>
+						<dt>
 						Comment
-					</dt>
-					<dd>
+						</dt>
+						<dd>
 						{% if c.prefix.comment %}
-                        <input type="text" name="prefix_comment" value="{{ c.prefix.comment or '' }}">
+						<input type="text" name="prefix_comment" value="{{ c.prefix.comment or '' }}">
 						{% else %}
 						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer; display: none;">add comment</span><input type="text" name="prefix_comment" style="width: 80%;">
 						{% endif %}
-					</dd>
-				</dl>
-			</div>
+						</dd>
+					</dl>
+				</div>
 
-			<div class="rule" id="prefix_comment_rule"></div>
+				<div class="rule" id="prefix_comment_rule"></div>
 
-			<div class="option">
-				<dl>
-					<dt>
-					Tags
-					</dt>
-					<dd>
-					<ul id="tags" style="font-size: 1.0em;">
-						{% for tag in c.prefix.tags|sort() %}<li>{{ tag }}</li>{% endfor %}
-					</ul>
-					</dd>
-				</dl>
-			</div>
+				<div class="option">
+					<dl>
+						<dt>
+						Tags
+						</dt>
+						<dd>
+						<ul id="tags" style="font-size: 1.0em;">
+							{% for tag in c.prefix.tags|sort() %}<li>{{ tag }}</li>{% endfor %}
+						</ul>
+						</dd>
+					</dl>
+				</div>
 
-            <div class="rule"></div>
+				<div class="rule"></div>
 
-            <div class="option">
-                <dl>
-                    <dt>
-                        Inherited Tags
-                    </dt>
-                    <dd>
-                        <ul id="inherited_tags" style="font-size: 1.0em;">
-                            {% for tag in c.prefix.inherited_tags|sort() %}<li>{{ tag }}</li>{% endfor %}
-                        </ul>
-                    </dd>
-                </dl>
-            </div>
+				<div class="option">
+					<dl>
+						<dt>
+						Inherited Tags
+						</dt>
+						<dd>
+						<ul id="inherited_tags" style="font-size: 1.0em;">
+							{% for tag in c.prefix.inherited_tags|sort() %}<li>{{ tag }}</li>{% endfor %}
+						</ul>
+						</dd>
+					</dl>
+				</div>
 
-			<div class="rule"></div>
+				<div class="rule"></div>
 
-			<div class="option">
-				<dl>
-					<dt>
+				<div class="option">
+					<dl>
+						<dt>
 						Node
-					</dt>
-					<dd>
+						</dt>
+						<dd>
 						<input type="text" name="prefix_node" value="{{ c.prefix.node or '' }}" class="tooltip" title="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured.">
-					</dd>
-				</dl>
-			</div>
+						</dd>
+					</dl>
+				</div>
 
-			<div class="rule"></div>
+				<div class="rule"></div>
 
-			<div class="option">
-				<dl>
-					<dt>
+				<div class="option">
+					<dl>
+						<dt>
 						Country
-					</dt>
-					<dd>
-                        <input type="text" name="prefix_country" size=3 value="{{ c.prefix.country or '' }}" class="tooltip" title="Two-letter country code according to ISO-3166-1'">
-					</dd>
-				</dl>
-			</div>
+						</dt>
+						<dd>
+						<input type="text" name="prefix_country" size=3 value="{{ c.prefix.country or '' }}" class="tooltip" title="Two-letter country code according to ISO-3166-1'">
+						</dd>
+					</dl>
+				</div>
 
-			<div class="rule"></div>
+				<div class="rule"></div>
 
-			<div class="option">
-				<dl>
-					<dt>
+				<div class="option">
+					<dl>
+						<dt>
 						Order ID
-					</dt>
-					<dd>
-                        <input type="text" name="prefix_order_id" value="{{ c.prefix.order_id or '' }}" size=10>
-					</dd>
-				</dl>
-			</div>
-			
-            <div class="rule"></div>
-    
-            <div class="option">
-				<dl>
-					<dt>
+						</dt>
+						<dd>
+						<input type="text" name="prefix_order_id" value="{{ c.prefix.order_id or '' }}" size=10>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
 						Customer ID
-					</dt>
-					<dd>
-                        <input type="text" name="prefix_customer_id" value="{{ c.prefix.customer_id or '' }}" size=10>
-					</dd>
-				</dl>
-			</div>
-			
-			<div class="rule"></div>
+						</dt>
+						<dd>
+						<input type="text" name="prefix_customer_id" value="{{ c.prefix.customer_id or '' }}" size=10>
+						</dd>
+					</dl>
+				</div>
 
-			<div class="option">
-				<dl>
-					<dt>
-                        VRF
-					</dt>
-					<dd>
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						VRF
+						</dt>
+						<dd>
 						<input type="button" name="prefix_vrf_btn" value="{% if c.prefix.vrf %}{{ c.prefix.vrf.rt or 'None' }}{% endif %}">
-                        <span id="prefix_vrf_display" class="tooltip" style="display: none;"></span>
+						<span id="prefix_vrf_display" class="tooltip" style="display: none;"></span>
 						<input type="hidden" name="prefix_vrf" value="{% if c.prefix.vrf %}{{ c.prefix.vrf.id }}{% endif %}">
-					</dd>
-				</dl>
-			</div>
+						</dd>
+					</dl>
+				</div>
 
-			<div class="rule"></div>
+				<div class="rule"></div>
 
-			<div class="option">
-				<dl>
-					<dt>
-					VLAN
-					</dt>
-					<dd>
-					<input type="text" name="prefix_vlan" value="{{ c.prefix.vlan or '' }}" size=10>
-					</dd>
-				</dl>
-			</div>
+				<div class="option">
+					<dl>
+						<dt>
+						VLAN
+						</dt>
+						<dd>
+						<input type="text" name="prefix_vlan" value="{{ c.prefix.vlan or '' }}" size=10>
+						</dd>
+					</dl>
+				</div>
 
-			<div class="rule"></div>
+				<div class="rule"></div>
 
-			<div class="option">
-				<dl>
-					<dt>
+				<div class="option">
+					<dl>
+						<dt>
 						Monitor
-					</dt>
-					<dd>
-                        <input type="checkbox" name="prefix_monitor" title="Check to monitor this prefix." {% if c.prefix.monitor == True %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                        <span id="alarm_priority_container">
-                            Priority:
-                            <input type="radio" id="radio-prefix-alarm-prio-warning" name="prefix_alarm_priority" value="warning"{% if c.prefix.alarm_priority == 'warning' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                            <label for="radio-prefix-alarm-prio-warning">Warning</label>
-                            <input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low"{% if c.prefix.alarm_priority == 'low' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                            <label for="radio-prefix-alarm-prio-low">Low</label>
-                            <input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium"{% if c.prefix.alarm_priority == 'medium' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                            <label for="radio-prefix-alarm-prio-medium">Medium</label>
-                            <input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high"{% if c.prefix.alarm_priority == 'high' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                            <label for="radio-prefix-alarm-prio-high">High</label>
-                            <input type="radio" id="radio-prefix-alarm-prio-critical" name="prefix_alarm_priority" value="critical"{% if c.prefix.alarm_priority == 'critical' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                            <label for="radio-prefix-alarm-prio-critical">Critical</label>
+						</dt>
+						<dd>
+						<input type="checkbox" name="prefix_monitor" title="Check to monitor this prefix." {% if c.prefix.monitor == True %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
+						<span id="alarm_priority_container">
+							Priority:
+							<input type="radio" id="radio-prefix-alarm-prio-warning" name="prefix_alarm_priority" value="warning"{% if c.prefix.alarm_priority == 'warning' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
+							<label for="radio-prefix-alarm-prio-warning">Warning</label>
+							<input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low"{% if c.prefix.alarm_priority == 'low' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
+							<label for="radio-prefix-alarm-prio-low">Low</label>
+							<input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium"{% if c.prefix.alarm_priority == 'medium' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
+							<label for="radio-prefix-alarm-prio-medium">Medium</label>
+							<input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high"{% if c.prefix.alarm_priority == 'high' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
+							<label for="radio-prefix-alarm-prio-high">High</label>
+							<input type="radio" id="radio-prefix-alarm-prio-critical" name="prefix_alarm_priority" value="critical"{% if c.prefix.alarm_priority == 'critical' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
+							<label for="radio-prefix-alarm-prio-critical">Critical</label>
 						</span>
-					</dd>
-				</dl>
-			</div>
+						</dd>
+					</dl>
+				</div>
 
-			<div class="rule"></div>
+				<div class="rule"></div>
 
-			<div class="option">
-				<dl>
-					<dt>
-					</dt>
-					<dd>
-                        <input type="hidden" name="id" value="{{ c.prefix.id }}">
+				<div class="option">
+					<dl>
+						<dt>
+						</dt>
+						<dd>
+						<input type="hidden" name="id" value="{{ c.prefix.id }}">
 						<input class="button button_green" type="submit" value="Add">
-					</dd>
-				</dl>
-			</div>
+						</dd>
+					</dl>
+				</div>
 
 			</form>
 		</div>

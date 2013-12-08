@@ -2,15 +2,15 @@
 
 {#
 
-    This file is included by pool_edit.html and prefix_add.html. To suit each
-    of these pages, the content is modified slightly at runtime when the page
-    loads, so beware, this might cause some 'WTF!?'.
+This file is included by pool_edit.html and prefix_add.html. To suit each
+of these pages, the content is modified slightly at runtime when the page
+loads, so beware, this might cause some 'WTF!?'.
 
 #}
 
 <!-- 
 
-    PREFIX ALLOCATION METHOD
+PREFIX ALLOCATION METHOD
 
 -->
 <div class="options-group" style="display: none;" id="prefix-alloc-method_container">
@@ -20,11 +20,11 @@
 		<div class="option">
 			<dl>
 				<dt style="text-align: left;">
-					<input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool">
-					<label for="radio-from-pool">From pool</label>
+				<input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool">
+				<label for="radio-from-pool">From pool</label>
 				</dt>
 				<dd>
-					Get a prefix from a pre-defined prefix pool.
+				Get a prefix from a pre-defined prefix pool.
 				</dd>
 			</dl>
 		</div>
@@ -34,11 +34,11 @@
 		<div class="option">
 			<dl>
 				<dt style="text-align: left;">
-					<input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix">
-					<label for="radio-from-prefix">From prefix</label>
+				<input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix">
+				<label for="radio-from-prefix">From prefix</label>
 				</dt>
 				<dd>
-					Get a prefix allocated from another prefix.
+				Get a prefix allocated from another prefix.
 				</dd>
 			</dl>
 		</div>
@@ -48,11 +48,11 @@
 		<div class="option">
 			<dl>
 				<dt style="text-align: left;">
-					<input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual">
-					<label for="radio-manual">Manual</label>
+				<input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual">
+				<label for="radio-manual">Manual</label>
 				</dt>
 				<dd>
-					Specify all data manually
+				Specify all data manually
 				</dd>
 			</dl>
 		</div>
@@ -62,7 +62,7 @@
 
 <!--
 
-    FROM-POOL
+FROM-POOL
 
 -->
 <div style="display: none;" id="from-pool_container">
@@ -74,13 +74,13 @@
 			<div class="option">
 				<dl>
 					<dt style="text-align: left;">
-						Family
+					Family
 					</dt>
 					<dd>
-						<input type="radio" name="prefix_family" value="4" id="family_4_radio" checked>
-						<label for="family_4_radio">IPv4</label>
-						<input type="radio" name="prefix_family" value="6" id="family_6_radio">
-						<label for="family_6_radio">IPv6</label>
+					<input type="radio" name="prefix_family" value="4" id="family_4_radio" checked>
+					<label for="family_4_radio">IPv4</label>
+					<input type="radio" name="prefix_family" value="6" id="family_6_radio">
+					<label for="family_6_radio">IPv6</label>
 					</dd>
 				</dl>
 			</div>
@@ -88,37 +88,37 @@
 			<div class="rule"></div>
 
 			<div style="padding: 20px;">
-                <table id="pool_table" class="listing" style="width: 100%;">
-                    <thead class="listing">
-                        <tr><th>Name</th><th>Description</th><th style="width: 110px;">Default type</th><th style="width: 90px;">4 / 6</th></tr>
-                    </thead>
-                    <tbody class="listing">
-                    </tbody>
-                </table>
+				<table id="pool_table" class="listing" style="width: 100%;">
+					<thead class="listing">
+						<tr><th>Name</th><th>Description</th><th style="width: 110px;">Default type</th><th style="width: 90px;">4 / 6</th></tr>
+					</thead>
+					<tbody class="listing">
+					</tbody>
+				</table>
 			</div>
 
 			<div class="rule"></div>
 
 			<div class="option" id="length_info_row" style="display: none;">
 				<dl>
-                    <dt style="text-align: left;">
-                        Allocating from pool
-                    </dt>
-                    <dd id="selected_pool_desc">
-                    </dd>
+					<dt style="text-align: left;">
+					Allocating from pool
+					</dt>
+					<dd id="selected_pool_desc">
+					</dd>
 					<dt style="text-align: left;" id="length_edit_row">
-						Prefix-length
+					Prefix-length
 					</dt>
 					<dd id="length_edit_row">
-						<input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
-						<label id="def_length_container" for="edit_length_default_radio">Use pools default prefix-length</label>
-						<br/>
-						<input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
-						<label for="edit_length_override_radio">Override pools default prefix-length</label>
-						<br/>
-						<div style="display: none;" id="length_row">
-							Use prefix-length: <input type="text" size=3 name="prefix_length_pool">
-						</div>
+					<input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
+					<label id="def_length_container" for="edit_length_default_radio">Use pools default prefix-length</label>
+					<br/>
+					<input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
+					<label for="edit_length_override_radio">Override pools default prefix-length</label>
+					<br/>
+					<div style="display: none;" id="length_row">
+						Use prefix-length: <input type="text" size=3 name="prefix_length_pool">
+					</div>
 					</dd>
 				</dl>
 			</div>
@@ -129,7 +129,7 @@
 
 <!--
 
-    FROM-PREFIX
+FROM-PREFIX
 
 -->
 <div style="display: none;" id="from-prefix_container">
@@ -141,20 +141,20 @@
 			</div>
 			{{ nipap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
 			{{ nipap.prefix_search_result() }}
-        </div>
-        <div class="rule"></div>
+		</div>
+		<div class="rule"></div>
 		<div class="option" id="prefix_length_prefix_container" style="display: none;">
-            <dl>
-                <dt>
-                    Allocating from parent prefix
-                </dt>
-                <dd id="alloc_from_prefix">
-                </dd>
-                <dt id="length_info_row">
-				    Prefix-length of new prefix
-                </dt>
+			<dl>
+				<dt>
+				Allocating from parent prefix
+				</dt>
+				<dd id="alloc_from_prefix">
+				</dd>
+				<dt id="length_info_row">
+				Prefix-length of new prefix
+				</dt>
 				<dd id="length_info_text">
-					<input type="text" name="prefix_length_prefix">
+				<input type="text" name="prefix_length_prefix">
 				</dd>
 			</dl>
 		</div>

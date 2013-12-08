@@ -1,86 +1,86 @@
 {% import 'macros.html' as nipap %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>{{ c.page_title|default('NIPAP') }}</title>
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="/jquery-ui-1.10.0.custom.css">
-        <link rel="stylesheet" href="/nipap.css">
-        <link rel="stylesheet" href="/tipTip.css">
-        <link rel="stylesheet" href="/jquery.tagit.css" type="text/css">
-        <script src="/jquery-1.9.1.min.js"></script>
-        <script src="/jquery.url.js"></script>
-        <script src="/jquery.tipTip.minified.js"></script>
-        <script src="/jquery-ui-1.10.0.custom.min.js"></script>
-        <script src="/tag-it.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="/nipap.js"></script>
-        <script>
-            $(function() {
+	<head>
+		<title>{{ c.page_title|default('NIPAP') }}</title>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="/jquery-ui-1.10.0.custom.css">
+		<link rel="stylesheet" href="/nipap.css">
+		<link rel="stylesheet" href="/tipTip.css">
+		<link rel="stylesheet" href="/jquery.tagit.css" type="text/css">
+		<script src="/jquery-1.9.1.min.js"></script>
+		<script src="/jquery.url.js"></script>
+		<script src="/jquery.tipTip.minified.js"></script>
+		<script src="/jquery-ui-1.10.0.custom.min.js"></script>
+		<script src="/tag-it.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/nipap.js"></script>
+		<script>
+			$(function() {
 
-                popped = ('state' in window.history && window.history.state !== null);
-                initialURL = location.href;
+				popped = ('state' in window.history && window.history.state !== null);
+				initialURL = location.href;
 
-                $(".tooltip").tipTip({delay: 100});
-                $(document).ajaxError(ajaxErrorHandler);
-                {% if session.user is defined %}
-                $('#add_vrf_filter_btn').click(
-                    function(evt) {
-                        showVRFSelectorMenu(clickFilterVRFSelector, $('#add_vrf_filter_btn'));
-                        evt.preventDefault();
-                    }
-                );
-                $.getJSON('/xhr/get_current_vrfs', receiveCurrentVRFs);
-                {% endif %}
-            });
-        </script>
-        {% block head %}
-        {% endblock %}
-    </head>
-    <body>
-        <div class="top_menu">
-            <div class="menu_entry">
-                <div style="font-size: 10pt; color: #CCCCCC; line-height: 37px; font-weight: bold; float: left;">
-                VRF
-                </div>
-                <div id="vrf_filter_container" style="float: left;">
-                    <div class="vrf_filter_entry" id="first_vrf_filter_entry" data-vrf=""></div>
-                    <div class="vrf_filter_entry" id="second_vrf_filter_entry" data-vrf=""></div>
-                    <div class="vrf_filter_entry" id="extra_vrf_filter_entry"></div>
-                </div>
-                <a href="#" class="add_btn" id="add_vrf_filter_btn">+</a>
-            </div>
-            <div class="menu_entry" style="position: absolute; left: 43%; padding-top: 0px;">
-                <ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
-                    <li style="display: inline-block; padding: 0; margin: 0;">
-                        <a href="{{ h.url(controller = 'vrf', action = 'list') }}" class="menu_link {% if page == 'vrfs' -%}menu_link_active{%- endif -%}">VRFs</a>
-                    </li>
-                    <li style="display: inline-block; padding: 0; margin: 0;">
-                        <a href="{{ h.url(controller = 'prefix', action = 'list') }}" class="menu_link {% if page == 'prefixes' -%}menu_link_active{%- endif -%}">prefixes</a>
-                    </li>
-                    <li style="display: inline-block;">
-                        <a href="{{ h.url(controller = 'pool', action = 'list') }}" class="menu_link {% if page == 'pools' -%}menu_link_active{%- endif -%}">pools</a>
-                    </li>
-                </ol>
-            </div>
-            <div class="menu_entry" style="position: absolute; right: 30px; padding-top: 0px;">
-                <ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
-                    <li style="display: inline-block; padding: 0; margin: 0;">
-                        <a href="{{ url(controller='auth', action='logout') }}" class="menu_link">Log out</a>
-                    </li>
-                </ol>
-            </div>
-        </div>
-        {% block menu %}
-        {% endblock %}
-        {% block raw_content %}
-        {% endblock %}
-        <div class="content_outer">
-            <div class="content_inner">
-                {% block content %}
-                {% endblock %}
-            </div>
-            <div style="height: 500px;"> &nbsp; </div>
-        </div>
-        <div class="version"><a href="{{ h.url(controller = 'version') }}">v{{ c.www_version }}</a></div>
-    </body>
+				$(".tooltip").tipTip({delay: 100});
+				$(document).ajaxError(ajaxErrorHandler);
+				{% if session.user is defined %}
+				$('#add_vrf_filter_btn').click(
+				function(evt) {
+					showVRFSelectorMenu(clickFilterVRFSelector, $('#add_vrf_filter_btn'));
+					evt.preventDefault();
+				}
+				);
+				$.getJSON('/xhr/get_current_vrfs', receiveCurrentVRFs);
+				{% endif %}
+			});
+		</script>
+		{% block head %}
+		{% endblock %}
+	</head>
+	<body>
+		<div class="top_menu">
+			<div class="menu_entry">
+				<div style="font-size: 10pt; color: #CCCCCC; line-height: 37px; font-weight: bold; float: left;">
+					VRF
+				</div>
+				<div id="vrf_filter_container" style="float: left;">
+					<div class="vrf_filter_entry" id="first_vrf_filter_entry" data-vrf=""></div>
+					<div class="vrf_filter_entry" id="second_vrf_filter_entry" data-vrf=""></div>
+					<div class="vrf_filter_entry" id="extra_vrf_filter_entry"></div>
+				</div>
+				<a href="#" class="add_btn" id="add_vrf_filter_btn">+</a>
+			</div>
+			<div class="menu_entry" style="position: absolute; left: 43%; padding-top: 0px;">
+				<ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
+					<li style="display: inline-block; padding: 0; margin: 0;">
+					<a href="{{ h.url(controller = 'vrf', action = 'list') }}" class="menu_link {% if page == 'vrfs' -%}menu_link_active{%- endif -%}">VRFs</a>
+					</li>
+					<li style="display: inline-block; padding: 0; margin: 0;">
+					<a href="{{ h.url(controller = 'prefix', action = 'list') }}" class="menu_link {% if page == 'prefixes' -%}menu_link_active{%- endif -%}">prefixes</a>
+					</li>
+					<li style="display: inline-block;">
+					<a href="{{ h.url(controller = 'pool', action = 'list') }}" class="menu_link {% if page == 'pools' -%}menu_link_active{%- endif -%}">pools</a>
+					</li>
+				</ol>
+			</div>
+			<div class="menu_entry" style="position: absolute; right: 30px; padding-top: 0px;">
+				<ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
+					<li style="display: inline-block; padding: 0; margin: 0;">
+					<a href="{{ url(controller='auth', action='logout') }}" class="menu_link">Log out</a>
+					</li>
+				</ol>
+			</div>
+		</div>
+		{% block menu %}
+		{% endblock %}
+		{% block raw_content %}
+		{% endblock %}
+		<div class="content_outer">
+			<div class="content_inner">
+				{% block content %}
+				{% endblock %}
+			</div>
+			<div style="height: 500px;"> &nbsp; </div>
+		</div>
+		<div class="version"><a href="{{ h.url(controller = 'version') }}">v{{ c.www_version }}</a></div>
+	</body>
 </html>
