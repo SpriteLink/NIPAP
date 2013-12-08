@@ -53,6 +53,14 @@
 
 
         $(function() {
+			$('#prefix_data_container').show()
+			$('#prefix-row').show()
+			// Set text on submit button to "Save" instead of "Add", since we
+			// are modifying existing prefix.
+			$("#prefix_form_submit_button").val("Save");
+			// Set form action to edit
+			$("#prefix_form").attr("action", "{{ h.url(controller="prefix", action="edit", id=c.prefix.id) }}");
+
 			// handle the comment input field
 			if ($("input[name='prefix_comment']").val() == '') {
 				$("input[name='prefix_comment']").hide();
@@ -64,7 +72,7 @@
 			}
 
             // Capture submit form event
-            $('form[name="prefix_form"]').submit(function(e) {
+            $('#prefix_form').submit(function(e) {
             {% if c.prefix.authoritative_source != 'nipap' %}
                 dialog = showDialogYesNo(
                     'Confirm prefix edit',
@@ -114,219 +122,7 @@
 Prefix administration &mdash;&gt; edit prefix
 </div>
 
-<!--
-
-    PREFIX DATA
-
--->
-<div id="prefix_data_container">
-<form method="post" name="prefix_form" action="{{ h.url(controller="prefix", action="edit", id=c.prefix.id) }}">
-    <div class="options-group">
-        <div class="options-content">
-            <h3 class="options-group-heading">Properties of {{ c.prefix.type }} {{ c.prefix.prefix }}</h3>
-            <div class="option">
-                <dl>
-                    <dt>Prefix</dt>
-                    <dd><input type="text" name="prefix_prefix" value="{{ c.prefix.prefix }}" class="tooltip" title="The prefix, i.e. 192.0.2.16/28"></dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>Type</dt>
-                    <dd>
-                        <input type="radio" id="prefix-type-res" name="prefix_type" value="reservation" class="tooltip" title="" {% if c.prefix.type == 'reservation' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="prefix-type-res">Reservation</label>
-                        <input type="radio" id="prefix-type-ass" name="prefix_type" value="assignment" class="tooltip" title="" {% if c.prefix.type == 'assignment' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="prefix-type-ass">Assignment</label>
-                        <input type="radio" id="prefix-type-host" name="prefix_type" value="host" class="tooltip" title=""{% if c.prefix.type == 'host' %} checked{% endif %} disabled><label for="prefix-type-host">Host</label>
-						<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
-                    </dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        Description
-                    </dt>
-                    <dd>
-						<input type="text" name="prefix_description" style="width: 80%;" class="tooltip" title="A brief description of the prefix." value="{{ c.prefix.description or '' }}">
-                    </dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        Comment
-                    </dt>
-                    <dd>
-						{% if c.prefix.comment %}
-                        <input type="text" name="prefix_comment" value="{{ c.prefix.comment or '' }}">
-						{% else %}
-						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer; display: none;">add comment</span><input type="text" name="prefix_comment" style="width: 80%;">
-						{% endif %}
-                    </dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        Tags
-                    </dt>
-                    <dd>
-                        <ul id="tags" style="font-size: 1.0em;">
-                            {% for tag in c.prefix.tags|sort() %}<li>{{ tag }}</li>{% endfor %}
-                        </ul>
-                    </dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        Inherited Tags
-                    </dt>
-                    <dd>
-                        <ul id="inherited_tags" style="font-size: 1.0em;">
-                            {% for tag in c.prefix.inherited_tags|sort() %}<li>{{ tag }}</li>{% endfor %}
-                        </ul>
-                    </dd>
-                </dl>
-            </div>
-
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        Node
-                    </dt>
-                    <dd>
-						<input type="text" name="prefix_node" value="{{ c.prefix.node or '' }}" class="tooltip" title="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured.">
-                    </dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        Country
-                    </dt>
-                    <dd>
-                        <input type="text" name="prefix_country" value="{{ c.prefix.country or '' }}" class="tooltip" title="Two-letter country code according to ISO-3166-1'">
-                    </dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        Order ID
-                    </dt>
-                    <dd>
-                        <input type="text" name="prefix_order_id" value="{{ c.prefix.order_id or '' }}" size=10>
-                    </dd>
-                </dl>
-            </div>
-            
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        Customer ID
-                    </dt>
-                    <dd>
-                        <input type="text" name="prefix_customer_id" value="{{ c.prefix.customer_id or '' }}" size=10>
-                    </dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        VRF
-                    </dt>
-                    <dd>
-                        <input type="button" name="prefix_vrf_btn" value="{{ c.prefix.vrf.rt or 'None' }}">
-                        <input type="hidden" name="prefix_vrf" value="{{ c.prefix.vrf.id }}">
-                    </dd>
-                </dl>
-            </div>
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        VLAN
-                    </dt>
-                    <dd>
-                        <input type="text" name="prefix_vlan" value="{{ c.prefix.vlan or '' }}" size=10>
-                    </dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                        Monitor
-                    </dt>
-                    <dd style="height: 20px; line-height: 20px;">
-                        <input type="checkbox" name="prefix_monitor" value="true"{% if c.prefix.monitor == True %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                        <span id="alarm_priority_container">
-                            Priority:
-                            <input type="radio" id="radio-prefix-alarm-prio-warning" name="prefix_alarm_priority" value="warning"{% if c.prefix.alarm_priority == 'warning' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                            <label for="radio-prefix-alarm-prio-warning">Warning</label>
-                            <input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low"{% if c.prefix.alarm_priority == 'low' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                            <label for="radio-prefix-alarm-prio-low">Low</label>
-                            <input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium"{% if c.prefix.alarm_priority == 'medium' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                            <label for="radio-prefix-alarm-prio-medium">Medium</label>
-                            <input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high"{% if c.prefix.alarm_priority == 'high' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                            <label for="radio-prefix-alarm-prio-high">High</label>
-                            <input type="radio" id="radio-prefix-alarm-prio-critical" name="prefix_alarm_priority" value="critical"{% if c.prefix.alarm_priority == 'critical' %} checked{% endif %}{% if c.prefix.type == 'host' %} disabled{% endif %}>
-                            <label for="radio-prefix-alarm-prio-critical">Critical</label>
-                        </span>
-                    </dd>
-                </dl>
-            </div>
-
-            <div class="rule"></div>
-
-            <div class="option">
-                <dl>
-                    <dt>
-                    </dt>
-                    <dd>
-                        <input type="hidden" name="id" value="{{ c.prefix.id }}">
-                        <input class="button button_green" type="submit" value="Save">
-                    </dd>
-                </dl>
-            </div>
-        </div>
-    <div>
-</form>
-
-</div>
+{% include 'prefix_form.html' %}
 
 <div id="prefix_success_container" style="display: none;">
     <div class="options-group">
