@@ -161,8 +161,8 @@ PREFIX DATA
 						VRF
 						</dt>
 						<dd>
+						<span id="prefix_vrf_display"></span>
 						<input type="button" name="prefix_vrf_btn" value="{% if c.prefix.vrf %}{{ c.prefix.vrf.rt or 'None' }}{% endif %}">
-						<span id="prefix_vrf_display" class="tooltip" style="display: none;"></span>
 						<input type="hidden" name="prefix_vrf" value="{% if c.prefix.vrf %}{{ c.prefix.vrf.id }}{% endif %}">
 						</dd>
 					</dl>
