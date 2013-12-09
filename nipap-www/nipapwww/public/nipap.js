@@ -669,6 +669,20 @@ function showPrefix(prefix, reference, offset) {
 		prefix_customer_id.html(prefix.customer_id);
 	}
 
+    // Add comment icon if a comment is present
+	prefix_row.append('<div id="prefix_comment' + prefix.id + '">');
+	var prefix_comment = $('#prefix_comment' + prefix.id);
+	prefix_comment.addClass('prefix_column');
+	prefix_comment.addClass('prefix_comment');
+	if (prefix.comment == null || prefix.comment == '') {
+		prefix_comment.html("&nbsp;");
+	} else {
+		prefix_comment.addClass('tooltip');
+		prefix_comment.prop('title', prefix.comment)
+		prefix_comment.html('<img src="/comment-icon.png">');
+		prefix_comment.tipTip({ delay: 100 });
+	}
+
 	// Add prefix description
 	prefix_row.append('<div id="prefix_description' + prefix.id + '">');
 	var prefix_description = $('#prefix_description' + prefix.id);
