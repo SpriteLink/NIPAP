@@ -47,7 +47,7 @@ setup(
     url = nipap.__url__,
     packages = ['nipap'],
     keywords = ['nipap'],
-    requires = ['twisted', 'ldap', 'sqlite3', 'IPy', 'psycopg2'],
+    requires = ['ldap', 'sqlite3', 'IPy', 'psycopg2'],
     data_files = get_data_files(),
     classifiers = [
         'Development Status :: 4 - Beta',
