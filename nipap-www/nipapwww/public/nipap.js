@@ -1663,7 +1663,7 @@ function receiveVRFContainerData(search_result) {
 	if (vrf.rt == null) {
 		vrf_rt = '-';
 	}
-	$('#preflist_vrf_container_' + vrf.id).children('div[class="preflist_vrf_panel"]').html('<b>RT:&nbsp;<span style="font-size: 1.5em">' + vrf_rt + '</span></b><br/>' + vrf.name);
+	$('#preflist_vrf_container_' + vrf.id).children('div[class="preflist_vrf_panel"]').html('<div class="preflist_vrf_rt"><b>RT:&nbsp;' + vrf_rt + '</b></div><b class="t"></b><div style="padding-bottom: 30px; margin-left: 5px;">' + vrf.name + '</div>');
 }
 
 
@@ -1804,26 +1804,30 @@ function showAllocContainer(e) {
 		// and add prefix too pool-pages. When adding a prefix to a pool, even
 		// manually added prefixes can have the VRF set on beforehand. Check
 		// ugly global variable to see what we're currently doing.
-		if (prefix_link_type = 'add_too_pool') {
+		if (prefix_link_type == 'add_too_pool') {
+			// Adding a prefix to a pool
 
 			// Do we have an implied VRF set?
-			if (implied_vrf_id == null) {
+			if (typeof(implied_vrf_id) != 'undefined') {
+				if (implied_vrf_id == null) {
 
-				resetPrefixVRFDisplay();
+					resetPrefixVRFDisplay();
 
-			} else {
+				} else {
 
-				// Set prefix VRF to pool's implied VRF (if available)
-				$("input[name = prefix_vrf]").val(implied_vrf_id);
-				$("#prefix_vrf_display").html(implied_vrf_rt);
-				$("input[name = prefix_vrf_btn]").hide();
-				$("#prefix_vrf_display").attr('title', 'VRF ' + implied_vrf_rt + ' taken from pool\'s implied VRF.');
-				$("#prefix_vrf_display").tipTip();
-				$("#prefix_vrf_display").show();
+					// Set prefix VRF to pool's implied VRF (if available)
+					$("input[name = prefix_vrf]").val(implied_vrf_id);
+					$("#prefix_vrf_display").html(implied_vrf_rt);
+					$("input[name = prefix_vrf_btn]").hide();
+					$("#prefix_vrf_display").attr('title', 'VRF ' + implied_vrf_rt + ' taken from pool\'s implied VRF.');
+					$("#prefix_vrf_display").tipTip();
+					$("#prefix_vrf_display").show();
 
+				}
 			}
 
 		} else {
+			// "Normal" addition of a prefix
 
 			resetPrefixVRFDisplay();
 

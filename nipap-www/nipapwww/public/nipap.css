@@ -423,9 +423,29 @@ tbody.listing > tr:hover {
 }
 
 .preflist_vrf_panel {
+	border-left: 1px solid #EEEEEE;
 	width: 100px;
 	display: table-cell;
 	font-size: 12px;
+	color: #666666;
+}
+
+.preflist_vrf_rt {
+	position: relative;
+	left: -8px;
+	background-color: #2D2D2D;
+	color: #EEEEEE;
+	padding: 2px 5px 2px 8px;
+}
+
+.t {
+    border-left: 8px solid rgba(0, 0, 0, 0);
+    border-top: 5px solid #999999;
+    bottom: -5px;
+    clip: rect(0px, 10px, 20px, 0px);
+    left: -8px;
+    position: relative;
+	z-index: -1;
 }
 
 .preflist_prefix_panel {
