@@ -1413,7 +1413,7 @@ function insertPrefixList(pref_list) {
 
 		// This should only happen when adding the very first prefix to a completely empty list
 		// Add it manually so we have a starting point
-		var c = getVRFContainer(prefix.vrf_rt);
+		var c = getVRFContainer(prefix.vrf_id);
 		showPrefix(prefix, c, null);
 		prev_prefix = prefix;
 		prefix_list[prefix.id] = prefix;
@@ -1468,7 +1468,7 @@ function insertPrefix(prefix, prev_prefix) {
 	// Changing VRF - create new VRF container and add prefix to it
 	if (prefix.vrf_id != prev_prefix.vrf_id) {
 
-		var c = getVRFContainer(prefix.vrf_rt);
+		var c = getVRFContainer(prefix.vrf_id);
 		showPrefix(prefix, c, null);
 		return;
 
@@ -1525,7 +1525,7 @@ function insertPrefix(prefix, prev_prefix) {
 
 			// Safety net - stop iterating if we reached the VRF container
 			// which is the highest level.
-			if (main_container === getVRFContainer(prefix.vrf_rt)) {
+			if (main_container === getVRFContainer(prefix.vrf_id)) {
 				break;
 			}
 
@@ -1641,25 +1641,29 @@ function insertPrefix(prefix, prev_prefix) {
  * Creates a new container if it does not exists, otherwise returns the
  * existing one.
  */
-function getVRFContainer(vrf) {
-
-	if (vrf == null) {
-		var vrf_s = 'No VRF';
-		var vrf_id = 'null';
-	} else {
-		var vrf_s = vrf;
-		var vrf_id = vrf.replace(':', '_');
-	}
-
+function getVRFContainer(vrf_id) {
 	if ($('#preflist_prefix_panel_' + vrf_id).length == 0) {
+		$.getJSON("/xhr/smart_search_vrf", { 'vrf_id': vrf_id, 'query_string': '' }, receiveVRFContainerData);
 		$("#prefix_list").append('<div class="preflist_vrf_container" id="preflist_vrf_container_' + vrf_id + '">' +
-			'<div class="preflist_vrf_panel">' + vrf_s + '</div>' +
+			'<div class="preflist_vrf_panel"></div>' +
 			'<div class="preflist_prefix_panel" id="preflist_prefix_panel_' + vrf_id + '"></div>' +
 			'</div>');
 	}
 
 	return $('#preflist_prefix_panel_' + vrf_id);
+}
 
+/*
+ * Update VRF container with RT and name
+ */
+function receiveVRFContainerData(search_result) {
+	vrf = search_result.result[0];
+
+	vrf_rt = vrf.rt;
+	if (vrf.rt == null) {
+		vrf_rt = '-';
+	}
+	$('#preflist_vrf_container_' + vrf.id).children('div[class="preflist_vrf_panel"]').html('<b>RT:&nbsp;<span style="font-size: 1.5em">' + vrf_rt + '</span></b><br/>' + vrf.name);
 }
 
 
