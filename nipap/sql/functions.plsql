@@ -500,7 +500,7 @@ BEGIN
 	-- if an assignment contains hosts, we block the delete
 	IF OLD.type = 'assignment' THEN
 		-- contains one child prefix
-		IF (SELECT COUNT(1) FROM ip_net_plan WHERE prefix << OLD.prefix AND vrf_id = OLD.vrf_id LIMIT 1) > 0 THEN
+		IF (SELECT COUNT(1) FROM ip_net_plan WHERE iprange(prefix) << iprange(OLD.prefix) AND vrf_id = OLD.vrf_id LIMIT 1) > 0 THEN
 			RAISE EXCEPTION '1200:Prohibited delete, prefix (%) contains hosts.', OLD.prefix;
 		END IF;
 	END IF;
@@ -517,12 +517,12 @@ CREATE OR REPLACE FUNCTION tf_ip_net_plan__indent_children__iu_before() RETURNS 
 DECLARE
 	new_parent record;
 BEGIN
-	SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix >> NEW.prefix ORDER BY prefix DESC LIMIT 1;
+	SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY prefix DESC LIMIT 1;
 
 	IF TG_OP = 'UPDATE' THEN
-		NEW.children := (SELECT COUNT(1) FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix << NEW.prefix AND prefix != OLD.prefix AND indent = COALESCE(new_parent.indent+1, 0));
+		NEW.children := (SELECT COUNT(1) FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) << iprange(NEW.prefix) AND prefix != OLD.prefix AND indent = COALESCE(new_parent.indent+1, 0));
 	ELSE
-		NEW.children := (SELECT COUNT(1) FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix << NEW.prefix AND indent = COALESCE(new_parent.indent+1, 0));
+		NEW.children := (SELECT COUNT(1) FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) << iprange(NEW.prefix) AND indent = COALESCE(new_parent.indent+1, 0));
 	END IF;
 
 	RETURN NEW;
@@ -548,9 +548,9 @@ BEGIN
 		-- table has already been updated and we risk getting ourself as
 		-- old_parent.
 		IF TG_OP = 'UPDATE' THEN
-			SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND prefix >> OLD.prefix AND prefix != NEW.prefix ORDER BY prefix DESC LIMIT 1;
+			SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND iprange(prefix) >> iprange(OLD.prefix) AND prefix != NEW.prefix ORDER BY prefix DESC LIMIT 1;
 		ELSE
-			SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND prefix >> OLD.prefix ORDER BY prefix DESC LIMIT 1;
+			SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND iprange(prefix) >> iprange(OLD.prefix) ORDER BY prefix DESC LIMIT 1;
 		END IF;
 
 		IF old_parent.id IS NOT NULL THEN
@@ -558,7 +558,7 @@ BEGIN
 					(SELECT COUNT(1)
 					FROM ip_net_plan
 					WHERE vrf_id = OLD.vrf_id
-						AND prefix << old_parent.prefix
+						AND iprange(prefix) << iprange(old_parent.prefix)
 						AND indent = old_parent.indent+1)
 				WHERE id = old_parent.id;
 		END IF;
@@ -572,13 +572,13 @@ BEGIN
 		-- This only sets number of children prefixes for the new parent
 		-- prefix. The number of children for the prefix being modified is
 		-- calculated in the before trigger.
-		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix >> NEW.prefix ORDER BY prefix DESC LIMIT 1;
+		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY prefix DESC LIMIT 1;
 		IF new_parent.id IS NOT NULL THEN
 			UPDATE ip_net_plan SET children =
 					(SELECT COUNT(1)
 					FROM ip_net_plan
 					WHERE vrf_id = NEW.vrf_id
-						AND prefix << new_parent.prefix
+						AND iprange(prefix) << iprange(new_parent.prefix)
 						AND indent = new_parent.indent+1)
 				WHERE id = new_parent.id;
 		END IF;
@@ -598,7 +598,7 @@ DECLARE
 	new_parent record;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
-		SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND prefix >> OLD.prefix ORDER BY prefix DESC LIMIT 1;
+		SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND iprange(prefix) >> iprange(OLD.prefix) ORDER BY prefix DESC LIMIT 1;
 
 		-- parent is NULL if we are top level
 		IF old_parent.id IS NULL THEN
@@ -612,7 +612,7 @@ BEGIN
 		END IF;
 
 	ELSIF TG_OP = 'INSERT' THEN
-		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix >> NEW.prefix ORDER BY prefix DESC LIMIT 1;
+		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY prefix DESC LIMIT 1;
 
 		-- identify the parent and run calc_tags on it to inherit tags to
 		-- the new prefix from the parent
