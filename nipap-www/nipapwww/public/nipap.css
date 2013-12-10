@@ -436,6 +436,10 @@ tbody.listing > tr:hover {
 	background-color: #2D2D2D;
 	color: #EEEEEE;
 	padding: 2px 5px 2px 8px;
+	width: 90px;
+    -webit-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    -moz-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .t {
