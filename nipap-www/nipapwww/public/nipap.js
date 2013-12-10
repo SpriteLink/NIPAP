@@ -899,8 +899,8 @@ function addVRFToSelectList(vrf, elem) {
 
 	elem.append('<a href="#" id="vrf_filter_entry_' + String(vrf.id) + '" ' +
 		'class="vrf_filter_entry" data-vrf_id="' + String(vrf.id) + '" data-vrf_rt="' + vrf.rt + '">' +
-			'<div><div class="selector_tick">&nbsp;</div>' +
-			( vrf.id == 0 ? vrf.name : (vrf.rt + '&nbsp;-&nbsp;' + vrf.name) ) + '</div>' +
+			'<div><div class="selector_tick">&nbsp;</div><div class="vrf_filter_entry_rt">RT:&nbsp;' +
+			( vrf.id == 0 ? '-' : vrf.rt ) + '</div>' + vrf.name + '</div>' +
 			'<div class="selector_entry_description" style="padding-top: 5px; padding-left: 15px; font-weight: normal; font-size: 9pt;">' +
 			( vrf.description == null ? '' : vrf.description ) + '</div><div class="selector_x">&nbsp;</div></a>');
 
@@ -1659,11 +1659,7 @@ function getVRFContainer(vrf_id) {
 function receiveVRFContainerData(search_result) {
 	vrf = search_result.result[0];
 
-	vrf_rt = vrf.rt;
-	if (vrf.rt == null) {
-		vrf_rt = '-';
-	}
-	$('#preflist_vrf_container_' + vrf.id).children('div[class="preflist_vrf_panel"]').html('<div class="preflist_vrf_rt"><b>RT:&nbsp;' + vrf_rt + '</b></div><b class="t"></b><div style="padding-bottom: 30px; margin-left: 5px;">' + vrf.name + '</div>');
+	$('#preflist_vrf_container_' + vrf.id).children('div[class="preflist_vrf_panel"]').html('<div class="preflist_vrf_rt"><b>RT:&nbsp;' + ( vrf.rt == null ? '-' : vrf.rt ) + '</b></div><b class="t"></b><div style="padding-bottom: 30px; margin-left: 5px;">' + vrf.name + '</div>');
 }
 
 

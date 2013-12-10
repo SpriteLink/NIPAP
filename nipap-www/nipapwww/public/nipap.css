@@ -89,6 +89,18 @@ a.menu_link:hover {
     position: relative;
 }
 
+.vrf_filter_entry_rt {
+	float: left;
+	background-color: #2D2D2D;
+	color: #EEEEEE;
+	padding: 1px 5px 1px 5px;
+	-webit-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+	-moz-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+	box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+	margin: 0;
+	margin-right: 5px;
+}
+
 /*
  * An add-button
  */
