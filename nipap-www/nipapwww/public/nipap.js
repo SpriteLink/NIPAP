@@ -1827,6 +1827,14 @@ function showAllocContainer(e) {
 
 			resetPrefixVRFDisplay();
 
+			if (Object.keys(selected_vrfs).length == 0) {
+				$("#prefix_vrf_display").html("No VRF currently selected, please choose destination VRF manually.");
+			} else if (Object.keys(selected_vrfs).length == 1) {
+				$("#prefix_vrf_display").html("Destination VRF set to current VRF selection.");
+			} else {
+				$("#prefix_vrf_display").html("Multiple selected VRFs, please choose destination VRF for new prefix manually.");
+			}
+			$("#prefix_vrf_display").show();
 		}
 
 	}
