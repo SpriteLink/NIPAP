@@ -91,14 +91,12 @@ a.menu_link:hover {
 
 .vrf_filter_entry_rt {
 	float: left;
-	background-color: #2D2D2D;
-	color: #EEEEEE;
-	padding: 1px 5px 1px 5px;
-	-webit-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-	-moz-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-	box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+	background-color: #EEEEEE;
+	color: #2D2D2D;
+	padding: 0px 5px 0px 5px;
 	margin: 0;
 	margin-right: 5px;
+	border: 1px solid #DDDDDD;
 }
 
 /*
@@ -467,13 +465,11 @@ tbody.listing > tr:hover {
 .preflist_vrf_rt {
 	position: relative;
 	left: -8px;
-	background-color: #2D2D2D;
-	color: #EEEEEE;
+	background-color: #EEEEEE;
+	color: #2D2D2D;
 	padding: 2px 5px 2px 8px;
 	width: 90px;
-    -webit-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
-    -moz-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+	border: 1px solid #DDDDDD;
 }
 
 .t {
