@@ -898,10 +898,11 @@ function performVRFSelectorSearch() {
 function addVRFToSelectList(vrf, elem) {
 
 	elem.append('<a href="#" id="vrf_filter_entry_' + String(vrf.id) + '" ' +
-		'class="vrf_filter_entry" data-vrf_id="' + String(vrf.id) + '" data-vrf_rt="' + vrf.rt + '">' +
+		'class="vrf_filter_entry" data-vrf_id="' + String(vrf.id) + '" data-vrf_rt="' + ( vrf.rt == null ? '-' : vrf.rt ) + 
+		'" data-vrf_name="' + vrf.name + '" data-vrf_description="' + vrf.description + '">' +
 			'<div><div class="selector_tick">&nbsp;</div><div class="vrf_filter_entry_rt">RT:&nbsp;' +
 			( vrf.id == 0 ? '-' : vrf.rt ) + '</div>' + vrf.name + '</div>' +
-			'<div class="selector_entry_description" style="padding-top: 5px; padding-left: 15px; font-weight: normal; font-size: 9pt;">' +
+			'<div class="selector_entry_description">' +
 			( vrf.description == null ? '' : vrf.description ) + '</div><div class="selector_x">&nbsp;</div></a>');
 
 	// display tick
@@ -986,15 +987,16 @@ function clickPrefixVRFSelector(evt) {
 		}
 		tgt = tgt.parentElement;
 	}
-	var vrf_id = tgt.getAttribute('data-vrf_id');
+	var vrf = Object();
+	vrf.id = tgt.getAttribute('data-vrf_id');
+	vrf.rt = tgt.getAttribute('data-vrf_rt');
+	vrf.name = tgt.getAttribute('data-vrf_name');
+	vrf.description = tgt.getAttribute('data-vrf_description');
+	$("#prefix_vrf_display").html('<div class="vrf_filter_entry"><div class="vrf_filter_entry_rt">RT:&nbsp;' + vrf.rt + '</div><div class="selector_entry_name" style="margin-left: 5px;">' + vrf.name + '</div><div class="selector_entry_description" style="clear: both;">' + vrf.description + '</div></div>');
 
 	// update VRF input field with selected VRF
-	$('input[name="prefix_vrf"]').val(vrf_id);
-	if (vrf_id == 'null') {
-		$('input[name="prefix_vrf_btn"]').val('None');
-	} else {
-		$('input[name="prefix_vrf_btn"]').val(tgt.getAttribute('data-vrf_rt'));
-	}
+	$('input[name="prefix_vrf_id"]').val(vrf.id);
+	$("#prefix_vrf_text").html('Manually selected VRF:');
 
 	hidePopupMenu();
 	evt.preventDefault();
@@ -1758,6 +1760,7 @@ function unhide(id) {
  */
 function showAllocContainer(e) {
 
+	$("input[name = prefix_vrf]").show();
 	// from-prefix
 	if (e.currentTarget.id == 'radio-from-prefix') {
 
@@ -1804,19 +1807,18 @@ function showAllocContainer(e) {
 			// Adding a prefix to a pool
 
 			// Do we have an implied VRF set?
-			if (typeof(implied_vrf_id) != 'undefined') {
-				if (implied_vrf_id == null) {
+			if (typeof(implied_vrf) != 'undefined') {
+				if (implied_vrf.id == null) {
 
 					resetPrefixVRFDisplay();
 
 				} else {
 
 					// Set prefix VRF to pool's implied VRF (if available)
-					$("input[name = prefix_vrf]").val(implied_vrf_id);
-					$("#prefix_vrf_display").html(implied_vrf_rt);
+					$("#prefix_vrf_text").html("VRF " + implied_vrf.rt + " taken from pool's implied VRF.");
+					$("input[name = prefix_vrf]").val(implied_vrf.id);
 					$("input[name = prefix_vrf_btn]").hide();
-					$("#prefix_vrf_display").attr('title', 'VRF ' + implied_vrf_rt + ' taken from pool\'s implied VRF.');
-					$("#prefix_vrf_display").tipTip();
+					$("#prefix_vrf_display").html('<div class="vrf_filter_entry"><div class="vrf_filter_entry_rt">RT:&nbsp;' + implied_vrf.rt + '</div><div class="selector_entry_name" style="margin-left: 5px;">' + implied_vrf.name + '</div><div class="selector_entry_description" style="clear: both;">' + implied_vrf.description + '</div></div>');
 					$("#prefix_vrf_display").show();
 
 				}
@@ -1828,11 +1830,16 @@ function showAllocContainer(e) {
 			resetPrefixVRFDisplay();
 
 			if (Object.keys(selected_vrfs).length == 0) {
-				$("#prefix_vrf_display").html("No VRF currently selected, please choose destination VRF manually.");
+				$("#prefix_vrf_text").html("No VRF currently selected, please choose destination VRF for new prefix manually.");
+				$("#prefix_vrf_display").html("No VRF selected.");
 			} else if (Object.keys(selected_vrfs).length == 1) {
-				$("#prefix_vrf_display").html("Destination VRF set to current VRF selection.");
+				var vrf = null;
+				$.each(selected_vrfs, function(k, v) { vrf = v; });
+				$("#prefix_vrf_text").html('Destination VRF for new prefix set to currently selected VRF.');
+				$("#prefix_vrf_display").html('<div class="vrf_filter_entry"><div class="vrf_filter_entry_rt">RT:&nbsp;' + vrf.rt + '</div><div class="selector_entry_name" style="margin-left: 5px;">' + vrf.name + '</div><div class="selector_entry_description" style="clear: both;">' + vrf.description + '</div></div>');
 			} else {
-				$("#prefix_vrf_display").html("Multiple selected VRFs, please choose destination VRF for new prefix manually.");
+				$("#prefix_vrf_text").html("Multiple VRFs selected, please choose destination VRF for new prefix manually.");
+				$("#prefix_vrf_display").html("No VRF selected.");
 			}
 			$("#prefix_vrf_display").show();
 		}
@@ -2123,20 +2130,18 @@ function selectPool(id) {
 	}
 
     // Set prefix VRF to pool's implied VRF (if available)
-    var vrf_text = "";
     if (cur_opts.pool.vrf_rt == null) {
-        vrf_text = 'None';
-        $("input[name = prefix_vrf]").val(null);
+        $("input[name = prefix_vrf_id]").val(null);
     } else {
-        vrf_text = cur_opts.pool.vrf_rt;
-        $("input[name = prefix_vrf]").val(cur_opts.pool.vrf_id);
+        $("input[name = prefix_vrf_id]").val(cur_opts.pool.vrf_id);
     }
 
-    $("#prefix_vrf_display").html(vrf_text);
+	$("#prefix_vrf_text").html("Destination VRF for new prefix taken from pool's implied VRF.");
+	$("#prefix_vrf_display").html('<div class="vrf_filter_entry"><div class="vrf_filter_entry_rt">RT:&nbsp;' + ( cur_opts.pool.vrf_rt == null ? '-' : cur_opts.pool.vrf_rt ) + '</div><div class="selector_entry_name" style="margin-left: 5px;"></div><div class="selector_entry_description" style="clear: both;"></div></div>');
     $("input[name = prefix_vrf_btn]").hide();
-    $("#prefix_vrf_display").attr('title', 'VRF ' + vrf_text + ' taken from pool\'s implied VRF.');
-    $("#prefix_vrf_display").tipTip();
     $("#prefix_vrf_display").show();
+	$.getJSON("/xhr/smart_search_vrf", { 'vrf_id': cur_opts.pool.vrf_id, 'query_string': '' }, receivePoolImpliedVRFData);
+
 
 	// show pool name and description
 	$('#selected_pool_desc').html(pool_list[id].name + ' &mdash; ' + pool_list[id].description);
@@ -2144,6 +2149,12 @@ function selectPool(id) {
 		$('#pool_prefix_type').html(pool_list[id].default_type);
 		$('#default_prefix_type').show();
 		$('#prefix_type_selection').hide();
+		$('#prefix-type-res').prop('checked', 'false');
+		$('#prefix-type-ass').prop('checked', 'false');
+		$('#prefix-type-host').prop('checked', 'false');
+		if (pool_list[id].default_type == 'reservation') { $('#prefix-type-res').prop('checked', 'true') }
+		if (pool_list[id].default_type == 'assignment') { $('#prefix-type-ass').prop('checked', 'true') }
+		if (pool_list[id].default_type == 'host') { $('#prefix-type-host').prop('checked', 'true') }
 	}
 
 	// display data form
@@ -2160,6 +2171,16 @@ function selectPool(id) {
 	$("html,body").animate({ scrollTop: $("#length_info_row").offset().top - 50}, 700);
 	$("#length_info_row").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
 
+}
+
+
+/*
+ * Update VRF info based on pools implied_vrf information
+ */
+function receivePoolImpliedVRFData(search_result) {
+	implied_vrf = search_result.result[0];
+
+	$("#prefix_vrf_display").html('<div class="vrf_filter_entry"><div class="vrf_filter_entry_rt">RT:&nbsp;' + ( cur_opts.pool.vrf_rt == null ? '-' : cur_opts.pool.vrf_rt ) + '</div><div class="selector_entry_name" style="margin-left: 5px;">' + implied_vrf.name + '</div><div class="selector_entry_description" style="clear: both;">' + implied_vrf.description + '</div></div>');
 }
 
 

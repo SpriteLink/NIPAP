@@ -35,8 +35,37 @@ PREFIX DATA
 							<input type="radio" id="prefix-type-ass" name="prefix_type" value="assignment" class="tooltip" title="" {% if c.prefix.type == 'assignment' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="prefix-type-ass">Assignment</label>
 							<input type="radio" id="prefix-type-host" name="prefix_type" value="host" class="tooltip" title=""{% if c.prefix.type == 'host' %} checked{% endif %} disabled><label for="prefix-type-host">Host</label>
 							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
-							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
 						</span>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						VRF
+						</dt>
+						<dd>
+						<div style="position: relative;">
+							<div>
+								<div id="prefix_vrf_text" class="prefix_vrf_text"></div>
+								<div class="selector">
+									<div id="prefix_vrf_display" style="width: 80%; border: 1px solid #CCCCCC; float: left;">
+										{% if c.prefix.vrf %}
+										<div class="vrf_filter_entry">
+											<div class="vrf_filter_entry_rt">RT:&nbsp;{{ c.prefix.vrf.rt or '-' }}</div>
+											<div class="selector_entry_name" style="margin-left: 5px;">{{ c.prefix.vrf.name }}</div>
+											<div class="selector_entry_description" style="clear: both;">{{ c.prefix.vrf.description }}</div>
+										</div>
+										{% endif %}
+									</div>
+									<input type="button" class="button button_red" style="display: none; margin-left: 15px; float: left;" name="prefix_vrf_btn" value="Change VRF">
+								</div>
+							</div>
+						</div>
+						<input type="hidden" name="prefix_vrf_id" value="{% if c.prefix.vrf %}{{ c.prefix.vrf.id }}{% endif %}">
 						</dd>
 					</dl>
 				</div>
@@ -149,21 +178,6 @@ PREFIX DATA
 						</dt>
 						<dd>
 						<input type="text" name="prefix_customer_id" value="{{ c.prefix.customer_id or '' }}" size=10>
-						</dd>
-					</dl>
-				</div>
-
-				<div class="rule"></div>
-
-				<div class="option">
-					<dl>
-						<dt>
-						VRF
-						</dt>
-						<dd>
-						<span id="prefix_vrf_display"></span>
-						<input type="button" class="button button_red" name="prefix_vrf_btn" value="Change VRF">
-						<input type="hidden" name="prefix_vrf" value="{% if c.prefix.vrf %}{{ c.prefix.vrf.id }}{% endif %}">
 						</dd>
 					</dl>
 				</div>

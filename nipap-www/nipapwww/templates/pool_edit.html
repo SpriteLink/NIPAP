@@ -11,12 +11,17 @@
 	var indent_head = Array();
 	prefix_link_type = 'add_too_pool';
 	var pool_id = {{ c.pool.id }};
+	var implied_vrf = Object();
 	{% if c.pool.vrf is none %}
-	var implied_vrf_id = null;
-	var implied_vrf_rt = null;
+	implied_vrf.id = null;
+	implied_vrf.rt = null;
+	implied_vrf.name = null;
+	implied_vrf.description = null;
 	{% else %}
-	var implied_vrf_id = {{ c.pool.vrf.id }};
-	var implied_vrf_rt = '{{ c.pool.vrf.rt }}';
+	implied_vrf.id = {{ c.pool.vrf.id }};
+	implied_vrf.rt = '{{ c.pool.vrf.rt }}';
+	implied_vrf.name = '{{ c.pool.vrf.name }}';
+	implied_vrf.description = '{{ c.pool.vrf.description }}';
 	{% endif %}
 	var prefix = null;
 

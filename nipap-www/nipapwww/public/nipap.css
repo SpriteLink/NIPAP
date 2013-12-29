@@ -90,6 +90,8 @@ a.menu_link:hover {
 }
 
 .vrf_filter_entry_rt {
+    font-size: 9pt;
+    font-weight: bold;
 	float: left;
 	background-color: #EEEEEE;
 	color: #2D2D2D;
@@ -732,7 +734,6 @@ tbody.listing > tr:hover {
 .selector > div > a:hover {
     background-color: hsl(210, 53%, 51%);
     color: #ffffff;
-    text-shadow: 0 0 2px hsla(0, 0%, 0%, 0.6);
 }
 
 .selector_search_string {
@@ -760,6 +761,13 @@ tbody.listing > tr:hover {
     top: 5px;
     right: 7px;
     width: 16px;
+}
+
+.selector_entry_name {
+	float: left;
+    color: hsl(0, 0%, 40%);
+    font-size: 9pt;
+    font-weight: bold;
 }
 
 .selector_entry_description {
@@ -829,6 +837,11 @@ tbody.listing > tr:hover {
 .prefix_added_entry {
     padding: 8px;
     background-color: #ccffcc;
+}
+
+.prefix_vrf_text {
+	font-style: italic;
+	font-size: 0.9em;
 }
 
 /*
