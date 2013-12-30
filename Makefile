@@ -14,6 +14,7 @@ all:
 	@echo "make builddeb - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 	@echo "make debrepo - Create Packages.gz file suitable for github apt repo"
+	@echo "make bumpversion - Bump version to latest in NEWS file"
 
 source:
 	for PROJ in $(SUBPROJ); do \
@@ -60,4 +61,9 @@ clean:
 	rm -rf repos/apt/db repos/apt/dist repos/apt/pool
 	for PROJ in $(SUBPROJ); do \
 		cd $$PROJ; make clean; cd ..; \
+	done
+
+bumpversion:
+	for PROJ in $(SUBPROJ); do \
+		cd $$PROJ; make bumpversion; cd ..; \
 	done

@@ -12,6 +12,7 @@ all:
 	@echo "make install - Install on local system"
 	@echo "make buildrpm - Generate a rpm package"
 	@echo "make builddeb - Generate a deb package"
+	@echo "make bumpversion - Bump version to latest in ../NEWS file"
 	@echo "make clean - Get rid of scratch and byte files"
 
 source:
@@ -45,3 +46,12 @@ clean:
 	find . -name '*.pyc' -delete
 	rm -rf data/sessions/container_file/*
 	rm -rf data/sessions/container_file_lock/*
+
+VER := $(shell head -n1 ../NEWS | awk '{print $$2}')
+bumpversion:
+	# replace version number in nipapwww/__init__.py
+	sed -i 's/\(__version__\s*= \)"[^"]\+"/\1"$(VER)"/' nipapwww/__init__.py
+	# replace version number in nipap_www.egg-info/PKG-INFO
+	sed -i 's/^Version:.*/Version: $(VER)/' nipap_www.egg-info/PKG-INFO
+	# update debian/changelog
+	../utilities/news2dch.py ../NEWS debian/changelog
