@@ -43,6 +43,8 @@ nipapwww/public/jquery.tagit.css
 nipapwww/public/jquery.tipTip.minified.js
 nipapwww/public/jquery.url.js
 nipapwww/public/loading.gif
+nipapwww/public/minify.py
+nipapwww/public/nipap-ip.png
 nipapwww/public/nipap.css
 nipapwww/public/nipap.js
 nipapwww/public/tag-icon.png
