@@ -53,7 +53,11 @@ clean:
 	find . -name '*.pyc' -delete
 
 VER := $(shell head -n1 ../NEWS | awk '{print $$2}')
+DB_VER := $(shell grep "COMMENT ON DATABASE nipap IS" sql/ip_net.plsql | sed 's/.*version: \([0-9]\+\).*/\1/')
 bumpversion:
+	# update debian package nipapd's config and postinst script with current db
+	# version
+	sed -i 's/^CURRENT_DB_VERSION.*/CURRENT_DB_VERSION=$(DB_VER)/' debian/nipapd.config debian/nipapd.postinst
 	# replace version number in nipap/__init__.py
 	sed -i 's/\(__version__\s*= \)"[^"]\+"/\1"$(VER)"/' nipap/__init__.py
 	# update debian/changelog
