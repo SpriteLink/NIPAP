@@ -125,7 +125,7 @@ class AuthFactory:
 
     def get_auth(self, username, password, authoritative_source, auth_options={}):
         """ Returns an authentication object.
-    
+
             Examines the auth backend given after the '@' in the username and
             returns a suitable instance of a subclass of the BaseAuth class.
 
@@ -153,7 +153,7 @@ class AuthFactory:
             del(self._auth_cache[key])
 
         user_authbackend = username.rsplit('@', 1)
-    
+
         # Find out what auth backend to use.
         # If no auth backend was specified in username, use default
         backend = ""
@@ -162,7 +162,7 @@ class AuthFactory:
             self._logger.debug("Using default auth backend %s" % backend)
         else:
             backend = user_authbackend[1]
-    
+
         # do we have a cached instance?
         auth_str = ( str(username) + str(password) + str(authoritative_source)
             + str(auth_options) )
@@ -189,7 +189,7 @@ class AuthFactory:
 
 class BaseAuth:
     """ A base authentication class.
-        
+
         All authentication modules should extend this class.
     """
 
@@ -246,7 +246,7 @@ class BaseAuth:
             Returns True/False dependant on whether the authentication
             succeeded or not.
         """
-    
+
         return False
 
 

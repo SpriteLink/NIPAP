@@ -762,7 +762,7 @@ class Nipap:
         """
 
         self._logger.debug("add_vrf called; attr: %s" % str(attr))
-		
+
         if auth.readonly is True:
             raise NipapError('User %s does not have write permission!' % auth.username)
 
@@ -807,7 +807,7 @@ class Nipap:
         """
 
         self._logger.debug("remove_vrf called; spec: %s" % str(spec))
-		
+
         if auth.readonly is True:
             raise NipapError('User %s does not have write permission!' % auth.username)
 
@@ -929,7 +929,7 @@ class Nipap:
 
         self._logger.debug("edit_vrf called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
-				
+
         if auth.readonly is True:
             raise NipapError('User %s does not have write permission!' % auth.username)
 
@@ -1335,7 +1335,7 @@ class Nipap:
         """
 
         self._logger.debug("add_pool called; attrs: %s" % str(attr))
-		
+
         if auth.readonly is True:
             raise NipapError('User %s does not have write permission!' % auth.username)
 
@@ -1377,7 +1377,7 @@ class Nipap:
         """
 
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
-		
+
         if auth.readonly is True:
             raise NipapError('User %s does not have write permission!' % auth.username)
 
@@ -1526,7 +1526,7 @@ class Nipap:
 
         self._logger.debug("edit_pool called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
-				
+
         if auth.readonly is True:
             raise NipapError('User %s does not have write permission!' % auth.username)
 
@@ -2034,7 +2034,7 @@ class Nipap:
         """
 
         self._logger.debug("add_prefix called; attr: %s; args: %s" % (str(attr), str(args)))
-		
+
         if auth.readonly is True:
             raise NipapError('User %s does not have write permission!' % auth.username)
 
@@ -2212,7 +2212,7 @@ class Nipap:
 
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
                 (str(spec), str(attr)))
-				
+
         if auth.readonly is True:
             raise NipapError('User %s does not have write permission!' % auth.username)
 
@@ -2593,7 +2593,7 @@ class Nipap:
         """
 
         self._logger.debug("remove_prefix called; spec: %s" % str(spec))
-		
+
         if auth.readonly is True:
             raise NipapError('User %s does not have write permission!' % auth.username)
 
