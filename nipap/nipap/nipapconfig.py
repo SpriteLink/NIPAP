@@ -21,8 +21,6 @@ class NipapConfig(ConfigParser.SafeConfigParser):
 
         if len(self.__shared_state) == 0:
             # First time - create new instance!
-            if cfg_path is None:
-                raise NipapConfigError("missing configuration file")
             self._cfg_path = cfg_path
 
             ConfigParser.ConfigParser.__init__(self, default)
