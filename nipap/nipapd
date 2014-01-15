@@ -9,7 +9,7 @@ import os
 import sys
 import ConfigParser
 
-from nipap.nipapconfig import NipapConfig
+from nipap.nipapconfig import NipapConfig, NipapConfigError
 from nipap.backend import NipapError
 
 def drop_privileges(uid_name='nobody', gid_name='nogroup'):
@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     try:
         cfg = NipapConfig(options.config_file, default)
-    except nipap.nipapconfig.NipapConfigError, exc:
+    except NipapConfigError, exc:
         if options.config_file:
             print >> sys.stderr, "The specified configuration file ('" + options.config_file + "') does not exist"
             sys.exit(1)
