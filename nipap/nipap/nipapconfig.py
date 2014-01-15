@@ -33,6 +33,10 @@ class NipapConfig(ConfigParser.SafeConfigParser):
         """ Read the configuration file
         """
 
+        # don't try to parse config file if we don't have one set
+        if not self._cfg_path:
+            return
+
         try:
             cfg_fp = open(self._cfg_path, 'r')
             self.readfp(cfg_fp)
