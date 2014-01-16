@@ -19,8 +19,8 @@ Overall goals:
 Out of these goals, the following set of tools and resources have been chosen
 for the overall design.
 
- * Backend implemented using PostgreSQL
- * Middleware / XML-RPC API in Python with the Twisted framework
+ * Backend storage implemented using PostgreSQL
+ * Backend / XML-RPC API in Python with the Flask-XML-RPC framework
  * CLI client in Python
  * Web GUI in Python using the Pyramid framework
 
@@ -49,19 +49,31 @@ Python is a modern interpreted language with an easy to use syntax and plenty
 of powerful features. Experienced programmers usually pick up the language
 within a few days, less experienced within a slightly larger time. Its clean
 syntax makes it easy for people to familiarize themselves with the NIPAP
-codebase. In addition it offers the excellent networking framework Twisted
-which NIPAP heavily relies on for it's API functionality.
+codebase.
 
 
-Why Twisted?
+Why Flask (and not Twisted)?
 ------------
+NIPAP was originally implemented with a Twisted powered backend but has since
+been rewritten to use Flask.
+
 Twisted is one of the leading concurrency frameworks allowing developers to
 focus on their own application instead of labour-intensive work surrounding it.
 It is used by companies such as Apple (iCal server) and Spotify (playlist
 service) to serve hundreds of thousands of users. Twisted includes modules for
 serving data over XML-RPC and/or SOAP as well as a complete toolset for
-asynchronous calls. For NIPAP, this means we write NIPAP code and not XML-RPC and
-concurrency code, as most of that is already complete.
+asynchronous calls.
+
+Unfortunately, using Twisted asynchronous model is rocket science. Code needs
+to be built specifically for Twisted. The original implementation never took
+advantage of asynchronous calls and deferred objects and during later attempts
+of adding it we realised how difficult and cumbersome it is. One really needs
+to write code from the beginning up to suit Twisted.
+
+Instead, we turned our eye to Flask, which together with Tornado offers a
+pre-forked model. We didn't need to change a line of code in our backend module
+yet we have now achieved a simple form of parallelism. Flask is easy! For
+NIPAP, this means we focus on NIPAP code and not XML-RPC and concurrency code.
 
 
 Why XML-RPC?
@@ -70,14 +82,19 @@ From the very start, it was a important design goal that NIPAP remain open for
 interoperation with any and all other systems and so it would be centered
 around a small and simple API from which everything can be performed. Not
 intending to reinvent the wheel, especially given the plethora of already
-available APIs, it was up to chosing the "right one". Twisted offers built-in
-support for SOAP (WebServices) as well as XML-RPC and given design goals such
-as simple, SOAP didn't quite feel right and so XML-RPC was chosen. It should
-however be noted that NIPAPs XML-RPC protocol is a thin wrapper around an inner
-core and so exposing a SOAP interface in addition to XML-RPC can be easily
-achieved. XML-RPC shares a lot of similarities with SOAP but is very much less
-complex and it is possible for a human to read it in a tcpdump or similar while
+available APIs, it was up to chosing the "right one". Twisted, which was
+originally used for Twisteds backend, offers built-in support for SOAP
+(WebServices) as well as XML-RPC but given design goals such as simple, SOAP
+didn't quite feel right and thus XML-RPC was chosen. It should however be noted
+that NIPAPs XML-RPC protocol is a thin wrapper around an inner core and so
+exposing a SOAP interface in addition to XML-RPC can be easily achieved.
+XML-RPC shares a lot of similarities with SOAP but is very much less complex
+and it is possible for a human to read it in a tcpdump or similar while
 with SOAP one likely needs some interpreter or the brain of Albert Einstein.
+Since the original implementation with Twisted, the backend has been
+reimplemented using Flask-XML-RPC which is an extension to Flask. In addition
+to XML-RPC, it is also possible to load a JSON-RPC module with Flask to add
+another interface.
 
 
 
