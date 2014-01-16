@@ -12,14 +12,12 @@
 # serve to show the default.
 
 import sys, os
-sys.path.insert(0, '../../nipap')
-sys.path.insert(0, '../../pynipap')
-#sys.path.append('../../nipap-www/nipapwww')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.append(os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../../nipap'))
+sys.path.insert(0, os.path.abspath('../../pynipap'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -195,3 +193,31 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+import os
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if on_rtd:
+    import sys
+
+    class Mock(object):
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __call__(self, *args, **kwargs):
+            return Mock()
+
+        @classmethod
+        def __getattr__(cls, name):
+            if name in ('__file__', '__path__'):
+                return '/dev/null'
+            elif name[0] == name[0].upper():
+                mockType = type(name, (), {})
+                mockType.__module__ = __name__
+                return mockType
+            else:
+                return Mock()
+
+    MOCK_MODULES = ['ldap', 'IPy', 'psycopg2.extras', 'psycopg2']
+
+    for mod_name in MOCK_MODULES:
+        sys.modules[mod_name] = Mock()

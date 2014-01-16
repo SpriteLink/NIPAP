@@ -26,9 +26,9 @@ Contents:
 
    design
    nipap
+   pynipap
    xmlrpc
    authlib
-   pynipap
 
 
 Indices and tables
