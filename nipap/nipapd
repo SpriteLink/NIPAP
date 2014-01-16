@@ -142,7 +142,8 @@ if __name__ == '__main__':
         lf.write('%d\n' % os.getpid())
         lf.flush()
 
-    from nipap.xmlrpc import app as nipapxml
+    import nipap.xmlrpc
+    nipapxml = nipap.xmlrpc.setup()
 
     # logging
     if cfg.getboolean('nipapd', 'debug'):
