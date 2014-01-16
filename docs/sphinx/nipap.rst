@@ -1,2 +1,2 @@
-.. automodule:: nipap.nipap
+.. automodule:: nipap.backend
     :members:

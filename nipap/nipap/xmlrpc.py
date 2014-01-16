@@ -1,4 +1,9 @@
-#!/usr/bin/env python
+""" NIPAP XML-RPC
+    =============
+    This module contains the actual functions presented over the XML-RPC API. All
+    functions are quite thin and mostly wrap around the functionality provided by
+    the backend module.
+"""
 
 import time
 from functools import wraps
@@ -25,6 +30,9 @@ from authlib import AuthFactory, AuthError
 
 
 class NipapXMLRPC:
+    """ NIPAP XML-RPC API
+    """
+
     def __init__(self):
         self.nip = Nipap()
 

@@ -1,0 +1,2 @@
+Flask-XML-RPC
+Flask-Compress
