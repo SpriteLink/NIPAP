@@ -1,22 +1,22 @@
 Getting started for sysadmins
 -----------------------------
-This will walk you through the setup process to get NIPAP running. With no
-prior experience it should take about 15 minutes to get NIPAP running,
-including installing all prerequisites.
+This guide will walk you through the setup process to get NIPAP up and running
+on a Debian 7.0 (wheezy) or Ubuntu 12.04 or later system. With no prior
+experience it should take about 15 minutes.
 
-Debian and Ubuntu are the only two distributions supported at this time. It is
-certainly possible to install on other Linux flavours or other UNIX-style
-operating systems, but there are no packages and currently no instructions. We
-were hoping to provide .rpms, but given the large amount of dependencies
-missing in RHEL and the added complexity in the package build process, this has
-yet to happen.
+Debian and Debian derivatives (primarily Ubuntu) are the only distributions
+supported at this time. It is certainly possible to install on other Linux
+flavours or other UNIX-style operating systems, but there are no packages and
+currently no instructions. We were hoping to provide .rpms, but given the large
+amount of dependencies missing in RHEL and the added complexity in the package
+build process, this has yet to happen.
 
 
 Debian installation
 -------------------
 Add the NIPAP repo to your package sources and update your lists::
 
-    echo "deb http://spritelink.github.com/NIPAP/repos/apt stable main" > /etc/apt/sources.list.d/nipap.list
+    echo "deb http://spritelink.github.io/NIPAP/repos/apt stable main extra" > /etc/apt/sources.list.d/nipap.list
     apt-get update
 
 There are now five new packages::
@@ -29,120 +29,63 @@ There are now five new packages::
     python-pynipap - Python module for accessing NIPAP
     root@debian:~#
 
-'nipapd' contains the XML-RPC middleware daemon which is a required component
-in the NIPAP suite. It's the glue between the database and the rest of the
-world. 'nipap-common' is more of a library with common stuff needed by all the
+The 'nipapd' package contains the XML-RPC backend daemon which is a required
+component of the NIPAP system. It essentially represents the content of the
+database over an XML-RPC interface, allowing additions, deletions and
+modifications. 'nipap-common' is a library with common stuff needed by all the
 other components, so regardless which one you choose, you will get this one.
 'nipap-cli' is, not very surprisingly, a CLI client for NIPAP while 'nipap-www'
-is web GUI. Choose your favourite interface or both and install it, you will
-automatically get 'python-pynipap' which is a client-side library for Python
-applications and since both the web GUI and CLI client is written in Python,
-you will need 'python-pynipap'. If you want, you can install the nipapd
-middleware on one machine and the CLI and/or web on a different one.
+is the web GUI. Choose your favourite interface or both and install it, you
+will automatically get 'python-pynipap' which is the client-side library for
+Python applications and since both the web GUI and CLI client is written in
+Python, you will need 'python-pynipap'. If you want, you can install the nipapd
+backend on one machine and the CLI and/or web on another.
 
-Once you've picked your packages, issue apt-get install. Here we install the
-nipapd daemon and CLI client::
+Let's install the backend::
 
-    apt-get install nipapd nipap-cli
+    apt-get install nipapd
 
 apt-get will complain about that the packages cannot be authenticated. This is
-due to the reason that the NIPAP Debian repository is not signed. Ignore the
-warning and type 'y' to continue. After the installation is done, you will have
-the PostgreSQL database server and all the other necessary dependancies
-installed except for ip4r, an addon to Postgres which allows for efficient
-indexing of IPv4 and IPv6 data.
+due to the NIPAP Debian repository not being signed. Ignore the warning and
+type 'y' to continue. During installation, the nipapd package will ask if you
+want to automatically load the needed database structure and start nipapd on
+startup - answer Yes to both questions. After the installation is done, you
+will have the PostgreSQL database server and all the other necessary
+dependencies installed. nipapd will not be able to start until it can connect
+to the database and as postgresql does not by default listen to localhost
+(127.0.0.1), you will need to edit /etc/postgresql/9.1/main/postgresql.conf and
+uncomment the listen_address line to have it listen to localhost (or all '*').
+Restart nipapd after editing your PostgreSQL configuration::
 
-ip4r
-----
-The latest ip4r code in CVS supports IPv4 as well as IPv6. Unfortunately, it
-has not been released as a new version yet nor do any distributions carry the
-version from CVS, thus for IPv6 support you will have to get the CVS version
-yourself.
+    /etc/init.d/nipapd restart
 
-If you are lucky enough to run a Debian 6.0 (Squeeze) installation on amd64, we
-have a prebuilt ip4r package in the NIPAP Debian repository that matches up
-with the PostgreSQL 8.4 that ships in Debian 6.0. Add the 'extras' repo, update
-and install it with::
-
-    echo "deb http://spritelink.github.com/NIPAP/repos/apt stable main extras" > /etc/apt/sources.list.d/nipap.list
-    apt-get update
-    apt-get install postgresql-8.4-ip4r
-
-... and skip to the next section.
-
-If you are using something other than Debian 6.0 on amd64, you will need to
-install ip4r from source. Get ip4r from CVS;
-http://pgfoundry.org/scm/?group_id=1000079
-Once you have it, follow the instructions to have it installed on your machine.
-It should be a simple matter of getting a few dev libs for postgresl via apt
-and then make && make install.
-
-Populating the database
------------------------
-The database needs to be populated with tables and a database user that the
-nipapd daemon can authenticate as. This is unfortunately a manual task for now.
-Hopefully it will soon be done through debians post-installation sciprint
-infrastructure. Until then, you need to follow these steps.
-
-Begin by creating a new database user. To administrate the Postgres database,
-you typically sudo to root and then su to postgres, from where you can add the
-new user::
-
-    sudo -i
-    su - postgres
-    createuser -S -R -D -W nipap
-    createdb -O nipap nipap
-
-You'll be prompted for a new password when creating the user - remember it. Now
-we need to populate the database with some tables and functions. In the ip4r
-directory downloaded via CVS, there is a file called ip4r.sql that needs to be
-run in for the 'nipap' database, again as the nipap user::
-
-    psql -d nipap -f <path to ip4r.sql>
-
-Continue with the functions file followed by the tables::
-
-    psql -d nipap -f /usr/share/nipap/sql/functions.plsql
-    psql -d nipap -f /usr/share/nipap/sql/ip_net.plsql
-
-Your database is now ready to go!
-
-Running nipapd
---------------
-Edit /etc/nipap/nipap.conf and fill in the database password that you set
-earlier. Edit /etc/default/nipapd and set RUN=yes. Now you can go ahead and
-start nipapd by executing ``/etc/init.d/nipapd start``
-
-nipapd ships with a default local authentication database with a user called
-'guest' and with the password 'guest'. You can set up the CLI client to test
-your new setup or continue to the web UI configuration to get the web up and
-running.
 
 CLI configuration
 -----------------
-This is pretty easy, once you have the nipap-cli command installed, a new
-command, 'nipap', is available to you. It reads .nipaprc in your home directory
-and expects to find things like the host address of the nipapd and the
-authentication credentials.
+This is pretty easy, once you have the nipap-cli package installed, a new
+command, 'nipap', is available to you. It reads .nipaprc in your home directry
+and expects to find things like the host address of nipapd the authentication
+credentials.
 
-Here's an example .nipaprc that will work towards localhost with the default
-guest login::
+Create a new user in the local authentication database for the CLI::
+
+    nipap-passwd -a *username* -p *username* -n "My CLI user"
+
+Where *username* and *password* is the username and password you wish to crate.
+Use the same username and password to fill in your .nipaprc. Here's an example
+.nipaprc that will work towards localhost with the user you just crated::
 
     [global]
     hostname = localhost
     port     = 1337
-    username = guest
-    password = guest
-    default_schema = test
+    username = *username*
+    password = *password*
+    default_vrf = none
 
-The last option sets which schema which is the default to work with if nothing
-else is set. Schemas is an integral part of working with NIPAP and you can read
-more about it in the user documentation. For now, let's create that test schema
-so that you can work with it::
+The last option sets which VRF is the default to work with if nothin else is
+specified.
 
-    nipap schema add name test description "My test schema"
-
-Now let's try adding a prefix too::
+Let's try adding a prefix too::
 
     nipap address add prefix 192.0.2.0/24 type assignment description "test prefix"
 
@@ -150,53 +93,24 @@ And list everything covered by 0.0.0.0/0::
 
     nipap address list 0/0
 
-Installation of the web UI
---------------------------
-The NIPAP web UI performs all operations through the NIPAP XML-RPC API served
-by nipapd, which means they do not need to be installed on the same machine. It
-is built on the Pylons web framework and requires Pylons version >= 1.0. This
-version has unfortunately not yet made it into neither the Debian nor the
-Ubuntu official repositories yet. For you lycky enough to run an apt-based
-distribution, there is a Pylons 1.0 package in the NIPAP 'extra' repository
-which should work on any apt-based system running python 2.5, 2.6 or 2.7.  See
-how to enable the 'extra' repo under the ip4r-section above. With the 'extra'
-repository enabled, the NIPAP web UI is installed using the following command::
+
+Installation and configuration of the web UI
+--------------------------------------------
+The nipap-www package comes with an automagic configuration guide that will help you setup the needed user and configure it if, and only if, you are running nipapd on the same machine. Install nipap-www with::
 
     apt-get install nipap-www
 
-When apt-get has completed the installation, you should have all dependencies
-required for the NIPAP web UI as well as the web UI itself installed.
+When you are asked whether you want to add a user automatically and configure
+it, answer yes. If you tried to install nipap-www at the same time as nipapd,
+you might not be prompted with the quetion to automatically add a user. Try
+doing 'dpkg-reconfigure nipap-www' in the case.
 
-Configuration of the web UI
----------------------------
-Begin by adding a user for the web interface to the local authentication
-database on the server where nipapd is running::
+The user added to the local authentication database by the installation
+script is merely used by the web interface to talk to the backend. For login to
+the web interface, you should create one or more additional user accounts. Use
+the nipap-passwd utility to add a user::
 
-	nipap-passwd -a *username* -p *password* -n 'NIPAP web UI' -t
-
-The '-t' option tells nipap-passwd to make the new user a 'trusted' user, that
-is a user which can authenticate against nipapd using one username but log all
-changes as made by another user. See the docs for the NIPAP authentication
-library for more information about this:
-http://spritelink.github.com/NIPAP/nipap/authlib.html
-
-Now we need to configure the web UI with the URI to the nipapd server. Edit
-/etc/nipap/nipap.conf and set the option 'xmlrpc_uri' under the section
-'[www]'. The URI should have the form
-'http://*username*:*password*@*address*:*port*', for example
-'http://www:secret@127.0.0.1:9000' to connect to nipapd running on the local
-machine (127.0.0.1) listening on port 9000 and authenticate with the username
-'www' and password 'secret'.
-
-For authentication, the NIPAP web UI uses the same authentication library and
-settings as nipapd. That means, if they are running on the same machine they by
-default use the same authentication database and the users can use the same
-credentials for the web UI as for the backend. If they are not running on the
-same machine, there will be two separate authentication databases; one for the
-XML-RPC backend and one for the web UI.  Thus the web users needs to be added
-on the machine where the web UI is running as well, using the 'nipap-passwd'
-command as described above. These users does not need to be 'trusted' as above
-though, so skip the '-t' option.
+    nipap-passwd -a *username* -p *password* -n "Name of my new user"
 
 Serving the web UI
 ------------------
