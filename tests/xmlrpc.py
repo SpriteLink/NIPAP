@@ -16,7 +16,7 @@ log_format = "%(levelname)-8s %(message)s"
 
 import xmlrpclib
 
-server_url = "http://guest:guest@127.0.0.1:1337/XMLRPC"
+server_url = "http://unittest:gottatest@127.0.0.1:1337/XMLRPC"
 s = xmlrpclib.Server(server_url, allow_none=1);
 
 ad = { 'authoritative_source': 'nipap' }
