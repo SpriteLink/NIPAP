@@ -163,6 +163,7 @@
     Classes
     -------
 """
+from functools import wraps
 import exceptions
 import logging
 import psycopg2
@@ -171,6 +172,8 @@ import shlex
 import socket
 import re
 import IPy
+
+import authlib
 
 
 _operation_map = {
@@ -195,6 +198,28 @@ _operation_map = {
     }
 """ Maps operators in a prefix query to SQL operators.
 """
+
+
+
+def requires_rw(f):
+    """ Adds readwrite authorization
+
+        This will check if the user is a readonly user and if so reject the
+        query. Apply this decorator to readwrite functions.
+    """
+    @wraps(f)
+
+    def decorated(*args, **kwargs):
+        auth = args[1]
+        if auth.readonly:
+            logger = logging.getLogger()
+            logger.info("read-only user '%s' is not authorized to run function '%s'" % (auth.username, f.__name__))
+            raise authlib.AuthorizationFailed("read-only user '%s' is not authorized to run function '%s'" % (auth.username, f.__name__))
+        return f(*args, **kwargs)
+
+    return decorated
+
+
 
 
 
@@ -259,7 +284,7 @@ class Nipap:
     #
 
     def _register_inet(self, oid=None, conn_or_curs=None):
-        """Create the INET type and an Inet adapter."""
+        """ Create the INET type and an Inet adapter."""
         from psycopg2 import extensions as _ext
         if not oid:
             oid = 869
@@ -748,6 +773,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def add_vrf(self, auth, attr):
         """ Add a new VRF.
 
@@ -792,6 +818,7 @@ class Nipap:
         return vrf
 
 
+    @requires_rw
     def remove_vrf(self, auth, spec):
         """ Remove a VRF.
 
@@ -910,6 +937,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def edit_vrf(self, auth, spec, attr):
         """ Update VRFs matching `spec` with attributes `attr`.
 
@@ -1314,6 +1342,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def add_pool(self, auth, attr):
         """ Create a pool according to `attr`.
 
@@ -1355,6 +1384,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def remove_pool(self, auth, spec):
         """ Remove a pool.
 
@@ -1498,6 +1528,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def edit_pool(self, auth, spec, attr):
         """ Update pool given by `spec` with attributes `attr`.
 
@@ -1981,6 +2012,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def add_prefix(self, auth, attr, args = {}):
         """ Add a prefix and return its ID.
 
@@ -2175,6 +2207,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def edit_prefix(self, auth, spec, attr):
         """ Update prefix matching `spec` with attributes `attr`.
 
@@ -2564,6 +2597,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def remove_prefix(self, auth, spec, recursive = False):
         """ Remove prefix matching `spec`.
 
@@ -3173,7 +3207,6 @@ class Nipap:
                         'val1': 'customer_id',
                         'val2': query_str_part['string']
                         }
-                 
                     })
 
         # Sum all query parts to one query
@@ -3331,6 +3364,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def add_asn(self, auth, attr):
         """ Add AS number to NIPAP.
 
@@ -3371,6 +3405,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def edit_asn(self, auth, asn, attr):
         """ Edit AS number
 
@@ -3418,6 +3453,7 @@ class Nipap:
 
 
 
+    @requires_rw
     def remove_asn(self, auth, asn):
         """ Remove AS number
         """

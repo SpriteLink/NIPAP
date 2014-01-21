@@ -1117,6 +1117,29 @@ class NipapDuplicateError(NipapError):
     pass
 
 
+
+class NipapAuthError(NipapError):
+    """ General NIPAP AAA error
+    """
+    pass
+
+
+
+class NipapAuthenticationError(NipapAuthError):
+    """ Authentication failed.
+    """
+    pass
+
+
+
+class NipapAuthorizationError(NipapAuthError):
+    """ Authorization failed.
+    """
+    pass
+
+
+
+
 #
 # GLOBAL STUFF
 #
@@ -1137,7 +1160,10 @@ _fault_to_exception_map = {
     1120: NipapExtraneousInputError,
     1200: NipapValueError,
     1300: NipapNonExistentError,
-    1400: NipapDuplicateError
+    1400: NipapDuplicateError,
+    1500: NipapAuthError,
+    1510: NipapAuthenticationError,
+    1520: NipapAuthorizationError
 }
 
 log = logging.getLogger("Pynipap")
