@@ -12,6 +12,12 @@ from flask import request, Response
 from flaskext.xmlrpc import XMLRPCHandler, Fault
 from flask.ext.compress import Compress
 
+from nipapconfig import NipapConfig
+from backend import Nipap, NipapError
+import nipap
+from authlib import AuthFactory, AuthError
+
+
 def setup():
     app = Flask('nipap.xmlrpc')
     Compress(app)
@@ -23,10 +29,74 @@ def setup():
 
     return app
 
-from nipapconfig import NipapConfig
-from backend import Nipap, NipapError
-import nipap
-from authlib import AuthFactory, AuthError
+
+def authenticate():
+    """ Sends a 401 response that enables basic auth
+    """
+    return Response(
+        'Could not verify your access level for that URL.\n'
+        'You have to login with proper credentials', 401,
+        {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+
+def requires_auth(f):
+    """ Class decorator for XML-RPC functions that requires auth
+    """
+    @wraps(f)
+
+    def decorated(self, *args, **kwargs):
+        """
+        """
+
+        # Fetch auth options from args
+        auth_options = {}
+        nipap_args = {}
+
+        # validate function arguments
+        if len(args) == 1:
+            nipap_args = args[0]
+        else:
+            #logger.info("Malformed request: got %d parameters" % len(args))
+            raise Fault(1000, ("NIPAP API functions take exactly 1 argument (%d given)") % len(args))
+
+        if type(nipap_args) != dict:
+            raise Fault(1000, ("Function argument must be XML-RPC struct/Python dict (Python %s given)." %
+                type(nipap_args).__name__ ))
+
+        # fetch auth options
+        try:
+            auth_options = nipap_args['auth']
+            if type(auth_options) is not dict:
+                raise ValueError()
+        except (KeyError, ValueError):
+            raise Fault(1000, ("Missing/invalid authentication options in request."))
+
+        # fetch authoritative source
+        try:
+            auth_source = auth_options['authoritative_source']
+        except KeyError:
+            raise Fault(1000, ("Missing authoritative source in auth options."))
+
+        if not request.authorization:
+            return authenticate()
+
+        # init AuthFacory()
+        af = AuthFactory()
+        auth = af.get_auth(request.authorization.username,
+                request.authorization.password, auth_source, auth_options or {})
+
+        # authenticated?
+        if not auth.authenticate():
+            return authenticate()
+
+        # Replace auth options in API call arguments with auth object
+        new_args = dict(args[0])
+        new_args['auth'] = auth
+
+        return f(self, *(new_args,), **kwargs)
+
+    return decorated
+
 
 
 class NipapXMLRPC:
@@ -35,86 +105,6 @@ class NipapXMLRPC:
 
     def __init__(self):
         self.nip = Nipap()
-
-    def check_auth(self, username, password, auth_source, auth_options = False):
-        """This function is called to check if a username /
-        password combination is valid.
-        """
-        af = AuthFactory()
-        try:
-            auth = af.get_auth(username, password, auth_source, auth_options or {})
-        except AuthError, exp:
-            return False
-
-        if not auth.authenticate():
-            return False
-
-        return auth
-
-    def authenticate(self, ):
-        """Sends a 401 response that enables basic auth"""
-        return Response(
-            'Could not verify your access level for that URL.\n'
-            'You have to login with proper credentials', 401,
-            {'WWW-Authenticate': 'Basic realm="Login Required"'})
-
-    def requires_auth(f):
-        """
-        """
-        @wraps(f)
-
-        def decorated(self, *args, **kwargs):
-            """
-            """
-
-            # Fetch auth options from args
-            auth_options = {}
-            nipap_args = {}
-
-            # validate function arguments
-            if len(args) == 1:
-                nipap_args = args[0]
-            else:
-                #logger.info("Malformed request: got %d parameters" % len(args))
-                raise Fault(1000, ("NIPAP API functions take exactly 1 argument (%d given)") % len(args))
-
-            if type(nipap_args) != dict:
-                raise Fault(1000, ("Function argument must be XML-RPC struct/Python dict (Python %s given)." %
-                    type(nipap_args).__name__ ))
-
-            # fetch auth options
-            try:
-                auth_options = nipap_args['auth']
-                if type(auth_options) is not dict:
-                    raise ValueError()
-            except (KeyError, ValueError):
-                raise Fault(1000, ("Missing/invalid authentication options in request."))
-
-            # fetch authoritative source
-            try:
-                auth_source = auth_options['authoritative_source']
-            except KeyError:
-                raise Fault(1000, ("Missing authoritative source in auth options."))
-
-            if not request.authorization:
-                return authenticate()
-
-            # init AuthFacory()
-            af = AuthFactory()
-            auth = af.get_auth(request.authorization.username,
-                    request.authorization.password, auth_source, auth_options or {})
-
-            # authenticated?
-            if not auth.authenticate():
-                return authenticate()
-
-            # Replace auth options in API call arguments with auth object
-            new_args = dict(args[0])
-            new_args['auth'] = auth
-
-            return f(self, *(new_args,), **kwargs)
-
-        return decorated
 
 
     @requires_auth
@@ -140,8 +130,9 @@ class NipapXMLRPC:
         if args.get('message') is not None:
             return args.get('message')
 
+
     @requires_auth
-    def version(self, ):
+    def version(self):
         """ Returns nipapd version
 
             Returns a string.
@@ -414,8 +405,6 @@ class NipapXMLRPC:
     #
     # PREFIX FUNCTIONS
     #
-
-
     @requires_auth
     def add_prefix(self, args):
         """ Add a prefix.
@@ -439,7 +428,6 @@ class NipapXMLRPC:
             raise Fault(e.error_code, str(e))
 
 
-
     @requires_auth
     def list_prefix(self, args):
         """ List prefixes.
@@ -458,7 +446,6 @@ class NipapXMLRPC:
             return self.nip.list_prefix(args.get('auth'), args.get('prefix') or {})
         except NipapError, e:
             raise Fault(e.error_code, str(e))
-
 
 
     @requires_auth
@@ -481,7 +468,6 @@ class NipapXMLRPC:
             raise Fault(e.error_code, str(e))
 
 
-
     @requires_auth
     def remove_prefix(self, args):
         """ Remove a prefix.
@@ -498,7 +484,6 @@ class NipapXMLRPC:
             return self.nip.remove_prefix(args.get('auth'), args.get('prefix'), args.get('recursive'))
         except NipapError, e:
             raise Fault(e.error_code, str(e))
-
 
 
     @requires_auth
@@ -523,7 +508,6 @@ class NipapXMLRPC:
             return self.nip.search_prefix(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except NipapError, e:
             raise Fault(e.error_code, str(e))
-
 
 
     @requires_auth
@@ -555,7 +539,6 @@ class NipapXMLRPC:
             raise Fault(e.error_code, str(e))
 
 
-
     @requires_auth
     def find_free_prefix(self, args):
         """ Find a free prefix.
@@ -573,7 +556,6 @@ class NipapXMLRPC:
             return self.nip.find_free_prefix(args.get('auth'), args.get('args'))
         except NipapError, e:
             raise Fault(e.error_code, str(e))
-
 
 
     #
@@ -599,7 +581,6 @@ class NipapXMLRPC:
             raise Fault(e.error_code, str(e))
 
 
-
     @requires_auth
     def remove_asn(self, args):
         """ Removes an ASN.
@@ -616,7 +597,6 @@ class NipapXMLRPC:
             self.nip.remove_asn(args.get('auth'), args.get('asn'))
         except NipapError, e:
             raise Fault(e.error_code, str(e))
-
 
 
     @requires_auth
@@ -639,7 +619,6 @@ class NipapXMLRPC:
             raise Fault(e.error_code, str(e))
 
 
-
     @requires_auth
     def edit_asn(self, args):
         """ Edit an ASN.
@@ -658,7 +637,6 @@ class NipapXMLRPC:
             return self.nip.edit_asn(args.get('auth'), args.get('asn'), args.get('attr'))
         except NipapError, e:
             raise Fault(e.error_code, str(e))
-
 
 
     @requires_auth
@@ -683,7 +661,6 @@ class NipapXMLRPC:
             return self.nip.search_asn(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except NipapError, e:
             raise Fault(e.error_code, str(e))
-
 
 
     @requires_auth
