@@ -28,7 +28,8 @@ query = {
         'val2': '(foo|b.*)'
         }
 
-res = server.search_tag({ 'auth': ad, 'query': query })
+res = server.list_vrf({ 'auth': ad, 'spec': {} })
+print res
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': '', 'search_options': { 'include_all_parents': True } })
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'foo', 'search_options': { 'include_all_parents': True } })
 #res = server.smart_search_prefix({ 'auth': ad, 'query_string': 'foo', 'search_options': { 'include_all_parents': True } })

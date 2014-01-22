@@ -16,14 +16,17 @@ install:
     - sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-ldap python-docutils postgresql postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress
     # install the newly built nipap packages
     - sudo dpkg -i nipap*.deb python-pynipap*.deb
+    # move configuration files into place
+    - sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf
+    - sudo cp nipap/local_auth.db /etc/nipap/
+    # create local user for unittests
+    - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n "User for running unit tests"
     # populate answers to nipapd package install questions and reconfigure
     - echo "set nipapd/autoconf true" | sudo debconf-communicate
     - echo "set nipapd/startup true" | sudo debconf-communicate
     - sudo dpkg-reconfigure nipapd
-    # move configuration files into place
-    - sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf
-    - sudo cp nipap/local_auth.db /etc/nipap/
     - cp nipap-cli/nipaprc ~/.nipaprc
+    - sed -i -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' ~/.nipaprc
 
 script:
     - cd tests

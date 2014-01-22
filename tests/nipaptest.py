@@ -15,7 +15,7 @@ from nipap.nipapconfig import NipapConfig
 from pynipap import AuthOptions, VRF, Pool, Prefix, NipapNonExistentError, NipapDuplicateError, NipapValueError
 import pynipap
 
-pynipap.xmlrpc_uri = 'http://guest@local:guest@127.0.0.1:1337'
+pynipap.xmlrpc_uri = 'http://unittest:gottatest@127.0.0.1:1337'
 o = AuthOptions({
         'authoritative_source': 'nipap'
         })
