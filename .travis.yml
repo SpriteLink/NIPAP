@@ -21,6 +21,7 @@ install:
     - sudo cp nipap/local_auth.db /etc/nipap/
     # create local user for unittests
     - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n "User for running unit tests"
+    - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"
     # populate answers to nipapd package install questions and reconfigure
     - echo "set nipapd/autoconf true" | sudo debconf-communicate
     - echo "set nipapd/startup true" | sudo debconf-communicate
@@ -33,6 +34,7 @@ script:
     - nosetests xmlrpc.py
     - nosetests nipaptest.py
     - nosetests test_cli.py
+    - nosetests nipap-ro.py
 
 notifications:
     irc:
