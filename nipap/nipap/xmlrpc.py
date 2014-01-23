@@ -553,7 +553,7 @@ class NipapXMLRPC:
         """
 
         try:
-            return self.nip.find_free_prefix(args.get('auth'), args.get('args'))
+            return self.nip.find_free_prefix(args.get('auth'), args.get('vrf'), args.get('args'))
         except NipapError, e:
             raise Fault(e.error_code, str(e))
 
