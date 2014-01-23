@@ -584,7 +584,7 @@ class Pool(Pynipap):
 
         try:
             pool = Pool.list({'id': id})[0]
-        except KeyError:
+        except (IndexError, KeyError):
             raise NipapNonExistentError('no pool with ID ' + str(id) + ' found')
 
         _cache['Pool'][id] = pool
@@ -781,7 +781,7 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def search(cls, query, search_opts):
+    def search(cls, query, search_opts={}):
         """ Search for prefixes.
         """
 
@@ -807,7 +807,7 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, query_string, search_options, extra_query = None):
+    def smart_search(cls, query_string, search_options={}, extra_query = None):
         """ Perform a smart prefix search.
         """
 
