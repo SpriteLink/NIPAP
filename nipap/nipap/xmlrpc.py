@@ -87,7 +87,7 @@ def requires_auth(f):
 
         # authenticated?
         if not auth.authenticate():
-            return authenticate()
+            raise Fault(1510, ("Incorrect username or password."))
 
         # Replace auth options in API call arguments with auth object
         new_args = dict(args[0])
