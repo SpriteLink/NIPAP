@@ -29,6 +29,9 @@
     * :class:`NipapNoSuchOperatorError`
     * :class:`NipapValueError`
     * :class:`NipapDuplicateError`
+    * :class:`NipapAuthError`
+    * :class:`NipapAuthenticationError`
+    * :class:`NipapAuthorizationError`
 
     General usage
     -------------

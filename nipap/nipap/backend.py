@@ -1,16 +1,16 @@
 """ NIPAP API
     =========
 
-    This module contains the Nipap class which provides most of the logic in
-    NIPAP apart from that contained within the PostgreSQL database.
+    This module contains the Nipap class which provides most of the backend
+    logic in NIPAP apart from that contained within the PostgreSQL database.
 
-    NIPAP contains three types of objects: VRFs, prefixes and pools.
+    NIPAP contains four types of objects: ASNs, VRFs, prefixes and pools.
 
     VRF
     ------
     A VRF represents a Virtual Routing and Forwarding instance. By default, one
     VRF which represents the global routing table ("no VRF") is defined. This
-    ID always has the ID 0.
+    VRF always has the ID 0.
 
     VRF attributes
     ^^^^^^^^^^^^^^
@@ -27,12 +27,12 @@
     * :func:`~Nipap.edit_vrf` - Edit a VRF.
     * :func:`~Nipap.remove_vrf` - Remove a VRF.
     * :func:`~Nipap.search_vrf` - Search VRFs based on a formatted dict.
-    * :func:`~Nipap.smart_search_vrf` - Search VRFs based on a query string.
+    : :func:`~Nipap.smart_search_vrf` - Search VRFs based on a query string.
 
 
     Prefix
     ------
-    A prefix object defines an address prefix. Prefixes can be one of three
+    A prefix object defines an IP address prefix. Prefixes can be one of three
     different types; reservation, assignment or host.
     Reservation; a prefix which is reserved for future use.
     Assignment; addresses assigned to a specific purpose.
@@ -81,11 +81,11 @@
 
     Pool
     ----
-    Reserved prefixes can be gathered in a pool which then can be used when
-    adding prefixes. The `add_prefix` can for example be asked to return a
-    prefix from the pool CORE-LOOPBACKS. Then all the prefix member of this pool
-    will be examined for a suitable prefix with the default length specified in
-    the pool if nothing else is given.
+    A pool is used to group together a number of prefixes for the purpose of
+    assigning new prefixes from that pool. :func:`~Nipap.add_prefix` can for
+    example be asked to return a new prefix from a pool. All prefixes that are
+    members of the pool will be examined for free space and a new prefix, of the
+    specified prefix-length, will be returned to the user.
 
     Pool attributes
     ^^^^^^^^^^^^^^^
