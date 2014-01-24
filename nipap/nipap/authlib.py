@@ -1,35 +1,37 @@
 """ Authentication library
     ======================
 
-    A base authentication & authorization (not yet implemented) module.
+    A base authentication & authorization module.
 
     Includes the base class BaseAuth.
 
     Authentication and authorization in NIPAP
     -----------------------------------------
+    NIPAP offers basic authentication with two different backends, a simple
+    two-level authorization model and a trust-system for simplifying system
+    integration.
 
-    Due to the way NIPAP is thought to be used a somewhat involved
-    authentication model has been implemented, but fear not! If the extra
-    features not are needed, much of the complexity can be ignored.
+    Readonly users are only authorized to run queries which do not modify any
+    data in the database. No further granularity of access control is offered at
+    this point.
 
-    Even though NIPAP does not yet support authorization, all users can perform
-    all operations, there are two classes of users: trusted and not trusted.
-    What differ between trusted and non-trusted users is that a thusted user
-    can perform operations which will be logged as performed by another user.
-    This feature is thought to be used by NIPAP clients which have their own
-    means of authenticating users; say for example a web application supporting
-    the NTLM single sign-on feature. By letting the web application use a
-    trusted account to authenticate against the NIPAP server, it can specify a
-    user who will be listed as responsible for the changes made different from
-    the account used to authenticate the backend queries.
+    Trusted users can perform operations which will be logged as performed by
+    another user. This feature is meant for system integration, for example to
+    be used by a NIPAP client which have its own means of authentication users;
+    say for example a web application supporting the NTLM single sign-on
+    feature. By letting the web application use a trusted account to
+    authenticate against the NIPAP service, it can specify the username of the
+    end-user, so that audit logs will be written with the correct information.
+    Without the trusted-bit, all queries performed by end-users through this
+    system would look like they were performed by the system itself.
 
-    The NIPAP authentication system also has a concept of authoritative source.
-    The authoritative source is a string which defines what system made the
-    last change to a prefix. Well-behaved clients SHOULD present a warning to
-    the user when trying to alter a prefix with an authoritative source
-    different than the system itself, as other system might depend on the
-    information being unchanged. This is, however, by no means enforced by the
-    NIPAP service.
+    The NIPAP auth system also has a concept of authoritative source. The
+    authoritative source is a string which simply defines what system is the
+    authoritative source of data for a prefix. Well-behaved clients SHOULD
+    present a warning to the user when trying to alter a prefix with an
+    authoritative source different than the system itself, as other system might
+    depend on the information being unchanged. This is however, by no means
+    enforced by the NIPAP service.
 
     Authentication backends
     -----------------------
@@ -40,7 +42,7 @@
 
     The authentication classes presented here are used both in the NIPAP web UI
     and in the XML-RPC backend. So far only the SqliteAuth backend supports
-    trusted users.
+    trusted and readonly users.
 
     What authentication backend to use can be specified by suffixing the
     username with @`backend`, where `backend` is set in the configuration file.
