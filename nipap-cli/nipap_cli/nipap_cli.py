@@ -353,7 +353,7 @@ def list_prefix(arg, opts):
                 tags = '-'
                 if len(p.tags) > 0:
                     tags = '#%d' % len(p.tags)
-                prefix_str = "%%-s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-40s" % min_indent
+                prefix_str = "%%-14s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-40s" % min_indent
                 print prefix_str % (vrf,
                     "".join("  " for i in xrange(p.indent)) + p.display_prefix,
                     p.type[0].upper(), tags, p.node, p.order_id,
