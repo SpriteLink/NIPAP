@@ -150,7 +150,7 @@
 import xmlrpclib
 import logging
 
-__version__		= "0.23.0"
+__version__		= "0.26.1"
 __author__		= "Kristian Larsson, Lukas Garberg"
 __author_email__= "kll@tele2.net, lukas@spritelink.net"
 __copyright__	= "Copyright 2011, Kristian Larsson, Lukas Garberg"
@@ -162,6 +162,11 @@ __url__			= "http://SpriteLink.github.com/NIPAP"
 # This variable holds the URI to the nipap XML-RPC service which will be used.
 # It must be set before the Pynipap can be used!
 xmlrpc_uri = None
+
+# Caching of objects is enabled per default but can be disabled for certain
+# scenarios. Since we don't have any cache expiration time it can be useful to
+# disable for long running applications.
+CACHE = True
 
 class AuthOptions:
     """ A global-ish authentication option container.
@@ -317,6 +322,30 @@ class VRF(Pynipap):
     description = None
     """ VRF description, as a string.
     """
+    num_prefixes_v4 = None
+    """ Number of IPv4 prefixes in this VRF
+    """
+    num_prefixes_v6 = None
+    """ Number of IPv6 prefixes in this VRF
+    """
+    total_addresses_v4 = None
+    """ Total number of IPv4 addresses in this VRF
+    """
+    total_addresses_v6 = None
+    """ Total number of IPv6 addresses in this VRF
+    """
+    used_addresses_v4 = None
+    """ Number of used IPv4 addresses in this VRF
+    """
+    used_addresses_v6 = None
+    """ Number of used IPv6 addresses in this VRF
+    """
+    free_addresses_v4 = None
+    """ Number of free IPv4 addresses in this VRF
+    """
+    free_addresses_v6 = None
+    """ Number of free IPv6 addresses in this VRF
+    """
 
 
     @classmethod
@@ -356,6 +385,14 @@ class VRF(Pynipap):
         vrf.rt = parm['rt']
         vrf.name = parm['name']
         vrf.description = parm['description']
+        vrf.num_prefixes_v4 = long(parm['num_prefixes_v4'])
+        vrf.num_prefixes_v6 = long(parm['num_prefixes_v6'])
+        vrf.total_addresses_v4 = long(parm['total_addresses_v4'])
+        vrf.total_addresses_v6 = long(parm['total_addresses_v6'])
+        vrf.used_addresses_v4 = long(parm['used_addresses_v4'])
+        vrf.used_addresses_v6 = long(parm['used_addresses_v6'])
+        vrf.free_addresses_v4 = long(parm['free_addresses_v4'])
+        vrf.free_addresses_v6 = long(parm['free_addresses_v6'])
 
         return vrf
 
@@ -367,10 +404,11 @@ class VRF(Pynipap):
         """
 
         # cached?
-        if id in _cache['VRF']:
-            log.debug('cache hit for VRF %d' % id)
-            return _cache['VRF'][id]
-        log.debug('cache miss for VRF %d' % id)
+        if CACHE:
+            if id in _cache['VRF']:
+                log.debug('cache hit for VRF %d' % id)
+                return _cache['VRF'][id]
+            log.debug('cache miss for VRF %d' % id)
 
         try:
             vrf = VRF.list({ 'id': id })[0]
@@ -507,6 +545,16 @@ class Pool(Pynipap):
     ipv4_default_prefix_length = None
     ipv6_default_prefix_length = None
     vrf = None
+    member_prefixes_v4 = None
+    member_prefixes_v6 = None
+    used_prefixes_v4 = None
+    used_prefixes_v6 = None
+    total_addresses_v4 = None
+    total_addresses_v6 = None
+    used_addresses_v4 = None
+    used_addresses_v6 = None
+    free_addresses_v4 = None
+    free_addresses_v6 = None
 
 
     def save(self):
@@ -580,10 +628,11 @@ class Pool(Pynipap):
         """
 
         # cached?
-        if id in _cache['Pool']:
-            log.debug('cache hit for pool %d' % id)
-            return _cache['Pool'][id]
-        log.debug('cache miss for pool %d' % id)
+        if CACHE:
+            if id in _cache['Pool']:
+                log.debug('cache hit for pool %d' % id)
+                return _cache['Pool'][id]
+            log.debug('cache miss for pool %d' % id)
 
         try:
             pool = Pool.list({'id': id})[0]
@@ -666,6 +715,16 @@ class Pool(Pynipap):
         pool.default_type = parm['default_type']
         pool.ipv4_default_prefix_length = parm['ipv4_default_prefix_length']
         pool.ipv6_default_prefix_length = parm['ipv6_default_prefix_length']
+        pool.member_prefixes_v4 = long(parm['member_prefixes_v4'])
+        pool.member_prefixes_v6 = long(parm['member_prefixes_v6'])
+        pool.used_prefixes_v4 = long(parm['used_prefixes_v4'])
+        pool.used_prefixes_v6 = long(parm['used_prefixes_v6'])
+        pool.total_addresses_v4 = long(parm['total_addresses_v4'])
+        pool.total_addresses_v6 = long(parm['total_addresses_v6'])
+        pool.used_addresses_v4 = long(parm['used_addresses_v4'])
+        pool.used_addresses_v6 = long(parm['used_addresses_v6'])
+        pool.free_addresses_v4 = long(parm['free_addresses_v4'])
+        pool.free_addresses_v6 = long(parm['free_addresses_v6'])
         if parm['vrf_id'] is not None:
             pool.vrf = VRF.get(parm['vrf_id'])
 
@@ -723,6 +782,9 @@ class Prefix(Pynipap):
     vlan = None
     added = None
     last_modified = None
+    total_addresses = None
+    used_addreses = None
+    free_addreses = None
 
 
     def __init__(self):
@@ -738,10 +800,11 @@ class Prefix(Pynipap):
         """
 
         # cached?
-        if id in _cache['Prefix']:
-            log.debug('cache hit for prefix %d' % id)
-            return _cache['Prefix'][id]
-        log.debug('cache miss for prefix %d' % id)
+        if CACHE:
+            if id in _cache['Prefix']:
+                log.debug('cache hit for prefix %d' % id)
+                return _cache['Prefix'][id]
+            log.debug('cache miss for prefix %d' % id)
 
         try:
             prefix = Prefix.list({'id': id})[0]
@@ -1014,6 +1077,9 @@ class Prefix(Pynipap):
         prefix.vlan = pref['vlan']
         prefix.added = pref['added']
         prefix.last_modified = pref['last_modified']
+        prefix.total_addresses = long(pref['total_addresses'])
+        prefix.used_addresses = long(pref['used_addresses'])
+        prefix.free_addresses = long(pref['free_addresses'])
 
         prefix.inherited_tags = {}
         for tag_name in pref['inherited_tags']:
@@ -1043,6 +1109,21 @@ def nipapd_version():
     xmlrpc = XMLRPCConnection()
     try:
         return xmlrpc.connection.version(
+            {
+                'auth': AuthOptions().options
+            })
+    except xmlrpclib.Fault as xml_fault:
+        raise _fault_to_exception(xml_fault)
+
+
+
+def nipap_db_version():
+    """ Get schema version of database we're connected to.
+    """
+
+    xmlrpc = XMLRPCConnection()
+    try:
+        return xmlrpc.connection.db_version(
             {
                 'auth': AuthOptions().options
             })

@@ -1,55 +1,7 @@
 {% extends "base.html" %}
 {% set page = 'vrfs' %}
 
-{% block head %}
-<script>
-
-	$(function () {
-		$(".minibutton").each(function() {
-			$(this).click(function(e) {
-				var tr = $(this).parent().parent();
-				var vrf_id = tr.attr('data-vrf-id');
-				var vrf_rt = tr.children('td:first').text();
-				var menu = getPopupMenu($(this), 'VRF', vrf_id);
-
-				menu.append('<a href="/vrf/edit/' + vrf_id + '">Edit</a>');
-				menu.append('<a id="vrf_remove' + vrf_id + '" href="/vrf/remove/' + vrf_id + '">Remove</a>');
-
-				$('#vrf_remove' + vrf_id).click(function(e) {
-					e.preventDefault();
-					var dialog = showDialogYesNo('Really remove VRF?', 'Are you sure you want to remove the VRF "' + vrf_rt + '"?',
-					function () {
-						var data = {
-							'id': vrf_id
-						};
-						$.getJSON('/xhr/remove_vrf', data, vrfRemoved);
-
-						hidePopupMenu();
-						dialog.dialog('close');
-
-					});
-				});
-
-				menu.slideDown('fast');
-				e.preventDefault();
-				e.stopPropagation();
-			});
-		});
-	});
-
-	/*
-	* Callback function after a vrf has been removed
-	*/
-	function vrfRemoved(vrf) {
-		if ('error' in vrf) {
-			showDialogNotice('Error', vrf.message);
-			return;
-		}
-		$('#vrf_row' + vrf.id).remove();
-	}
-
-</script>
-{% endblock %}
+{% block body_attributes %}ng-controller="VRFListController"{% endblock %}
 
 {% block content %}
 
@@ -66,7 +18,10 @@
 	</div>
 </div>
 
-
+<div style="text-align: center; padding: 30px;">
+    <label>Search: <input type="text" ng-model="query"></label>
+</div>
+{% raw %}
 <table style="border-spacing: 0px; width: 100%;">
 	<thead class="listing">
 		<tr>
@@ -74,18 +29,24 @@
 		</tr>
 	</thead>
 	<tbody class="listing">
-		{% for vrf in c.vrfs %}
-		<tr id="vrf_row{{ vrf.id }}" data-vrf-id="{{vrf.id}}">
+		<tr ng-repeat="vrf in vrfs | filter:query">
 			<td style="padding-left: 30px;">{{ vrf.rt }}</a></td>
-		<td>{{ vrf.name or '' }}</td>
-		<td>{{ vrf.description or '' }}</td>
-		<td>
-			<div id="vrf_button{{vrf.id}}" class="minibutton">
-				<div class="popup_button_icon">&nbsp;</div>
-			</div>
-		</td>
-	</tr>
-	{% endfor %}
-</tbody>
+			<td>{{ vrf.name }}</td>
+			<td>{{ vrf.description }}</td>
+			<td>
+                <div class="dropdown">
+                    <div class="dropdown-toggle minibutton">
+                        <div class="popup_button_icon">&nbsp;</div>
+                    </div>
+                    <div class="dropdown-menu popup_menu">
+                        <h3>VRF</h3>
+                        <a href="/vrf/edit/{{ vrf.id }}">Edit</a>
+                        <a href="#" ng-click="vrfConfirmRemove($event, vrf)">Remove</a>
+                    </div>
+                </div>
+			</td>
+		</tr>
+	</tbody>
 </table>
+{% endraw %}
 {% endblock %}

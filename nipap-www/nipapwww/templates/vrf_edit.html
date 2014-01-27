@@ -59,4 +59,73 @@
 	</div>
 </div>
 
+<!-- statistics -->
+<div class="options-group">
+	<div class="options-content">
+		<h3 class="options-group-heading">Statistics for VRF: {{ c.edit_vrf.name }}</h3>
+
+		<div class="option">
+			<dl>
+				<dt>
+				IPv4
+				</dt>
+				<dd>
+				{% if c.edit_vrf.num_prefixes_v4 == 0 %}
+				No IPv4 prefixes in VRF.
+				{% else %}
+				<canvas id="canvas_vrf_addresses_v4" style="float: right;" width="250px;" height="100"></canvas>
+				VRF {{c.edit_vrf.name}} contains {{c.edit_vrf.num_prefixes_v4}} IPv4 prefixes containing a total of {{c.edit_vrf.total_addresses_v4}} addresses. {{c.edit_vrf.used_addresses_v4}} of those are in use while {{c.edit_vrf.free_addresses_v4}} are free, representing a usage of {{ (c.edit_vrf.used_addresses_v4 / c.edit_vrf.total_addresses_v4 * 100) | round(1) }}%.
+				{% endif %}
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt>
+				IPv6
+				</dt>
+				<dd>
+				{% if c.edit_vrf.num_prefixes_v6 == 0 %}
+				No IPv6 prefixes in VRF.
+				{% else %}
+				<canvas id="canvas_vrf_addresses_v6" style="float: right;" width="250px;" height="100"></canvas>
+				VRF {{c.edit_vrf.name}} contains {{c.edit_vrf.num_prefixes_v6}} IPv6 prefixes containing a total of {{c.edit_vrf.total_addresses_v6}} addresses. {{c.edit_vrf.used_addresses_v6}} of those are in use while {{c.edit_vrf.free_addresses_v6}} are free, representing a usage of {{ (c.edit_vrf.used_addresses_v6 / c.edit_vrf.total_addresses_v6 * 100) | round(1) }}%.
+				{% endif %}
+				</dd>
+			</dl>
+		</div>
+	</div>
+</div>
+
+<script>
+
+var data_charts = [
+	{
+		color: '#d74228',
+		highlight: '#e74228',
+		label: 'Used'
+	},
+	{
+		color: '#368400',
+		highlight: '#36a200',
+		label: 'Free'
+	}
+	];
+
+var data_vrf_addresses_v4 = $.extend(true, [], data_charts);
+data_vrf_addresses_v4[0]['value'] = {{c.edit_vrf.used_addresses_v4}};
+data_vrf_addresses_v4[1]['value'] = {{c.edit_vrf.free_addresses_v4}};
+var data_vrf_addresses_v6 = $.extend(true, [], data_charts);
+data_vrf_addresses_v6[0]['value'] = {{c.edit_vrf.used_addresses_v6}};
+data_vrf_addresses_v6[1]['value'] = {{c.edit_vrf.free_addresses_v6}};
+
+var options = { animationSteps : 20, animationEasing: "easeOutQuart" };
+var chart_vrf_addresses_v4 = new Chart($("#canvas_vrf_addresses_v4")[0].getContext("2d")).Doughnut(data_vrf_addresses_v4, options);
+var chart_vrf_addresses_v6 = new Chart($("#canvas_vrf_addresses_v6")[0].getContext("2d")).Doughnut(data_vrf_addresses_v6, options);
+
+</script>
+
 {% endblock %}

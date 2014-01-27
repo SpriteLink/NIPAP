@@ -15,13 +15,15 @@ import jnipap.Connection;
  */
 public class OConnection extends jnipap.Connection implements SQLData {
 
+	private static final long serialVersionUID = 0;
+
 	/**
 	 * Create instance from SQL.
 	 */
 	public void readSQL(SQLInput stream, String typeName) throws SQLException {
 
 		try {
-			this.srv_url = new URL(stream.readString());
+			srv_url = new URL(stream.readString());
 		} catch(MalformedURLException e) {
 			throw new SQLException(e);
 		}

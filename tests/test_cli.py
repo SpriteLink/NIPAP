@@ -80,6 +80,9 @@ class NipapCliTest(unittest.TestCase):
                 self.assertIn('last_modified', p)
                 del(p['added'])
                 del(p['last_modified'])
+                del(p['total_addresses'])
+                del(p['used_addresses'])
+                del(p['free_addresses'])
 
         elif isinstance(res, dict) and 'result' in res:
             # res from smart search
@@ -88,6 +91,9 @@ class NipapCliTest(unittest.TestCase):
                 self.assertIn('last_modified', p)
                 del(p['added'])
                 del(p['last_modified'])
+                del(p['total_addresses'])
+                del(p['used_addresses'])
+                del(p['free_addresses'])
 
         elif isinstance(res, dict):
             # just one single prefix
@@ -95,6 +101,9 @@ class NipapCliTest(unittest.TestCase):
             self.assertIn('last_modified', p)
             del(p['added'])
             del(p['last_modified'])
+            del(res['total_addresses'])
+            del(res['used_addresses'])
+            del(res['free_addresses'])
 
         return res
 

@@ -13,6 +13,7 @@ Synopsis
 Description
 ===========
 **nipap** is the NIPAP command-line client. It connects (over a network or locally) to a NIPAP backend, send requests and displays the results.
+The connection settings are saved in **~/.nipaprc**
 
 **nipap** ships with a bash completion file which greatly simplifies working with **nipap**.
 
@@ -84,4 +85,4 @@ Kristian Larsson, Lukas Garberg
 
 Copyright
 =========
-Kristian Larsson, Lukas Garberg 2011-2013
+Kristian Larsson, Lukas Garberg 2011-2014

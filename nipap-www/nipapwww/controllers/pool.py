@@ -21,8 +21,6 @@ class PoolController(BaseController):
         """ Displays a list of pools.
         """
 
-        c.pools = Pool.list()
-
         return render('/pool_list.html')
 
 

@@ -1,6 +1,14 @@
 #!/usr/bin/python
 # vim: et :
 
+#
+# All of the tests in this test suite runs directly against the XML-RPC
+# interfaces of NIPAP to check return data and so forth. As it can be rather
+# time-consuming to test everything on a XML-RPC level (everything is received
+# as basic Python data structures) it is often better to put the test in
+# nipaptest.py and use Pynipap to run more of an "end-to-end" test.
+#
+
 import logging
 import unittest
 import sys
@@ -60,6 +68,93 @@ class NipapXmlTest(unittest.TestCase):
         self.nipap._execute("DELETE FROM ip_net_asn")
 
 
+    def _mangle_pool_result(self, res):
+        """ Mangle pool result for easier testing
+
+            We can never predict the values of things like the ID (okay, that
+            one is actually kind of doable) or the added and last_modified
+            timestamp. This function will make sure the values are present but
+            then strip them to make it easier to test against an expected
+            result.
+
+            All testing of statistics is done in nipaptest.py so we strip that
+            from the result here to make things simple.
+        """
+
+        if isinstance(res, list):
+            # res from list_pool
+            for p in res:
+                self.assertIn('total_addresses_v4', p)
+                self.assertIn('total_addresses_v6', p)
+                self.assertIn('used_addresses_v4', p)
+                self.assertIn('used_addresses_v6', p)
+                self.assertIn('free_addresses_v4', p)
+                self.assertIn('free_addresses_v6', p)
+                self.assertIn('member_prefixes_v4', p)
+                self.assertIn('member_prefixes_v6', p)
+                self.assertIn('used_prefixes_v4', p)
+                self.assertIn('used_prefixes_v6', p)
+                del(p['total_addresses_v4'])
+                del(p['total_addresses_v6'])
+                del(p['used_addresses_v4'])
+                del(p['used_addresses_v6'])
+                del(p['free_addresses_v4'])
+                del(p['free_addresses_v6'])
+                del(p['member_prefixes_v4'])
+                del(p['member_prefixes_v6'])
+                del(p['used_prefixes_v4'])
+                del(p['used_prefixes_v6'])
+
+        elif isinstance(res, dict) and 'result' in res:
+            # res from smart search
+            for p in res['result']:
+                self.assertIn('total_addresses_v4', p)
+                self.assertIn('total_addresses_v6', p)
+                self.assertIn('used_addresses_v4', p)
+                self.assertIn('used_addresses_v6', p)
+                self.assertIn('free_addresses_v4', p)
+                self.assertIn('free_addresses_v6', p)
+                self.assertIn('member_prefixes_v4', p)
+                self.assertIn('member_prefixes_v6', p)
+                self.assertIn('used_prefixes_v4', p)
+                self.assertIn('used_prefixes_v6', p)
+                del(p['total_addresses_v4'])
+                del(p['total_addresses_v6'])
+                del(p['used_addresses_v4'])
+                del(p['used_addresses_v6'])
+                del(p['free_addresses_v4'])
+                del(p['free_addresses_v6'])
+                del(p['member_prefixes_v4'])
+                del(p['member_prefixes_v6'])
+                del(p['used_prefixes_v4'])
+                del(p['used_prefixes_v6'])
+
+        elif isinstance(res, dict):
+            # just one single pool
+            self.assertIn('total_addresses_v4', res)
+            self.assertIn('total_addresses_v6', res)
+            self.assertIn('used_addresses_v4', res)
+            self.assertIn('used_addresses_v6', res)
+            self.assertIn('free_addresses_v4', res)
+            self.assertIn('free_addresses_v6', res)
+            self.assertIn('member_prefixes_v4', res)
+            self.assertIn('member_prefixes_v6', res)
+            self.assertIn('used_prefixes_v4', res)
+            self.assertIn('used_prefixes_v6', res)
+            del(res['total_addresses_v4'])
+            del(res['total_addresses_v6'])
+            del(res['used_addresses_v4'])
+            del(res['used_addresses_v6'])
+            del(res['free_addresses_v4'])
+            del(res['free_addresses_v6'])
+            del(res['member_prefixes_v4'])
+            del(res['member_prefixes_v6'])
+            del(res['used_prefixes_v4'])
+            del(res['used_prefixes_v6'])
+
+        return res
+
+
     def _mangle_prefix_result(self, res):
         """ Mangle prefix result for easier testing
 
@@ -68,6 +163,9 @@ class NipapXmlTest(unittest.TestCase):
             timestamp. This function will make sure the values are present but
             then strip them to make it easier to test against an expected
             result.
+
+            All testing of statistics is done in nipaptest.py so we strip that
+            from the result here to make things simple.
         """
 
         if isinstance(res, list):
@@ -75,23 +173,129 @@ class NipapXmlTest(unittest.TestCase):
             for p in res:
                 self.assertIn('added', p)
                 self.assertIn('last_modified', p)
+                self.assertIn('total_addresses', p)
+                self.assertIn('used_addresses', p)
+                self.assertIn('free_addresses', p)
                 del(p['added'])
                 del(p['last_modified'])
+                del(p['total_addresses'])
+                del(p['used_addresses'])
+                del(p['free_addresses'])
 
         elif isinstance(res, dict) and 'result' in res:
             # res from smart search
             for p in res['result']:
                 self.assertIn('added', p)
                 self.assertIn('last_modified', p)
+                self.assertIn('total_addresses', p)
+                self.assertIn('used_addresses', p)
+                self.assertIn('free_addresses', p)
                 del(p['added'])
                 del(p['last_modified'])
+                del(p['total_addresses'])
+                del(p['used_addresses'])
+                del(p['free_addresses'])
 
         elif isinstance(res, dict):
             # just one single prefix
             self.assertIn('added', res)
             self.assertIn('last_modified', res)
+            self.assertIn('total_addresses', res)
+            self.assertIn('used_addresses', res)
+            self.assertIn('free_addresses', res)
             del(res['added'])
             del(res['last_modified'])
+            del(res['total_addresses'])
+            del(res['used_addresses'])
+            del(res['free_addresses'])
+
+        return res
+
+
+
+    def _mangle_vrf_result(self, res):
+        """ Mangle vrf result for easier testing
+
+            We can never predict the values of things like the ID (okay, that
+            one is actually kind of doable) or the added and last_modified
+            timestamp. This function will make sure the values are present but
+            then strip them to make it easier to test against an expected
+            result.
+
+            All testing of statistics is done in nipaptest.py so we strip that
+            from the result here to make things simple.
+        """
+
+        if isinstance(res, list):
+            # res from list_vrf
+            for p in res:
+                #self.assertIn('added', p)
+                #self.assertIn('last_modified', p)
+                self.assertIn('total_addresses_v4', p)
+                self.assertIn('total_addresses_v6', p)
+                self.assertIn('used_addresses_v4', p)
+                self.assertIn('used_addresses_v6', p)
+                self.assertIn('free_addresses_v4', p)
+                self.assertIn('free_addresses_v6', p)
+                self.assertIn('num_prefixes_v4', p)
+                self.assertIn('num_prefixes_v6', p)
+                #del(p['added'])
+                #del(p['last_modified'])
+                del(p['total_addresses_v4'])
+                del(p['total_addresses_v6'])
+                del(p['used_addresses_v4'])
+                del(p['used_addresses_v6'])
+                del(p['free_addresses_v4'])
+                del(p['free_addresses_v6'])
+                del(p['num_prefixes_v4'])
+                del(p['num_prefixes_v6'])
+
+        elif isinstance(res, dict) and 'result' in res:
+            # res from smart search
+            for p in res['result']:
+                #self.assertIn('added', p)
+                #self.assertIn('last_modified', p)
+                self.assertIn('total_addresses_v4', p)
+                self.assertIn('total_addresses_v6', p)
+                self.assertIn('used_addresses_v4', p)
+                self.assertIn('used_addresses_v6', p)
+                self.assertIn('free_addresses_v4', p)
+                self.assertIn('free_addresses_v6', p)
+                self.assertIn('num_prefixes_v4', p)
+                self.assertIn('num_prefixes_v6', p)
+                #del(p['added'])
+                #del(p['last_modified'])
+                del(p['total_addresses_v4'])
+                del(p['total_addresses_v6'])
+                del(p['used_addresses_v4'])
+                del(p['used_addresses_v6'])
+                del(p['free_addresses_v4'])
+                del(p['free_addresses_v6'])
+                del(p['num_prefixes_v4'])
+                del(p['num_prefixes_v6'])
+
+        elif isinstance(res, dict):
+            # just one single vrf
+            #self.assertIn('added', res)
+            #self.assertIn('last_modified', res)
+            self.assertIn('total_addresses_v4', res)
+            self.assertIn('total_addresses_v6', res)
+            self.assertIn('used_addresses_v4', res)
+            self.assertIn('used_addresses_v6', res)
+            self.assertIn('free_addresses_v4', res)
+            self.assertIn('free_addresses_v6', res)
+            self.assertIn('num_prefixes_v4', res)
+            self.assertIn('num_prefixes_v6', res)
+            #del(res['added'])
+            #del(res['last_modified'])
+            del(res['total_addresses_v4'])
+            del(res['total_addresses_v6'])
+            del(res['used_addresses_v4'])
+            del(res['used_addresses_v6'])
+            del(res['free_addresses_v4'])
+            del(res['free_addresses_v6'])
+            del(res['num_prefixes_v4'])
+            del(res['num_prefixes_v6'])
 
         return res
 
@@ -117,8 +321,8 @@ class NipapXmlTest(unittest.TestCase):
 
         ref = attr.copy()
         ref['id'] = vrf['id']
-        self.assertEqual(vrf, ref)
-        self.assertEqual(s.list_vrf({ 'auth': ad, 'vrf': { 'id': vrf['id'] } }), [ ref, ])
+        self.assertEqual(self._mangle_vrf_result(vrf), ref)
+        self.assertEqual(self._mangle_vrf_result(s.list_vrf({ 'auth': ad, 'vrf': { 'id': vrf['id'] } })), [ ref, ])
 
         attr['rt'] = '123:abc'
         with self.assertRaisesRegexp(xmlrpclib.Fault, '.'): # TODO: specify exception string
@@ -136,7 +340,7 @@ class NipapXmlTest(unittest.TestCase):
         res_edit = s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': { 'name': 'FOO', 'description': 'BAR' }})
         res_list = s.list_vrf({ 'auth': ad, 'vrf': { } })[0]
         del(res_list['id'])
-        self.assertEqual(res_list, { 'rt': None, 'name': 'FOO', 'description': 'BAR' }, 'VRF change incorrect')
+        self.assertEqual(self._mangle_vrf_result(res_list), { 'rt': None, 'name': 'FOO', 'description': 'BAR' }, 'VRF change incorrect')
 
 
 
@@ -174,7 +378,7 @@ class NipapXmlTest(unittest.TestCase):
         self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
         res = res[0]
         del(res['id'])
-        self.assertEqual(res, attr, 'VRF changed after empty edit_vrf operation')
+        self.assertEqual(self._mangle_vrf_result(res), attr)
 
         # valid change
         attr['rt'] = '65000:1234'
@@ -188,7 +392,7 @@ class NipapXmlTest(unittest.TestCase):
         res = res[0]
         # ignore the ID
         del(res['id'])
-        self.assertEqual(res, attr, 'VRF change incorrect')
+        self.assertEqual(self._mangle_vrf_result(res), attr, 'VRF change incorrect')
 
 
 
@@ -211,7 +415,7 @@ class NipapXmlTest(unittest.TestCase):
             'val1': 'rt',
             'val2': attr['rt']
         }
-        res = s.search_vrf({ 'auth': ad, 'query': q })
+        res = self._mangle_vrf_result(s.search_vrf({ 'auth': ad, 'query': q }))
         self.assertEquals(res['result'], [ attr, ], 'Search result from equal match did not match')
 
         # regex match
@@ -220,11 +424,11 @@ class NipapXmlTest(unittest.TestCase):
             'val1': 'description',
             'val2': 'instance 65000'
         }
-        res = s.search_vrf({ 'auth': ad, 'query': q })
+        res = self._mangle_vrf_result(s.search_vrf({ 'auth': ad, 'query': q }))
         self.assertEquals(res['result'], [ attr, ], 'Search result from regex match did not match')
 
         # smart search
-        res = s.smart_search_vrf({ 'auth': ad, 'query_string': 'forwarding instance' })
+        res = self._mangle_vrf_result(s.smart_search_vrf({ 'auth': ad, 'query_string': 'forwarding instance' }))
         self.assertEquals(res['result'], [ attr, ], 'Smart search result did not match')
 
 
@@ -468,7 +672,7 @@ class NipapXmlTest(unittest.TestCase):
         # add the "top" prefix - 1.0.0.0/8
         attr = {
                 'prefix': '1.0.0.0/8',
-                'description': 'test prefix',
+                'description': 'top prefix',
                 'type': 'reservation',
                 'tags': ['top']
                 }
@@ -479,7 +683,7 @@ class NipapXmlTest(unittest.TestCase):
         # add the "bottom" prefix 1.3.3.0/24
         attr = {
                 'prefix': '1.3.3.0/24',
-                'description': 'test prefix',
+                'description': 'bottom prefix',
                 'type': 'assignment',
                 'tags': ['bottom'],
                 }
@@ -500,7 +704,7 @@ class NipapXmlTest(unittest.TestCase):
         # add the "middle" prefix 1.3.0.0/16
         attr = {
                 'prefix': '1.3.0.0/16',
-                'description': 'test prefix',
+                'description': 'middle prefix',
                 'type': 'reservation',
                 'tags': ['middle'],
                 }
@@ -1064,7 +1268,7 @@ class NipapXmlTest(unittest.TestCase):
         self.assertEquals(1, len(p), 'Wrong number of pools returned')
         p = p[0]
 
-        self.assertEquals(p, expected, 'Received pool differs from added pool')
+        self.assertEquals(self._mangle_pool_result(p), expected, 'Received pool differs from added pool')
 
 
     def test_edit_pool(self):
@@ -1098,7 +1302,8 @@ class NipapXmlTest(unittest.TestCase):
         expected['vrf_rt'] = None
         expected['vrf_name'] = None
 
-        self.assertEquals(s.list_pool({ 'auth': ad, 'pool': { 'id': res['id'] } })[0], expected)
+        self.assertEquals(self._mangle_pool_result(s.list_pool({ 'auth': ad,
+            'pool': { 'id': res['id'] } })[0]), expected)
 
 
     def test_search_pool(self):

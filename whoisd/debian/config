@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+# should nipap-whoisd be started on system boot?
+db_input high nipap-whoisd/startup || true
+db_go

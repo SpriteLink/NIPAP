@@ -3,7 +3,6 @@
 
     A shell command to interact with NIPAP.
 """
-
 import logging
 import sys
 
@@ -12,6 +11,27 @@ import nipap_cli.nipap_cli
 from nipap_cli.command import Command, CommandError
 from pynipap import NipapError
 
+import codecs
+# do UTF-8 output for redirected stdout
+if sys.stdout.encoding is None:
+    # if encoding is None it means Python hasn't been able to determine the
+    # encoding from the terminal, so we are probably being redirected and so we
+    # default to UTF-8
+    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+
+# early close of stdout to avoid broken pipe, see #464
+# If our output is being piped and the receiver of the pipe is killed off before
+# us there won't be a pipe anymore and Python will print an ugly "broken pipe"
+# backtrace that could look a bit different depending on which version of Python
+# we are running on. To avoid this, we register an atexit handler which will try
+# to close stdout before we exit.
+import atexit
+@atexit.register
+def at_exit():
+    try:
+        sys.stdout.close()
+    except:
+        pass
 
 
 class NullHandler(logging.Handler):
@@ -30,13 +50,13 @@ if __name__ == '__main__':
     nullh = NullHandler()
     logger.addHandler(nullh)
 
-    import optparse
-    parser = optparse.OptionParser()
-    parser.add_option("--version", action="store_true", help="display version information and exit")
+    import argparse
+    parser = argparse.ArgumentParser(description='NIPAP command-line client')
+    parser.add_argument("-f", "--force", action="store_true", help="disable interactive prompting of actions")
+    parser.add_argument("--version", action="store_true", help="display version information and exit")
+    args = parser.parse_args()
 
-    (options, args) = parser.parse_args()
-
-    if options.version:
+    if args.version:
         import pynipap
         print "nipap CLI client version:", nipap_cli.__version__
         print "pynipap version:", pynipap.__version__
@@ -59,7 +79,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     try:
-        cmd = Command(nipap_cli.nipap_cli.cmds, sys.argv[1::])
+        cmd = Command(nipap_cli.nipap_cli.cmds, args)
     except (ValueError, CommandError, NipapError) as exc:
         print >> sys.stderr, "Error: %s" % str(exc)
         sys.exit(1)
@@ -71,7 +91,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     try:
-        cmd.exe(cmd.arg, cmd.exe_options)
+        cmd.exe(cmd.arg, cmd.exe_options, options)
     except KeyboardInterrupt:
         sys.exit(130)
     except (IOError, OSError):

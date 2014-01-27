@@ -1,3 +1,115 @@
+nipap-cli (0.26.1-1) stable; urgency=low
+
+  * Fix www icons (#551)
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 04 Aug 2014 09:25:41 +0200
+
+nipap-cli (0.26.0-1) stable; urgency=low
+
+  * Support for statistics! Total / used / free prefixes are now listed
+    for prefixes, VRFs and pool (#248)
+  * Travis-CI testing of package upgrade (#524 / #525)
+  * Introduced AngularJS framework, it is only used on a few pages at
+    this time but its use will become more widespread with time (#338)
+  * Web UI now supports searching for VRFs (#347)
+  * CLI dual-stack address assignment (#526)
+  * CLI remove now defaults to recursive when assignment contains hosts
+    (#520)
+  * CLI support for user impersonation via environment variables (#538)
+  * CLI support for suppressing interactive prompts (#499)
+  * Web UI pool list page converted to AngularJS (#503)
+  * Faster pool listing thanks to db index (#497)
+  * Fix CLI with regards to viewing default VRF (#527)
+  * Fix for Web UI prefix Save button (#523)
+  * Fix for CLI .nipaprc bug (#509)
+  * Fix bug for updating display_prefix on hosts (#515)
+  * Fix for CLI piping (#464)
+  * Fix for CLI address modification traceback (#516)
+  * Fix tag inheritance bugs (#507 & #519)
+  * Fix bug for calculation of children (#518)
+  * Fix nipap-passwd traceback (#548)
+
+ -- Kristian Larsson <kll@spritelink.net>  Sun, 03 Aug 2014 19:56:37 +0200
+
+nipap-cli (0.25.0-1) stable; urgency=low
+
+  * There's now a whois-server!
+  * Fix tab completion on non-closed quoted string (#493)
+  * Fix search on UTF-8 characters (#492)
+  * Fix CLI output of UTF-8 with redirected stdout (#491)
+  * Fix pool expansion with manually created prefix (#489)
+  * Fix CLI auto-calc of prefix type with from-prefix (#462)
+  * Remove some debug message (#476)
+  * Update nipapd man page (#479)
+  * Various installation improvements
+
+ -- Kristian Larsson <kll@spritelink.net>  Fri, 21 Mar 2014 23:27:26 +0100
+
+nipap-cli (0.24.5-1) stable; urgency=low
+
+  * Semi-fix leaking files in backend (#485)
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 18 Mar 2014 22:09:51 +0100
+
+nipap-cli (0.24.4-1) stable; urgency=low
+
+  * Fix prefix add in VRF using from-prefix (#477)
+  * Fix web UI header misalignment (#475)
+  * Fix version of nipapd in web UI (#474)
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 11 Feb 2014 16:23:25 +0100
+
+nipap-cli (0.24.3-1) stable; urgency=low
+
+  * Prevent nipapd logging to stdout when run as daemon.
+  * Improve Debian install scripts.
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 11 Feb 2014 09:02:59 +0100
+
+nipap-cli (0.24.2-1) stable; urgency=low
+
+  * Add missing dependency on Tornado for nipapd!
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Feb 2014 15:59:35 +0100
+
+nipap-cli (0.24.1-1) stable; urgency=low
+
+  * Add missing dependency on Flask-Compress library for nipapd
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Feb 2014 15:50:51 +0100
+
+nipap-cli (0.24.0-1) stable; urgency=low
+
+  * nipaprc configuration option 'default_vrf' is replaced by
+    'default_vrf_rt' which only affects address adds/edits/removals. A
+    second option 'default_list_vrf_rt' controls the default VRF for
+    listing/search operations.
+  * 'guest' user is no longer part of default shipping local_auth
+    database. A user needs to be added manually for the web UI or CLI
+    users.
+  * New pre-forked backend. Replaced Twisted in preference of Flask-XML-
+    RPC, served using Tornado. Backend will default to pre-forking to
+    the number of CPUs. PostgreSQL also pre-forks and with one
+    PostgreSQL backend per nipapd process, performance for parallel
+    queries should see a significant boost.
+  * Backend support for read-only users. A local_auth (SQLite) user can
+    now be configured to be read-only. Web UI is lacking support, for
+    example the "Add prefix" button is still present and enabled but
+    trying to add a prefix will raise an error message.
+  * Revamp look of VRF information and make it consistent across web UI
+    and CLI as far as possible.
+  * Fix for searches on "weird" IP addresses like 123.123123/24 which
+    would previously generate exception.
+  * Various formatting improvements to CLI
+  * Various bug fixes to the web UI
+  * Consistently use iprange indices in database for improved
+    performance
+  * Reference documentation is now kept up to date using readthedocs.org
+  * Makefile target for bumping version - won't help you unless you're a
+    developer ;)
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Feb 2014 15:30:43 +0100
+
 nipap-cli (0.23.0-1) stable; urgency=low
 
   * Add 'Customer ID' attribute to prefixes. This can be used to store a

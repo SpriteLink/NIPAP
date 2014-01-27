@@ -9,6 +9,9 @@ import java.sql.SQLException;
 
 public class OSearchOptions extends HashMap implements SQLData {
 
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
+
 	public void readSQL(SQLInput stream, String typeName) throws SQLException {
 
         put("max_result", new Integer(stream.readBigDecimal().intValue()));

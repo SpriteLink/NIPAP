@@ -634,7 +634,7 @@ function showPrefix(prefix, reference, offset) {
 		}
 		prefix_tags.addClass('tooltip');
 		prefix_tags.prop('title', tags_html)
-		prefix_tags.html('<img src="/tag-icon.png">');
+		prefix_tags.html('<img src="/images/tag-16.png">');
 		prefix_tags.tipTip({ delay: 100 });
 	}
 
@@ -681,7 +681,7 @@ function showPrefix(prefix, reference, offset) {
 	} else {
 		prefix_comment.addClass('tooltip');
 		prefix_comment.prop('title', prefix.comment)
-		prefix_comment.html('<img src="/comment-icon.png">');
+		prefix_comment.html('<img src="/images/comments-16.png">');
 		prefix_comment.tipTip({ delay: 100 });
 	}
 
@@ -910,7 +910,7 @@ function addVRFToSelectList(vrf, elem) {
 	// display tick
 	if (selected_vrfs.hasOwnProperty(String(vrf.id))) {
 		elem.children('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&#10003;');
-		elem.children('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/remove-icon.png">');
+		elem.children('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/images/x-mark-3-16.png">');
 	}
 
 	$("#vrf_filter_entry_" + String(vrf.id)).click(curVRFCallback);
@@ -1337,7 +1337,7 @@ function verifyPrefixListResponse(search_result) {
 
 	// Error?
 	if ('error' in search_result) {
-		showDialogNotice("Error", prefix.message);
+		showDialogNotice("Error", search_result.message);
 		return false;
 	}
 
@@ -1526,19 +1526,20 @@ function insertPrefix(prefix, prev_prefix) {
 		 * Find the collapse container in which the previous prefix was placed.
 		 */
 		main_container = $("#prefix_entry" + prev_prefix.id);
+		vrf_container = getVRFContainer(prefix.vrf_id);
 		for (i = prev_prefix.indent - prefix.indent; i > 0; i--) {
 			main_container = main_container.parent();
-
-			// Safety net - stop iterating if we reached the VRF container
-			// which is the highest level.
-			if (main_container === getVRFContainer(prefix.vrf_id)) {
-				break;
-			}
 
 			// The previous prefix on our level might have been placed into a
 			// hidden container. If so, get it's parent.
 			if (main_container.hasClass('prefix_hidden_container')) {
 				main_container = main_container.parent();
+			}
+
+			// Safety net - stop iterating if we reached the VRF container
+			// which is the highest level.
+			if (main_container.parent()[0] === vrf_container[0]) {
+				break;
 			}
 
 		}
@@ -1553,7 +1554,7 @@ function insertPrefix(prefix, prev_prefix) {
 			var next = main_container.next();
 
 			if (next.length == 0) {
-				// Main container last elemment, place hidden container after it.
+				// Main container last element, place hidden container after it.
 				reference = addHiddenContainer(prefix, main_container, 'after');
 				offset = null;
 			} else {
@@ -1665,7 +1666,17 @@ function getVRFContainer(vrf_id) {
 function receiveVRFContainerData(search_result) {
 	vrf = search_result.result[0];
 
-	$('#preflist_vrf_container_' + vrf.id).children('div[class="preflist_vrf_panel"]').html('<div class="preflist_vrf_rt"><b>RT:&nbsp;' + ( vrf.rt == null ? '-' : vrf.rt ) + '</b></div><b class="t"></b><div style="padding-bottom: 30px; margin-left: 5px;">' + vrf.name + '</div>');
+	$('#preflist_vrf_container_' + vrf.id).children('div[class="preflist_vrf_panel"]').html('<div class="preflist_vrf_rt"><b>RT:&nbsp;' + ( vrf.rt == null ? '-' : vrf.rt ) + '</b></div><b class="t"></b><div class="preflist_vrf_name">' + vrf.name + '</div>');
+}
+
+/*
+ * Update VRF container with RT and name for add prefix page
+ */
+function receivePrefixVRFData(search_result) {
+	vrf = search_result.result[0];
+
+	$("#prefix_vrf_display").html('<div class="vrf_filter_entry"><div class="vrf_filter_entry_rt">RT:&nbsp;' + vrf.rt + '</div><div class="selector_entry_name" style="margin-left: 5px;">' + vrf.name + '</div><div class="selector_entry_description" style="clear: both;">' + vrf.description + '</div></div>');
+    $("#prefix_vrf_display").show();
 }
 
 
@@ -1853,6 +1864,7 @@ function showAllocContainer(e) {
 	$('#radio-prefix-type-reservation').removeAttr('disabled');
 	$('#radio-prefix-type-assignment').removeAttr('disabled');
 	$('#radio-prefix-type-host').removeAttr('disabled');
+
 	$('#radio-prefix-type-reservation').removeAttr('checked');
 	$('#radio-prefix-type-assignment').removeAttr('checked');
 	$('#radio-prefix-type-host').removeAttr('checked');
@@ -2221,7 +2233,7 @@ function prefixFormSubmit(e) {
 		'country': $('input[name="prefix_country"]').val(),
 		'order_id': $('input[name="prefix_order_id"]').val(),
 		'customer_id': $('input[name="prefix_customer_id"]').val(),
-		'vrf': $('input[name="prefix_vrf"]').val(),
+		'vrf': $('input[name="prefix_vrf_id"]').val(),
 		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
 		'vlan': $('input[name="prefix_vlan"]').val()
 	};
@@ -2325,23 +2337,13 @@ function selectPrefix(prefix_id) {
 		$('#radio-prefix-type-host').prop('checked', true);
 	}
 
-    // Set VRF to the same as the prefix we're allocating from
+	// Set VRF to the same as the prefix we're allocating from
+	$.getJSON("/xhr/smart_search_vrf", { 'vrf_id': prefix_list[prefix_id].vrf_id, 'query_string': '' }, receivePrefixVRFData);
+	$('input[name="prefix_vrf_id"]').val(prefix_list[prefix_id].vrf_id);
 
-    // Set prefix VRF to pool's implied VRF (if available)
-    var vrf_text = "";
-    if (prefix_list[prefix_id].vrf_rt == null) {
-        vrf_text = 'None';
-        $("input[name = prefix_vrf]").val(null);
-    } else {
-        vrf_text = prefix_list[prefix_id].vrf_rt;
-        $("input[name = prefix_vrf]").val(prefix_list[prefix_id].vrf_id);
-    }
-
-    $("#prefix_vrf_display").html(vrf_text);
-    $("input[name = prefix_vrf_btn]").hide();
-    $("#prefix_vrf_display").attr('title', 'VRF ' + vrf_text + ' taken from parent prefix (' + prefix_list[prefix_id].display_prefix + ').');
-    $("#prefix_vrf_display").tipTip();
-    $("#prefix_vrf_display").show();
+	$("#prefix_vrf_text").html('VRF from parent prefix:');
+	$("#prefix_vrf_display").html();
+	$("input[name = prefix_vrf_btn]").hide();
 
 	// Lead the user to the next step in the process
 	$('#prefix_data_container').show();
@@ -2358,6 +2360,7 @@ function selectPrefix(prefix_id) {
 	// where it is done for the prefix length field for pools.
 	$('input[name="prefix_length_prefix"]').keyup(enableNodeInput);
 	enableMonitor();
+	enableNodeInput();
 
 }
 

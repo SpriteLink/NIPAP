@@ -5,28 +5,33 @@
 
 import sys
 import os
-import optparse
+import argparse
 import logging
 
 import nipap.authlib
-from nipap.nipapconfig import NipapConfig
+from nipap.nipapconfig import NipapConfig, NipapConfigError
 
 if __name__ == '__main__':
 
-    # parse options
-    parser = optparse.OptionParser()
-    parser.add_option('-a', '--add', dest='add_user', type='string', help='add user ADD_USER')
-    parser.add_option('-d', '--delete', dest='delete_user', type='string', help="delete user DELETE_USER")
-    parser.add_option('-f', '--file', dest='db_file', type='string', help="database file [default: read from config]")
-#    parser.add_option('-m', '--modify', dest='modify_user', type='string')
-    parser.add_option('-p', '--password', dest='password', type='string', help='set user\'s password to PASSWORD')
-    parser.add_option('-l', '--list', action='store_true', dest='list', help='list users')
-    parser.add_option('-t', '--trusted', action='store_true', dest='trusted', default=False, help='mark user as trusted')
-    parser.add_option('-r', '--readonly', action='store_true', dest='readonly', default=False, help='set user to read only')
-    parser.add_option('-n', '--name', dest='name', type='string', help='set user\'s name to NAME')
-    parser.add_option('-c', '--config', dest='config', default='/etc/nipap/nipap.conf', type='string', help=
+    # parse arguments & options
+    parser = argparse.ArgumentParser(description='NIPAP User configuration')
+    parser.add_argument('action', metavar='{list, add, delete}', nargs='?', type=str, choices=['list', 'add', 'delete'], help='define an action to execute')
+    parser.add_argument('-u', '--user', dest='user', type=str, help='username')
+    parser.add_argument('-p', '--password', dest='password', type=str, help='set user\'s password to PASSWORD')
+    parser.add_argument('-n', '--name', dest='name', type=str, help='set user\'s name to NAME')
+    parser.add_argument('-t', '--trusted', action='store_true', dest='trusted', default=False, help='mark user as trusted')
+    parser.add_argument('-r', '--readonly', action='store_true', dest='readonly', default=False, help='set user to read only')
+    parser.add_argument('-f', '--file', dest='db_file', type=str, help="database file [default: read from config]")
+    parser.add_argument('-c', '--config', dest='config', default='/etc/nipap/nipap.conf', type=str, help=
             'read configuration from CONFIG [default:/etc/nipap/nipap.conf]')
-    options, args = parser.parse_args()
+    parser.add_argument('--version', action='version', version='nipap-passwd version %s' % nipap.__version__)
+    parser.add_argument('--latest-version', action='store_true',
+            help='check that the sqlite database is of latest version')
+    parser.add_argument('--create-database', action='store_true',
+            help='create SqliteAuth database')
+    parser.add_argument('--upgrade-database', action='store_true',
+            help='upgrade sqlite database to latest version')
+    args = parser.parse_args()
 
     logger = logging.getLogger()
     log_format = "%(levelname)-8s %(message)s"
@@ -35,41 +40,74 @@ if __name__ == '__main__':
     logger.setLevel(logging.WARNING)
     logger.addHandler(log_stream)
 
-    cfg = NipapConfig(options.config)
+    try:
+        cfg = NipapConfig(options.config)
+    except NipapConfigError, exc:
+        print >> sys.stderr, "The specified configuration file ('" + options.config + "') does not exist"
+        sys.exit(1)
 
-    if options.db_file:
-        cfg.set('auth.backends.local', 'db_path', options.db_file)
+    if args.db_file:
+        cfg.set('auth.backends.local', 'db_path', args.db_file)
 
     a = nipap.authlib.SqliteAuth('local', 'a', 'b', 'c')
 
-    if options.list:
+    if options.latest_version:
+        try:
+            latest = a._latest_db_version()
+            if not latest:
+                print >> sys.stderr, "It seems your Sqlite database for local auth is out of date"
+                print >> sys.stderr, "Please run 'nipap-passwd --upgrade-database' to upgrade your database."
+                sys.exit(2)
+        except nipap.authlib.AuthSqliteError, e:
+            print >> sys.stderr, "Error checking version of Sqlite database for local auth: %s" % e
+            sys.exit(1)
+        print "Sqlite database for local auth is of the latest version."
+        sys.exit(0)
+
+    if options.create_database:
+        a._create_database()
+        sys.exit(0)
+
+    if options.upgrade_database:
+        a._upgrade_database()
+        sys.exit(0)
+
+    if args.action == 'list':
         # print a nicely formatted list of users
-        header =  "%-20s %-25s %-7s %-7s" % ('username', 'real name', 'trusted', 'read only')
+        header =  "%-20s %-25s %-7s %-7s" % ('username', 'real name', 'trusted', 'read only') 
         print "%s\n%s" % (header,''.join('-' for x in range(len(header))))
         for u in a.list_users():
-            print "%-20s %-25s %-7d %-7d" % (u['username'], u['full_name'], int(u['trusted']), int(u['readonly']))
-
-    elif options.add_user:
-        if not options.password:
+            if not args.user or args.user == u['username']:
+                print "%-20s %-25s %-7d %-7d" % (u['username'], u['full_name'], int(u['trusted']), int(u['readonly'])) 
+    
+    elif args.action == 'add':
+        if not args.user:
+            print "Please specify user with --user"
+            sys.exit(1)
+        if not args.password:
             print "Please specify password with --password"
             sys.exit(1)
-        if not options.name:
+        if not args.name:
             print "Please specify name with --name"
             sys.exit(1)
         try:
-            a.add_user(options.add_user, options.password, options.name, options.trusted, options.readonly)
-            print "Added user %s to database %s" % (options.add_user, cfg.get('auth.backends.local','db_path'))
+            a.add_user(args.user, args.password, args.name, args.trusted, args.readonly)
+            print "Added user %s to database %s" % (args.user, cfg.get('auth.backends.local','db_path'))
         except nipap.authlib.AuthError as exc:
             if str(exc) == 'attempt to write a readonly database':
                 print "You do not have sufficient rights to write to database: %s" % (cfg.get('auth.backends.local','db_path'))
             elif str(exc) == 'column username is not unique':
-                print "Username '%s' already exists in the database: %s " % (options.add_user, cfg.get('auth.backends.local','db_path'))
+                print "Username '%s' already exists in the database: %s " % (args.user, cfg.get('auth.backends.local','db_path'))
             else:
                 print exc
-    elif options.delete_user:
+                    
+    elif args.action == 'delete':
         try:
-            a.remove_user(options.delete_user)
-            print "User %s deleted from database %s" % (options.delete_user, cfg.get('auth.backends.local', 'db_path'))
+            if not args.user:
+                print "Please specify user with --user"
+                sys.exit(1)
+            a.remove_user(args.user)
+            print "User %s deleted from database %s" % (args.user, cfg.get('auth.backends.local', 'db_path'))
         except nipap.authlib.AuthError as exc:
             if str(exc) == 'attempt to write a readonly database':
                 print "You do not have sufficient rights to write to database: %s" % (cfg.get('auth.backends.local','db_path'))

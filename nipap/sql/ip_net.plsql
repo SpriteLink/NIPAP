@@ -4,7 +4,7 @@
 --
 --------------------------------------------
 
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 3';
+COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 4';
 
 CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
 
@@ -23,7 +23,15 @@ CREATE TABLE ip_net_vrf (
 	id serial PRIMARY KEY,
 	rt text,
 	name text,
-	description text
+	description text,
+	num_prefixes_v4 numeric(40) DEFAULT 0,
+	num_prefixes_v6 numeric(40) DEFAULT 0,
+	total_addresses_v4 numeric(40) DEFAULT 0,
+	total_addresses_v6 numeric(40) DEFAULT 0,
+	used_addresses_v4 numeric(40) DEFAULT 0,
+	used_addresses_v6 numeric(40) DEFAULT 0,
+	free_addresses_v4 numeric(40) DEFAULT 0,
+	free_addresses_v6 numeric(40) DEFAULT 0
 );
 
 --
@@ -41,14 +49,22 @@ CREATE UNIQUE INDEX ip_net_vrf__name__index ON ip_net_vrf (name) WHERE name IS N
 COMMENT ON TABLE ip_net_vrf IS 'IP Address VRFs';
 COMMENT ON INDEX ip_net_vrf__rt__index IS 'VRF RT';
 COMMENT ON INDEX ip_net_vrf__name__index IS 'VRF name';
+COMMENT ON COLUMN ip_net_vrf.num_prefixes_v4 IS 'Number of IPv4 prefixes in this VRF';
+COMMENT ON COLUMN ip_net_vrf.num_prefixes_v6 IS 'Number of IPv6 prefixes in this VRF';
+COMMENT ON COLUMN ip_net_vrf.total_addresses_v4 IS 'Total number of IPv4 addresses in this VRF';
+COMMENT ON COLUMN ip_net_vrf.total_addresses_v6 IS 'Total number of IPv6 addresses in this VRF';
+COMMENT ON COLUMN ip_net_vrf.used_addresses_v4 IS 'Number of used IPv4 addresses in this VRF';
+COMMENT ON COLUMN ip_net_vrf.used_addresses_v6 IS 'Number of used IPv6 addresses in this VRF';
+COMMENT ON COLUMN ip_net_vrf.free_addresses_v4 IS 'Number of free IPv4 addresses in this VRF';
+COMMENT ON COLUMN ip_net_vrf.free_addresses_v6 IS 'Number of free IPv6 addresses in this VRF';
 
 
 
 --
--- This table is used to store our pools. pools are for a specific
--- purpose and when you need a specific type of address, ie a core
--- loopback or similar, you'll just pick the right pool and get an
--- address assigned automatically.
+-- This table is used to store our pools. pools are the grouping of a number of
+-- prefixes for a specific purpose and when you need a specific type of
+-- address, ie a core loopback or similar, you'll just pick the right pool and
+-- get an address assigned automatically.
 --
 CREATE TABLE ip_net_pool (
 	id serial PRIMARY KEY,
@@ -56,12 +72,42 @@ CREATE TABLE ip_net_pool (
 	description text,
 	default_type ip_net_plan_type,
 	ipv4_default_prefix_length integer,
-	ipv6_default_prefix_length integer
+	ipv6_default_prefix_length integer,
+	member_prefixes_v4 numeric(40) DEFAULT 0,
+	member_prefixes_v6 numeric(40) DEFAULT 0,
+	used_prefixes_v4 numeric(40) DEFAULT 0,
+	used_prefixes_v6 numeric(40) DEFAULT 0,
+	total_addresses_v4 numeric(40) DEFAULT 0,
+	total_addresses_v6 numeric(40) DEFAULT 0,
+	used_addresses_v4 numeric(40) DEFAULT 0,
+	used_addresses_v6 numeric(40) DEFAULT 0,
+	free_addresses_v4 numeric(40) DEFAULT 0,
+	free_addresses_v6 numeric(40) DEFAULT 0,
+	free_prefixes_v4 numeric(40) DEFAULT 0,
+	free_prefixes_v6 numeric(40) DEFAULT 0,
+	total_prefixes_v4 numeric(40) DEFAULT 0,
+	total_prefixes_v6 numeric(40) DEFAULT 0
 );
 
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 
 COMMENT ON INDEX ip_net_pool_name_key IS 'pool name';
+
+COMMENT ON COLUMN ip_net_pool.member_prefixes_v4 IS 'Number of IPv4 prefixes that are members of this pool';
+COMMENT ON COLUMN ip_net_pool.member_prefixes_v6 IS 'Number of IPv6 prefixes that are members of this pool';
+COMMENT ON COLUMN ip_net_pool.used_prefixes_v4 IS 'Number of IPv4 prefixes allocated from this pool';
+COMMENT ON COLUMN ip_net_pool.used_prefixes_v6 IS 'Number of IPv6 prefixes allocated from this pool';
+COMMENT ON COLUMN ip_net_pool.total_addresses_v4 IS 'Total number of IPv4 addresses in this pool';
+COMMENT ON COLUMN ip_net_pool.total_addresses_v6 IS 'Total number of IPv6 addresses in this pool';
+COMMENT ON COLUMN ip_net_pool.used_addresses_v4 IS 'Number of used IPv4 addresses in this pool';
+COMMENT ON COLUMN ip_net_pool.used_addresses_v6 IS 'Number of used IPv6 addresses in this pool';
+COMMENT ON COLUMN ip_net_pool.free_addresses_v4 IS 'Number of free IPv4 addresses in this pool';
+COMMENT ON COLUMN ip_net_pool.free_addresses_v6 IS 'Number of free IPv6 addresses in this pool';
+COMMENT ON COLUMN ip_net_pool.free_prefixes_v4 IS 'Number of potentially free IPv4 prefixes of the default assignment size';
+COMMENT ON COLUMN ip_net_pool.free_prefixes_v6 IS 'Number of potentially free IPv6 prefixes of the default assignment size';
+COMMENT ON COLUMN ip_net_pool.total_prefixes_v4 IS 'Potentially the total number of IPv4 child prefixes in pool. This is based on current number of childs and potential childs of the default assignment size, which is why it can vary.';
+COMMENT ON COLUMN ip_net_pool.total_prefixes_v6 IS 'Potentially the total number of IPv6 child prefixes in pool. This is based on current number of childs and potential childs of the default assignment size, which is why it can vary.';
+
 
 
 --
@@ -94,7 +140,10 @@ CREATE TABLE ip_net_plan (
 	tags text[] DEFAULT '{}',
 	inherited_tags text[] DEFAULT '{}',
 	added timestamp with time zone DEFAULT NOW(),
-	last_modified timestamp with time zone DEFAULT NOW()
+	last_modified timestamp with time zone DEFAULT NOW(),
+	total_addresses numeric(40),
+	used_addresses numeric(40),
+	free_addresses numeric(40)
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
@@ -121,6 +170,9 @@ COMMENT ON COLUMN ip_net_plan.tags IS 'Tags associated with the prefix';
 COMMENT ON COLUMN ip_net_plan.inherited_tags IS 'Tags inherited from parent (and grand-parent) prefixes';
 COMMENT ON COLUMN ip_net_plan.added IS 'The date and time when the prefix was added';
 COMMENT ON COLUMN ip_net_plan.last_modified IS 'The date and time when the prefix was last modified';
+COMMENT ON COLUMN ip_net_plan.total_addresses IS 'Total number of addresses in this prefix';
+COMMENT ON COLUMN ip_net_plan.used_addresses IS 'Number of used addresses in this prefix';
+COMMENT ON COLUMN ip_net_plan.free_addresses IS 'Number of free addresses in this prefix';
 
 CREATE UNIQUE INDEX ip_net_plan__vrf_id_prefix__index ON ip_net_plan (vrf_id, prefix);
 
@@ -128,6 +180,7 @@ CREATE INDEX ip_net_plan__vrf_id__index ON ip_net_plan (vrf_id);
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 CREATE INDEX ip_net_plan__family__index ON ip_net_plan (family(prefix));
 CREATE INDEX ip_net_plan__prefix_iprange_index ON ip_net_plan USING gist(iprange(prefix));
+CREATE INDEX ip_net_plan__pool_id__index ON ip_net_plan (pool_id);
 
 COMMENT ON INDEX ip_net_plan__vrf_id_prefix__index IS 'prefix';
 

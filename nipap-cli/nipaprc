@@ -22,8 +22,13 @@ password = guest
 # The string "%search_string%" will be replaced by the current search string.
 #complete_node_cmd = node list %search_string%
 
-# A default VRF which will be used when no VRF is specified in the command
-# arguments. 'none' means VRF 'Default' (RT None) while 'all' means that
-# searches will include data from all all VRFs while writes
-# (adds/modifications) by default goes to VRF 'Default' (RT None).
-default_vrf = all
+# Used as default VRF RT by 'nipap address add/modify/remove/view' commands
+# when no other VRF RT is specified on the command line. Also used as default
+# VRF when expanding a pool with a new prefix for the first time.
+# '-' means VRF 'Default' (RT: -)
+default_vrf_rt = -
+
+# 'nipap address list' will per default search in the following VRF RT when no
+# VRF RT is specified on the command line.
+# 'all' means that searches will include results from all VRFs
+default_list_vrf_rt = all
