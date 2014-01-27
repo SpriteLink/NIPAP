@@ -7,7 +7,7 @@ change NIPAP user password
 
 Synopsis
 --------
-**nipapd** [option...]
+**nipap-passwd** action [options...]
 
 Description
 -----------
@@ -19,15 +19,19 @@ Options
 -------
 **nipapd-passwd** accepts the following command-line arguments.
 
+ positional arguments:
+    action {list, add, delete}      define an action to execute
+
+ optional arguments:
     -h, --help                      show a help message
-    -a ADD_USER, --add=ADD_USER     add user with username ADD_USER
-    -d DELETE_USER, --delete=DELETE_USER    delete user with username DELETE_USER
-    -f DB_FILE, --file=DB_FILE      database file [default: read from config]
+    -u USER, --user=USER            username
     -p PASSWORD, --password=PASSWORD    set user's password to PASSWORD
-    -l, --list                      list all users
-    -t, --trusted                   mark user as trusted
     -n NAME, --name=NAME            set user's name to NAME
+    -t, --trusted                   mark user as trusted
+    -r, --readonly                  set user to read only
+    -f DB_FILE, --file=DB_FILE      database file [default: read from config]
     -c CONFIG, --config=CONFIG      read configuration from configuration file CONFIG [default: /etc/nipap/nipap.conf]
+    --version                       show program's version number and exit
 
 Copyright
 ---------

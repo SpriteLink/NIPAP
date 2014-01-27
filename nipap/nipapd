@@ -4,7 +4,7 @@
 import fcntl
 import logging
 import logging.handlers
-import optparse
+import argparse
 import os
 import sys
 import ConfigParser
@@ -33,19 +33,22 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
 
 
 if __name__ == '__main__':
-    parser = optparse.OptionParser()
-    parser.add_option("-d", "--debug", action="store_true", dest="debug", help="enable debugging")
-    parser.add_option("-f", "--foreground", action="store_true", dest="foreground", help="run in foreground and log to stdout")
-    parser.add_option("-l", "--listen", metavar="ADDRESS", help="listen to IPv4/6 ADDRESS")
-    parser.add_option("-p", "--port", dest="port", type="int", help="listen on TCP port PORT")
-    parser.add_option("-c", "--config", dest="config_file", type="string", default="/etc/nipap/nipap.conf", help="read configuration from file CONFIG_FILE")
-    parser.add_option("-P", "--pid-file", type="string", help="write a PID file to PID_FILE")
-    parser.add_option("--no-pid-file", action="store_true", default=False, help="turn off writing PID file (overrides config file)")
-    parser.add_option("--version", action="store_true", help="display version information and exit")
+    parser = argparse.ArgumentParser(description='NIPAP backend server')
+    parser.add_argument('-d', '--debug', action='store_true', dest='debug', help='enable debugging')
+    parser.add_argument('-f', '--foreground', action='store_true', dest='foreground', help='run in foreground and log to stdout')
+    parser.add_argument('-l', '--listen', type=str, metavar='ADDRESS', help='listen to IPv4/6 ADDRESS')
+    parser.add_argument('-p', '--port', dest='port', type=int, help='listen on TCP port PORT')
+    parser.add_argument('-c', '--config', dest='config_file', type=str, default='/etc/nipap/nipap.conf', help='read configuration from file CONFIG_FILE')
+    parser.add_argument('-P', '--pid-file', type=str, help='write a PID file to PID_FILE')
+    parser.add_argument('--no-pid-file', action='store_true', default=False, help='turn off writing PID file (overrides config file)')
+    parser.add_argument('--version', action='store_true', help='display version information and exit')
+    # Arguments overwriting config settings
+    cfg_args = [ 'debug', 'foreground', 'port', 'config_file' ]
 
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
 
-    if options.version:
+    if args.version:
+        import nipap
         print "nipapd version:", nipap.__version__
         sys.exit(0)
 
@@ -76,29 +79,27 @@ if __name__ == '__main__':
     }
 
     try:
-        cfg = NipapConfig(options.config_file, default)
+        cfg = NipapConfig(args.config_file, default)
     except NipapConfigError, exc:
-        if options.config_file:
-            print >> sys.stderr, "The specified configuration file ('" + options.config_file + "') does not exist"
+        if args.config_file:
+            print >> sys.stderr, "The specified configuration file ('" + args.config_file + "') does not exist"
             sys.exit(1)
         # if no config file is specified, we'll live with our defaults
 
-    # Go through list of optparse options and set the config object to
+    # Go through list of argparse args and set the config object to
     # their values.
-    for val in parser.option_list:
+    for arg_dest in cfg_args:
 
-        if val.dest is None:
-            continue
         # This is not very pretty... but how can I otherwise access elements
-        # in the options object from variables?
+        # in the args object from variables?
         try:
-            if eval('options.' + val.dest) is None:
+            if eval('args.' + arg_dest) is None:
                 continue
         except AttributeError:
             continue
 
         try:
-            cfg.set('nipapd', val.dest, str(eval("options." + val.dest)))
+            cfg.set('nipapd', arg_dest, str(eval("args." + arg_dest)))
         except ConfigParser.NoSectionError as exc:
             print >> sys.stderr, "The configuration file contains errors:", exc
             sys.exit(1)
@@ -125,7 +126,7 @@ if __name__ == '__main__':
         ret = nipap.daemon.createDaemon()
 
     # pid file handling
-    if cfg.get('nipapd', 'pid_file') and not options.no_pid_file:
+    if cfg.get('nipapd', 'pid_file') and not args.no_pid_file:
         # need a+ to be able to read PID from file
         try:
             lf = open(cfg.get('nipapd', 'pid_file'), 'a+', 0)

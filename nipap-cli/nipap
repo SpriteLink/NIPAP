@@ -30,13 +30,13 @@ if __name__ == '__main__':
     nullh = NullHandler()
     logger.addHandler(nullh)
 
-    import optparse
-    parser = optparse.OptionParser()
-    parser.add_option("--version", action="store_true", help="display version information and exit")
+    import argparse
+    parser = argparse.ArgumentParser(description='NIPAP command-line client')
+    parser.add_argument("--version", action="store_true", help="display version information and exit")
 
-    (options, args) = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
-    if options.version:
+    if args.version:
         import pynipap
         print "nipap CLI client version:", nipap_cli.__version__
         print "pynipap version:", pynipap.__version__

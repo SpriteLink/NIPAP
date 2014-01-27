@@ -20,8 +20,8 @@ install:
     - sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf
     - sudo cp nipap/local_auth.db /etc/nipap/
     # create local user for unittests
-    - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n "User for running unit tests"
-    - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"
+    - sudo nipap/nipap-passwd add -u unittest -f /etc/nipap/local_auth.db -p gottatest -n "User for running unit tests"
+    - sudo nipap/nipap-passwd add -u readonly -f /etc/nipap/local_auth.db -p gottatest --readonly -n "Read-only user for running unit tests"
     # populate answers to nipapd package install questions and reconfigure
     - echo "set nipapd/autoconf true" | sudo debconf-communicate
     - echo "set nipapd/startup true" | sudo debconf-communicate

@@ -23,8 +23,8 @@ if [ "$RET" = "true" ]; then
 	# the nipap.conf configuration file, provided that it exists
 	# TODO: check if there is already a www user configured in the
 	#       configuration file and use that username instead of $WWW_USER
-	if [ `nipap-passwd -l | awk "{ if (\\$1~/^$WWW_USER$/) { print \\$1 } }" | wc -l` = "0" ]; then
-		nipap-passwd -a $WWW_USER -p $WWW_PASS -n "$WWW_NAME" -t > /dev/null 2>&1
+	if [ `nipap-passwd list | awk "{ if (\\$1~/^$WWW_USER$/) { print \\$1 } }" | wc -l` = "0" ]; then
+		nipap-passwd add -u $WWW_USER -p $WWW_PASS -n "$WWW_NAME" -t > /dev/null 2>&1
 		if [ -e /etc/nipap/nipap.conf ]; then
 			sed -i -e "s/http:\/\/[^:]\+:[^@]\+@/http:\/\/$WWW_USER@local:$WWW_PASS@/" /etc/nipap/nipap.conf
 		fi
