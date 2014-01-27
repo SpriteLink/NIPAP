@@ -298,28 +298,28 @@ class Nipap:
     def _is_ipv4(self, ip):
         """ Return true if given arg is a valid IPv4 address
         """
-
         try:
-            socket.inet_aton(ip)
-        except socket.error:
+            p = IPy.IP(ip)
+        except ValueError:
             return False
-        except exceptions.UnicodeEncodeError:
-            return False
-        return True
+
+        if p.version() == 4:
+            return True
+        return False
 
 
 
     def _is_ipv6(self, ip):
         """ Return true if given arg is a valid IPv6 address
         """
-
         try:
-            socket.inet_pton(socket.AF_INET6, ip)
-        except socket.error, UnicodeEncodeError:
+            p = IPy.IP(ip)
+        except ValueError:
             return False
-        except exceptions.UnicodeEncodeError:
-            return False
-        return True
+
+        if p.version() == 6:
+            return True
+        return False
 
 
 
