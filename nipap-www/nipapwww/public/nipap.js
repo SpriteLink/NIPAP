@@ -1668,6 +1668,16 @@ function receiveVRFContainerData(search_result) {
 	$('#preflist_vrf_container_' + vrf.id).children('div[class="preflist_vrf_panel"]').html('<div class="preflist_vrf_rt"><b>RT:&nbsp;' + ( vrf.rt == null ? '-' : vrf.rt ) + '</b></div><b class="t"></b><div style="padding-bottom: 30px; margin-left: 5px;">' + vrf.name + '</div>');
 }
 
+/*
+ * Update VRF container with RT and name for add prefix page
+ */
+function receivePrefixVRFData(search_result) {
+	vrf = search_result.result[0];
+
+	$("#prefix_vrf_display").html('<div class="vrf_filter_entry"><div class="vrf_filter_entry_rt">RT:&nbsp;' + vrf.rt + '</div><div class="selector_entry_name" style="margin-left: 5px;">' + vrf.name + '</div><div class="selector_entry_description" style="clear: both;">' + vrf.description + '</div></div>');
+    $("#prefix_vrf_display").show();
+}
+
 
 /*
  * Add a container for hidden prefixes
@@ -2325,23 +2335,12 @@ function selectPrefix(prefix_id) {
 		$('#radio-prefix-type-host').prop('checked', true);
 	}
 
-    // Set VRF to the same as the prefix we're allocating from
+	// Set VRF to the same as the prefix we're allocating from
+	$.getJSON("/xhr/smart_search_vrf", { 'vrf_id': prefix_list[prefix_id].vrf_id, 'query_string': '' }, receivePrefixVRFData);
 
-    // Set prefix VRF to pool's implied VRF (if available)
-    var vrf_text = "";
-    if (prefix_list[prefix_id].vrf_rt == null) {
-        vrf_text = 'None';
-        $("input[name = prefix_vrf]").val(null);
-    } else {
-        vrf_text = prefix_list[prefix_id].vrf_rt;
-        $("input[name = prefix_vrf]").val(prefix_list[prefix_id].vrf_id);
-    }
-
-    $("#prefix_vrf_display").html(vrf_text);
-    $("input[name = prefix_vrf_btn]").hide();
-    $("#prefix_vrf_display").attr('title', 'VRF ' + vrf_text + ' taken from parent prefix (' + prefix_list[prefix_id].display_prefix + ').');
-    $("#prefix_vrf_display").tipTip();
-    $("#prefix_vrf_display").show();
+	$("#prefix_vrf_text").html('VRF from parent prefix:');
+	$("#prefix_vrf_display").html();
+	$("input[name = prefix_vrf_btn]").hide();
 
 	// Lead the user to the next step in the process
 	$('#prefix_data_container').show();
