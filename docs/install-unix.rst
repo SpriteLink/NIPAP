@@ -47,7 +47,7 @@ Continue with the tables file followed by the functions::
     psql -d nipap -f /usr/share/nipap/sql/ip_net.plsql
     psql -d nipap -f /usr/share/nipap/sql/functions.plsql
 
-Your database is now ready to go!
+Your database should now be ready to go!
 
 
 Install NIPAP
@@ -64,12 +64,9 @@ Running nipapd
 --------------
 Edit /etc/nipap/nipap.conf and fill in the database password that you set
 earlier. Edit /etc/default/nipapd and set RUN=yes. Now you can go ahead and
-start nipapd by executing ``/etc/init.d/nipapd start``
+start nipapd by executing::
 
-nipapd ships with a default local authentication database with a user called
-'guest' and with the password 'guest'. You can set up the CLI client to test
-your new setup or continue to the web UI configuration to get the web up and
-running.
+    /etc/init.d/nipapd start
 
 CLI configuration
 -----------------
@@ -78,7 +75,8 @@ command, 'nipap', is available to you. It reads .nipaprc in your home directory
 and expects to find things like the host address of the nipapd and the
 authentication credentials.
 
-Here's an example .nipaprc that will work towards localhost with the default
+Here's an example .nipaprc, fill in your username and password with the cred XXX
+need to restart nipapd before local auth takes effect
 guest login::
 
     [global]
@@ -86,7 +84,7 @@ guest login::
     port     = 1337
     username = guest
     password = guest
-    default_schema = test
+    default_vrf_rt = test
 
 The last option sets which schema which is the default to work with if nothing
 else is set. Schemas is an integral part of working with NIPAP and you can read
