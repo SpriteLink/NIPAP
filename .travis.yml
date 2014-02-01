@@ -2,8 +2,29 @@ language: python
 python:
   - 2.7
 
+env:
+    global:
+        - "ARTIFACTS_AWS_REGION=eu-west-1"
+        - "ARTIFACTS_S3_BUCKET=nipap"
+        # ARTIFACTS_AWS_SECRET_ACCESS_KEY
+        - secure: "IdV13kwWXV/sgF1xbvNjZjha5e0yJ6WTiU+LFatQo3SHR4iRvlRrxk9HYANT\nwYCpqJ5T01w7mBhqiNRRlRFYtxwrsQfLC6sPyV8USaAVDeBUkXkGNJ1BU+oh\noM4V8c/qHxy7TvA/+mQ69ORCH9yFVtC8EInL71JcuPuAzR20H80="
+        # ARTIFACTS_AWS_ACCESS_KEY_ID
+        - secure: "lxO7SGOLlMu4AldVb0XNViRAPhanleCeIH5BmrhKRMm1k7YnU0WGmfR+1X+m\n7PYI+011vHyVvC/ofbgbbBgqvmbec103ozrrbMCWPm27OCcfjyYJJJtcMLIe\nnD7cQC3u9F0ASxvBBmKIFIKwWPtzDSs4dq3RNfBXkGQc8RsEk1Y="
+    matrix:
+        # basic build only running nosetests
+        - "DO_PYLINT=false PERFTEST=false"
+        # build nosetest and then pylint with artifact upload to S3
+        - "DO_PYLINT=true PERFTEST=true"
+
 virtualenv:
     system_site_packages: true
+
+before_script:
+    # script for uploading build artifacts to Amazon S3
+    - if [[ "$PYLINT" == "true" ]]; then travis_retry gem install travis-artifacts; fi
+    # install pylint
+    - if [[ "$PYLINT" == "true" ]]; then sudo apt-get install -qq -y --force-yes pylint; fi
+
 
 install:
     # we use our debian repo to get ip4r
@@ -35,6 +56,15 @@ script:
     - nosetests nipaptest.py
     - nosetests test_cli.py
     - nosetests nipap-ro.py
+    # pylint
+    - cd ..
+    - if [[ $PYLINT == true ]]; then mkdir pylint; fi
+    - if [[ $PYLINT == true ]]; then pylint nipap/nipapd nipap/nipap/*.py > pylint/nipap || true; fi
+    - if [[ $PYLINT == true ]]; then pylint pynipap/pynipap.py > pylint/pynipap || true; fi
+    - if [[ $PYLINT == true ]]; then pylint nipap-cli/nipap nipap-cli/nipap_cli/*.py > pylint/nipap-cli || true; fi
+
+after_success:
+    - if [[ ${TRAVIS_SECURE_ENV_VARS} == true && ${TRAVIS_BRANCH} == master && ${PYLINT} == true ]]; then travis-artifacts upload --path pylint/nipap --path pylint/pynipap --path pylint/nipap-cli --target-path artifacts/pylint/$TRAVIS_BUILD_NUMBER/; fi
 
 notifications:
     irc:
