@@ -12,9 +12,9 @@ env:
         - secure: "lxO7SGOLlMu4AldVb0XNViRAPhanleCeIH5BmrhKRMm1k7YnU0WGmfR+1X+m\n7PYI+011vHyVvC/ofbgbbBgqvmbec103ozrrbMCWPm27OCcfjyYJJJtcMLIe\nnD7cQC3u9F0ASxvBBmKIFIKwWPtzDSs4dq3RNfBXkGQc8RsEk1Y="
     matrix:
         # basic build only running nosetests
-        - "DO_PYLINT=false PERFTEST=false"
+        - "PYLINT=false PERFTEST=false"
         # build nosetest and then pylint with artifact upload to S3
-        - "DO_PYLINT=true PERFTEST=true"
+        - "PYLINT=true PERFTEST=true"
 
 virtualenv:
     system_site_packages: true
