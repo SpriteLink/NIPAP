@@ -59,9 +59,9 @@ script:
     # pylint
     - cd ..
     - if [[ $PYLINT == true ]]; then mkdir pylint; fi
-    - if [[ $PYLINT == true ]]; then pylint nipap/nipapd nipap/nipap/*.py > pylint/nipap || true; fi
-    - if [[ $PYLINT == true ]]; then pylint pynipap/pynipap.py > pylint/pynipap || true; fi
-    - if [[ $PYLINT == true ]]; then pylint nipap-cli/nipap nipap-cli/nipap_cli/*.py > pylint/nipap-cli || true; fi
+    - if [[ $PYLINT == true ]]; then (echo -n "timestamp: "; date "+%s"; pylint nipap/nipapd nipap/nipap/*.py) > pylint/nipap || true; fi
+    - if [[ $PYLINT == true ]]; then (echo -n "timestamp: "; date "+%s"; pylint pynipap/pynipap.py) > pylint/pynipap || true; fi
+    - if [[ $PYLINT == true ]]; then (echo -n "timestamp: "; date "+%s"; pylint nipap-cli/nipap nipap-cli/nipap_cli/*.py) > pylint/nipap-cli || true; fi
 
 after_success:
     - if [[ ${TRAVIS_SECURE_ENV_VARS} == true && ${TRAVIS_BRANCH} == master && ${PYLINT} == true ]]; then travis-artifacts upload --path pylint/nipap --path pylint/pynipap --path pylint/nipap-cli --target-path artifacts/pylint/$TRAVIS_BUILD_NUMBER/; fi
