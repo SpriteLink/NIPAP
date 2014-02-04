@@ -321,13 +321,16 @@ def list_prefix(arg, opts):
     v = get_vrf(opts.get('vrf_rt'), default_var='default_list_vrf_rt', abort=True)
 
     if v.rt == 'all':
+        vrf_text = 'any VRF'
         vrf_q = None
     else:
+        vrf_text = vrf_format(v)
         vrf_q = {
             'operator': 'equals',
             'val1': 'vrf_rt',
             'val2': v.rt
         }
+    print "Searching for prefixes in %s..." % vrf_text
 
 
     offset = 0
@@ -352,6 +355,13 @@ def list_prefix(arg, opts):
                     min_indent = indent
             min_indent += 15
 
+            # print column headers
+            prefix_str = "%%-14s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-s" % min_indent
+            column_header = prefix_str % ('VRF', 'Prefix', '', '#', 'Node',
+                    'Order', 'Customer', 'Description')
+            print column_header
+            print "".join("=" for i in xrange(len(column_header)))
+
         for p in res['result']:
             if p.display == False:
                 continue
@@ -360,7 +370,6 @@ def list_prefix(arg, opts):
                 tags = '-'
                 if len(p.tags) > 0:
                     tags = '#%d' % len(p.tags)
-                prefix_str = "%%-14s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-40s" % min_indent
                 print prefix_str % (p.vrf.rt or '-',
                     "".join("  " for i in xrange(p.indent)) + p.display_prefix,
                     p.type[0].upper(), tags, p.node, p.order_id,
@@ -623,10 +632,10 @@ def view_prefix(arg, opts):
     res = Prefix.list(q)
 
     if len(res) == 0:
-        vrf_text = 'in any VRF'
+        vrf_text = 'any VRF'
         if v.rt != 'all':
-            vrf_text = 'in %s' % vrf_format(v)
-        print >> sys.stderr, "Address %s not found %s." % (arg, vrf_text)
+            vrf_text = vrf_format(v)
+        print >> sys.stderr, "Address %s not found in %s." % (arg, vrf_text)
         sys.exit(1)
 
     p = res[0]
@@ -727,10 +736,10 @@ def remove_prefix(arg, opts):
     res = Prefix.list(spec)
 
     if len(res) < 1:
-        vrf_text = 'in any VRF'
+        vrf_text = 'any VRF'
         if v.rt != 'all':
-            vrf_text = 'in %s' % vrf_format(v)
-        print >> sys.stderr, "Prefix %s not found %s." % (arg, vrf_text)
+            vrf_text = vrf_format(v)
+        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_text)
         sys.exit(1)
 
     p = res[0]
