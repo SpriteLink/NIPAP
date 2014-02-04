@@ -241,10 +241,11 @@ def list_pool(arg, opts):
     limit = 100
     while True:
         res = Pool.smart_search(search_string, { 'offset': offset, 'max_result': limit }, vrf_q)
-        if len(res['result']) == 0:
-            print "No matching pools found"
-            return
-        elif offset == 0:
+        if offset == 0: # first time in loop?
+            if len(res['result']) == 0:
+                print "No matching pools found"
+                return
+
             print "%-19s %-39s %-13s  %-8s  %s" % (
                 "Name", "Description", "Default type", "4 / 6", "Implied VRF"
                 )
@@ -288,10 +289,11 @@ def list_vrf(arg, opts):
     limit = 100
     while True:
         res = VRF.search(query, { 'offset': offset, 'max_result': limit })
-        if len(res['result']) == 0:
-            print "No matching VRFs found."
-            return
-        elif offset == 0:
+        if offset == 0:
+            if len(res['result']) == 0:
+                print "No matching VRFs found."
+                return
+
             print "%-16s %-22s %-40s" % ("VRF", "Name", "Description")
             print "--------------------------------------------------------------------------------"
 
@@ -337,13 +339,13 @@ def list_prefix(arg, opts):
             'include_neighbors': True, 'offset': offset, 'max_result': limit },
             vrf_q)
 
-        if len(res['result']) == 0:
-            print "No addresses matching '%s' found." % search_string
-            return
+        if offset == 0: # first time in loop?
+            if len(res['result']) == 0:
+                print "No addresses matching '%s' found." % search_string
+                return
 
-        # Guess the width of the prefix column by looking at the initial result
-        # set.
-        if offset == 0:
+            # Guess the width of the prefix column by looking at the initial
+            # result set.
             for p in res['result']:
                 indent = p.indent * 2 + len(p.prefix)
                 if indent > min_indent:
