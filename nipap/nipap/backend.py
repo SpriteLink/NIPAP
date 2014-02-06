@@ -27,7 +27,7 @@
     * :func:`~Nipap.edit_vrf` - Edit a VRF.
     * :func:`~Nipap.remove_vrf` - Remove a VRF.
     * :func:`~Nipap.search_vrf` - Search VRFs based on a formatted dict.
-    : :func:`~Nipap.smart_search_vrf` - Search VRFs based on a query string.
+    * :func:`~Nipap.smart_search_vrf` - Search VRFs based on a query string.
 
 
     Prefix
