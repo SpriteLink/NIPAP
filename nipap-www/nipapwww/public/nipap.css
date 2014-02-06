@@ -675,6 +675,10 @@ tbody.listing > tr:hover {
     color: hsl(0, 0%, 47%);
 }
 
+.open > .popup_menu {
+    display: block;
+}
+
 .popup_menu > h3 {
     font-weight: bold;
     font-size: 11px;

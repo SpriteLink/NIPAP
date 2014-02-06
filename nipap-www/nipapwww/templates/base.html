@@ -1,6 +1,6 @@
 {% import 'macros.html' as nipap %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="nipapApp">
 	<head>
 		<title>{{ c.page_title|default('NIPAP') }}</title>
 		<meta charset="utf-8">
@@ -8,6 +8,9 @@
 		<link rel="stylesheet" href="/nipap.css">
 		<link rel="stylesheet" href="/tipTip.css">
 		<link rel="stylesheet" href="/jquery.tagit.css" type="text/css">
+		<script src="/angular.js"></script>
+		<script src="/ui-bootstrap-tpls.js"></script>
+		<script src="/controllers.js"></script>
 		<script src="/jquery-1.9.1.min.js"></script>
 		<script src="/jquery.url.js"></script>
 		<script src="/jquery.tipTip.minified.js"></script>
@@ -36,7 +39,7 @@
 		{% block head %}
 		{% endblock %}
 	</head>
-	<body>
+	<body {% block body_attributes %}{% endblock %}>
 		<div class="top_menu">
 			<div class="menu_entry">
 				<div style="font-size: 10pt; color: #CCCCCC; line-height: 37px; font-weight: bold; float: left;">
