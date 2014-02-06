@@ -14,6 +14,9 @@ import jnipap.AddPrefixOptions;
  */
 public class OAddPrefixOptions extends AddPrefixOptions implements SQLData {
 
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
+
 	public void readSQL(SQLInput stream, String typeName) throws SQLException {
 
 		// Read data
