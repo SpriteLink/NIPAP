@@ -132,9 +132,6 @@ public class Connection {
 	}
 
 	public Object execute(String pMethodName, List pParams) throws JnipapException {
-		System.out.println("Apan: " + pMethodName);
-		System.out.println("Bepan: " + pParams);
-		System.out.println("Cepan: " + connection);
 		try {
 			return connection.execute(pMethodName, pParams);
 		} catch(XmlRpcException e) {
