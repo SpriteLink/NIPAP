@@ -210,6 +210,11 @@ public class API {
 		search_query.put("val1", "external_key");
 		search_query.put("val2", external_key);
 
+		// Modify search options to include network & all neighboring prefixes
+		// (most importantly: the default gateway)
+		search_options.put("include_neighbors", Boolean.valueOf(true));
+		search_options.put("parents_depth", new Integer(1));
+
 		// Perform search
 		Map result = Prefix.search((jnipap.Connection)conn, search_query, search_options);
 
