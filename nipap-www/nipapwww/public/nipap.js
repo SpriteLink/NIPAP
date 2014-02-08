@@ -1863,6 +1863,7 @@ function showAllocContainer(e) {
 	$('#radio-prefix-type-reservation').removeAttr('disabled');
 	$('#radio-prefix-type-assignment').removeAttr('disabled');
 	$('#radio-prefix-type-host').removeAttr('disabled');
+
 	$('#radio-prefix-type-reservation').removeAttr('checked');
 	$('#radio-prefix-type-assignment').removeAttr('checked');
 	$('#radio-prefix-type-host').removeAttr('checked');
