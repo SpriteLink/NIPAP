@@ -110,7 +110,6 @@ class AuthFactory:
             if section_components[0] == 'auth.backends':
                 auth_backend = section_components[1]
                 self._backends[auth_backend] = eval(self._config.get(section, 'type'))
-                self._backends[auth_backend](auth_backend, 'a', 'b', 'c')
 
         self._logger.debug("Registered auth backends %s" % str(self._backends))
 
