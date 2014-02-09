@@ -121,6 +121,17 @@ if __name__ == '__main__':
             print >> sys.stderr, "Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group)
             sys.exit(1)
 
+    # pre-start checks
+    from nipap import authlib
+    a = authlib.SqliteAuth('local', 'a', 'b', 'c')
+    try:
+        a._latest_db_version()
+    except authlib.AuthSqliteError, e:
+        print >> sys.stderr, "Problem with Sqlite database for local auth: %s" % e
+        print >> sys.stderr, "Run 'nipap-passwd --upgrade-database' to upgrade your database."
+        sys.exit(1)
+
+
     if not cfg.getboolean('nipapd', 'foreground'):
         import nipap.daemon
         ret = nipap.daemon.createDaemon()

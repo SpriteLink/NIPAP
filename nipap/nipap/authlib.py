@@ -377,20 +377,11 @@ class SqliteAuth(BaseAuth):
 
         self._logger.debug('Creating SqliteAuth instance')
 
-        # make sure that user table exists
-        sql_verify_table = '''SELECT * FROM sqlite_master
-            WHERE type = 'table' AND name = 'user' '''
-
         # connect to database
         try:
             self._db_conn = sqlite3.connect(self._cfg.get('auth.backends.' + self.auth_backend, 'db_path'), check_same_thread = False)
             self._db_conn.row_factory = sqlite3.Row
             self._db_curs = self._db_conn.cursor()
-            self._db_curs.execute(sql_verify_table)
-
-            if len(self._db_curs.fetchall()) < 1:
-                self._logger.info('user database does not exist')
-                self._setup_database()
 
         except sqlite3.Error, e:
             self._logger.error('Could not open user database: %s' % str(e))
@@ -398,7 +389,31 @@ class SqliteAuth(BaseAuth):
 
 
 
-    def _setup_database(self):
+    def _latest_db_version(self):
+        """ Check if database is of the latest version
+
+            Fairly stupid functions that simply checks for existence of columns.
+        """
+        # make sure that user table exists
+        sql_verify_table = '''SELECT * FROM sqlite_master
+            WHERE type = 'table' AND name = 'user' '''
+        self._db_curs.execute(sql_verify_table)
+        if len(self._db_curs.fetchall()) < 1:
+            raise AuthSqliteError("No 'user' table.")
+
+        for column in ('username', 'pwd_salt', 'pwd_hash', 'full_name',
+                'trusted', 'readonly'):
+            sql = "SELECT %s FROM user" % column
+            try:
+                self._db_curs.execute(sql)
+            except:
+                raise AuthSqliteError("No column '%s' on table 'user'." % column)
+
+        return True
+
+
+
+    def _create_database(self):
         """ Set up database
 
             Creates tables required for the authentication module.
@@ -414,6 +429,23 @@ class SqliteAuth(BaseAuth):
             readonly NOT NULL DEFAULT 0
         )'''
         self._db_curs.execute(sql)
+        self._db_conn.commit()
+
+
+
+    def _upgrade_database(self):
+        """ Upgrade database to latest version
+
+            This is a fairly primitive function that won't look at how the
+            database looks like but just blindly run commands.
+        """
+        self._logger.info('upgrading user database')
+        # add readonly column
+        try:
+            sql = '''ALTER TABLE user ADD COLUMN readonly NOT NULL DEFAULT 0'''
+            self._db_curs.execute(sql)
+        except:
+            pass
         self._db_conn.commit()
 
 
@@ -568,3 +600,8 @@ class AuthorizationFailed(AuthError):
     """ Authorization failed.
     """
     error_code = 1520
+
+
+class AuthSqliteError(AuthError):
+    """ Problem with the Sqlite database
+    """
