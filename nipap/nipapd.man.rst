@@ -42,4 +42,4 @@ To start nipapd in the foreground with debug logging, running on a specific port
 
 Copyright
 ---------
-Kristian Larsson, Lukas Garberg 2011-2013
+Kristian Larsson, Lukas Garberg 2011-2014

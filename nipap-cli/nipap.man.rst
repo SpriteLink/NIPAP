@@ -84,4 +84,4 @@ Kristian Larsson, Lukas Garberg
 
 Copyright
 =========
-Kristian Larsson, Lukas Garberg 2011-2013
+Kristian Larsson, Lukas Garberg 2011-2014
