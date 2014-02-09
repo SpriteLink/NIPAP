@@ -46,6 +46,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.version:
+        import nipap
         print "nipapd version:", nipap.__version__
         sys.exit(0)
 
