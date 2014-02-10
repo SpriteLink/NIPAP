@@ -39,7 +39,6 @@ install:
     - sudo dpkg -i nipap*.deb python-pynipap*.deb
     # move configuration files into place
     - sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf
-    - sudo cp nipap/local_auth.db /etc/nipap/
     # create local user for unittests
     - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n "User for running unit tests"
     - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"
