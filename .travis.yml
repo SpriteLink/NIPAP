@@ -37,15 +37,15 @@ install:
     - sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-ldap python-docutils postgresql postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress
     # install the newly built nipap packages
     - sudo dpkg -i nipap*.deb python-pynipap*.deb
-    # move configuration files into place
-    - sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf
-    # create local user for unittests
-    - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n "User for running unit tests"
-    - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"
     # populate answers to nipapd package install questions and reconfigure
     - echo "set nipapd/autoconf true" | sudo debconf-communicate
     - echo "set nipapd/startup true" | sudo debconf-communicate
+    # reconfigure to do bootstrapping of db and stuff
     - sudo dpkg-reconfigure nipapd
+    # create local user for unittests
+    - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n "User for running unit tests"
+    - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"
+    - sudo /etc/init.d/nipapd restart
     - cp nipap-cli/nipaprc ~/.nipaprc
     - sed -i -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' ~/.nipaprc
 
@@ -65,8 +65,8 @@ script:
 after_success:
     - if [[ ${TRAVIS_SECURE_ENV_VARS} == true && ${TRAVIS_BRANCH} == master && ${PYLINT} == true ]]; then travis-artifacts upload --path pylint/nipap --path pylint/pynipap --path pylint/nipap-cli --target-path artifacts/pylint/$TRAVIS_BUILD_NUMBER/; fi
 
-notifications:
-    irc:
-        channels:
-            - "irc.freenode.org#NIPAP"
-        skip_join: true
+#notifications:
+#    irc:
+#        channels:
+#            - "irc.freenode.org#NIPAP"
+#        skip_join: true
