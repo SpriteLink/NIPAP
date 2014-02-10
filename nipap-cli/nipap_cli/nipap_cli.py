@@ -246,7 +246,7 @@ def list_pool(arg, opts):
                 print "No matching pools found"
                 return
 
-            print "%-19s %-39s %-13s  %-8s  %s" % (
+            print "%-19s %-39s %-13s  %-8s %s" % (
                 "Name", "Description", "Default type", "4 / 6", "Implied VRF"
                 )
             print "------------------------------------------------------------------------------------------------"
@@ -260,10 +260,10 @@ def list_pool(arg, opts):
             vrf_rt = '-'
             vrf_name = '-'
             if p.vrf is not None:
-                vrf_rt = p.vrf.rt
+                vrf_rt = p.vrf.rt or '-'
                 vrf_name = p.vrf.name
 
-            print "%-19s %-39s %-13s %-2s / %-3s  RT: %s %s" % (
+            print "%-19s %-39s %-13s %-2s / %-3s  [RT: %s] %s" % (
                 p.name, desc, p.default_type,
                 str(p.ipv4_default_prefix_length or '-'),
                 str(p.ipv6_default_prefix_length or '-'),
@@ -294,7 +294,7 @@ def list_vrf(arg, opts):
                 print "No matching VRFs found."
                 return
 
-            print "%-16s %-22s %-40s" % ("VRF", "Name", "Description")
+            print "%-16s %-22s %-40s" % ("VRF RT", "Name", "Description")
             print "--------------------------------------------------------------------------------"
 
         for v in res['result']:
@@ -302,7 +302,7 @@ def list_vrf(arg, opts):
                 desc = v.description[0:37] + "..."
             else:
                 desc = v.description
-            print "%-16s %-22s %-40s" % (v.rt, v.name, desc)
+            print "%-16s %-22s %-40s" % (v.rt or '-', v.name, desc)
 
         if len(res['result']) < limit:
             break
