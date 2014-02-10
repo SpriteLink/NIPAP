@@ -1,3 +1,9 @@
+pynipap (0.24.2-1) stable; urgency=low
+
+  * Add missing dependency on Tornado for nipapd!
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Feb 2014 15:59:35 +0100
+
 pynipap (0.24.1-1) stable; urgency=low
 
   * Add missing dependency on Flask-Compress library for nipapd

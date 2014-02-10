@@ -1,3 +1,7 @@
+Version 0.24.2 - Goldfinger
+---------------------------
+ * Add missing dependency on Tornado for nipapd!
+
 Version 0.24.1 - Goldfinger
 ---------------------------
  * Add missing dependency on Flask-Compress library for nipapd
