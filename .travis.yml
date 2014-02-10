@@ -65,8 +65,8 @@ script:
 after_success:
     - if [[ ${TRAVIS_SECURE_ENV_VARS} == true && ${TRAVIS_BRANCH} == master && ${PYLINT} == true ]]; then travis-artifacts upload --path pylint/nipap --path pylint/pynipap --path pylint/nipap-cli --target-path artifacts/pylint/$TRAVIS_BUILD_NUMBER/; fi
 
-#notifications:
-#    irc:
-#        channels:
-#            - "irc.freenode.org#NIPAP"
-#        skip_join: true
+notifications:
+    irc:
+        channels:
+            - "irc.freenode.org#NIPAP"
+        skip_join: true
