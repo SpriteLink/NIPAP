@@ -45,10 +45,6 @@ case "$1" in
 			adduser --quiet --system --group --no-create-home nipap
 		fi
 
-		# set ownership/permissions on the local auth db
-		chown -f :nipap /etc/nipap/local_auth.db
-		chmod -f 0644 /etc/nipap/local_auth.db
-
 		# autostart
 		db_get nipapd/startup
 		if [ "$RET" = "true" ]; then
@@ -97,8 +93,15 @@ case "$1" in
 
 				# update nipap.conf with database credentials
 				cat /etc/nipap/nipap.conf.dist | sed -e "s/#user *= *[^ ]\+/user = nipap/" -e 's/db_host *= *[^ ]\+/db_host = ""/' -e "s/db_user *= *[^ ]\+/db_user = $DB_USER /" -e "s/db_name *= *[^ ]\+/db_name = $DB_NAME /" -e "s/db_pass *= *[^ ]\+/db_pass = $DB_PASS /" > /etc/nipap/nipap.conf
+
 			fi
+			# create local auth database
+			nipap-passwd --create-database
 		fi
+
+		# set ownership/permissions on the local auth db
+		chown -f :nipap /etc/nipap/local_auth.db
+		chmod -f 0644 /etc/nipap/local_auth.db
 
 		db_stop
 
