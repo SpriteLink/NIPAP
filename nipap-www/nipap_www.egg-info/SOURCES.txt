@@ -33,6 +33,7 @@ nipapwww/lib/app_globals.py
 nipapwww/lib/base.py
 nipapwww/lib/helpers.py
 nipapwww/model/__init__.py
+nipapwww/public/comment-icon.png
 nipapwww/public/datatable.css
 nipapwww/public/favicon.ico
 nipapwww/public/jquery-1.9.1.min.js
@@ -43,8 +44,11 @@ nipapwww/public/jquery.tagit.css
 nipapwww/public/jquery.tipTip.minified.js
 nipapwww/public/jquery.url.js
 nipapwww/public/loading.gif
+nipapwww/public/minify.py
+nipapwww/public/nipap-ip.png
 nipapwww/public/nipap.css
 nipapwww/public/nipap.js
+nipapwww/public/remove-icon.png
 nipapwww/public/tag-icon.png
 nipapwww/public/tag-it.min.js
 nipapwww/public/tipTip.css
@@ -81,6 +85,7 @@ nipapwww/templates/pool_list.html
 nipapwww/templates/prefix_add.html
 nipapwww/templates/prefix_add_containers.html
 nipapwww/templates/prefix_edit.html
+nipapwww/templates/prefix_form.html
 nipapwww/templates/prefix_list.html
 nipapwww/templates/prefix_remove_confirm.html
 nipapwww/templates/version.html

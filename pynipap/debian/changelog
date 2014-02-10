@@ -1,3 +1,35 @@
+pynipap (0.24.0-1) stable; urgency=low
+
+  * nipaprc configuration option 'default_vrf' is replaced by
+    'default_vrf_rt' which only affects address adds/edits/removals. A
+    second option 'default_list_vrf_rt' controls the default VRF for
+    listing/search operations.
+  * 'guest' user is no longer part of default shipping local_auth
+    database. A user needs to be added manually for the web UI or CLI
+    users.
+  * New pre-forked backend. Replaced Twisted in preference of Flask-XML-
+    RPC, served using Tornado. Backend will default to pre-forking to
+    the number of CPUs. PostgreSQL also pre-forks and with one
+    PostgreSQL backend per nipapd process, performance for parallel
+    queries should see a significant boost.
+  * Backend support for read-only users. A local_auth (SQLite) user can
+    now be configured to be read-only. Web UI is lacking support, for
+    example the "Add prefix" button is still present and enabled but
+    trying to add a prefix will raise an error message.
+  * Revamp look of VRF information and make it consistent across web UI
+    and CLI as far as possible.
+  * Fix for searches on "weird" IP addresses like 123.123123/24 which
+    would previously generate exception.
+  * Various formatting improvements to CLI
+  * Various bug fixes to the web UI
+  * Consistently use iprange indices in database for improved
+    performance
+  * Reference documentation is now kept up to date using readthedocs.org
+  * Makefile target for bumping version - won't help you unless you're a
+    developer ;)
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Feb 2014 15:30:37 +0100
+
 pynipap (0.23.0-1) stable; urgency=low
 
   * Add 'Customer ID' attribute to prefixes. This can be used to store a
