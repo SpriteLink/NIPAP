@@ -1,3 +1,7 @@
+Version 0.24.1 - Goldfinger
+---------------------------
+ * Add missing dependency on Flask-Compress library for nipapd
+
 Version 0.24.0 - Goldfinger
 ---------------------------
  * nipaprc configuration option 'default_vrf' is replaced by 'default_vrf_rt'
