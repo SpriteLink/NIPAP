@@ -458,7 +458,7 @@ tbody.listing > tr:hover {
 
 .preflist_vrf_panel {
 	border-left: 1px solid #EEEEEE;
-	width: 100px;
+	width: 155px;
 	display: table-cell;
 	font-size: 12px;
 	color: #666666;
@@ -472,6 +472,13 @@ tbody.listing > tr:hover {
 	padding: 2px 5px 2px 8px;
 	width: 90px;
 	border: 1px solid #DDDDDD;
+}
+
+.preflist_vrf_name {
+	width: 150px;
+	word-wrap: break-word;
+	padding-bottom: 30px;
+	margin-left: 5px;
 }
 
 .t {
