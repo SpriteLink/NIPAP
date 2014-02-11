@@ -1665,7 +1665,7 @@ function getVRFContainer(vrf_id) {
 function receiveVRFContainerData(search_result) {
 	vrf = search_result.result[0];
 
-	$('#preflist_vrf_container_' + vrf.id).children('div[class="preflist_vrf_panel"]').html('<div class="preflist_vrf_rt"><b>RT:&nbsp;' + ( vrf.rt == null ? '-' : vrf.rt ) + '</b></div><b class="t"></b><div style="padding-bottom: 30px; margin-left: 5px;">' + vrf.name + '</div>');
+	$('#preflist_vrf_container_' + vrf.id).children('div[class="preflist_vrf_panel"]').html('<div class="preflist_vrf_rt"><b>RT:&nbsp;' + ( vrf.rt == null ? '-' : vrf.rt ) + '</b></div><b class="t"></b><div class="preflist_vrf_name">' + vrf.name + '</div>');
 }
 
 /*
