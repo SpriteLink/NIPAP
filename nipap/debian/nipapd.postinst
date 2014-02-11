@@ -57,18 +57,20 @@ case "$1" in
 
 		# if database already exists
 		if [ "$NIPAP_DB_EXISTS" = "1" ]; then
-			# do the upgrade dance...
+			# should we do the upgrade dance?
+			db_get nipapd/startup
+			if [ "$RET" = "true" ]; then
+				# iterate through and upgrade in steps of one version at a time
+				for FROM_VERSION in `seq ${NIPAP_DB_VERSION} $((${CURRENT_DB_VERSION}-1))`; do
+					TO_VERSION=$((${FROM_VERSION}+1))
+					PSQL_FILE="upgrade-${FROM_VERSION}-${TO_VERSION}.plsql"
 
-			# iterate through and upgrade in steps of one version at a time
-			for FROM_VERSION in `seq ${NIPAP_DB_VERSION} $((${CURRENT_DB_VERSION}-1))`; do
-				TO_VERSION=$((${FROM_VERSION}+1))
-				PSQL_FILE="upgrade-${FROM_VERSION}-${TO_VERSION}.plsql"
+					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/${PSQL_FILE}" postgres >/dev/null 2>&1
+				done
 
-				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/${PSQL_FILE}" postgres >/dev/null 2>&1
-			done
-
-			# load latest NIPAP database functions
-			su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
+				# load latest NIPAP database functions
+				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
+			fi
 
 		else
 			# first time setup
@@ -102,6 +104,12 @@ case "$1" in
 		# set ownership/permissions on the local auth db
 		chown -f :nipap /etc/nipap/local_auth.db
 		chmod -f 0644 /etc/nipap/local_auth.db
+
+		# upgrade sqlite?
+		db_get nipapd/sqlite_upgrade
+		if [ "$RET" = "true" ]; then
+			nipap-passwd --upgrade-database
+		fi
 
 		db_stop
 
