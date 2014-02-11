@@ -2232,7 +2232,7 @@ function prefixFormSubmit(e) {
 		'country': $('input[name="prefix_country"]').val(),
 		'order_id': $('input[name="prefix_order_id"]').val(),
 		'customer_id': $('input[name="prefix_customer_id"]').val(),
-		'vrf': $('input[name="prefix_vrf"]').val(),
+		'vrf': $('input[name="prefix_vrf_id"]').val(),
 		'alarm_priority': $('input[name="prefix_alarm_priority"]:checked').val(),
 		'vlan': $('input[name="prefix_vlan"]').val()
 	};
@@ -2338,6 +2338,7 @@ function selectPrefix(prefix_id) {
 
 	// Set VRF to the same as the prefix we're allocating from
 	$.getJSON("/xhr/smart_search_vrf", { 'vrf_id': prefix_list[prefix_id].vrf_id, 'query_string': '' }, receivePrefixVRFData);
+	$('input[name="prefix_vrf_id"]').val(prefix_list[prefix_id].vrf_id);
 
 	$("#prefix_vrf_text").html('VRF from parent prefix:');
 	$("#prefix_vrf_display").html();
