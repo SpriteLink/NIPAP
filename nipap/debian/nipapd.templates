@@ -36,6 +36,6 @@ Template: nipapd/sqlite_upgrade
 Type: boolean
 Default: false
 Description: Upgrade Sqlite database for local auth ?
- You are upgradin from an older version of nipapd and an old version of the
+ You are upgrading from an older version of nipapd and an old version of the
  Sqlite databse for local auth has been found. The installation can try to
  automatically upgrade to the latest version of the database structure.

@@ -1,6 +1,7 @@
 Version 0.24.3 - Goldfinger
 ---------------------------
  * Prevent nipapd logging to stdout when run as daemon.
+ * Improve Debian install scripts.
 
 Version 0.24.2 - Goldfinger
 ---------------------------

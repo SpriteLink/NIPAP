@@ -1,8 +1,9 @@
 nipap-cli (0.24.3-1) stable; urgency=low
 
   * Prevent nipapd logging to stdout when run as daemon.
+  * Improve Debian install scripts.
 
- -- Kristian Larsson <kll@spritelink.net>  Tue, 11 Feb 2014 08:37:20 +0100
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 11 Feb 2014 09:02:59 +0100
 
 nipap-cli (0.24.2-1) stable; urgency=low
 
