@@ -133,7 +133,7 @@ class NipapXMLRPC:
 
 
     @requires_auth
-    def version(self):
+    def version(self, args):
         """ Returns nipapd version
 
             Returns a string.
