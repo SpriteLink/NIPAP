@@ -1,3 +1,7 @@
+Version 0.24.3 - Goldfinger
+---------------------------
+ * Prevent nipapd logging to stdout when run as daemon.
+
 Version 0.24.2 - Goldfinger
 ---------------------------
  * Add missing dependency on Tornado for nipapd!

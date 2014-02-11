@@ -1,3 +1,9 @@
+nipap-www (0.24.3-1) stable; urgency=low
+
+  * Prevent nipapd logging to stdout when run as daemon.
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 11 Feb 2014 08:37:19 +0100
+
 nipap-www (0.24.2-1) stable; urgency=low
 
   * Add missing dependency on Tornado for nipapd!
