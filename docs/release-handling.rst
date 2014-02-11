@@ -65,10 +65,30 @@ installing a package.
 
 Rolling a new version
 ---------------------
+Update the NEWS file as described above.
+
+If you have changes to the database, don't forget to increment the version
+number in sql/ip_net.sql
+
+From the project root, run::
+
+    make bumpversion
+
+This will automatically update the debian changelog based on the content of the
+NEWS file. You can bump the version for a single component (such as pynipap) by
+running the same command in the directory of that component.
+
+
+Manually rolling a new version
+------------------------------
+You probably don't want to roll a new release manually but this might help in
+understanding what happens behind the scenes.
+
 The different packages are first built as Python easy_install / distutils
 packages which are later mangled into a debian package. To roll a new version
 there are thus two places that need updating; the first is where easy_install
-gets its version number. You can look into setup.py and see the version line.
+gets its version number. You can look into setup.py and see the version line
+and which file & variable it refers too.
 
 See the following files for version info:
 nipap/nipap/__init__.py
