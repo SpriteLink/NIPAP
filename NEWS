@@ -1,3 +1,9 @@
+Version 0.24.4 - Goldfinger
+---------------------------
+ * Fix prefix add in VRF using from-prefix (#477)
+ * Fix web UI header misalignment (#475)
+ * Fix version of nipapd in web UI (#474)
+
 Version 0.24.3 - Goldfinger
 ---------------------------
  * Prevent nipapd logging to stdout when run as daemon.

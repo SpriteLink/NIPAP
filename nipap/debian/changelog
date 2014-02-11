@@ -1,3 +1,11 @@
+nipap (0.24.4-1) stable; urgency=low
+
+  * Fix prefix add in VRF using from-prefix (#477)
+  * Fix web UI header misalignment (#475)
+  * Fix version of nipapd in web UI (#474)
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 11 Feb 2014 16:23:23 +0100
+
 nipap (0.24.3-1) stable; urgency=low
 
   * Prevent nipapd logging to stdout when run as daemon.
