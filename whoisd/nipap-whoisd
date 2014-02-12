@@ -1,0 +1,401 @@
+#!/usr/bin/env python
+
+import os
+import re
+import sys
+
+import ConfigParser
+import SocketServer
+
+import pynipap
+from pynipap import Prefix, VRF, NipapError
+
+__version__ = '0.18.0'
+
+# Default daemon parameters.
+# File mode creation mask of the daemon.
+UMASK = 0
+
+# Default working directory for the daemon.
+WORKDIR = "/"
+
+# Default maximum for the number of available file descriptors.
+MAXFD = 1024
+
+# The standard I/O file descriptors are redirected to /dev/null by default.
+if (hasattr(os, "devnull")):
+   REDIRECT_TO = os.devnull
+else:
+   REDIRECT_TO = "/dev/null"
+
+def createDaemon():
+   """Detach a process from the controlling terminal and run it in the
+   background as a daemon.
+   """
+
+   try:
+      # Fork a child process so the parent can exit.  This returns control to
+      # the command-line or shell.  It also guarantees that the child will not
+      # be a process group leader, since the child receives a new process ID
+      # and inherits the parent's process group ID.  This step is required
+      # to insure that the next call to os.setsid is successful.
+      pid = os.fork()
+   except OSError, e:
+      raise Exception, "%s [%d]" % (e.strerror, e.errno)
+
+   if (pid == 0):   # The first child.
+      # To become the session leader of this new session and the process group
+      # leader of the new process group, we call os.setsid().  The process is
+      # also guaranteed not to have a controlling terminal.
+      os.setsid()
+
+      # Is ignoring SIGHUP necessary?
+      #
+      # It's often suggested that the SIGHUP signal should be ignored before
+      # the second fork to avoid premature termination of the process.  The
+      # reason is that when the first child terminates, all processes, e.g.
+      # the second child, in the orphaned group will be sent a SIGHUP.
+      #
+      # "However, as part of the session management system, there are exactly
+      # two cases where SIGHUP is sent on the death of a process:
+      #
+      #   1) When the process that dies is the session leader of a session that
+      #      is attached to a terminal device, SIGHUP is sent to all processes
+      #      in the foreground process group of that terminal device.
+      #   2) When the death of a process causes a process group to become
+      #      orphaned, and one or more processes in the orphaned group are
+      #      stopped, then SIGHUP and SIGCONT are sent to all members of the
+      #      orphaned group." [2]
+      #
+      # The first case can be ignored since the child is guaranteed not to have
+      # a controlling terminal.  The second case isn't so easy to dismiss.
+      # The process group is orphaned when the first child terminates and
+      # POSIX.1 requires that every STOPPED process in an orphaned process
+      # group be sent a SIGHUP signal followed by a SIGCONT signal.  Since the
+      # second child is not STOPPED though, we can safely forego ignoring the
+      # SIGHUP signal.  In any case, there are no ill-effects if it is ignored.
+      #
+      # import signal           # Set handlers for asynchronous events.
+      # signal.signal(signal.SIGHUP, signal.SIG_IGN)
+
+      try:
+         # Fork a second child and exit immediately to prevent zombies.  This
+         # causes the second child process to be orphaned, making the init
+         # process responsible for its cleanup.  And, since the first child is
+         # a session leader without a controlling terminal, it's possible for
+         # it to acquire one by opening a terminal in the future (System V-
+         # based systems).  This second fork guarantees that the child is no
+         # longer a session leader, preventing the daemon from ever acquiring
+         # a controlling terminal.
+         pid = os.fork()    # Fork a second child.
+      except OSError, e:
+         raise Exception, "%s [%d]" % (e.strerror, e.errno)
+
+      if (pid == 0):    # The second child.
+         # Since the current working directory may be a mounted filesystem, we
+         # avoid the issue of not being able to unmount the filesystem at
+         # shutdown time by changing it to the root directory.
+         os.chdir(WORKDIR)
+         # We probably don't want the file mode creation mask inherited from
+         # the parent, so we give the child complete control over permissions.
+         os.umask(UMASK)
+      else:
+         # exit() or _exit()?  See below.
+         os._exit(0)    # Exit parent (the first child) of the second child.
+   else:
+      # exit() or _exit()?
+      # _exit is like exit(), but it doesn't call any functions registered
+      # with atexit (and on_exit) or any registered signal handlers.  It also
+      # closes any open file descriptors.  Using exit() may cause all stdio
+      # streams to be flushed twice and any temporary files may be unexpectedly
+      # removed.  It's therefore recommended that child branches of a fork()
+      # and the parent branch(es) of a daemon use _exit().
+      os._exit(0)   # Exit parent of the first child.
+
+   # Close all open file descriptors.  This prevents the child from keeping
+   # open any file descriptors inherited from the parent.  There is a variety
+   # of methods to accomplish this task.  Three are listed below.
+   #
+   # Try the system configuration variable, SC_OPEN_MAX, to obtain the maximum
+   # number of open file descriptors to close.  If it doesn't exists, use
+   # the default value (configurable).
+   #
+   # try:
+   #    maxfd = os.sysconf("SC_OPEN_MAX")
+   # except (AttributeError, ValueError):
+   #    maxfd = MAXFD
+   #
+   # OR
+   #
+   # if (os.sysconf_names.has_key("SC_OPEN_MAX")):
+   #    maxfd = os.sysconf("SC_OPEN_MAX")
+   # else:
+   #    maxfd = MAXFD
+   #
+   # OR
+   #
+   # Use the getrlimit method to retrieve the maximum file descriptor number
+   # that can be opened by this process.  If there is not limit on the
+   # resource, use the default value.
+   #
+   import resource      # Resource usage information.
+   maxfd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
+   if (maxfd == resource.RLIM_INFINITY):
+      maxfd = MAXFD
+  
+   # FIXME: this breaks our tpxmld, so it's commented for now //kll
+   # Iterate through and close all file descriptors.
+#   for fd in range(0, maxfd):
+#      try:
+#         os.close(fd)
+#      except OSError:   # ERROR, fd wasn't open to begin with (ignored)
+#         pass
+
+   # Redirect the standard I/O file descriptors to the specified file.  Since
+   # the daemon has no controlling terminal, most daemons redirect stdin,
+   # stdout, and stderr to /dev/null.  This is done to prevent side-effects
+   # from reads and writes to the standard I/O file descriptors.
+
+   # This call to open is guaranteed to return the lowest file descriptor,
+   # which will be 0 (stdin), since it was closed above.
+   os.open(REDIRECT_TO, os.O_RDWR)  # standard input (0)
+
+   # Duplicate standard input to standard output and standard error.
+   os.dup2(0, 1)            # standard output (1)
+   os.dup2(0, 2)            # standard error (2)
+
+   return(0)
+
+
+
+def drop_privileges(uid_name='nobody', gid_name='nogroup'):
+    if os.getuid() != 0:
+        raise Exception("non-root user cannot drop privileges")
+
+    import pwd, grp
+    # Get the uid/gid from the name
+    uid = pwd.getpwnam(uid_name).pw_uid
+    gid = grp.getgrnam(gid_name).gr_gid
+
+    # Remove group privileges
+    os.setgroups([])
+
+    # Try setting the new uid/gid
+    os.setgid(gid)
+    os.setuid(uid)
+
+    # Ensure a very conservative umask
+    old_umask = os.umask(077)
+
+
+
+def format_line(key, value):
+    """ Format  a single key, value pair in a whois looking format
+    """
+    if value is None:
+        return ''
+
+    return "%-20s %s\n" % (key + ':', value)
+
+
+
+def format_prefix(p):
+    """ Format a pynipap Prefix object into a whois looking format
+    """
+    if p.family == 4:
+        res = format_line("inetnum", p.prefix)
+    else:
+        res = format_line("inet6num", p.prefix)
+    res += format_line('vrf-rt', p.vrf.rt)
+    res += format_line('vrf-name', p.vrf.name)
+    res += format_line('descr', p.description)
+    res += format_line('comment', p.comment)
+    res += format_line('country', p.country)
+    res += format_line('order', p.order_id)
+    res += format_line('node', p.node)
+    res += format_line('monitor', p.monitor)
+    res += format_line('alarm-priority', p.alarm_priority)
+    return res
+
+
+
+def format_vrf(vrf):
+    """ Format a pynipap VRF object into a whois looking format
+    """
+    res = format_line('rt', vrf.rt)
+    res += format_line('vrf', vrf.name)
+    res += format_line('descr', vrf.description)
+    return res
+
+
+
+class WhoisServer(SocketServer.BaseRequestHandler):
+    def handle(self):
+        """ Called for every connection
+        """
+        # receive data
+        query = ''
+        while True:
+            data = self.request.recv(1024)
+            query += data
+            if len(data) < 1024:
+                break
+
+        query = query.strip()
+
+        # respond!
+        total_hits = 0
+        response = '% This is the NIPAP whois query service.\n\n'
+
+        if query == '':
+            pass
+        elif re.match('^[0-9]+:[0-9]+:.*$', query):
+            # 123:123:1.2.3.4 - IP address and VRF
+            # respond with prefixes
+            m = re.match('^([0-9]+:[0-9]+):(.*)$', query)
+            vrf_query = {
+                    'val1': 'vrf_rt',
+                    'operator': 'equals',
+                    'val2': m.group(1)
+                }
+            res = Prefix.smart_search(m.group(2), { }, vrf_query)
+            if len(res['result']) > 0:
+                total_hits += len(res['result'])
+                for p in res['result']:
+                    response += format_prefix(p)
+                    response += '\n'
+        else:
+            # respond with VRFs
+            res = VRF.smart_search(query, { })
+            if len(res['result']) > 0:
+                total_hits += len(res['result'])
+                response += '% VRFs matching\n'
+                for p in res['result']:
+                    response += format_vrf(p)
+                    response += '\n'
+
+            # respond with prefixes
+            res = Prefix.smart_search(query, { })
+            if len(res['result']) > 0:
+                total_hits += len(res['result'])
+                for p in res['result']:
+                    response += format_prefix(p)
+                    response += '\n'
+
+        if total_hits == 0:
+            response += "%ERROR:101: no entries found\n"
+            response += "%\n"
+            response += "% No entries found in source NIPAP.\n"
+            response += '%\n'
+            response += '% Query the whois service by IP address, prefix, VRF RT or free text\n'
+            response += '% search. It is possible to search for a prefix in a VRF by\n'
+            response += '% concatenating the VRF RT and the prefix: 123:123:1.2.3.4\n'
+            response += '%\n'
+
+        response += "\n%% This query was served by the NIPAP whois server version %s\n" % __version__
+        self.request.send(response)
+
+
+
+if __name__ == '__main__':
+
+    import optparse
+    parser = optparse.OptionParser()
+    parser.add_option("--config", dest="config_file", type="string", default="/etc/nipap/nipap.conf", help="read configuration from file CONFIG_FILE")
+    parser.add_option("--listen", metavar="ADDRESS", help="listen on IPv4/6 ADDRESS")
+    parser.add_option("--port", type=int, default=43, help="port to listen to")
+    parser.add_option("--pid-file", type="string", help="write a PID file to PID_FILE")
+    parser.add_option("--no-pid-file", action="store_true", default=False, help="turn off writing PID file (overrides config file)")
+    parser.add_option("--version", action="store_true", help="display version information and exit")
+
+    (options, args) = parser.parse_args()
+
+    if options.version:
+        print "nipap-whoisd version:", __version__
+        sys.exit(0)
+
+    default = {
+        'pid_file': None,
+        'listen': '0.0.0.0',
+        'port': '43',
+        'nipapd_host': 'localhost',
+        'nipapd_port': '1337',
+        'nipapd_username': None,
+        'user': None,
+        'group': None
+    }
+    cfg = ConfigParser.ConfigParser(default)
+    cfg.read(options.config_file)
+
+    # Go through list of optparse options and set the config object to
+    # their values.
+    for val in parser.option_list:
+
+        if val.dest is None:
+            continue
+        # This is not very pretty... but how can I otherwise access elements
+        # in the options object from variables?
+        try:
+            if eval('options.' + val.dest) is None:
+                continue
+        except AttributeError:
+            continue
+
+        try:
+            cfg.set('whoisd', val.dest, str(eval("options." + val.dest)))
+        except ConfigParser.NoSectionError as exc:
+            print exc
+            print >> sys.stderr, "The configuration file contains errors:", exc
+            sys.exit(1)
+
+
+    # drop privileges
+    if cfg.get('whoisd', 'user') is not None:
+        run_user = cfg.get('nipapd', 'user')
+        if cfg.get('whoisd', 'group') is not None:
+            run_group = cfg.get('whoisd', 'group')
+        else:
+            run_group = cfg.get('whoisd', 'user')
+        try:
+            drop_privileges(run_user, run_group)
+        except Exception, e:
+            print >> sys.stderr, ("nipap-whoisd is configured to drop privileges and run as user '%s' and group '%s', \n"
+                        "but was not started as root and can therefore not drop privileges") % (run_user, run_group)
+            sys.exit(1)
+        except KeyError:
+            print >> sys.stderr, "Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group)
+            sys.exit(1)
+
+    # daemonize
+    createDaemon()
+
+    # pid file handling
+    if cfg.get('whoisd', 'pid_file') and not options.no_pid_file:
+        # need a+ to be able to read PID from file
+        try:
+            lf = open(cfg.get('whoisd', 'pid_file'), 'a+', 0)
+        except IOError, exc:
+            print >> sys.stderr, "Unable to open PID file '%s': %s" % (
+                    str(exc.filename), str(exc.strerror))
+            sys.exit(1)
+        try:
+            fcntl.flock(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except IOError:
+            print >> sys.stderr, 'nipap-whoisd already running (pid: %s)' % lf.read().strip()
+            sys.exit(1)
+        print >> sys.stderr, 'Writing PID to file: %s' % cfg.get('whoisd', 'pid_file')
+        lf.truncate()
+        lf.write('%d\n' % os.getpid())
+        lf.flush()
+
+    pynipap.xmlrpc_uri = 'http://%(username)s:%(password)s@%(host)s:%(port)s' % {
+            'username': cfg.get('whoisd', 'nipapd_username'),
+            'password': cfg.get('whoisd', 'nipapd_password'),
+            'host': cfg.get('whoisd', 'nipapd_host'),
+            'port': cfg.get('whoisd', 'nipapd_port')
+        }
+    ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
+
+    server = SocketServer.ForkingTCPServer((cfg.get('whoisd', 'listen'),
+        int(cfg.get('whoisd', 'port'))), WhoisServer)
+    server.serve_forever()
