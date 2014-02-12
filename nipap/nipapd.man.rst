@@ -30,7 +30,7 @@ nipapd accepts the following command-line arguments. These and more options are 
 
 Bugs / Caveats
 --------------
-**nipapd** is single threaded and handles requests in a synchronous fashion. This means that slow queries will block the backend from responding to other queries until the slow query has run to completion.
+Who knows? ;)
 
 Examples
 --------
