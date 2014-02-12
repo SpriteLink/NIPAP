@@ -19,10 +19,18 @@ fi
 
 db_get nipap-www/autouser
 if [ "$RET" = "true" ]; then
-	# check if www-user already exists, if not, create it and configure it in
+	# check if there is already a www user configured in the
+	# configuration file and use that username for $WWW_USER
+	if [ -e /etc/nipap/nipap.conf ]; then
+		USER=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/\(.*\)@local:.*@.*/\1/'`
+		PASS=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/.*@local:\(.*\)@.*/\1/'`
+		if [ "$USER" != "" ] && [ "$PASS" != "" ]; then
+			WWW_USER=$USER
+			WWW_PASS=$PASS
+		fi
+	fi
+	# check if $WWW_USER already exists, if not, create it and configure it in
 	# the nipap.conf configuration file, provided that it exists
-	# TODO: check if there is already a www user configured in the
-	#       configuration file and use that username instead of $WWW_USER
 	if [ `nipap-passwd -l | awk "{ if (\\$1~/^$WWW_USER$/) { print \\$1 } }" | wc -l` = "0" ]; then
 		nipap-passwd -a $WWW_USER -p $WWW_PASS -n "$WWW_NAME" -t > /dev/null 2>&1
 		if [ -e /etc/nipap/nipap.conf ]; then
