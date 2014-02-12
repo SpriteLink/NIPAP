@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import re
 import SocketServer
 
 import pynipap
@@ -39,8 +40,8 @@ def format_prefix(p):
 def format_vrf(vrf):
     """ Format a pynipap VRF object into a whois looking format
     """
-    res = format_line('vrf', vrf.name)
-    res += format_line('rt', vrf.rt)
+    res = format_line('rt', vrf.rt)
+    res += format_line('vrf', vrf.name)
     res += format_line('descr', vrf.description)
     return res
 
@@ -64,27 +65,50 @@ class WhoisServer(SocketServer.BaseRequestHandler):
         total_hits = 0
         response = '% This is the NIPAP whois query service.\n\n'
 
-        # respond with VRFs
-        res = VRF.smart_search(query, { })
-        if len(res['result']) > 0:
-            total_hits += len(res['result'])
-            response += '% VRFs matching\n'
-            for p in res['result']:
-                response += format_vrf(p)
-                response += '\n'
+        if query == '':
+            pass
+        elif re.match('^[0-9]+:[0-9]+:.*$', query):
+            # 123:123:1.2.3.4 - IP address and VRF
+            # respond with prefixes
+            m = re.match('^([0-9]+:[0-9]+):(.*)$', query)
+            vrf_query = {
+                    'val1': 'vrf_rt',
+                    'operator': 'equals',
+                    'val2': m.group(1)
+                }
+            res = Prefix.smart_search(m.group(2), { }, vrf_query)
+            if len(res['result']) > 0:
+                total_hits += len(res['result'])
+                for p in res['result']:
+                    response += format_prefix(p)
+                    response += '\n'
+        else:
+            # respond with VRFs
+            res = VRF.smart_search(query, { })
+            if len(res['result']) > 0:
+                total_hits += len(res['result'])
+                response += '% VRFs matching\n'
+                for p in res['result']:
+                    response += format_vrf(p)
+                    response += '\n'
 
-        # respond with prefixes
-        res = Prefix.smart_search(query, { })
-        if len(res['result']) > 0:
-            total_hits += len(res['result'])
-            for p in res['result']:
-                response += format_prefix(p)
-                response += '\n'
+            # respond with prefixes
+            res = Prefix.smart_search(query, { })
+            if len(res['result']) > 0:
+                total_hits += len(res['result'])
+                for p in res['result']:
+                    response += format_prefix(p)
+                    response += '\n'
 
         if total_hits == 0:
             response += "%ERROR:101: no entries found\n"
             response += "%\n"
             response += "% No entries found in source NIPAP.\n"
+            response += '%\n'
+            response += '% Query the whois service by IP address, prefix, VRF RT or free text\n'
+            response += '% search. It is possible to search for a prefix in a VRF by\n'
+            response += '% concatenating the VRF RT and the prefix: 123:123:1.2.3.4\n'
+            response += '%\n'
 
         response += "\n%% This query was served by the NIPAP whois server version %s\n" % __version__
         self.request.send(response)
