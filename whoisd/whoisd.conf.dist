@@ -29,8 +29,8 @@
 # specified user and group. If no user is specified, nipap-whoisd will run as
 # the user who started it (typically root). If only user but no group is
 # specified, the value for user will be used for group as well.
-#user = nipap
-#group = nipap
+user = nobody
+group = nogroup
 
 listen = 0.0.0.0                ; IP address to listen on.
 port = 43                       ; XML-RPC listen port (change requires restart)
