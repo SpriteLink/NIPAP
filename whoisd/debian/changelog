@@ -1,0 +1,13 @@
+nipap-whoisd (0.24.4-1) stable; urgency=low
+
+  * Fix prefix add in VRF using from-prefix (#477)
+  * Fix web UI header misalignment (#475)
+  * Fix version of nipapd in web UI (#474)
+
+ -- Kristian Larsson <kll@spritelink.net>  Thu, 13 Feb 2014 08:32:29 +0100
+
+nipap-whoisd (0.1.0-1) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ -- Kristian Larsson <kll@spritelink.net>  Thu, 13 Feb 2014 08:28:07 +0100

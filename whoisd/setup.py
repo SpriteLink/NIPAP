@@ -16,7 +16,7 @@ def get_data_files():
         sys.exit(1)
 
     files = [
-            ('/etc/nipap/', ['nipap-whoisd.conf.dist']),
+            ('/etc/nipap/', ['whoisd.conf.dist']),
             ('/usr/sbin/', ['nipap-whoisd']),
             ('/usr/share/man/man8/', ['nipap-whoisd.8'])
         ]
@@ -28,7 +28,7 @@ long_desc = open('README.rst').read()
 short_desc = long_desc.split('\n')[0].split(' - ')[1].strip()
 
 setup(
-    name = 'nipap_whoisd',
+    name = 'nipap-whoisd',
     version = nipap_whoisd.__version__,
     description = short_desc,
     long_description = long_desc,
@@ -36,8 +36,8 @@ setup(
     author_email = nipap_whoisd.__author_email__,
     license = nipap_whoisd.__license__,
     url = nipap_whoisd.__url__,
-    packages = ['nipap_whoisd'],
-    keywords = ['nipap_whoisd'],
+    py_modules = ['nipap_whoisd'],
+    keywords = ['nipap-whoisd'],
     requires = ['pynipap'],
     data_files = get_data_files(),
     classifiers = [
