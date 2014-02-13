@@ -118,7 +118,7 @@ class WhoisServer(SocketServer.BaseRequestHandler):
             response += '% concatenating the VRF RT and the prefix: 123:123:1.2.3.4\n'
             response += '%\n'
 
-        response += "\n%% This query was served by the NIPAP whois server version %s\n" % __version__
+        response += "\n%% This query was served by the NIPAP whois server version %s\n" % nipap_whoisd.__version__
         self.request.send(response)
 
 
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.version:
-        print "nipap-whoisd version:", __version__
+        print "nipap-whoisd version:", nipap_whoisd.__version__
         sys.exit(0)
 
     default = {
@@ -174,6 +174,11 @@ if __name__ == '__main__':
             print >> sys.stderr, "The configuration file contains errors:", exc
             sys.exit(1)
 
+    try:
+        server = SocketServer.ForkingTCPServer((cfg.get('whoisd', 'listen'),
+            int(cfg.get('whoisd', 'port'))), WhoisServer)
+    except socket.error, exc:
+        print >> sys.stderr, "Unable to bind to socket", str(exc)
 
     # drop privileges
     if cfg.get('whoisd', 'user') is not None:
@@ -183,7 +188,7 @@ if __name__ == '__main__':
         else:
             run_group = cfg.get('whoisd', 'user')
         try:
-            drop_privileges(run_user, run_group)
+            nipap_whoisd.drop_privileges(run_user, run_group)
         except Exception, e:
             print >> sys.stderr, ("nipap-whoisd is configured to drop privileges and run as user '%s' and group '%s', \n"
                         "but was not started as root and can therefore not drop privileges") % (run_user, run_group)
@@ -222,6 +227,5 @@ if __name__ == '__main__':
         }
     ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
 
-    server = SocketServer.ForkingTCPServer((cfg.get('whoisd', 'listen'),
-        int(cfg.get('whoisd', 'port'))), WhoisServer)
+    # and serve!
     server.serve_forever()
