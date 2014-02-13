@@ -10,7 +10,13 @@ import SocketServer
 import pynipap
 from pynipap import Prefix, VRF, NipapError
 
-__version__ = '0.18.0'
+__version__		= "0.24.4"
+__author__		= "Kristian Larsson, Lukas Garberg"
+__author_email__ = "kll@tele2.net, lukas@spritelink.net"
+__copyright__	= "Copyright 2011-2014, Kristian Larsson, Lukas Garberg"
+__license__		= "MIT"
+__status__		= "Development"
+__url__			= "http://SpriteLink.github.com/NIPAP"
 
 # Default daemon parameters.
 # File mode creation mask of the daemon.
