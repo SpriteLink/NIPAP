@@ -45,10 +45,10 @@ public class Connection {
 	 */
 	public Connection(URL srv_url, String auth_username, String password) {
 
-		this.srv_url = srv_url;
-		this.username = auth_username;
-		this.auth_username = auth_username;
-		this.password = password;
+		srv_url = srv_url;
+		username = auth_username;
+		auth_username = auth_username;
+		password = password;
 
 		setup();
 
@@ -70,15 +70,15 @@ public class Connection {
 
 		// Create configuration object
 		config = new XmlRpcClientConfigImpl();
-		config.setServerURL(this.srv_url);
+		config.setServerURL(srv_url);
 		config.setEnabledForExtensions(true);
-		config.setBasicUserName(this.auth_username);
-		config.setBasicPassword(this.password);
+		config.setBasicUserName(auth_username);
+		config.setBasicPassword(password);
 
 		// Create client object
 		connection = new XmlRpcClient();
-		connection.setConfig(this.config);
-		connection.setTypeFactory(new NonExNullParser(this.connection));
+		connection.setConfig(config);
+		connection.setTypeFactory(new NonExNullParser(connection));
 
 	}
 
@@ -107,16 +107,16 @@ public class Connection {
 		HashMap map = new HashMap();
 
 		// Add non-null elements
-		if (this.full_name != null) {
-			map.put("full_name", this.full_name);
+		if (full_name != null) {
+			map.put("full_name", full_name);
 		}
 
-		if (this.authoritative_source != null) {
-			map.put("authoritative_source", this.authoritative_source);
+		if (authoritative_source != null) {
+			map.put("authoritative_source", authoritative_source);
 		}
 
-		if (this.username != null) {
-			map.put("username", this.username);
+		if (username != null) {
+			map.put("username", username);
 		}
 
 		return (Map)map;
@@ -125,17 +125,17 @@ public class Connection {
 
 	public Object execute(String pMethodName, Object[] pParams) throws JnipapException {
 		try {
-			return this.connection.execute(pMethodName, pParams);
+			return connection.execute(pMethodName, pParams);
 		} catch(XmlRpcException e) {
-			throw (JnipapException)this.xmlRpcExceptionToJnipapException(e);
+			throw (JnipapException)xmlRpcExceptionToJnipapException(e);
 		}
 	}
 
 	public Object execute(String pMethodName, List pParams) throws JnipapException {
 		try {
-			return this.connection.execute(pMethodName, pParams);
+			return connection.execute(pMethodName, pParams);
 		} catch(XmlRpcException e) {
-			throw (JnipapException)this.xmlRpcExceptionToJnipapException(e);
+			throw (JnipapException)xmlRpcExceptionToJnipapException(e);
 		}
 	}
 

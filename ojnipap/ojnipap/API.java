@@ -195,20 +195,25 @@ public class API {
 	 * Perform a search in the external_key field.
 	 *
 	 * Returns a list of prefixes having the external_key attribute set to
-	 * `query`. The search is performed using the `equals` operator.
+	 * `external_key`. The search is performed using the `equals` operator.
 	 *
 	 * @param conn Connection object
 	 * @param query String to search
 	 * @param search_options Search options such as limiting the number of results
 	 * @return An array of OPrefix objects matching the search query
 	 */
-	public static ARRAY searchPrefixExtKey(OConnection conn, String query, OSearchOptions search_options) throws JnipapException {
+	public static ARRAY searchPrefixExtKey(OConnection conn, String external_key, OSearchOptions search_options) throws JnipapException {
 
 		// Build search query map
 		HashMap search_query = new HashMap();
 		search_query.put("operator", "equals");
 		search_query.put("val1", "external_key");
-		search_query.put("val2", query);
+		search_query.put("val2", external_key);
+
+		// Modify search options to include network & all neighboring prefixes
+		// (most importantly: the default gateway)
+		search_options.put("include_neighbors", Boolean.valueOf(true));
+		search_options.put("parents_depth", new Integer(1));
 
 		// Perform search
 		Map result = Prefix.search((jnipap.Connection)conn, search_query, search_options);
@@ -284,6 +289,18 @@ public class API {
 		return toSQLObj(pref);
 
 	}
+
+	/**
+	 * Remove a prefix from NIPAP
+	 *
+	 * @param conn Connection object
+	 * @param pref Prefix object to remove
+	 */
+	 public static void removePrefix(OConnection conn, OPrefix pref) throws JnipapException {
+
+		pref.remove(conn);
+
+	 }
 
 	/**
 	 * Convert VRF to SQLData version
