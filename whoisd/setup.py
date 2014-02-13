@@ -4,22 +4,21 @@ from distutils.core import setup
 import subprocess
 import sys
 
-import nipapwhoisd
-
+import nipap_whoisd
 
 # return all the extra data files
 def get_data_files():
     # generate man pages using rst2man
     try:
-        subprocess.call(["rst2man", "nipapwhoisd.man.rst", "nipapwhoisd.8"])
+        subprocess.call(["rst2man", "nipap-whoisd.man.rst", "nipap-whoisd.8"])
     except OSError as exc:
         print >> sys.stderr, "rst2man failed to run:", str(exc)
         sys.exit(1)
 
     files = [
-            ('/etc/nipap/', ['nipapwhoisd.conf.dist']),
-            ('/usr/sbin/', ['nipapwhoisd']),
-            ('/usr/share/man/man8/', ['nipapwhoisd.8'])
+            ('/etc/nipap/', ['nipap-whoisd.conf.dist']),
+            ('/usr/sbin/', ['nipap-whoisd']),
+            ('/usr/share/man/man8/', ['nipap-whoisd.8'])
         ]
 
     return files
@@ -29,16 +28,16 @@ long_desc = open('README.rst').read()
 short_desc = long_desc.split('\n')[0].split(' - ')[1].strip()
 
 setup(
-    name = 'nipapwhoisd',
-    version = nipapwhoisd.__version__,
+    name = 'nipap_whoisd',
+    version = nipap_whoisd.__version__,
     description = short_desc,
     long_description = long_desc,
-    author = nipapwhoisd.__author__,
-    author_email = nipapwhoisd.__author_email__,
-    license = nipapwhoisd.__license__,
-    url = nipapwhoisd.__url__,
-    packages = ['nipapwhoisd'],
-    keywords = ['nipapwhoisd'],
+    author = nipap_whoisd.__author__,
+    author_email = nipap_whoisd.__author_email__,
+    license = nipap_whoisd.__license__,
+    url = nipap_whoisd.__url__,
+    packages = ['nipap_whoisd'],
+    keywords = ['nipap_whoisd'],
     requires = ['pynipap'],
     data_files = get_data_files(),
     classifiers = [
