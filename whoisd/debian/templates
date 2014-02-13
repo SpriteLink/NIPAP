@@ -1,0 +1,6 @@
+Template: nipap-whoisd/startup
+Type: boolean
+Default: false
+Description: Start nipap-whoisd automatically?
+ The NIPAP whois daemon, nipap-whoisd, can can be automatically started on
+ system startup by inclusion in the system startup scripts.
