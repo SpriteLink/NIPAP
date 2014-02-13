@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import fcntl
 import os
 import re
 import sys
@@ -176,7 +177,7 @@ if __name__ == '__main__':
 
     # drop privileges
     if cfg.get('whoisd', 'user') is not None:
-        run_user = cfg.get('nipapd', 'user')
+        run_user = cfg.get('whoisd', 'user')
         if cfg.get('whoisd', 'group') is not None:
             run_group = cfg.get('whoisd', 'group')
         else:

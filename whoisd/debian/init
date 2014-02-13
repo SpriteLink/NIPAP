@@ -56,7 +56,7 @@ case "$1" in
 			log_progress_msg "already running"
 			log_end_msg 0
 		else
-			if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE; then
+			if start-stop-daemon --start --exec $DAEMON -- --config $CONFIGFILE; then
 				log_end_msg 0
 			else
 				log_end_msg 1
@@ -81,7 +81,7 @@ case "$1" in
 		RUNNING=$(running)
 		if [ -n "$RUNNING" ]; then
 			if start-stop-daemon --stop --pidfile $PIDFILE; then
-				if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE; then
+				if start-stop-daemon --start --exec $DAEMON -- --config $CONFIGFILE; then
 					log_end_msg 0
 				else
 					log_end_msg 1
@@ -90,7 +90,7 @@ case "$1" in
 				log_end_msg 1
 			fi
 		else
-			if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE; then
+			if start-stop-daemon --start --exec $DAEMON -- --config $CONFIGFILE; then
 				log_end_msg 0
 			else
 				log_end_msg 1
