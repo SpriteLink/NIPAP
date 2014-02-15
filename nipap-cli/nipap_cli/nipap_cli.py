@@ -456,8 +456,10 @@ def add_prefix(arg, opts):
 
         if 'from-prefix' in args:
             parent_prefix = args['from-prefix'][0]
+            parent_op = 'equals'
         else:
             parent_prefix = opts.get('prefix').split('/')[0]
+            parent_op = 'contains'
 
         # prefix must be a CIDR network, ie no bits set in host part, so we
         # remove the prefix length part of the prefix as then the backend will
@@ -465,7 +467,7 @@ def add_prefix(arg, opts):
         auto_type_query = {
                 'val1': {
                     'val1'      : 'prefix',
-                    'operator'  : 'contains',
+                    'operator'  : parent_op,
                     'val2'      : parent_prefix
                     },
                 'operator': 'and',
