@@ -98,7 +98,7 @@ case "$1" in
 
 			fi
 			# create local auth database
-			nipap-passwd --create-database
+			nipap-passwd --create-database > /dev/null 2>&1
 		fi
 
 		# set ownership/permissions on the local auth db
@@ -108,7 +108,7 @@ case "$1" in
 		# upgrade sqlite?
 		db_get nipapd/sqlite_upgrade
 		if [ "$RET" = "true" ]; then
-			nipap-passwd --upgrade-database
+			nipap-passwd --upgrade-database > /dev/null 2>&1
 		fi
 
 		db_stop
