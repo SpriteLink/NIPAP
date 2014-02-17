@@ -7,7 +7,6 @@ BUILDIR=$(CURDIR)/debian/python-nipap-build
 PROJECT=nipap-whoisd
 
 all:
-#	$(PYTHON) setup.py build
 	@echo "make source - Create source package"
 	@echo "make install - Install on local system"
 	@echo "make buildrpm - Generate a rpm package"
@@ -44,7 +43,8 @@ clean:
 	$(PYTHON) setup.py clean
 	rm -rf build/ MANIFEST dist/ debian/tmp debian/$(PROJECT) debian/files \
 	.pc/ debian/$(PROJECT).debhelper.log debian/$(PROJECT).postinst.debhelper \
-	debian/$(PROJECT).prerm.debhelper debian/$(PROJECT).substvars nipap-whoisd.8
+	debian/$(PROJECT).prerm.debhelper debian/$(PROJECT).postrm.debhelper \
+	debian/$(PROJECT).substvars nipap-whoisd.8
 	find . -name '*.pyc' -delete
 
 VER := $(shell head -n1 ../NEWS | awk '{print $$2}')
