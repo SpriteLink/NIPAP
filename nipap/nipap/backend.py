@@ -669,7 +669,7 @@ class Nipap:
 
         dbname = self._cfg.get('nipapd', 'db_name')
         self._execute("SELECT description FROM pg_shdescription JOIN pg_database ON objoid = pg_database.oid WHERE datname = '%s'" % dbname)
-        comment = self._curs_pg.fetchone()
+        comment = self._curs_pg.fetchone()[0]
         schema_version = comment.replace('NIPAP database - schema version: ', '')
 
         return schema_version
