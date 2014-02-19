@@ -664,6 +664,27 @@ class Nipap:
 
 
 
+    def _get_db_version(self):
+        """ Get the schema version of the nipap psql db.
+        """
+
+        dbname = self._cfg.get('nipapd', 'db_name')
+        self._execute("SELECT description FROM pg_shdescription JOIN pg_database ON objoid = pg_database.oid WHERE datname = '%s'" % dbname)
+        comment = self._curs_pg.fetchone()[0]
+        if comment is None:
+            raise NipapError("Could not find comment of psql database %s" % dbname)
+
+        db_version = None
+        m = re.match('NIPAP database - schema version: ([0-9]+)', comment)
+        if m:
+            db_version = int(m.group(1))
+        else:
+            raise NipapError("Could not match schema version database comment")
+
+        return db_version
+
+
+
 
     #
     # VRF functions

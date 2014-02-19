@@ -42,6 +42,7 @@ if __name__ == '__main__':
     parser.add_option("-P", "--pid-file", type="string", help="write a PID file to PID_FILE")
     parser.add_option("--no-pid-file", action="store_true", default=False, help="turn off writing PID file (overrides config file)")
     parser.add_option("--version", action="store_true", help="display version information and exit")
+    parser.add_option("--db-version", dest="dbversion", action="store_true", help="display database schema version information and exit")
 
     (options, args) = parser.parse_args()
 
@@ -119,6 +120,12 @@ if __name__ == '__main__':
             print >> sys.stderr, "Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group)
             sys.exit(1)
 
+    if options.dbversion:
+        from nipap.backend import Nipap
+        nip = Nipap()
+        print "nipap db schema:", nip._get_db_version()
+        sys.exit(0)
+
     # pre-start checks
     from nipap import authlib
     a = authlib.SqliteAuth('local', 'a', 'b', 'c')
@@ -127,6 +134,15 @@ if __name__ == '__main__':
     except authlib.AuthSqliteError, e:
         print >> sys.stderr, "Problem with Sqlite database for local auth: %s" % e
         print >> sys.stderr, "Run 'nipap-passwd --upgrade-database' to upgrade your database."
+        sys.exit(1)
+
+    #check nipap database schema version
+    from nipap.backend import Nipap
+    import nipap
+    nip = Nipap()
+    current_db_version = nip._get_db_version()
+    if current_db_version != nipap.__db_version__:
+        print >> sys.stderr, "NIPAP PostgreSQL database is outdated. Schema version '%s' is required to run but you are using '%s'" % (nipap.__db_version__, current_db_version)
         sys.exit(1)
 
 

@@ -1117,6 +1117,21 @@ def nipapd_version():
 
 
 
+def nipap_db_version():
+    """ Get schema version of database we're connected to.
+    """
+
+    xmlrpc = XMLRPCConnection()
+    try:
+        return xmlrpc.connection.db_version(
+            {
+                'auth': AuthOptions().options
+            })
+    except xmlrpclib.Fault as xml_fault:
+        raise _fault_to_exception(xml_fault)
+
+
+
 #
 # Define exceptions
 #

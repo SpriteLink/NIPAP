@@ -142,6 +142,16 @@ class NipapXMLRPC:
 
 
 
+    @requires_auth
+    def db_version(self, args):
+        """ Returns schema version of nipap psql db
+
+            Returns a string.
+        """
+        return self.nip._get_db_version()
+
+
+
     #
     # VRF FUNCTIONS
     #
