@@ -663,6 +663,19 @@ class Nipap:
 
 
 
+    def _get_schema_version(self):
+        """ Get the schema version of the nipap psql db.
+        """
+
+        dbname = self._cfg.get('nipapd', 'db_name')
+        self._execute("SELECT description FROM pg_shdescription JOIN pg_database ON objoid = pg_database.oid WHERE datname = '%s'" % dbname)
+        comment = self._curs_pg.fetchone()
+        schema_version = comment.replace('NIPAP database - schema version: ', '')
+
+        return schema_version
+
+
+
 
     #
     # VRF functions
