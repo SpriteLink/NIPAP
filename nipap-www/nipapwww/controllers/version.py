@@ -20,4 +20,6 @@ class VersionController(BaseController):
         except:
             c.nipapd_version = 'unknown'
 
+        c.nipap_db_version = pynipap.nipap_db_version()
+
         return render('/version.html')
