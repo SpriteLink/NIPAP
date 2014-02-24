@@ -7,8 +7,8 @@ experience it should take about 15 minutes.
 Debian and Debian derivatives (primarily Ubuntu) are the only distributions
 supported at this time. It is certainly possible to install on other Linux
 flavours or other UNIX-style operating systems, but there are no prebuilt
-packages. Please see install-unix.rst for installation instructions on
-non-Debian like Unix systems.
+packages. Please see `install-unix <install-unix.rst>`_ for installation
+instructions on non-Debian like Unix systems.
 
 Debian installation
 -------------------

@@ -7,16 +7,17 @@ script) and above all, that it is tested.
 Installation
 ------------
 If you are running a Debian system or a Debian derivative, see
-install-debian.rst for installation instructions.
+`installing on Debian <install-debian.rst>`_ for instructions.
 
 NIPAP should be able to run on any Unix-like operating system but you will need
-to install dependencies and NIPAP manually. See install-unix.rst for
-instructions.
+to install dependencies and NIPAP manually. See `installing on Unix systems
+<stall-unix.rst>`_ for instructions.
 
 Configuration
 -------------
-Once you have NIPAP installed on your machine, read config-nipapd.rst for a
-configuration guide of the NIPAP backend (nipapd).
+Once you have NIPAP installed on your machine, read `nipap configuration
+<config-nipapd.rst>`_ for a configuration guide of the NIPAP backend (nipapd).
 
-config-cli.rst covers configuration of the CLI while config-www.rst covers the
-necessary configuration for setting up the NIPAP web UI.
+Check out `CLI configuration <config-cli.rst>`_ and / or `configuration of
+nipap-www <config-www.rst>`_ which covers the necessary configuration for
+setting up the NIPAP web UI.
