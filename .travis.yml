@@ -68,5 +68,7 @@ after_success:
 notifications:
     irc:
         channels:
+            # secure variable to prevent forks of NIPAP to send notifications to our IRC channel
+            # irc.freenode.org#NIPAP
             - secure: "VejFQYDTUqrVzo+eHKf9BTWema2LHxdloPAgAbPjFF6W3n3ASbJwuXle2tg6\nr7ZavweLoTnV5LsPT6aCBO4I7ZT90O9SqhcVdZH6wzFkiW/f0HQs8VaEH/ch\nHiAjueMHalUEMdHYNJuKvoJzfG/3MPWuPdxP/Nb3rJYikJea9aE="
         skip_join: true
