@@ -3,7 +3,7 @@ Installation and configuration of the web UI
 This assumes you have installed the nipap-www package via apt or equivalent.
 
 For login to the web interface, you should create one or more user accounts.
-You might have already created a user interface when installing the nipap-www
+You might have already created a user account when installing the nipap-www
 package but that account is for the web interface to talk to the backend.
 Adding the following accounts is for login to the web interface itself.
 Use the nipap-passwd utility to add a user::
@@ -19,8 +19,8 @@ httpd with mod_wsgi. For quick tests and development the lightweight server
 paster
 ======
 Using paster is the easiest way to get the NIPAP web UI up and running, but
-it's not really suitable for deployment. Anyway, to serve the NIPAP web UI from
-paster, simply run the following::
+it's not really suitable for production deployment. To serve the NIPAP web UI
+from paster, run the following::
 
 	paster serve /etc/nipap/nipap-www.ini
 

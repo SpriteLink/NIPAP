@@ -86,12 +86,10 @@ guest login::
     password = guest
     default_vrf_rt = test
 
-The last option sets which schema which is the default to work with if nothing
-else is set. Schemas is an integral part of working with NIPAP and you can read
-more about it in the user documentation. For now, let's create that test schema
-so that you can work with it::
+The last option sets which VRF is the default to work with if nothing
+else is set. For now, let's create that test vrf so that you can work with it::
 
-    nipap schema add name test description "My test schema"
+    nipap vrf add name test description "My test VRF"
 
 Now let's try adding a prefix too::
 
