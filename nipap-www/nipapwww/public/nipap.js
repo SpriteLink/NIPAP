@@ -2359,6 +2359,7 @@ function selectPrefix(prefix_id) {
 	// where it is done for the prefix length field for pools.
 	$('input[name="prefix_length_prefix"]').keyup(enableNodeInput);
 	enableMonitor();
+	enableNodeInput();
 
 }
 
