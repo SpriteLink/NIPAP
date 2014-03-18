@@ -11,7 +11,7 @@ If you are running a Debian system or a Debian derivative, see
 
 NIPAP should be able to run on any Unix-like operating system but you will need
 to install dependencies and NIPAP manually. See `installing on Unix systems
-<stall-unix.rst>`_ for instructions.
+<install-unix.rst>`_ for instructions.
 
 Configuration
 -------------

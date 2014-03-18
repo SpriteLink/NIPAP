@@ -9,3 +9,9 @@ all:
 		sed -e 's/<\/body>/{% include footer.html %}/' | \
 		sed -e 's/href="\([^"]\+\).rst"/href="\1.html"/g' > $$OUT; \
 	done
+
+clean:
+	for DOC in $(DOCS); do \
+		OUT=`echo $$DOC | sed -e 's/.rst$$/.html/'`; \
+		rm $$OUT; \
+	done
