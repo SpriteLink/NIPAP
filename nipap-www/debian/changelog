@@ -1,3 +1,9 @@
+nipap-www (0.24.5-1) stable; urgency=low
+
+  * Semi-fix leaking files in backend (#485)
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 18 Mar 2014 22:09:51 +0100
+
 nipap-www (0.24.4-1) stable; urgency=low
 
   * Fix prefix add in VRF using from-prefix (#477)
