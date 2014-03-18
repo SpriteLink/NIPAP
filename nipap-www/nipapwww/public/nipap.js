@@ -1526,19 +1526,20 @@ function insertPrefix(prefix, prev_prefix) {
 		 * Find the collapse container in which the previous prefix was placed.
 		 */
 		main_container = $("#prefix_entry" + prev_prefix.id);
+		vrf_container = getVRFContainer(prefix.vrf_id);
 		for (i = prev_prefix.indent - prefix.indent; i > 0; i--) {
 			main_container = main_container.parent();
-
-			// Safety net - stop iterating if we reached the VRF container
-			// which is the highest level.
-			if (main_container === getVRFContainer(prefix.vrf_id)) {
-				break;
-			}
 
 			// The previous prefix on our level might have been placed into a
 			// hidden container. If so, get it's parent.
 			if (main_container.hasClass('prefix_hidden_container')) {
 				main_container = main_container.parent();
+			}
+
+			// Safety net - stop iterating if we reached the VRF container
+			// which is the highest level.
+			if (main_container.parent()[0] === vrf_container[0]) {
+				break;
 			}
 
 		}
@@ -1553,7 +1554,7 @@ function insertPrefix(prefix, prev_prefix) {
 			var next = main_container.next();
 
 			if (next.length == 0) {
-				// Main container last elemment, place hidden container after it.
+				// Main container last element, place hidden container after it.
 				reference = addHiddenContainer(prefix, main_container, 'after');
 				offset = null;
 			} else {
