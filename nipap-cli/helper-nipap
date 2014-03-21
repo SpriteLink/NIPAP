@@ -39,7 +39,10 @@ if __name__ == '__main__':
     # let shlex handle escaped whitespaces and similar
     args = []
     for arg in sys.argv[offset::]:
-        if arg != '': arg = shlex.split(arg)[0]
+        try:
+            if arg != '': arg = shlex.split(arg)[0]
+        except:
+            sys.exit()
         args.append(arg)
 
     try:
