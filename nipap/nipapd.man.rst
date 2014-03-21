@@ -22,11 +22,12 @@ nipapd accepts the following command-line arguments. These and more options are 
     -h, --help                      show a help message
     -d, --debug                     enable debugging
     -f, --foreground                run in foreground and log to stdout
-    -l ADDRESS, --listed=ADDRESS    listen to IPv4/6 **ADDRESS**
+    -l ADDRESS, --listen=ADDRESS    listen to IPv4/6 **ADDRESS**
     -p PORT, --port=PORT            listen on TCP port **PORT**
     -c CONFIG-FILE, --config=CONFIG_FILE    read configuration from file **CONFIG_FILE**
     -P PID_FILE, --pid-file=PID_FILE    write a PID file to **PID_FILE**
     --no-pid-file                   turn off writing a PID file (overrides config file)
+    --version                       display version information and exit
 
 Bugs / Caveats
 --------------
