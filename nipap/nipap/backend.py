@@ -646,11 +646,12 @@ class Nipap:
         # find query parts
         query_str_parts = []
         try:
-            for part in shlex.split(query_str):
-                query_str_parts.append({ 'string': part })
+            for part in shlex.split(query_str.encode('utf-8')):
+                query_str_parts.append({ 'string': part.decode('utf-8') })
         except ValueError as exc:
             if str(exc) == 'No closing quotation':
                 raise NipapValueError(str(exc))
+            raise exc
 
         # Handle empty search.
         # We need something to iterate over, but shlex.split() returns
