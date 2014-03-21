@@ -1,3 +1,17 @@
+pynipap (0.25.0-1) stable; urgency=low
+
+  * There's now a whois-server!
+  * Fix tab completion on non-closed quoted string (#493)
+  * Fix search on UTF-8 characters (#492)
+  * Fix CLI output of UTF-8 with redirected stdout (#491)
+  * Fix pool expansion with manually created prefix (#489)
+  * Fix CLI auto-calc of prefix type with from-prefix (#462)
+  * Remove some debug message (#476)
+  * Update nipapd man page (#479)
+  * Various installation improvements
+
+ -- Kristian Larsson <kll@spritelink.net>  Fri, 21 Mar 2014 23:27:21 +0100
+
 pynipap (0.24.5-1) stable; urgency=low
 
   * Semi-fix leaking files in backend (#485)
