@@ -60,7 +60,6 @@
 		// register function for pageshow & popstate events
 		$(window).on('pageshow', function(evt) {
 
-			log('pageshow');
 			onPageShowOrPopState();
 
 		});
@@ -72,7 +71,6 @@
 			popped = true;
 			if (initialPop) return;
 
-			log('popstate');
 			onPageShowOrPopState();
 
 			// Perform prefix search
