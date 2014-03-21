@@ -12,7 +12,13 @@ import nipap_cli.nipap_cli
 from nipap_cli.command import Command, CommandError
 from pynipap import NipapError
 
-
+import codecs
+# do UTF-8 output for redirected stdout
+if sys.stdout.encoding is None:
+    # if encoding is None it means Python hasn't been able to determine the
+    # encoding from the terminal, so we are probably being redirected and so we
+    # default to UTF-8
+    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 class NullHandler(logging.Handler):
     """ A NULL logging handler
