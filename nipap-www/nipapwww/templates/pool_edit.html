@@ -213,6 +213,12 @@
 			// enable/disable the Node input
 			enableNodeInput();
 
+			// tags
+			$("#tags").tagit({
+				allowSpaces: true,
+				removeConfirmation: true
+			});
+
 			// Capture submit form event
 			$('form[name="pool_form"]').submit(function(e) {
 				var data = {
