@@ -22,7 +22,6 @@ class VrfController(BaseController):
         """ List VRFs.
         """
 
-        c.vrfs = VRF.list()
         return render('/vrf_list.html')
 
 
