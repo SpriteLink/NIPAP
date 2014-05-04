@@ -159,7 +159,16 @@ class NipapXMLRPC:
             Returns the internal database ID for the VRF.
         """
         try:
-            return self.nip.add_vrf(args.get('auth'), args.get('attr'))
+            res = self.nip.add_vrf(args.get('auth'), args.get('attr'))
+
+            # fugly cast from large numbers to string to deal with XML-RPC
+            for val in ( 'num_prefixes_v4', 'num_prefixes_v6',
+                'total_addresses_v4', 'total_addresses_v6',
+                'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
+                'free_addresses_v6'):
+                res[val] = str(res[val])
+
+            return res
         except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 
@@ -197,7 +206,17 @@ class NipapXMLRPC:
             Returns a list of structs matching the VRF spec.
         """
         try:
-            return self.nip.list_vrf(args.get('auth'), args.get('vrf'))
+            res = self.nip.list_vrf(args.get('auth'), args.get('vrf'))
+
+            # fugly cast from large numbers to string to deal with XML-RPC
+            for vrf in res:
+                for val in ( 'num_prefixes_v4', 'num_prefixes_v6',
+                    'total_addresses_v4', 'total_addresses_v6',
+                    'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
+                    'free_addresses_v6'):
+                    vrf[val] = str(vrf[val])
+
+            return res
         except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 
@@ -217,7 +236,17 @@ class NipapXMLRPC:
                 VRF attributes.
         """
         try:
-            return self.nip.edit_vrf(args.get('auth'), args.get('vrf'), args.get('attr'))
+            res = self.nip.edit_vrf(args.get('auth'), args.get('vrf'), args.get('attr'))
+
+            # fugly cast from large numbers to string to deal with XML-RPC
+            for vrf in res:
+                for val in ( 'num_prefixes_v4', 'num_prefixes_v6',
+                    'total_addresses_v4', 'total_addresses_v6',
+                    'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
+                    'free_addresses_v6'):
+                    vrf[val] = str(vrf[val])
+
+            return res
         except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 
@@ -241,7 +270,17 @@ class NipapXMLRPC:
             used.
         """
         try:
-            return self.nip.search_vrf(args.get('auth'), args.get('query'), args.get('search_options') or {})
+            res = self.nip.search_vrf(args.get('auth'), args.get('query'), args.get('search_options') or {})
+
+            # fugly cast from large numbers to string to deal with XML-RPC
+            for vrf in res['result']:
+                for val in ( 'num_prefixes_v4', 'num_prefixes_v6',
+                    'total_addresses_v4', 'total_addresses_v6',
+                    'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
+                    'free_addresses_v6'):
+                    vrf[val] = str(vrf[val])
+
+            return res
         except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 
@@ -265,9 +304,19 @@ class NipapXMLRPC:
             search string and the search options used.
         """
         try:
-            return self.nip.smart_search_vrf(args.get('auth'),
+            res = self.nip.smart_search_vrf(args.get('auth'),
                     args.get('query_string'), args.get('search_options', {}),
                     args.get('extra_query'))
+
+            # fugly cast from large numbers to string to deal with XML-RPC
+            for vrf in res['result']:
+                for val in ( 'num_prefixes_v4', 'num_prefixes_v6',
+                    'total_addresses_v4', 'total_addresses_v6',
+                    'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
+                    'free_addresses_v6'):
+                    vrf[val] = str(vrf[val])
+
+            return res
         except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 
@@ -424,7 +473,12 @@ class NipapXMLRPC:
             Returns ID of created prefix.
         """
         try:
-            return self.nip.add_prefix(args.get('auth'), args.get('attr'), args.get('args'))
+            res = self.nip.add_prefix(args.get('auth'), args.get('attr'), args.get('args'))
+            # fugly cast from large numbers to string to deal with XML-RPC
+            res['total_addresses'] = str(res['total_addresses'])
+            res['used_addresses'] = str(res['used_addresses'])
+            res['free_addresses'] = str(res['free_addresses'])
+            return res
         except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 
@@ -442,9 +496,18 @@ class NipapXMLRPC:
                 Prefix attributes to match.
 
             Returns a list of structs describing the matching prefixes.
+
+            Certain values are casted from numbers to strings because XML-RPC
+            simply cannot handle anything bigger than an integer.
         """
         try:
-            return self.nip.list_prefix(args.get('auth'), args.get('prefix') or {})
+            res = self.nip.list_prefix(args.get('auth'), args.get('prefix') or {})
+            # fugly cast from large numbers to string to deal with XML-RPC
+            for pref in res:
+                pref['total_addresses'] = str(pref['total_addresses'])
+                pref['used_addresses'] = str(pref['used_addresses'])
+                pref['free_addresses'] = str(pref['free_addresses'])
+            return res
         except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 
@@ -464,7 +527,13 @@ class NipapXMLRPC:
                 Attribuets to set on the new prefix.
         """
         try:
-            return self.nip.edit_prefix(args.get('auth'), args.get('prefix'), args.get('attr'))
+            res = self.nip.edit_prefix(args.get('auth'), args.get('prefix'), args.get('attr'))
+            # fugly cast from large numbers to string to deal with XML-RPC
+            for pref in res:
+                pref['total_addresses'] = str(pref['total_addresses'])
+                pref['used_addresses'] = str(pref['used_addresses'])
+                pref['free_addresses'] = str(pref['free_addresses'])
+            return res
         except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 
@@ -504,9 +573,18 @@ class NipapXMLRPC:
 
             Returns a struct containing the search result together with the
             search options used.
+
+            Certain values are casted from numbers to strings because XML-RPC
+            simply cannot handle anything bigger than an integer.
         """
         try:
-            return self.nip.search_prefix(args.get('auth'), args.get('query'), args.get('search_options') or {})
+            res = self.nip.search_prefix(args.get('auth'), args.get('query'), args.get('search_options') or {})
+            # fugly cast from large numbers to string to deal with XML-RPC
+            for pref in res['result']:
+                pref['total_addresses'] = str(pref['total_addresses'])
+                pref['used_addresses'] = str(pref['used_addresses'])
+                pref['free_addresses'] = str(pref['free_addresses'])
+            return res
         except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 
@@ -531,12 +609,21 @@ class NipapXMLRPC:
 
             Returns a struct containing search result, interpretation of the
             query string and the search options used.
+
+            Certain values are casted from numbers to strings because XML-RPC
+            simply cannot handle anything bigger than an integer.
         """
 
         try:
-            return self.nip.smart_search_prefix(args.get('auth'),
+            res = self.nip.smart_search_prefix(args.get('auth'),
                     args.get('query_string'), args.get('search_options') or {},
                     args.get('extra_query'))
+            # fugly cast from large numbers to string to deal with XML-RPC
+            for pref in res['result']:
+                pref['total_addresses'] = str(pref['total_addresses'])
+                pref['used_addresses'] = str(pref['used_addresses'])
+                pref['free_addresses'] = str(pref['free_addresses'])
+            return res
         except (AuthError, NipapError), e:
             raise Fault(e.error_code, str(e))
 

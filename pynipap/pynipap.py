@@ -317,6 +317,30 @@ class VRF(Pynipap):
     description = None
     """ VRF description, as a string.
     """
+    num_prefixes_v4 = None
+    """ Number of IPv4 prefixes in this VRF
+    """
+    num_prefixes_v6 = None
+    """ Number of IPv6 prefixes in this VRF
+    """
+    total_addresses_v4 = None
+    """ Total number of IPv4 addresses in this VRF
+    """
+    total_addresses_v6 = None
+    """ Total number of IPv6 addresses in this VRF
+    """
+    used_addresses_v4 = None
+    """ Number of used IPv4 addresses in this VRF
+    """
+    used_addresses_v6 = None
+    """ Number of used IPv6 addresses in this VRF
+    """
+    free_addresses_v4 = None
+    """ Number of free IPv4 addresses in this VRF
+    """
+    free_addresses_v6 = None
+    """ Number of free IPv6 addresses in this VRF
+    """
 
 
     @classmethod
@@ -356,6 +380,14 @@ class VRF(Pynipap):
         vrf.rt = parm['rt']
         vrf.name = parm['name']
         vrf.description = parm['description']
+        vrf.num_prefixes_v4 = long(parm['num_prefixes_v4'])
+        vrf.num_prefixes_v6 = long(parm['num_prefixes_v6'])
+        vrf.total_addresses_v4 = long(parm['total_addresses_v4'])
+        vrf.total_addresses_v6 = long(parm['total_addresses_v6'])
+        vrf.used_addresses_v4 = long(parm['used_addresses_v4'])
+        vrf.used_addresses_v6 = long(parm['used_addresses_v6'])
+        vrf.free_addresses_v4 = long(parm['free_addresses_v4'])
+        vrf.free_addresses_v6 = long(parm['free_addresses_v6'])
 
         return vrf
 
@@ -723,6 +755,9 @@ class Prefix(Pynipap):
     vlan = None
     added = None
     last_modified = None
+    total_addresses = None
+    used_addreses = None
+    free_addreses = None
 
 
     def __init__(self):
@@ -1014,6 +1049,9 @@ class Prefix(Pynipap):
         prefix.vlan = pref['vlan']
         prefix.added = pref['added']
         prefix.last_modified = pref['last_modified']
+        prefix.total_addresses = long(pref['total_addresses'])
+        prefix.used_addresses = long(pref['used_addresses'])
+        prefix.free_addresses = long(pref['free_addresses'])
 
         prefix.inherited_tags = {}
         for tag_name in pref['inherited_tags']:

@@ -585,10 +585,20 @@ def view_vrf(arg, opts, shell_opts):
     v = res[0]
 
     print "-- VRF"
-    print "  %-12s : %d" % ("ID", v.id)
-    print "  %-12s : %s" % ("RT", v.rt)
-    print "  %-12s : %s" % ("Name", v.name)
-    print "  %-12s : %s" % ("Description", v.description)
+    print "  %-24s : %d" % ("ID", v.id)
+    print "  %-24s : %s" % ("RT", v.rt)
+    print "  %-24s : %s" % ("Name", v.name)
+    print "  %-24s : %s" % ("Description", v.description)
+    print "-- IPv4 Statistics"
+    print "  %-24s : %s" % ("Number of IPv4 prefixes", v.num_prefixes_v4)
+    print "  %-24s : %s" % ("Total IPv4 addresses", v.total_addresses_v4)
+    print "  %-24s : %s" % ("Used IPv4 addresses", v.used_addresses_v4)
+    print "  %-24s : %s" % ("Free IPv4 addresses", v.free_addresses_v4)
+    print "-- IPv6 Statistics"
+    print "  %-24s : %s" % ("Number of IPv6 prefixes", v.num_prefixes_v6)
+    print "  %-24s : %s" % ("Total IPv6 addresses", v.total_addresses_v6)
+    print "  %-24s : %s" % ("Used IPv6 addresses", v.used_addresses_v6)
+    print "  %-24s : %s" % ("Free IPv6 addresses", v.free_addresses_v6)
 
 
 
@@ -663,6 +673,9 @@ def view_prefix(arg, opts, shell_opts):
     print "  %-15s : %s" % ("Monitor", p.monitor)
     print "  %-15s : %s" % ("Added", p.added)
     print "  %-15s : %s" % ("Last modified", p.last_modified)
+    print "  %-15s : %s / %s (%.2f%% of %s)" % ("Used / Free", p.used_addresses,
+            p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
+            p.total_addresses)
     print "-- Tags"
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
         print "  %s" % tag_name

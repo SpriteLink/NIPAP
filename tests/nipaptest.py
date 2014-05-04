@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+#
+# Most of the tests here are performed via Pynipap which makes it a lot easier
+# to test things given that we receive python objects and not just basic data
+# structures like those returned in xmlrpc.py. If you want to write a new test,
+# it is recommended that you place it here rather than in xmlrpc.py.
+#
+
 import logging
 import unittest
 import sys
@@ -376,6 +383,176 @@ class TestCountryCodeValue(unittest.TestCase):
         # output should be capitalized
         self.assertEqual('SE', p.country)
 
+
+
+class TestPrefixStatistics(unittest.TestCase):
+    """ Test calculation of statistics for prefixes
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_stats1(self):
+        """ Check stats are correct when adding prefix
+        """
+        th = TestHelper()
+        # add a top level prefix
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(256, res['result'][0].total_addresses)
+        self.assertEqual(0, res['result'][0].used_addresses)
+        self.assertEqual(256, res['result'][0].free_addresses)
+
+        # add a covering supernet around p1
+        p2 = th.add_prefix('1.0.0.0/20', 'reservation', 'bar')
+
+        # check stats for p2, our new top level prefix
+        res = Prefix.smart_search('1.0.0.0/20', {})
+        self.assertEqual(4096, res['result'][0].total_addresses)
+        self.assertEqual(256, res['result'][0].used_addresses)
+        self.assertEqual(3840, res['result'][0].free_addresses)
+
+
+    def test_stats2(self):
+        """ Check stats are correct when enlarging prefix
+        """
+        th = TestHelper()
+        # add a top level prefix
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
+        p2 = th.add_prefix('1.0.7.0/24', 'assignment', 'test')
+
+        # add a covering supernet around p1
+        p3 = th.add_prefix('1.0.0.0/22', 'reservation', 'bar')
+
+        # check that p3 looks good
+        res = Prefix.smart_search('1.0.0.0/22', {})
+        self.assertEqual(1024, res['result'][0].total_addresses)
+        self.assertEqual(256, res['result'][0].used_addresses)
+        self.assertEqual(768, res['result'][0].free_addresses)
+        # now move our supernet, so we see that the update thingy works
+        p3.prefix = '1.0.0.0/21'
+        p3.save()
+
+        # check stats for p2, our new top level prefix
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(2048, res['result'][0].total_addresses)
+        self.assertEqual(512, res['result'][0].used_addresses)
+        self.assertEqual(1536, res['result'][0].free_addresses)
+
+
+    def test_stats3(self):
+        """ Check stats are correct when shrinking prefix
+        """
+        th = TestHelper()
+        # add a top level prefix
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
+        p2 = th.add_prefix('1.0.7.0/24', 'assignment', 'test')
+
+        # add a covering supernet around p1
+        p3 = th.add_prefix('1.0.0.0/21', 'reservation', 'bar')
+
+        # check that p3 looks good
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(2048, res['result'][0].total_addresses)
+        self.assertEqual(512, res['result'][0].used_addresses)
+        self.assertEqual(1536, res['result'][0].free_addresses)
+
+        # now move our supernet, so we see that the update thingy works
+        p3.prefix = '1.0.0.0/22'
+        p3.save()
+
+        # check stats for p2, our new top level prefix
+        res = Prefix.smart_search('1.0.0.0/22', {})
+        self.assertEqual(1024, res['result'][0].total_addresses)
+        self.assertEqual(256, res['result'][0].used_addresses)
+        self.assertEqual(768, res['result'][0].free_addresses)
+
+
+    def test_stats4(self):
+        """ Check stats are correct when moving prefix
+        """
+        th = TestHelper()
+        # add a top level prefix
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
+        p2 = th.add_prefix('2.0.0.0/25', 'reservation', 'bar')
+        p2 = th.add_prefix('1.0.0.0/23', 'reservation', 'bar')
+        # now move our supernet, so we see that the update thingy works
+        p2.prefix = '2.0.0.0/22'
+        p2.save()
+
+        # check stats for p2, our new top level prefix
+        res = Prefix.smart_search('2.0.0.0/22', {})
+        self.assertEqual(1024, res['result'][0].total_addresses)
+        self.assertEqual(128, res['result'][0].used_addresses)
+        self.assertEqual(896, res['result'][0].free_addresses)
+
+
+
+    def test_stats5(self):
+        """ Add prefixes within other prefix and verify parent prefix has correct statistics
+        """
+        th = TestHelper()
+        # add a top level prefix
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(256, res['result'][0].total_addresses)
+        self.assertEqual(0, res['result'][0].used_addresses)
+        self.assertEqual(256, res['result'][0].free_addresses)
+
+        # add a host in our top prefix
+        p2 = th.add_prefix('1.0.0.1/32', 'host', 'bar')
+
+        # check stats for p1, our top level prefix
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(256, res['result'][0].total_addresses)
+        self.assertEqual(1, res['result'][0].used_addresses)
+        self.assertEqual(255, res['result'][0].free_addresses)
+
+        # check stats for p2, our new host prefix
+        res = Prefix.smart_search('1.0.0.1/32', {})
+        self.assertEqual(1, res['result'][0].total_addresses)
+        self.assertEqual(1, res['result'][0].used_addresses)
+        self.assertEqual(0, res['result'][0].free_addresses)
+
+
+    def test_stats6(self):
+        """ Remove prefix and check old parent is correctly updated
+        """
+        th = TestHelper()
+
+        # p1 children are p2 (which covers p3 and p4) and p5
+        p1 = th.add_prefix('1.0.0.0/20', 'reservation', 'test')
+        p2 = th.add_prefix('1.0.0.0/22', 'reservation', 'test')
+        p3 = th.add_prefix('1.0.0.0/24', 'reservation', 'test')
+        p4 = th.add_prefix('1.0.1.0/24', 'reservation', 'test')
+        p5 = th.add_prefix('1.0.7.0/24', 'reservation', 'test')
+
+        # moving p2 means that p1 get p3, p4 and p5 as children
+        p2.prefix = '2.0.0.0/22'
+        p2.save()
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/20', {})
+        self.assertEqual(4096, res['result'][0].total_addresses)
+        self.assertEqual(768, res['result'][0].used_addresses)
+        self.assertEqual(3328, res['result'][0].free_addresses)
+
+        # moving back p2 which means that p1 get p2 and p5 as children
+        p2.prefix = '1.0.0.0/22'
+        p2.save()
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/20', {})
+        self.assertEqual(4096, res['result'][0].total_addresses)
+        self.assertEqual(1280, res['result'][0].used_addresses)
+        self.assertEqual(2816, res['result'][0].free_addresses)
 
 
 class TestAddressListing(unittest.TestCase):

@@ -345,6 +345,8 @@ DECLARE
 	new_parent RECORD;
 	child RECORD;
 	i_max_pref_len integer;
+	p RECORD;
+	num_used integer;
 BEGIN
 	-- this is a shortcut to avoid running the rest of this trigger as it
 	-- can be fairly costly performance wise
@@ -375,6 +377,11 @@ BEGIN
 	-- contains the parent prefix
 	SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
 
+	--
+	---- Various sanity checking -----------------------------------------------
+	--
+	-- Trigger on: vrf_id, prefix, type
+	--
 	-- check that type is correct on insert and update
 	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
 		IF NEW.type = 'host' THEN
@@ -465,6 +472,71 @@ BEGIN
 		END IF;
 	END IF;
 
+
+	--
+	---- Calculate indent for new prefix ---------------------------------------
+	--
+	-- Trigger on: vrf_id, prefix
+	--
+	-- use parent prefix indent+1 or if parent is not set, it means we are a
+	-- top level prefix and we use indent 0
+	NEW.indent := COALESCE(new_parent.indent+1, 0);
+
+
+	--
+	---- Statistics ------------------------------------------------------------
+	--
+	-- Trigger on: vrf_id, prefix
+	--
+
+	-- total addresses
+	IF family(NEW.prefix) = 4 THEN
+		NEW.total_addresses = power(2::numeric, 32 - masklen(NEW.prefix));
+	ELSE
+		NEW.total_addresses = power(2::numeric, 128 - masklen(NEW.prefix));
+	END IF;
+
+	-- used addresses
+	-- special case for hosts
+	IF masklen(NEW.prefix) = i_max_pref_len THEN
+		NEW.used_addresses := NEW.total_addresses;
+	ELSE
+		num_used := 0;
+		IF TG_OP = 'INSERT' THEN
+			FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = COALESCE(new_parent.indent+1, 0) ORDER BY prefix ASC) LOOP
+				num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
+			END LOOP;
+		ELSIF TG_OP = 'UPDATE' THEN
+			IF OLD.prefix = NEW.prefix THEN
+				-- NOOP
+			ELSIF NEW.prefix << OLD.prefix THEN -- NEW is smaller and covered by OLD
+				--
+				FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = OLD.indent+1 ORDER BY prefix ASC) LOOP
+					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
+				END LOOP;
+			ELSIF NEW.prefix >> OLD.prefix THEN -- NEW is larger and covers OLD
+				-- since the new prefix covers the old prefix but the indent
+				-- hasn't been updated yet, we will see child prefixes with
+				-- OLD.indent + 1 and then the part that is now covered by
+				-- NEW.prefix but wasn't covered by OLD.prefix will have
+				-- NEW.indent+1.
+				FOR p IN (SELECT * FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix != OLD.prefix AND ((indent = OLD.indent+1 AND prefix << OLD.prefix) OR indent = NEW.indent AND prefix << NEW.prefix) ORDER BY prefix ASC) LOOP
+					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
+				END LOOP;
+
+			ELSE -- prefix has been moved and doesn't cover or is covered by OLD
+				FOR p IN (SELECT * FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix << NEW.prefix AND indent = COALESCE(new_parent.indent+1, 0) ORDER BY prefix ASC) LOOP
+					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
+				END LOOP;
+
+			END IF;
+		END IF;
+		NEW.used_addresses = num_used;
+	END IF;
+
+	-- free addresses
+	NEW.free_addresses := NEW.total_addresses - NEW.used_addresses;
+
 	-- all is well, return
 	RETURN NEW;
 END;
@@ -519,6 +591,10 @@ DECLARE
 BEGIN
 	SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY prefix DESC LIMIT 1;
 
+	-- FIXME: this cannot possibly do the right thing, see
+	--		  https://github.com/SpriteLink/NIPAP/wiki/Trigger-trickiness
+	-- TODO: see if we can add test scenarios which break children calculation
+	--		 because I don't think this code works properly //kll
 	IF TG_OP = 'UPDATE' THEN
 		NEW.children := (SELECT COUNT(1) FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) << iprange(NEW.prefix) AND prefix != OLD.prefix AND indent = COALESCE(new_parent.indent+1, 1));
 	ELSE
@@ -535,56 +611,77 @@ $_$ LANGUAGE plpgsql;
 --
 CREATE OR REPLACE FUNCTION tf_ip_net_plan__prefix_iu_after() RETURNS trigger AS $_$
 DECLARE
+	old_parent RECORD;
 	new_parent RECORD;
 	child RECORD;
 	i_max_pref_len integer;
+	num_used integer;
+	p RECORD;
 BEGIN
 	i_max_pref_len := 32;
 	IF family(NEW.prefix) = 6 THEN
 		i_max_pref_len := 128;
 	END IF;
-	-- contains the parent prefix
-	SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
 
-	-- update display_prefix of children prefixes
+	--
+	-- get old and new parents
+	--
 	IF TG_OP = 'UPDATE' THEN
-		IF NEW.type = 'assignment' AND OLD.prefix != NEW.prefix THEN
-			UPDATE ip_net_plan SET display_prefix = set_masklen(prefix::inet, masklen(NEW.prefix)) WHERE vrf_id = NEW.vrf_id AND prefix << NEW.prefix;
-		END IF;
+		-- Note how we have to explicitly filter out NEW.prefix for UPDATEs as
+		-- the table has already been updated and we risk getting ourself as
+		-- old_parent.
+		SELECT * INTO old_parent
+		FROM ip_net_plan
+		WHERE vrf_id = OLD.vrf_id
+			AND iprange(prefix) >> iprange(OLD.prefix)
+			AND prefix != NEW.prefix
+		ORDER BY prefix DESC LIMIT 1;
+	ELSIF TG_OP = 'DELETE' THEN
+		SELECT * INTO old_parent
+		FROM ip_net_plan
+		WHERE vrf_id = OLD.vrf_id
+			AND iprange(prefix) >> iprange(OLD.prefix)
+		ORDER BY prefix DESC LIMIT 1;
 	END IF;
 
-	-- all is well, return
-	RETURN NEW;
-END;
-$_$ LANGUAGE plpgsql;
+	-- contains the parent prefix
+	SELECT * INTO new_parent
+	FROM ip_net_plan
+	WHERE vrf_id = NEW.vrf_id
+		AND iprange(prefix) >> iprange(NEW.prefix)
+	ORDER BY prefix DESC LIMIT 1;
 
 
---
--- Trigger function to calculate the number of children and update the indent
--- level for associated prefix when adding or removing a prefix.
---
-CREATE OR REPLACE FUNCTION tf_ip_net_plan__indent_children__iud_after() RETURNS trigger AS $$
-DECLARE
-	old_parent record;
-	new_parent record;
-BEGIN
+	--
+	---- indent ----------------------------------------------------------------
+	--
+	-- Trigger on: vrf_id, prefix
+	--
+	IF TG_OP IN ('DELETE', 'UPDATE') THEN
+		-- remove one indentation level where the old prefix used to be
+		PERFORM calc_indent(OLD.vrf_id, OLD.prefix, -1);
+	END IF;
+	IF TG_OP IN ('INSERT', 'UPDATE') THEN
+		-- add one indentation level to where the new prefix is
+		PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
+	END IF;
+
+
+	--
+	---- children ----------------------------------------------------------------
+	--
+	-- Trigger on: vrf_id, prefix
+	--
 	-- This only sets the number of children prefix for the old or new parent
 	-- prefix. The number of children for the prefix being modified is
 	-- calculated in the before trigger.
-
+	--
+	-- NOTE: this is dependent upon indent already being correctly set
+	-- NOTE: old and new parent needs to be set
+	--
 	IF TG_OP IN ('DELETE', 'UPDATE') THEN
-		-- calculation of children is dependent upon indent, so do indent first
-		PERFORM calc_indent(OLD.vrf_id, OLD.prefix, -1);
-
-		-- children calc
-		-- Note how we have to explicitly filter out NEW.prefix as the table
-		-- has already been updated and we risk getting ourself as old_parent.
-		IF TG_OP = 'UPDATE' THEN
-			SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND iprange(prefix) >> iprange(OLD.prefix) AND prefix != NEW.prefix ORDER BY prefix DESC LIMIT 1;
-		ELSE
-			SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND iprange(prefix) >> iprange(OLD.prefix) ORDER BY prefix DESC LIMIT 1;
-		END IF;
-
+		-- do we have a old parent? if not, this is a top level prefix and we
+		-- have no parent to update children count for!
 		IF old_parent.id IS NOT NULL THEN
 			UPDATE ip_net_plan SET children =
 					(SELECT COUNT(1)
@@ -597,11 +694,8 @@ BEGIN
 	END IF;
 
 	IF TG_OP IN ('INSERT', 'UPDATE') THEN
-		-- calculation of children is dependent upon indent, so do indent first
-		PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
-
-		-- children calc
-		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY prefix DESC LIMIT 1;
+		-- do we have a new parent? if not, this is a top level prefix and we
+		-- have no parent to update children count for!
 		IF new_parent.id IS NOT NULL THEN
 			UPDATE ip_net_plan SET children =
 					(SELECT COUNT(1)
@@ -613,9 +707,64 @@ BEGIN
 		END IF;
 	END IF;
 
+
+
+	--
+	---- display_prefix update -------------------------------------------------
+	-- update display_prefix of direct child prefixes which are hosts
+	--
+	-- Trigger: prefix
+	--
+	IF TG_OP = 'UPDATE' THEN
+		-- display_prefix only differs from prefix on hosts and the only reason the
+		-- display_prefix would change is if the covering assignment is changed
+		IF NEW.type = 'assignment' AND OLD.prefix != NEW.prefix THEN
+			UPDATE ip_net_plan SET display_prefix = set_masklen(prefix::inet, masklen(NEW.prefix)) WHERE vrf_id = NEW.vrf_id AND prefix << NEW.prefix;
+		END IF;
+	END IF;
+
+
+	--
+	---- Statistics ------------------------------------------------------------
+	--
+	-- Trigger on: vrf_id, prefix
+	--
+
+	-- update old and new parent
+	IF TG_OP IN ('DELETE', 'UPDATE') THEN
+		-- do we have a old parent? if not, this is a top level prefix and we
+		-- have no parent to update children count for!
+		IF old_parent.id IS NOT NULL THEN
+			-- update old parent's used and free addresses to account for the
+			-- removal of 'this' prefix (in its old state) while increasing for
+			-- previous indirect children that are now direct children of old
+			-- parent
+			UPDATE ip_net_plan SET
+				used_addresses = old_parent.used_addresses - (OLD.total_addresses - CASE WHEN OLD.type = 'host' THEN 0 ELSE OLD.used_addresses END),
+				free_addresses = total_addresses - (old_parent.used_addresses - (OLD.total_addresses - CASE WHEN OLD.type = 'host' THEN 0 ELSE OLD.used_addresses END))
+				WHERE id = old_parent.id;
+		END IF;
+	END IF;
+
+	IF TG_OP IN ('INSERT', 'UPDATE') THEN
+		-- do we have a new parent? if not, this is a top level prefix and we
+		-- have no parent to update children count for!
+		IF new_parent.id IS NOT NULL THEN
+			-- update new parent's used and free addresses to account for the
+			-- addition of 'this' prefix while decreasing for previous direct
+			-- children that are now covered by 'this'
+			UPDATE ip_net_plan SET
+				used_addresses = new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END),
+				free_addresses = total_addresses - (new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END))
+				WHERE id = new_parent.id;
+		END IF;
+	END IF;
+
+
+	-- all is well, return
 	RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$_$ LANGUAGE plpgsql;
 
 
 --
@@ -683,7 +832,7 @@ $$ LANGUAGE plpgsql;
 
 
 --
--- Function used to remove all triggers during installation of new triggers
+-- Function used to remove all triggers before installation of new triggers
 --
 CREATE OR REPLACE FUNCTION clean_nipap_triggers() RETURNS bool AS $_$
 DECLARE
@@ -745,6 +894,12 @@ CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_before
 -- actions to be performed after an UPDATE on ip_net_plan
 -- sanity checks are performed in the before trigger, so this is only to
 -- execute various changes that need to happen once a prefix has been updated
+CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__i_after
+	AFTER INSERT
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_after();
+
 CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_after
 	AFTER UPDATE OF vrf_id, prefix, type
 	ON ip_net_plan
@@ -782,19 +937,6 @@ CREATE TRIGGER trigger_ip_net_plan__indent_children__u_before
 	FOR EACH ROW
 	WHEN (OLD.prefix != NEW.prefix)
 	EXECUTE PROCEDURE tf_ip_net_plan__indent_children__iu_before();
-
-CREATE TRIGGER trigger_ip_net_plan__indent_children__id_after
-	AFTER INSERT OR DELETE
-	ON ip_net_plan
-	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_plan__indent_children__iud_after();
-
-CREATE TRIGGER trigger_ip_net_plan__indent_children__u_after
-	AFTER UPDATE OF prefix
-	ON ip_net_plan
-	FOR EACH ROW
-	WHEN (OLD.prefix != NEW.prefix)
-	EXECUTE PROCEDURE tf_ip_net_plan__indent_children__iud_after();
 
 
 --
