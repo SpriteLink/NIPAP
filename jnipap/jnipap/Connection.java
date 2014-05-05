@@ -45,10 +45,10 @@ public class Connection {
 	 */
 	public Connection(URL srv_url, String auth_username, String password) {
 
-		srv_url = srv_url;
-		username = auth_username;
-		auth_username = auth_username;
-		password = password;
+		Connection.srv_url = srv_url;
+		this.username = auth_username;
+		this.auth_username = auth_username;
+		this.password = password;
 
 		setup();
 
