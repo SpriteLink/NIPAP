@@ -388,6 +388,20 @@ def list_prefix(arg, opts):
 
 
 
+def impersonate_user(opts):
+    """ Provide a quick way to perform user impersonation
+        with the nipap_cli package.
+        Drawback : this function must explicitly be called
+        in each add/modify/delete functions
+    """
+
+    realuser = opts.get('asuser')
+    if realuser:
+        pynipap.AuthOptions({'authoritative_source': 'nipap', 'username': realuser})
+
+
+
+
 """
     ADD FUNCTIONS
 """
@@ -395,6 +409,8 @@ def list_prefix(arg, opts):
 def add_prefix(arg, opts):
     """ Add prefix to NIPAP
     """
+
+    impersonate_user(opts)
 
     p = Prefix()
     p.prefix = opts.get('prefix')
@@ -530,6 +546,8 @@ def add_vrf(arg, opts):
     """ Add VRF to NIPAP
     """
 
+    impersonate_user(opts)
+
     v = VRF()
     v.rt = opts.get('rt')
     v.name = opts.get('name')
@@ -548,6 +566,8 @@ def add_vrf(arg, opts):
 def add_pool(arg, opts):
     """ Add a pool.
     """
+
+    impersonate_user(opts)
 
     p = Pool()
     p.name = opts.get('name')
@@ -678,6 +698,8 @@ def remove_vrf(arg, opts):
     """ Remove VRF
     """
 
+    impersonate_user(opts)
+
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
         print >> sys.stderr, "VRF with [RT: %s] not found." % arg
@@ -701,6 +723,8 @@ def remove_pool(arg, opts):
     """ Remove pool
     """
 
+    impersonate_user(opts)
+
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
         print >> sys.stderr, "No pool with name '%s' found." % arg
@@ -721,6 +745,8 @@ def remove_pool(arg, opts):
 def remove_prefix(arg, opts):
     """ Remove prefix
     """
+
+    impersonate_user(opts)
 
     # set up some basic variables
     remove_confirmed = False
@@ -876,6 +902,8 @@ def modify_vrf(arg, opts):
     """ Modify a VRF with the options set in opts
     """
 
+    impersonate_user(opts)
+
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
         print >> sys.stderr, "VRF with [RT: %s] not found." % arg
@@ -899,6 +927,8 @@ def modify_vrf(arg, opts):
 def modify_pool(arg, opts):
     """ Modify a pool with the options set in opts
     """
+
+    impersonate_user(opts)
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
@@ -927,6 +957,9 @@ def modify_pool(arg, opts):
 def grow_pool(arg, opts):
     """ Expand a pool with the ranges set in opts
     """
+
+    impersonate_user(opts)
+
     if not pool:
         print >> sys.stderr, "No pool with name '%s' found." % arg
         sys.exit(1)
@@ -970,6 +1003,9 @@ def grow_pool(arg, opts):
 def shrink_pool(arg, opts):
     """ Shrink a pool by removing the ranges in opts from it
     """
+
+    impersonate_user(opts)
+
     if not pool:
         print >> sys.stderr, "No pool with name '%s' found." % arg
         sys.exit(1)
@@ -997,12 +1033,15 @@ def modify_prefix(arg, opts):
     """ Modify the prefix 'arg' with the options 'opts'
     """
 
+    impersonate_user(opts)
+
     spec = { 'prefix': arg }
-    spec['vrf_rt'] = get_vrf(opts.get('vrf_rt'), abort=True).rt
+    vrf = get_vrf(opts.get('vrf_rt'), abort=True)
+    spec['vrf_rt'] = vrf.rt
 
     res = Prefix.list(spec)
     if len(res) == 0:
-        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_format(v))
+        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_format(vrf))
         return
 
     p = res[0]
@@ -1254,6 +1293,13 @@ cmds = {
                     'type': 'command',
                     'exec': add_prefix,
                     'children': {
+                        'asuser': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
                         'comment': {
                             'type': 'option',
                             'argument': {
@@ -1420,6 +1466,13 @@ cmds = {
                         'description': 'Prefix to edit',
                     },
                     'children': {
+                        'asuser': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
                         'vrf_rt': {
                             'type': 'option',
                             'argument': {
@@ -1559,7 +1612,14 @@ cmds = {
                         'description': 'Remove address'
                     },
                     'children': {
-	                    'vrf_rt': {
+                        'asuser': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
+                        'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
@@ -1606,6 +1666,13 @@ cmds = {
                     'type': 'command',
                     'exec': add_vrf,
                     'children': {
+                        'asuser': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
                         'rt': {
                             'type': 'option',
                             'argument': {
@@ -1689,6 +1756,15 @@ cmds = {
                         'content_type': unicode,
                         'description': 'VRF',
                         'complete': complete_vrf,
+                    },
+                    'children': {
+                        'asuser': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        }
                     }
                 },
 
@@ -1702,6 +1778,13 @@ cmds = {
                         'complete': complete_vrf,
                     },
                     'children': {
+                        'asuser': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
                         'set': {
                             'type': 'command',
                             'exec': modify_vrf,
@@ -1748,6 +1831,13 @@ cmds = {
                     'type': 'command',
                     'exec': add_pool,
                     'children': {
+                        'asuser': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
                         'default-type': {
                             'type': 'option',
                             'argument': {
@@ -1864,6 +1954,15 @@ cmds = {
                         'content_type': unicode,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
+                    },
+                    'children': {
+                        'asuser': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        }
                     }
                 },
 
@@ -1878,6 +1977,13 @@ cmds = {
                         'complete': complete_pool_name,
                     },
                     'children': {
+                        'asuser': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
                         'add': {
                             'type': 'option',
                             'exec': grow_pool,
@@ -1918,6 +2024,13 @@ cmds = {
                         'complete': complete_pool_name,
                     },
                     'children': {
+                        'asuser': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
                         'set': {
                             'type': 'command',
                             'exec': modify_pool,
