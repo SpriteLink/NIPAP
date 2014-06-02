@@ -511,7 +511,7 @@ $_$ LANGUAGE plpgsql;
 
 
 --
--- Trigger function to set indent and children on new prefix.
+-- Trigger function to set indent and children on the new prefix.
 --
 CREATE OR REPLACE FUNCTION tf_ip_net_plan__indent_children__iu_before() RETURNS trigger AS $_$
 DECLARE
@@ -531,22 +531,54 @@ $_$ LANGUAGE plpgsql;
 
 
 --
--- Trigger function to make update the indent level when adding or removing
--- prefixes.
+-- Trigger function to update various data once a prefix has been UPDATEd.
+--
+CREATE OR REPLACE FUNCTION tf_ip_net_plan__prefix_iu_after() RETURNS trigger AS $_$
+DECLARE
+	new_parent RECORD;
+	child RECORD;
+	i_max_pref_len integer;
+BEGIN
+	i_max_pref_len := 32;
+	IF family(NEW.prefix) = 6 THEN
+		i_max_pref_len := 128;
+	END IF;
+	-- contains the parent prefix
+	SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
+
+	-- update display_prefix of children prefixes
+	IF TG_OP = 'UPDATE' THEN
+		IF NEW.type = 'assignment' AND OLD.prefix != NEW.prefix THEN
+			UPDATE ip_net_plan SET display_prefix = set_masklen(prefix::inet, masklen(NEW.prefix)) WHERE vrf_id = NEW.vrf_id AND prefix << NEW.prefix;
+		END IF;
+	END IF;
+
+	-- all is well, return
+	RETURN NEW;
+END;
+$_$ LANGUAGE plpgsql;
+
+
+--
+-- Trigger function to calculate the number of children and update the indent
+-- level for associated prefix when adding or removing a prefix.
 --
 CREATE OR REPLACE FUNCTION tf_ip_net_plan__indent_children__iud_after() RETURNS trigger AS $$
 DECLARE
 	old_parent record;
 	new_parent record;
 BEGIN
+	-- This only sets the number of children prefix for the old or new parent
+	-- prefix. The number of children for the prefix being modified is
+	-- calculated in the before trigger.
+
 	IF TG_OP IN ('DELETE', 'UPDATE') THEN
+		-- calculation of children is dependent upon indent, so do indent first
 		PERFORM calc_indent(OLD.vrf_id, OLD.prefix, -1);
 
 		-- children calc
-		-- This only sets number of children prefixes for the old parent
-		-- prefix. Note how we have to explicitly filter out NEW.prefix as the
-		-- table has already been updated and we risk getting ourself as
-		-- old_parent.
+		-- Note how we have to explicitly filter out NEW.prefix as the table
+		-- has already been updated and we risk getting ourself as old_parent.
 		IF TG_OP = 'UPDATE' THEN
 			SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND iprange(prefix) >> iprange(OLD.prefix) AND prefix != NEW.prefix ORDER BY prefix DESC LIMIT 1;
 		ELSE
@@ -569,9 +601,6 @@ BEGIN
 		PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
 
 		-- children calc
-		-- This only sets number of children prefixes for the new parent
-		-- prefix. The number of children for the prefix being modified is
-		-- calculated in the before trigger.
 		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY prefix DESC LIMIT 1;
 		IF new_parent.id IS NOT NULL THEN
 			UPDATE ip_net_plan SET children =
@@ -674,12 +703,14 @@ CREATE TRIGGER trigger_ip_net_vrf__d_before
 --
 
 
+-- sanity checking of INSERTs on ip_net_plan
 CREATE TRIGGER trigger_ip_net_plan__i_before
 	BEFORE INSERT
 	ON ip_net_plan
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_before();
 
+-- sanity checking of UPDATEs on ip_net_plan
 CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_before
 	BEFORE UPDATE OF vrf_id, prefix, type
 	ON ip_net_plan
@@ -688,6 +719,18 @@ CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_before
 		OR OLD.prefix != NEW.prefix
 		OR OLD.type != NEW.type)
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_before();
+
+-- actions to be performed after an UPDATE on ip_net_plan
+-- sanity checks are performed in the before trigger, so this is only to
+-- execute various changes that need to happen once a prefix has been updated
+CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_after
+	AFTER UPDATE OF vrf_id, prefix, type
+	ON ip_net_plan
+	FOR EACH ROW
+	WHEN (OLD.vrf_id != NEW.vrf_id
+		OR OLD.prefix != NEW.prefix
+		OR OLD.type != NEW.type)
+	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_after();
 
 -- check country code is correct
 CREATE TRIGGER trigger_ip_net_plan__other__i_before

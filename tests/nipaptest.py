@@ -113,6 +113,37 @@ class TestParentPrefix(unittest.TestCase):
 
 
 
+class TestPrefixDisplayPrefix(unittest.TestCase):
+    """ Test calculation of display_prefix on child prefixes
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_prefix_edit(self):
+        """ Make sure display_prefix is correctly updated on modification of
+            parent
+        """
+        # we ran into display_prefix not being updated correctly in #515
+
+        th = TestHelper()
+        # add a few prefixes
+        p1 = th.add_prefix('192.168.0.0/24', 'assignment', 'test')
+        p2 = th.add_prefix('192.168.0.1/32', 'host', 'test')
+
+        # now edit the "middle prefix" so that it now covers 192.168.1.0/24
+        p1.prefix = '192.168.0.0/23'
+        p1.save()
+
+        # check that display_prefix of host is as expected
+        res = Prefix.smart_search('192.168.0.1/32', {})
+        self.assertEqual('192.168.0.1/23', res['result'][0].display_prefix)
+
+
+
 class TestPrefixIndent(unittest.TestCase):
     """ Test prefix indent calculation
     """
