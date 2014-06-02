@@ -998,7 +998,8 @@ def modify_prefix(arg, opts):
     """
 
     spec = { 'prefix': arg }
-    spec['vrf_rt'] = get_vrf(opts.get('vrf_rt'), abort=True).rt
+    v = get_vrf(opts.get('vrf_rt'), abort=True)
+    spec['vrf_rt'] = v.rt
 
     res = Prefix.list(spec)
     if len(res) == 0:
