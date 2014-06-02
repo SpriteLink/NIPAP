@@ -40,11 +40,12 @@ class TestHelper:
         n._execute("DELETE FROM ip_net_asn")
 
 
-    def add_prefix(self, prefix, type, description):
+    def add_prefix(self, prefix, type, description, tags=[]):
         p = Prefix()
         p.prefix = prefix
         p.type = type
         p.description = description
+        p.tags = tags
         p.save()
         return p
 
@@ -180,6 +181,43 @@ class TestPrefixIndent(unittest.TestCase):
             result.append([prefix.prefix, prefix.indent])
 
         self.assertEqual(expected, result)
+
+
+
+class TestPrefixTags(unittest.TestCase):
+    """ Test prefix tag calculation
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_prefix_edit(self):
+        """ Verify tags are correct after prefix edit
+        """
+        # ran into this issue in #507
+
+        th = TestHelper()
+        # add to "top level" prefix, each with a unique tag
+        p1 = th.add_prefix('1.0.0.0/8', 'reservation', 'test', tags=['a'])
+        p2 = th.add_prefix('2.0.0.0/8', 'reservation', 'test', tags=['b'])
+
+        # add a subnet of p1
+        p3 = th.add_prefix('1.0.0.0/24', 'reservation', 'test')
+
+        # p3 should have inherited_tags = ['a'] from p1
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(['a'], res['result'][0].inherited_tags.keys())
+
+        # edit p3 to become subnet of p2
+        p3.prefix = '2.0.0.0/24'
+        p3.save()
+
+        # p3 should have inherited_tags = ['b'] from p2
+        res = Prefix.smart_search('2.0.0.0/24', {})
+        self.assertEqual(['b'], res['result'][0].inherited_tags.keys())
 
 
 

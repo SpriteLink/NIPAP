@@ -621,6 +621,28 @@ $$ LANGUAGE plpgsql;
 --
 -- Trigger function to update inherited tags.
 --
+CREATE OR REPLACE FUNCTION tf_ip_net_plan__tags__iu_before() RETURNS trigger AS $$
+DECLARE
+	old_parent record;
+	new_parent record;
+BEGIN
+	IF TG_OP = 'DELETE' THEN
+		-- NOOP
+	ELSIF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+		-- figure out parent prefix
+		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY prefix DESC LIMIT 1;
+		-- set new inherited_tags based on parent_prefix tags and inherited_tags
+		NEW.inherited_tags := array_undup(array_cat(new_parent.inherited_tags, new_parent.tags));
+	END IF;
+
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--
+-- Trigger function to update inherited tags.
+--
 CREATE OR REPLACE FUNCTION tf_ip_net_plan__tags__iud_after() RETURNS trigger AS $$
 DECLARE
 	old_parent record;
@@ -775,13 +797,34 @@ CREATE TRIGGER trigger_ip_net_plan__indent_children__u_after
 	EXECUTE PROCEDURE tf_ip_net_plan__indent_children__iud_after();
 
 
+--
 -- update tags and inherited tags
+--
+
+-- update tags and inherited tags for prefix being INSERTed
+CREATE TRIGGER trigger_ip_net_plan__tags__i_before
+	BEFORE INSERT
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_plan__tags__iu_before();
+
+-- update tags and inherited tags for prefix being UPDATEd
+CREATE TRIGGER trigger_ip_net_plan__tags__u_before
+	BEFORE UPDATE
+	ON ip_net_plan
+	FOR EACH ROW
+	WHEN (OLD.vrf_id != NEW.vrf_id
+		OR OLD.prefix != NEW.prefix)
+	EXECUTE PROCEDURE tf_ip_net_plan__tags__iu_before();
+
+-- update tags and inherited tags for adjacent prefixes
 CREATE TRIGGER trigger_ip_net_plan__tags__id_after
 	AFTER INSERT OR DELETE
 	ON ip_net_plan
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_plan__tags__iud_after();
 
+-- update tags and inherited tags for adjacent prefixes
 CREATE TRIGGER trigger_ip_net_plan__tags__u_after
 	AFTER UPDATE OF prefix, tags, inherited_tags
 	ON ip_net_plan
