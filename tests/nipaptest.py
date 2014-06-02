@@ -241,6 +241,7 @@ class TestPrefixChildren(unittest.TestCase):
 
         self.assertEqual(expected, result)
 
+        # p4 192.168.1.0/24 => 192.168.0.0/21
         p4.prefix = '192.168.0.0/21'
         p4.save()
         expected = []
@@ -272,6 +273,26 @@ class TestPrefixChildren(unittest.TestCase):
             result.append([prefix.prefix, prefix.children])
 
         self.assertEqual(expected, result)
+
+    def test_children2(self):
+        """ Add an assignment and a host and make children calculation works
+            after modifying the assignment
+        """
+        # we ran into children not being updated correctly in #515
+
+        th = TestHelper()
+        # add a few prefixes
+        p1 = th.add_prefix('192.168.0.0/24', 'assignment', 'test')
+        p2 = th.add_prefix('192.168.0.1/32', 'host', 'test')
+
+        # now edit the "middle prefix" so that it now covers 192.168.1.0/24
+        p1.prefix = '192.168.0.0/23'
+        p1.save()
+
+        # check that children of parent is as expected
+        res = Prefix.smart_search('192.168.0.0/23', {})
+        self.assertEqual(1, res['result'][0].children)
+
 
 
 class TestCountryCodeValue(unittest.TestCase):
