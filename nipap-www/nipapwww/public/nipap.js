@@ -1337,7 +1337,7 @@ function verifyPrefixListResponse(search_result) {
 
 	// Error?
 	if ('error' in search_result) {
-		showDialogNotice("Error", prefix.message);
+		showDialogNotice("Error", search_result.message);
 		return false;
 	}
 
