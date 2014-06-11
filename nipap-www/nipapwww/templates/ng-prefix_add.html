@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+{% set page = 'prefixes' %}
+
+{% block body_attributes %}ng-controller="PrefixAddController"{% endblock %}
+
+{% block content %}
+
+<div class="page-title">
+	Prefix administration &mdash;&gt; add prefix
+</div>
+
+<div class="options-group" id="prefix-alloc-method_container">
+	<div class="options-content">
+		<h3 class="options-group-heading">Prefix allocation method</h3>
+
+		<div class="option">
+			<dl>
+				<dt style="text-align: left;">
+				<input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool">
+				<label for="radio-from-pool">From pool</label>
+				</dt>
+				<dd>
+				Get a prefix from a pre-defined prefix pool.
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt style="text-align: left;">
+				<input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix">
+				<label for="radio-from-prefix">From prefix</label>
+				</dt>
+				<dd>
+				Get a prefix allocated from another prefix.
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt style="text-align: left;">
+				<input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual">
+				<label for="radio-manual">Manual</label>
+				</dt>
+				<dd>
+				Specify all data manually
+				</dd>
+			</dl>
+		</div>
+
+	</div>
+</div>
+
+<!--
+
+FROM-POOL
+
+-->
+<div id="from-pool_container">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Pool allocation options</h3>
+
+
+			<div class="option">
+				<dl>
+					<dt style="text-align: left;">
+					Family
+					</dt>
+					<dd>
+					<input type="radio" name="prefix_family" value="4" id="family_4_radio" checked>
+					<label for="family_4_radio">IPv4</label>
+					<input type="radio" name="prefix_family" value="6" id="family_6_radio">
+					<label for="family_6_radio">IPv6</label>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div style="padding: 20px;">
+				<table id="pool_table" class="listing" style="width: 100%;">
+					<thead class="listing">
+						<tr><th>Name</th><th>Description</th><th style="width: 110px;">Default type</th><th style="width: 90px;">4 / 6</th></tr>
+					</thead>
+					<tbody class="listing">
+					</tbody>
+				</table>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option" id="length_info_row" style="display: none;">
+				<dl>
+					<dt style="text-align: left;">
+					Allocating from pool
+					</dt>
+					<dd id="selected_pool_desc">
+					</dd>
+					<dt style="text-align: left;" id="length_edit_row">
+					Prefix-length
+					</dt>
+					<dd id="length_edit_row">
+					<input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
+					<label id="def_length_container" for="edit_length_default_radio">Use pools default prefix-length</label>
+					<br/>
+					<input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
+					<label for="edit_length_override_radio">Override pools default prefix-length</label>
+					<br/>
+					<div style="display: none;" id="length_row">
+						Use prefix-length: <input type="text" size=3 name="prefix_length_pool">
+					</div>
+					</dd>
+				</dl>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<!--
+
+FROM-PREFIX
+
+-->
+<div id="from-prefix_container">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Prefix allocation options</h3>
+			<div class="options-guide">
+				You have chosen to allocate your new prefix from inside another, already existing, prefix. Please use the search tool to find and select the prefix which you would like to allocate your new prefix from.
+			</div>
+			<!-- nipap.prefix_search_form(c.search_opt_parent, c.search_opt_child) -->
+			<!-- nipap.prefix_search_result() -->
+		</div>
+		<div class="rule"></div>
+		<div class="option" id="prefix_length_prefix_container" style="display: none;">
+			<dl>
+				<dt>
+				Allocating from parent prefix
+				</dt>
+				<dd id="alloc_from_prefix">
+				</dd>
+				<dt id="length_info_row">
+				Prefix-length of new prefix
+				</dt>
+				<dd id="length_info_text">
+				<input type="text" name="prefix_length_prefix">
+				</dd>
+			</dl>
+		</div>
+	</div>
+</div>
+
+<!--
+
+PREFIX DATA
+
+-->
+<div id="prefix_data_container">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Prefix options</h3>
+			<form method="post" id="prefix_form" action="{{ h.url(controller="prefix", action="add") }}">
+
+				<div class="option" style="display: none;" id="prefix-row">
+					<dl>
+						<dt>
+						Prefix <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+						</dt>
+						<dd>
+						<input type="text" name="prefix_prefix" class="tooltip" title="The prefix, i.e. 192.0.2.16/28">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Type <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+						</dt>
+						<dd>
+						<span id="default_prefix_type" style="display: none; cursor: pointer;">Default prefix type for pool is <b><span id="pool_prefix_type"></span></b>. Click to change.</span>
+						<span id="prefix_type_selection">
+							<input type="radio" id="radio-prefix-type-reservation" name="prefix_type" value="reservation" class="tooltip" title=""><label for="radio-prefix-type-reservation">Reservation</label>
+							<input type="radio" id="radio-prefix-type-assignment" name="prefix_type" value="assignment" class="tooltip" title=""><label for="radio-prefix-type-assignment">Assignment</label>
+							<input type="radio" id="radio-prefix-type-host" name="prefix_type" value="host" class="tooltip" title=""><label for="radio-prefix-type-host">Host</label>
+							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
+						</span>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						VRF
+						</dt>
+						<dd>
+						<div style="position: relative;">
+							<div>
+								<div id="prefix_vrf_text" class="prefix_vrf_text"></div>
+								<div class="selector">
+									<div id="prefix_vrf_display" style="width: 80%; border: 1px solid #CCCCCC; float: left;">
+										<div class="vrf_filter_entry">
+											<div class="vrf_filter_entry_rt">RT:&nbsp; c.prefix.vrf.rt or '-' </div>
+											<div class="selector_entry_name" style="margin-left: 5px;">c.prefix.vrf.name</div>
+											<div class="selector_entry_description" style="clear: both;">c.prefix.vrf.description</div>
+										</div>
+									</div>
+									<input type="button" class="button button_red" style="display: none; margin-left: 15px; float: left;" name="prefix_vrf_btn" value="Change VRF">
+								</div>
+							</div>
+						</div>
+						<input type="hidden" name="prefix_vrf_id" value="">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Description
+						</dt>
+						<dd>
+						<input type="text" name="prefix_description" style="width: 80%;" class="tooltip" title="A brief description of the prefix." value="">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option" id="prefix_comment_container">
+					<dl>
+						<dt>
+						Comment
+						</dt>
+						<dd>
+						<input type="text" name="prefix_comment" value="">
+						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer; display: none;">add comment</span><input type="text" name="prefix_comment" style="width: 80%;">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule" id="prefix_comment_rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Tags
+						</dt>
+						<dd>
+						<ul id="tags" style="font-size: 1.0em;">
+							<li>tag</li>
+						</ul>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Inherited Tags
+						</dt>
+						<dd>
+						<ul id="inherited_tags" style="font-size: 1.0em;">
+							<li>tag</li>
+						</ul>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Node
+						</dt>
+						<dd>
+						<input type="text" name="prefix_node" class="tooltip" title="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured.">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Country
+						</dt>
+						<dd>
+						<input type="text" name="prefix_country" size=3 class="tooltip" title="Two-letter country code according to ISO-3166-1'">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Order ID
+						</dt>
+						<dd>
+						<input type="text" name="prefix_order_id" size=10>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Customer ID
+						</dt>
+						<dd>
+						<input type="text" name="prefix_customer_id" size=10>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						VLAN
+						</dt>
+						<dd>
+						<input type="text" name="prefix_vlan" size=10>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Monitor
+						</dt>
+						<dd>
+						<input type="checkbox" name="prefix_monitor" title="Check to monitor this prefix.">
+						<span id="alarm_priority_container">
+							Priority:
+							<input type="radio" id="radio-prefix-alarm-prio-warning" name="prefix_alarm_priority" value="warning">
+							<label for="radio-prefix-alarm-prio-warning">Warning</label>
+							<input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low">
+							<label for="radio-prefix-alarm-prio-low">Low</label>
+							<input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium">
+							<label for="radio-prefix-alarm-prio-medium">Medium</label>
+							<input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high">
+							<label for="radio-prefix-alarm-prio-high">High</label>
+							<input type="radio" id="radio-prefix-alarm-prio-critical" name="prefix_alarm_priority" value="critical">
+							<label for="radio-prefix-alarm-prio-critical">Critical</label>
+						</span>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						</dt>
+						<dd>
+						<input class="button button_green" type="submit" value="Add">
+						</dd>
+					</dl>
+				</div>
+
+			</form>
+		</div>
+	</div>
+</div>
+
+<div id="prefix_added_container" style="display: none;">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Result</h3>
+			<div id="prefix_added_list">
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

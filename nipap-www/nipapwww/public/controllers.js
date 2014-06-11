@@ -116,3 +116,17 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 		});
 	}
 });
+
+/*
+ * PrefixAddController - Used to add prefixes to NIPAP
+ */
+nipapApp.controller('PrefixAddController', function ($scope, $http) {
+
+});
+
+/*
+ * PrefixAddFromPoolController - Used to add prefixes to NIPAP from a pool
+ */
+nipapApp.controller('PrefixAddFromPoolController', function ($scope, $http) {
+
+});

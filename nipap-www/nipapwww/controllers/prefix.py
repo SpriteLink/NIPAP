@@ -48,6 +48,14 @@ class PrefixController(BaseController):
 
 
 
+    def ng_add(self):
+        """ AngularJS-version of add-prefix page
+        """
+
+        return render('/ng-prefix_add.html')
+
+
+
     def edit(self, id):
         """ Edit a prefix.
         """
