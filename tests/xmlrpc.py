@@ -291,7 +291,7 @@ class NipapXmlTest(unittest.TestCase):
         self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
         res = res[0]
         del(res['id'])
-        self.assertEqual(self._mangle_vrf_result(res), attr, 'VRF changed after empty edit_vrf operation')
+        self.assertEqual(self._mangle_vrf_result(res), attr)
 
         # valid change
         attr['rt'] = '65000:1234'

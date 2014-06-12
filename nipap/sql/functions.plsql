@@ -537,6 +537,19 @@ BEGIN
 	-- free addresses
 	NEW.free_addresses := NEW.total_addresses - NEW.used_addresses;
 
+
+	--
+	---- Inherited Tags --------------------------------------------------------
+	-- Update inherited tags
+	--
+	-- Trigger: vrf_id, prefix
+	--
+	-- set new inherited_tags based on parent_prefix tags and inherited_tags
+	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+		NEW.inherited_tags := array_undup(array_cat(new_parent.inherited_tags, new_parent.tags));
+	END IF;
+
+
 	-- all is well, return
 	RETURN NEW;
 END;
@@ -619,8 +632,10 @@ DECLARE
 	p RECORD;
 BEGIN
 	i_max_pref_len := 32;
-	IF family(NEW.prefix) = 6 THEN
-		i_max_pref_len := 128;
+	IF TG_OP IN ('INSERT', 'UPDATE') THEN
+		IF family(NEW.prefix) = 6 THEN
+			i_max_pref_len := 128;
+		END IF;
 	END IF;
 
 	--
@@ -645,11 +660,13 @@ BEGIN
 	END IF;
 
 	-- contains the parent prefix
-	SELECT * INTO new_parent
-	FROM ip_net_plan
-	WHERE vrf_id = NEW.vrf_id
-		AND iprange(prefix) >> iprange(NEW.prefix)
-	ORDER BY prefix DESC LIMIT 1;
+	IF TG_OP != 'DELETE' THEN
+		SELECT * INTO new_parent
+		FROM ip_net_plan
+		WHERE vrf_id = NEW.vrf_id
+			AND iprange(prefix) >> iprange(NEW.prefix)
+		ORDER BY prefix DESC LIMIT 1;
+	END IF;
 
 
 	--
@@ -657,11 +674,15 @@ BEGIN
 	--
 	-- Trigger on: vrf_id, prefix
 	--
-	IF TG_OP IN ('DELETE', 'UPDATE') THEN
+	IF TG_OP = 'DELETE' THEN
 		-- remove one indentation level where the old prefix used to be
 		PERFORM calc_indent(OLD.vrf_id, OLD.prefix, -1);
-	END IF;
-	IF TG_OP IN ('INSERT', 'UPDATE') THEN
+	ELSIF TG_OP = 'INSERT' THEN
+		-- add one indentation level to where the new prefix is
+		PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
+	ELSIF TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix THEN
+		-- remove one indentation level where the old prefix used to be
+		PERFORM calc_indent(OLD.vrf_id, OLD.prefix, -1);
 		-- add one indentation level to where the new prefix is
 		PERFORM calc_indent(NEW.vrf_id, NEW.prefix, 1);
 	END IF;
@@ -760,6 +781,34 @@ BEGIN
 		END IF;
 	END IF;
 
+	--
+	---- Inherited Tags --------------------------------------------------------
+	-- Update inherited tags
+	--
+	-- Trigger: prefix, tags, inherited_tags
+	--
+	IF TG_OP = 'DELETE' THEN
+		-- parent is NULL if we are top level
+		IF old_parent.id IS NULL THEN
+			-- calc tags from parent of the deleted prefix to what is now the
+			-- direct children of the parent prefix
+			PERFORM calc_tags(OLD.vrf_id, OLD.prefix);
+		ELSE
+			PERFORM calc_tags(OLD.vrf_id, old_parent.prefix);
+		END IF;
+
+	ELSIF TG_OP = 'INSERT' THEN
+		-- identify the parent and run calc_tags on it to inherit tags to
+		-- the new prefix from the parent
+		PERFORM calc_tags(NEW.vrf_id, new_parent.prefix);
+		-- now push tags from the new prefix to its children
+		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
+
+	ELSIF TG_OP = 'UPDATE' THEN
+		PERFORM calc_tags(OLD.vrf_id, OLD.prefix);
+		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
+	END IF;
+
 
 	-- all is well, return
 	RETURN NEW;
@@ -780,55 +829,12 @@ BEGIN
 	ELSIF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
 		-- figure out parent prefix
 		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY prefix DESC LIMIT 1;
-		-- set new inherited_tags based on parent_prefix tags and inherited_tags
-		NEW.inherited_tags := array_undup(array_cat(new_parent.inherited_tags, new_parent.tags));
 	END IF;
 
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-
---
--- Trigger function to update inherited tags.
---
-CREATE OR REPLACE FUNCTION tf_ip_net_plan__tags__iud_after() RETURNS trigger AS $$
-DECLARE
-	old_parent record;
-	new_parent record;
-BEGIN
-	IF TG_OP = 'DELETE' THEN
-		SELECT * INTO old_parent FROM ip_net_plan WHERE vrf_id = OLD.vrf_id AND iprange(prefix) >> iprange(OLD.prefix) ORDER BY prefix DESC LIMIT 1;
-
-		-- parent is NULL if we are top level
-		IF old_parent.id IS NULL THEN
-			-- calc tags from parent of the deleted prefix to what is now the
-			-- direct children of the parent prefix
-			-- tags
-			PERFORM calc_tags(OLD.vrf_id, OLD.prefix);
-		ELSE
-			-- tags
-			PERFORM calc_tags(OLD.vrf_id, old_parent.prefix);
-		END IF;
-
-	ELSIF TG_OP = 'INSERT' THEN
-		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY prefix DESC LIMIT 1;
-
-		-- identify the parent and run calc_tags on it to inherit tags to
-		-- the new prefix from the parent
-		-- tag calculation
-		PERFORM calc_tags(NEW.vrf_id, new_parent.prefix);
-		-- now push tags from the new prefix to its children
-		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
-
-	ELSIF TG_OP = 'UPDATE' THEN
-		PERFORM calc_tags(OLD.vrf_id, OLD.prefix);
-		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
-	END IF;
-
-	RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
 
 --
@@ -895,7 +901,7 @@ CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_before
 -- sanity checks are performed in the before trigger, so this is only to
 -- execute various changes that need to happen once a prefix has been updated
 CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__i_after
-	AFTER INSERT
+	AFTER INSERT OR DELETE
 	ON ip_net_plan
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_after();
@@ -906,7 +912,9 @@ CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_after
 	FOR EACH ROW
 	WHEN (OLD.vrf_id != NEW.vrf_id
 		OR OLD.prefix != NEW.prefix
-		OR OLD.type != NEW.type)
+		OR OLD.type != NEW.type
+		OR OLD.tags != NEW.tags
+		OR OLD.inherited_tags != NEW.inherited_tags)
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_after();
 
 -- check country code is correct
@@ -938,43 +946,6 @@ CREATE TRIGGER trigger_ip_net_plan__indent_children__u_before
 	WHEN (OLD.prefix != NEW.prefix)
 	EXECUTE PROCEDURE tf_ip_net_plan__indent_children__iu_before();
 
-
---
--- update tags and inherited tags
---
-
--- update tags and inherited tags for prefix being INSERTed
-CREATE TRIGGER trigger_ip_net_plan__tags__i_before
-	BEFORE INSERT
-	ON ip_net_plan
-	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_plan__tags__iu_before();
-
--- update tags and inherited tags for prefix being UPDATEd
-CREATE TRIGGER trigger_ip_net_plan__tags__u_before
-	BEFORE UPDATE
-	ON ip_net_plan
-	FOR EACH ROW
-	WHEN (OLD.vrf_id != NEW.vrf_id
-		OR OLD.prefix != NEW.prefix)
-	EXECUTE PROCEDURE tf_ip_net_plan__tags__iu_before();
-
--- update tags and inherited tags for adjacent prefixes
-CREATE TRIGGER trigger_ip_net_plan__tags__id_after
-	AFTER INSERT OR DELETE
-	ON ip_net_plan
-	FOR EACH ROW
-	EXECUTE PROCEDURE tf_ip_net_plan__tags__iud_after();
-
--- update tags and inherited tags for adjacent prefixes
-CREATE TRIGGER trigger_ip_net_plan__tags__u_after
-	AFTER UPDATE OF prefix, tags, inherited_tags
-	ON ip_net_plan
-	FOR EACH ROW
-	WHEN (OLD.prefix != NEW.prefix
-		OR OLD.tags != NEW.tags
-		OR OLD.inherited_tags != NEW.inherited_tags)
-	EXECUTE PROCEDURE tf_ip_net_plan__tags__iud_after();
 
 --
 CREATE TRIGGER trigger_ip_net_plan_prefix__d_before
