@@ -749,7 +749,7 @@ def remove_prefix(arg, opts):
     if p.authoritative_source != 'nipap':
         auth_src.add(p.authoritative_source)
 
-    if recursive is True:
+    if recursive is True or p.type == 'assignment':
         # recursive delete
 
         # get affected prefixes
@@ -771,8 +771,21 @@ def remove_prefix(arg, opts):
                 'operator': 'and',
                 'val2': vrf_q
             }
-
         pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
+
+        # if recursive is False, this delete will fail, ask user to do recursive
+        # delete instead
+        if recursive is False:
+            if len(pres['result']) > 1:
+                print "WARNING: %s in %s contains %s hosts." % (p.prefix, vrf_format(p.vrf), len(pres['result']))
+                res = raw_input("Would you like to recursively delete %s and all hosts? [y/N]: " % (p.prefix))
+                if res.lower() in [ 'y', 'yes' ]:
+                    recursive = True
+                else:
+                    print >> sys.stderr, "ERROR: Removal of assignment containing hosts is prohibited. Aborting removal of %s in %s." % (p.prefix, vrf_format(p.vrf))
+                    sys.exit(1)
+
+    if recursive is True:
         if len(pres['result']) <= 1:
             res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
 
