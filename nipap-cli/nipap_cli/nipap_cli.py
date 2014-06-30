@@ -687,7 +687,7 @@ def remove_vrf(arg, opts):
 
     print "RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description)
     print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL ITS ADDRESSES"
-    res = raw_input("Do you really want to remove %s? [y/n]: " % vrf_format(v))
+    res = raw_input("Do you really want to remove %s? [y/N]: " % vrf_format(v))
 
     if res == 'y':
         v.remove()
@@ -708,7 +708,7 @@ def remove_pool(arg, opts):
 
     p = res[0]
 
-    res = raw_input("Do you really want to remove the pool '%s'? [y/n]: " % p.name)
+    res = raw_input("Do you really want to remove the pool '%s'? [y/N]: " % p.name)
 
     if res == 'y':
         p.remove()
@@ -774,7 +774,7 @@ def remove_prefix(arg, opts):
 
         pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
         if len(pres['result']) <= 1:
-            res = raw_input("Do you really want to remove the prefix %s in %s? [y/n]: " % (p.prefix, vrf_format(p.vrf)))
+            res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
 
             if res.lower() in [ 'y', 'yes' ]:
                 remove_confirmed = True
@@ -802,7 +802,7 @@ def remove_prefix(arg, opts):
 
             if len(auth_src) == 0:
                 # Simple case; all prefixes were added from NIPAP
-                res = raw_input("Do you really want to recursively remove %s prefixes in %s? [y/n]: " % (len(pres['result']),
+                res = raw_input("Do you really want to recursively remove %s prefixes in %s? [y/N]: " % (len(pres['result']),
                             vrf_format(vrf)))
 
                 if res.lower() in [ 'y', 'yes' ]:
@@ -852,7 +852,7 @@ def remove_prefix(arg, opts):
                 sys.exit(1)
 
         else:
-            res = raw_input("Do you really want to remove the prefix %s in %s? [y/n]: " % (p.prefix, vrf_format(p.vrf)))
+            res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
             if res.lower() in [ 'y', 'yes' ]:
                 remove_confirmed = True
 
