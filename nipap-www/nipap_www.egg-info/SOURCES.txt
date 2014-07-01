@@ -33,8 +33,14 @@ nipapwww/lib/app_globals.py
 nipapwww/lib/base.py
 nipapwww/lib/helpers.py
 nipapwww/model/__init__.py
+nipapwww/public/.bootstrap.css.swp
+nipapwww/public/.controllers.js.swp
+nipapwww/public/bootstrap.min.css
+nipapwww/public/bootstrap.min.js
 nipapwww/public/comment-icon.png
 nipapwww/public/datatable.css
+nipapwww/public/docs.min.css
+nipapwww/public/docs.min.js
 nipapwww/public/favicon.ico
 nipapwww/public/jquery-1.9.1.min.js
 nipapwww/public/jquery-ui-1.10.0.custom.css
@@ -51,7 +57,12 @@ nipapwww/public/nipap.js
 nipapwww/public/remove-icon.png
 nipapwww/public/tag-icon.png
 nipapwww/public/tag-it.min.js
+nipapwww/public/test.html
 nipapwww/public/tipTip.css
+nipapwww/public/fonts/glyphicons-halflings-regular.eot
+nipapwww/public/fonts/glyphicons-halflings-regular.svg
+nipapwww/public/fonts/glyphicons-halflings-regular.ttf
+nipapwww/public/fonts/glyphicons-halflings-regular.woff
 nipapwww/public/images/back_disabled.jpg
 nipapwww/public/images/back_enabled.jpg
 nipapwww/public/images/display_menu.png
@@ -75,6 +86,8 @@ nipapwww/public/images/ui-icons_2e83ff_256x240.png
 nipapwww/public/images/ui-icons_454545_256x240.png
 nipapwww/public/images/ui-icons_888888_256x240.png
 nipapwww/public/images/ui-icons_cd0a0a_256x240.png
+nipapwww/templates/.base.html.swp
+nipapwww/templates/.vrf_list.html.swp
 nipapwww/templates/base.html
 nipapwww/templates/login.html
 nipapwww/templates/macros.html

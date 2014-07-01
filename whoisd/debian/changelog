@@ -1,3 +1,9 @@
+nipap-whoisd (0.25.1-1) stable; urgency=low
+
+  * Debian packages are now signed!
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 01 Jul 2014 10:22:53 +0200
+
 nipap-whoisd (0.24.4-1) stable; urgency=low
 
   * Fix prefix add in VRF using from-prefix (#477)

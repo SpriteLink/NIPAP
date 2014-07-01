@@ -1,3 +1,9 @@
+nipap-www (0.25.1-1) stable; urgency=low
+
+  * Debian packages are now signed!
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 01 Jul 2014 10:22:52 +0200
+
 nipap-www (0.24.5-1) stable; urgency=low
 
   * Semi-fix leaking files in backend (#485)
