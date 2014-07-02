@@ -12,9 +12,11 @@ instructions on non-Debian like Unix systems.
 
 Debian installation
 -------------------
-Add the NIPAP repo to your package sources and update your lists::
+Add the NIPAP repo to your package sources, add our public key for proper
+authentication of our packages and update your lists::
 
     echo "deb http://spritelink.github.io/NIPAP/repos/apt stable main extra" > /etc/apt/sources.list.d/nipap.list
+    wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | apt-key add -
     apt-get update
 
 There are now five new packages::
@@ -43,13 +45,10 @@ Let's install the backend::
 
     apt-get install nipapd
 
-apt-get will complain about that the packages cannot be authenticated. This is
-due to the NIPAP Debian repository not being signed. Ignore the warning and
-type 'y' to continue. During installation, the nipapd package will ask if you
-want to automatically load the needed database structure and start nipapd on
-startup - answer Yes to both questions. After the installation is done, you
-will have the PostgreSQL database server and all the other necessary
-dependencies installed.
+During installation, the nipapd package will ask if you want to automatically
+load the needed database structure and start nipapd on startup - answer Yes to
+both questions. After the installation is done, you will have the PostgreSQL
+database server and all the other necessary dependencies installed.
 
 
 Web UI
