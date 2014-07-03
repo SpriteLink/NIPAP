@@ -68,6 +68,93 @@ class NipapXmlTest(unittest.TestCase):
         self.nipap._execute("DELETE FROM ip_net_asn")
 
 
+    def _mangle_pool_result(self, res):
+        """ Mangle pool result for easier testing
+
+            We can never predict the values of things like the ID (okay, that
+            one is actually kind of doable) or the added and last_modified
+            timestamp. This function will make sure the values are present but
+            then strip them to make it easier to test against an expected
+            result.
+
+            All testing of statistics is done in nipaptest.py so we strip that
+            from the result here to make things simple.
+        """
+
+        if isinstance(res, list):
+            # res from list_pool
+            for p in res:
+                self.assertIn('total_addresses_v4', p)
+                self.assertIn('total_addresses_v6', p)
+                self.assertIn('used_addresses_v4', p)
+                self.assertIn('used_addresses_v6', p)
+                self.assertIn('free_addresses_v4', p)
+                self.assertIn('free_addresses_v6', p)
+                self.assertIn('member_prefixes_v4', p)
+                self.assertIn('member_prefixes_v6', p)
+                self.assertIn('child_prefixes_v4', p)
+                self.assertIn('child_prefixes_v6', p)
+                del(p['total_addresses_v4'])
+                del(p['total_addresses_v6'])
+                del(p['used_addresses_v4'])
+                del(p['used_addresses_v6'])
+                del(p['free_addresses_v4'])
+                del(p['free_addresses_v6'])
+                del(p['member_prefixes_v4'])
+                del(p['member_prefixes_v6'])
+                del(p['child_prefixes_v4'])
+                del(p['child_prefixes_v6'])
+
+        elif isinstance(res, dict) and 'result' in res:
+            # res from smart search
+            for p in res['result']:
+                self.assertIn('total_addresses_v4', p)
+                self.assertIn('total_addresses_v6', p)
+                self.assertIn('used_addresses_v4', p)
+                self.assertIn('used_addresses_v6', p)
+                self.assertIn('free_addresses_v4', p)
+                self.assertIn('free_addresses_v6', p)
+                self.assertIn('member_prefixes_v4', p)
+                self.assertIn('member_prefixes_v6', p)
+                self.assertIn('child_prefixes_v4', p)
+                self.assertIn('child_prefixes_v6', p)
+                del(p['total_addresses_v4'])
+                del(p['total_addresses_v6'])
+                del(p['used_addresses_v4'])
+                del(p['used_addresses_v6'])
+                del(p['free_addresses_v4'])
+                del(p['free_addresses_v6'])
+                del(p['member_prefixes_v4'])
+                del(p['member_prefixes_v6'])
+                del(p['child_prefixes_v4'])
+                del(p['child_prefixes_v6'])
+
+        elif isinstance(res, dict):
+            # just one single pool
+            self.assertIn('total_addresses_v4', res)
+            self.assertIn('total_addresses_v6', res)
+            self.assertIn('used_addresses_v4', res)
+            self.assertIn('used_addresses_v6', res)
+            self.assertIn('free_addresses_v4', res)
+            self.assertIn('free_addresses_v6', res)
+            self.assertIn('member_prefixes_v4', res)
+            self.assertIn('member_prefixes_v6', res)
+            self.assertIn('child_prefixes_v4', res)
+            self.assertIn('child_prefixes_v6', res)
+            del(res['total_addresses_v4'])
+            del(res['total_addresses_v6'])
+            del(res['used_addresses_v4'])
+            del(res['used_addresses_v6'])
+            del(res['free_addresses_v4'])
+            del(res['free_addresses_v6'])
+            del(res['member_prefixes_v4'])
+            del(res['member_prefixes_v6'])
+            del(res['child_prefixes_v4'])
+            del(res['child_prefixes_v6'])
+
+        return res
+
+
     def _mangle_prefix_result(self, res):
         """ Mangle prefix result for easier testing
 
@@ -1181,7 +1268,7 @@ class NipapXmlTest(unittest.TestCase):
         self.assertEquals(1, len(p), 'Wrong number of pools returned')
         p = p[0]
 
-        self.assertEquals(p, expected, 'Received pool differs from added pool')
+        self.assertEquals(self._mangle_pool_result(p), expected, 'Received pool differs from added pool')
 
 
     def test_edit_pool(self):
@@ -1215,7 +1302,8 @@ class NipapXmlTest(unittest.TestCase):
         expected['vrf_rt'] = None
         expected['vrf_name'] = None
 
-        self.assertEquals(s.list_pool({ 'auth': ad, 'pool': { 'id': res['id'] } })[0], expected)
+        self.assertEquals(self._mangle_pool_result(s.list_pool({ 'auth': ad,
+            'pool': { 'id': res['id'] } })[0]), expected)
 
 
     def test_search_pool(self):

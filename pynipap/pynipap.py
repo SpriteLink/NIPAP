@@ -539,6 +539,16 @@ class Pool(Pynipap):
     ipv4_default_prefix_length = None
     ipv6_default_prefix_length = None
     vrf = None
+    member_prefixes_v4 = None
+    member_prefixes_v6 = None
+    child_prefixes_v4 = None
+    child_prefixes_v6 = None
+    total_addresses_v4 = None
+    total_addresses_v6 = None
+    used_addresses_v4 = None
+    used_addresses_v6 = None
+    free_addresses_v4 = None
+    free_addresses_v6 = None
 
 
     def save(self):
@@ -698,6 +708,16 @@ class Pool(Pynipap):
         pool.default_type = parm['default_type']
         pool.ipv4_default_prefix_length = parm['ipv4_default_prefix_length']
         pool.ipv6_default_prefix_length = parm['ipv6_default_prefix_length']
+        pool.member_prefixes_v4 = long(parm['member_prefixes_v4'])
+        pool.member_prefixes_v6 = long(parm['member_prefixes_v6'])
+        pool.child_prefixes_v4 = long(parm['child_prefixes_v4'])
+        pool.child_prefixes_v6 = long(parm['child_prefixes_v6'])
+        pool.total_addresses_v4 = long(parm['total_addresses_v4'])
+        pool.total_addresses_v6 = long(parm['total_addresses_v6'])
+        pool.used_addresses_v4 = long(parm['used_addresses_v4'])
+        pool.used_addresses_v6 = long(parm['used_addresses_v6'])
+        pool.free_addresses_v4 = long(parm['free_addresses_v4'])
+        pool.free_addresses_v6 = long(parm['free_addresses_v6'])
         if parm['vrf_id'] is not None:
             pool.vrf = VRF.get(parm['vrf_id'])
 

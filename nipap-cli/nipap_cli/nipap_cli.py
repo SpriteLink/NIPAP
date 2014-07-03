@@ -627,7 +627,23 @@ def view_pool(arg, opts, shell_opts):
     print "  %-22s : %s" % ("Default type", p.default_type)
     print "  %-22s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name)
     print "  %-22s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
-    print "\n-- Prefixes in pool"
+    # statistics
+    if p.total_addresses_v4 == 0:
+        used_percent_v4 = 0
+    else:
+        used_percent_v4 = (float(p.used_addresses_v4)/p.total_addresses_v4)*100
+    if p.total_addresses_v6 == 0:
+        used_percent_v6 = 0
+    else:
+        used_percent_v6 = (float(p.used_addresses_v6)/p.total_addresses_v6)*100
+    print "  %-22s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 Used / Free",
+            p.used_addresses_v4, p.free_addresses_v4, used_percent_v4,
+            p.total_addresses_v4)
+    print "  %-22s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv6 Used / Free",
+            p.used_addresses_v6, p.free_addresses_v6, used_percent_v6,
+            p.total_addresses_v6)
+    print "\n-- Prefixes in pool - v4: %d  v6: %d" % (p.member_prefixes_v4,
+            p.member_prefixes_v6)
 
     res = Prefix.list({ 'pool_id': p.id})
     for pref in res:

@@ -47,14 +47,40 @@ class TestHelper:
         n._execute("DELETE FROM ip_net_asn")
 
 
-    def add_prefix(self, prefix, type, description, tags=[]):
+    def add_prefix(self, prefix, type, description, tags=[], pool_id=None):
+
         p = Prefix()
         p.prefix = prefix
         p.type = type
         p.description = description
         p.tags = tags
+        if pool_id:
+            pool = Pool.get(pool_id)
+            p.pool = pool
         p.save()
         return p
+
+
+    def add_prefix_from_pool(self, pool, family, description):
+        p = Prefix()
+        args = {}
+        args['from-pool'] = pool
+        args['family'] = family
+        p.type = pool.default_type
+
+        p.save(args)
+        return p
+
+
+
+    def add_pool(self, name, default_type, ipv4_default_prefix_length, ipv6_default_prefix_length):
+        pool = Pool()
+        pool.name = name
+        pool.default_type = default_type
+        pool.ipv4_default_prefix_length = ipv4_default_prefix_length
+        pool.ipv6_default_prefix_length = ipv6_default_prefix_length
+        pool.save()
+        return pool
 
 
 
@@ -382,6 +408,286 @@ class TestCountryCodeValue(unittest.TestCase):
 
         # output should be capitalized
         self.assertEqual('SE', p.country)
+
+
+
+class TestPoolStatistics(unittest.TestCase):
+    """ Test calculation of statistics for pools
+    """
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_stats1(self):
+        """ Check total stats are correct when adding and removing member prefix
+        """
+        th = TestHelper()
+
+        # add a pool
+        pool1 = th.add_pool('test', 'assignment', 31, 112)
+
+        # check stats for pool1
+        res = Pool.list({ 'id': pool1.id })
+        # ipv4
+        self.assertEqual(0, res[0].member_prefixes_v4)
+        self.assertEqual(0, res[0].child_prefixes_v4)
+        self.assertEqual(0, res[0].total_addresses_v4)
+        self.assertEqual(0, res[0].used_addresses_v4)
+        self.assertEqual(0, res[0].free_addresses_v4)
+        # ipv6
+        self.assertEqual(0, res[0].member_prefixes_v6)
+        self.assertEqual(0, res[0].child_prefixes_v6)
+        self.assertEqual(0, res[0].total_addresses_v6)
+        self.assertEqual(0, res[0].used_addresses_v6)
+        self.assertEqual(0, res[0].free_addresses_v6)
+
+        # add some members to the pool
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test', pool_id=pool1.id)
+        p2 = th.add_prefix('2.0.0.0/24', 'assignment', 'test', pool_id=pool1.id)
+        p3 = th.add_prefix('2001:db8::/48', 'assignment', 'test', pool_id=pool1.id)
+        p4 = th.add_prefix('2001:db8:1::/48', 'assignment', 'test', pool_id=pool1.id)
+
+        # check stats for pool1
+        res = Pool.list({ 'id': pool1.id })
+        # ipv4
+        self.assertEqual(2, res[0].member_prefixes_v4)
+        self.assertEqual(0, res[0].child_prefixes_v4)
+        self.assertEqual(512, res[0].total_addresses_v4)
+        self.assertEqual(0, res[0].used_addresses_v4)
+        self.assertEqual(512, res[0].free_addresses_v4)
+        # ipv6
+        self.assertEqual(2, res[0].member_prefixes_v6)
+        self.assertEqual(0, res[0].child_prefixes_v6)
+        self.assertEqual(2417851639229258349412352, res[0].total_addresses_v6)
+        self.assertEqual(0, res[0].used_addresses_v6)
+        self.assertEqual(2417851639229258349412352, res[0].free_addresses_v6)
+
+        # remove one IPv4 and one IPv6 member from the pool
+        p1.remove()
+        p3.remove()
+
+        # check stats for pool1
+        res = Pool.list({ 'id': pool1.id })
+        # ipv4
+        self.assertEqual(1, res[0].member_prefixes_v4)
+        self.assertEqual(0, res[0].child_prefixes_v4)
+        self.assertEqual(256, res[0].total_addresses_v4)
+        self.assertEqual(0, res[0].used_addresses_v4)
+        self.assertEqual(256, res[0].free_addresses_v4)
+        # ipv6
+        self.assertEqual(1, res[0].member_prefixes_v6)
+        self.assertEqual(0, res[0].child_prefixes_v6)
+        self.assertEqual(1208925819614629174706176, res[0].total_addresses_v6)
+        self.assertEqual(0, res[0].used_addresses_v6)
+        self.assertEqual(1208925819614629174706176, res[0].free_addresses_v6)
+
+
+    def test_stats2(self):
+        """ Check total stats are correct when updating member prefix
+        """
+        th = TestHelper()
+
+        # add a pool
+        pool1 = th.add_pool('test', 'assignment', 31, 112)
+
+        # add some members to the pool
+        p1 = th.add_prefix('1.0.0.0/24', 'reservation', 'test', pool_id=pool1.id)
+        p2 = th.add_prefix('2001:db8::/48', 'reservation', 'test', pool_id=pool1.id)
+
+        p1.prefix = '1.0.0.0/25'
+        p1.save()
+        p2.prefix = '2001:db8::/64'
+        p2.save()
+
+        # check stats for pool1
+        res = Pool.list({ 'id': pool1.id })
+        # ipv4
+        self.assertEqual(1, res[0].member_prefixes_v4)
+        self.assertEqual(0, res[0].child_prefixes_v4)
+        self.assertEqual(128, res[0].total_addresses_v4)
+        self.assertEqual(0, res[0].used_addresses_v4)
+        self.assertEqual(128, res[0].free_addresses_v4)
+        # ipv6
+        self.assertEqual(1, res[0].member_prefixes_v6)
+        self.assertEqual(0, res[0].child_prefixes_v6)
+        self.assertEqual(18446744073709551616, res[0].total_addresses_v6)
+        self.assertEqual(0, res[0].used_addresses_v6)
+        self.assertEqual(18446744073709551616, res[0].free_addresses_v6)
+
+
+    def test_stats3(self):
+        """ Check total stats are correct when adding and removing child prefixes from pool
+        """
+        th = TestHelper()
+
+        # add a pool
+        pool1 = th.add_pool('test', 'assignment', 31, 112)
+
+        # add some members to the pool
+        p1 = th.add_prefix('1.0.0.0/24', 'reservation', 'test', pool_id=pool1.id)
+        p2 = th.add_prefix('2001:db8::/48', 'reservation', 'test', pool_id=pool1.id)
+
+        # add child from pool
+        pc1 = th.add_prefix_from_pool(pool1, 4, 'foo')
+        pc2 = th.add_prefix_from_pool(pool1, 6, 'foo')
+
+        # check stats for pool1
+        res = Pool.list({ 'id': pool1.id })
+        # ipv4
+        self.assertEqual(1, res[0].member_prefixes_v4)
+        self.assertEqual(1, res[0].child_prefixes_v4)
+        self.assertEqual(256, res[0].total_addresses_v4)
+        self.assertEqual(2, res[0].used_addresses_v4)
+        self.assertEqual(254, res[0].free_addresses_v4)
+        # ipv6
+        self.assertEqual(1, res[0].member_prefixes_v6)
+        self.assertEqual(1, res[0].child_prefixes_v6)
+        self.assertEqual(1208925819614629174706176, res[0].total_addresses_v6)
+        self.assertEqual(65536, res[0].used_addresses_v6)
+        self.assertEqual(1208925819614629174640640, res[0].free_addresses_v6)
+
+        # remove child prefixes
+        pc1.remove()
+        pc2.remove()
+
+        # check stats for pool1
+        res = Pool.list({ 'id': pool1.id })
+        # ipv4
+        self.assertEqual(1, res[0].member_prefixes_v4)
+        self.assertEqual(0, res[0].child_prefixes_v4)
+        self.assertEqual(256, res[0].total_addresses_v4)
+        self.assertEqual(0, res[0].used_addresses_v4)
+        self.assertEqual(256, res[0].free_addresses_v4)
+        # ipv6
+        self.assertEqual(1, res[0].member_prefixes_v6)
+        self.assertEqual(0, res[0].child_prefixes_v6)
+        self.assertEqual(1208925819614629174706176, res[0].total_addresses_v6)
+        self.assertEqual(0, res[0].used_addresses_v6)
+        self.assertEqual(1208925819614629174706176, res[0].free_addresses_v6)
+
+
+    def test_stats4(self):
+        """ Check total stats are correct when modifying child prefixes in pool
+        """
+        th = TestHelper()
+
+        # add a pool
+        pool1 = th.add_pool('test', 'assignment', 31, 112)
+
+        # add some members to the pool
+        p1 = th.add_prefix('1.0.0.0/24', 'reservation', 'test', pool_id=pool1.id)
+        p2 = th.add_prefix('2001:db8::/48', 'reservation', 'test', pool_id=pool1.id)
+
+        # add child from pool
+        pc1 = th.add_prefix_from_pool(pool1, 4, 'foo')
+        pc2 = th.add_prefix_from_pool(pool1, 6, 'foo')
+
+        # change child prefix and size and make sure stats are updated correctly
+        pc1.prefix = '1.0.0.128/25'
+        pc1.save()
+        pc2.prefix = '2001:db8:0:1::/64'
+        pc2.save()
+
+        # check stats for pool1
+        res = Pool.list({ 'id': pool1.id })
+        # ipv4
+        self.assertEqual(1, res[0].member_prefixes_v4)
+        self.assertEqual(1, res[0].child_prefixes_v4)
+        self.assertEqual(256, res[0].total_addresses_v4)
+        self.assertEqual(128, res[0].used_addresses_v4)
+        self.assertEqual(128, res[0].free_addresses_v4)
+        # ipv6
+        self.assertEqual(1, res[0].member_prefixes_v6)
+        self.assertEqual(1, res[0].child_prefixes_v6)
+        self.assertEqual(1208925819614629174706176, res[0].total_addresses_v6)
+        self.assertEqual(18446744073709551616, res[0].used_addresses_v6)
+        self.assertEqual(1208907372870555465154560, res[0].free_addresses_v6)
+
+
+    def test_stats5(self):
+        """ Check total stats are correct when adding and removing member prefix with childs from pool
+
+            This is trickier as there is now a child in the pool that needs to
+            be accounted for.
+        """
+        th = TestHelper()
+
+        # add a pool
+        pool1 = th.add_pool('test', 'assignment', 31, 112)
+
+        # add some members to the pool
+        p1 = th.add_prefix('1.0.0.0/24', 'reservation', 'test', pool_id=pool1.id)
+        p2 = th.add_prefix('2.0.0.0/24', 'reservation', 'test', pool_id=pool1.id)
+        p3 = th.add_prefix('2001:db8:1::/48', 'reservation', 'test', pool_id=pool1.id)
+        p4 = th.add_prefix('2001:db8:2::/48', 'reservation', 'test', pool_id=pool1.id)
+
+        # add child from pool
+        pc1 = th.add_prefix_from_pool(pool1, 4, 'foo')
+        pc2 = th.add_prefix_from_pool(pool1, 6, 'foo')
+
+        # remove first member prefixes from pool
+        p1.pool = None
+        p1.save()
+        p3.pool = None
+        p3.save()
+
+        # check stats for pool1
+        res = Pool.list({ 'id': pool1.id })
+        # ipv4
+        self.assertEqual(1, res[0].member_prefixes_v4)
+        self.assertEqual(0, res[0].child_prefixes_v4)
+        self.assertEqual(256, res[0].total_addresses_v4)
+        self.assertEqual(0, res[0].used_addresses_v4)
+        self.assertEqual(256, res[0].free_addresses_v4)
+        # ipv6
+        self.assertEqual(1, res[0].member_prefixes_v6)
+        self.assertEqual(0, res[0].child_prefixes_v6)
+        self.assertEqual(1208925819614629174706176, res[0].total_addresses_v6)
+        self.assertEqual(0, res[0].used_addresses_v6)
+        self.assertEqual(1208925819614629174706176, res[0].free_addresses_v6)
+
+        # readd prefixes to pool
+        p1.pool = pool1
+        p1.save()
+        p3.pool = pool1
+        p3.save()
+
+        # check stats for pool1
+        res = Pool.list({ 'id': pool1.id })
+        # ipv4
+        self.assertEqual(2, res[0].member_prefixes_v4)
+        self.assertEqual(1, res[0].child_prefixes_v4)
+        self.assertEqual(512, res[0].total_addresses_v4)
+        self.assertEqual(2, res[0].used_addresses_v4)
+        self.assertEqual(510, res[0].free_addresses_v4)
+        # ipv6
+        self.assertEqual(2, res[0].member_prefixes_v6)
+        self.assertEqual(1, res[0].child_prefixes_v6)
+        self.assertEqual(2417851639229258349412352, res[0].total_addresses_v6)
+        self.assertEqual(65536, res[0].used_addresses_v6)
+        self.assertEqual(2417851639229258349346816, res[0].free_addresses_v6)
+
+
+
+    def test_stats6(self):
+        """ Check total stats are correct when adding member prefix with childs to pool
+        """
+        th = TestHelper()
+
+        # add a pool
+        pool1 = th.add_pool('test', 'assignment', 31, 112)
+
+        # add some members to the pool
+        p1 = th.add_prefix('1.0.0.0/24', 'reservation', 'test', pool_id=pool1.id)
+        p2 = th.add_prefix('2.0.0.0/24', 'reservation', 'test', pool_id=pool1.id)
+        p3 = th.add_prefix('2001:db8::/48', 'reservation', 'test', pool_id=pool1.id)
+        p4 = th.add_prefix('2001:db8:1::/48', 'reservation', 'test', pool_id=pool1.id)
+
+        # add child from pool
+        pc1 = th.add_prefix_from_pool(pool1, 4, 'foo')
+        pc2 = th.add_prefix_from_pool(pool1, 6, 'foo')
 
 
 

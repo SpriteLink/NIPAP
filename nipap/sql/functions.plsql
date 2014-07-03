@@ -626,6 +626,8 @@ CREATE OR REPLACE FUNCTION tf_ip_net_plan__prefix_iu_after() RETURNS trigger AS 
 DECLARE
 	old_parent RECORD;
 	new_parent RECORD;
+	old_parent_pool RECORD;
+	new_parent_pool RECORD;
 	child RECORD;
 	i_max_pref_len integer;
 	num_used integer;
@@ -668,6 +670,13 @@ BEGIN
 		ORDER BY prefix DESC LIMIT 1;
 	END IF;
 
+	-- store old and new parents pool
+	IF TG_OP IN ('DELETE', 'UPDATE') THEN
+		SELECT * INTO old_parent_pool FROM ip_net_pool WHERE id = old_parent.pool_id;
+	END IF;
+	IF TG_OP IN ('INSERT', 'UPDATE') THEN
+		SELECT * INTO new_parent_pool FROM ip_net_pool WHERE id = new_parent.pool_id;
+	END IF;
 
 	--
 	---- indent ----------------------------------------------------------------
@@ -746,7 +755,7 @@ BEGIN
 
 
 	--
-	---- Statistics ------------------------------------------------------------
+	---- Prefix statistics -----------------------------------------------------
 	--
 	-- Trigger on: vrf_id, prefix
 	--
@@ -766,7 +775,6 @@ BEGIN
 				WHERE id = old_parent.id;
 		END IF;
 	END IF;
-
 	IF TG_OP IN ('INSERT', 'UPDATE') THEN
 		-- do we have a new parent? if not, this is a top level prefix and we
 		-- have no parent to update children count for!
@@ -778,6 +786,86 @@ BEGIN
 				used_addresses = new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END),
 				free_addresses = total_addresses - (new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END))
 				WHERE id = new_parent.id;
+		END IF;
+	END IF;
+
+	--
+	---- Pool statistics -------------------------------------------------------
+	--
+	-- Update pool statistics
+	--
+
+	-- member prefix related statistics, ie pool total and similar
+	IF TG_OP = 'DELETE' OR (TG_OP = 'UPDATE' AND (OLD.pool_id IS DISTINCT FROM NEW.pool_id OR OLD.prefix != NEW.prefix)) THEN
+		-- we are a member prefix, update the pool totals
+		IF family(OLD.prefix) = 4 THEN
+			UPDATE ip_net_pool
+			SET member_prefixes_v4 = member_prefixes_v4 - 1,
+				child_prefixes_v4 = child_prefixes_v4 - OLD.children,
+				total_addresses_v4 = total_addresses_v4 - OLD.total_addresses,
+				free_addresses_v4 = free_addresses_v4 - OLD.free_addresses,
+				used_addresses_v4 = used_addresses_v4 - OLD.used_addresses
+			WHERE id = OLD.pool_id;
+		ELSE
+			UPDATE ip_net_pool
+			SET member_prefixes_v6 = member_prefixes_v6 - 1,
+				child_prefixes_v6 = child_prefixes_v6 - OLD.children,
+				total_addresses_v6 = total_addresses_v6 - OLD.total_addresses,
+				free_addresses_v6 = free_addresses_v6 - OLD.free_addresses,
+				used_addresses_v6 = used_addresses_v6 - OLD.used_addresses
+			WHERE id = OLD.pool_id;
+		END IF;
+	END IF;
+	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND (OLD.pool_id IS DISTINCT FROM NEW.pool_id OR OLD.prefix != NEW.prefix)) THEN
+		-- we are a member prefix, update the pool totals
+		IF family(NEW.prefix) = 4 THEN
+			UPDATE ip_net_pool
+			SET member_prefixes_v4 = member_prefixes_v4 + 1,
+				child_prefixes_v4 = child_prefixes_v4 + NEW.children,
+				total_addresses_v4 = total_addresses_v4 + NEW.total_addresses,
+				free_addresses_v4 = free_addresses_v4 + NEW.free_addresses,
+				used_addresses_v4 = used_addresses_v4 + NEW.used_addresses
+			WHERE id = NEW.pool_id;
+		ELSE
+			UPDATE ip_net_pool
+			SET member_prefixes_v6 = member_prefixes_v6 + 1,
+				child_prefixes_v6 = child_prefixes_v6 + NEW.children,
+				total_addresses_v6 = total_addresses_v6 + NEW.total_addresses,
+				free_addresses_v6 = free_addresses_v6 + NEW.free_addresses,
+				used_addresses_v6 = used_addresses_v6 + NEW.used_addresses
+			WHERE id = NEW.pool_id;
+		END IF;
+	END IF;
+
+	-- we are the child of a pool, ie our parent prefix is a member of the pool
+	IF TG_OP = 'DELETE' OR (TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix) THEN
+		IF family(OLD.prefix) = 4 THEN
+			UPDATE ip_net_pool
+			SET child_prefixes_v4 = child_prefixes_v4 - 1,
+				free_addresses_v4 = free_addresses_v4 + OLD.total_addresses,
+				used_addresses_v4 = used_addresses_v4 - OLD.total_addresses
+			WHERE id = old_parent_pool.id;
+		ELSE
+			UPDATE ip_net_pool
+			SET child_prefixes_v6 = child_prefixes_v6 - 1,
+				free_addresses_v6 = free_addresses_v6 + OLD.total_addresses,
+				used_addresses_v6 = used_addresses_v6 - OLD.total_addresses
+			WHERE id = old_parent_pool.id;
+		END IF;
+	END IF;
+	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix) THEN
+		IF family(NEW.prefix) = 4 THEN
+			UPDATE ip_net_pool
+			SET child_prefixes_v4 = child_prefixes_v4 + 1,
+				free_addresses_v4 = free_addresses_v4 - NEW.total_addresses,
+				used_addresses_v4 = used_addresses_v4 + NEW.total_addresses
+			WHERE id = new_parent_pool.id;
+		ELSE
+			UPDATE ip_net_pool
+			SET child_prefixes_v6 = child_prefixes_v6 + 1,
+				free_addresses_v6 = free_addresses_v6 - NEW.total_addresses,
+				used_addresses_v6 = used_addresses_v6 + NEW.total_addresses
+			WHERE id = new_parent_pool.id;
 		END IF;
 	END IF;
 
@@ -900,21 +988,23 @@ CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_before
 -- actions to be performed after an UPDATE on ip_net_plan
 -- sanity checks are performed in the before trigger, so this is only to
 -- execute various changes that need to happen once a prefix has been updated
-CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__i_after
+CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__id_after
 	AFTER INSERT OR DELETE
 	ON ip_net_plan
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_after();
 
+-- TODO: use 'IS DISTINCT FROM' on fields which could be NULL, also check other trigger functions:w
 CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_after
-	AFTER UPDATE OF vrf_id, prefix, type
+	AFTER UPDATE OF vrf_id, prefix, type, pool_id
 	ON ip_net_plan
 	FOR EACH ROW
 	WHEN (OLD.vrf_id != NEW.vrf_id
 		OR OLD.prefix != NEW.prefix
 		OR OLD.type != NEW.type
 		OR OLD.tags != NEW.tags
-		OR OLD.inherited_tags != NEW.inherited_tags)
+		OR OLD.inherited_tags != NEW.inherited_tags
+		OR OLD.pool_id IS DISTINCT FROM NEW.pool_id)
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_after();
 
 -- check country code is correct
