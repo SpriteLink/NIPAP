@@ -61,10 +61,10 @@ COMMENT ON COLUMN ip_net_vrf.free_addresses_v6 IS 'Number of free IPv6 addresses
 
 
 --
--- This table is used to store our pools. pools are for a specific
--- purpose and when you need a specific type of address, ie a core
--- loopback or similar, you'll just pick the right pool and get an
--- address assigned automatically.
+-- This table is used to store our pools. pools are the grouping of a number of
+-- prefixes for a specific purpose and when you need a specific type of
+-- address, ie a core loopback or similar, you'll just pick the right pool and
+-- get an address assigned automatically.
 --
 CREATE TABLE ip_net_pool (
 	id serial PRIMARY KEY,
@@ -82,7 +82,11 @@ CREATE TABLE ip_net_pool (
 	used_addresses_v4 numeric(40) DEFAULT 0,
 	used_addresses_v6 numeric(40) DEFAULT 0,
 	free_addresses_v4 numeric(40) DEFAULT 0,
-	free_addresses_v6 numeric(40) DEFAULT 0
+	free_addresses_v6 numeric(40) DEFAULT 0,
+	free_prefixes_v4 numeric(40) DEFAULT 0,
+	free_prefixes_v6 numeric(40) DEFAULT 0,
+	total_prefixes_v4 numeric(40) DEFAULT 0,
+	total_prefixes_v6 numeric(40) DEFAULT 0
 );
 
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
@@ -99,6 +103,10 @@ COMMENT ON COLUMN ip_net_pool.used_addresses_v4 IS 'Number of used IPv4 addresse
 COMMENT ON COLUMN ip_net_pool.used_addresses_v6 IS 'Number of used IPv6 addresses in this pool';
 COMMENT ON COLUMN ip_net_pool.free_addresses_v4 IS 'Number of free IPv4 addresses in this pool';
 COMMENT ON COLUMN ip_net_pool.free_addresses_v6 IS 'Number of free IPv6 addresses in this pool';
+COMMENT ON COLUMN ip_net_pool.free_prefixes_v4 IS 'Number of potentially free IPv4 prefixes of the default assignment size';
+COMMENT ON COLUMN ip_net_pool.free_prefixes_v6 IS 'Number of potentially free IPv6 prefixes of the default assignment size';
+COMMENT ON COLUMN ip_net_pool.total_prefixes_v4 IS 'Potentially the total number of IPv4 child prefixes in pool. This is based on current number of childs and potential childs of the default assignment size, which is why it can vary.';
+COMMENT ON COLUMN ip_net_pool.total_prefixes_v6 IS 'Potentially the total number of IPv6 child prefixes in pool. This is based on current number of childs and potential childs of the default assignment size, which is why it can vary.';
 
 
 
