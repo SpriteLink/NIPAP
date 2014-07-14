@@ -163,6 +163,11 @@ __url__			= "http://SpriteLink.github.com/NIPAP"
 # It must be set before the Pynipap can be used!
 xmlrpc_uri = None
 
+# Caching of objects is enabled per default but can be disabled for certain
+# scenarios. Since we don't have any cache expiration time it can be useful to
+# disable for long running applications.
+CACHE = True
+
 class AuthOptions:
     """ A global-ish authentication option container.
 
@@ -399,10 +404,11 @@ class VRF(Pynipap):
         """
 
         # cached?
-        if id in _cache['VRF']:
-            log.debug('cache hit for VRF %d' % id)
-            return _cache['VRF'][id]
-        log.debug('cache miss for VRF %d' % id)
+        if CACHE:
+            if id in _cache['VRF']:
+                log.debug('cache hit for VRF %d' % id)
+                return _cache['VRF'][id]
+            log.debug('cache miss for VRF %d' % id)
 
         try:
             vrf = VRF.list({ 'id': id })[0]
@@ -622,10 +628,11 @@ class Pool(Pynipap):
         """
 
         # cached?
-        if id in _cache['Pool']:
-            log.debug('cache hit for pool %d' % id)
-            return _cache['Pool'][id]
-        log.debug('cache miss for pool %d' % id)
+        if CACHE:
+            if id in _cache['Pool']:
+                log.debug('cache hit for pool %d' % id)
+                return _cache['Pool'][id]
+            log.debug('cache miss for pool %d' % id)
 
         try:
             pool = Pool.list({'id': id})[0]
@@ -793,10 +800,11 @@ class Prefix(Pynipap):
         """
 
         # cached?
-        if id in _cache['Prefix']:
-            log.debug('cache hit for prefix %d' % id)
-            return _cache['Prefix'][id]
-        log.debug('cache miss for prefix %d' % id)
+        if CACHE:
+            if id in _cache['Prefix']:
+                log.debug('cache hit for prefix %d' % id)
+                return _cache['Prefix'][id]
+            log.debug('cache miss for prefix %d' % id)
 
         try:
             prefix = Prefix.list({'id': id})[0]
