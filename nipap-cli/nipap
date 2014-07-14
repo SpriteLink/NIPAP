@@ -3,7 +3,6 @@
 
     A shell command to interact with NIPAP.
 """
-
 import logging
 import sys
 
@@ -19,6 +18,21 @@ if sys.stdout.encoding is None:
     # encoding from the terminal, so we are probably being redirected and so we
     # default to UTF-8
     sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+
+# early close of stdout to avoid broken pipe, see #464
+# If our output is being piped and the receiver of the pipe is killed off before
+# us there won't be a pipe anymore and Python will print an ugly "broken pipe"
+# backtrace that could look a bit different depending on which version of Python
+# we are running on. To avoid this, we register an atexit handler which will try
+# to close stdout before we exit.
+import atexit
+@atexit.register
+def at_exit():
+    try:
+        sys.stdout.close()
+    except:
+        pass
+
 
 class NullHandler(logging.Handler):
     """ A NULL logging handler
