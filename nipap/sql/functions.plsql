@@ -761,21 +761,19 @@ BEGIN
 	--
 
 	-- update old and new parent
-	IF TG_OP IN ('DELETE', 'UPDATE') THEN
+	IF TG_OP = 'DELETE' THEN
 		-- do we have a old parent? if not, this is a top level prefix and we
 		-- have no parent to update children count for!
 		IF old_parent.id IS NOT NULL THEN
 			-- update old parent's used and free addresses to account for the
-			-- removal of 'this' prefix (in its old state) while increasing for
-			-- previous indirect children that are now direct children of old
-			-- parent
+			-- removal of 'this' prefix while increasing for previous indirect
+			-- children that are now direct children of old parent
 			UPDATE ip_net_plan SET
 				used_addresses = old_parent.used_addresses - (OLD.total_addresses - CASE WHEN OLD.type = 'host' THEN 0 ELSE OLD.used_addresses END),
 				free_addresses = total_addresses - (old_parent.used_addresses - (OLD.total_addresses - CASE WHEN OLD.type = 'host' THEN 0 ELSE OLD.used_addresses END))
 				WHERE id = old_parent.id;
 		END IF;
-	END IF;
-	IF TG_OP IN ('INSERT', 'UPDATE') THEN
+	ELSIF TG_OP = 'INSERT' THEN
 		-- do we have a new parent? if not, this is a top level prefix and we
 		-- have no parent to update children count for!
 		IF new_parent.id IS NOT NULL THEN
@@ -786,6 +784,109 @@ BEGIN
 				used_addresses = new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END),
 				free_addresses = total_addresses - (new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END))
 				WHERE id = new_parent.id;
+		END IF;
+	ELSIF TG_OP = 'UPDATE' THEN
+		IF OLD.prefix != NEW.prefix THEN
+			IF old_parent.id = new_parent.id THEN
+				UPDATE ip_net_plan SET
+					used_addresses = (new_parent.used_addresses - (OLD.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE OLD.used_addresses END)) + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END),
+					free_addresses = total_addresses - ((new_parent.used_addresses - (OLD.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE OLD.used_addresses END)) + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END))
+					WHERE id = new_parent.id;
+			ELSE
+				IF old_parent.id IS NOT NULL THEN
+					-- update old parent's used and free addresses to account for the
+					-- removal of 'this' prefix while increasing for previous indirect
+					-- children that are now direct children of old parent
+					UPDATE ip_net_plan SET
+						used_addresses = old_parent.used_addresses - (OLD.total_addresses - CASE WHEN OLD.type = 'host' THEN 0 ELSE OLD.used_addresses END),
+						free_addresses = total_addresses - (old_parent.used_addresses - (OLD.total_addresses - CASE WHEN OLD.type = 'host' THEN 0 ELSE OLD.used_addresses END))
+						WHERE id = old_parent.id;
+				END IF;
+				IF new_parent.id IS NOT NULL THEN
+					-- update new parent's used and free addresses to account for the
+					-- addition of 'this' prefix while decreasing for previous direct
+					-- children that are now covered by 'this'
+					UPDATE ip_net_plan SET
+						used_addresses = new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END),
+						free_addresses = total_addresses - (new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END))
+						WHERE id = new_parent.id;
+				END IF;
+			END IF;
+		END IF;
+	END IF;
+
+
+	--
+	---- VRF statistics --------------------------------------------------------
+	--
+	-- Trigger on: vrf_id, prefix, indent, used_addresses
+	--
+
+	-- update number of prefixes in VRF
+	IF TG_OP = 'DELETE' THEN
+		IF family(OLD.prefix) = 4 THEN
+			UPDATE ip_net_vrf SET num_prefixes_v4 = num_prefixes_v4 - 1 WHERE id = OLD.vrf_id;
+		ELSE
+			UPDATE ip_net_vrf SET num_prefixes_v6 = num_prefixes_v6 - 1 WHERE id = OLD.vrf_id;
+		END IF;
+	ELSIF TG_OP = 'INSERT' THEN
+		IF family(NEW.prefix) = 4 THEN
+			UPDATE ip_net_vrf SET num_prefixes_v4 = num_prefixes_v4 + 1 WHERE id = NEW.vrf_id;
+		ELSE
+			UPDATE ip_net_vrf SET num_prefixes_v6 = num_prefixes_v6 + 1 WHERE id = NEW.vrf_id;
+		END IF;
+	END IF;
+	-- update total / used / free addresses in VRF
+	IF TG_OP = 'UPDATE' AND OLD.indent = 0 AND NEW.indent = 0 AND (OLD.prefix != NEW.prefix OR OLD.used_addresses != NEW.used_addresses) THEN
+		-- we were and still are a top level prefix but used_addresses changed
+		IF family(OLD.prefix) = 4 THEN
+			UPDATE ip_net_vrf
+			SET
+				total_addresses_v4 = (total_addresses_v4 - OLD.total_addresses) + NEW.total_addresses,
+				used_addresses_v4 = (used_addresses_v4 - OLD.used_addresses) + NEW.used_addresses,
+				free_addresses_v4 = (free_addresses_v4 - OLD.free_addresses) + NEW.free_addresses
+			WHERE id = OLD.vrf_id;
+		ELSE
+			UPDATE ip_net_vrf
+			SET
+				total_addresses_v6 = (total_addresses_v6 - OLD.total_addresses) + NEW.total_addresses,
+				used_addresses_v6 = (used_addresses_v6 - OLD.used_addresses) + NEW.used_addresses,
+				free_addresses_v6 = (free_addresses_v6 - OLD.free_addresses) + NEW.free_addresses
+			WHERE id = OLD.vrf_id;
+		END IF;
+	ELSIF (TG_OP = 'DELETE' AND OLD.indent = 0) OR (TG_OP = 'UPDATE' AND NEW.indent > 0 AND OLD.indent = 0) THEN
+		-- we were a top level prefix and became a NON top level
+		IF family(OLD.prefix) = 4 THEN
+			UPDATE ip_net_vrf
+			SET
+				total_addresses_v4 = total_addresses_v4 - OLD.total_addresses,
+				used_addresses_v4 = used_addresses_v4 - OLD.used_addresses,
+				free_addresses_v4 = free_addresses_v4 - OLD.free_addresses
+			WHERE id = OLD.vrf_id;
+		ELSE
+			UPDATE ip_net_vrf
+			SET
+				total_addresses_v6 = total_addresses_v6 - OLD.total_addresses,
+				used_addresses_v6 = used_addresses_v6 - OLD.used_addresses,
+				free_addresses_v6 = free_addresses_v6 - OLD.free_addresses
+			WHERE id = OLD.vrf_id;
+		END IF;
+	ELSIF (TG_OP = 'INSERT' AND NEW.indent = 0) OR (TG_OP = 'UPDATE' AND OLD.indent > 0 AND NEW.indent = 0) THEN
+		-- we were a NON top level prefix and became a top level
+		IF family(NEW.prefix) = 4 THEN
+			UPDATE ip_net_vrf
+			SET
+				total_addresses_v4 = total_addresses_v4 + NEW.total_addresses,
+				used_addresses_v4 = used_addresses_v4 + NEW.used_addresses,
+				free_addresses_v4 = free_addresses_v4 + NEW.free_addresses
+			WHERE id = NEW.vrf_id;
+		ELSE
+			UPDATE ip_net_vrf
+			SET
+				total_addresses_v6 = total_addresses_v6 + NEW.total_addresses,
+				used_addresses_v6 = used_addresses_v6 + NEW.used_addresses,
+				free_addresses_v6 = free_addresses_v6 + NEW.free_addresses
+			WHERE id = NEW.vrf_id;
 		END IF;
 	END IF;
 
@@ -996,15 +1097,17 @@ CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__id_after
 
 -- TODO: use 'IS DISTINCT FROM' on fields which could be NULL, also check other trigger functions:w
 CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_after
-	AFTER UPDATE OF vrf_id, prefix, type, pool_id
+	AFTER UPDATE OF vrf_id, prefix, indent, type, pool_id, used_addresses
 	ON ip_net_plan
 	FOR EACH ROW
 	WHEN (OLD.vrf_id != NEW.vrf_id
 		OR OLD.prefix != NEW.prefix
+		OR OLD.indent != NEW.indent
 		OR OLD.type != NEW.type
 		OR OLD.tags != NEW.tags
 		OR OLD.inherited_tags != NEW.inherited_tags
-		OR OLD.pool_id IS DISTINCT FROM NEW.pool_id)
+		OR OLD.pool_id IS DISTINCT FROM NEW.pool_id
+		OR OLD.used_addresses != NEW.used_addresses)
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_after();
 
 -- check country code is correct

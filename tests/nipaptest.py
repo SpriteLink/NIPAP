@@ -27,6 +27,9 @@ o = AuthOptions({
         'authoritative_source': 'nipap'
         })
 
+# disable caching of objects in Pynipap
+pynipap.CACHE = False
+
 
 class TestHelper:
 
@@ -859,6 +862,104 @@ class TestPrefixStatistics(unittest.TestCase):
         self.assertEqual(4096, res['result'][0].total_addresses)
         self.assertEqual(1280, res['result'][0].used_addresses)
         self.assertEqual(2816, res['result'][0].free_addresses)
+        # TODO: check what happens when a prefix is moved several indents,
+        # something like 1.3.3.0/24 to 1.3.0.0/16 where 1.3.0.0/20 and /21 is in
+        # between
+
+
+
+class TestVrfStatistics(unittest.TestCase):
+    """ Test calculation of statistics for VRFs
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_stats1(self):
+        """ Check stats are correct when adding and removing prefixes
+        """
+        th = TestHelper()
+
+        # add some top level prefixes to the default VRF
+        p1 = th.add_prefix('1.0.0.0/24', 'reservation', 'test')
+        p2 = th.add_prefix('2.0.0.0/24', 'reservation', 'test')
+        p3 = th.add_prefix('2001:db8:1::/48', 'reservation', 'test')
+        p4 = th.add_prefix('2001:db8:2::/48', 'reservation', 'test')
+
+        # check stats for VRF
+        res = VRF.get(0)
+        # ipv4
+        self.assertEqual(2, res.num_prefixes_v4)
+        self.assertEqual(512, res.total_addresses_v4)
+        self.assertEqual(0, res.used_addresses_v4)
+        self.assertEqual(512, res.free_addresses_v4)
+        # ipv6
+        self.assertEqual(2, res.num_prefixes_v6)
+        self.assertEqual(2417851639229258349412352, res.total_addresses_v6)
+        self.assertEqual(0, res.used_addresses_v6)
+        self.assertEqual(2417851639229258349412352, res.free_addresses_v6)
+
+        # remove some prefixes
+        p1.remove()
+        p3.remove()
+
+        # check stats for VRF
+        res = VRF.get(0)
+        # ipv4
+        self.assertEqual(1, res.num_prefixes_v4)
+        self.assertEqual(256, res.total_addresses_v4)
+        self.assertEqual(0, res.used_addresses_v4)
+        self.assertEqual(256, res.free_addresses_v4)
+        # ipv6
+        self.assertEqual(1, res.num_prefixes_v6)
+        self.assertEqual(1208925819614629174706176, res.total_addresses_v6)
+        self.assertEqual(0, res.used_addresses_v6)
+        self.assertEqual(1208925819614629174706176, res.free_addresses_v6)
+
+
+    def test_stats2(self):
+        """ Check stats are correct when adding and removing prefixes
+        """
+        th = TestHelper()
+
+        # add some top level prefixes to the default VRF
+        p1 = th.add_prefix('1.0.0.0/24', 'reservation', 'test')
+        p2 = th.add_prefix('1.0.0.128/25', 'assignment', 'test')
+        p3 = th.add_prefix('2001:db8:1::/48', 'reservation', 'test')
+        p4 = th.add_prefix('2001:db8:1:1::/64', 'reservation', 'test')
+
+        # check stats for VRF
+        res = VRF.get(0)
+        # ipv4
+        self.assertEqual(2, res.num_prefixes_v4)
+        self.assertEqual(256, res.total_addresses_v4)
+        self.assertEqual(128, res.used_addresses_v4)
+        self.assertEqual(128, res.free_addresses_v4)
+        # ipv6
+        self.assertEqual(2, res.num_prefixes_v6)
+        self.assertEqual(1208925819614629174706176, res.total_addresses_v6)
+        self.assertEqual(18446744073709551616, res.used_addresses_v6)
+        self.assertEqual(1208907372870555465154560, res.free_addresses_v6)
+
+        # remove some prefixes
+        p1.remove()
+        p3.remove()
+
+        # check stats for VRF
+        res = VRF.get(0)
+        # ipv4
+        self.assertEqual(1, res.num_prefixes_v4)
+        self.assertEqual(128, res.total_addresses_v4)
+        self.assertEqual(0, res.used_addresses_v4)
+        self.assertEqual(128, res.free_addresses_v4)
+        # ipv6
+        self.assertEqual(1, res.num_prefixes_v6)
+        self.assertEqual(18446744073709551616, res.total_addresses_v6)
+        self.assertEqual(0, res.used_addresses_v6)
+        self.assertEqual(18446744073709551616, res.free_addresses_v6)
 
 
 class TestAddressListing(unittest.TestCase):
