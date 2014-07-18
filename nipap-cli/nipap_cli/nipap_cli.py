@@ -388,6 +388,17 @@ def list_prefix(arg, opts):
 
 
 
+def impersonate_user():
+    """ Provide a quick way to perform user impersonation
+        with the nipap_cli package.
+        Drawback : this function must explicitly be called
+        in each add/modify/delete functions
+    """
+    if cfg.has_option('global', 'realuser'):
+        realuser = cfg.get('global', 'realuser')
+        if realuser:
+            pynipap.AuthOptions({'authoritative_source': 'nipap', 'username': realuser})
+
 """
     ADD FUNCTIONS
 """
@@ -395,6 +406,8 @@ def list_prefix(arg, opts):
 def add_prefix(arg, opts):
     """ Add prefix to NIPAP
     """
+
+    impersonate_user()
 
     p = Prefix()
     p.prefix = opts.get('prefix')
@@ -530,6 +543,8 @@ def add_vrf(arg, opts):
     """ Add VRF to NIPAP
     """
 
+    impersonate_user()
+
     v = VRF()
     v.rt = opts.get('rt')
     v.name = opts.get('name')
@@ -548,6 +563,8 @@ def add_vrf(arg, opts):
 def add_pool(arg, opts):
     """ Add a pool.
     """
+
+    impersonate_user()
 
     p = Pool()
     p.name = opts.get('name')
@@ -678,6 +695,8 @@ def remove_vrf(arg, opts):
     """ Remove VRF
     """
 
+    impersonate_user()
+
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
         print >> sys.stderr, "VRF with [RT: %s] not found." % arg
@@ -701,6 +720,8 @@ def remove_pool(arg, opts):
     """ Remove pool
     """
 
+    impersonate_user()
+
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
         print >> sys.stderr, "No pool with name '%s' found." % arg
@@ -721,6 +742,8 @@ def remove_pool(arg, opts):
 def remove_prefix(arg, opts):
     """ Remove prefix
     """
+
+    impersonate_user()
 
     # set up some basic variables
     remove_confirmed = False
@@ -889,6 +912,8 @@ def modify_vrf(arg, opts):
     """ Modify a VRF with the options set in opts
     """
 
+    impersonate_user()
+
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
         print >> sys.stderr, "VRF with [RT: %s] not found." % arg
@@ -912,6 +937,8 @@ def modify_vrf(arg, opts):
 def modify_pool(arg, opts):
     """ Modify a pool with the options set in opts
     """
+
+    impersonate_user()
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
@@ -940,6 +967,8 @@ def modify_pool(arg, opts):
 def grow_pool(arg, opts):
     """ Expand a pool with the ranges set in opts
     """
+    impersonate_user()
+
     if not pool:
         print >> sys.stderr, "No pool with name '%s' found." % arg
         sys.exit(1)
@@ -983,6 +1012,8 @@ def grow_pool(arg, opts):
 def shrink_pool(arg, opts):
     """ Shrink a pool by removing the ranges in opts from it
     """
+    impersonate_user()
+
     if not pool:
         print >> sys.stderr, "No pool with name '%s' found." % arg
         sys.exit(1)
@@ -1009,6 +1040,8 @@ def shrink_pool(arg, opts):
 def modify_prefix(arg, opts):
     """ Modify the prefix 'arg' with the options 'opts'
     """
+
+    impersonate_user()
 
     spec = { 'prefix': arg }
     v = get_vrf(opts.get('vrf_rt'), abort=True)
@@ -2001,6 +2034,12 @@ cmds = {
 # read configuration
 cfg = ConfigParser.ConfigParser()
 cfg.read(os.path.expanduser('~/.nipaprc'))
+
+""" Environment variables have precedance over configuration file.
+"""
+realuser =  os.environ.get('NIPAP_REAL_USER')
+if realuser:
+    cfg.set('global', 'realuser', realuser)
 
 setup_connection()
 
