@@ -310,6 +310,100 @@ def list_vrf(arg, opts):
 
 
 
+def search_prefix(arg, opts):
+    """ search for prefixes matching 'arg' and opts
+    """
+
+    search_string = ''
+    if type(arg) == list or type(arg) == tuple:
+        search_string = ' '.join(arg)
+
+    v = get_vrf(opts.get('vrf_rt'), default_var='default_list_vrf_rt', abort=True)
+    t = opts.get('tags')
+    vlan = opts.get('vlan')
+    script = opts.get('script') or False
+
+    if t and len(t) > 0:
+        search_string += ' #' + t.replace (',', ' #')
+
+    if vlan and len(vlan) > 0:
+        search_string += ' @' + vlan
+
+    if v.rt == 'all':
+        vrf_text = 'any VRF'
+        vrf_q = None
+    else:
+        vrf_text = vrf_format(v)
+        vrf_q = {
+            'operator': 'equals',
+            'val1': 'vrf_rt',
+            'val2': v.rt
+        }
+
+    if script == False:
+        print "Searching for prefixes in %s..." % vrf_text
+
+
+    offset = 0
+    # small initial limit for "instant" result
+    limit = 50
+    min_indent = 0
+    while True:
+        res = Prefix.smart_search(search_string, { 'parents_depth': 0,
+            'include_neighbors': False, 'offset': offset, 'max_result': limit },
+            vrf_q)
+
+        if offset == 0: # first time in loop?
+            if len(res['result']) == 0:
+                print "No addresses matching '%s' found." % search_string
+                return
+
+            # Guess the width of the prefix column by looking at the initial
+            # result set.
+            for p in res['result']:
+                indent = p.indent * 2 + len(p.prefix)
+                if indent > min_indent:
+                    min_indent = indent
+            min_indent += 15
+
+            # print column headers
+            prefix_str = "%%-14s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-s" % min_indent
+            column_header = prefix_str % ('VRF', 'Prefix', '', '#', 'Node',
+                    'Order', 'Customer', 'Description')
+
+            if script == False:
+                print column_header
+                print "".join("=" for i in xrange(len(column_header)))
+
+        for p in res['result']:
+            if p.display == False:
+                continue
+
+            try:
+                tags = '-'
+                if len(p.tags) > 0:
+                    tags = '#%d' % len(p.tags)
+
+                if script == False:
+                    print prefix_str % (p.vrf.rt or '-',
+                        "".join("  " for i in xrange(p.indent)) + p.display_prefix,
+                        p.type[0].upper(), tags, p.node, p.order_id,
+                        p.customer_id, p.description
+                    )
+                else:
+                    print "%s" % p.display_prefix
+
+            except UnicodeEncodeError, e:
+                print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
+
+        if len(res['result']) < limit:
+            break
+        offset += limit
+
+        # let consecutive limit be higher to tax the XML-RPC backend less
+        limit = 200
+
+
 def list_prefix(arg, opts):
     """ List prefixes matching 'arg'
     """
@@ -1434,6 +1528,53 @@ cmds = {
                             }
                         }
                     },
+                },
+
+                # search
+                'search': {
+                    'type': 'command',
+                    'exec': search_prefix,
+                    'rest_argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Prefix',
+                    },
+                    'children': {
+                        'vrf_rt': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'VRF',
+                                'complete': complete_vrf_virtual,
+                            },
+                        },
+                        'tags': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'tags',
+                                'complete': complete_tags,
+                            },
+                        },
+                        'vlan': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'vlan'
+                            },
+                        },
+                       'script': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_bool,
+                            }
+                        },
+                    }
                 },
 
                 # list
