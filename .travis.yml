@@ -12,9 +12,12 @@ env:
         - secure: "lxO7SGOLlMu4AldVb0XNViRAPhanleCeIH5BmrhKRMm1k7YnU0WGmfR+1X+m\n7PYI+011vHyVvC/ofbgbbBgqvmbec103ozrrbMCWPm27OCcfjyYJJJtcMLIe\nnD7cQC3u9F0ASxvBBmKIFIKwWPtzDSs4dq3RNfBXkGQc8RsEk1Y="
     matrix:
         # basic build only running nosetests
-        - "PYLINT=false PERFTEST=false"
+        - "PYLINT=false PERFTEST=false UPGRADE=false"
         # build nosetest and then pylint with artifact upload to S3
-        - "PYLINT=true PERFTEST=true"
+        - "PYLINT=true PERFTEST=true UPGRADE=false"
+        # test upgrade by first installing stable package from official repo
+        # and then build and upgrade to new packages
+        - "PYLINT=false PERFTEST=false UPGRADE=true"
 
 virtualenv:
     system_site_packages: true
@@ -27,30 +30,44 @@ before_script:
 
 
 install:
-    # we use our debian repo to get ip4r
+    # add NIPAP official Debian repo and keys, we use it to get ip4r
     - echo "deb http://spritelink.github.io/NIPAP/repos/apt stable main extra" | sudo tee /etc/apt/sources.list.d/nipap.list
+    - wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -
     - sudo apt-get update -qq
-    # install dependencies for building packages and build debian packages
-    - sudo apt-get install -qq -y --force-yes devscripts python-docutils
-    - make builddeb
     # install dependencies for installing & running nipap
     - sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-ldap python-docutils postgresql postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress
+    # install dependencies for building packages and build NIPAP debian packages
+    - sudo apt-get install -qq -y --force-yes devscripts python-docutils
+    # if we are testing the upgrade, first install NIPAP packages from official repo
+    - "if [[ $UPGRADE == true ]]; then sudo apt-get install -qq nipapd nipap-www nipap-cli; fi"
+    # bump version so that we know we are upgrading beyond what is installed
+    - "if [[ $UPGRADE == true ]]; then (echo -e 'Version 9999.9.9\n------------------\n * Test version for Travis-CI automatic upgrade test'; cat NEWS) > NEWS2; mv NEWS2 NEWS; make bumpversion; fi"
+    # populate answers to nipapd package install questions and reconfigure
+    - "if [[ $UPGRADE == true ]]; then echo 'set nipapd/autoconf true' | sudo debconf-communicate; echo 'set nipapd/startup true' | sudo debconf-communicate; echo 'set nipapd/upgrade true' | sudo debconf-communicate; sudo dpkg-reconfigure nipapd; fi"
+    # create local user for unittest and restart
+    - "if [[ $UPGRADE == true ]]; then sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n unittest; sudo /etc/init.d/nipapd restart; fi"
+    # if upgrade, add some data to the database that we can verify later
+    - "if [[ $UPGRADE == true ]]; then nosetests tests/upgrade-before.py; fi"
+    # build new NIPAP packages
+    - make builddeb
     # install the newly built nipap packages
     - sudo dpkg -i nipap*.deb python-pynipap*.deb
     # populate answers to nipapd package install questions and reconfigure
     - echo "set nipapd/autoconf true" | sudo debconf-communicate
     - echo "set nipapd/startup true" | sudo debconf-communicate
-    # reconfigure to do bootstrapping of db and stuff
+    # reconfigure to do bootstrapping of db and stuff, unless we are trying
+    # upgrade in which case this will upgrade everything for us
     - sudo dpkg-reconfigure nipapd
     # create local user for unittests
     - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n "User for running unit tests"
     - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"
     - sudo /etc/init.d/nipapd restart
-    - cp nipap-cli/nipaprc ~/.nipaprc
-    - sed -i -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' ~/.nipaprc
+    - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
 
 script:
     - cd tests
+    # if upgrade, verify data loaded before upgrade looks correct post upgrade
+    - "if [[ $UPGRADE == true ]]; then nosetests upgrade-after.py; fi"
     - nosetests xmlrpc.py
     - nosetests nipaptest.py
     - nosetests test_cli.py
