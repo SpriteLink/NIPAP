@@ -229,7 +229,7 @@ PREFIX DATA
 						</dt>
 						<dd>
 						<input type="hidden" name="id" value="{{ c.prefix.id }}">
-						<input class="button button_green" type="submit" value="Add">
+						<input class="button button_green" type="submit" value="{% if c.prefix.id is defined %}Save{% else %}Add{% endif %}">
 						</dd>
 					</dl>
 				</div>
