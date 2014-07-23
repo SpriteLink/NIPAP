@@ -1,4 +1,9 @@
 #!/usr/bin/python
+#
+# This is run by Travis-CI before an upgrade to load some data into the
+# database. After the upgrade is complete, the data is verified by
+# upgrade-after.py to make sure that the upgrade of the database went smoothly.
+#
 
 import logging
 import unittest
@@ -64,6 +69,27 @@ class TestLoad(unittest.TestCase):
         p5 = th.add_prefix('192.168.2.0/24', 'reservation', 'test')
         p6 = th.add_prefix('192.168.32.0/20', 'reservation', 'test')
         p7 = th.add_prefix('192.168.32.0/24', 'reservation', 'test')
+
+        ps1 = th.add_prefix('2001:db8:1::/48', 'reservation', 'test')
+        ps2 = th.add_prefix('2001:db8:1::/64', 'reservation', 'test')
+        ps3 = th.add_prefix('2001:db8:2::/48', 'reservation', 'test')
+
+        pool1 = Pool()
+        pool1.name = 'upgrade-test'
+        pool1.save()
+        p2.pool = pool1
+        p2.save()
+        ps1.pool = pool1
+        ps1.save()
+
+        pool2 = Pool()
+        pool2.name = 'upgrade-test2'
+        pool2.save()
+
+        vrf1 = VRF()
+        vrf1.name = 'foo'
+        vrf1.rt = '123:123'
+        vrf1.save()
 
 
 
