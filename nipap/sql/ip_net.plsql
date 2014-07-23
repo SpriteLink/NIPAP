@@ -4,7 +4,7 @@
 --
 --------------------------------------------
 
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 3';
+COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 4';
 
 CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
 
