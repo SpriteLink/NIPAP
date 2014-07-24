@@ -216,8 +216,8 @@ class TestCheckdata(unittest.TestCase):
         """ Verify data after upgrade
         """
         expected = [{
-            'child_prefixes_v4': '3',
-            'child_prefixes_v6': '1',
+            'used_prefixes_v4': '3',
+            'used_prefixes_v6': '1',
             'default_type': None,
             'description': None,
             'free_addresses_v4': '3328',
@@ -244,8 +244,8 @@ class TestCheckdata(unittest.TestCase):
         """ Verify data after upgrade
         """
         expected = [{
-            'child_prefixes_v4': '0',
-            'child_prefixes_v6': '0',
+            'used_prefixes_v4': '0',
+            'used_prefixes_v6': '0',
             'default_type': None,
             'description': None,
             'free_addresses_v4': '0',

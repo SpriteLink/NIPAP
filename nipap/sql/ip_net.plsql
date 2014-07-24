@@ -75,8 +75,8 @@ CREATE TABLE ip_net_pool (
 	ipv6_default_prefix_length integer,
 	member_prefixes_v4 numeric(40) DEFAULT 0,
 	member_prefixes_v6 numeric(40) DEFAULT 0,
-	child_prefixes_v4 numeric(40) DEFAULT 0,
-	child_prefixes_v6 numeric(40) DEFAULT 0,
+	used_prefixes_v4 numeric(40) DEFAULT 0,
+	used_prefixes_v6 numeric(40) DEFAULT 0,
 	total_addresses_v4 numeric(40) DEFAULT 0,
 	total_addresses_v6 numeric(40) DEFAULT 0,
 	used_addresses_v4 numeric(40) DEFAULT 0,
@@ -95,8 +95,8 @@ COMMENT ON INDEX ip_net_pool_name_key IS 'pool name';
 
 COMMENT ON COLUMN ip_net_pool.member_prefixes_v4 IS 'Number of IPv4 prefixes that are members of this pool';
 COMMENT ON COLUMN ip_net_pool.member_prefixes_v6 IS 'Number of IPv6 prefixes that are members of this pool';
-COMMENT ON COLUMN ip_net_pool.child_prefixes_v4 IS 'Number of IPv4 prefixes allocated from this pool';
-COMMENT ON COLUMN ip_net_pool.child_prefixes_v6 IS 'Number of IPv6 prefixes allocated from this pool';
+COMMENT ON COLUMN ip_net_pool.used_prefixes_v4 IS 'Number of IPv4 prefixes allocated from this pool';
+COMMENT ON COLUMN ip_net_pool.used_prefixes_v6 IS 'Number of IPv6 prefixes allocated from this pool';
 COMMENT ON COLUMN ip_net_pool.total_addresses_v4 IS 'Total number of IPv4 addresses in this pool';
 COMMENT ON COLUMN ip_net_pool.total_addresses_v6 IS 'Total number of IPv6 addresses in this pool';
 COMMENT ON COLUMN ip_net_pool.used_addresses_v4 IS 'Number of used IPv4 addresses in this pool';

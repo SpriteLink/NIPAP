@@ -547,8 +547,8 @@ class Pool(Pynipap):
     vrf = None
     member_prefixes_v4 = None
     member_prefixes_v6 = None
-    child_prefixes_v4 = None
-    child_prefixes_v6 = None
+    used_prefixes_v4 = None
+    used_prefixes_v6 = None
     total_addresses_v4 = None
     total_addresses_v6 = None
     used_addresses_v4 = None
@@ -717,8 +717,8 @@ class Pool(Pynipap):
         pool.ipv6_default_prefix_length = parm['ipv6_default_prefix_length']
         pool.member_prefixes_v4 = long(parm['member_prefixes_v4'])
         pool.member_prefixes_v6 = long(parm['member_prefixes_v6'])
-        pool.child_prefixes_v4 = long(parm['child_prefixes_v4'])
-        pool.child_prefixes_v6 = long(parm['child_prefixes_v6'])
+        pool.used_prefixes_v4 = long(parm['used_prefixes_v4'])
+        pool.used_prefixes_v6 = long(parm['used_prefixes_v6'])
         pool.total_addresses_v4 = long(parm['total_addresses_v4'])
         pool.total_addresses_v6 = long(parm['total_addresses_v6'])
         pool.used_addresses_v4 = long(parm['used_addresses_v4'])

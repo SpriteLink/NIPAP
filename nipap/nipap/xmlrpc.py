@@ -343,7 +343,7 @@ class NipapXMLRPC:
 
             # fugly cast from large numbers to string to deal with XML-RPC
             for val in ( 'member_prefixes_v4', 'member_prefixes_v6',
-                'child_prefixes_v4', 'child_prefixes_v6',
+                'used_prefixes_v4', 'used_prefixes_v6',
                 'total_addresses_v4', 'total_addresses_v6',
                 'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
                 'free_addresses_v6'):
@@ -392,7 +392,7 @@ class NipapXMLRPC:
             # fugly cast from large numbers to string to deal with XML-RPC
             for pool in res:
                 for val in ( 'member_prefixes_v4', 'member_prefixes_v6',
-                    'child_prefixes_v4', 'child_prefixes_v6',
+                    'used_prefixes_v4', 'used_prefixes_v6',
                     'total_addresses_v4', 'total_addresses_v6',
                     'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
                     'free_addresses_v6'):
@@ -423,7 +423,7 @@ class NipapXMLRPC:
             # fugly cast from large numbers to string to deal with XML-RPC
             for pool in res:
                 for val in ( 'member_prefixes_v4', 'member_prefixes_v6',
-                    'child_prefixes_v4', 'child_prefixes_v6',
+                    'used_prefixes_v4', 'used_prefixes_v6',
                     'total_addresses_v4', 'total_addresses_v6',
                     'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
                     'free_addresses_v6'):
@@ -458,7 +458,7 @@ class NipapXMLRPC:
             # fugly cast from large numbers to string to deal with XML-RPC
             for pool in res['result']:
                 for val in ( 'member_prefixes_v4', 'member_prefixes_v6',
-                    'child_prefixes_v4', 'child_prefixes_v6',
+                    'used_prefixes_v4', 'used_prefixes_v6',
                     'total_addresses_v4', 'total_addresses_v6',
                     'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
                     'free_addresses_v6'):
@@ -495,7 +495,7 @@ class NipapXMLRPC:
             # fugly cast from large numbers to string to deal with XML-RPC
             for pool in res['result']:
                 for val in ( 'member_prefixes_v4', 'member_prefixes_v6',
-                    'child_prefixes_v4', 'child_prefixes_v6',
+                    'used_prefixes_v4', 'used_prefixes_v6',
                     'total_addresses_v4', 'total_addresses_v6',
                     'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
                     'free_addresses_v6'):

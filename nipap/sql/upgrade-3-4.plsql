@@ -32,8 +32,8 @@ COMMENT ON COLUMN ip_net_plan.free_addresses IS 'Number of free addresses in thi
 -- add statistics to pool table
 ALTER TABLE ip_net_pool ADD COLUMN member_prefixes_v4 numeric(40) DEFAULT 0;
 ALTER TABLE ip_net_pool ADD COLUMN member_prefixes_v6 numeric(40) DEFAULT 0;
-ALTER TABLE ip_net_pool ADD COLUMN child_prefixes_v4 numeric(40) DEFAULT 0;
-ALTER TABLE ip_net_pool ADD COLUMN child_prefixes_v6 numeric(40) DEFAULT 0;
+ALTER TABLE ip_net_pool ADD COLUMN used_prefixes_v4 numeric(40) DEFAULT 0;
+ALTER TABLE ip_net_pool ADD COLUMN used_prefixes_v6 numeric(40) DEFAULT 0;
 ALTER TABLE ip_net_pool ADD COLUMN total_addresses_v4 numeric(40) DEFAULT 0;
 ALTER TABLE ip_net_pool ADD COLUMN total_addresses_v6 numeric(40) DEFAULT 0;
 ALTER TABLE ip_net_pool ADD COLUMN used_addresses_v4 numeric(40) DEFAULT 0;
@@ -47,8 +47,8 @@ ALTER TABLE ip_net_pool ADD COLUMN total_prefixes_v6 numeric(40) DEFAULT 0;
 
 COMMENT ON COLUMN ip_net_pool.member_prefixes_v4 IS 'Number of IPv4 prefixes that are members of this pool';
 COMMENT ON COLUMN ip_net_pool.member_prefixes_v6 IS 'Number of IPv6 prefixes that are members of this pool';
-COMMENT ON COLUMN ip_net_pool.child_prefixes_v4 IS 'Number of IPv4 prefixes allocated from this pool';
-COMMENT ON COLUMN ip_net_pool.child_prefixes_v6 IS 'Number of IPv6 prefixes allocated from this pool';
+COMMENT ON COLUMN ip_net_pool.used_prefixes_v4 IS 'Number of IPv4 prefixes allocated from this pool';
+COMMENT ON COLUMN ip_net_pool.used_prefixes_v6 IS 'Number of IPv6 prefixes allocated from this pool';
 COMMENT ON COLUMN ip_net_pool.total_addresses_v4 IS 'Total number of IPv4 addresses in this pool';
 COMMENT ON COLUMN ip_net_pool.total_addresses_v6 IS 'Total number of IPv6 addresses in this pool';
 COMMENT ON COLUMN ip_net_pool.used_addresses_v4 IS 'Number of used IPv4 addresses in this pool';
@@ -79,8 +79,8 @@ UPDATE ip_net_vrf SET free_addresses_v6 = COALESCE((SELECT SUM(free_addresses) F
 -- pool stats
 UPDATE ip_net_pool SET member_prefixes_v4 = (SELECT COUNT(1) FROM ip_net_plan WHERE pool_id = ip_net_pool.id AND family(prefix) = 4);
 UPDATE ip_net_pool SET member_prefixes_v6 = (SELECT COUNT(1) FROM ip_net_plan WHERE pool_id = ip_net_pool.id AND family(prefix) = 6);
-UPDATE ip_net_pool SET child_prefixes_v4 = (SELECT COUNT(1) from ip_net_plan AS inp JOIN ip_net_plan AS inp2 ON (inp2.prefix << inp.prefix AND inp2.indent = inp.indent+1 AND family(inp.prefix) = 4) WHERE inp.pool_id = ip_net_pool.id);
-UPDATE ip_net_pool SET child_prefixes_v6 = (SELECT COUNT(1) from ip_net_plan AS inp JOIN ip_net_plan AS inp2 ON (inp2.prefix << inp.prefix AND inp2.indent = inp.indent+1 AND family(inp.prefix) = 6) WHERE inp.pool_id = ip_net_pool.id);
+UPDATE ip_net_pool SET used_prefixes_v4 = (SELECT COUNT(1) from ip_net_plan AS inp JOIN ip_net_plan AS inp2 ON (inp2.prefix << inp.prefix AND inp2.indent = inp.indent+1 AND family(inp.prefix) = 4) WHERE inp.pool_id = ip_net_pool.id);
+UPDATE ip_net_pool SET used_prefixes_v6 = (SELECT COUNT(1) from ip_net_plan AS inp JOIN ip_net_plan AS inp2 ON (inp2.prefix << inp.prefix AND inp2.indent = inp.indent+1 AND family(inp.prefix) = 6) WHERE inp.pool_id = ip_net_pool.id);
 UPDATE ip_net_pool SET total_addresses_v4 = COALESCE((SELECT SUM(total_addresses) FROM ip_net_plan WHERE pool_id = ip_net_pool.id AND family(prefix) = 4), 0);
 UPDATE ip_net_pool SET total_addresses_v6 = COALESCE((SELECT SUM(total_addresses) FROM ip_net_plan WHERE pool_id = ip_net_pool.id AND family(prefix) = 6), 0);
 UPDATE ip_net_pool SET used_addresses_v4 = COALESCE((SELECT SUM(used_addresses) FROM ip_net_plan WHERE pool_id = ip_net_pool.id AND family(prefix) = 4), 0);

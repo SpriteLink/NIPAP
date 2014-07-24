@@ -902,7 +902,7 @@ BEGIN
 		IF family(OLD.prefix) = 4 THEN
 			UPDATE ip_net_pool
 			SET member_prefixes_v4 = member_prefixes_v4 - 1,
-				child_prefixes_v4 = child_prefixes_v4 - OLD.children,
+				used_prefixes_v4 = used_prefixes_v4 - OLD.children,
 				total_addresses_v4 = total_addresses_v4 - OLD.total_addresses,
 				free_addresses_v4 = free_addresses_v4 - OLD.free_addresses,
 				used_addresses_v4 = used_addresses_v4 - OLD.used_addresses
@@ -910,7 +910,7 @@ BEGIN
 		ELSE
 			UPDATE ip_net_pool
 			SET member_prefixes_v6 = member_prefixes_v6 - 1,
-				child_prefixes_v6 = child_prefixes_v6 - OLD.children,
+				used_prefixes_v6 = used_prefixes_v6 - OLD.children,
 				total_addresses_v6 = total_addresses_v6 - OLD.total_addresses,
 				free_addresses_v6 = free_addresses_v6 - OLD.free_addresses,
 				used_addresses_v6 = used_addresses_v6 - OLD.used_addresses
@@ -922,7 +922,7 @@ BEGIN
 		IF family(NEW.prefix) = 4 THEN
 			UPDATE ip_net_pool
 			SET member_prefixes_v4 = member_prefixes_v4 + 1,
-				child_prefixes_v4 = child_prefixes_v4 + NEW.children,
+				used_prefixes_v4 = used_prefixes_v4 + NEW.children,
 				total_addresses_v4 = total_addresses_v4 + NEW.total_addresses,
 				free_addresses_v4 = free_addresses_v4 + NEW.free_addresses,
 				used_addresses_v4 = used_addresses_v4 + NEW.used_addresses
@@ -930,7 +930,7 @@ BEGIN
 		ELSE
 			UPDATE ip_net_pool
 			SET member_prefixes_v6 = member_prefixes_v6 + 1,
-				child_prefixes_v6 = child_prefixes_v6 + NEW.children,
+				used_prefixes_v6 = used_prefixes_v6 + NEW.children,
 				total_addresses_v6 = total_addresses_v6 + NEW.total_addresses,
 				free_addresses_v6 = free_addresses_v6 + NEW.free_addresses,
 				used_addresses_v6 = used_addresses_v6 + NEW.used_addresses
@@ -942,13 +942,13 @@ BEGIN
 	IF TG_OP = 'DELETE' OR (TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix) THEN
 		IF family(OLD.prefix) = 4 THEN
 			UPDATE ip_net_pool
-			SET child_prefixes_v4 = child_prefixes_v4 - 1,
+			SET used_prefixes_v4 = used_prefixes_v4 - 1,
 				free_addresses_v4 = free_addresses_v4 + OLD.total_addresses,
 				used_addresses_v4 = used_addresses_v4 - OLD.total_addresses
 			WHERE id = old_parent_pool.id;
 		ELSE
 			UPDATE ip_net_pool
-			SET child_prefixes_v6 = child_prefixes_v6 - 1,
+			SET used_prefixes_v6 = used_prefixes_v6 - 1,
 				free_addresses_v6 = free_addresses_v6 + OLD.total_addresses,
 				used_addresses_v6 = used_addresses_v6 - OLD.total_addresses
 			WHERE id = old_parent_pool.id;
@@ -957,13 +957,13 @@ BEGIN
 	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix) THEN
 		IF family(NEW.prefix) = 4 THEN
 			UPDATE ip_net_pool
-			SET child_prefixes_v4 = child_prefixes_v4 + 1,
+			SET used_prefixes_v4 = used_prefixes_v4 + 1,
 				free_addresses_v4 = free_addresses_v4 - NEW.total_addresses,
 				used_addresses_v4 = used_addresses_v4 + NEW.total_addresses
 			WHERE id = new_parent_pool.id;
 		ELSE
 			UPDATE ip_net_pool
-			SET child_prefixes_v6 = child_prefixes_v6 + 1,
+			SET used_prefixes_v6 = used_prefixes_v6 + 1,
 				free_addresses_v6 = free_addresses_v6 - NEW.total_addresses,
 				used_addresses_v6 = used_addresses_v6 + NEW.total_addresses
 			WHERE id = new_parent_pool.id;
