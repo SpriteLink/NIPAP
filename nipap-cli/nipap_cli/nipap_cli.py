@@ -604,7 +604,7 @@ def view_vrf(arg, opts, shell_opts):
             v.used_addresses_v4, v.free_addresses_v4, used_percent_v4,
             v.total_addresses_v4)
     print "  %-26s : %s" % ("IPv6 prefixes", v.num_prefixes_v6)
-    print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv6 addresses Used / Free",
+    print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
             v.used_addresses_v6, v.free_addresses_v6, used_percent_v6,
             v.total_addresses_v6)
 
@@ -647,7 +647,7 @@ def view_pool(arg, opts, shell_opts):
     print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
             p.used_addresses_v4, p.free_addresses_v4, used_percent_v4,
             p.total_addresses_v4)
-    print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv6 addresses Used / Free",
+    print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
             p.used_addresses_v6, p.free_addresses_v6, used_percent_v6,
             p.total_addresses_v6)
     print "\n-- Prefixes in pool - v4: %d  v6: %d" % (p.member_prefixes_v4,
@@ -697,9 +697,14 @@ def view_prefix(arg, opts, shell_opts):
     print "  %-26s : %s" % ("Monitor", p.monitor)
     print "  %-26s : %s" % ("Added", p.added)
     print "  %-26s : %s" % ("Last modified", p.last_modified)
-    print "  %-26s : %s / %s (%.2f%% of %s)" % ("Addresses Used / Free", p.used_addresses,
-            p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
-            p.total_addresses)
+    if p.family == 4:
+        print "  %-26s : %s / %s (%.2f%% of %s)" % ("Addresses Used / Free", p.used_addresses,
+                p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
+                p.total_addresses)
+    else:
+        print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("Addresses Used / Free", p.used_addresses,
+                p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
+                p.total_addresses)
     print "-- Tags"
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
         print "  %s" % tag_name
