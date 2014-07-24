@@ -310,6 +310,100 @@ def list_vrf(arg, opts):
 
 
 
+def search_prefix(arg, opts):
+    """ search for prefixes matching 'arg' and opts
+    """
+
+    search_string = ''
+    if type(arg) == list or type(arg) == tuple:
+        search_string = ' '.join(arg)
+
+    v = get_vrf(opts.get('vrf_rt'), default_var='default_list_vrf_rt', abort=True)
+    t = opts.get('tags')
+    vlan = opts.get('vlan')
+    script = opts.get('script') or False
+
+    if t and len(t) > 0:
+        search_string += ' #' + t.replace (',', ' #')
+
+    if vlan and len(vlan) > 0:
+        search_string += ' @' + vlan
+
+    if v.rt == 'all':
+        vrf_text = 'any VRF'
+        vrf_q = None
+    else:
+        vrf_text = vrf_format(v)
+        vrf_q = {
+            'operator': 'equals',
+            'val1': 'vrf_rt',
+            'val2': v.rt
+        }
+
+    if script == False:
+        print "Searching for prefixes in %s..." % vrf_text
+
+
+    offset = 0
+    # small initial limit for "instant" result
+    limit = 50
+    min_indent = 0
+    while True:
+        res = Prefix.smart_search(search_string, { 'parents_depth': 0,
+            'include_neighbors': False, 'offset': offset, 'max_result': limit },
+            vrf_q)
+
+        if offset == 0: # first time in loop?
+            if len(res['result']) == 0:
+                print "No addresses matching '%s' found." % search_string
+                return
+
+            # Guess the width of the prefix column by looking at the initial
+            # result set.
+            for p in res['result']:
+                indent = p.indent * 2 + len(p.prefix)
+                if indent > min_indent:
+                    min_indent = indent
+            min_indent += 15
+
+            # print column headers
+            prefix_str = "%%-14s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-s" % min_indent
+            column_header = prefix_str % ('VRF', 'Prefix', '', '#', 'Node',
+                    'Order', 'Customer', 'Description')
+
+            if script == False:
+                print column_header
+                print "".join("=" for i in xrange(len(column_header)))
+
+        for p in res['result']:
+            if p.display == False:
+                continue
+
+            try:
+                tags = '-'
+                if len(p.tags) > 0:
+                    tags = '#%d' % len(p.tags)
+
+                if script == False:
+                    print prefix_str % (p.vrf.rt or '-',
+                        "".join("  " for i in xrange(p.indent)) + p.display_prefix,
+                        p.type[0].upper(), tags, p.node, p.order_id,
+                        p.customer_id, p.description
+                    )
+                else:
+                    print "%s" % p.display_prefix
+
+            except UnicodeEncodeError, e:
+                print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
+
+        if len(res['result']) < limit:
+            break
+        offset += limit
+
+        # let consecutive limit be higher to tax the XML-RPC backend less
+        limit = 200
+
+
 def list_prefix(arg, opts):
     """ List prefixes matching 'arg'
     """
@@ -388,6 +482,17 @@ def list_prefix(arg, opts):
 
 
 
+def impersonate_user():
+    """ Provide a quick way to perform user impersonation
+        with the nipap_cli package.
+        Drawback : this function must explicitly be called
+        in each add/modify/delete functions
+    """
+    if cfg.has_option('global', 'realuser'):
+        realuser = cfg.get('global', 'realuser')
+        if realuser:
+            pynipap.AuthOptions({'authoritative_source': 'nipap', 'username': realuser})
+
 """
     ADD FUNCTIONS
 """
@@ -395,6 +500,8 @@ def list_prefix(arg, opts):
 def add_prefix(arg, opts):
     """ Add prefix to NIPAP
     """
+
+    impersonate_user()
 
     p = Prefix()
     p.prefix = opts.get('prefix')
@@ -530,6 +637,8 @@ def add_vrf(arg, opts):
     """ Add VRF to NIPAP
     """
 
+    impersonate_user()
+
     v = VRF()
     v.rt = opts.get('rt')
     v.name = opts.get('name')
@@ -548,6 +657,8 @@ def add_vrf(arg, opts):
 def add_pool(arg, opts):
     """ Add a pool.
     """
+
+    impersonate_user()
 
     p = Pool()
     p.name = opts.get('name')
@@ -678,6 +789,8 @@ def remove_vrf(arg, opts):
     """ Remove VRF
     """
 
+    impersonate_user()
+
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
         print >> sys.stderr, "VRF with [RT: %s] not found." % arg
@@ -701,6 +814,8 @@ def remove_pool(arg, opts):
     """ Remove pool
     """
 
+    impersonate_user()
+
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
         print >> sys.stderr, "No pool with name '%s' found." % arg
@@ -721,6 +836,8 @@ def remove_pool(arg, opts):
 def remove_prefix(arg, opts):
     """ Remove prefix
     """
+
+    impersonate_user()
 
     # set up some basic variables
     remove_confirmed = False
@@ -889,6 +1006,8 @@ def modify_vrf(arg, opts):
     """ Modify a VRF with the options set in opts
     """
 
+    impersonate_user()
+
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
         print >> sys.stderr, "VRF with [RT: %s] not found." % arg
@@ -912,6 +1031,8 @@ def modify_vrf(arg, opts):
 def modify_pool(arg, opts):
     """ Modify a pool with the options set in opts
     """
+
+    impersonate_user()
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
@@ -940,6 +1061,8 @@ def modify_pool(arg, opts):
 def grow_pool(arg, opts):
     """ Expand a pool with the ranges set in opts
     """
+    impersonate_user()
+
     if not pool:
         print >> sys.stderr, "No pool with name '%s' found." % arg
         sys.exit(1)
@@ -983,6 +1106,8 @@ def grow_pool(arg, opts):
 def shrink_pool(arg, opts):
     """ Shrink a pool by removing the ranges in opts from it
     """
+    impersonate_user()
+
     if not pool:
         print >> sys.stderr, "No pool with name '%s' found." % arg
         sys.exit(1)
@@ -1009,6 +1134,8 @@ def shrink_pool(arg, opts):
 def modify_prefix(arg, opts):
     """ Modify the prefix 'arg' with the options 'opts'
     """
+
+    impersonate_user()
 
     spec = { 'prefix': arg }
     v = get_vrf(opts.get('vrf_rt'), abort=True)
@@ -1401,6 +1528,53 @@ cmds = {
                             }
                         }
                     },
+                },
+
+                # search
+                'search': {
+                    'type': 'command',
+                    'exec': search_prefix,
+                    'rest_argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                        'description': 'Prefix',
+                    },
+                    'children': {
+                        'vrf_rt': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'VRF',
+                                'complete': complete_vrf_virtual,
+                            },
+                        },
+                        'tags': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'tags',
+                                'complete': complete_tags,
+                            },
+                        },
+                        'vlan': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'description': 'vlan'
+                            },
+                        },
+                       'script': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_bool,
+                            }
+                        },
+                    }
                 },
 
                 # list
@@ -2001,6 +2175,12 @@ cmds = {
 # read configuration
 cfg = ConfigParser.ConfigParser()
 cfg.read(os.path.expanduser('~/.nipaprc'))
+
+""" Environment variables have precedance over configuration file.
+"""
+realuser =  os.environ.get('NIPAP_REAL_USER')
+if realuser:
+    cfg.set('global', 'realuser', realuser)
 
 setup_connection()
 

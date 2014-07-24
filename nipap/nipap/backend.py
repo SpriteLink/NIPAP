@@ -3092,6 +3092,19 @@ class Nipap:
                     }
                 })
 
+            # vlan
+            elif re.match('@', query_str_part['string']):
+                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as vlan")
+                query_str_part['interpretation'] = 'vlan'
+                query_str_part['attribute'] = 'vlan'
+
+                query_str_part['operator'] = 'equals'
+                query_parts.append({
+                    'operator': 'equals',
+                        'val1': 'vlan',
+                        'val2': query_str_part['string'][1:]
+                })
+
             # IPv4 prefix
             elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('/')) == 2:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")

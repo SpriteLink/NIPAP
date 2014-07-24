@@ -221,11 +221,13 @@ function displaySearchHelp() {
 		   "<h4>IP addresses / prefixes</h4>Searching for IP addresses are specially treated and will only match in the IP address column. Simply enter a complete IPv4 or IPv6 address and it will be automatically interpreted as an IP address.<br/><br/>It is possible to match entire prefixes and all their content by searching for a prefix in CIDR notation (e.g. 192.168.1.0/24). Searching for 192.168.1.x or 192.168.1 (as some would expect to match everything in 192.168.1.0/24) will not work as they will not be interpreted as prefixes but as text." +
 		   "<h4>VRF selector</h4>The VRF selector is located in the top left corner and is used to filter the prefix search to prefixes within the listed VRFs. Press the + to add one or more VRFs to the VRF list. Prefix search results will only include prefixes that are within the VRFs in the list. If no VRFs are specified with the VRF selector the prefix search will list prefixes from all VRFs. " +
 		   "<h4>Matching tags</h4>To search for a prefix with a certain tag, simply type '#foo', where 'foo' is the name of the tag. The search will match any prefix that has this tag set or that 'inherits' it from an encompassing prefix. Only exact matches are given and it is not possible to use regexp or similar to match tags." +
+		   "<h4>Matching vlan</h4>To search for a prefix with a certain vlan, simply type '@bar', where 'bar' is the numerical ID of the vlan. The search will match any prefix that has this vlan set. Only exact matches are given and it is not possible to use regexp or similar to match vlan." +
 		   "<h3>Examples</h3>" +
 		   "To find what the IP address 192.168.1.1 is used for:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1" +
 		   "<br/><br/>To list all addresses inside 172.16.0.0/24:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;172.16.0.0/24" +
 		   "<br/><br/>To match prefixes with 'TEST-ROUTER-1' in description or comment and that are somewhere in the network 10.0.0.0/8:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;10.0.0.0/8 TEST-ROUTER-1" +
 		   "<br/><br/>To match prefixes with tag 'core' and description or comment 'router':<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;#core router" +
+		   "<br/><br/>To match prefixes with tag 'gateway' and vlan 666 :<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;#gateway @666" +
 		   '<br/><br/></div>';
 	d = showDialog('search_help', 'Searching', c, 800);
 
