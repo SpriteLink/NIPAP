@@ -218,7 +218,7 @@ def _expand_list_query(opts):
     return query
 
 
-def list_pool(arg, opts):
+def list_pool(arg, opts, shell_opts):
     """ List pools matching a search criteria
     """
 
@@ -275,7 +275,7 @@ def list_pool(arg, opts):
 
 
 
-def list_vrf(arg, opts):
+def list_vrf(arg, opts, shell_opts):
     """ List VRFs matching a search criteria
     """
 
@@ -310,7 +310,7 @@ def list_vrf(arg, opts):
 
 
 
-def list_prefix(arg, opts):
+def list_prefix(arg, opts, shell_opts):
     """ List prefixes matching 'arg'
     """
 
@@ -392,7 +392,7 @@ def list_prefix(arg, opts):
     ADD FUNCTIONS
 """
 
-def add_prefix(arg, opts):
+def add_prefix(arg, opts, shell_opts):
     """ Add prefix to NIPAP
     """
 
@@ -526,7 +526,7 @@ def add_prefix(arg, opts):
 
 
 
-def add_vrf(arg, opts):
+def add_vrf(arg, opts, shell_opts):
     """ Add VRF to NIPAP
     """
 
@@ -545,7 +545,7 @@ def add_vrf(arg, opts):
 
 
 
-def add_pool(arg, opts):
+def add_pool(arg, opts, shell_opts):
     """ Add a pool.
     """
 
@@ -569,7 +569,7 @@ def add_pool(arg, opts):
 """
     VIEW FUNCTIONS
 """
-def view_vrf(arg, opts):
+def view_vrf(arg, opts, shell_opts):
     """ View a single VRF
     """
 
@@ -588,7 +588,7 @@ def view_vrf(arg, opts):
 
 
 
-def view_pool(arg, opts):
+def view_pool(arg, opts, shell_opts):
     """ View a single pool
     """
 
@@ -621,7 +621,7 @@ def view_pool(arg, opts):
 
 
 
-def view_prefix(arg, opts):
+def view_prefix(arg, opts, shell_opts):
     """ View a single prefix.
     """
 
@@ -674,9 +674,11 @@ def view_prefix(arg, opts):
     REMOVE FUNCTIONS
 """
 
-def remove_vrf(arg, opts):
+def remove_vrf(arg, opts, shell_opts):
     """ Remove VRF
     """
+
+    remove_confirmed = shell_opts.force
 
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
@@ -685,21 +687,27 @@ def remove_vrf(arg, opts):
 
     v = res[0]
 
-    print "RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description)
-    print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL ITS ADDRESSES"
-    res = raw_input("Do you really want to remove %s? [y/N]: " % vrf_format(v))
+    if not remove_confirmed:
+        print "RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description)
+        print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL ITS ADDRESSES"
+        res = raw_input("Do you really want to remove %s? [y/N]: " % vrf_format(v))
 
-    if res == 'y':
+        if res == 'y':
+            remove_confirmed = True
+        else:
+            print "Operation canceled."
+
+    if remove_confirmed:
         v.remove()
         print "%s removed." % vrf_format(v)
-    else:
-        print "Operation canceled."
 
 
 
-def remove_pool(arg, opts):
+def remove_pool(arg, opts, shell_opts):
     """ Remove pool
     """
+
+    remove_confirmed = shell_opts.force
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
@@ -708,22 +716,25 @@ def remove_pool(arg, opts):
 
     p = res[0]
 
-    res = raw_input("Do you really want to remove the pool '%s'? [y/N]: " % p.name)
+    if not remove_confirmed:
+        res = raw_input("Do you really want to remove the pool '%s'? [y/N]: " % p.name)
 
-    if res == 'y':
+        if res == 'y':
+            remove_confirmed = True
+        else:
+            print "Operation canceled."
+
+    if remove_confirmed:
         p.remove()
         print "Pool '%s' removed." % p.name
-    else:
-        print "Operation canceled."
 
 
-
-def remove_prefix(arg, opts):
+def remove_prefix(arg, opts, shell_opts):
     """ Remove prefix
     """
 
     # set up some basic variables
-    remove_confirmed = False
+    remove_confirmed = shell_opts.force
     auth_src = set()
     recursive = False
 
@@ -749,125 +760,126 @@ def remove_prefix(arg, opts):
     if p.authoritative_source != 'nipap':
         auth_src.add(p.authoritative_source)
 
-    if recursive is True or p.type == 'assignment':
-        # recursive delete
+    if not remove_confirmed:
+        if recursive is True or p.type == 'assignment':
+            # recursive delete
 
-        # get affected prefixes
-        query = {
-                'val1': 'prefix',
-                'operator': 'contained_within_equals',
-                'val2': p.prefix
-        }
-
-        # add VRF to query if we have one
-        if 'vrf_rt' in spec:
-            vrf_q = {
-                'val1': 'vrf_rt',
-                'operator': 'equals',
-                'val2': spec['vrf_rt']
-            }
+            # get affected prefixes
             query = {
-                'val1': query,
-                'operator': 'and',
-                'val2': vrf_q
+                    'val1': 'prefix',
+                    'operator': 'contained_within_equals',
+                    'val2': p.prefix
             }
-        pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
 
-        # if recursive is False, this delete will fail, ask user to do recursive
-        # delete instead
-        if recursive is False:
-            if len(pres['result']) > 1:
-                print "WARNING: %s in %s contains %s hosts." % (p.prefix, vrf_format(p.vrf), len(pres['result']))
-                res = raw_input("Would you like to recursively delete %s and all hosts? [y/N]: " % (p.prefix))
-                if res.lower() in [ 'y', 'yes' ]:
-                    recursive = True
-                else:
-                    print >> sys.stderr, "ERROR: Removal of assignment containing hosts is prohibited. Aborting removal of %s in %s." % (p.prefix, vrf_format(p.vrf))
-                    sys.exit(1)
+            # add VRF to query if we have one
+            if 'vrf_rt' in spec:
+                vrf_q = {
+                    'val1': 'vrf_rt',
+                    'operator': 'equals',
+                    'val2': spec['vrf_rt']
+                }
+                query = {
+                    'val1': query,
+                    'operator': 'and',
+                    'val2': vrf_q
+                }
+            pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
 
-    if recursive is True:
-        if len(pres['result']) <= 1:
-            res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
+            # if recursive is False, this delete will fail, ask user to do recursive
+            # delete instead
+            if recursive is False:
+                if len(pres['result']) > 1:
+                    print "WARNING: %s in %s contains %s hosts." % (p.prefix, vrf_format(p.vrf), len(pres['result']))
+                    res = raw_input("Would you like to recursively delete %s and all hosts? [y/N]: " % (p.prefix))
+                    if res.lower() in [ 'y', 'yes' ]:
+                        recursive = True
+                    else:
+                        print >> sys.stderr, "ERROR: Removal of assignment containing hosts is prohibited. Aborting removal of %s in %s." % (p.prefix, vrf_format(p.vrf))
+                        sys.exit(1)
 
-            if res.lower() in [ 'y', 'yes' ]:
-                remove_confirmed = True
-
-        else:
-            print "Recursively deleting %s in %s will delete the following prefixes:" % (p.prefix, vrf_format(p.vrf))
-
-            # Iterate prefixes to print a few of them and check the prefixes'
-            # authoritative source
-            i = 0
-            for rp in pres['result']:
-                if i <= 10:
-                    print "%-29s %-2s %-19s %-14s %-14s %-40s" % ("".join("  " for i in
-                        range(rp.indent)) + rp.display_prefix,
-                        rp.type[0].upper(), rp.node, rp.order_id,
-                        rp.customer_id, rp.description)
-
-                if i == 10:
-                    print ".. and %s other prefixes" % (len(pres['result']) - 10)
-
-                if rp.authoritative_source != 'nipap':
-                    auth_src.add(rp.authoritative_source)
-
-                i += 1
-
-            if len(auth_src) == 0:
-                # Simple case; all prefixes were added from NIPAP
-                res = raw_input("Do you really want to recursively remove %s prefixes in %s? [y/N]: " % (len(pres['result']),
-                            vrf_format(vrf)))
+        if recursive is True:
+            if len(pres['result']) <= 1:
+                res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
 
                 if res.lower() in [ 'y', 'yes' ]:
                     remove_confirmed = True
 
             else:
-                # we have prefixes with authoritative source != nipap
-                auth_src = list(auth_src)
-                plural = ""
+                print "Recursively deleting %s in %s will delete the following prefixes:" % (p.prefix, vrf_format(p.vrf))
 
-                # format prompt depending on how many different sources we have
-                if len(auth_src) == 1:
-                    systems = "'%s'" % auth_src[0]
-                    prompt = "Enter the name of the managing system to continue or anything else to abort: "
+                # Iterate prefixes to print a few of them and check the prefixes'
+                # authoritative source
+                i = 0
+                for rp in pres['result']:
+                    if i <= 10:
+                        print "%-29s %-2s %-19s %-14s %-14s %-40s" % ("".join("  " for i in
+                            range(rp.indent)) + rp.display_prefix,
+                            rp.type[0].upper(), rp.node, rp.order_id,
+                            rp.customer_id, rp.description)
+
+                    if i == 10:
+                        print ".. and %s other prefixes" % (len(pres['result']) - 10)
+
+                    if rp.authoritative_source != 'nipap':
+                        auth_src.add(rp.authoritative_source)
+
+                    i += 1
+
+                if len(auth_src) == 0:
+                    # Simple case; all prefixes were added from NIPAP
+                    res = raw_input("Do you really want to recursively remove %s prefixes in %s? [y/N]: " % (len(pres['result']),
+                                vrf_format(vrf)))
+
+                    if res.lower() in [ 'y', 'yes' ]:
+                        remove_confirmed = True
 
                 else:
-                    systems = ", ".join("'%s'" % x for x in auth_src[1:]) + " and '%s'" % auth_src[0]
-                    plural = "s"
-                    prompt = "Enter the name of the last managing system to continue or anything else to abort: "
+                    # we have prefixes with authoritative source != nipap
+                    auth_src = list(auth_src)
+                    plural = ""
 
-                print ("Prefix %s in %s contains prefixes managed by the system%s %s. " +
-                    "Are you sure you want to remove them? ") % (p.prefix,
-                            vrf_format(p.vrf), plural, systems)
-                res = raw_input(prompt)
+                    # format prompt depending on how many different sources we have
+                    if len(auth_src) == 1:
+                        systems = "'%s'" % auth_src[0]
+                        prompt = "Enter the name of the managing system to continue or anything else to abort: "
 
-                # Did the user provide the correct answer?
+                    else:
+                        systems = ", ".join("'%s'" % x for x in auth_src[1:]) + " and '%s'" % auth_src[0]
+                        plural = "s"
+                        prompt = "Enter the name of the last managing system to continue or anything else to abort: "
+
+                    print ("Prefix %s in %s contains prefixes managed by the system%s %s. " +
+                        "Are you sure you want to remove them? ") % (p.prefix,
+                                vrf_format(p.vrf), plural, systems)
+                    res = raw_input(prompt)
+
+                    # Did the user provide the correct answer?
+                    if res.lower() == auth_src[0].lower():
+                        remove_confirmed = True
+                    else:
+                        print >> sys.stderr, "System names did not match."
+                        sys.exit(1)
+
+        else:
+            # non recursive delete
+            if len(auth_src) > 0:
+                auth_src = list(auth_src)
+                print ("Prefix %s in %s is managed by the system '%s'. " +
+                    "Are you sure you want to remove it? ") % (p.prefix,
+                            vrf_format(p.vrf), auth_src[0])
+                res = raw_input("Enter the name of the managing system to continue or anything else to abort: ")
+
                 if res.lower() == auth_src[0].lower():
                     remove_confirmed = True
+
                 else:
                     print >> sys.stderr, "System names did not match."
                     sys.exit(1)
 
-    else:
-        # non recursive delete
-        if len(auth_src) > 0:
-            auth_src = list(auth_src)
-            print ("Prefix %s in %s is managed by the system '%s'. " +
-                "Are you sure you want to remove it? ") % (p.prefix,
-                        vrf_format(p.vrf), auth_src[0])
-            res = raw_input("Enter the name of the managing system to continue or anything else to abort: ")
-
-            if res.lower() == auth_src[0].lower():
-                remove_confirmed = True
-
             else:
-                print >> sys.stderr, "System names did not match."
-                sys.exit(1)
-
-        else:
-            res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
-            if res.lower() in [ 'y', 'yes' ]:
-                remove_confirmed = True
+                res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
+                if res.lower() in [ 'y', 'yes' ]:
+                    remove_confirmed = True
 
     if remove_confirmed is True:
         p.remove(recursive = recursive)
@@ -885,7 +897,7 @@ def remove_prefix(arg, opts):
     MODIFY FUNCTIONS
 """
 
-def modify_vrf(arg, opts):
+def modify_vrf(arg, opts, shell_opts):
     """ Modify a VRF with the options set in opts
     """
 
@@ -909,7 +921,7 @@ def modify_vrf(arg, opts):
 
 
 
-def modify_pool(arg, opts):
+def modify_pool(arg, opts, shell_opts):
     """ Modify a pool with the options set in opts
     """
 
@@ -937,7 +949,7 @@ def modify_pool(arg, opts):
 
 
 
-def grow_pool(arg, opts):
+def grow_pool(arg, opts, shell_opts):
     """ Expand a pool with the ranges set in opts
     """
     if not pool:
@@ -980,7 +992,7 @@ def grow_pool(arg, opts):
 
 
 
-def shrink_pool(arg, opts):
+def shrink_pool(arg, opts, shell_opts):
     """ Shrink a pool by removing the ranges in opts from it
     """
     if not pool:
@@ -1006,9 +1018,11 @@ def shrink_pool(arg, opts):
 
 
 
-def modify_prefix(arg, opts):
+def modify_prefix(arg, opts, shell_opts):
     """ Modify the prefix 'arg' with the options 'opts'
     """
+
+    modify_confirmed = shell_opts.force
 
     spec = { 'prefix': arg }
     v = get_vrf(opts.get('vrf_rt'), abort=True)
@@ -1052,7 +1066,7 @@ def modify_prefix(arg, opts):
         p.monitor = _str_to_bool(opts['monitor'])
 
     # Promt user if prefix has authoritative source != nipap
-    if p.authoritative_source.lower() != 'nipap':
+    if not modify_confirmed and p.authoritative_source.lower() != 'nipap':
 
         res = raw_input("Prefix %s in %s is managed by system '%s'. Are you sure you want to modify it? [y/n]: " %
             (p.prefix, vrf_format(p.vrf), p.authoritative_source))
