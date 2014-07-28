@@ -54,7 +54,11 @@ def setup_connection():
         print >> sys.stderr, "Please define the username, password, hostname and port in your .nipaprc under the section 'global'"
         sys.exit(1)
 
-    ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
+    ao = pynipap.AuthOptions({
+        'authoritative_source': 'nipap',
+        'username': os.getenv('NIPAP_IMPERSONATE_USERNAME') or cfg.get('global', 'username'),
+        'full_name': os.getenv('NIPAP_IMPERSONATE_FULL_NAME'),
+        })
 
 
 
