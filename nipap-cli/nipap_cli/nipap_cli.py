@@ -577,12 +577,11 @@ def view_vrf(arg, opts, shell_opts):
     """ View a single VRF
     """
 
-    res = VRF.list({ 'rt': arg })
-    if len(res) < 1:
-        print >> sys.stderr, "VRF with [RT: %s] not found." % arg
+    if arg is None:
+        print >> sys.stderr, "ERROR: Please specify the RT of the VRF to view."
         sys.exit(1)
 
-    v = res[0]
+    v = get_vrf(arg, abort=True)
 
     print "-- VRF"
     print "  %-12s : %d" % ("ID", v.id)
