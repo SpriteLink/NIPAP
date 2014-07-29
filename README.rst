@@ -50,5 +50,8 @@ X11 / MIT
 
 Contributing
 ------------
-Contributions or suggestions are very much welcome! Fork us on GitHub! :)
+Contributions to NIPAP are more than welcome. Please report bugs or improvement
+requests via GitHub issues.
 
+If you would like to submit code, please read through our code submission
+guidelines at https://github.com/SpriteLink/NIPAP/wiki/Code%20submission
