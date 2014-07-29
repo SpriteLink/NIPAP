@@ -26,7 +26,7 @@ valid_countries = [
     'GB', 'HR', 'LT', 'LV', 'KZ', 'NL',
     'RU', 'SE', 'US' ] # test test, fill up! :)
 valid_prefix_types = [ 'host', 'reservation', 'assignment' ]
-valid_families = [ 'ipv4', 'ipv6' ]
+valid_families = [ 'ipv4', 'ipv6', 'dual-stack' ]
 valid_bools = [ 'true', 'false' ]
 valid_priorities = [ 'warning', 'low', 'medium', 'high', 'critical' ]
 
@@ -396,6 +396,20 @@ def add_prefix(arg, opts):
     """ Add prefix to NIPAP
     """
 
+    # sanity checks
+    if 'from-pool' not in opts and 'from-prefix' not in opts and 'prefix' not in opts:
+        print >> sys.stderr, "ERROR: 'prefix', 'from-pool' or 'from-prefix' must be specified."
+        sys.exit(1)
+
+    if len([opt for opt in opts if opt in ['from-pool', 'from-prefix', 'prefix']]) > 1:
+        print >> sys.stderr, "ERROR: Use either assignment 'from-pool', 'from-prefix' or manual mode (using 'prefix')"
+        sys.exit(1)
+
+    if 'from-pool' in opts:
+        return add_prefix_from_pool(arg, opts)
+
+    args = {}
+
     p = Prefix()
     p.prefix = opts.get('prefix')
     p.type = opts.get('type')
@@ -412,18 +426,6 @@ def add_prefix(arg, opts):
 
     p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
 
-    if 'from-pool' not in opts and 'from-prefix' not in opts and 'prefix' not in opts:
-        print >> sys.stderr, "ERROR: 'prefix', 'from-pool' or 'from-prefix' must be specified."
-        sys.exit(1)
-
-    args = {}
-    if 'from-pool' in opts:
-        res = Pool.list({ 'name': opts['from-pool'] })
-        if len(res) == 0:
-            print >> sys.stderr, "No pool named '%s' found." % opts['from-pool']
-            sys.exit(1)
-
-        args['from-pool'] = res[0]
 
     if 'from-prefix' in opts:
         args['from-prefix'] = [ opts['from-prefix'], ]
@@ -432,88 +434,84 @@ def add_prefix(arg, opts):
         args['prefix_length'] = int(opts['prefix_length'])
 
     if 'family' in opts:
-        family = opts['family']
         if opts['family'] == 'ipv4':
             family = 4
         elif opts['family'] == 'ipv6':
             family = 6
+        elif opts['family'] == 'dual-stack':
+            print >> sys.stderr, "ERROR: dual-stack mode only valid for from-pool assignments"
+            sys.exit(1)
 
         args['family'] = family
 
-    # set type to default type of pool unless already set
-    if 'from-pool' in args:
-        if p.type is None:
-            p.type = args['from-pool'].default_type
+    # try to automatically figure out type for new prefix when not
+    # allocating from a pool
 
+    # get a list of prefixes that contain this prefix
+    vrf_id = 0
+    if p.vrf:
+        vrf_id = p.vrf.id
+
+    if 'from-prefix' in args:
+        parent_prefix = args['from-prefix'][0]
+        parent_op = 'equals'
     else:
-        # try to automatically figure out type for new prefix when not
-        # allocating from a pool
+        parent_prefix = opts.get('prefix').split('/')[0]
+        parent_op = 'contains'
 
-        # get a list of prefixes that contain this prefix
-        vrf_id = 0
-        if p.vrf:
-            vrf_id = p.vrf.id
+    # prefix must be a CIDR network, ie no bits set in host part, so we
+    # remove the prefix length part of the prefix as then the backend will
+    # assume all bits being set
+    auto_type_query = {
+            'val1': {
+                'val1'      : 'prefix',
+                'operator'  : parent_op,
+                'val2'      : parent_prefix
+                },
+            'operator': 'and',
+            'val2': {
+                'val1'      : 'vrf_id',
+                'operator'  : 'equals',
+                'val2'      : vrf_id
+                }
+        }
+    res = Prefix.search(auto_type_query, { })
 
-        if 'from-prefix' in args:
-            parent_prefix = args['from-prefix'][0]
-            parent_op = 'equals'
-        else:
-            parent_prefix = opts.get('prefix').split('/')[0]
-            parent_op = 'contains'
+    # no results, ie the requested prefix is a top level prefix
+    if len(res['result']) == 0:
+        if p.type is None:
+            print >> sys.stderr, "ERROR: Type of prefix must be specified ('assignment' or 'reservation')."
+            sys.exit(1)
+    else:
+        # last prefix in list will be the parent of the new prefix
+        parent = res['result'][-1]
 
-        # prefix must be a CIDR network, ie no bits set in host part, so we
-        # remove the prefix length part of the prefix as then the backend will
-        # assume all bits being set
-        auto_type_query = {
-                'val1': {
-                    'val1'      : 'prefix',
-                    'operator'  : parent_op,
-                    'val2'      : parent_prefix
-                    },
-                'operator': 'and',
-                'val2': {
-                    'val1'      : 'vrf_id',
-                    'operator'  : 'equals',
-                    'val2'      : vrf_id
-                    }
-            }
-        res = Prefix.search(auto_type_query, { })
-
-        # no results, ie the requested prefix is a top level prefix
-        if len(res['result']) == 0:
+        # if the parent is an assignment, we can assume the new prefix to be
+        # a host and act accordingly
+        if parent.type == 'assignment':
+            # automatically set type
             if p.type is None:
-                print >> sys.stderr, "ERROR: Type of prefix must be specified ('assignment' or 'reservation')."
-                sys.exit(1)
-        else:
-            # last prefix in list will be the parent of the new prefix
-            parent = res['result'][-1]
+                print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically setting type 'host' for new prefix."
+            elif p.type == 'host':
+                pass
+            else:
+                print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix." % p.type
+            p.type = 'host'
 
-            # if the parent is an assignment, we can assume the new prefix to be
-            # a host and act accordingly
-            if parent.type == 'assignment':
-                # automatically set type
-                if p.type is None:
-                    print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically setting type 'host' for new prefix."
-                elif p.type == 'host':
-                    pass
+            # if it's a manually specified prefix
+            if 'prefix' in opts:
+                # fiddle prefix length to all bits set
+                if parent.family == 4:
+                    p.prefix = p.prefix.split('/')[0] + '/32'
                 else:
-                    print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix." % p.type
-                p.type = 'host'
+                    p.prefix = p.prefix.split('/')[0] + '/128'
 
-                # if it's a manually specified prefix
-                if 'prefix' in opts:
-                    # fiddle prefix length to all bits set
-                    if parent.family == 4:
-                        p.prefix = p.prefix.split('/')[0] + '/32'
-                    else:
-                        p.prefix = p.prefix.split('/')[0] + '/128'
-
-                # for from-prefix, we set prefix_length to host length
-                elif 'from-prefix' in opts:
-                    if parent.family == 4:
-                        args['prefix_length'] = 32
-                    else:
-                        args['prefix_length'] = 128
+            # for from-prefix, we set prefix_length to host length
+            elif 'from-prefix' in opts:
+                if parent.family == 4:
+                    args['prefix_length'] = 32
+                else:
+                    args['prefix_length'] = 128
 
     try:
         p.save(args)
@@ -523,6 +521,71 @@ def add_prefix(arg, opts):
 
     print "Prefix %s added to %s" % (p.display_prefix, vrf_format(p.vrf))
 
+
+
+def add_prefix_from_pool(arg, opts):
+    """ Add prefix using from-pool to NIPAP
+    """
+
+    args = {}
+
+    # sanity checking
+    if 'from-pool' in opts:
+        res = Pool.list({ 'name': opts['from-pool'] })
+        if len(res) == 0:
+            print >> sys.stderr, "No pool named '%s' found." % opts['from-pool']
+            sys.exit(1)
+
+        args['from-pool'] = res[0]
+
+    if 'family' not in opts:
+        print >> sys.stderr, "ERROR: You have to specify the address family."
+        sys.exit(1)
+
+    if opts['family'] == 'ipv4':
+        afis = [4]
+    elif opts['family'] == 'ipv6':
+        afis = [6]
+    elif opts['family'] == 'dual-stack':
+        afis = [4, 6]
+        if 'prefix_length' in opts:
+            print >> sys.stderr, "ERROR: 'prefix_length' can not be specified for 'dual-stack' assignment"
+            sys.exit(1)
+
+    if 'prefix_length' in opts:
+        args['prefix_length'] = int(opts['prefix_length'])
+
+    for afi in afis:
+        p = Prefix()
+        p.prefix = opts.get('prefix')
+        p.type = opts.get('type')
+        p.description = opts.get('description')
+        p.node = opts.get('node')
+        p.country = opts.get('country')
+        p.order_id = opts.get('order_id')
+        p.customer_id = opts.get('customer_id')
+        p.alarm_priority = opts.get('alarm_priority')
+        p.comment = opts.get('comment')
+        p.monitor = _str_to_bool(opts.get('monitor'))
+        p.vlan = opts.get('vlan')
+        p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
+
+        p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
+        # set type to default type of pool unless already set
+        if p.type is None:
+            if args['from-pool'].default_type is None:
+                print >> sys.stderr, "ERROR: Type not specified and no default-type specified for pool: %s" % opts['from-pool']
+            p.type = args['from-pool'].default_type
+
+        args['family'] = afi
+
+        try:
+            p.save(args)
+        except NipapError as exc:
+            print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
+            sys.exit(1)
+
+        print "Prefix %s added to %s" % (p.display_prefix, vrf_format(p.vrf))
 
 
 
