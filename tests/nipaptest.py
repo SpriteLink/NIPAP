@@ -348,6 +348,7 @@ class TestPrefixChildren(unittest.TestCase):
 
         self.assertEqual(expected, result)
 
+
     def test_children2(self):
         """ Add an assignment and a host and make children calculation works
             after modifying the assignment
@@ -366,6 +367,186 @@ class TestPrefixChildren(unittest.TestCase):
         # check that children of parent is as expected
         res = Prefix.smart_search('192.168.0.0/23', {})
         self.assertEqual(1, res['result'][0].children)
+
+
+    def test_children3(self):
+        """ Check children are correct when adding prefix
+        """
+        th = TestHelper()
+        # add a top level prefix
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(0, res['result'][0].children)
+
+        # add a covering supernet around p1
+        p2 = th.add_prefix('1.0.0.0/20', 'reservation', 'bar')
+
+        # check stats for p2, our new top level prefix
+        res = Prefix.smart_search('1.0.0.0/20', {})
+        self.assertEqual(1, res['result'][0].children)
+
+
+    def test_children4(self):
+        """ Check children are correct when enlarging prefix
+        """
+        th = TestHelper()
+        # add a top level prefix
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
+        p2 = th.add_prefix('1.0.7.0/24', 'assignment', 'test')
+
+        # add a covering supernet around p1
+        p3 = th.add_prefix('1.0.0.0/22', 'reservation', 'bar')
+
+        # check that p3 looks good
+        res = Prefix.smart_search('1.0.0.0/22', {})
+        self.assertEqual(1, res['result'][0].children)
+        # now move our supernet, so we see that the update thingy works
+        p3.prefix = '1.0.0.0/21'
+        p3.save()
+
+        # check stats for p2, our new top level prefix
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(2, res['result'][0].children)
+
+
+    def test_children5(self):
+        """ Check children are correct when shrinking prefix
+        """
+        th = TestHelper()
+        # add a top level prefix
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
+        p2 = th.add_prefix('1.0.7.0/24', 'assignment', 'test')
+
+        # add a covering supernet around p1 and p2
+        p3 = th.add_prefix('1.0.0.0/21', 'reservation', 'bar')
+
+        # check that p3 looks good
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(2, res['result'][0].children)
+
+        # shrink our supernet, so it only covers p1
+        p3.prefix = '1.0.0.0/22'
+        p3.save()
+
+        # check that p3 only covers p1
+        res = Prefix.smart_search('1.0.0.0/22', {})
+        self.assertEqual(1, res['result'][0].children)
+
+
+
+    def test_children6(self):
+        """ Check children are correct when moving prefix
+        """
+        th = TestHelper()
+        # add a top level prefix
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
+        p2 = th.add_prefix('2.0.0.0/25', 'reservation', 'bar')
+        # now move our supernet, so we see that the update thingy works
+        p2.prefix = '2.0.0.0/22'
+        p2.save()
+
+        # check stats for p2, we shouldn't see children based on our old
+        # position (2.0.0.0/25)
+        res = Prefix.smart_search('2.0.0.0/22', {})
+        self.assertEqual(0, res['result'][0].children)
+
+        # now move our supernet, so we see that the update thingy works
+        p2.prefix = '1.0.0.0/22'
+        p2.save()
+
+        # check stats for p2, we should get p1 as child
+        res = Prefix.smart_search('1.0.0.0/22', {})
+        self.assertEqual(1, res['result'][0].children)
+
+
+
+    def test_children7(self):
+        """ Add prefixes within other prefix and verify parent prefix has correct children
+        """
+        th = TestHelper()
+        # add a top level prefix
+        p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(0, res['result'][0].children)
+
+        # add a host in our top prefix
+        p2 = th.add_prefix('1.0.0.1/32', 'host', 'bar')
+
+        # check stats for p1, our top level prefix
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(1, res['result'][0].children)
+
+        # check stats for p2, our new host prefix
+        res = Prefix.smart_search('1.0.0.1/32', {})
+        self.assertEqual(0, res['result'][0].children)
+
+
+    def test_children8(self):
+        """ Remove prefix and check old parent is correctly updated
+        """
+        th = TestHelper()
+
+        # p1 children are p2 (which covers p3 and p4) and p5
+        p1 = th.add_prefix('1.0.0.0/20', 'reservation', 'test')
+        p2 = th.add_prefix('1.0.0.0/22', 'reservation', 'test')
+        p3 = th.add_prefix('1.0.0.0/24', 'reservation', 'test')
+        p4 = th.add_prefix('1.0.1.0/24', 'reservation', 'test')
+        p5 = th.add_prefix('1.0.7.0/24', 'reservation', 'test')
+
+        # moving p2 means that p1 get p3, p4 and p5 as children
+        p2.prefix = '2.0.0.0/22'
+        p2.save()
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/20', {})
+        self.assertEqual(3, res['result'][0].children)
+
+        # moving back p2 which means that p1 get p2 and p5 as children
+        p2.prefix = '1.0.0.0/22'
+        p2.save()
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/20', {})
+        self.assertEqual(2, res['result'][0].children)
+
+
+    def test_children9(self):
+        """ Move prefix several indent steps and check children is correct
+        """
+        th = TestHelper()
+
+        # tree of prefixes
+        p1 = th.add_prefix('1.0.0.0/20', 'reservation', 'test')
+        p2 =  th.add_prefix('1.0.0.0/21', 'reservation', 'test')
+        p3 =   th.add_prefix('1.0.0.0/22', 'reservation', 'test')
+        p4 =    th.add_prefix('1.0.0.0/23', 'reservation', 'test')
+        p5 =     th.add_prefix('1.0.0.0/24', 'reservation', 'test')
+        p6 =    th.add_prefix('1.0.2.0/24', 'reservation', 'test')
+        p7 =   th.add_prefix('1.0.4.0/22', 'reservation', 'test')
+
+        # check stats for p2
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(2, res['result'][0].children)
+
+        # move p3 outside of the tree
+        p3.prefix = '2.0.0.0/22'
+        p3.save()
+
+        # check stats for p2
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(3, res['result'][0].children)
+
+        # move p3 into the tree again
+        p3.prefix = '1.0.0.0/22'
+        p3.save()
+
+        # check stats for p2
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(2, res['result'][0].children)
 
 
 
@@ -762,7 +943,7 @@ class TestPrefixStatistics(unittest.TestCase):
         p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
         p2 = th.add_prefix('1.0.7.0/24', 'assignment', 'test')
 
-        # add a covering supernet around p1
+        # add a covering supernet around p1 and p2
         p3 = th.add_prefix('1.0.0.0/21', 'reservation', 'bar')
 
         # check that p3 looks good
@@ -775,7 +956,7 @@ class TestPrefixStatistics(unittest.TestCase):
         p3.prefix = '1.0.0.0/22'
         p3.save()
 
-        # check stats for p2, our new top level prefix
+        # check that p3 only covers p1
         res = Prefix.smart_search('1.0.0.0/22', {})
         self.assertEqual(1024, res['result'][0].total_addresses)
         self.assertEqual(256, res['result'][0].used_addresses)
@@ -789,16 +970,16 @@ class TestPrefixStatistics(unittest.TestCase):
         # add a top level prefix
         p1 = th.add_prefix('1.0.0.0/24', 'assignment', 'test')
         p2 = th.add_prefix('2.0.0.0/25', 'reservation', 'bar')
-        p2 = th.add_prefix('1.0.0.0/23', 'reservation', 'bar')
         # now move our supernet, so we see that the update thingy works
         p2.prefix = '2.0.0.0/22'
         p2.save()
 
-        # check stats for p2, our new top level prefix
+        # check stats for p2, we shouldn't see stats based on our old position
+        # (2.0.0.0/25)
         res = Prefix.smart_search('2.0.0.0/22', {})
         self.assertEqual(1024, res['result'][0].total_addresses)
-        self.assertEqual(128, res['result'][0].used_addresses)
-        self.assertEqual(896, res['result'][0].free_addresses)
+        self.assertEqual(0, res['result'][0].used_addresses)
+        self.assertEqual(1024, res['result'][0].free_addresses)
 
 
 
@@ -862,10 +1043,47 @@ class TestPrefixStatistics(unittest.TestCase):
         self.assertEqual(4096, res['result'][0].total_addresses)
         self.assertEqual(1280, res['result'][0].used_addresses)
         self.assertEqual(2816, res['result'][0].free_addresses)
-        # TODO: check what happens when a prefix is moved several indents,
-        # something like 1.3.3.0/24 to 1.3.0.0/16 where 1.3.0.0/20 and /21 is in
-        # between
 
+
+    def test_stats7(self):
+        """ Move prefix several indent steps and check stats are correct
+        """
+        th = TestHelper()
+
+        # tree of prefixes
+        p1 = th.add_prefix('1.0.0.0/20', 'reservation', 'test')
+        p2 =  th.add_prefix('1.0.0.0/21', 'reservation', 'test')
+        p3 =   th.add_prefix('1.0.0.0/22', 'reservation', 'test')
+        p4 =    th.add_prefix('1.0.0.0/23', 'reservation', 'test')
+        p5 =     th.add_prefix('1.0.0.0/24', 'reservation', 'test')
+        p6 =    th.add_prefix('1.0.2.0/24', 'reservation', 'test')
+        p7 =   th.add_prefix('1.0.4.0/22', 'reservation', 'test')
+
+        # check stats for p2
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(2048, res['result'][0].total_addresses)
+        self.assertEqual(2048, res['result'][0].used_addresses)
+        self.assertEqual(0, res['result'][0].free_addresses)
+
+        # move p3 outside of the tree
+        p3.prefix = '2.0.0.0/22'
+        p3.save()
+
+        # check stats for p2
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(2048, res['result'][0].total_addresses)
+        self.assertEqual(1792, res['result'][0].used_addresses)
+        self.assertEqual(256, res['result'][0].free_addresses)
+
+        # move p3 into the tree again
+        p3.prefix = '1.0.0.0/22'
+        p3.save()
+
+        # check stats for p2
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(2048, res['result'][0].total_addresses)
+        self.assertEqual(2048, res['result'][0].used_addresses)
+        self.assertEqual(0, res['result'][0].free_addresses)
 
 
     def test_stats7(self):
