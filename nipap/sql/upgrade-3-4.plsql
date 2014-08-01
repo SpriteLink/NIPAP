@@ -93,5 +93,8 @@ UPDATE ip_net_pool SET free_addresses_v6 = COALESCE((SELECT SUM(free_addresses) 
 --UPDATE ip_net_pool SET total_prefixes_v4 = 
 --UPDATE ip_net_pool SET total_prefixes_v6 = 
 
+-- add pool_id index
+CREATE INDEX ip_net_plan__pool_id__index ON ip_net_plan (pool_id);
+
 -- update database schema version
 COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 4';

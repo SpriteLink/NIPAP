@@ -180,6 +180,7 @@ CREATE INDEX ip_net_plan__vrf_id__index ON ip_net_plan (vrf_id);
 CREATE INDEX ip_net_plan__node__index ON ip_net_plan (node);
 CREATE INDEX ip_net_plan__family__index ON ip_net_plan (family(prefix));
 CREATE INDEX ip_net_plan__prefix_iprange_index ON ip_net_plan USING gist(iprange(prefix));
+CREATE INDEX ip_net_plan__pool_id__index ON ip_net_plan (pool_id);
 
 COMMENT ON INDEX ip_net_plan__vrf_id_prefix__index IS 'prefix';
 
