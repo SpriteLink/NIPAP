@@ -256,6 +256,43 @@ class TestPrefixTags(unittest.TestCase):
         self.assertEqual(['b'], res['result'][0].inherited_tags.keys())
 
 
+    def test_tags1(self):
+        """ Verify tags are correctly inherited
+        """
+        th = TestHelper()
+
+        # add to "top level" prefix, each with a unique tag
+        p1 = th.add_prefix('1.0.0.0/8', 'reservation', 'test', tags=['a'])
+        p2 = th.add_prefix('1.0.0.0/9', 'reservation', 'test')
+        p3 = th.add_prefix('1.0.0.0/10', 'reservation', 'test')
+
+        # p3 should have inherited_tags = ['a'] from p1
+        res = Prefix.smart_search('1.0.0.0/10', {})
+        self.assertEqual(['a'], res['result'][0].inherited_tags.keys())
+
+        p4 = th.add_prefix('1.0.0.0/24', 'reservation', 'test')
+        p5 = th.add_prefix('1.0.0.0/23', 'reservation', 'test')
+        p6 = th.add_prefix('1.0.0.0/22', 'reservation', 'test')
+
+        # p4 should have inherited_tags = ['a'] from p1
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(['a'], res['result'][0].inherited_tags.keys())
+
+        # change tags on top level prefix
+        p1.tags = ['b']
+        p1.save()
+
+        # p4 should have inherited_tags = ['a'] from p1
+        res = Prefix.smart_search('1.0.0.0/8', {})
+        self.assertEqual([], res['result'][0].inherited_tags.keys())
+        self.assertEqual(['b'], res['result'][1].inherited_tags.keys())
+        self.assertEqual(['b'], res['result'][2].inherited_tags.keys())
+        self.assertEqual(['b'], res['result'][3].inherited_tags.keys())
+        self.assertEqual(['b'], res['result'][4].inherited_tags.keys())
+        self.assertEqual(['b'], res['result'][5].inherited_tags.keys())
+
+
+
 
 class TestPrefixChildren(unittest.TestCase):
     """ Test calculation of children prefixes
