@@ -511,19 +511,24 @@ BEGIN
 				-- NOOP
 			ELSIF NEW.prefix << OLD.prefix THEN -- NEW is smaller and covered by OLD
 				--
-				FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = OLD.indent+1 ORDER BY prefix ASC) LOOP
+				RAISE WARNING 'foo';
+				FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = NEW.indent ORDER BY prefix ASC) LOOP
 					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
 				END LOOP;
-			ELSIF NEW.prefix >> OLD.prefix THEN -- NEW is larger and covers OLD
+			ELSIF NEW.prefix >> OLD.prefix AND OLD.indent = NEW.indent THEN -- NEW is larger and covers OLD, but same indent
 				-- since the new prefix covers the old prefix but the indent
 				-- hasn't been updated yet, we will see child prefixes with
 				-- OLD.indent + 1 and then the part that is now covered by
 				-- NEW.prefix but wasn't covered by OLD.prefix will have
-				-- NEW.indent+1.
+				-- indent = NEW.indent ( to be NEW.indent+1 after update)
 				FOR p IN (SELECT * FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix != OLD.prefix AND ((indent = OLD.indent+1 AND prefix << OLD.prefix) OR indent = NEW.indent AND prefix << NEW.prefix) ORDER BY prefix ASC) LOOP
 					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
 				END LOOP;
 
+			ELSIF NEW.prefix >> OLD.prefix THEN -- NEW is larger and covers OLD but with different indent
+				FOR p IN (SELECT * FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix != OLD.prefix AND (indent = NEW.indent AND prefix << NEW.prefix) ORDER BY prefix ASC) LOOP
+					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
+				END LOOP;
 			ELSE -- prefix has been moved and doesn't cover or is covered by OLD
 				FOR p IN (SELECT * FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix << NEW.prefix AND indent = COALESCE(new_parent.indent+1, 0) ORDER BY prefix ASC) LOOP
 					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
