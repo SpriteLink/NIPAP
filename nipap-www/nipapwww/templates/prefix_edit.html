@@ -135,4 +135,46 @@
 	</div>
 </div>
 
+<!-- statistics -->
+<div class="options-group">
+	<div class="options-content">
+		<h3 class="options-group-heading">Statistics for prefix: {{ c.prefix.prefix }}</h3>
+
+		<div class="option">
+			<dl>
+				<dt>
+				</dt>
+				<dd>
+				<canvas id="canvas_prefix_addresses" style="float: right;" width="250px;" height="100"></canvas>
+				Prefix {{c.prefix.prefix}} contains {{c.prefix.total_addresses}} addresses out of which {{c.prefix.used_addresses}} are in use while {{c.prefix.free_addresses}} are free, representing a usage of {{ (c.prefix.used_addresses / c.prefix.free_addresses * 100) | round(1) }}%.
+				</dd>
+			</dl>
+		</div>
+
+	</div>
+</div>
+
+<script>
+
+var data_prefix_addresses = [
+	{
+		value: {{c.prefix.used_addresses}},
+		color: '#d74228',
+		highlight: '#e74228',
+		label: 'Used'
+	},
+	{
+		value: {{c.prefix.free_addresses}},
+		color: '#368400',
+		highlight: '#36a200',
+		label: 'Free'
+	}
+	];
+
+
+var options = { animationSteps : 20, animationEasing: "easeOutQuart" };
+var chart_prefix_addresses = new Chart($("#canvas_prefix_addresses")[0].getContext("2d")).Doughnut(data_prefix_addresses, options);
+
+</script>
+
 {% endblock %}

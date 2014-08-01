@@ -659,10 +659,28 @@ def view_vrf(arg, opts, shell_opts):
         sys.exit(1)
 
     print "-- VRF"
-    print "  %-12s : %d" % ("ID", v.id)
-    print "  %-12s : %s" % ("RT", v.rt)
-    print "  %-12s : %s" % ("Name", v.name)
-    print "  %-12s : %s" % ("Description", v.description)
+    print "  %-26s : %d" % ("ID", v.id)
+    print "  %-26s : %s" % ("RT", v.rt)
+    print "  %-26s : %s" % ("Name", v.name)
+    print "  %-26s : %s" % ("Description", v.description)
+    # statistics
+    if v.total_addresses_v4 == 0:
+        used_percent_v4 = 0
+    else:
+        used_percent_v4 = (float(v.used_addresses_v4)/v.total_addresses_v4)*100
+    if v.total_addresses_v6 == 0:
+        used_percent_v6 = 0
+    else:
+        used_percent_v6 = (float(v.used_addresses_v6)/v.total_addresses_v6)*100
+    print "-- Statistics"
+    print "  %-26s : %s" % ("IPv4 prefixes", v.num_prefixes_v4)
+    print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
+            v.used_addresses_v4, v.free_addresses_v4, used_percent_v4,
+            v.total_addresses_v4)
+    print "  %-26s : %s" % ("IPv6 prefixes", v.num_prefixes_v6)
+    print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
+            v.used_addresses_v6, v.free_addresses_v6, used_percent_v6,
+            v.total_addresses_v6)
 
 
 
@@ -685,13 +703,29 @@ def view_pool(arg, opts, shell_opts):
         vrf_name = p.vrf.name
 
     print  "-- Pool "
-    print "  %-22s : %d" % ("ID", p.id)
-    print "  %-22s : %s" % ("Name", p.name)
-    print "  %-22s : %s" % ("Description", p.description)
-    print "  %-22s : %s" % ("Default type", p.default_type)
-    print "  %-22s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name)
-    print "  %-22s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
-    print "\n-- Prefixes in pool"
+    print "  %-26s : %d" % ("ID", p.id)
+    print "  %-26s : %s" % ("Name", p.name)
+    print "  %-26s : %s" % ("Description", p.description)
+    print "  %-26s : %s" % ("Default type", p.default_type)
+    print "  %-26s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name)
+    print "  %-26s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
+    # statistics
+    if p.total_addresses_v4 == 0:
+        used_percent_v4 = 0
+    else:
+        used_percent_v4 = (float(p.used_addresses_v4)/p.total_addresses_v4)*100
+    if p.total_addresses_v6 == 0:
+        used_percent_v6 = 0
+    else:
+        used_percent_v6 = (float(p.used_addresses_v6)/p.total_addresses_v6)*100
+    print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
+            p.used_addresses_v4, p.free_addresses_v4, used_percent_v4,
+            p.total_addresses_v4)
+    print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
+            p.used_addresses_v6, p.free_addresses_v6, used_percent_v6,
+            p.total_addresses_v6)
+    print "\n-- Prefixes in pool - v4: %d  v6: %d" % (p.member_prefixes_v4,
+            p.member_prefixes_v6)
 
     res = Prefix.list({ 'pool_id': p.id})
     for pref in res:
@@ -722,21 +756,29 @@ def view_prefix(arg, opts, shell_opts):
     vrf = p.vrf.rt
 
     print  "-- Address "
-    print "  %-15s : %s" % ("Prefix", p.prefix)
-    print "  %-15s : %s" % ("Display prefix", p.display_prefix)
-    print "  %-15s : %s" % ("Type", p.type)
-    print "  %-15s : IPv%s" % ("Family", p.family)
-    print "  %-15s : %s" % ("VRF", vrf)
-    print "  %-15s : %s" % ("Description", p.description)
-    print "  %-15s : %s" % ("Node", p.node)
-    print "  %-15s : %s" % ("Country", p.country)
-    print "  %-15s : %s" % ("Order", p.order_id)
-    print "  %-15s : %s" % ("Customer", p.customer_id)
-    print "  %-15s : %s" % ("VLAN", p.vlan)
-    print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
-    print "  %-15s : %s" % ("Monitor", p.monitor)
-    print "  %-15s : %s" % ("Added", p.added)
-    print "  %-15s : %s" % ("Last modified", p.last_modified)
+    print "  %-26s : %s" % ("Prefix", p.prefix)
+    print "  %-26s : %s" % ("Display prefix", p.display_prefix)
+    print "  %-26s : %s" % ("Type", p.type)
+    print "  %-26s : IPv%s" % ("Family", p.family)
+    print "  %-26s : %s" % ("VRF", vrf)
+    print "  %-26s : %s" % ("Description", p.description)
+    print "  %-26s : %s" % ("Node", p.node)
+    print "  %-26s : %s" % ("Country", p.country)
+    print "  %-26s : %s" % ("Order", p.order_id)
+    print "  %-26s : %s" % ("Customer", p.customer_id)
+    print "  %-26s : %s" % ("VLAN", p.vlan)
+    print "  %-26s : %s" % ("Alarm priority", p.alarm_priority)
+    print "  %-26s : %s" % ("Monitor", p.monitor)
+    print "  %-26s : %s" % ("Added", p.added)
+    print "  %-26s : %s" % ("Last modified", p.last_modified)
+    if p.family == 4:
+        print "  %-26s : %s / %s (%.2f%% of %s)" % ("Addresses Used / Free", p.used_addresses,
+                p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
+                p.total_addresses)
+    else:
+        print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("Addresses Used / Free", p.used_addresses,
+                p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
+                p.total_addresses)
     print "-- Tags"
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
         print "  %s" % tag_name

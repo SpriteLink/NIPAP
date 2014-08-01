@@ -65,11 +65,13 @@ case "$1" in
 					TO_VERSION=$((${FROM_VERSION}+1))
 					PSQL_FILE="upgrade-${FROM_VERSION}-${TO_VERSION}.plsql"
 
-					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/${PSQL_FILE}" postgres >/dev/null 2>&1
+					echo -n "Upgrading NIPAP SQL database schema from ${FROM_VERSION} to ${TO_VERSION}, please be patient, this can take a while..."
+					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/${PSQL_FILE}" postgres >/dev/null 2>&1 && echo "DONE"
 				done
 
 				# load latest NIPAP database functions
-				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
+				echo -n "Loading NIPAP SQL database functions..."
+				su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1 && echo "DONE"
 			fi
 
 		else

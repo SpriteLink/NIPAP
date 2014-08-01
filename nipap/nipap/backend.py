@@ -1441,6 +1441,16 @@ class Nipap:
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
+                        po.member_prefixes_v4,
+                        po.member_prefixes_v6,
+                        po.used_prefixes_v4,
+                        po.used_prefixes_v6,
+                        po.total_addresses_v4,
+                        po.total_addresses_v6,
+                        po.used_addresses_v4,
+                        po.used_addresses_v6,
+                        po.free_addresses_v4,
+                        po.free_addresses_v6,
                         vrf.id AS vrf_id,
                         vrf.rt AS vrf_rt,
                         vrf.name AS vrf_name,
@@ -1694,6 +1704,16 @@ class Nipap:
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
+                        po.member_prefixes_v4,
+                        po.member_prefixes_v6,
+                        po.used_prefixes_v4,
+                        po.used_prefixes_v6,
+                        po.total_addresses_v4,
+                        po.total_addresses_v6,
+                        po.used_addresses_v4,
+                        po.used_addresses_v6,
+                        po.free_addresses_v4,
+                        po.free_addresses_v6,
                         vrf.id AS vrf_id,
                         vrf.rt AS vrf_rt,
                         vrf.name AS vrf_name,
@@ -1956,6 +1976,9 @@ class Nipap:
             prefix_attr['indent'] = 'inp.indent'
             prefix_attr['added'] = 'inp.added'
             prefix_attr['last_modified'] = 'inp.last_modified'
+            prefix_attr['total_addresses'] = 'inp.total_addresses'
+            prefix_attr['used_addresses'] = 'inp.used_addresses'
+            prefix_attr['free_addresses'] = 'inp.free_addresses'
 
             if query['val1'] not in prefix_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
@@ -2562,7 +2585,10 @@ class Nipap:
             inp.monitor,
             inp.vlan,
             inp.added,
-            inp.last_modified
+            inp.last_modified,
+            inp.total_addresses,
+            inp.used_addresses,
+            inp.free_addresses
             FROM ip_net_plan inp
             JOIN ip_net_vrf vrf ON (inp.vrf_id = vrf.id)
             LEFT JOIN ip_net_pool pool ON (inp.pool_id = pool.id) %s
@@ -2927,7 +2953,10 @@ class Nipap:
         vlan,
         added,
         last_modified,
-        children
+        children,
+        total_addresses,
+        used_addresses,
+        free_addresses
     FROM (
         SELECT DISTINCT ON(vrf_rt_order(vrf.rt), p1.prefix) p1.id,
             p1.prefix,
@@ -2952,6 +2981,9 @@ class Nipap:
             p1.added,
             p1.last_modified,
             p1.children,
+            p1.total_addresses,
+            p1.used_addresses,
+            p1.free_addresses,
             vrf.id AS vrf_id,
             vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,
