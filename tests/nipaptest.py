@@ -868,6 +868,43 @@ class TestPrefixStatistics(unittest.TestCase):
 
 
 
+    def test_stats7(self):
+        """ Enlarge / shrink prefix over several indent levels
+        """
+        th = TestHelper()
+
+        # p1 children are p2 (which covers p3 and p4) and p5
+        p1 = th.add_prefix('1.0.0.0/16', 'reservation', 'test')
+        p2 = th.add_prefix('1.0.0.0/22', 'reservation', 'test')
+        p3 = th.add_prefix('1.0.0.0/23', 'reservation', 'FOO')
+        p4 = th.add_prefix('1.0.0.0/24', 'reservation', 'test')
+        p5 = th.add_prefix('1.0.1.0/24', 'reservation', 'test')
+        p6 = th.add_prefix('1.0.2.0/24', 'reservation', 'test')
+        p7 = th.add_prefix('1.0.3.0/24', 'reservation', 'test')
+
+        # enlarge p3 so that it covers p2, ie moved up several indent levels
+        p3.prefix = '1.0.0.0/21'
+        p3.save()
+
+        # check stats for p3
+        res = Prefix.smart_search('1.0.0.0/21', {})
+        self.assertEqual(2048, res['result'][0].total_addresses)
+        self.assertEqual(1024, res['result'][0].used_addresses)
+        self.assertEqual(1024, res['result'][0].free_addresses)
+
+        # move back p3
+        p3.prefix = '1.0.0.0/23'
+        p3.save()
+
+        # check stats for p3
+        res = Prefix.smart_search('1.0.0.0/23', {})
+        self.assertEqual(512, res['result'][0].total_addresses)
+        self.assertEqual(512, res['result'][0].used_addresses)
+        self.assertEqual(0, res['result'][0].free_addresses)
+
+
+
+
 class TestVrfStatistics(unittest.TestCase):
     """ Test calculation of statistics for VRFs
     """

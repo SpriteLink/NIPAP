@@ -511,19 +511,23 @@ BEGIN
 				-- NOOP
 			ELSIF NEW.prefix << OLD.prefix THEN -- NEW is smaller and covered by OLD
 				--
-				FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = OLD.indent+1 ORDER BY prefix ASC) LOOP
+				FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = NEW.indent ORDER BY prefix ASC) LOOP
 					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
 				END LOOP;
-			ELSIF NEW.prefix >> OLD.prefix THEN -- NEW is larger and covers OLD
+			ELSIF NEW.prefix >> OLD.prefix AND OLD.indent = NEW.indent THEN -- NEW is larger and covers OLD, but same indent
 				-- since the new prefix covers the old prefix but the indent
 				-- hasn't been updated yet, we will see child prefixes with
 				-- OLD.indent + 1 and then the part that is now covered by
 				-- NEW.prefix but wasn't covered by OLD.prefix will have
-				-- NEW.indent+1.
+				-- indent = NEW.indent ( to be NEW.indent+1 after update)
 				FOR p IN (SELECT * FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix != OLD.prefix AND ((indent = OLD.indent+1 AND prefix << OLD.prefix) OR indent = NEW.indent AND prefix << NEW.prefix) ORDER BY prefix ASC) LOOP
 					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
 				END LOOP;
 
+			ELSIF NEW.prefix >> OLD.prefix THEN -- NEW is larger and covers OLD but with different indent
+				FOR p IN (SELECT * FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix != OLD.prefix AND (indent = NEW.indent AND prefix << NEW.prefix) ORDER BY prefix ASC) LOOP
+					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
+				END LOOP;
 			ELSE -- prefix has been moved and doesn't cover or is covered by OLD
 				FOR p IN (SELECT * FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND prefix << NEW.prefix AND indent = COALESCE(new_parent.indent+1, 0) ORDER BY prefix ASC) LOOP
 					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
@@ -939,34 +943,38 @@ BEGIN
 	END IF;
 
 	-- we are the child of a pool, ie our parent prefix is a member of the pool
-	IF TG_OP = 'DELETE' OR (TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix) THEN
-		IF family(OLD.prefix) = 4 THEN
-			UPDATE ip_net_pool
-			SET used_prefixes_v4 = used_prefixes_v4 - 1,
-				free_addresses_v4 = free_addresses_v4 + OLD.total_addresses,
-				used_addresses_v4 = used_addresses_v4 - OLD.total_addresses
-			WHERE id = old_parent_pool.id;
-		ELSE
-			UPDATE ip_net_pool
-			SET used_prefixes_v6 = used_prefixes_v6 - 1,
-				free_addresses_v6 = free_addresses_v6 + OLD.total_addresses,
-				used_addresses_v6 = used_addresses_v6 - OLD.total_addresses
-			WHERE id = old_parent_pool.id;
+	IF (TG_OP = 'DELETE' OR (TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix)) THEN
+		IF old_parent.pool_id IS NOT NULL THEN
+			IF family(OLD.prefix) = 4 THEN
+				UPDATE ip_net_pool
+				SET used_prefixes_v4 = used_prefixes_v4 - 1,
+					free_addresses_v4 = free_addresses_v4 + OLD.total_addresses,
+					used_addresses_v4 = used_addresses_v4 - OLD.total_addresses
+				WHERE id = old_parent_pool.id;
+			ELSE
+				UPDATE ip_net_pool
+				SET used_prefixes_v6 = used_prefixes_v6 - 1,
+					free_addresses_v6 = free_addresses_v6 + OLD.total_addresses,
+					used_addresses_v6 = used_addresses_v6 - OLD.total_addresses
+				WHERE id = old_parent_pool.id;
+			END IF;
 		END IF;
 	END IF;
-	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix) THEN
-		IF family(NEW.prefix) = 4 THEN
-			UPDATE ip_net_pool
-			SET used_prefixes_v4 = used_prefixes_v4 + 1,
-				free_addresses_v4 = free_addresses_v4 - NEW.total_addresses,
-				used_addresses_v4 = used_addresses_v4 + NEW.total_addresses
-			WHERE id = new_parent_pool.id;
-		ELSE
-			UPDATE ip_net_pool
-			SET used_prefixes_v6 = used_prefixes_v6 + 1,
-				free_addresses_v6 = free_addresses_v6 - NEW.total_addresses,
-				used_addresses_v6 = used_addresses_v6 + NEW.total_addresses
-			WHERE id = new_parent_pool.id;
+	IF (TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix)) THEN
+		IF new_parent.pool_id IS NOT NULL THEN
+			IF family(NEW.prefix) = 4 THEN
+				UPDATE ip_net_pool
+				SET used_prefixes_v4 = used_prefixes_v4 + 1,
+					free_addresses_v4 = free_addresses_v4 - NEW.total_addresses,
+					used_addresses_v4 = used_addresses_v4 + NEW.total_addresses
+				WHERE id = new_parent_pool.id;
+			ELSE
+				UPDATE ip_net_pool
+				SET used_prefixes_v6 = used_prefixes_v6 + 1,
+					free_addresses_v6 = free_addresses_v6 - NEW.total_addresses,
+					used_addresses_v6 = used_addresses_v6 + NEW.total_addresses
+				WHERE id = new_parent_pool.id;
+			END IF;
 		END IF;
 	END IF;
 
