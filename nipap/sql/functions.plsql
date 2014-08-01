@@ -1099,17 +1099,16 @@ CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__id_after
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_after();
 
--- TODO: use 'IS DISTINCT FROM' on fields which could be NULL, also check other trigger functions:w
 CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_after
-	AFTER UPDATE OF vrf_id, prefix, indent, type, pool_id, used_addresses
+	AFTER UPDATE OF vrf_id, prefix, indent, type, pool_id, used_addresses, tags, inherited_tags
 	ON ip_net_plan
 	FOR EACH ROW
 	WHEN (OLD.vrf_id != NEW.vrf_id
 		OR OLD.prefix != NEW.prefix
 		OR OLD.indent != NEW.indent
 		OR OLD.type != NEW.type
-		OR OLD.tags != NEW.tags
-		OR OLD.inherited_tags != NEW.inherited_tags
+		OR OLD.tags IS DISTINCT FROM NEW.tags
+		OR OLD.inherited_tags IS DISTINCT FROM NEW.inherited_tags
 		OR OLD.pool_id IS DISTINCT FROM NEW.pool_id
 		OR OLD.used_addresses != NEW.used_addresses)
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_after();
