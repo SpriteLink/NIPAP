@@ -9,7 +9,7 @@ import optparse
 import logging
 
 import nipap.authlib
-from nipap.nipapconfig import NipapConfig
+from nipap.nipapconfig import NipapConfig, NipapConfigError
 
 if __name__ == '__main__':
 
@@ -41,7 +41,11 @@ if __name__ == '__main__':
     logger.setLevel(logging.WARNING)
     logger.addHandler(log_stream)
 
-    cfg = NipapConfig(options.config)
+    try:
+        cfg = NipapConfig(options.config)
+    except NipapConfigError, exc:
+        print >> sys.stderr, "The specified configuration file ('" + options.config + "') does not exist"
+        sys.exit(1)
 
     if options.db_file:
         cfg.set('auth.backends.local', 'db_path', options.db_file)
