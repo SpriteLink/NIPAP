@@ -20,6 +20,7 @@ Version 0.26.0 - Iron Man
  * Fix for CLI address modification traceback (#516)
  * Fix tag inheritance bugs (#507 & #519)
  * Fix bug for calculation of children (#518)
+ * Fix nipap-passwd traceback (#548)
 
 Version 0.25.0 - Dr. Who
 ------------------------

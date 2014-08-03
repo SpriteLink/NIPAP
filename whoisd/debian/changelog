@@ -1,3 +1,30 @@
+nipap-whoisd (0.26.0-1) stable; urgency=low
+
+  * Support for statistics! Total / used / free prefixes are now listed
+    for prefixes, VRFs and pool (#248)
+  * Travis-CI testing of package upgrade (#524 / #525)
+  * Introduced AngularJS framework, it is only used on a few pages at
+    this time but its use will become more widespread with time (#338)
+  * Web UI now supports searching for VRFs (#347)
+  * CLI dual-stack address assignment (#526)
+  * CLI remove now defaults to recursive when assignment contains hosts
+    (#520)
+  * CLI support for user impersonation via environment variables (#538)
+  * CLI support for suppressing interactive prompts (#499)
+  * Web UI pool list page converted to AngularJS (#503)
+  * Faster pool listing thanks to db index (#497)
+  * Fix CLI with regards to viewing default VRF (#527)
+  * Fix for Web UI prefix Save button (#523)
+  * Fix for CLI .nipaprc bug (#509)
+  * Fix bug for updating display_prefix on hosts (#515)
+  * Fix for CLI piping (#464)
+  * Fix for CLI address modification traceback (#516)
+  * Fix tag inheritance bugs (#507 & #519)
+  * Fix bug for calculation of children (#518)
+  * Fix nipap-passwd traceback (#548)
+
+ -- Kristian Larsson <kll@spritelink.net>  Sun, 03 Aug 2014 19:56:42 +0200
+
 nipap-whoisd (0.25.0-1) stable; urgency=low
 
   * There's now a whois-server!
