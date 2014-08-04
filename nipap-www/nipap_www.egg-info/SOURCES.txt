@@ -33,7 +33,11 @@ nipapwww/lib/app_globals.py
 nipapwww/lib/base.py
 nipapwww/lib/helpers.py
 nipapwww/model/__init__.py
-nipapwww/public/comment-icon.png
+nipapwww/public/Chart.min.js
+nipapwww/public/angular.js
+nipapwww/public/angular.min.js
+nipapwww/public/bootstrap.css
+nipapwww/public/controllers.js
 nipapwww/public/datatable.css
 nipapwww/public/favicon.ico
 nipapwww/public/jquery-1.9.1.min.js
@@ -44,16 +48,14 @@ nipapwww/public/jquery.tagit.css
 nipapwww/public/jquery.tipTip.minified.js
 nipapwww/public/jquery.url.js
 nipapwww/public/loading.gif
-nipapwww/public/minify.py
-nipapwww/public/nipap-ip.png
 nipapwww/public/nipap.css
 nipapwww/public/nipap.js
-nipapwww/public/remove-icon.png
-nipapwww/public/tag-icon.png
 nipapwww/public/tag-it.min.js
 nipapwww/public/tipTip.css
+nipapwww/public/ui-bootstrap-tpls.js
 nipapwww/public/images/back_disabled.jpg
 nipapwww/public/images/back_enabled.jpg
+nipapwww/public/images/comments-16.png
 nipapwww/public/images/display_menu.png
 nipapwww/public/images/forward_disabled.jpg
 nipapwww/public/images/forward_enabled.jpg
@@ -62,6 +64,7 @@ nipapwww/public/images/sort_asc_disabled.png
 nipapwww/public/images/sort_both.png
 nipapwww/public/images/sort_desc.png
 nipapwww/public/images/sort_desc_disabled.png
+nipapwww/public/images/tag-16.png
 nipapwww/public/images/ui-bg_flat_0_aaaaaa_40x100.png
 nipapwww/public/images/ui-bg_flat_75_ffffff_40x100.png
 nipapwww/public/images/ui-bg_glass_55_fbf9ee_1x400.png
@@ -75,6 +78,7 @@ nipapwww/public/images/ui-icons_2e83ff_256x240.png
 nipapwww/public/images/ui-icons_454545_256x240.png
 nipapwww/public/images/ui-icons_888888_256x240.png
 nipapwww/public/images/ui-icons_cd0a0a_256x240.png
+nipapwww/public/images/x-mark-3-16.png
 nipapwww/templates/base.html
 nipapwww/templates/login.html
 nipapwww/templates/macros.html

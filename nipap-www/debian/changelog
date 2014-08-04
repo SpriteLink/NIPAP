@@ -1,3 +1,9 @@
+nipap-www (0.26.2-1) stable; urgency=low
+
+  * Fix two statistics bugs in web-UI (#552 & #553)
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 04 Aug 2014 17:23:41 +0200
+
 nipap-www (0.26.1-1) stable; urgency=low
 
   * Fix www icons (#551)
