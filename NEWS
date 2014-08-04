@@ -1,3 +1,7 @@
+Version 0.26.2 - Iron Man
+-------------------------
+ * Fix two statistics bugs in web-UI (#552 & #553)
+
 Version 0.26.1 - Iron Man
 -------------------------
  * Fix www icons (#551)
