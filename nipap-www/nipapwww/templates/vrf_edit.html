@@ -74,7 +74,7 @@
 				No IPv4 prefixes in VRF.
 				{% else %}
 				<canvas id="canvas_vrf_addresses_v4" style="float: right;" width="250px;" height="100"></canvas>
-				VRF {{c.edit_vrf.name}} contains {{c.edit_vrf.num_prefixes_v4}} IPv4 prefixes containing a total of {{c.edit_vrf.total_addresses_v4}} addresses. {{c.edit_vrf.used_addresses_v4}} of those are in use while {{c.edit_vrf.free_addresses_v4}} are free, representing a usage of {{ (c.edit_vrf.used_addresses_v4 / c.edit_vrf.free_addresses_v4 * 100) | round(1) }}%.
+				VRF {{c.edit_vrf.name}} contains {{c.edit_vrf.num_prefixes_v4}} IPv4 prefixes containing a total of {{c.edit_vrf.total_addresses_v4}} addresses. {{c.edit_vrf.used_addresses_v4}} of those are in use while {{c.edit_vrf.free_addresses_v4}} are free, representing a usage of {{ (c.edit_vrf.used_addresses_v4 / c.edit_vrf.total_addresses_v4 * 100) | round(1) }}%.
 				{% endif %}
 				</dd>
 			</dl>
@@ -92,7 +92,7 @@
 				No IPv6 prefixes in VRF.
 				{% else %}
 				<canvas id="canvas_vrf_addresses_v6" style="float: right;" width="250px;" height="100"></canvas>
-				VRF {{c.edit_vrf.name}} contains {{c.edit_vrf.num_prefixes_v6}} IPv6 prefixes containing a total of {{c.edit_vrf.total_addresses_v6}} addresses. {{c.edit_vrf.used_addresses_v6}} of those are in use while {{c.edit_vrf.free_addresses_v6}} are free, representing a usage of {{ (c.edit_vrf.used_addresses_v6 / c.edit_vrf.free_addresses_v6 * 100) | round(1) }}%.
+				VRF {{c.edit_vrf.name}} contains {{c.edit_vrf.num_prefixes_v6}} IPv6 prefixes containing a total of {{c.edit_vrf.total_addresses_v6}} addresses. {{c.edit_vrf.used_addresses_v6}} of those are in use while {{c.edit_vrf.free_addresses_v6}} are free, representing a usage of {{ (c.edit_vrf.used_addresses_v6 / c.edit_vrf.total_addresses_v6 * 100) | round(1) }}%.
 				{% endif %}
 				</dd>
 			</dl>
