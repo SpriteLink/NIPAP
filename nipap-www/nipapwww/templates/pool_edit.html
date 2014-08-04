@@ -332,8 +332,12 @@ data_pool_addresses_v6[0]['value'] = {{c.pool.used_addresses_v6}};
 data_pool_addresses_v6[1]['value'] = {{c.pool.free_addresses_v6}};
 
 var options = { animationSteps : 20, animationEasing: "easeOutQuart" };
+{% if c.pool.member_prefixes_v4 > 0 %}
 var chart_pool_addresses_v4 = new Chart($("#canvas_pool_addresses_v4")[0].getContext("2d")).Doughnut(data_pool_addresses_v4, options);
+{% endif %}
+{% if c.pool.member_prefixes_v6 > 0 %}
 var chart_pool_addresses_v6 = new Chart($("#canvas_pool_addresses_v6")[0].getContext("2d")).Doughnut(data_pool_addresses_v6, options);
+{% endif %}
 
 </script>
 
