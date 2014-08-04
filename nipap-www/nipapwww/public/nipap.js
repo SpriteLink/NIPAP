@@ -634,7 +634,7 @@ function showPrefix(prefix, reference, offset) {
 		}
 		prefix_tags.addClass('tooltip');
 		prefix_tags.prop('title', tags_html)
-		prefix_tags.html('<img src="/icons/tag-16.png">');
+		prefix_tags.html('<img src="/images/tag-16.png">');
 		prefix_tags.tipTip({ delay: 100 });
 	}
 
@@ -681,7 +681,7 @@ function showPrefix(prefix, reference, offset) {
 	} else {
 		prefix_comment.addClass('tooltip');
 		prefix_comment.prop('title', prefix.comment)
-		prefix_comment.html('<img src="/icons/comments-16.png">');
+		prefix_comment.html('<img src="/images/comments-16.png">');
 		prefix_comment.tipTip({ delay: 100 });
 	}
 
@@ -910,7 +910,7 @@ function addVRFToSelectList(vrf, elem) {
 	// display tick
 	if (selected_vrfs.hasOwnProperty(String(vrf.id))) {
 		elem.children('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&#10003;');
-		elem.children('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/icons/x-mark-3-16.png">');
+		elem.children('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/images/x-mark-3-16.png">');
 	}
 
 	$("#vrf_filter_entry_" + String(vrf.id)).click(curVRFCallback);
