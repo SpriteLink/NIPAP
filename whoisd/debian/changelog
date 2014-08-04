@@ -1,3 +1,9 @@
+nipap-whoisd (0.26.1-1) stable; urgency=low
+
+  * Fix www icons (#551)
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 04 Aug 2014 09:25:41 +0200
+
 nipap-whoisd (0.26.0-1) stable; urgency=low
 
   * Support for statistics! Total / used / free prefixes are now listed

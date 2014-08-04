@@ -1,3 +1,7 @@
+Version 0.26.1 - Iron Man
+-------------------------
+ * Fix www icons (#551)
+
 Version 0.26.0 - Iron Man
 -------------------------
  * Support for statistics! Total / used / free prefixes are now listed for
