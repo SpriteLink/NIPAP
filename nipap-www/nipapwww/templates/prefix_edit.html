@@ -146,7 +146,7 @@
 				</dt>
 				<dd>
 				<canvas id="canvas_prefix_addresses" style="float: right;" width="250px;" height="100"></canvas>
-				Prefix {{c.prefix.prefix}} contains {{c.prefix.total_addresses}} addresses out of which {{c.prefix.used_addresses}} are in use while {{c.prefix.free_addresses}} are free, representing a usage of {{ (c.prefix.used_addresses / c.prefix.free_addresses * 100) | round(1) }}%.
+				Prefix {{c.prefix.prefix}} contains {{c.prefix.total_addresses}} addresses out of which {{c.prefix.used_addresses}} are in use while {{c.prefix.free_addresses}} are free, representing a usage of {{ (c.prefix.used_addresses / c.prefix.total_addresses * 100) | round(1) }}%.
 				</dd>
 			</dl>
 		</div>
