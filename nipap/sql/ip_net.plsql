@@ -4,7 +4,7 @@
 --
 --------------------------------------------
 
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 4';
+COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';
 
 CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
 
@@ -31,7 +31,8 @@ CREATE TABLE ip_net_vrf (
 	used_addresses_v4 numeric(40) DEFAULT 0,
 	used_addresses_v6 numeric(40) DEFAULT 0,
 	free_addresses_v4 numeric(40) DEFAULT 0,
-	free_addresses_v6 numeric(40) DEFAULT 0
+	free_addresses_v6 numeric(40) DEFAULT 0,
+	tags text[] DEFAULT '{}'
 );
 
 --
