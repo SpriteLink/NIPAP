@@ -283,7 +283,7 @@
 					No IPv4 member prefixes.
 					{% else %}
 					<canvas id="canvas_pool_addresses_v4" style="float: right;" width="250px;" height="100"></canvas>
-					Pool {{c.pool.name}} consists of {{c.pool.member_prefixes_v4}} IPv4 prefixes totalling {{c.pool.total_addresses_v4}} addresses. {{c.pool.used_addresses_v4}} addresses are in use while {{c.pool.free_addresses_v4}} are free, representing a usage of {{ (c.pool.used_addresses_v4 / c.pool.free_addresses_v4 * 100) | round(1) }} %.
+					Pool {{c.pool.name}} consists of {{c.pool.member_prefixes_v4}} IPv4 prefixes totalling {{c.pool.total_addresses_v4}} addresses. {{c.pool.used_addresses_v4}} addresses are in use while {{c.pool.free_addresses_v4}} are free, representing a usage of {{ (c.pool.used_addresses_v4 / c.pool.total_addresses_v4 * 100) | round(1) }}%.
 					{% endif %}
 					</dd>
 				</dl>
@@ -301,7 +301,7 @@
 					No IPv6 member prefixes.
 					{% else %}
 					<canvas id="canvas_pool_addresses_v6" style="float: right;" width="250px;" height="100"></canvas>
-					Pool {{c.pool.name}} consists of {{c.pool.member_prefixes_v6}} IPv6 prefixes totalling {{c.pool.total_addresses_v6}} addresses. {{c.pool.used_addresses_v6}} addresses are in use while {{c.pool.free_addresses_v6}} are free, representing a usage of {{ (c.pool.used_addresses_v6 / c.pool.free_addresses_v6 * 100) | round(1) }} %.
+					Pool {{c.pool.name}} consists of {{c.pool.member_prefixes_v6}} IPv6 prefixes totalling {{c.pool.total_addresses_v6}} addresses. {{c.pool.used_addresses_v6}} addresses are in use while {{c.pool.free_addresses_v6}} are free, representing a usage of {{ (c.pool.used_addresses_v6 / c.pool.total_addresses_v6 * 100) | round(1) }}%.
 					{% endif %}
 					</dd>
 				</dl>
