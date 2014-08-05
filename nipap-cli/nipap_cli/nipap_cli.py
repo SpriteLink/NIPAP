@@ -555,6 +555,9 @@ def add_prefix_from_pool(arg, opts):
         if 'prefix_length' in opts:
             print >> sys.stderr, "ERROR: 'prefix_length' can not be specified for 'dual-stack' assignment"
             sys.exit(1)
+    else:
+        print >> sys.stderr, "ERROR: 'family' must be one of: %s" % " ".join(valid_families)
+        sys.exit(1)
 
     if 'prefix_length' in opts:
         args['prefix_length'] = int(opts['prefix_length'])
