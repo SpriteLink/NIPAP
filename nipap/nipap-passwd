@@ -54,10 +54,13 @@ if __name__ == '__main__':
 
     if options.latest_version:
         try:
-            a._latest_db_version()
+            latest = a._latest_db_version()
+            if not latest:
+                print >> sys.stderr, "It seems your Sqlite database for local auth is out of date"
+                print >> sys.stderr, "Please run 'nipap-passwd --upgrade-database' to upgrade your database."
+                sys.exit(2)
         except nipap.authlib.AuthSqliteError, e:
-            print >> sys.stderr, "Problem with Sqlite database for local auth: %s" % e
-            print >> sys.stderr, "Run 'nipap-passwd --upgrade-database' to upgrade your database."
+            print >> sys.stderr, "Error checking version of Sqlite database for local auth: %s" % e
             sys.exit(1)
         print "Sqlite database for local auth is of the latest version."
         sys.exit(0)

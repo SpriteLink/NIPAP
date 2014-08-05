@@ -406,7 +406,7 @@ class SqliteAuth(BaseAuth):
             try:
                 self._db_curs.execute(sql)
             except:
-                raise AuthSqliteError("No column '%s' on table 'user'." % column)
+                return False
 
         return True
 
