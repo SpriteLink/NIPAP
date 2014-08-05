@@ -298,15 +298,18 @@ def list_vrf(arg, opts, shell_opts):
                 print "No matching VRFs found."
                 return
 
-            print "%-16s %-22s %-40s" % ("VRF RT", "Name", "Description")
+            print "%-16s %-22s %-2s %-40s" % ("VRF RT", "Name", "#", "Description")
             print "--------------------------------------------------------------------------------"
 
         for v in res['result']:
-            if len(unicode(v.description)) > 40:
-                desc = v.description[0:37] + "..."
+            tags = '-'
+            if len(v.tags) > 0:
+                tags = '#%d' % len(v.tags)
+            if len(unicode(v.description)) > 100:
+                desc = v.description[0:97] + "..."
             else:
                 desc = v.description
-            print "%-16s %-22s %-40s" % (v.rt or '-', v.name, desc)
+            print "%-16s %-22s %-2s %-40s" % (v.rt or '-', v.name, tags, desc)
 
         if len(res['result']) < limit:
             break
@@ -604,6 +607,7 @@ def add_vrf(arg, opts, shell_opts):
     v.rt = opts.get('rt')
     v.name = opts.get('name')
     v.description = opts.get('description')
+    v.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
 
     try:
         v.save()
@@ -666,6 +670,9 @@ def view_vrf(arg, opts, shell_opts):
     print "  %-26s : %s" % ("RT", v.rt)
     print "  %-26s : %s" % ("Name", v.name)
     print "  %-26s : %s" % ("Description", v.description)
+    print "-- Tags"
+    for tag_name in sorted(v.tags, key=lambda s: s.lower()):
+        print "  %s" % tag_name
     # statistics
     if v.total_addresses_v4 == 0:
         used_percent_v4 = 0
@@ -1037,6 +1044,13 @@ def modify_vrf(arg, opts, shell_opts):
         v.name = opts['name']
     if 'description' in opts:
         v.description = opts['description']
+    if 'tags' in opts:
+        tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
+        v.tags = {}
+        for tag_name in tags:
+            tag = Tag()
+            tag.name = tag_name
+            v.tags[tag_name] = tag
 
     v.save()
 
@@ -1781,6 +1795,15 @@ cmds = {
                                 'content_type': unicode,
                                 'description': 'Description of the VRF'
                             }
+                        },
+                        'tags': {
+                            'type': 'option',
+                            'content_type': unicode,
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_tags,
+                            }
                         }
                     }
                 },
@@ -1880,6 +1903,15 @@ cmds = {
                                         'type': 'value',
                                         'content_type': unicode,
                                         'description': 'Description of the VRF'
+                                    }
+                                },
+                                'tags': {
+                                    'type': 'option',
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'complete': complete_tags,
                                     }
                                 }
                             }
