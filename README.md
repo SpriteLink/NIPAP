@@ -1,9 +1,8 @@
 NIPAP
 =====
 
-.. image:: https://travis-ci.org/SpriteLink/NIPAP.png?branch=master
-        :target: https://travis-ci.org/SpriteLink/NIPAP/branches
-        :alt: Build Status
+[![Build Status](https://travis-ci.org/SpriteLink/NIPAP.svg?branch=master)](https://travis-ci.org/SpriteLink/NIPAP)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/SpriteLink/NIPAP/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SpriteLink/NIPAP/?branch=master)
 
 NIPAP is the Neat IP Address Planner - a system built for managing large
 amounts of IP addresses.
