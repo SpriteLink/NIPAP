@@ -27,9 +27,10 @@ if __name__ == '__main__':
     parser.add_option('--latest-version', action='store_true',
             help='check if the sqlite database is of latest version')
     parser.add_option('-l', '--list', action='store_true', dest='list', help='list users')
-    parser.add_option('-p', '--password', dest='password', type='string', help='set user\'s password to PASSWORD')
+    parser.add_option('-p', '--password', dest='password', type='string', help='password of the user')
     parser.add_option('-r', '--readonly', action='store_true', dest='readonly', default=False, help='set user to read only')
     parser.add_option('-t', '--trusted', action='store_true', dest='trusted', default=False, help='mark user as trusted')
+    parser.add_option('--test-user', dest='test_user', type='string', help='try to authenticate with a user')
     parser.add_option('--upgrade-database', action='store_true',
             help='upgrade sqlite database to latest version')
     options, args = parser.parse_args()
@@ -79,6 +80,22 @@ if __name__ == '__main__':
         print "%s\n%s" % (header,''.join('-' for x in range(len(header))))
         for u in a.list_users():
             print "%-20s %-25s %-7d %-7d" % (u['username'], u['full_name'], int(u['trusted']), int(u['readonly']))
+
+    elif options.test_user:
+        if not options.password:
+            print "Please specify password with --password"
+            sys.exit(1)
+        if not a.get_user(options.test_user):
+            print "The user %s does not exist" % options.test_user
+            sys.exit(2)
+        af = nipap.authlib.AuthFactory()
+        auth = af.get_auth(options.test_user, options.password, "nipap", {})
+        if not auth.authenticate():
+            print "The password seems to be wrong"
+            sys.exit(2)
+
+        print "Username and password seem to be correct"
+        sys.exit(0)
 
     elif options.add_user:
         if not options.password:

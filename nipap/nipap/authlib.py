@@ -462,10 +462,7 @@ class SqliteAuth(BaseAuth):
 
         self._logger.debug('Trying to authenticate as user \'%s\'' % self.username)
 
-        sql = '''SELECT * FROM user WHERE username = ?'''
-        self._db_curs.execute(sql, (self.username, ))
-        user = self._db_curs.fetchone()
-
+        user = self.get_user(self.username)
         # Was user found?
         if user is None:
             self._logger.debug('unknown user %s' % self.username)
@@ -506,6 +503,19 @@ class SqliteAuth(BaseAuth):
 
         self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s' % (self.authenticated_as, self.username, self.full_name, str(self.readonly)))
         return self._authenticated
+
+
+
+    def get_user(self, username):
+        """ Fetch the user from the database
+
+            The function will return None if the user is not found
+        """
+
+        sql = '''SELECT * FROM user WHERE username = ?'''
+        self._db_curs.execute(sql, (username, ))
+        user = self._db_curs.fetchone()
+        return user
 
 
 
