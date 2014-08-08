@@ -3,8 +3,6 @@ Any contributions to NIPAP are very much welcome. As a user of NIPAP it is possi
 
 If you are uncertain on your bug/improvement issue, don't hesitate to discuss it on the official NIPAP IRC channel - #NIPAP on freenode.
 
-As NIPAP is a relatively young project, one of the areas in most need of help is simply documenting how to use NIPAP and especially with examples on how it can fit into different deployments. If you have an example on how you've incorporated NIPAP into your environment, please share it by opening a page on this wiki!
-
 ## Code submission
 
 Since NIPAP is hosted on GitHub, the most common method for sending code is through a pull request (PR). We have no principal problem with PRs - it's just that they tend to become cluttered with changes in a number of commits as feedback is given on the initial patch. We want PRs with a clean commit history. 
