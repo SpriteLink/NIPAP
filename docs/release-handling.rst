@@ -136,6 +136,6 @@ While for the stable repo, it's:
   make debrepo
 
 Make sure the new files are added to git, commit and push.
- git add repos
+ git add --all repos
  git commit -a -m "Add nipapd vX.Y.Z to debian STABLE|TEST repo"
  git push
