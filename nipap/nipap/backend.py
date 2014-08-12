@@ -27,7 +27,7 @@
     * :func:`~Nipap.edit_vrf` - Edit a VRF.
     * :func:`~Nipap.remove_vrf` - Remove a VRF.
     * :func:`~Nipap.search_vrf` - Search VRFs based on a formatted dict.
-    : :func:`~Nipap.smart_search_vrf` - Search VRFs based on a query string.
+    * :func:`~Nipap.smart_search_vrf` - Search VRFs based on a query string.
 
 
     Prefix
@@ -298,28 +298,28 @@ class Nipap:
     def _is_ipv4(self, ip):
         """ Return true if given arg is a valid IPv4 address
         """
-
         try:
-            socket.inet_aton(ip)
-        except socket.error:
+            p = IPy.IP(ip)
+        except ValueError:
             return False
-        except exceptions.UnicodeEncodeError:
-            return False
-        return True
+
+        if p.version() == 4:
+            return True
+        return False
 
 
 
     def _is_ipv6(self, ip):
         """ Return true if given arg is a valid IPv6 address
         """
-
         try:
-            socket.inet_pton(socket.AF_INET6, ip)
-        except socket.error, UnicodeEncodeError:
+            p = IPy.IP(ip)
+        except ValueError:
             return False
-        except exceptions.UnicodeEncodeError:
-            return False
-        return True
+
+        if p.version() == 6:
+            return True
+        return False
 
 
 
@@ -646,11 +646,12 @@ class Nipap:
         # find query parts
         query_str_parts = []
         try:
-            for part in shlex.split(query_str):
-                query_str_parts.append({ 'string': part })
+            for part in shlex.split(query_str.encode('utf-8')):
+                query_str_parts.append({ 'string': part.decode('utf-8') })
         except ValueError as exc:
             if str(exc) == 'No closing quotation':
                 raise NipapValueError(str(exc))
+            raise exc
 
         # Handle empty search.
         # We need something to iterate over, but shlex.split() returns
@@ -660,6 +661,27 @@ class Nipap:
             query_str_parts.append({ 'string': '' })
 
         return query_str_parts
+
+
+
+    def _get_db_version(self):
+        """ Get the schema version of the nipap psql db.
+        """
+
+        dbname = self._cfg.get('nipapd', 'db_name')
+        self._execute("SELECT description FROM pg_shdescription JOIN pg_database ON objoid = pg_database.oid WHERE datname = '%s'" % dbname)
+        comment = self._curs_pg.fetchone()[0]
+        if comment is None:
+            raise NipapError("Could not find comment of psql database %s" % dbname)
+
+        db_version = None
+        m = re.match('NIPAP database - schema version: ([0-9]+)', comment)
+        if m:
+            db_version = int(m.group(1))
+        else:
+            raise NipapError("Could not match schema version database comment")
+
+        return db_version
 
 
 
@@ -1440,6 +1462,16 @@ class Nipap:
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
+                        po.member_prefixes_v4,
+                        po.member_prefixes_v6,
+                        po.used_prefixes_v4,
+                        po.used_prefixes_v6,
+                        po.total_addresses_v4,
+                        po.total_addresses_v6,
+                        po.used_addresses_v4,
+                        po.used_addresses_v6,
+                        po.free_addresses_v4,
+                        po.free_addresses_v6,
                         vrf.id AS vrf_id,
                         vrf.rt AS vrf_rt,
                         vrf.name AS vrf_name,
@@ -1693,6 +1725,16 @@ class Nipap:
                         po.default_type,
                         po.ipv4_default_prefix_length,
                         po.ipv6_default_prefix_length,
+                        po.member_prefixes_v4,
+                        po.member_prefixes_v6,
+                        po.used_prefixes_v4,
+                        po.used_prefixes_v6,
+                        po.total_addresses_v4,
+                        po.total_addresses_v6,
+                        po.used_addresses_v4,
+                        po.used_addresses_v6,
+                        po.free_addresses_v4,
+                        po.free_addresses_v6,
                         vrf.id AS vrf_id,
                         vrf.rt AS vrf_rt,
                         vrf.name AS vrf_name,
@@ -1955,6 +1997,9 @@ class Nipap:
             prefix_attr['indent'] = 'inp.indent'
             prefix_attr['added'] = 'inp.added'
             prefix_attr['last_modified'] = 'inp.last_modified'
+            prefix_attr['total_addresses'] = 'inp.total_addresses'
+            prefix_attr['used_addresses'] = 'inp.used_addresses'
+            prefix_attr['free_addresses'] = 'inp.free_addresses'
 
             if query['val1'] not in prefix_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
@@ -2561,7 +2606,10 @@ class Nipap:
             inp.monitor,
             inp.vlan,
             inp.added,
-            inp.last_modified
+            inp.last_modified,
+            inp.total_addresses,
+            inp.used_addresses,
+            inp.free_addresses
             FROM ip_net_plan inp
             JOIN ip_net_vrf vrf ON (inp.vrf_id = vrf.id)
             LEFT JOIN ip_net_pool pool ON (inp.pool_id = pool.id) %s
@@ -2926,7 +2974,10 @@ class Nipap:
         vlan,
         added,
         last_modified,
-        children
+        children,
+        total_addresses,
+        used_addresses,
+        free_addresses
     FROM (
         SELECT DISTINCT ON(vrf_rt_order(vrf.rt), p1.prefix) p1.id,
             p1.prefix,
@@ -2951,6 +3002,9 @@ class Nipap:
             p1.added,
             p1.last_modified,
             p1.children,
+            p1.total_addresses,
+            p1.used_addresses,
+            p1.free_addresses,
             vrf.id AS vrf_id,
             vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,

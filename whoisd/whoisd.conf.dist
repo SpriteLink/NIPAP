@@ -1,0 +1,47 @@
+# -------------------------------
+# NIPAP whoisd configuration file
+# -------------------------------
+# 
+# This file consists mostly of lines of the form:
+#
+#   name = value
+#
+# Where name is the name of an option and value is its value. Value may be
+# empty. Options are further grouped into sections, which start with:
+#
+#   [section]
+#
+# There is no explicit marker for the end of a section. All options following a
+# section header is interpreted as belonging to that section. Please be aware
+# of which section you edit.
+#
+# Lines starting with "#" or ";" are interpreted as a comments. It may not
+# contain leading whitespace! Comments may also appear on lines holding values
+# or section names but must be prefaced with whitespace followed by ";". Lines
+# starting with whitespace is interpreted as a continuation of the value on the
+# previous option-value line.
+#
+# The commented-out settings shown represent the default values in most cases.
+#
+
+[whoisd]
+# Run nipap-whoisd as a different user, ie drop privileges from root to the
+# specified user and group. If no user is specified, nipap-whoisd will run as
+# the user who started it (typically root). If only user but no group is
+# specified, the value for user will be used for group as well.
+user = nobody
+group = nogroup
+
+listen = 0.0.0.0                ; IP address to listen on.
+port = 43                       ; XML-RPC listen port (change requires restart)
+pid_file = /var/run/nipap-whoisd/whoisd.pid
+
+#
+# - nipapd connection -
+# the following parameters control how nipap-whoisd connects to the nipapd
+# backend
+#
+nipapd_host = localhost			; nipapd hostname
+nipapd_port = 1337				; nipapd port
+#nipapd_username = fillmein		; nipapd username
+#nipapd_password = fillmein		; nipapd password

@@ -1,17 +1,20 @@
 _nipap()
 {
+	local words
 	local cur
 	# set IFS to newline to handle tab completion for entries containing a space
 	local IFS=$'\n'
 
 	COMPREPLY=()
-	cur=${COMP_WORDS[COMP_CWORD]}
+	_get_comp_words_by_ref -n : words cur
 
 	if [[ ${#cur} -eq 0 ]]; then
-		COMPREPLY=( $( helper-nipap ${COMP_WORDS[@]} ''  ) )
+		COMPREPLY=( $( helper-nipap ${words[@]} ''  ) )
 	else
-		COMPREPLY=( $( helper-nipap ${COMP_WORDS[@]} ) )
+		COMPREPLY=( $( helper-nipap ${words[@]} ) )
 	fi
+
+	__ltrim_colon_completions "$cur"
 
 	return;
 

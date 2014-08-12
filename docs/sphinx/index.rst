@@ -29,6 +29,7 @@ Contents:
    pynipap
    xmlrpc
    authlib
+   release-handling
 
 
 Indices and tables

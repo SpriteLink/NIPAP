@@ -22,15 +22,16 @@ nipapd accepts the following command-line arguments. These and more options are 
     -h, --help                      show a help message
     -d, --debug                     enable debugging
     -f, --foreground                run in foreground and log to stdout
-    -l ADDRESS, --listed=ADDRESS    listen to IPv4/6 **ADDRESS**
+    -l ADDRESS, --listen=ADDRESS    listen to IPv4/6 **ADDRESS**
     -p PORT, --port=PORT            listen on TCP port **PORT**
     -c CONFIG-FILE, --config=CONFIG_FILE    read configuration from file **CONFIG_FILE**
     -P PID_FILE, --pid-file=PID_FILE    write a PID file to **PID_FILE**
     --no-pid-file                   turn off writing a PID file (overrides config file)
+    --version                       display version information and exit
 
 Bugs / Caveats
 --------------
-**nipapd** is single threaded and handles requests in a synchronous fashion. This means that slow queries will block the backend from responding to other queries until the slow query has run to completion.
+Who knows? ;)
 
 Examples
 --------
@@ -42,4 +43,4 @@ To start nipapd in the foreground with debug logging, running on a specific port
 
 Copyright
 ---------
-Kristian Larsson, Lukas Garberg 2011-2013
+Kristian Larsson, Lukas Garberg 2011-2014

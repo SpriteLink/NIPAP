@@ -26,7 +26,7 @@ valid_countries = [
     'GB', 'HR', 'LT', 'LV', 'KZ', 'NL',
     'RU', 'SE', 'US' ] # test test, fill up! :)
 valid_prefix_types = [ 'host', 'reservation', 'assignment' ]
-valid_families = [ 'ipv4', 'ipv6' ]
+valid_families = [ 'ipv4', 'ipv6', 'dual-stack' ]
 valid_bools = [ 'true', 'false' ]
 valid_priorities = [ 'warning', 'low', 'medium', 'high', 'critical' ]
 
@@ -54,8 +54,16 @@ def setup_connection():
         print >> sys.stderr, "Please define the username, password, hostname and port in your .nipaprc under the section 'global'"
         sys.exit(1)
 
-    ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
+    ao = pynipap.AuthOptions({
+        'authoritative_source': 'nipap',
+        'username': os.getenv('NIPAP_IMPERSONATE_USERNAME') or cfg.get('global', 'username'),
+        'full_name': os.getenv('NIPAP_IMPERSONATE_FULL_NAME'),
+        })
 
+
+
+def vrf_format(vrf):
+    return "VRF '%s' [RT: %s]" % (vrf.name, vrf.rt or '-')
 
 
 def get_pool(arg = None, opts = None, abort = False):
@@ -70,7 +78,7 @@ def get_pool(arg = None, opts = None, abort = False):
         pool = Pool.list({ 'name': arg })[0]
     except IndexError:
         if abort:
-            print >> sys.stderr, "Pool %s not found." % str(arg)
+            print >> sys.stderr, "Pool '%s' not found." % str(arg)
             sys.exit(1)
         else:
             pool = None
@@ -79,7 +87,7 @@ def get_pool(arg = None, opts = None, abort = False):
 
 
 
-def get_vrf(arg = None, opts = None, abort = False):
+def get_vrf(arg = None, default_var = 'default_vrf_rt', abort = False):
     """ Returns VRF to work in
 
         Returns a pynipap.VRF object representing the VRF we are working
@@ -98,24 +106,28 @@ def get_vrf(arg = None, opts = None, abort = False):
     if arg is None:
         # fetch default vrf
         try:
-            vrf_rt = cfg.get('global', 'default_vrf')
+            vrf_rt = cfg.get('global', default_var)
         except ConfigParser.NoOptionError:
             # default to all VRFs
             vrf_rt = 'all'
     else:
         vrf_rt = arg
 
-    if vrf_rt.lower() == 'none':
-        vrf = VRF()
-    elif vrf_rt.lower() == 'all':
+    if vrf_rt.lower() == 'all':
         vrf = VRF()
         vrf.rt = 'all'
     else:
+        if vrf_rt.lower() in ('-', 'none'):
+            vrf_rt = None
+
         try:
-            vrf = VRF.list({ 'rt': vrf_rt })[0]
-        except IndexError:
+            vrf = VRF.search({ 'val1': 'rt',
+                'operator': 'equals',
+                'val2': vrf_rt
+                })['result'][0]
+        except (KeyError, IndexError):
             if abort:
-                print >> sys.stderr, "VRF %s not found." % str(vrf_rt)
+                print >> sys.stderr, "VRF with [RT: %s] not found." % str(vrf_rt)
                 sys.exit(1)
             else:
                 vrf = False
@@ -210,7 +222,7 @@ def _expand_list_query(opts):
     return query
 
 
-def list_pool(arg, opts):
+def list_pool(arg, opts, shell_opts):
     """ List pools matching a search criteria
     """
 
@@ -218,7 +230,7 @@ def list_pool(arg, opts):
     if type(arg) == list or type(arg) == tuple:
         search_string = ' '.join(arg)
 
-    v = get_vrf(opts.get('vrf_rt'), abort=True)
+    v = get_vrf(opts.get('vrf_rt'), default_var='default_list_vrf_rt', abort=True)
 
     if v.rt == 'all':
         vrf_q = None
@@ -233,14 +245,15 @@ def list_pool(arg, opts):
     limit = 100
     while True:
         res = Pool.smart_search(search_string, { 'offset': offset, 'max_result': limit }, vrf_q)
-        if len(res['result']) == 0:
-            print "No matching pools found"
-            return
-        elif offset == 0:
-            print "%-19s %-39s %-13s  %-8s  %s" % (
+        if offset == 0: # first time in loop?
+            if len(res['result']) == 0:
+                print "No matching pools found"
+                return
+
+            print "%-19s %-39s %-13s  %-8s %s" % (
                 "Name", "Description", "Default type", "4 / 6", "Implied VRF"
-            )
-            print "-----------------------------------------------------------------------------------"
+                )
+            print "------------------------------------------------------------------------------------------------"
 
         for p in res['result']:
             if len(str(p.description)) > 38:
@@ -248,17 +261,17 @@ def list_pool(arg, opts):
             else:
                 desc = p.description
 
-            vrf_rt = None
-            vrf_name = None
-            if p.vrf:
-                vrf_rt = p.vrf.rt
+            vrf_rt = '-'
+            vrf_name = '-'
+            if p.vrf is not None:
+                vrf_rt = p.vrf.rt or '-'
                 vrf_name = p.vrf.name
 
-            print "%-19s %-39s %-13s %-2s / %-3s  %s" % (
+            print "%-19s %-39s %-13s %-2s / %-3s  [RT: %s] %s" % (
                 p.name, desc, p.default_type,
                 str(p.ipv4_default_prefix_length or '-'),
                 str(p.ipv6_default_prefix_length or '-'),
-                vrf_rt or vrf_name
+                vrf_rt, vrf_name
             )
         if len(res['result']) < limit:
             break
@@ -266,7 +279,7 @@ def list_pool(arg, opts):
 
 
 
-def list_vrf(arg, opts):
+def list_vrf(arg, opts, shell_opts):
     """ List VRFs matching a search criteria
     """
 
@@ -280,11 +293,12 @@ def list_vrf(arg, opts):
     limit = 100
     while True:
         res = VRF.search(query, { 'offset': offset, 'max_result': limit })
-        if len(res['result']) == 0:
-            print "No matching VRFs found."
-            return
-        elif offset == 0:
-            print "%-16s %-22s %-40s" % ("VRF", "Name", "Description")
+        if offset == 0:
+            if len(res['result']) == 0:
+                print "No matching VRFs found."
+                return
+
+            print "%-16s %-22s %-40s" % ("VRF RT", "Name", "Description")
             print "--------------------------------------------------------------------------------"
 
         for v in res['result']:
@@ -292,7 +306,7 @@ def list_vrf(arg, opts):
                 desc = v.description[0:37] + "..."
             else:
                 desc = v.description
-            print "%-16s %-22s %-40s" % (v.rt, v.name, desc)
+            print "%-16s %-22s %-40s" % (v.rt or '-', v.name, desc)
 
         if len(res['result']) < limit:
             break
@@ -300,7 +314,7 @@ def list_vrf(arg, opts):
 
 
 
-def list_prefix(arg, opts):
+def list_prefix(arg, opts, shell_opts):
     """ List prefixes matching 'arg'
     """
 
@@ -308,16 +322,19 @@ def list_prefix(arg, opts):
     if type(arg) == list or type(arg) == tuple:
         search_string = ' '.join(arg)
 
-    v = get_vrf(opts.get('vrf_rt'), abort=True)
+    v = get_vrf(opts.get('vrf_rt'), default_var='default_list_vrf_rt', abort=True)
 
     if v.rt == 'all':
+        vrf_text = 'any VRF'
         vrf_q = None
     else:
+        vrf_text = vrf_format(v)
         vrf_q = {
             'operator': 'equals',
             'val1': 'vrf_rt',
             'val2': v.rt
         }
+    print "Searching for prefixes in %s..." % vrf_text
 
 
     offset = 0
@@ -329,32 +346,35 @@ def list_prefix(arg, opts):
             'include_neighbors': True, 'offset': offset, 'max_result': limit },
             vrf_q)
 
-        if len(res['result']) == 0:
-            print "No addresses matching '%s' found." % search_string
-            return
+        if offset == 0: # first time in loop?
+            if len(res['result']) == 0:
+                print "No addresses matching '%s' found." % search_string
+                return
 
-        # Guess the width of the prefix column by looking at the initial result
-        # set.
-        if offset == 0:
+            # Guess the width of the prefix column by looking at the initial
+            # result set.
             for p in res['result']:
                 indent = p.indent * 2 + len(p.prefix)
                 if indent > min_indent:
                     min_indent = indent
             min_indent += 15
 
+            # print column headers
+            prefix_str = "%%-14s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-s" % min_indent
+            column_header = prefix_str % ('VRF', 'Prefix', '', '#', 'Node',
+                    'Order', 'Customer', 'Description')
+            print column_header
+            print "".join("=" for i in xrange(len(column_header)))
+
         for p in res['result']:
             if p.display == False:
                 continue
 
-            vrf = None
-            if p.vrf is not None:
-                vrf = p.vrf.rt
             try:
                 tags = '-'
                 if len(p.tags) > 0:
                     tags = '#%d' % len(p.tags)
-                prefix_str = "%%-14s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-40s" % min_indent
-                print prefix_str % (vrf,
+                print prefix_str % (p.vrf.rt or '-',
                     "".join("  " for i in xrange(p.indent)) + p.display_prefix,
                     p.type[0].upper(), tags, p.node, p.order_id,
                     p.customer_id, p.description
@@ -376,9 +396,23 @@ def list_prefix(arg, opts):
     ADD FUNCTIONS
 """
 
-def add_prefix(arg, opts):
+def add_prefix(arg, opts, shell_opts):
     """ Add prefix to NIPAP
     """
+
+    # sanity checks
+    if 'from-pool' not in opts and 'from-prefix' not in opts and 'prefix' not in opts:
+        print >> sys.stderr, "ERROR: 'prefix', 'from-pool' or 'from-prefix' must be specified."
+        sys.exit(1)
+
+    if len([opt for opt in opts if opt in ['from-pool', 'from-prefix', 'prefix']]) > 1:
+        print >> sys.stderr, "ERROR: Use either assignment 'from-pool', 'from-prefix' or manual mode (using 'prefix')"
+        sys.exit(1)
+
+    if 'from-pool' in opts:
+        return add_prefix_from_pool(arg, opts)
+
+    args = {}
 
     p = Prefix()
     p.prefix = opts.get('prefix')
@@ -394,26 +428,8 @@ def add_prefix(arg, opts):
     p.vlan = opts.get('vlan')
     p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
 
-    if 'vrf_rt' in opts:
-        if opts['vrf_rt'] != 'none':
-            try:
-                p.vrf = VRF.list({ 'rt': opts['vrf_rt'] })[0]
-            except IndexError:
-                print >> sys.stderr, "Could not find VRF with RT %s" % str(opts['vrf_rt'])
-                sys.exit(1)
+    p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
 
-    if 'from-pool' not in opts and 'from-prefix' not in opts and 'prefix' not in opts:
-        print >> sys.stderr, "ERROR: 'prefix', 'from-pool' or 'from-prefix' must be specified."
-        sys.exit(1)
-
-    args = {}
-    if 'from-pool' in opts:
-        res = Pool.list({ 'name': opts['from-pool'] })
-        if len(res) == 0:
-            print >> sys.stderr, "No pool named %s found." % opts['from-pool']
-            sys.exit(1)
-
-        args['from-pool'] = res[0]
 
     if 'from-prefix' in opts:
         args['from-prefix'] = [ opts['from-prefix'], ]
@@ -422,86 +438,84 @@ def add_prefix(arg, opts):
         args['prefix_length'] = int(opts['prefix_length'])
 
     if 'family' in opts:
-        family = opts['family']
         if opts['family'] == 'ipv4':
             family = 4
         elif opts['family'] == 'ipv6':
             family = 6
+        elif opts['family'] == 'dual-stack':
+            print >> sys.stderr, "ERROR: dual-stack mode only valid for from-pool assignments"
+            sys.exit(1)
 
         args['family'] = family
 
-    # set type to default type of pool unless already set
-    if 'from-pool' in args:
-        if p.type is None:
-            p.type = args['from-pool'].default_type
+    # try to automatically figure out type for new prefix when not
+    # allocating from a pool
 
+    # get a list of prefixes that contain this prefix
+    vrf_id = 0
+    if p.vrf:
+        vrf_id = p.vrf.id
+
+    if 'from-prefix' in args:
+        parent_prefix = args['from-prefix'][0]
+        parent_op = 'equals'
     else:
-        # try to automatically figure out type for new prefix when not
-        # allocating from a pool
+        parent_prefix = opts.get('prefix').split('/')[0]
+        parent_op = 'contains'
 
-        # get a list of prefixes that contain this prefix
-        vrf_id = 0
-        if p.vrf:
-            vrf_id = p.vrf.id
+    # prefix must be a CIDR network, ie no bits set in host part, so we
+    # remove the prefix length part of the prefix as then the backend will
+    # assume all bits being set
+    auto_type_query = {
+            'val1': {
+                'val1'      : 'prefix',
+                'operator'  : parent_op,
+                'val2'      : parent_prefix
+                },
+            'operator': 'and',
+            'val2': {
+                'val1'      : 'vrf_id',
+                'operator'  : 'equals',
+                'val2'      : vrf_id
+                }
+        }
+    res = Prefix.search(auto_type_query, { })
 
-        if 'from-prefix' in args:
-            parent_prefix = args['from-prefix'][0]
-        else:
-            parent_prefix = opts.get('prefix').split('/')[0]
+    # no results, ie the requested prefix is a top level prefix
+    if len(res['result']) == 0:
+        if p.type is None:
+            print >> sys.stderr, "ERROR: Type of prefix must be specified ('assignment' or 'reservation')."
+            sys.exit(1)
+    else:
+        # last prefix in list will be the parent of the new prefix
+        parent = res['result'][-1]
 
-        # prefix must be a CIDR network, ie no bits set in host part, so we
-        # remove the prefix length part of the prefix as then the backend will
-        # assume all bits being set
-        auto_type_query = {
-                'val1': {
-                    'val1'      : 'prefix',
-                    'operator'  : 'contains',
-                    'val2'      : parent_prefix
-                    },
-                'operator': 'and',
-                'val2': {
-                    'val1'      : 'vrf_id',
-                    'operator'  : 'equals',
-                    'val2'      : vrf_id
-                    }
-            }
-        res = Prefix.search(auto_type_query, { })
-
-        # no results, ie the requested prefix is a top level prefix
-        if len(res['result']) == 0:
+        # if the parent is an assignment, we can assume the new prefix to be
+        # a host and act accordingly
+        if parent.type == 'assignment':
+            # automatically set type
             if p.type is None:
-                print >> sys.stderr, "ERROR: Type of prefix must be specified ('assignment' or 'reservation')."
-                sys.exit(1)
-        else:
-            # last prefix in list will be the parent of the new prefix
-            parent = res['result'][-1]
+                print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically setting type 'host' for new prefix."
+            elif p.type == 'host':
+                pass
+            else:
+                print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix." % p.type
+            p.type = 'host'
 
-            # if the parent is an assignment, we can assume the new prefix to be
-            # a host and act accordingly
-            if parent.type == 'assignment':
-                # automatically set type
-                if p.type is None:
-                    print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically setting type 'host' for new prefix."
-                elif p.type == 'host':
-                    pass
+            # if it's a manually specified prefix
+            if 'prefix' in opts:
+                # fiddle prefix length to all bits set
+                if parent.family == 4:
+                    p.prefix = p.prefix.split('/')[0] + '/32'
                 else:
-                    print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix." % p.type
-                p.type = 'host'
+                    p.prefix = p.prefix.split('/')[0] + '/128'
 
-                # if it's a manually specified prefix
-                if 'prefix' in opts:
-                    # fiddle prefix length to all bits set
-                    if parent.family == 4:
-                        p.prefix = p.prefix.split('/')[0] + '/32'
-                    else:
-                        p.prefix = p.prefix.split('/')[0] + '/128'
-
-                # for from-prefix, we set prefix_length to host length
-                elif 'from-prefix' in opts:
-                    if parent.family == 4:
-                        args['prefix_length'] = 32
-                    else:
-                        args['prefix_length'] = 128
+            # for from-prefix, we set prefix_length to host length
+            elif 'from-prefix' in opts:
+                if parent.family == 4:
+                    args['prefix_length'] = 32
+                else:
+                    args['prefix_length'] = 128
 
     try:
         p.save(args)
@@ -509,17 +523,80 @@ def add_prefix(arg, opts):
         print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
         sys.exit(1)
 
-    if p.vrf.rt is None:
-        vrf_rt = 'none'
-        print "Prefix %s added to the global VRF." % (p.display_prefix)
+    print "Prefix %s added to %s" % (p.display_prefix, vrf_format(p.vrf))
+
+
+
+def add_prefix_from_pool(arg, opts):
+    """ Add prefix using from-pool to NIPAP
+    """
+
+    args = {}
+
+    # sanity checking
+    if 'from-pool' in opts:
+        res = Pool.list({ 'name': opts['from-pool'] })
+        if len(res) == 0:
+            print >> sys.stderr, "No pool named '%s' found." % opts['from-pool']
+            sys.exit(1)
+
+        args['from-pool'] = res[0]
+
+    if 'family' not in opts:
+        print >> sys.stderr, "ERROR: You have to specify the address family."
+        sys.exit(1)
+
+    if opts['family'] == 'ipv4':
+        afis = [4]
+    elif opts['family'] == 'ipv6':
+        afis = [6]
+    elif opts['family'] == 'dual-stack':
+        afis = [4, 6]
+        if 'prefix_length' in opts:
+            print >> sys.stderr, "ERROR: 'prefix_length' can not be specified for 'dual-stack' assignment"
+            sys.exit(1)
     else:
-        print "Prefix %s added to VRF '%s' (%s) " % (p.display_prefix,
-                p.vrf.name, p.vrf.rt)
+        print >> sys.stderr, "ERROR: 'family' must be one of: %s" % " ".join(valid_families)
+        sys.exit(1)
+
+    if 'prefix_length' in opts:
+        args['prefix_length'] = int(opts['prefix_length'])
+
+    for afi in afis:
+        p = Prefix()
+        p.prefix = opts.get('prefix')
+        p.type = opts.get('type')
+        p.description = opts.get('description')
+        p.node = opts.get('node')
+        p.country = opts.get('country')
+        p.order_id = opts.get('order_id')
+        p.customer_id = opts.get('customer_id')
+        p.alarm_priority = opts.get('alarm_priority')
+        p.comment = opts.get('comment')
+        p.monitor = _str_to_bool(opts.get('monitor'))
+        p.vlan = opts.get('vlan')
+        p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
+
+        p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
+        # set type to default type of pool unless already set
+        if p.type is None:
+            if args['from-pool'].default_type is None:
+                print >> sys.stderr, "ERROR: Type not specified and no default-type specified for pool: %s" % opts['from-pool']
+            p.type = args['from-pool'].default_type
+
+        args['family'] = afi
+
+        try:
+            p.save(args)
+        except NipapError as exc:
+            print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
+            sys.exit(1)
+
+        print "Prefix %s added to %s" % (p.display_prefix, vrf_format(p.vrf))
 
 
 
-
-def add_vrf(arg, opts):
+def add_vrf(arg, opts, shell_opts):
     """ Add VRF to NIPAP
     """
 
@@ -534,11 +611,11 @@ def add_vrf(arg, opts):
         print >> sys.stderr, "Could not add VRF to NIPAP: %s" % str(exc)
         sys.exit(1)
 
-    print "Added VRF %s with id %d" % (v.rt, v.id)
+    print "Added %s" % (vrf_format(v))
 
 
 
-def add_pool(arg, opts):
+def add_pool(arg, opts, shell_opts):
     """ Add a pool.
     """
 
@@ -555,40 +632,69 @@ def add_pool(arg, opts):
         print >> sys.stderr, "Could not add pool to NIPAP: %s" % str(exc)
         sys.exit(1)
 
-    print "Pool '%s' created with id %s" % (p.name, p.id)
+    print "Pool '%s' created." % (p.name)
 
 
 
 """
     VIEW FUNCTIONS
 """
-def view_vrf(arg, opts):
+def view_vrf(arg, opts, shell_opts):
     """ View a single VRF
     """
 
-    res = VRF.list({ 'rt': arg })
-    if len(res) < 1:
-        print >> sys.stderr, "VRF %s not found." % arg
+    if arg is None:
+        print >> sys.stderr, "ERROR: Please specify the RT of the VRF to view."
         sys.exit(1)
 
-    v = res[0]
+    # interpret as default VRF (ie, RT = None)
+    if arg.lower() in ('-', 'none'):
+        arg = None
+
+    try:
+        v = VRF.search({
+            'val1': 'rt',
+            'operator': 'equals',
+            'val2': arg }
+            )['result'][0]
+    except (KeyError, IndexError):
+        print >> sys.stderr, "VRF with [RT: %s] not found." % str(arg)
+        sys.exit(1)
 
     print "-- VRF"
-    print "  %-12s : %d" % ("ID", v.id)
-    print "  %-12s : %s" % ("RT", v.rt)
-    print "  %-12s : %s" % ("Name", v.name)
-    print "  %-12s : %s" % ("Description", v.description)
+    print "  %-26s : %d" % ("ID", v.id)
+    print "  %-26s : %s" % ("RT", v.rt)
+    print "  %-26s : %s" % ("Name", v.name)
+    print "  %-26s : %s" % ("Description", v.description)
+    # statistics
+    if v.total_addresses_v4 == 0:
+        used_percent_v4 = 0
+    else:
+        used_percent_v4 = (float(v.used_addresses_v4)/v.total_addresses_v4)*100
+    if v.total_addresses_v6 == 0:
+        used_percent_v6 = 0
+    else:
+        used_percent_v6 = (float(v.used_addresses_v6)/v.total_addresses_v6)*100
+    print "-- Statistics"
+    print "  %-26s : %s" % ("IPv4 prefixes", v.num_prefixes_v4)
+    print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
+            v.used_addresses_v4, v.free_addresses_v4, used_percent_v4,
+            v.total_addresses_v4)
+    print "  %-26s : %s" % ("IPv6 prefixes", v.num_prefixes_v6)
+    print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
+            v.used_addresses_v6, v.free_addresses_v6, used_percent_v6,
+            v.total_addresses_v6)
 
 
 
-def view_pool(arg, opts):
+def view_pool(arg, opts, shell_opts):
     """ View a single pool
     """
 
     res = Pool.list({ 'name': arg })
 
     if len(res) == 0:
-        print "No pool named %s found." % arg
+        print "No pool with name '%s' found." % arg
         return
 
     p = res[0]
@@ -600,13 +706,29 @@ def view_pool(arg, opts):
         vrf_name = p.vrf.name
 
     print  "-- Pool "
-    print "  %-22s : %d" % ("ID", p.id)
-    print "  %-22s : %s" % ("Name", p.name)
-    print "  %-22s : %s" % ("Description", p.description)
-    print "  %-22s : %s" % ("Default type", p.default_type)
-    print "  %-22s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name)
-    print "  %-22s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
-    print "\n-- Prefixes in pool"
+    print "  %-26s : %d" % ("ID", p.id)
+    print "  %-26s : %s" % ("Name", p.name)
+    print "  %-26s : %s" % ("Description", p.description)
+    print "  %-26s : %s" % ("Default type", p.default_type)
+    print "  %-26s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name)
+    print "  %-26s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
+    # statistics
+    if p.total_addresses_v4 == 0:
+        used_percent_v4 = 0
+    else:
+        used_percent_v4 = (float(p.used_addresses_v4)/p.total_addresses_v4)*100
+    if p.total_addresses_v6 == 0:
+        used_percent_v6 = 0
+    else:
+        used_percent_v6 = (float(p.used_addresses_v6)/p.total_addresses_v6)*100
+    print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
+            p.used_addresses_v4, p.free_addresses_v4, used_percent_v4,
+            p.total_addresses_v4)
+    print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
+            p.used_addresses_v6, p.free_addresses_v6, used_percent_v6,
+            p.total_addresses_v6)
+    print "\n-- Prefixes in pool - v4: %d  v6: %d" % (p.member_prefixes_v4,
+            p.member_prefixes_v6)
 
     res = Prefix.list({ 'pool_id': p.id})
     for pref in res:
@@ -614,7 +736,7 @@ def view_pool(arg, opts):
 
 
 
-def view_prefix(arg, opts):
+def view_prefix(arg, opts, shell_opts):
     """ View a single prefix.
     """
 
@@ -627,28 +749,39 @@ def view_prefix(arg, opts):
     res = Prefix.list(q)
 
     if len(res) == 0:
-        print "Address %s not found." % arg
-        return
+        vrf_text = 'any VRF'
+        if v.rt != 'all':
+            vrf_text = vrf_format(v)
+        print >> sys.stderr, "Address %s not found in %s." % (arg, vrf_text)
+        sys.exit(1)
 
     p = res[0]
     vrf = p.vrf.rt
 
     print  "-- Address "
-    print "  %-15s : %s" % ("Prefix", p.prefix)
-    print "  %-15s : %s" % ("Display prefix", p.display_prefix)
-    print "  %-15s : %s" % ("Type", p.type)
-    print "  %-15s : IPv%s" % ("Family", p.family)
-    print "  %-15s : %s" % ("VRF", vrf)
-    print "  %-15s : %s" % ("Description", p.description)
-    print "  %-15s : %s" % ("Node", p.node)
-    print "  %-15s : %s" % ("Country", p.country)
-    print "  %-15s : %s" % ("Order", p.order_id)
-    print "  %-15s : %s" % ("Customer", p.customer_id)
-    print "  %-15s : %s" % ("VLAN", p.vlan)
-    print "  %-15s : %s" % ("Alarm priority", p.alarm_priority)
-    print "  %-15s : %s" % ("Monitor", p.monitor)
-    print "  %-15s : %s" % ("Added", p.added)
-    print "  %-15s : %s" % ("Last modified", p.last_modified)
+    print "  %-26s : %s" % ("Prefix", p.prefix)
+    print "  %-26s : %s" % ("Display prefix", p.display_prefix)
+    print "  %-26s : %s" % ("Type", p.type)
+    print "  %-26s : IPv%s" % ("Family", p.family)
+    print "  %-26s : %s" % ("VRF", vrf)
+    print "  %-26s : %s" % ("Description", p.description)
+    print "  %-26s : %s" % ("Node", p.node)
+    print "  %-26s : %s" % ("Country", p.country)
+    print "  %-26s : %s" % ("Order", p.order_id)
+    print "  %-26s : %s" % ("Customer", p.customer_id)
+    print "  %-26s : %s" % ("VLAN", p.vlan)
+    print "  %-26s : %s" % ("Alarm priority", p.alarm_priority)
+    print "  %-26s : %s" % ("Monitor", p.monitor)
+    print "  %-26s : %s" % ("Added", p.added)
+    print "  %-26s : %s" % ("Last modified", p.last_modified)
+    if p.family == 4:
+        print "  %-26s : %s / %s (%.2f%% of %s)" % ("Addresses Used / Free", p.used_addresses,
+                p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
+                p.total_addresses)
+    else:
+        print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("Addresses Used / Free", p.used_addresses,
+                p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
+                p.total_addresses)
     print "-- Tags"
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
         print "  %s" % tag_name
@@ -664,56 +797,67 @@ def view_prefix(arg, opts):
     REMOVE FUNCTIONS
 """
 
-def remove_vrf(arg, opts):
+def remove_vrf(arg, opts, shell_opts):
     """ Remove VRF
     """
 
+    remove_confirmed = shell_opts.force
+
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
-        print >> sys.stderr, "VRF %s not found." % arg
+        print >> sys.stderr, "VRF with [RT: %s] not found." % arg
         sys.exit(1)
 
     v = res[0]
 
-    print "RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description)
-    print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL ITS ADDRESSES"
-    res = raw_input("Do you really want to remove the VRF %s? [y/n]: " % v.rt)
+    if not remove_confirmed:
+        print "RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description)
+        print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL ITS ADDRESSES"
+        res = raw_input("Do you really want to remove %s? [y/N]: " % vrf_format(v))
 
-    if res == 'y':
+        if res == 'y':
+            remove_confirmed = True
+        else:
+            print "Operation canceled."
+
+    if remove_confirmed:
         v.remove()
-        print "VRF %s removed." % v.rt
-    else:
-        print "Operation canceled."
+        print "%s removed." % vrf_format(v)
 
 
 
-def remove_pool(arg, opts):
+def remove_pool(arg, opts, shell_opts):
     """ Remove pool
     """
 
+    remove_confirmed = shell_opts.force
+
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
-        print >> sys.stderr, "No pool with name %s found." % arg
+        print >> sys.stderr, "No pool with name '%s' found." % arg
         sys.exit(1)
 
     p = res[0]
 
-    res = raw_input("Do you really want to remove the pool %s? [y/n]: " % p.name)
+    if not remove_confirmed:
+        res = raw_input("Do you really want to remove the pool '%s'? [y/N]: " % p.name)
 
-    if res == 'y':
+        if res == 'y':
+            remove_confirmed = True
+        else:
+            print "Operation canceled."
+
+    if remove_confirmed:
         p.remove()
-        print "Pool %s removed." % p.name
-    else:
-        print "Operation canceled."
+        print "Pool '%s' removed." % p.name
 
 
-
-def remove_prefix(arg, opts):
+def remove_prefix(arg, opts, shell_opts):
     """ Remove prefix
     """
 
     # set up some basic variables
-    remove_confirmed = False
+    remove_confirmed = shell_opts.force
     auth_src = set()
     recursive = False
 
@@ -721,132 +865,152 @@ def remove_prefix(arg, opts):
         recursive = True
 
     spec = { 'prefix': arg }
-    if opts.get('vrf_rt') is None:
-        v = get_vrf('none', abort=True)
-    else:
-        v = get_vrf(opts.get('vrf_rt'), abort=True)
-    spec['vrf_rt'] = v.rt
+    v = get_vrf(opts.get('vrf_rt'), abort=True)
+    if v.rt != 'all':
+        spec['vrf_rt'] = v.rt
 
     res = Prefix.list(spec)
 
     if len(res) < 1:
-        print >> sys.stderr, "No prefix %s found." % arg
+        vrf_text = 'any VRF'
+        if v.rt != 'all':
+            vrf_text = vrf_format(v)
+        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_text)
         sys.exit(1)
 
     p = res[0]
-    vrf = p.vrf.rt
 
     if p.authoritative_source != 'nipap':
         auth_src.add(p.authoritative_source)
 
-    if recursive is True:
-        # recursive delete
+    if not remove_confirmed:
+        if recursive is True or p.type == 'assignment':
+            # recursive delete
 
-        # get affected prefixes
-        query = {
-                'val1': 'prefix',
-                'operator': 'contained_within_equals',
-                'val2': p.prefix
-        }
-
-        # add VRF to query if we have one
-        if 'vrf_rt' in spec:
-            vrf_q = {
-                'val1': 'vrf_rt',
-                'operator': 'equals',
-                'val2': spec['vrf_rt']
-            }
+            # get affected prefixes
             query = {
-                'val1': query,
-                'operator': 'and',
-                'val2': vrf_q
+                    'val1': 'prefix',
+                    'operator': 'contained_within_equals',
+                    'val2': p.prefix
             }
 
-        pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
-        if len(pres['result']) <= 1:
-            res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, vrf))
+            # add VRF to query if we have one
+            if 'vrf_rt' in spec:
+                vrf_q = {
+                    'val1': 'vrf_rt',
+                    'operator': 'equals',
+                    'val2': spec['vrf_rt']
+                }
+                query = {
+                    'val1': query,
+                    'operator': 'and',
+                    'val2': vrf_q
+                }
+            pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
 
-            if res.lower() in [ 'y', 'yes' ]:
-                remove_confirmed = True
+            # if recursive is False, this delete will fail, ask user to do recursive
+            # delete instead
+            if recursive is False:
+                if len(pres['result']) > 1:
+                    print "WARNING: %s in %s contains %s hosts." % (p.prefix, vrf_format(p.vrf), len(pres['result']))
+                    res = raw_input("Would you like to recursively delete %s and all hosts? [y/N]: " % (p.prefix))
+                    if res.lower() in [ 'y', 'yes' ]:
+                        recursive = True
+                    else:
+                        print >> sys.stderr, "ERROR: Removal of assignment containing hosts is prohibited. Aborting removal of %s in %s." % (p.prefix, vrf_format(p.vrf))
+                        sys.exit(1)
 
-        else:
-            print "Recursively deleting %s will delete the following prefixes:" % p.prefix
-
-            # Iterate prefixes to print a few of them and check the prefixes'
-            # authoritative source
-            i = 0
-            for rp in pres['result']:
-                if i <= 10:
-                    print "%-29s %-2s %-19s %-14s %-14s %-40s" % ("".join("  " for i in
-                        range(rp.indent)) + rp.display_prefix,
-                        rp.type[0].upper(), rp.node, rp.order_id,
-                        rp.customer_id, rp.description)
-
-                if i == 10:
-                    print ".. and %s other prefixes" % (len(pres['result']) - 10)
-
-                if rp.authoritative_source != 'nipap':
-                    auth_src.add(rp.authoritative_source)
-
-                i += 1
-
-            if len(auth_src) == 0:
-                # Simple case; all prefixes were added from NIPAP
-                res = raw_input("Do you really want to recursively remove %s prefixes in VRF %s? [y/n]: " % (len(pres['result']), vrf))
+        if recursive is True:
+            if len(pres['result']) <= 1:
+                res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
 
                 if res.lower() in [ 'y', 'yes' ]:
                     remove_confirmed = True
 
             else:
-                # we have prefixes with authoritative source != nipap
-                auth_src = list(auth_src)
-                plural = ""
+                print "Recursively deleting %s in %s will delete the following prefixes:" % (p.prefix, vrf_format(p.vrf))
 
-                # format prompt depending on how many different sources we have
-                if len(auth_src) == 1:
-                    systems = "'%s'" % auth_src[0]
-                    prompt = "Enter the name of the managing system to continue or anything else to abort: "
+                # Iterate prefixes to print a few of them and check the prefixes'
+                # authoritative source
+                i = 0
+                for rp in pres['result']:
+                    if i <= 10:
+                        print "%-29s %-2s %-19s %-14s %-14s %-40s" % ("".join("  " for i in
+                            range(rp.indent)) + rp.display_prefix,
+                            rp.type[0].upper(), rp.node, rp.order_id,
+                            rp.customer_id, rp.description)
+
+                    if i == 10:
+                        print ".. and %s other prefixes" % (len(pres['result']) - 10)
+
+                    if rp.authoritative_source != 'nipap':
+                        auth_src.add(rp.authoritative_source)
+
+                    i += 1
+
+                if len(auth_src) == 0:
+                    # Simple case; all prefixes were added from NIPAP
+                    res = raw_input("Do you really want to recursively remove %s prefixes in %s? [y/N]: " % (len(pres['result']),
+                                vrf_format(vrf)))
+
+                    if res.lower() in [ 'y', 'yes' ]:
+                        remove_confirmed = True
 
                 else:
-                    systems = ", ".join("'%s'" % x for x in auth_src[1:]) + " and '%s'" % auth_src[0]
-                    plural = "s"
-                    prompt = "Enter the name of the last managing system to continue or anything else to abort: "
+                    # we have prefixes with authoritative source != nipap
+                    auth_src = list(auth_src)
+                    plural = ""
 
-                print ("Prefix %s in VRF %s contains prefixes managed by the system%s %s. " +
-                    "Are you sure you want to remove them? ") % (p.prefix, vrf, plural, systems)
-                res = raw_input(prompt)
+                    # format prompt depending on how many different sources we have
+                    if len(auth_src) == 1:
+                        systems = "'%s'" % auth_src[0]
+                        prompt = "Enter the name of the managing system to continue or anything else to abort: "
 
-                # Did the user provide the correct answer?
-                if res.lower() == auth_src[0].lower():
-                    remove_confirmed = True
-                else:
-                    print "System names did not match."
+                    else:
+                        systems = ", ".join("'%s'" % x for x in auth_src[1:]) + " and '%s'" % auth_src[0]
+                        plural = "s"
+                        prompt = "Enter the name of the last managing system to continue or anything else to abort: "
 
-    else:
-        # non recursive delete
-        if len(auth_src) > 0:
-            auth_src = list(auth_src)
-            print ("Prefix %s in VRF %s is managed by the system '%s'. " +
-                "Are you sure you want to remove it? ") % (p.prefix, vrf, auth_src[0])
-            res = raw_input("Enter the name of the managing system to continue or anything else to abort: ")
+                    print ("Prefix %s in %s contains prefixes managed by the system%s %s. " +
+                        "Are you sure you want to remove them? ") % (p.prefix,
+                                vrf_format(p.vrf), plural, systems)
+                    res = raw_input(prompt)
 
-            if res.lower() == auth_src[0].lower():
-                remove_confirmed = True
-
-            else:
-                print "System names did not match."
+                    # Did the user provide the correct answer?
+                    if res.lower() == auth_src[0].lower():
+                        remove_confirmed = True
+                    else:
+                        print >> sys.stderr, "System names did not match."
+                        sys.exit(1)
 
         else:
-            res = raw_input("Do you really want to remove the prefix %s in VRF %s? [y/n]: " % (p.prefix, vrf))
-            if res.lower() in [ 'y', 'yes' ]:
-                remove_confirmed = True
+            # non recursive delete
+            if len(auth_src) > 0:
+                auth_src = list(auth_src)
+                print ("Prefix %s in %s is managed by the system '%s'. " +
+                    "Are you sure you want to remove it? ") % (p.prefix,
+                            vrf_format(p.vrf), auth_src[0])
+                res = raw_input("Enter the name of the managing system to continue or anything else to abort: ")
+
+                if res.lower() == auth_src[0].lower():
+                    remove_confirmed = True
+
+                else:
+                    print >> sys.stderr, "System names did not match."
+                    sys.exit(1)
+
+            else:
+                res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
+                if res.lower() in [ 'y', 'yes' ]:
+                    remove_confirmed = True
 
     if remove_confirmed is True:
         p.remove(recursive = recursive)
         if recursive is True:
-            print "Prefix %s and %s other prefixes removed." % (p.prefix, (len(pres['result']) - 1))
+            print "Prefix %s and %s other prefixes in %s removed." % (p.prefix,
+                    (len(pres['result']) - 1), vrf_format(p.vrf))
         else:
-            print "Prefix %s removed." % p.prefix
+            print "Prefix %s in %s removed." % (p.prefix, vrf_format(p.vrf))
 
     else:
         print "Operation canceled."
@@ -856,13 +1020,13 @@ def remove_prefix(arg, opts):
     MODIFY FUNCTIONS
 """
 
-def modify_vrf(arg, opts):
+def modify_vrf(arg, opts, shell_opts):
     """ Modify a VRF with the options set in opts
     """
 
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
-        print >> sys.stderr, "VRF %s not found." % arg
+        print >> sys.stderr, "VRF with [RT: %s] not found." % arg
         sys.exit(1)
 
     v = res[0]
@@ -876,17 +1040,17 @@ def modify_vrf(arg, opts):
 
     v.save()
 
-    print "VRF %s saved." % v.rt
+    print "%s saved." % vrf_format(v)
 
 
 
-def modify_pool(arg, opts):
+def modify_pool(arg, opts, shell_opts):
     """ Modify a pool with the options set in opts
     """
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
-        print >> sys.stderr, "No pool with name %s found." % arg
+        print >> sys.stderr, "No pool with name '%s' found." % arg
         sys.exit(1)
 
     p = res[0]
@@ -904,75 +1068,92 @@ def modify_pool(arg, opts):
 
     p.save()
 
-    print "Pool %s saved." % p.name
+    print "Pool '%s' saved." % p.name
 
 
 
-def grow_pool(arg, opts):
+def grow_pool(arg, opts, shell_opts):
     """ Expand a pool with the ranges set in opts
     """
     if not pool:
-        print >> sys.stderr, "No pool with name %s found." % arg
+        print >> sys.stderr, "No pool with name '%s' found." % arg
         sys.exit(1)
 
     if not 'add' in opts:
-        print >> sys.stderr, "Please supply a prefix to add to pool %s" % pool.name
+        print >> sys.stderr, "Please supply a prefix to add to pool '%s'" % pool.name
         sys.exit(1)
 
-    res = Prefix.list({'prefix': opts['add']})
+    # Figure out VRF.
+    # If pool already has a member prefix, implied_vrf will be set. Look for new
+    # prefix to add in the same vrf as implied_vrf.
+    # If pool has no members, then use get_vrf() to get vrf to search in for
+    # prefix to add.
+    if pool.vrf is not None:
+        v = pool.vrf
+    else:
+        v = get_vrf(opts.get('vrf_rt'), abort=True)
+
+    q = { 'prefix': opts['add'] }
+    if v.rt != 'all':
+        q['vrf_rt'] = v.rt
+
+    res = Prefix.list(q)
+
     if len(res) == 0:
-        print >> sys.stderr, "No prefix found matching %s." % opts['add']
+        print >> sys.stderr, "No prefix found matching %s in %s." % (opts['add'], vrf_format(v))
         sys.exit(1)
     elif res[0].pool:
         if res[0].pool == pool:
-            print >> sys.stderr, "Prefix %s is already assigned to that pool." % opts['add']
+            print >> sys.stderr, "Prefix %s in %s is already assigned to that pool." % (opts['add'], vrf_format(v))
         else:
-            print >> sys.stderr, "Prefix %s is already assigned to a different pool (%s)." % (opts['add'], res[0].pool.name)
+            print >> sys.stderr, "Prefix %s in %s is already assigned to a different pool ('%s')." % (opts['add'], vrf_format(v), res[0].pool.name)
         sys.exit(1)
 
     res[0].pool = pool
     res[0].save()
-    print "Prefix %s added to pool %s." % (res[0].prefix, pool.name)
+    print "Prefix %s in %s added to pool '%s'." % (res[0].prefix, vrf_format(v), pool.name)
 
 
 
-def shrink_pool(arg, opts):
+def shrink_pool(arg, opts, shell_opts):
     """ Shrink a pool by removing the ranges in opts from it
     """
     if not pool:
-        print >> sys.stderr, "No pool with name %s found." % arg
+        print >> sys.stderr, "No pool with name '%s' found." % arg
         sys.exit(1)
 
     if 'remove' in opts:
         res = Prefix.list({'prefix': opts['remove'], 'pool_id': pool.id})
 
         if len(res) == 0:
-            print >> sys.stderr, "Pool %s does not contain %s." % (pool.name,
+            print >> sys.stderr, "Pool '%s' does not contain %s." % (pool.name,
                 opts['remove'])
             sys.exit(1)
 
         res[0].pool = None
         res[0].save()
-        print "Prefix %s removed from pool %s." % (res[0].prefix, pool.name)
+        print "Prefix %s removed from pool '%s'." % (res[0].prefix, pool.name)
     else:
-        print >> sys.stderr, "Please supply a prefix to add or remove to %s:" % (
+        print >> sys.stderr, "Please supply a prefix to add or remove to '%s':" % (
             pool.name)
         for pref in Prefix.list({'pool_id': pool.id}):
             print "  %s" % pref.prefix
 
 
 
-def modify_prefix(arg, opts):
+def modify_prefix(arg, opts, shell_opts):
     """ Modify the prefix 'arg' with the options 'opts'
     """
 
+    modify_confirmed = shell_opts.force
+
     spec = { 'prefix': arg }
-    v = get_vrf(abort=True)
+    v = get_vrf(opts.get('vrf_rt'), abort=True)
     spec['vrf_rt'] = v.rt
 
     res = Prefix.list(spec)
     if len(res) == 0:
-        print >> sys.stderr, "Prefix %s not found in VRF %s." % (arg, v.rt)
+        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_format(v))
         return
 
     p = res[0]
@@ -1007,22 +1188,11 @@ def modify_prefix(arg, opts):
     if 'monitor' in opts:
         p.monitor = _str_to_bool(opts['monitor'])
 
-    if 'vrf_rt' in opts:
-        try:
-            p.vrf = VRF.list({ 'rt': opts['vrf_rt'] })[0]
-        except IndexError:
-            print >> sys.stderr, "VRF %s not found." % opts['vrf_rt']
-            sys.exit(1)
-
     # Promt user if prefix has authoritative source != nipap
-    if p.authoritative_source.lower() != 'nipap':
+    if not modify_confirmed and p.authoritative_source.lower() != 'nipap':
 
-        vrf = 'none'
-        if p.vrf is not None:
-            vrf = p.vrf.rt
-
-        res = raw_input("Prefix %s in VRF %s is managed by system '%s'. Are you sure you want to modify it? [y/n]: " %
-            (p.prefix, vrf, p.authoritative_source))
+        res = raw_input("Prefix %s in %s is managed by system '%s'. Are you sure you want to modify it? [y/n]: " %
+            (p.prefix, vrf_format(p.vrf), p.authoritative_source))
 
         # If the user declines, short-circuit...
         if res.lower() not in [ 'y', 'yes' ]:
@@ -1035,7 +1205,7 @@ def modify_prefix(arg, opts):
         print >> sys.stderr, "Could not save prefix changes: %s" % str(exc)
         sys.exit(1)
 
-    print "Prefix %s saved." % p.display_prefix
+    print "Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf))
 
 
 
@@ -1865,6 +2035,16 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'content_type': unicode,
+                            },
+                            'children': {
+                                'vrf_rt': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'complete': complete_vrf,
+                                    }
+                                },
                             }
                         },
                         'remove': {

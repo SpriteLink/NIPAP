@@ -24,15 +24,18 @@ Options
 
  optional arguments:
     -h, --help                      show a help message
-    -u USER, --user=USER            username
-    -p PASSWORD, --password=PASSWORD    set user's password to PASSWORD
+    -u USER, --user=USER            specify the username
+    -p PASSWORD, --password=PASSWORD    specify the password for user
     -n NAME, --name=NAME            set user's name to NAME
     -t, --trusted                   mark user as trusted
     -r, --readonly                  set user to read only
     -f DB_FILE, --file=DB_FILE      database file [default: read from config]
     -c CONFIG, --config=CONFIG      read configuration from configuration file CONFIG [default: /etc/nipap/nipap.conf]
     --version                       show program's version number and exit
+    --create-database               create SqliteAuth database
+    --latest-version                check if the Sqlite database is of the latest version
+    --upgrade-database              upgrade Sqlite database to latest version
 
 Copyright
 ---------
-Kristian Larsson, Lukas Garberg 2011-2013
+Kristian Larsson, Lukas Garberg 2011-2014

@@ -1,0 +1,231 @@
+#!/usr/bin/env python
+
+import fcntl
+import os
+import re
+import sys
+
+import ConfigParser
+import SocketServer
+
+import nipap_whoisd
+
+import pynipap
+from pynipap import Prefix, VRF, NipapError
+
+
+
+def format_line(key, value):
+    """ Format  a single key, value pair in a whois looking format
+    """
+    if value is None:
+        return ''
+
+    return "%-20s %s\n" % (key + ':', value)
+
+
+
+def format_prefix(p):
+    """ Format a pynipap Prefix object into a whois looking format
+    """
+    if p.family == 4:
+        res = format_line("inetnum", p.prefix)
+    else:
+        res = format_line("inet6num", p.prefix)
+    res += format_line('vrf-rt', p.vrf.rt)
+    res += format_line('vrf-name', p.vrf.name)
+    res += format_line('descr', p.description)
+    res += format_line('comment', p.comment)
+    res += format_line('country', p.country)
+    res += format_line('order', p.order_id)
+    res += format_line('node', p.node)
+    res += format_line('monitor', p.monitor)
+    res += format_line('alarm-priority', p.alarm_priority)
+    return res
+
+
+
+def format_vrf(vrf):
+    """ Format a pynipap VRF object into a whois looking format
+    """
+    res = format_line('rt', vrf.rt)
+    res += format_line('vrf', vrf.name)
+    res += format_line('descr', vrf.description)
+    return res
+
+
+
+class WhoisServer(SocketServer.BaseRequestHandler):
+    def handle(self):
+        """ Called for every connection
+        """
+        # receive data
+        query = ''
+        while True:
+            data = self.request.recv(1024)
+            query += data
+            if len(data) < 1024:
+                break
+
+        query = query.strip()
+
+        # respond!
+        total_hits = 0
+        response = '% This is the NIPAP whois query service.\n\n'
+
+        if query == '':
+            pass
+        elif re.match('^[0-9]+:[0-9]+:.*$', query):
+            # 123:123:1.2.3.4 - IP address and VRF
+            # respond with prefixes
+            m = re.match('^([0-9]+:[0-9]+):(.*)$', query)
+            vrf_query = {
+                    'val1': 'vrf_rt',
+                    'operator': 'equals',
+                    'val2': m.group(1)
+                }
+            res = Prefix.smart_search(m.group(2), { }, vrf_query)
+            if len(res['result']) > 0:
+                total_hits += len(res['result'])
+                for p in res['result']:
+                    response += format_prefix(p)
+                    response += '\n'
+        else:
+            # respond with VRFs
+            res = VRF.smart_search(query, { })
+            if len(res['result']) > 0:
+                total_hits += len(res['result'])
+                response += '% VRFs matching\n'
+                for p in res['result']:
+                    response += format_vrf(p)
+                    response += '\n'
+
+            # respond with prefixes
+            res = Prefix.smart_search(query, { })
+            if len(res['result']) > 0:
+                total_hits += len(res['result'])
+                for p in res['result']:
+                    response += format_prefix(p)
+                    response += '\n'
+
+        if total_hits == 0:
+            response += "%ERROR:101: no entries found\n"
+            response += "%\n"
+            response += "% No entries found in source NIPAP.\n"
+            response += '%\n'
+            response += '% Query the whois service by IP address, prefix, VRF RT or free text\n'
+            response += '% search. It is possible to search for a prefix in a VRF by\n'
+            response += '% concatenating the VRF RT and the prefix: 123:123:1.2.3.4\n'
+            response += '%\n'
+
+        response += "\n%% This query was served by the NIPAP whois server version %s\n" % nipap_whoisd.__version__
+        self.request.send(response)
+
+
+
+if __name__ == '__main__':
+
+    import optparse
+    parser = optparse.OptionParser()
+    parser.add_option("--config", dest="config_file", type="string", default="/etc/nipap/nipap.conf", help="read configuration from file CONFIG_FILE")
+    parser.add_option("--listen", metavar="ADDRESS", help="listen on IPv4/6 ADDRESS")
+    parser.add_option("--port", type=int, default=43, help="port to listen to")
+    parser.add_option("--pid-file", type="string", help="write a PID file to PID_FILE")
+    parser.add_option("--no-pid-file", action="store_true", default=False, help="turn off writing PID file (overrides config file)")
+    parser.add_option("--version", action="store_true", help="display version information and exit")
+
+    (options, args) = parser.parse_args()
+
+    if options.version:
+        print "nipap-whoisd version:", nipap_whoisd.__version__
+        sys.exit(0)
+
+    default = {
+        'pid_file': None,
+        'listen': '0.0.0.0',
+        'port': '43',
+        'nipapd_host': 'localhost',
+        'nipapd_port': '1337',
+        'nipapd_username': None,
+        'user': None,
+        'group': None
+    }
+    cfg = ConfigParser.ConfigParser(default)
+    cfg.read(options.config_file)
+
+    # Go through list of optparse options and set the config object to
+    # their values.
+    for val in parser.option_list:
+
+        if val.dest is None:
+            continue
+        # This is not very pretty... but how can I otherwise access elements
+        # in the options object from variables?
+        try:
+            if eval('options.' + val.dest) is None:
+                continue
+        except AttributeError:
+            continue
+
+        try:
+            cfg.set('whoisd', val.dest, str(eval("options." + val.dest)))
+        except ConfigParser.NoSectionError as exc:
+            print exc
+            print >> sys.stderr, "The configuration file contains errors:", exc
+            sys.exit(1)
+
+    try:
+        server = SocketServer.ForkingTCPServer((cfg.get('whoisd', 'listen'),
+            int(cfg.get('whoisd', 'port'))), WhoisServer)
+    except socket.error, exc:
+        print >> sys.stderr, "Unable to bind to socket", str(exc)
+
+    # drop privileges
+    if cfg.get('whoisd', 'user') is not None:
+        run_user = cfg.get('whoisd', 'user')
+        if cfg.get('whoisd', 'group') is not None:
+            run_group = cfg.get('whoisd', 'group')
+        else:
+            run_group = cfg.get('whoisd', 'user')
+        try:
+            nipap_whoisd.drop_privileges(run_user, run_group)
+        except Exception, e:
+            print >> sys.stderr, ("nipap-whoisd is configured to drop privileges and run as user '%s' and group '%s', \n"
+                        "but was not started as root and can therefore not drop privileges") % (run_user, run_group)
+            sys.exit(1)
+        except KeyError:
+            print >> sys.stderr, "Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group)
+            sys.exit(1)
+
+    # daemonize
+    nipap_whoisd.createDaemon()
+
+    # pid file handling
+    if cfg.get('whoisd', 'pid_file') and not options.no_pid_file:
+        # need a+ to be able to read PID from file
+        try:
+            lf = open(cfg.get('whoisd', 'pid_file'), 'a+', 0)
+        except IOError, exc:
+            print >> sys.stderr, "Unable to open PID file '%s': %s" % (
+                    str(exc.filename), str(exc.strerror))
+            sys.exit(1)
+        try:
+            fcntl.flock(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except IOError:
+            print >> sys.stderr, 'nipap-whoisd already running (pid: %s)' % lf.read().strip()
+            sys.exit(1)
+        print >> sys.stderr, 'Writing PID to file: %s' % cfg.get('whoisd', 'pid_file')
+        lf.truncate()
+        lf.write('%d\n' % os.getpid())
+        lf.flush()
+
+    pynipap.xmlrpc_uri = 'http://%(username)s:%(password)s@%(host)s:%(port)s' % {
+            'username': cfg.get('whoisd', 'nipapd_username'),
+            'password': cfg.get('whoisd', 'nipapd_password'),
+            'host': cfg.get('whoisd', 'nipapd_host'),
+            'port': cfg.get('whoisd', 'nipapd_port')
+        }
+    ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
+
+    # and serve!
+    server.serve_forever()

@@ -58,7 +58,8 @@ bumpversion:
 	# update debian package nipapd's config and postinst script with current db
 	# version
 	sed -i 's/^CURRENT_DB_VERSION.*/CURRENT_DB_VERSION=$(DB_VER)/' debian/nipapd.config debian/nipapd.postinst
-	# replace version number in nipap/__init__.py
+	# replace version & db_version number in nipap/__init__.py
 	sed -i 's/\(__version__\s*= \)"[^"]\+"/\1"$(VER)"/' nipap/__init__.py
+	sed -i "s/\(__db_version__\s*= \)[0-9]\+/\1$(DB_VER)/" nipap/__init__.py
 	# update debian/changelog
 	../utilities/news2dch.py ../NEWS debian/changelog

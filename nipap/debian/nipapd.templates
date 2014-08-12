@@ -31,3 +31,29 @@ Description: Upgrade database structure to new version?
  WARNING: While this is designed and tested to be completely automatic and
  migrate all data to the new version, there is always a risk involved. It is
  recommended to back up your NIPAP database before proceeding.
+
+Template: nipapd/sqlite_upgrade
+Type: boolean
+Default: false
+Description: Upgrade Sqlite database for local auth ?
+ You are upgrading from an older version of nipapd and an old version of the
+ Sqlite databse for local auth has been found. The installation can try to
+ automatically upgrade to the latest version of the database structure.
+
+Template: nipapd/postgres_not_installed
+Type: note
+Description: PostgreSQL is not installed
+ Unable to determine that PostgreSQL is correctly installed. You can try to
+ rerun the configuration of nipapd using 'dpkg-reconfigure nipapd' after you
+ have correctly installed PostgreSQL.
+
+Template: nipapd/postgres_not_running
+Type: note
+Description: PostgreSQL is not running
+ PostgreSQL does not appear to be running and it is thus not possible to
+ determine whether the nipap database structure has already been loaded or if
+ it needs upgrading.
+ .
+ You can either perform any updates to the database structure manually or try
+ to rerun the configuration of nipapd using 'dpkg-reconfigure nipapd' after
+ PostgreSQL has been started again.

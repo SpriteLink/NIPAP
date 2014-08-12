@@ -12,6 +12,9 @@ package jnipap;
  */
 public class JnipapException extends Exception {
 
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
+
 	public JnipapException(String msg) {
 		super(msg);
 	}
@@ -26,6 +29,9 @@ public class JnipapException extends Exception {
  * General input error exception
  */
 class InputException extends JnipapException {
+
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
 
 	public InputException(String msg) {
 		super(msg);
@@ -43,6 +49,9 @@ class InputException extends JnipapException {
  * This can probably be a RuntimeError instead
  */
 class MissingInputException extends InputException {
+
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
 
 	public MissingInputException(String msg) {
 		super(msg);
@@ -62,6 +71,9 @@ class MissingInputException extends InputException {
  */
 class NonExistentException extends JnipapException {
 
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
+
 	public NonExistentException(String msg) {
 		super(msg);
 	}
@@ -78,6 +90,9 @@ class NonExistentException extends JnipapException {
  * expected.
  */
 class ValueException extends JnipapException {
+
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
 
 	public ValueException(String msg) {
 		super(msg);
@@ -96,6 +111,9 @@ class ValueException extends JnipapException {
  */
 class DuplicateException extends JnipapException {
 
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
+
 	public DuplicateException(String msg) {
 		super(msg);
 	}
@@ -113,6 +131,9 @@ class DuplicateException extends JnipapException {
  */
 class ConnectionException extends JnipapException {
 
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
+
 	public ConnectionException(String msg) {
 		super(msg);
 	}
@@ -128,6 +149,9 @@ class ConnectionException extends JnipapException {
  */
 class AuthFailedException extends JnipapException {
 
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
+
 	public AuthFailedException(String msg) {
 		super(msg);
 	}
@@ -142,6 +166,9 @@ class AuthFailedException extends JnipapException {
  * Thrown when invalid parameters were received
  */
 class InvalidParameterException extends JnipapException {
+
+	// version ID for serialization
+	private static final long serialVersionUID = 0L;
 
 	public InvalidParameterException(String msg) {
 		super(msg);

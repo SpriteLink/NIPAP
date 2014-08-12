@@ -1,12 +1,11 @@
 NIPAP
 =====
 
-.. image:: https://travis-ci.org/SpriteLink/NIPAP.png?branch=master
-        :target: https://travis-ci.org/SpriteLink/NIPAP/branches
-        :alt: Build Status
+[![Build Status](https://travis-ci.org/SpriteLink/NIPAP.svg?branch=master)](https://travis-ci.org/SpriteLink/NIPAP)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/SpriteLink/NIPAP/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SpriteLink/NIPAP/?branch=master)
 
-NIPAP is the Neat IP Address Planner - a system built for managing large
-amounts of IP addresses.
+NIPAP is a sleek, intuitive and powerful IP address management system built to
+efficiently handle large amounts of IP addresses.
 
 Having been developed at a fairly large service provider with operations
 throughout Europe, NIPAP is well suited for large organisations with massive
@@ -44,11 +43,27 @@ the web pages.
 
 Also see "Getting it" at http://SpriteLink.github.com/NIPAP.
 
-License
--------
-X11 / MIT
-
 Contributing
 ------------
-Contributions or suggestions are very much welcome! Fork us on GitHub! :)
+Contributions to NIPAP are more than welcome. Please report bugs or improvement
+requests via GitHub issues.
 
+If you would like to submit code, please read through our code submission
+guidelines at https://github.com/SpriteLink/NIPAP/wiki/Code%20submission
+
+Community
+---------
+Keep track of development and community news.
+ - Follow NIPAP news on [Google+](https://plus.google.com/100520153767587090955)
+ - Chat with other uses and the core team on IRC. `irc.freenode.net` / #NIPAP
+
+Versioning
+----------
+We try to adhere to [the Semantic Versioning guidelines](http://semver.org/)
+but sometimes we mess up.
+
+
+Copyright and License
+---------------------
+Code released under the [MIT license](LICENSE). Documentation released under
+[Creative Commons](docs/LICENSE).

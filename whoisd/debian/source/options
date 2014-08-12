@@ -1,0 +1,2 @@
+# Don't store "changes" made to Makefile
+extend-diff-ignore = "(^|/)(Makefile|MANIFEST|nipap-whoisd.man.rst)$"
