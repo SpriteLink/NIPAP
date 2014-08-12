@@ -24,6 +24,7 @@ Features in short:
  * Native VRF support, allowing overlapping prefixes in different VRFs
  * Support for documenting individual hosts
  * Very powerful search function (featuring regexp)
+ * Statistics over used and free addresses
  * Integrated audit log
  * IP address request system for automatically assigning suitable prefixes
  * XML-RPC middleware, allowing easy integration with other applications or writing
@@ -34,33 +35,35 @@ http://SpriteLink.github.com/NIPAP
 
 Getting started
 ---------------
-If you are running Ubuntu / Debian, add the followin repo:
+If you are running Ubuntu / Debian, add the following repo:
 
-   deb http://spritelink.github.io/NIPAP/repos/apt stable main
+    deb http://spritelink.github.io/NIPAP/repos/apt stable main extra
 
 And install nipapd for the backend, nipap-cli for the cli and/or nipap-www for
 the web pages.
 
-Also see "Getting it" at http://SpriteLink.github.com/NIPAP.
+Also see "Getting it" at http://SpriteLink.github.io/NIPAP.
 
 Contributing
 ------------
-Contributions to NIPAP are more than welcome. Please report bugs or improvement
-requests via GitHub issues.
-
-If you would like to submit code, please read through our code submission
-guidelines at https://github.com/SpriteLink/NIPAP/wiki/Code%20submission
+Contributions to NIPAP are more than welcome. Please take a moment to review
+our [contribution guidelines](CONTRIBUTING.md) to make the contribution process
+easy and effective for everyone involved!
 
 Community
 ---------
-Keep track of development and community news.
+Keep track of development and community news:
  - Follow NIPAP news on [Google+](https://plus.google.com/100520153767587090955)
- - Chat with other uses and the core team on IRC. `irc.freenode.net` / #NIPAP
+ - Chat with other users and the core team on IRC. `irc.freenode.net` / #NIPAP
 
 Versioning
 ----------
-We try to adhere to [the Semantic Versioning guidelines](http://semver.org/)
-but sometimes we mess up.
+While we have messed up some times, we try to adhere to
+[the Semantic Versioning guidelines](http://semver.org/).
+
+Note how NIPAP hasn't reached 1.0 yet which means there might still be
+substantial changes to APIs and similar. While we try to keep it to a minimum,
+there will inevitable be changes to progress development.
 
 
 Copyright and License
