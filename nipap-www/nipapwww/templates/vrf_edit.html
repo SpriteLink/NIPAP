@@ -24,7 +24,7 @@
 		// Capture submit form event
 		$('form[name="vrf_form"]').submit(function(e) {
 			var data = {
-				'rt': $('input[name="vrf"]').val(),
+				'rt': $('input[name="rt"]').val(),
 				'name': $('input[name="name"]').val(),
 				'description': $('input[name="description"]').val()
 			};
@@ -123,8 +123,12 @@ data_vrf_addresses_v6[0]['value'] = {{c.edit_vrf.used_addresses_v6}};
 data_vrf_addresses_v6[1]['value'] = {{c.edit_vrf.free_addresses_v6}};
 
 var options = { animationSteps : 20, animationEasing: "easeOutQuart" };
+{% if c.edit_vrf.num_prefixes_v4 > 0 %}
 var chart_vrf_addresses_v4 = new Chart($("#canvas_vrf_addresses_v4")[0].getContext("2d")).Doughnut(data_vrf_addresses_v4, options);
+{% endif %}
+{% if c.edit_vrf.num_prefixes_v6 > 0 %}
 var chart_vrf_addresses_v6 = new Chart($("#canvas_vrf_addresses_v6")[0].getContext("2d")).Doughnut(data_vrf_addresses_v6, options);
+{% endif %}
 
 </script>
 
