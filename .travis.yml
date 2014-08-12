@@ -59,8 +59,8 @@ install:
     # upgrade in which case this will upgrade everything for us
     - sudo dpkg-reconfigure nipapd
     # create local user for unittests
-    - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n "User for running unit tests"
-    - sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"
+    - sudo nipap/nipap-passwd add -u unittest -f /etc/nipap/local_auth.db -p gottatest -n "User for running unit tests"
+    - sudo nipap/nipap-passwd add -u readonly -f /etc/nipap/local_auth.db -p gottatest --readonly -n "Read-only user for running unit tests"
     - sudo /etc/init.d/nipapd restart
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
 

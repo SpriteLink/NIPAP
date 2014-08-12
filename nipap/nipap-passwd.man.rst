@@ -7,7 +7,7 @@ change NIPAP user password
 
 Synopsis
 --------
-**nipapd** [option...]
+**nipap-passwd** action [options...]
 
 Description
 -----------
@@ -19,18 +19,21 @@ Options
 -------
 **nipapd-passwd** accepts the following command-line arguments.
 
+ positional arguments:
+    action {list, add, delete}      define an action to execute
+
+ optional arguments:
     -h, --help                      show a help message
-    -a ADD_USER, --add=ADD_USER     add user with username ADD_USER
-    -c CONFIG, --config=CONFIG      read configuration from configuration file CONFIG [default: /etc/nipap/nipap.conf]
-    --create-database               create SqliteAuth database
-    -d DELETE_USER, --delete=DELETE_USER    delete user with username DELETE_USER
-    -f DB_FILE, --file=DB_FILE      database file [default: read from config]
+    -u USER, --user=USER            specify the username
+    -p PASSWORD, --password=PASSWORD    specify the password for user
     -n NAME, --name=NAME            set user's name to NAME
-    --latest-version                check if the sqlite database is of the latest version
-    -l, --list                      list all users
-    -p PASSWORD, --password=PASSWORD    set user's password to PASSWORD
-    -r, --readonly                  set usr to read only
     -t, --trusted                   mark user as trusted
+    -r, --readonly                  set user to read only
+    -f DB_FILE, --file=DB_FILE      database file [default: read from config]
+    -c CONFIG, --config=CONFIG      read configuration from configuration file CONFIG [default: /etc/nipap/nipap.conf]
+    --version                       show program's version number and exit
+    --create-database               create SqliteAuth database
+    --latest-version                check if the Sqlite database is of the latest version
     --upgrade-database              upgrade Sqlite database to latest version
 
 Copyright
