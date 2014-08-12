@@ -1,13 +1,11 @@
 import logging
-import sys
-import os
 
-from pylons import request, response, session, tmpl_context as c, url
-from pylons.controllers.util import abort, redirect
+from pylons import request, session, tmpl_context as c, url
+from pylons.controllers.util import redirect
 
 from nipapwww.lib.base import BaseController, render
 
-from nipap.authlib import AuthFactory, AuthError
+from nipap.authlib import AuthFactory
 from nipap.nipapconfig import NipapConfig
 
 from ConfigParser import NoOptionError
