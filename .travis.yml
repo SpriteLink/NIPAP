@@ -12,12 +12,13 @@ env:
         - secure: "lxO7SGOLlMu4AldVb0XNViRAPhanleCeIH5BmrhKRMm1k7YnU0WGmfR+1X+m\n7PYI+011vHyVvC/ofbgbbBgqvmbec103ozrrbMCWPm27OCcfjyYJJJtcMLIe\nnD7cQC3u9F0ASxvBBmKIFIKwWPtzDSs4dq3RNfBXkGQc8RsEk1Y="
     matrix:
         # basic build only running nosetests
-        - "PYLINT=false PERFTEST=false UPGRADE=false"
-        # build nosetest and then pylint with artifact upload to S3
-        - "PYLINT=true PERFTEST=true UPGRADE=false"
+        - "PYLINT=false UPGRADE=false"
         # test upgrade by first installing stable package from official repo
         # and then build and upgrade to new packages
-        - "PYLINT=false PERFTEST=false UPGRADE=true"
+        - "PYLINT=false UPGRADE=true"
+        # build nosetest and then pylint with artifact upload to S3
+        # NOTE: disabled since we now have Scrutinizer-CI for linting
+        #- "PYLINT=true UPGRADE=false"
 
 virtualenv:
     system_site_packages: true
