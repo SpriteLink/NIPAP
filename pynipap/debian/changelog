@@ -1,3 +1,13 @@
+pynipap (0.26.3-1) stable; urgency=medium
+
+  * Add support for Ubuntu 14.04 (#568)
+  * Add db schema version check in nipapd (#460)
+  * Fix CLI tab completion bug for colons (#422)
+  * Fix CLI family sanity checking (#558)
+  * Fix nipap-passwd version check (#557)
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 12 Aug 2014 17:27:09 +0200
+
 pynipap (0.26.1-1) stable; urgency=low
 
   * Fix www icons (#551)
