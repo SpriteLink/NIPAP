@@ -1,6 +1,5 @@
 """Pylons environment configuration"""
 import os
-import sys
 
 from jinja2 import Environment, FileSystemLoader
 from pylons.configuration import PylonsConfig
