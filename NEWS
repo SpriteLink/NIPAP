@@ -1,3 +1,7 @@
+Version 0.26.4 - Iron Man
+-------------------------
+ * Fix edit of VRF RT in web UI (#575)
+
 Version 0.26.3 - Iron Man
 -------------------------
  * Add support for Ubuntu 14.04 (#568)
