@@ -13,10 +13,10 @@ PREFIX DATA
 				<div class="option" style="display: none;" id="prefix-row">
 					<dl>
 						<dt>
-						Prefix <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+						Prefix <span class="required tiptip" title="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
-						<input type="text" name="prefix_prefix" value="{{ c.prefix.prefix }}" class="tooltip" title="The prefix, i.e. 192.0.2.16/28">
+						<input type="text" name="prefix_prefix" value="{{ c.prefix.prefix }}" class="tiptip" title="The prefix, i.e. 192.0.2.16/28">
 						</dd>
 					</dl>
 				</div>
@@ -26,14 +26,14 @@ PREFIX DATA
 				<div class="option">
 					<dl>
 						<dt>
-						Type <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+						Type <span class="required tiptip" title="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
 						<span id="default_prefix_type" style="display: none; cursor: pointer;">Default prefix type for pool is <b><span id="pool_prefix_type"></span></b>. Click to change.</span>
 						<span id="prefix_type_selection">
-							<input type="radio" id="radio-prefix-type-reservation" name="prefix_type" value="reservation" class="tooltip" title="" {% if c.prefix.type == 'reservation' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="radio-prefix-type-reservation">Reservation</label>
-							<input type="radio" id="radio-prefix-type-assignment" name="prefix_type" value="assignment" class="tooltip" title="" {% if c.prefix.type == 'assignment' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="radio-prefix-type-assignment">Assignment</label>
-							<input type="radio" id="radio-prefix-type-host" name="prefix_type" value="host" class="tooltip" title=""{% if c.prefix.type == 'host' %} checked{% endif %} disabled><label for="radio-prefix-type-host">Host</label>
+							<input type="radio" id="radio-prefix-type-reservation" name="prefix_type" value="reservation" class="tiptip" title="" {% if c.prefix.type == 'reservation' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="radio-prefix-type-reservation">Reservation</label>
+							<input type="radio" id="radio-prefix-type-assignment" name="prefix_type" value="assignment" class="tiptip" title="" {% if c.prefix.type == 'assignment' %}checked{% elif c.prefix.type == 'host' %}disabled{% endif %}><label for="radio-prefix-type-assignment">Assignment</label>
+							<input type="radio" id="radio-prefix-type-host" name="prefix_type" value="host" class="tiptip" title=""{% if c.prefix.type == 'host' %} checked{% endif %} disabled><label for="radio-prefix-type-host">Host</label>
 							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
 						</span>
 						</dd>
@@ -78,7 +78,7 @@ PREFIX DATA
 						Description
 						</dt>
 						<dd>
-						<input type="text" name="prefix_description" style="width: 80%;" class="tooltip" title="A brief description of the prefix." value="{{ c.prefix.description or '' }}">
+						<input type="text" name="prefix_description" style="width: 80%;" class="tiptip" title="A brief description of the prefix." value="{{ c.prefix.description or '' }}">
 						</dd>
 					</dl>
 				</div>
@@ -138,7 +138,7 @@ PREFIX DATA
 						Node
 						</dt>
 						<dd>
-						<input type="text" name="prefix_node" value="{{ c.prefix.node or '' }}" class="tooltip" title="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured.">
+						<input type="text" name="prefix_node" value="{{ c.prefix.node or '' }}" class="tiptip" title="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured.">
 						</dd>
 					</dl>
 				</div>
@@ -151,7 +151,7 @@ PREFIX DATA
 						Country
 						</dt>
 						<dd>
-						<input type="text" name="prefix_country" size=3 value="{{ c.prefix.country or '' }}" class="tooltip" title="Two-letter country code according to ISO-3166-1'">
+						<input type="text" name="prefix_country" size=3 value="{{ c.prefix.country or '' }}" class="tiptip" title="Two-letter country code according to ISO-3166-1'">
 						</dd>
 					</dl>
 				</div>

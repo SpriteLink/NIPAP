@@ -12,7 +12,7 @@
 				<div class="option">
 					<dl>
 						<dt>
-						Name <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
+						Name <span class="required tiptip" title="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
 						<input type="text" name="name" value="{%- if c.pool is defined -%}{{ c.pool.name }}{%- endif -%}"></td>
@@ -28,7 +28,7 @@
 					Description
 					</dt>
 					<dd>
-					<input type="text" style="width: 80%;" name="description" value="{%- if c.pool is defined -%}{{ c.pool.description or '' }}{%- endif -%}" class="tooltip" title="Enter a short description of what this pool is used for.">
+					<input type="text" style="width: 80%;" name="description" value="{%- if c.pool is defined -%}{{ c.pool.description or '' }}{%- endif -%}" class="tiptip" title="Enter a short description of what this pool is used for.">
 					</dd>
 				</dl>
 			</div>
@@ -41,12 +41,12 @@
 					Default type
 					</dt>
 					<dd>
-					<input id="radio-default-type-reservation" class="tooltip" title="Reservation are for reserving a network for later assigning as specific assignments" type="radio" name="default_type" value="reservation" {% if c.pool is defined %}{% if c.pool.default_type == 'reservation' %} checked{% endif %}{% endif %}>
-					<label for="radio-default-type-reservation" class="tooltip" title="Reservation are for reserving a network for later assigning as specific assignments">Reservation</label>
-					<input id="radio-default-type-assignment" class="tooltip" title="A single subnet, for a specific use in the network" type="radio" name="default_type" value="assignment" {% if c.pool is defined %}{% if c.pool.default_type == 'assignment' %} checked{% endif %}{% endif %}>
-					<label for="radio-default-type-assignment" class="tooltip" title="A single subnet, for a specific use in the network">Assignment</label>
-					<input id="radio-default-type-host" class="tooltip" title="A single host within an assignment" type="radio" name="default_type" value="host" {% if c.pool is defined %}{% if c.pool.default_type == 'host' %} checked{% endif %}{% endif %}>
-					<label id="label-default-type-host" class="tooltip" title="A single host within an assignment" for="radio-default-type-host">Host</label>
+					<input id="radio-default-type-reservation" class="tiptip" title="Reservation are for reserving a network for later assigning as specific assignments" type="radio" name="default_type" value="reservation" {% if c.pool is defined %}{% if c.pool.default_type == 'reservation' %} checked{% endif %}{% endif %}>
+					<label for="radio-default-type-reservation" class="tiptip" title="Reservation are for reserving a network for later assigning as specific assignments">Reservation</label>
+					<input id="radio-default-type-assignment" class="tiptip" title="A single subnet, for a specific use in the network" type="radio" name="default_type" value="assignment" {% if c.pool is defined %}{% if c.pool.default_type == 'assignment' %} checked{% endif %}{% endif %}>
+					<label for="radio-default-type-assignment" class="tiptip" title="A single subnet, for a specific use in the network">Assignment</label>
+					<input id="radio-default-type-host" class="tiptip" title="A single host within an assignment" type="radio" name="default_type" value="host" {% if c.pool is defined %}{% if c.pool.default_type == 'host' %} checked{% endif %}{% endif %}>
+					<label id="label-default-type-host" class="tiptip" title="A single host within an assignment" for="radio-default-type-host">Host</label>
 					<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
 					</dd>
 				</dl>
@@ -60,7 +60,7 @@
 					Default IPv4 prefix length
 					</dt>
 					<dd>
-					<input type="text" name="ipv4_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv4_default_prefix_length or '' }}{% endif %}" class="tooltip" title="The default IPv4 prefix length of prefixes assigned from this pool. Should be an integer value, for example 24 or 31.">
+					<input type="text" name="ipv4_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv4_default_prefix_length or '' }}{% endif %}" class="tiptip" title="The default IPv4 prefix length of prefixes assigned from this pool. Should be an integer value, for example 24 or 31.">
 					</dd>
 				</dl>
 			</div>
@@ -73,7 +73,7 @@
 					Default IPv6 prefix length
 					</dt>
 					<dd>
-					<input type="text" name="ipv6_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv6_default_prefix_length or '' }}{% endif %}" class="tooltip" title="The default IPv6 prefix length of prefixes assigned from this pool. Should be an integer value, for example 64 or 112.">
+					<input type="text" name="ipv6_default_prefix_length" value="{% if c.pool is defined %}{{ c.pool.ipv6_default_prefix_length or '' }}{% endif %}" class="tiptip" title="The default IPv6 prefix length of prefixes assigned from this pool. Should be an integer value, for example 64 or 112.">
 					</dd>
 				</dl>
 			</div>
@@ -87,7 +87,7 @@
 					Implied VRF
 					</dt>
 					<dd>
-					<span class="tooltip" title="The implied VRF is the VRF to which prefixes that are members of this pool belong.">
+					<span class="tiptip" title="The implied VRF is the VRF to which prefixes that are members of this pool belong.">
 						{% if c.pool is defined %}{% if c.pool.vrf.rt != None %}{{ c.pool.vrf.rt or '' }} - {% endif %}{{ c.pool.vrf.name or '' }}{% endif %}
 					</span>
 					</dd>

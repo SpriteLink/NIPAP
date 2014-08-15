@@ -5,6 +5,7 @@
 		<title>{{ c.page_title|default('NIPAP') }}</title>
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="/jquery-ui-1.10.0.custom.css">
+		<link rel="stylesheet" href="/bootstrap.min.css">
 		<link rel="stylesheet" href="/nipap.css">
 		<link rel="stylesheet" href="/tipTip.css">
 		<link rel="stylesheet" href="/jquery.tagit.css" type="text/css">
@@ -24,7 +25,7 @@
 				popped = ('state' in window.history && window.history.state !== null);
 				initialURL = location.href;
 
-				$(".tooltip").tipTip({delay: 100});
+				$(".tiptip").tipTip({delay: 100});
 				$(document).ajaxError(ajaxErrorHandler);
 				{% if session.user is defined %}
 				$('#add_vrf_filter_btn').click(

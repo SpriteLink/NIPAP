@@ -603,7 +603,7 @@ function showPrefix(prefix, reference, offset) {
 	prefix_type_icon.addClass('prefix_type_' + prefix.type);
 
 	// Add tooltip to prefix type icon
-	prefix_type_icon.addClass('tooltip');
+	prefix_type_icon.addClass('tiptip');
 	prefix_type_icon.attr('title', prefix.type[0].toUpperCase() + prefix.type.slice(1));
 	prefix_type_icon.html(prefix.type[0].toUpperCase());
 
@@ -632,7 +632,7 @@ function showPrefix(prefix, reference, offset) {
 		for (var i = 0; i < sorted_inherited_tags.length; i++) {
 			tags_html += "&nbsp;&nbsp;" + sorted_inherited_tags[i] + "<br/>";
 		}
-		prefix_tags.addClass('tooltip');
+		prefix_tags.addClass('tiptip');
 		prefix_tags.prop('title', tags_html)
 		prefix_tags.html('<img src="/images/tag-16.png">');
 		prefix_tags.tipTip({ delay: 100 });
@@ -679,7 +679,7 @@ function showPrefix(prefix, reference, offset) {
 	if (prefix.comment == null || prefix.comment == '') {
 		prefix_comment.html("&nbsp;");
 	} else {
-		prefix_comment.addClass('tooltip');
+		prefix_comment.addClass('tiptip');
 		prefix_comment.prop('title', prefix.comment)
 		prefix_comment.html('<img src="/images/comments-16.png">');
 		prefix_comment.tipTip({ delay: 100 });
@@ -1141,7 +1141,7 @@ function receivePrefixList(search_result) {
 	if (!verifyPrefixListResponse(search_result)) return;
 	newest_prefix_query = parseInt(search_result.search_options.query_id);
 
-	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left tooltip" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" title="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
+	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left tiptip" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" title="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
 	$('#search_interpretation_text').tipTip({delay: 100});
 
 	/*
@@ -1188,7 +1188,7 @@ function receivePrefixList(search_result) {
 			tooltip = "The description OR node OR order id OR the comment should regexp match '" + interp.string + "'";
 		}
 
-		intp_cont.append('<div class="search_interpretation tooltip" id="intp' + key + '" title="' + tooltip + '">');
+		intp_cont.append('<div class="search_interpretation tiptip" id="intp' + key + '" title="' + tooltip + '">');
 		$('#intp' + key).html(text);
 		$('#intp' + key).tipTip({delay: 100});
 
@@ -2327,8 +2327,8 @@ function selectPrefix(prefix_id) {
 			maxpreflen = 128;
 		}
 
-		$('#length_info_text').html('<span class="tooltip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' + maxpreflen+ '>');
-		$('.tooltip').tipTip({delay: 100});
+		$('#length_info_text').html('<span class="tiptip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' + maxpreflen+ '>');
+		$('.tiptip').tipTip({delay: 100});
 
 		// enable / disable types
 		$('#radio-prefix-type-reservation').attr('disabled', 'disabled');
