@@ -571,6 +571,11 @@ class Pool(Pynipap):
     free_addresses_v6 = None
 
 
+    def __init__(self):
+        Pynipap.__init__(self)
+        self.tags = {}
+
+
     def save(self):
         """ Save changes made to pool to NIPAP.
         """
@@ -581,8 +586,11 @@ class Pool(Pynipap):
             'description': self.description,
             'default_type': self.default_type,
             'ipv4_default_prefix_length': self.ipv4_default_prefix_length,
-            'ipv6_default_prefix_length': self.ipv6_default_prefix_length
+            'ipv6_default_prefix_length': self.ipv6_default_prefix_length,
+            'tags': []
         }
+        for tag_name in self.tags:
+            data['tags'].append(tag_name)
 
         if self.id is None:
             # New object, create
@@ -739,6 +747,13 @@ class Pool(Pynipap):
         pool.used_addresses_v6 = long(parm['used_addresses_v6'])
         pool.free_addresses_v4 = long(parm['free_addresses_v4'])
         pool.free_addresses_v6 = long(parm['free_addresses_v6'])
+
+        pool.tags = {}
+        for tag_name in parm['tags']:
+            tag = Tag.from_dict({'name': tag_name })
+            pool.tags[tag_name] = tag
+
+        # TODO: WTF is this?
         if parm['vrf_id'] is not None:
             pool.vrf = VRF.get(parm['vrf_id'])
 
