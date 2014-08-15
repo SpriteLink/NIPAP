@@ -1852,6 +1852,7 @@ function showAllocContainer(e) {
 				$.each(selected_vrfs, function(k, v) { vrf = v; });
 				$("#prefix_vrf_text").html('Destination VRF for new prefix set to currently selected VRF.');
 				$("#prefix_vrf_display").html('<div class="vrf_filter_entry"><div class="vrf_filter_entry_rt">RT:&nbsp;' + vrf.rt + '</div><div class="selector_entry_name" style="margin-left: 5px;">' + vrf.name + '</div><div class="selector_entry_description" style="clear: both;">' + vrf.description + '</div></div>');
+				$('input[name="prefix_vrf_id"]').val(vrf.id);
 			} else {
 				$("#prefix_vrf_text").html("Multiple VRFs selected, please choose destination VRF for new prefix manually.");
 				$("#prefix_vrf_display").html("No VRF selected.");
