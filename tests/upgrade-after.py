@@ -282,7 +282,8 @@ class TestCheckdata(unittest.TestCase):
             'total_addresses_v4': '0',
             'total_addresses_v6': '0',
             'used_addresses_v4': '0',
-            'used_addresses_v6': '0'
+            'used_addresses_v6': '0',
+            'tags': []
             }]
 
         self.assertEqual(expected, self._mangle_vrf_result(s.list_vrf({ 'auth':
@@ -305,7 +306,8 @@ class TestCheckdata(unittest.TestCase):
             'total_addresses_v4': '65536',
             'total_addresses_v6': '2417851639229258349412352',
             'used_addresses_v4': '8192',
-            'used_addresses_v6': '18446744073709551616'
+            'used_addresses_v6': '18446744073709551616',
+            'tags': []
             }]
 
         self.assertEqual(expected, self._mangle_vrf_result(s.list_vrf({ 'auth':
