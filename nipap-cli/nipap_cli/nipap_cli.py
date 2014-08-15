@@ -250,8 +250,8 @@ def list_pool(arg, opts, shell_opts):
                 print "No matching pools found"
                 return
 
-            print "%-19s %-39s %-13s  %-8s %s" % (
-                "Name", "Description", "Default type", "4 / 6", "Implied VRF"
+            print "%-19s %-2s %-39s %-13s  %-8s %s" % (
+                "Name", "#", "Description", "Default type", "4 / 6", "Implied VRF"
                 )
             print "------------------------------------------------------------------------------------------------"
 
@@ -267,8 +267,12 @@ def list_pool(arg, opts, shell_opts):
                 vrf_rt = p.vrf.rt or '-'
                 vrf_name = p.vrf.name
 
-            print "%-19s %-39s %-13s %-2s / %-3s  [RT: %s] %s" % (
-                p.name, desc, p.default_type,
+            tags = '-'
+            if len(p.tags) > 0:
+                tags = "#%d" % (len(p.tags))
+
+            print "%-19s %-2s %-39s %-13s %-2s / %-3s  [RT: %s] %s" % (
+                p.name, tags, desc, p.default_type,
                 str(p.ipv4_default_prefix_length or '-'),
                 str(p.ipv6_default_prefix_length or '-'),
                 vrf_rt, vrf_name
@@ -629,6 +633,13 @@ def add_pool(arg, opts, shell_opts):
     p.default_type = opts.get('default-type')
     p.ipv4_default_prefix_length = opts.get('ipv4_default_prefix_length')
     p.ipv6_default_prefix_length = opts.get('ipv6_default_prefix_length')
+    if 'tags' in opts:
+        tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
+        p.tags = {}
+        for tag_name in tags:
+            tag = Tag()
+            tag.name = tag_name
+            p.tags[tag_name] = tag
 
     try:
         p.save()
@@ -670,6 +681,7 @@ def view_vrf(arg, opts, shell_opts):
     print "  %-26s : %s" % ("RT", v.rt)
     print "  %-26s : %s" % ("Name", v.name)
     print "  %-26s : %s" % ("Description", v.description)
+
     print "-- Tags"
     for tag_name in sorted(v.tags, key=lambda s: s.lower()):
         print "  %s" % tag_name
@@ -719,7 +731,13 @@ def view_pool(arg, opts, shell_opts):
     print "  %-26s : %s" % ("Default type", p.default_type)
     print "  %-26s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name)
     print "  %-26s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
+
+    print "-- Tags"
+    for tag_name in sorted(p.tags, key=lambda s: s.lower()):
+        print "  %s" % tag_name
+
     # statistics
+    print "-- Statistics"
     if p.total_addresses_v4 == 0:
         used_percent_v4 = 0
     else:
@@ -1079,6 +1097,13 @@ def modify_pool(arg, opts, shell_opts):
         p.ipv4_default_prefix_length = opts['ipv4_default_prefix_length']
     if 'ipv6_default_prefix_length' in opts:
         p.ipv6_default_prefix_length = opts['ipv6_default_prefix_length']
+    if 'tags' in opts:
+        tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
+        p.tags = {}
+        for tag_name in tags:
+            tag = Tag()
+            tag.name = tag_name
+            p.tags[tag_name] = tag
 
     p.save()
 
@@ -1971,6 +1996,15 @@ cmds = {
                                 'content_type': int,
                                 'descripton': 'Default IPv6 prefix length'
                             }
+                        },
+                        'tags': {
+                            'type': 'option',
+                            'content_type': unicode,
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                                'complete': complete_tags,
+                            }
                         }
                     }
                 },
@@ -2144,6 +2178,15 @@ cmds = {
                                         'type': 'value',
                                         'content_type': int,
                                         'descripton': 'Default IPv6 prefix length'
+                                    }
+                                },
+                                'tags': {
+                                    'type': 'option',
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                        'complete': complete_tags,
                                     }
                                 }
                             }
