@@ -25,13 +25,14 @@
 <table style="border-spacing: 0px; width: 100%;">
 	<thead class="listing">
 		<tr>
-			<th style="padding-left: 30px;">RT</th><th>Name</th><th>Description</th><th></th>
+			<th style="padding-left: 30px;">RT</th><th>Name</th><th></th><th>Description</th><th></th>
 		</tr>
 	</thead>
 	<tbody class="listing">
 		<tr ng-repeat="vrf in vrfs | filter:query">
 			<td style="padding-left: 30px;">{{ vrf.rt }}</a></td>
 			<td>{{ vrf.name }}</td>
+			<td><img ng-if="vrf.tags|notEmpty" src="/images/tag-16.png" tooltip-trigger="mouseenter" tooltip-placement="bottom" tooltip-html-unsafe="{{vrf.tags|popoverFormatTags}}"></td>
 			<td>{{ vrf.description }}</td>
 			<td>
                 <div class="dropdown">

@@ -129,6 +129,8 @@ class XhrController(BaseController):
                 v.name = request.params['name'].strip()
         if 'description' in request.params:
             v.description = request.params['description']
+        if 'tags' in request.params:
+            v.tags = json.loads(request.params['tags'])
 
         try:
             v.save()
@@ -160,6 +162,8 @@ class XhrController(BaseController):
                 v.name = None
         if 'description' in request.params:
             v.description = request.params['description']
+        if 'tags' in request.params:
+            v.tags = json.loads(request.params['tags'])
 
         try:
             v.save()
@@ -779,7 +783,8 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'id': obj.id,
                 'rt': obj.rt,
                 'name': obj.name,
-                'description': obj.description
+                'description': obj.description,
+                'tags': obj.tags
             }
 
         elif isinstance(obj, Pool):
