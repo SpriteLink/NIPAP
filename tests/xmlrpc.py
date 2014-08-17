@@ -313,6 +313,7 @@ class NipapXmlTest(unittest.TestCase):
         with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute name'):
             s.add_vrf({ 'auth': ad, 'attr': attr })
         attr['name'] = 'test'
+        attr['tags'] = []
 
         attr['description'] = 'my test vrf'
         vrf = s.add_vrf({ 'auth': ad, 'attr': attr })
@@ -337,10 +338,12 @@ class NipapXmlTest(unittest.TestCase):
         with self.assertRaisesRegexp(xmlrpclib.Fault, 'Invalid input for column rt, must be NULL for VRF id 0'):
             s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': { 'rt': '123:456a' }})
 
-        res_edit = s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': { 'name': 'FOO', 'description': 'BAR' }})
+        res_edit = s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': {
+            'name': 'FOO', 'description': 'BAR', 'tags': [] }})
         res_list = s.list_vrf({ 'auth': ad, 'vrf': { } })[0]
         del(res_list['id'])
-        self.assertEqual(self._mangle_vrf_result(res_list), { 'rt': None, 'name': 'FOO', 'description': 'BAR' }, 'VRF change incorrect')
+        self.assertEqual(self._mangle_vrf_result(res_list), { 'rt': None,
+            'name': 'FOO', 'description': 'BAR', 'tags': [] }, 'VRF change incorrect')
 
 
 
@@ -350,7 +353,8 @@ class NipapXmlTest(unittest.TestCase):
         attr = {
             'rt': '65000:123',
             'name': '65k:123',
-            'description': 'VRF 65000:123'
+            'description': 'VRF 65000:123',
+            'tags': []
         }
         spec = { 'rt': '65000:123' }
         vrf = s.add_vrf({ 'auth': ad, 'attr': attr })
@@ -384,6 +388,7 @@ class NipapXmlTest(unittest.TestCase):
         attr['rt'] = '65000:1234'
         attr['name'] = '65k:1234'
         attr['description'] = 'VRF 65000:1234'
+        attr['tags'] = []
         s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': attr })
 
         # verify result of valid change
@@ -404,7 +409,8 @@ class NipapXmlTest(unittest.TestCase):
         attr = {
             'rt': '65000:1235',
             'name': '65k:1235',
-            'description': 'Virtual Routing and Forwarding instance 65000:123'
+            'description': 'Virtual Routing and Forwarding instance 65000:123',
+            'tags': []
         }
         vrf = s.add_vrf({ 'auth': ad, 'attr': attr })
         attr['id'] = vrf['id']

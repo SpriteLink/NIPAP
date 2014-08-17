@@ -50,6 +50,23 @@
 
 				<div class="option">
 					<dl>
+						<dt>
+						Tags
+						</dt>
+						<dd>
+						<ul id="tags" style="font-size: 1.0em;">
+							{%- if c.action == 'edit' -%}
+							{% for tag in c.edit_vrf.tags|sort() %}<li>{{ tag }}</li>{% endfor %}
+							{% endif %}
+						</ul>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
 						<dt></dt>
 						<dd>
 						{% if c.vrf is defined %}

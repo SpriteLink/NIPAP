@@ -348,6 +348,11 @@ class VRF(Pynipap):
     """
 
 
+    def __init__(self):
+        Pynipap.__init__(self)
+        self.tags = {}
+
+
     @classmethod
     def list(cls, vrf = {}):
         """ List VRFs.
@@ -385,6 +390,12 @@ class VRF(Pynipap):
         vrf.rt = parm['rt']
         vrf.name = parm['name']
         vrf.description = parm['description']
+
+        vrf.tags = {}
+        for tag_name in parm['tags']:
+            tag = Tag.from_dict({'name': tag_name })
+            vrf.tags[tag_name] = tag
+
         vrf.num_prefixes_v4 = long(parm['num_prefixes_v4'])
         vrf.num_prefixes_v6 = long(parm['num_prefixes_v6'])
         vrf.total_addresses_v4 = long(parm['total_addresses_v4'])
@@ -480,8 +491,11 @@ class VRF(Pynipap):
         data = {
             'rt': self.rt,
             'name': self.name,
-            'description': self.description
+            'description': self.description,
+            'tags': []
         }
+        for tag_name in self.tags:
+            data['tags'].append(tag_name)
 
         if self.id is None:
             # New object, create

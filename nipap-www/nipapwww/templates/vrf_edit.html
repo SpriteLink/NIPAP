@@ -26,7 +26,8 @@
 			var data = {
 				'rt': $('input[name="rt"]').val(),
 				'name': $('input[name="name"]').val(),
-				'description': $('input[name="description"]').val()
+				'description': $('input[name="description"]').val(),
+				'tags': JSON.stringify($('#tags').tagit("assignedTags"))
 			};
 
 			$.getJSON('{{ h.url(controller="xhr", action="edit_vrf", id=c.edit_vrf.id) }}', data, vrfEdited);
@@ -34,6 +35,12 @@
 			// prevent default action ("ordinary" HTTP POST)
 			e.preventDefault();
 
+		});
+
+		// tags
+		$("#tags").tagit({
+			allowSpaces: true,
+			removeConfirmation: true
 		});
 	});
 

@@ -5,7 +5,38 @@
 /*
  * Define nipapApp angular application
  */
-var nipapApp = angular.module('nipapApp', [ 'ui.bootstrap.dropdownToggle' ]);
+var nipapApp = angular.module('nipapApp', [ 'ui.bootstrap' ]);
+
+
+/*
+ * Filter to return number of entries in 'dict', ie JavaScript Object
+ */
+nipapApp.filter('dictSize', function () {
+	return function(object) {
+		return Object.keys(object).length;
+	}
+});
+
+
+/*
+ * Filter to return number of entries in 'dict', ie JavaScript Object
+ */
+nipapApp.filter('notEmpty', function () {
+	return function(object) {
+		return !!(object && Object.keys(object).length);
+	};
+});
+
+
+/*
+ * Filter to format tags for tag popover
+ */
+nipapApp.filter('popoverFormatTags', function () {
+	return function(object) {
+		return '<div style="text-align: left;">Tags: <br/>' + Object.keys(object).join('<br/>') + '</div>';
+	};
+});
+
 
 /*
  * VRFListController - used to list VRFs on the /vrf/list-page
@@ -15,7 +46,7 @@ nipapApp.controller('VRFListController', function ($scope, $http) {
 	// Fetch VRFs from backend
 	$http.get('/xhr/list_vrf').success(function (data) {
 		if (data.hasOwnProperty('error')) {
-			// display some error message
+			// TODO: display some error message
 		} else {
 			$scope.vrfs = data;
 		}
@@ -72,7 +103,7 @@ nipapApp.controller('PoolListController', function ($scope, $http) {
 	// Fetch VRFs from backend
 	$http.get('/xhr/list_pool').success(function (data) {
 		if (data.hasOwnProperty('error')) {
-			// display some error message
+			// TODO: display some error message
 		} else {
 			$scope.pools = data;
 		}

@@ -770,6 +770,7 @@ class Nipap:
             vrf_attr['rt'] = 'rt'
             vrf_attr['name'] = 'name'
             vrf_attr['description'] = 'description'
+            vrf_attr['tags'] = 'tags'
 
             if query['val1'] not in vrf_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
@@ -813,7 +814,7 @@ class Nipap:
 
         # sanity check - do we have all attributes?
         req_attr = [ 'rt', 'name' ]
-        self._check_attr(attr, req_attr, req_attr + [ 'description', ])
+        self._check_attr(attr, req_attr, req_attr + [ 'description', 'tags' ])
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_vrf " + insert
@@ -976,7 +977,7 @@ class Nipap:
 
         # sanity check - do we have all attributes?
         req_attr = [ ]
-        allowed_attr = [ 'rt', 'name', 'description' ]
+        allowed_attr = [ 'rt', 'name', 'description', 'tags' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
         # get list of VRFs which will be changed before changing them
@@ -1210,31 +1211,53 @@ class Nipap:
         query_parts = list()
         for query_str_part in query_str_parts:
 
-            self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-            query_str_part['interpretation'] = 'text'
-            query_str_part['operator'] = 'regex'
-            query_str_part['attribute'] = 'vrf or name or description'
-            query_parts.append({
-                'operator': 'or',
-                'val1': {
+            # tags
+            if re.match('#', query_str_part['string']):
+                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
+                query_str_part['interpretation'] = '(inherited) tag'
+                query_str_part['attribute'] = 'tag'
+
+                query_str_part['operator'] = 'equals_any'
+                query_parts.append({
                     'operator': 'or',
                     'val1': {
-                        'operator': 'regex_match',
-                        'val1': 'name',
-                        'val2': query_str_part['string']
+                        'operator': 'equals_any',
+                        'val1': 'tags',
+                        'val2': query_str_part['string'][1:]
+                    },
+                    'val2': {
+                        'operator': 'equals_any',
+                        'val1': 'inherited_tags',
+                        'val2': query_str_part['string'][1:]
+                    }
+                })
+
+            else:
+                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
+                query_str_part['interpretation'] = 'text'
+                query_str_part['operator'] = 'regex'
+                query_str_part['attribute'] = 'vrf or name or description'
+                query_parts.append({
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'regex_match',
+                            'val1': 'name',
+                            'val2': query_str_part['string']
+                        },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'description',
+                            'val2': query_str_part['string']
+                        }
                     },
                     'val2': {
                         'operator': 'regex_match',
-                        'val1': 'description',
+                        'val1': 'rt',
                         'val2': query_str_part['string']
                     }
-                },
-                'val2': {
-                    'operator': 'regex_match',
-                    'val1': 'rt',
-                    'val2': query_str_part['string']
-                }
-            })
+                })
 
         # Sum all query parts to one query
         query = {}
