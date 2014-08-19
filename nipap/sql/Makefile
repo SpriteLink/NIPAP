@@ -42,7 +42,7 @@ endif
 
 
 all:
-	@echo "Run this as the postgres user!"
+	@echo "Please run \"make install\" as postgres user."
 
 
 db:
