@@ -68,7 +68,7 @@ Rolling a new version
 Update the NEWS file as described above.
 
 If you have changes to the database, don't forget to increment the version
-number in sql/ip_net.sql
+number in sql/ip_net.sql.
 
 From the project root, run::
 
@@ -77,6 +77,41 @@ From the project root, run::
 This will automatically update the debian changelog based on the content of the
 NEWS file. You can bump the version for a single component (such as pynipap) by
 running the same command in the directory of that component.
+
+After having built packages for the new version, tag the git repo with the new
+version number;
+  git tag vX.Y.Z
+And for pushing to git:
+  git push origin refs/tags/vX.Y.Z
+
+
+Rolling the deb repo
+--------------------
+Debian stable is the primary production platform targeted by NIPAP and new
+releases should be put in our Debian repo.
+
+To update the deb repo, make sure you are on branch 'master' and then build the
+bebian packages with:
+  make builddeb
+
+Then checkout the 'gh-pages' branch and add them to the repo.
+Start by adding them to the testing repo:
+  make debrepo-testing
+
+Once the new version has been tested out for a bit, it is time to copy it to
+stable, using:
+  make debrepo
+
+Regardless if you are putting the packages in testing or stable, you need to
+actually push them to the github repo. Make sure the new files are added to
+git, commit and push:
+ git add --all repos
+ git commit -a -m "Add nipapd vX.Y.Z to debian STABLE|TEST repo"
+ git push
+
+Once a stable version is release, update readthedocs.org to point to the latest
+tag and write a post on Google+ in the NIPAP community and share it from the
+NIPAP account.
 
 
 Manually rolling a new version
@@ -110,32 +145,3 @@ When dch launches an editor for editing the changelog. Copy the content of the
 NEWS file into the Debian changelog (see previous chapten "NEWS / Changelog"
 for more information). Make sure the formatting aligns and save the file.
 
-After having built packages for the new version, tag the git repo with the new
-version number;
-  git tag vX.Y.Z
-And for pushing to git:
-  git push origin refs/tags/vX.Y.Z
-
-Don't forget to update the version number of the SQL schema file if changes has
-been made to tables or indices. It's in the comment on the database. The same
-goes for nipap/debian/nipapd.config which also needs the version of the
-database file.
-
-
-Rolling the deb repo
---------------------
-To update the deb repo, make sure you are on branch 'master' and then build the
-bebian packages with:
-  make builddeb
-
-Then checkout the 'gh-pages' branch and add them to the repo.
-For the testing repo, it's:
-  make debrepo-testing
-
-While for the stable repo, it's:
-  make debrepo
-
-Make sure the new files are added to git, commit and push.
- git add --all repos
- git commit -a -m "Add nipapd vX.Y.Z to debian STABLE|TEST repo"
- git push
