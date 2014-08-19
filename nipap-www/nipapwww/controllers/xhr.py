@@ -249,6 +249,8 @@ class XhrController(BaseController):
         if 'ipv6_default_prefix_length' in request.params:
             if request.params['ipv6_default_prefix_length'].strip() != '':
                 p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
+        if 'tags' in request.params:
+            p.tags = json.loads(request.params['tags'])
 
         try:
            p.save()
@@ -281,6 +283,8 @@ class XhrController(BaseController):
                 p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
             else:
                 p.ipv6_default_prefix_length = None
+        if 'tags' in request.params:
+            p.tags = json.loads(request.params['tags'])
 
         try:
            p.save()
@@ -804,7 +808,8 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'description': obj.description,
                 'default_type': obj.default_type,
                 'ipv4_default_prefix_length': obj.ipv4_default_prefix_length,
-                'ipv6_default_prefix_length': obj.ipv6_default_prefix_length
+                'ipv6_default_prefix_length': obj.ipv6_default_prefix_length,
+                'tags': obj.tags
             }
 
         elif isinstance(obj, Prefix):

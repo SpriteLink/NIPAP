@@ -226,7 +226,8 @@
 					'description': $('input[name="description"]').val(),
 					'default_type': $('input[name="default_type"]:checked').val(),
 					'ipv4_default_prefix_length': $('input[name="ipv4_default_prefix_length"]').val(),
-					'ipv6_default_prefix_length': $('input[name="ipv6_default_prefix_length"]').val()
+					'ipv6_default_prefix_length': $('input[name="ipv6_default_prefix_length"]').val(),
+					'tags': JSON.stringify($('#tags').tagit("assignedTags"))
 				};
 
 				$.getJSON('{{ h.url(controller="xhr", action="edit_pool", id=c.pool.id) }}', data, poolEdited);

@@ -58,6 +58,7 @@ COMMENT ON COLUMN ip_net_vrf.used_addresses_v4 IS 'Number of used IPv4 addresses
 COMMENT ON COLUMN ip_net_vrf.used_addresses_v6 IS 'Number of used IPv6 addresses in this VRF';
 COMMENT ON COLUMN ip_net_vrf.free_addresses_v4 IS 'Number of free IPv4 addresses in this VRF';
 COMMENT ON COLUMN ip_net_vrf.free_addresses_v6 IS 'Number of free IPv6 addresses in this VRF';
+COMMENT ON COLUMN ip_net_vrf.tags IS 'Tags associated with the VRF';
 
 
 
@@ -87,7 +88,8 @@ CREATE TABLE ip_net_pool (
 	free_prefixes_v4 numeric(40) DEFAULT 0,
 	free_prefixes_v6 numeric(40) DEFAULT 0,
 	total_prefixes_v4 numeric(40) DEFAULT 0,
-	total_prefixes_v6 numeric(40) DEFAULT 0
+	total_prefixes_v6 numeric(40) DEFAULT 0,
+	tags text[] DEFAULT '{}'
 );
 
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
@@ -108,6 +110,7 @@ COMMENT ON COLUMN ip_net_pool.free_prefixes_v4 IS 'Number of potentially free IP
 COMMENT ON COLUMN ip_net_pool.free_prefixes_v6 IS 'Number of potentially free IPv6 prefixes of the default assignment size';
 COMMENT ON COLUMN ip_net_pool.total_prefixes_v4 IS 'Potentially the total number of IPv4 child prefixes in pool. This is based on current number of childs and potential childs of the default assignment size, which is why it can vary.';
 COMMENT ON COLUMN ip_net_pool.total_prefixes_v6 IS 'Potentially the total number of IPv6 child prefixes in pool. This is based on current number of childs and potential childs of the default assignment size, which is why it can vary.';
+COMMENT ON COLUMN ip_net_pool.tags IS 'Tags associated with the pool';
 
 
 

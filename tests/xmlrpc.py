@@ -1268,6 +1268,7 @@ class NipapXmlTest(unittest.TestCase):
         expected['vrf_id'] = None
         expected['vrf_rt'] = None
         expected['vrf_name'] = None
+        expected['tags'] = []
 
         # list pool and verify data in NIPAP
         p = s.list_pool({ 'auth': ad, 'pool': { 'id': expected['id'] } })
@@ -1307,6 +1308,7 @@ class NipapXmlTest(unittest.TestCase):
         expected['vrf_id'] = None
         expected['vrf_rt'] = None
         expected['vrf_name'] = None
+        expected['tags'] = []
 
         self.assertEquals(self._mangle_pool_result(s.list_pool({ 'auth': ad,
             'pool': { 'id': res['id'] } })[0]), expected)

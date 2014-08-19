@@ -234,7 +234,8 @@ class TestCheckdata(unittest.TestCase):
             'used_addresses_v6': '18446744073709551616',
             'vrf_id': 0,
             'vrf_name': 'default',
-            'vrf_rt': None
+            'vrf_rt': None,
+            'tags': []
             }]
         self.assertEqual(expected, self._mangle_pool_result(s.list_pool({ 'auth': ad, 'pool': { 'name': 'upgrade-test' } })))
 
@@ -262,7 +263,8 @@ class TestCheckdata(unittest.TestCase):
             'used_addresses_v6': '0',
             'vrf_id': None,
             'vrf_name': None,
-            'vrf_rt': None
+            'vrf_rt': None,
+            'tags': []
             }]
         self.assertEqual(expected, self._mangle_pool_result(s.list_pool({ 'auth': ad, 'pool': { 'name': 'upgrade-test2' } })))
 
