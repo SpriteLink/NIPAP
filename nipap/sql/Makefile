@@ -50,8 +50,7 @@ db:
 	createdb -O $(DB_USER) $(DB_NAME)
 	-createlang -d $(DB_NAME) plpgsql
 	-psql -q -c "ALTER USER $(DB_USER) ENCRYPTED PASSWORD '$(DB_PASS)'"
-# TODO: The ip4r extension needs to be added to the newly created
-# 	database.  How do we do that?
+	-psql -d $(DB_NAME) -c "CREATE EXTENSION ip4r;"
 
 
 tables:
