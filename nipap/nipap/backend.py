@@ -670,12 +670,12 @@ class Nipap:
 
         dbname = self._cfg.get('nipapd', 'db_name')
         self._execute("SELECT description FROM pg_shdescription JOIN pg_database ON objoid = pg_database.oid WHERE datname = '%s'" % dbname)
-        comment = self._curs_pg.fetchone()[0]
+        comment = self._curs_pg.fetchone()
         if comment is None:
             raise NipapError("Could not find comment of psql database %s" % dbname)
 
         db_version = None
-        m = re.match('NIPAP database - schema version: ([0-9]+)', comment)
+        m = re.match('NIPAP database - schema version: ([0-9]+)', comment[0])
         if m:
             db_version = int(m.group(1))
         else:
