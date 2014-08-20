@@ -82,7 +82,7 @@ clean-db:
 
 
 clean-tables:
-	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f clean.plsql
+	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) < clean.plsql
 # TODO: If no password is specified with PGPASSWORD, this operation
 # 	will in all likeliness result in a failure, so we should
 # 	require a PGPASSWORD
