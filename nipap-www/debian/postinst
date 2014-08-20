@@ -22,8 +22,8 @@ if [ "$RET" = "true" ]; then
 	# check if there is already a www user configured in the
 	# configuration file and use that username for $WWW_USER
 	if [ -e /etc/nipap/nipap.conf ]; then
-		USER=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/\(.*\)@local:.*@.*/\1/'`
-		PASS=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/.*@local:\(.*\)@.*/\1/'`
+		USER=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/\(.*\)@[^:]*:.*@.*/\1/'`
+		PASS=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/.*@[^:]*:\(.*\)@.*/\1/'`
 		if [ "$USER" != "" ] && [ "$PASS" != "" ]; then
 			WWW_USER=$USER
 			WWW_PASS=$PASS
@@ -34,7 +34,7 @@ if [ "$RET" = "true" ]; then
 	if [ `nipap-passwd -l | awk "{ if (\\$1~/^$WWW_USER$/) { print \\$1 } }" | wc -l` = "0" ]; then
 		nipap-passwd -a $WWW_USER -p $WWW_PASS -n "$WWW_NAME" -t > /dev/null 2>&1
 		if [ -e /etc/nipap/nipap.conf ]; then
-			sed -i -e "s/http:\/\/[^:]\+:[^@]\+@/http:\/\/$WWW_USER@local:$WWW_PASS@/" /etc/nipap/nipap.conf
+			sed -i -e "s/http:\/\/[^:]*:[^@]*@/http:\/\/$WWW_USER@local:$WWW_PASS@/" /etc/nipap/nipap.conf
 		fi
 	fi
 fi
