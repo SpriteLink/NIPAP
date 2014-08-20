@@ -16,20 +16,6 @@ else
 DB_PASS:=$(PGPASSWORD)
 endif
 
-#
-# TODO: need install thingy for ip4r
-# psql -f /usr/lib/postgresql/8.4/lib/ip4r.so nipap
-#
-# 	- how do we determine if the system has ip4r modules at all?
-# 		* can we ask psql?
-# 			- Yes we can, just run a iprange() function and see
-# 			  what happens
-# 		* if it's a debian / ubuntu system we can use apt-cache
-# 	- how do we determine where the .sql file is?
-# 		* we can guess on a few well known paths
-# 		* we know where it's at on debian like systems
-#
-
 # test database version
 PG_VER := $(shell pg_config --version | awk '{print $$2}')
 PG_VER_MAJOR := $(shell echo $(PG_VER) | awk -F. '{ print ($$1 + 0) }')
