@@ -138,6 +138,7 @@ if __name__ == '__main__':
     except authlib.AuthSqliteError, e:
         print >> sys.stderr, "Error checking version of Sqlite database for local auth: %s" % e
         sys.exit(1)
+    del a
 
     #check nipap database schema version
     from nipap.backend import Nipap
