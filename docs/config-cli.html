@@ -1,0 +1,42 @@
+---
+---
+{% include header.html %}
+<div class="document" id="cli-configuration">
+<h1 class="title">CLI configuration</h1>
+
+<p>This is pretty easy, once you have the nipap-cli package installed (or if
+you've installed it manually), a new command, 'nipap', is available to you. It
+reads .nipaprc in your home directory and expects to find things like the host
+address of nipapd and authentication credentials.</p>
+<p>If you haven't already done so, you can create a new user. Execute the
+following on the machine running nipapd to create a new user in the local
+authentication database:</p>
+<pre class="literal-block">
+nipap-passwd -a *username* -p *username* -n &quot;My CLI user&quot;
+</pre>
+<p>Where <em>username</em> and <em>password</em> is the username and password you wish to
+create. Use the same username and password to fill in your .nipaprc. Here's an
+example .nipaprc that will work towards localhost with the user you just
+crated:</p>
+<pre class="literal-block">
+[global]
+hostname = localhost
+port     = 1337
+username = *username*
+password = *password*
+default_vrf = none
+</pre>
+<p>Naturally, if you are running the CLI and nipapd on two different machines,
+'hostname' will need to be set to the machine where nipapd is running.</p>
+<p>The last option sets which VRF is the default to work with if nothin else is
+specified.</p>
+<p>Let's try adding a prefix too:</p>
+<pre class="literal-block">
+nipap address add prefix 192.0.2.0/24 type assignment description &quot;test prefix&quot;
+</pre>
+<p>And list everything covered by 0.0.0.0/0:</p>
+<pre class="literal-block">
+nipap address list 0/0
+</pre>
+</div>
+{% include footer.html %}
