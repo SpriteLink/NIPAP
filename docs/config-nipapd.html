@@ -1,0 +1,28 @@
+---
+---
+{% include header.html %}
+<div class="document" id="configuration-of-the-nipap-backend-nipapd">
+<h1 class="title">Configuration of the NIPAP backend (nipapd)</h1>
+
+<p>Make sure nipapd is installed.</p>
+<p>nipapd will not be able to start until it can connect to the backend database
+and as postgresql does not by default listen to localhost (127.0.0.1), you will
+need to edit /etc/postgresql/9.1/main/postgresql.conf and uncomment the
+listen_address line to have it listen to localhost (or all '*').</p>
+<p>If you installed nipapd using the Debian packages, it prompted you to
+automatically setup the database connection in which case you should not need
+to do anything further but (re)start nipapd. If you installed nipapd manually,
+you will need to fill in your database connection parameters in nipap.conf
+yourself.</p>
+<p>Once done, restart nipapd:</p>
+<pre class="literal-block">
+/etc/init.d/nipapd restart
+</pre>
+<p>Per default, nipapd itself only listens to localhost (127.0.0.1). If you are
+going to run the web UI on the same machine and/or the CLI from the same
+machine, you do not need to change anything. If you on the other hand wish to
+run any of these from a second machine, you need to change the &quot;listen&quot; line in
+nipap.conf.
+for it to listen on all addresses, change the &quot;listen&quot; line in nipap.conf.</p>
+</div>
+{% include footer.html %}

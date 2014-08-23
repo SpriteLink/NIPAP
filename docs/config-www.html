@@ -1,0 +1,59 @@
+---
+---
+{% include header.html %}
+<div class="document">
+
+
+<div class="section" id="installation-and-configuration-of-the-web-ui">
+<h1>Installation and configuration of the web UI</h1>
+<p>This assumes you have installed the nipap-www package via apt or equivalent.</p>
+<p>For login to the web interface, you should create one or more user accounts.
+You might have already created a user account when installing the nipap-www
+package but that account is for the web interface to talk to the backend.
+Adding the following accounts is for login to the web interface itself.
+Use the nipap-passwd utility to add a user:</p>
+<pre class="literal-block">
+nipap-passwd -a *username* -p *password* -n &quot;Name of my new user&quot;
+</pre>
+</div>
+<div class="section" id="serving-the-web-ui">
+<h1>Serving the web UI</h1>
+<p>The NIPAP web UI can be served by any WGSI-capable web server such as Apache
+httpd with mod_wsgi. For quick tests and development the lightweight server
+'paster', part of Python Paste, is handy.</p>
+<div class="section" id="paster">
+<h2>paster</h2>
+<p>Using paster is the easiest way to get the NIPAP web UI up and running, but
+it's not really suitable for production deployment. To serve the NIPAP web UI
+from paster, run the following:</p>
+<pre class="literal-block">
+paster serve /etc/nipap/nipap-www.ini
+</pre>
+<p>Using the default configuration, the web UI should now be reachable on port
+5000. To change the port, edit /etc/nipap/nipap-www.ini.</p>
+</div>
+<div class="section" id="apache-httpd-with-mod-wsgi">
+<h2>Apache httpd with mod_wsgi</h2>
+<p>Begin by installing Apache httpd with mod_wsgi:</p>
+<pre class="literal-block">
+apt-get install libapache2-mod-wsgi
+</pre>
+<p>Then, add a new virtual host or configure the default one with the line:</p>
+<pre class="literal-block">
+WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
+</pre>
+<p>The web server needs to be able to write to its cache, alter the permissions of
+/var/cache/nipap-www so that the web server can write to it and preferrably
+also make sure no one else has access to it. For a typical Debian install of
+Apache httpd, the following should suffice:</p>
+<pre class="literal-block">
+chown -R www-data:www-data /var/cache/nipap-www
+chmod -R u=rwX /var/cache/nipap-www
+</pre>
+<p>Now, restart Apache httpd and the NIPAP web UI should be up and running!</p>
+<p>That wraps up this getting started guide, for more information see the manual
+pages.</p>
+</div>
+</div>
+</div>
+{% include footer.html %}
