@@ -1,20 +1,6 @@
-body {
-	padding-top: 50px;
-	padding-bottom: 70px;
-}
-
 .nipap-footer {
-	padding-top: 0;
-	padding-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 } 
 
-.carousel-caption {
-	color: #333;
-	text-shadow: 0 1px 2px rgba(50,50,100,.6);;
-}
-.carousel-indicators li {
-	background-color: #333;
-}
-.carousel-indicators .active {
-	background-color: #333;
-}
+
