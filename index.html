@@ -1,13 +1,40 @@
----
----
-{% include header.html %}
 <!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="utf-8">
+	<title>NIPAP - the best open source IP address management (IPAM) in the known universe</title>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/docs.min.css">
+	<link rel="stylesheet" href="css/nipap.css">
+	<link href="http://fonts.googleapis.com/css?family=Copse|Droid+Serif:400,700,400italic,700italic|Inconsolata:400,700|Open+Sans:300italic,400italic,600italic,700italic,400,300,600,700" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="#" style="color: #fff; font-size: 1.8em; font-family: 'Copse', serif; font-weight: normal; text-rendering: optimizelegibility; -webkit-font-smoothing: antialiased;">nipap</a>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li class="active"><a href="#">Home</a></li>
+					<li><a href="#about">About</a></li>
+					<li><a href="#reviews">Reviews</a></li>
+					<li><a href="#users">Users</a></li>
+					<li><a href="#contact">Contact</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
 
 	<section id="about">
 		<div class="jumbotron" style="background: url(assets/images/jumbotron_background_tile.png); color: #FFFFFF;">
 			<div class="container">
-				<h1 style="font-family: 'Copse', serif; font-weight: normal; text-rendering: optimizelegibility; -webkit-font-smoothing: antialiased;">A network engineers best friend</h1>
-				<p>nipap is a sleek, intuitive and powerful IP address management system built to handle large amounts of IP addresses.</p>
+				<h1 style="font-family: 'Copse', serif; font-weight: normal; text-rendering: optimizelegibility; -webkit-font-smoothing: antialiased;">nipap</h1>
+				<p>A sleek, intuitive and powerful IP address management system built to handle large amounts of IP addresses.</p>
 				<p><a class="btn btn-warning" href="#getting">Get it &raquo;</a></p>
 			</div>
 		</div>
@@ -28,7 +55,7 @@
 
 				<div class="col-md-4" style="background: url(assets/images/icons/black-novel-32.png) 0 20px no-repeat; padding-left: 50px;">
 					<h2>IPAM Love</h2>
-					<p>This thing was built by network engineers for network engineers because nothing else out there matched our passion for storing IP addresses. Lots of love built-in - guaranteed.</p>
+					<p>This thing was built by network engineers for network engineers because nothing else out there matched our passiong for storing IP addresses. Lots of love built-in - guaranteed.</p>
 				</div>
 
 				<div class="col-md-4" style="background: url(assets/images/icons/black-console-32.png) 0 20px no-repeat; padding-left: 50px;">
@@ -36,14 +63,14 @@
 					<p>Comes with a feature complete CLI for anyone who prefers libreadline to a web browser.</p>
 				</div>
 
-				<div class="col-md-4" style="background: url(assets/images/icons/black-python-32.png) 0 20px no-repeat; padding-left: 50px;">
-					<h2>Python</h2>
-					<p>Written in the world's most awesomest programming language. There's also a very convenient pynipap library for interfacing with NIPAP from Python.</p>
-				</div>
-
 				<div class="col-md-4" style="background: url(assets/images/icons/black-electricity-32.png) 0 20px no-repeat; padding-left: 50px;">
 					<h2>Lightning fast</h2>
 					<p>Never again wade through long list of IP addresses for finding the next available one. NIPAP's automagic address allocation functionality quickly gives you the next free address.</p>
+				</div>
+
+				<div class="col-md-4" style="background: url(assets/images/icons/black-python-32.png) 0 20px no-repeat; padding-left: 50px;">
+					<h2>Python</h2>
+					<p>Written in the world's most awesomest programming language. There's also a very convenient pynipap library for interfacing with NIPAP from Python.</p>
 				</div>
 
 				<div class="col-md-4" style="background: url(assets/images/icons/black-search-3-32.png) 0 20px no-repeat; padding-left: 50px;">
@@ -85,7 +112,7 @@
 		</div>
 	</section>
 
-	<section id="check-it-out">
+	<section id="getting">
 		<div class="container">
 			<h1 class="page-header">Check it out</h1>
 			<p>Check out the <a href="http://nipap-demo.spritelink.net">demo installation</a>, read some <a href="#reviews">reviews</a> or look at these pretty screenshots.</p>
@@ -100,24 +127,24 @@
 				<!-- Wrapper for slides -->
 				<div class="carousel-inner">
 					<div class="item active">
-						<img src="assets/images/screenshots/search.png" alt="...">
+						<img src="/assets/images/screenshots/search.png" alt="...">
 						<div class="carousel-caption">
-							<h3 class="carousel-text">Powerful search</h3>
-							<p class="carousel-text">Featuring regular expressions and complex match operators</p>
+							<h3>Powerful search</h3>
+							<p>Featuring regular expressions and complex match operators</p>
 						</div>
 					</div>
 					<div class="item">
-						<img src="assets/images/screenshots/vrf-list.png" alt="...">
+						<img src="/assets/images/screenshots/vrf-list.png" alt="...">
 						<div class="carousel-caption">
-							<h3 class="carousel-text">Native VRF support</h3>
-							<p class="carousel-text">NIPAP is designed from the ground up for VRFs.</p>
+							<h3>Native VRF support</h3>
+							<p>NIPAP is designed from the ground up for VRFs.</p>
 						</div>
 					</div>
 					<div class="item">
-						<img src="assets/images/screenshots/new-prefix-from-pool.png" alt="...">
+						<img src="/assets/images/screenshots/new-prefix-from-pool.png" alt="...">
 						<div class="carousel-caption">
-							<h3 class="carousel-text">Adding prefixes</h3>
-							<p class="carousel-text">Prefixes can be conveniently added from address pools.</p>
+							<h3>Adding prefixes</h3>
+							<p>Prefixes can be conveniently added from address pools.</p>
 						</div>
 					</div>
 				</div>
@@ -137,7 +164,6 @@
 	<section id="getting">
 		<div class="container">
 			<h1 class="page-header">Getting it</h1>
-			Read the <a href="docs/INSTALL.html">installation guide</a> for getting nipap up and running.
 		</div>
 	</section>
 
@@ -155,11 +181,12 @@
 					<blockquote><p><kbd>&lt;+ytti&gt; Axu, imma let the dude finish but http://spritelink.github.io/NIPAP/ is best IPAM of all time</kbd></p><footer>ytti, network pro</footer></blockquote>
 				</div>
 				<div class="col-md-12">
-					<blockquote><p>DANTE, the operator of Europe's research and education network GEANT, selected NIPAP for a number of key features and has been using NIPAP for some time now.
+					<blockquote><p>DANTE operator of GEANT the pan European research and education network has been using NIPAP for some time now. DANTE selected NIPAP for its ability to provision subnets following predefined template for its ease of use and flexibility.  
 						
-						NIPAP allows DANTE's teams to work with a single tool from the definition of the addressing template to its reservation and allocation ensuring a clean and well maintained address space. This cohesive approach is all the more critical when running both IPv4 and IPv6 natively which NIPAP helps to maintain. It was all also critical for DANTE to select a tool able to work with Virtual routing instances (VRF).
+						NIPAP allows DANTE's teams to work from a single tool from the definition of the addressing template to its reservation and allocation ensuring a clean and well maintained address space. This cohesive approach is all the more critical when running both IPv4 and IPv6 natively which NIPAP help to maintain. It was all also critical for DANTE to select a tool able to work with Virtual routing instances (VRF).
+						NIPAP is a very simple tool, very easy to put in place it allowed DANTE to maintain a well-organized address space very cheaply and very quickly. 
 						
-						NIPAP is a "no muss, no fuss" tool that is very easy to deploy and DANTE will continue to closely follow future development of the tool with great interest.<footer>Sebastiano Buscaglione, DANTE</footer></blockquote>
+						We would like to see the introduction of few features like the abilities to delegated part of the address space and the ability to create user groups with different responsibility of the address space. NIPAP is a "no muss, no fuss" tool very easy to deploy and DANTE will follow future development of the tool with great interest.<footer>Sebastiano Buscaglione, DANTE</footer></blockquote>
 				</div>
 			</div>
 		</div>
@@ -169,9 +196,7 @@
 		<div class="container">
 			<h1 class="page-header">Documentation</h1>
 			<div>
-				<p>See the <a href="docs/INSTALL.html">installation guide</a> for instructions on the installing and configuring NIPAP for your environment.</p>
-				<p>There is no good user documentation at this point. While we are working on a Gitbook for user documentation, our hope is that most parts of NIPAP are reasonably self-explanatory and intuitive so that the majority of users will get by until there is some more proper documentation written.</p>
-				<p>Developers are encouraged to read the <a href="http://nipap.readthedocs.org/">developer reference documentation</a>.</p>
+				<p>hello</p>
 			</div>
 		</div>
 	</section>
@@ -179,6 +204,7 @@
 	<section id="contact">
 		<div class="container">
 			<h1 class="page-header">Problem?</h1>
+			<img src="assets/images/science-troll.jpg" alt="Kind Science Troll will help you out!" style="float: left; height: 100px;">
 			<p>Got a problem? We'd love to hear your feedback.</p>
 			<p>If you've found a bug or would like to make a feature request, we would appreciate if you could open up an <a href="https://github.com/SpriteLink/NIPAP/issues">issue on GitHub</a>. If you don't have a GitHub account and don't care much for getting one, you may use the seamlessly integrated Google Forms below. We also appreciate feedback on the choice of theme for the Google Form.</p>
 			<p>There is also an IRC channel on freenode called #NIPAP. Join if you want to chat!</p>
@@ -188,4 +214,21 @@
 		</div>
 	</section>
 
-{% include footer.html %}
+	<footer class="bs-docs-footer navbar-inverse nipap-footer" role="navigation">
+
+		<div class="container">
+			<ul class="bs-docs-footer-links">
+				<li><img src="assets/images/icons/gray-google-plus-24.png"> <a href="https://plus.google.com/communities/104192872189003321837">discuss</a> on Google+</li>
+				<li><img src="assets/images/icons/gray-chat-4-24.png"> <a href="irc://chat.freenode.net/#NIPAP">#NIPAP</a> on freenode</li>
+				<li><img src="assets/images/icons/gray-github-10-24.png"> <a href="https://github.com/SpriteLink/NIPAP/issues">issue tracker</a> on GitHub</li>
+				<li><img src="assets/images/icons/gray-google-plus-5-24.png"> <a href="https://plus.google.com/100520153767587090955">follow NIPAP</a> on Google+</li>
+			</ul>
+		</div>
+	</footer>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/docs.min.js"></script>
+</body>
+</html>
