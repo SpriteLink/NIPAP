@@ -53,6 +53,8 @@ DECLARE
 	i_indent integer;
 	new_inherited_tags text[];
 BEGIN
+	-- TODO: why don't we take the prefix as argument? That way we could save
+	--		 in these selects fetching data from the table that we already have.
 	i_indent := (
 		SELECT indent+1
 		FROM ip_net_plan
@@ -75,7 +77,11 @@ BEGIN
 		new_inherited_tags := '{}';
 	END IF;
 
-	UPDATE ip_net_plan SET inherited_tags = new_inherited_tags WHERE vrf_id = arg_vrf AND iprange(prefix ) << iprange(arg_prefix::cidr) AND indent = i_indent;
+	-- TODO: we don't need to update if our old tags are the same as our new
+	-- TODO: we could add WHERE inherited_tags != new_inherited_tags which
+	--		 could potentially speed up this update considerably, especially
+	--		 with a GiN index on that column
+	UPDATE ip_net_plan SET inherited_tags = new_inherited_tags WHERE vrf_id = arg_vrf AND iprange(prefix) << iprange(arg_prefix::cidr) AND indent = i_indent;
 
 	RETURN true;
 END;
@@ -991,12 +997,11 @@ BEGIN
 		END IF;
 
 	ELSIF TG_OP = 'INSERT' THEN
-		-- identify the parent and run calc_tags on it to inherit tags to
-		-- the new prefix from the parent
-		PERFORM calc_tags(NEW.vrf_id, new_parent.prefix);
 		-- now push tags from the new prefix to its children
 		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
-
+		IF NEW.children > 0 AND (NEW.tags != '{}' OR NEW.inherited_tags != '{}') THEN
+			PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
+		END IF;
 	ELSIF TG_OP = 'UPDATE' THEN
 		PERFORM calc_tags(OLD.vrf_id, OLD.prefix);
 		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
