@@ -1,6 +1,11 @@
+body {
+	padding-top: 50px;
+	padding-bottom: 70px;
+}
+
 .nipap-footer {
-  padding-top: 0;
-  padding-bottom: 0;
+	padding-top: 0;
+	padding-bottom: 0;
 } 
 
 .carousel-caption {
