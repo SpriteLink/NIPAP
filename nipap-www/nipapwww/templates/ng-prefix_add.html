@@ -5,6 +5,8 @@
 
 {% block content %}
 
+{% raw %}
+
 <div class="page-title">
 	Prefix administration &mdash;&gt; add prefix
 </div>
@@ -16,7 +18,7 @@
 		<div class="option">
 			<dl>
 				<dt style="text-align: left;">
-				<input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool">
+				<input id="radio-from-pool" type="radio" name="prefix_alloc_method" value="from-pool" ng-model="prefix_alloc_method">
 				<label for="radio-from-pool">From pool</label>
 				</dt>
 				<dd>
@@ -30,7 +32,7 @@
 		<div class="option">
 			<dl>
 				<dt style="text-align: left;">
-				<input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix">
+				<input id="radio-from-prefix" type="radio" name="prefix_alloc_method" value="from-prefix" ng-model="prefix_alloc_method">
 				<label for="radio-from-prefix">From prefix</label>
 				</dt>
 				<dd>
@@ -44,7 +46,7 @@
 		<div class="option">
 			<dl>
 				<dt style="text-align: left;">
-				<input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual">
+				<input id="radio-manual" type="radio" name="prefix_alloc_method" value="manual" ng-model="prefix_alloc_method">
 				<label for="radio-manual">Manual</label>
 				</dt>
 				<dd>
@@ -61,7 +63,7 @@
 FROM-POOL
 
 -->
-<div id="from-pool_container">
+<div id="from-pool_container" ng-show="prefix_alloc_method == 'from-pool'">
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Pool allocation options</h3>
@@ -73,9 +75,9 @@ FROM-POOL
 					Family
 					</dt>
 					<dd>
-					<input type="radio" name="prefix_family" value="4" id="family_4_radio" checked>
+					<input type="radio" name="prefix_family" value="4" id="family_4_radio" ng-model="prefix_family">
 					<label for="family_4_radio">IPv4</label>
-					<input type="radio" name="prefix_family" value="6" id="family_6_radio">
+					<input type="radio" name="prefix_family" value="6" id="family_6_radio" ng-model="prefix_family">
 					<label for="family_6_radio">IPv6</label>
 					</dd>
 				</dl>
@@ -83,38 +85,31 @@ FROM-POOL
 
 			<div class="rule"></div>
 
-			<div style="padding: 20px;">
-				<table id="pool_table" class="listing" style="width: 100%;">
-					<thead class="listing">
-						<tr><th>Name</th><th>Description</th><th style="width: 110px;">Default type</th><th style="width: 90px;">4 / 6</th></tr>
-					</thead>
-					<tbody class="listing">
-					</tbody>
-				</table>
-			</div>
+			<div style="padding: 20px;" nipap-pool-selector></div>
 
 			<div class="rule"></div>
 
-			<div class="option" id="length_info_row" style="display: none;">
+			<div class="option" id="length_info_row" ng-show="from_pool !== null">
 				<dl>
 					<dt style="text-align: left;">
-					Allocating from pool
+						Allocating from pool
 					</dt>
 					<dd id="selected_pool_desc">
+						{{ from_pool.name }} &mdash; {{ from_pool.description }}
 					</dd>
 					<dt style="text-align: left;" id="length_edit_row">
-					Prefix-length
+						Prefix-length
 					</dt>
 					<dd id="length_edit_row">
-					<input type="radio" name="edit_length" value="0" id="edit_length_default_radio" checked>
-					<label id="def_length_container" for="edit_length_default_radio">Use pools default prefix-length</label>
-					<br/>
-					<input type="radio" name="edit_length" value="1" id="edit_length_override_radio">
-					<label for="edit_length_override_radio">Override pools default prefix-length</label>
-					<br/>
-					<div style="display: none;" id="length_row">
-						Use prefix-length: <input type="text" size=3 name="prefix_length_pool">
-					</div>
+						<input type="radio" id="edit_length_default_radio" name="edit_length" ng-model="pool_use_default_preflen" ng-value="true">
+						<label for="edit_length_default_radio">Use pools default prefix-length of /{{ pool_preflen }}</label>
+						<br/>
+						<input type="radio" id="edit_length_override_radio" name="edit_length" ng-model="pool_use_default_preflen" ng-value="false">
+						<label for="edit_length_override_radio">Override pools default prefix-length</label>
+						<br/>
+						<div id="length_row" ng-show="pool_use_default_preflen == false">
+							Use prefix-length: <input type="text" size=3 name="prefix_length_pool" ng-model="prefix_length">
+						</div>
 					</dd>
 				</dl>
 			</div>
@@ -128,7 +123,7 @@ FROM-POOL
 FROM-PREFIX
 
 -->
-<div id="from-prefix_container">
+<div id="from-prefix_container" ng-show="prefix_alloc_method == 'from-prefix'">
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Prefix allocation options</h3>
@@ -162,13 +157,13 @@ FROM-PREFIX
 PREFIX DATA
 
 -->
-<div id="prefix_data_container">
+<div id="prefix_data_container" ng-show="prefix_alloc_method == 'manual' || from_pool != null || from_prefix != null">
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Prefix options</h3>
-			<form method="post" id="prefix_form" action="{{ h.url(controller="prefix", action="add") }}">
+			<form>
 
-				<div class="option" style="display: none;" id="prefix-row">
+				<div class="option" ng-show="prefix_alloc_method == 'manual'" id="prefix-row">
 					<dl>
 						<dt>
 						Prefix <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
@@ -187,11 +182,14 @@ PREFIX DATA
 						Type <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
-						<span id="default_prefix_type" style="display: none; cursor: pointer;">Default prefix type for pool is <b><span id="pool_prefix_type"></span></b>. Click to change.</span>
-						<span id="prefix_type_selection">
-							<input type="radio" id="radio-prefix-type-reservation" name="prefix_type" value="reservation" class="tooltip" title=""><label for="radio-prefix-type-reservation">Reservation</label>
-							<input type="radio" id="radio-prefix-type-assignment" name="prefix_type" value="assignment" class="tooltip" title=""><label for="radio-prefix-type-assignment">Assignment</label>
-							<input type="radio" id="radio-prefix-type-host" name="prefix_type" value="host" class="tooltip" title=""><label for="radio-prefix-type-host">Host</label>
+						<span id="default_prefix_type" style="cursor: pointer;" ng-show="from_pool !== null && type_input_enabled == false" ng-click="type_input_enabled = true">Default prefix type for pool is <b>{{ from_pool.default_type }}</b>. Click to change.</span>
+						<span id="prefix_type_selection" ng-show="type_input_enabled == true">
+							<input type="radio" id="radio-prefix-type-reservation" name="prefix_type" value="reservation" class="tooltip" title="" ng-model="prefix_type">
+							<label for="radio-prefix-type-reservation">Reservation</label>
+							<input type="radio" id="radio-prefix-type-assignment" name="prefix_type" value="assignment" class="tooltip" title="" ng_model="prefix_type">
+							<label for="radio-prefix-type-assignment">Assignment</label>
+							<input type="radio" id="radio-prefix-type-host" name="prefix_type" value="host" class="tooltip" title="" ng_model="prefix_type">
+							<label for="radio-prefix-type-host">Host</label>
 							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
 						</span>
 						</dd>
@@ -208,16 +206,18 @@ PREFIX DATA
 						<dd>
 						<div style="position: relative;">
 							<div>
-								<div id="prefix_vrf_text" class="prefix_vrf_text"></div>
+								<div id="prefix_vrf_text" class="prefix_vrf_text"><span ng-show="vrf == null">No VRF currently selected, please choose destination VRF for new prefix manually.</span></div>
 								<div class="selector">
 									<div id="prefix_vrf_display" style="width: 80%; border: 1px solid #CCCCCC; float: left;">
-										<div class="vrf_filter_entry">
-											<div class="vrf_filter_entry_rt">RT:&nbsp; c.prefix.vrf.rt or '-' </div>
-											<div class="selector_entry_name" style="margin-left: 5px;">c.prefix.vrf.name</div>
-											<div class="selector_entry_description" style="clear: both;">c.prefix.vrf.description</div>
+										<div class="vrf_filter_entry" ng-show="vrf !== null">
+											<div class="vrf_filter_entry_rt">RT:&nbsp; {{ vrf.rt || '-' }} </div>
+											<div class="selector_entry_name" style="margin-left: 5px;">{{ vrf.name }}</div>
+											<div class="selector_entry_description" style="clear: both;">{{ vrf.description }}</div>
 										</div>
+										<span ng-show="vrf == null">No VRF selected.</span>
 									</div>
-									<input type="button" class="button button_red" style="display: none; margin-left: 15px; float: left;" name="prefix_vrf_btn" value="Change VRF">
+									<!-- TODO: handle pools without implied VRF (empty VRFs) -->
+									<input type="button" class="button button_red" style="margin-left: 15px; float: left;" name="prefix_vrf_btn" value="Change VRF" ng-show="from_pool == null">
 								</div>
 							</div>
 						</div>
@@ -400,5 +400,7 @@ PREFIX DATA
 		</div>
 	</div>
 </div>
+
+{% endraw %}
 
 {% endblock %}

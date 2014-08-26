@@ -22,3 +22,12 @@ nipapAppDirectives.directive('nipapPoolSelector', function ($http) {
     };
 
 });
+
+nipapAppDirectives.directive('nipapVRFSelector', function ($http) {
+
+    return {
+        restrict: 'AE',
+        templateUrl: ''
+    };
+
+});
