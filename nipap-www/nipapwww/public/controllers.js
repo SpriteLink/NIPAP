@@ -2,46 +2,12 @@
  * Controllers for the NIPAP AngularJS app
  */
 
-/*
- * Define nipapApp angular application
- */
-var nipapApp = angular.module('nipapApp', [ 'ui.bootstrap' ]);
-
-
-/*
- * Filter to return number of entries in 'dict', ie JavaScript Object
- */
-nipapApp.filter('dictSize', function () {
-	return function(object) {
-		return Object.keys(object).length;
-	}
-});
-
-
-/*
- * Filter to return number of entries in 'dict', ie JavaScript Object
- */
-nipapApp.filter('notEmpty', function () {
-	return function(object) {
-		return !!(object && Object.keys(object).length);
-	};
-});
-
-
-/*
- * Filter to format tags for tag popover
- */
-nipapApp.filter('popoverFormatTags', function () {
-	return function(object) {
-		return '<div style="text-align: left;">Tags: <br/>' + Object.keys(object).join('<br/>') + '</div>';
-	};
-});
-
+var nipapAppControllers = angular.module('nipapApp.controllers', []);
 
 /*
  * VRFListController - used to list VRFs on the /vrf/list-page
  */
-nipapApp.controller('VRFListController', function ($scope, $http) {
+nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 
 	// Fetch VRFs from backend
 	$http.get('/xhr/list_vrf').success(function (data) {
@@ -98,7 +64,7 @@ nipapApp.controller('VRFListController', function ($scope, $http) {
 /*
  * PoolListController - used to list pools on the /pool/list-page
  */
-nipapApp.controller('PoolListController', function ($scope, $http) {
+nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 
 	// Fetch VRFs from backend
 	$http.get('/xhr/list_pool').success(function (data) {
