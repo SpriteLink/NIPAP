@@ -111,7 +111,10 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 # ----------------------
 #
 [www]
-xmlrpc_uri = http://test@local:test@127.0.0.1:1337
+xmlrpc_uri = http://@:@127.0.0.1:1337
+#connection uri to the backend
+#example using local authentication with username 'user' and password 'pass'
+#xmlrpc_uri = http://user@local:pass@127.0.0.1:1337
 
 # welcome_message allows the display of a custom message on the login page of
 # the web interface, it might contain hints about what credentials to use or
