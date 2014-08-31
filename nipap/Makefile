@@ -1,7 +1,7 @@
 # $Id: Makefile,v 1.6 2011/04/18 17:14:00 lukagarb Exp $
 #
 
-PYTHON=`which python`
+PYTHON=`which python2`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/python-nipap-build
 PROJECT=nipap
