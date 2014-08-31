@@ -179,8 +179,8 @@ class NipapXMLRPC:
                 res[val] = str(res[val])
 
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -197,8 +197,8 @@ class NipapXMLRPC:
         """
         try:
             self.nip.remove_vrf(args.get('auth'), args.get('vrf'))
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -227,8 +227,8 @@ class NipapXMLRPC:
                     vrf[val] = str(vrf[val])
 
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -257,8 +257,8 @@ class NipapXMLRPC:
                     vrf[val] = str(vrf[val])
 
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -291,8 +291,8 @@ class NipapXMLRPC:
                     vrf[val] = str(vrf[val])
 
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -327,8 +327,8 @@ class NipapXMLRPC:
                     vrf[val] = str(vrf[val])
 
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -360,8 +360,8 @@ class NipapXMLRPC:
                 res[val] = str(res[val])
 
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -378,8 +378,8 @@ class NipapXMLRPC:
         """
         try:
             self.nip.remove_pool(args.get('auth'), args.get('pool'))
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -409,8 +409,8 @@ class NipapXMLRPC:
                     pool[val] = str(pool[val])
 
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -440,8 +440,8 @@ class NipapXMLRPC:
                     pool[val] = str(pool[val])
 
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -475,8 +475,8 @@ class NipapXMLRPC:
                     pool[val] = str(pool[val])
 
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -512,8 +512,8 @@ class NipapXMLRPC:
                     pool[val] = str(pool[val])
 
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -543,8 +543,8 @@ class NipapXMLRPC:
             res['used_addresses'] = str(res['used_addresses'])
             res['free_addresses'] = str(res['free_addresses'])
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -572,8 +572,8 @@ class NipapXMLRPC:
                 pref['used_addresses'] = str(pref['used_addresses'])
                 pref['free_addresses'] = str(pref['free_addresses'])
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -598,8 +598,8 @@ class NipapXMLRPC:
                 pref['used_addresses'] = str(pref['used_addresses'])
                 pref['free_addresses'] = str(pref['free_addresses'])
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -616,8 +616,8 @@ class NipapXMLRPC:
         """
         try:
             return self.nip.remove_prefix(args.get('auth'), args.get('prefix'), args.get('recursive'))
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -649,8 +649,8 @@ class NipapXMLRPC:
                 pref['used_addresses'] = str(pref['used_addresses'])
                 pref['free_addresses'] = str(pref['free_addresses'])
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -688,8 +688,8 @@ class NipapXMLRPC:
                 pref['used_addresses'] = str(pref['used_addresses'])
                 pref['free_addresses'] = str(pref['free_addresses'])
             return res
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -708,8 +708,8 @@ class NipapXMLRPC:
 
         try:
             return self.nip.find_free_prefix(args.get('auth'), args.get('vrf'), args.get('args'))
-        except NipapError, e:
-            raise Fault(e.error_code, str(e))
+        except NipapError as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -732,8 +732,8 @@ class NipapXMLRPC:
 
         try:
             return self.nip.add_asn(args.get('auth'), args.get('attr'))
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -751,8 +751,8 @@ class NipapXMLRPC:
 
         try:
             self.nip.remove_asn(args.get('auth'), args.get('asn'))
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -772,8 +772,8 @@ class NipapXMLRPC:
 
         try:
             return self.nip.list_asn(args.get('auth'), args.get('asn') or {})
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -793,8 +793,8 @@ class NipapXMLRPC:
 
         try:
             return self.nip.edit_asn(args.get('auth'), args.get('asn'), args.get('attr'))
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -818,8 +818,8 @@ class NipapXMLRPC:
 
         try:
             return self.nip.search_asn(args.get('auth'), args.get('query'), args.get('search_options') or {})
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
@@ -843,8 +843,8 @@ class NipapXMLRPC:
 
         try:
             return self.nip.smart_search_asn(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
-        except (AuthError, NipapError), e:
-            raise Fault(e.error_code, str(e))
+        except (AuthError, NipapError) as exc:
+            raise Fault(exc.error_code, str(exc))
 
 
 
