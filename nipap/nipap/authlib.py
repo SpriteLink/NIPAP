@@ -315,9 +315,10 @@ class LdapAuth(BaseAuth):
 
         try:
             self._ldap_conn.simple_bind_s('uid=' + self.username + ',' + self._ldap_basedn, self.password)
-        except ldap.SERVER_DOWN, exc:
+        except ldap.SERVER_DOWN as exc:
             raise AuthError('Could not connect to LDAP server')
-        except (ldap.INVALID_CREDENTIALS, ldap.INVALID_DN_SYNTAX, ldap.UNWILLING_TO_PERFORM), exc:
+        except (ldap.INVALID_CREDENTIALS, ldap.INVALID_DN_SYNTAX,
+                ldap.UNWILLING_TO_PERFORM) as exc:
             # Auth failed
             self._logger.debug('erroneous password for user %s' % self.username)
             self._authenticated = False
@@ -382,9 +383,9 @@ class SqliteAuth(BaseAuth):
             self._db_conn.row_factory = sqlite3.Row
             self._db_curs = self._db_conn.cursor()
 
-        except sqlite3.Error, e:
-            self._logger.error('Could not open user database: %s' % str(e))
-            raise AuthError(str(e))
+        except sqlite3.Error as exc:
+            self._logger.error('Could not open user database: %s' % str(exc))
+            raise AuthError(str(exc))
 
 
 
