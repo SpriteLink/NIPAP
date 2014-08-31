@@ -393,11 +393,11 @@ class Nipap:
             self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
             self._register_inet()
-        except psycopg2.Error, e:
-            self._logger.error("pgsql: %s" % e)
+        except psycopg2.Error as exc:
+            self._logger.error("pgsql: %s" % exc)
             raise NipapError("Backend unable to connect to database")
-        except psycopg2.Warning, w:
-            self._logger.warning('pgsql: %s' % w)
+        except psycopg2.Warning as warn:
+            self._logger.warning('pgsql: %s' % warn)
 
 
 
@@ -408,7 +408,7 @@ class Nipap:
         self._logger.debug("SQL: " + sql + "  params: " + str(opt))
         try:
             self._curs_pg.execute(sql, opt)
-        except psycopg2.InternalError, e:
+        except psycopg2.InternalError as exc:
             self._con_pg.rollback()
 
             # NOTE: psycopg2 is unable to differentiate between exceptions
@@ -426,31 +426,31 @@ class Nipap:
             # we throw (and log) a more general exception.
 
             # determine if it's "one of our" exceptions or something else
-            if len(str(e).split(":")) < 2:
-                raise NipapError(e)
-            code = str(e).split(":", 1)[0]
+            if len(str(exc).split(":")) < 2:
+                raise NipapError(exc)
+            code = str(exc).split(":", 1)[0]
             try:
                 int(code)
             except:
-                raise NipapError(e)
+                raise NipapError(exc)
 
-            text = str(e).splitlines()[0].split(":", 1)[1]
+            text = str(exc).splitlines()[0].split(":", 1)[1]
 
             if code == '1200':
                 raise NipapValueError(text)
 
-            estr = "Internal database error: %s" % e
+            estr = "Internal database error: %s" % exc
             self._logger.error(estr)
-            raise NipapError(str(e))
+            raise NipapError(str(exc))
 
-        except psycopg2.IntegrityError, e:
+        except psycopg2.IntegrityError as exc:
             self._con_pg.rollback()
 
             # this is a duplicate key error
-            if e.pgcode == "23505":
+            if exc.pgcode == "23505":
                 # figure out which column it is and retrieve the database
                 # description for that column
-                m = re.match(r'.*"([^"]+)"', e.pgerror)
+                m = re.match(r'.*"([^"]+)"', exc.pgerror)
                 if m is None:
                     raise NipapDuplicateError("Objects primary keys already exist")
                 cursor = self._con_pg.cursor()
@@ -466,7 +466,7 @@ class Nipap:
                 # figure out the value for the duplicate value
                 column_value = None
                 try:
-                    m = re.match(r'.*=\(([^)]+)\) already exists.', e.pgerror.splitlines()[1])
+                    m = re.match(r'.*=\(([^)]+)\) already exists.', exc.pgerror.splitlines()[1])
                     if m is not None:
                         column_value = m.group(1)
                 except:
@@ -480,31 +480,31 @@ class Nipap:
                     str(column_desc) +
                     "', the value you have inputted is already in use.")
 
-            raise NipapError(str(e))
+            raise NipapError(str(exc))
 
-        except psycopg2.DataError, e:
+        except psycopg2.DataError as exc:
             self._con_pg.rollback()
 
-            m = re.search('invalid cidr value: "([^"]+)"', e.pgerror)
+            m = re.search('invalid cidr value: "([^"]+)"', exc.pgerror)
             if m is not None:
                 strict_prefix = str(IPy.IP(m.group(1), make_net = True))
                 estr = "Invalid prefix (%s); bits set to right of mask. Network address for current mask: %s" % (m.group(1), strict_prefix)
                 raise NipapValueError(estr)
 
-            m = re.search('invalid input syntax for type (cidr|inet): "([^"]+)"', e.pgerror)
+            m = re.search('invalid input syntax for type (cidr|inet): "([^"]+)"', exc.pgerror)
             if m is not None:
                 estr = "Invalid syntax for prefix (%s)" % m.group(2)
                 raise NipapValueError(estr)
 
-            raise NipapValueError(str(e))
+            raise NipapValueError(str(exc))
 
-        except psycopg2.Error, e:
+        except psycopg2.Error as exc:
             try:
                 self._con_pg.rollback()
             except psycopg2.Error:
                 pass
 
-            estr = "Unable to execute query: %s" % e
+            estr = "Unable to execute query: %s" % exc
             self._logger.error(estr)
 
             # abort if we've already tried to reconnect
@@ -518,8 +518,8 @@ class Nipap:
 
             return self._execute(sql, opt, callno + 1)
 
-        except psycopg2.Warning, w:
-            self._logger.warning(str(w))
+        except psycopg2.Warning as warn:
+            self._logger.warning(str(warn))
 
 
 
@@ -1104,7 +1104,7 @@ class Nipap:
         else:
             try:
                 search_options['max_result'] = int(search_options['max_result'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'max_result'. Only integer values allowed.''')
 
@@ -1114,7 +1114,7 @@ class Nipap:
         else:
             try:
                 search_options['offset'] = int(search_options['offset'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
@@ -1727,7 +1727,7 @@ class Nipap:
         else:
             try:
                 search_options['max_result'] = int(search_options['max_result'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'max_result'. Only integer values allowed.''')
 
@@ -1737,7 +1737,7 @@ class Nipap:
         else:
             try:
                 search_options['offset'] = int(search_options['offset'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
@@ -2899,7 +2899,7 @@ class Nipap:
         else:
             try:
                 search_options['parents_depth'] = int(search_options['parents_depth'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'parent_depth'. Only integer values allowed.''')
 
@@ -2909,7 +2909,7 @@ class Nipap:
         else:
             try:
                 search_options['children_depth'] = int(search_options['children_depth'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'children_depth'. Only integer values allowed.''')
 
@@ -2927,7 +2927,7 @@ class Nipap:
         else:
             try:
                 search_options['max_result'] = int(search_options['max_result'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'max_result'. Only integer values allowed.''')
 
@@ -2937,7 +2937,7 @@ class Nipap:
         else:
             try:
                 search_options['offset'] = int(search_options['offset'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
@@ -3641,7 +3641,7 @@ class Nipap:
         else:
             try:
                 search_options['max_result'] = int(search_options['max_result'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'max_result'. Only integer values allowed.''')
 
@@ -3651,7 +3651,7 @@ class Nipap:
         else:
             try:
                 search_options['offset'] = int(search_options['offset'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
@@ -3911,7 +3911,7 @@ class Nipap:
         else:
             try:
                 search_options['max_result'] = int(search_options['max_result'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'max_result'. Only integer values allowed.''')
 
@@ -3921,7 +3921,7 @@ class Nipap:
         else:
             try:
                 search_options['offset'] = int(search_options['offset'])
-            except (ValueError, TypeError), e:
+            except (ValueError, TypeError):
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
