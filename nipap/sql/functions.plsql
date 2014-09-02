@@ -91,6 +91,26 @@ $_$ LANGUAGE plpgsql;
 
 --
 -- find free IP ranges within the specified prefix
+--------------------------------------------------
+
+--
+-- overloaded funciton for feeding array of IDs
+--
+CREATE OR REPLACE FUNCTION find_free_ranges (IN arg_prefix_ids integer[]) RETURNS SETOF iprange AS $_$
+DECLARE
+	id int;
+	r iprange;
+BEGIN
+	FOR id IN (SELECT arg_prefix_ids[i] FROM generate_subscripts(arg_prefix_ids, 1) AS i) LOOP
+		FOR r IN (SELECT find_free_ranges(id)) LOOP
+			RETURN NEXT r;
+		END LOOP;
+	END LOOP;
+
+	RETURN;
+END;
+$_$ LANGUAGE plpgsql;
+
 --
 -- Each range starts on the first non-used address, ie broadcast of "previous
 -- prefix" + 1 and ends on address before network address of "next prefix".
@@ -230,6 +250,47 @@ END;
 $_$ LANGUAGE plpgsql;
 
 
+--
+-- Calculate number of free prefixes in a pool
+--
+CREATE OR REPLACE FUNCTION calc_pool_free_prefixes(arg_pool_id integer, arg_family integer, arg_new_prefix cidr DEFAULT NULL) RETURNS numeric(40) AS $_$
+DECLARE
+	pool ip_net_pool;
+BEGIN
+	SELECT * INTO pool FROM ip_net_pool WHERE id = arg_pool_id;
+	RETURN calc_pool_free_prefixes(pool, arg_family, arg_new_prefix);
+END;
+$_$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION calc_pool_free_prefixes(arg_pool ip_net_pool, arg_family integer, arg_new_prefix cidr DEFAULT NULL) RETURNS numeric(40) AS $_$
+DECLARE
+	default_prefix_length integer;
+	prefix_ids integer[];
+BEGIN
+	IF arg_family = 4 THEN
+		default_prefix_length := arg_pool.ipv4_default_prefix_length;
+	ELSE
+		default_prefix_length := arg_pool.ipv6_default_prefix_length;
+	END IF;
+
+	-- not possible to determine amount of free addresses if the default prefix
+	-- length is not set
+	IF default_prefix_length IS NULL THEN
+		RETURN NULL;
+	END IF;
+
+	-- if we don't have any member prefixes, free prefixes will be NULL
+	prefix_ids := ARRAY((SELECT id FROM ip_net_plan WHERE pool_id = arg_pool.id AND family(prefix)=arg_family));
+	IF array_length(prefix_ids, 1) IS NULL THEN
+		RETURN NULL;
+	END IF;
+
+	RETURN cidr_count(ARRAY((SELECT iprange2cidr(ARRAY((SELECT find_free_ranges(prefix_ids)))))), default_prefix_length);
+END;
+$_$ LANGUAGE plpgsql;
+
+
 
 --
 -- Count the number of prefixes of a certain size that fits in the list of
@@ -237,7 +298,7 @@ $_$ LANGUAGE plpgsql;
 --
 -- Example:
 --   SELECT cidr_count('{1.0.0.0/24,2.0.0.0/23}', 29);
---    cidr_count 
+--    cidr_count
 --   ------------
 --           384
 --
@@ -270,7 +331,7 @@ BEGIN
 	END IF;
 
 	FOR i IN (SELECT masklen(arg_cidrs[s]) FROM generate_subscripts(arg_cidrs, 1) AS s) LOOP
-		num_cidrs = num_cidrs + power(2, (arg_prefix_length - i));
+		num_cidrs = num_cidrs + power(2::numeric(40), (arg_prefix_length - i));
 	END LOOP;
 
 	RETURN num_cidrs;
@@ -830,6 +891,7 @@ DECLARE
 	i_max_pref_len integer;
 	num_used integer;
 	p RECORD;
+	free_prefixes numeric(40);
 BEGIN
 	i_max_pref_len := 32;
 	IF TG_OP IN ('INSERT', 'UPDATE') THEN
@@ -1094,13 +1156,15 @@ BEGIN
 	-- Update pool statistics
 	--
 
-	-- member prefix related statistics, ie pool total and similar
+	-- we are a member prefix of a pool, update pool total
 	IF TG_OP = 'DELETE' OR (TG_OP = 'UPDATE' AND (OLD.pool_id IS DISTINCT FROM NEW.pool_id OR OLD.prefix != NEW.prefix)) THEN
-		-- we are a member prefix, update the pool totals
+		free_prefixes := calc_pool_free_prefixes(OLD.pool_id, family(OLD.prefix));
 		IF family(OLD.prefix) = 4 THEN
 			UPDATE ip_net_pool
 			SET member_prefixes_v4 = member_prefixes_v4 - 1,
 				used_prefixes_v4 = used_prefixes_v4 - OLD.children,
+				free_prefixes_v4 = free_prefixes,
+				total_prefixes_v4 = (used_prefixes_v4 - OLD.children) + free_prefixes,
 				total_addresses_v4 = total_addresses_v4 - OLD.total_addresses,
 				free_addresses_v4 = free_addresses_v4 - OLD.free_addresses,
 				used_addresses_v4 = used_addresses_v4 - OLD.used_addresses
@@ -1109,6 +1173,8 @@ BEGIN
 			UPDATE ip_net_pool
 			SET member_prefixes_v6 = member_prefixes_v6 - 1,
 				used_prefixes_v6 = used_prefixes_v6 - OLD.children,
+				free_prefixes_v6 = free_prefixes,
+				total_prefixes_v6 = (used_prefixes_v6 - OLD.children) + free_prefixes,
 				total_addresses_v6 = total_addresses_v6 - OLD.total_addresses,
 				free_addresses_v6 = free_addresses_v6 - OLD.free_addresses,
 				used_addresses_v6 = used_addresses_v6 - OLD.used_addresses
@@ -1116,11 +1182,13 @@ BEGIN
 		END IF;
 	END IF;
 	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND (OLD.pool_id IS DISTINCT FROM NEW.pool_id OR OLD.prefix != NEW.prefix)) THEN
-		-- we are a member prefix, update the pool totals
+		free_prefixes := calc_pool_free_prefixes(NEW.pool_id, family(NEW.prefix));
 		IF family(NEW.prefix) = 4 THEN
 			UPDATE ip_net_pool
 			SET member_prefixes_v4 = member_prefixes_v4 + 1,
 				used_prefixes_v4 = used_prefixes_v4 + NEW.children,
+				free_prefixes_v4 = free_prefixes,
+				total_prefixes_v4 = (used_prefixes_v4 + NEW.children) + free_prefixes,
 				total_addresses_v4 = total_addresses_v4 + NEW.total_addresses,
 				free_addresses_v4 = free_addresses_v4 + NEW.free_addresses,
 				used_addresses_v4 = used_addresses_v4 + NEW.used_addresses
@@ -1129,6 +1197,8 @@ BEGIN
 			UPDATE ip_net_pool
 			SET member_prefixes_v6 = member_prefixes_v6 + 1,
 				used_prefixes_v6 = used_prefixes_v6 + NEW.children,
+				free_prefixes_v6 = free_prefixes,
+				total_prefixes_v6 = (used_prefixes_v6 + NEW.children) + free_prefixes,
 				total_addresses_v6 = total_addresses_v6 + NEW.total_addresses,
 				free_addresses_v6 = free_addresses_v6 + NEW.free_addresses,
 				used_addresses_v6 = used_addresses_v6 + NEW.used_addresses
@@ -1136,18 +1206,23 @@ BEGIN
 		END IF;
 	END IF;
 
-	-- we are the child of a pool, ie our parent prefix is a member of the pool
+	-- we are the child of a pool, ie our parent prefix is a member of the pool, update used / free
 	IF (TG_OP = 'DELETE' OR (TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix)) THEN
 		IF old_parent.pool_id IS NOT NULL THEN
+			free_prefixes := calc_pool_free_prefixes(old_parent.pool_id, family(old_parent.prefix));
 			IF family(OLD.prefix) = 4 THEN
 				UPDATE ip_net_pool
 				SET used_prefixes_v4 = used_prefixes_v4 - 1,
+					free_prefixes_v4 = free_prefixes,
+					total_prefixes_v4 = (used_prefixes_v4 - 1) + free_prefixes,
 					free_addresses_v4 = free_addresses_v4 + OLD.total_addresses,
 					used_addresses_v4 = used_addresses_v4 - OLD.total_addresses
 				WHERE id = old_parent_pool.id;
 			ELSE
 				UPDATE ip_net_pool
 				SET used_prefixes_v6 = used_prefixes_v6 - 1,
+					free_prefixes_v6 = free_prefixes,
+					total_prefixes_v6 = (used_prefixes_v6 - 1) + free_prefixes,
 					free_addresses_v6 = free_addresses_v6 + OLD.total_addresses,
 					used_addresses_v6 = used_addresses_v6 - OLD.total_addresses
 				WHERE id = old_parent_pool.id;
@@ -1156,15 +1231,20 @@ BEGIN
 	END IF;
 	IF (TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND OLD.prefix != NEW.prefix)) THEN
 		IF new_parent.pool_id IS NOT NULL THEN
+			free_prefixes := calc_pool_free_prefixes(new_parent.pool_id, family(new_parent.prefix));
 			IF family(NEW.prefix) = 4 THEN
 				UPDATE ip_net_pool
 				SET used_prefixes_v4 = used_prefixes_v4 + 1,
+					free_prefixes_v4 = free_prefixes,
+					total_prefixes_v4 = (used_prefixes_v4 + 1) + free_prefixes,
 					free_addresses_v4 = free_addresses_v4 - NEW.total_addresses,
 					used_addresses_v4 = used_addresses_v4 + NEW.total_addresses
 				WHERE id = new_parent_pool.id;
 			ELSE
 				UPDATE ip_net_pool
 				SET used_prefixes_v6 = used_prefixes_v6 + 1,
+					free_prefixes_v6 = free_prefixes,
+					total_prefixes_v6 = (used_prefixes_v6 + 1) + free_prefixes,
 					free_addresses_v6 = free_addresses_v6 - NEW.total_addresses,
 					used_addresses_v6 = used_addresses_v6 + NEW.total_addresses
 				WHERE id = new_parent_pool.id;
@@ -1225,6 +1305,29 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION tf_ip_net_pool__iu_before() RETURNS trigger AS $_$
+BEGIN
+	IF TG_OP = 'INSERT' THEN
+		NEW.free_prefixes_v4 := calc_pool_free_prefixes(NEW, 4);
+		NEW.total_prefixes_v4 := NEW.used_prefixes_v4 + NEW.free_prefixes_v4;
+		NEW.free_prefixes_v6 := calc_pool_free_prefixes(NEW, 6);
+		NEW.total_prefixes_v6 := NEW.used_prefixes_v6 + NEW.free_prefixes_v6;
+	ELSIF TG_OP = 'UPDATE' THEN
+		IF OLD.ipv4_default_prefix_length IS DISTINCT FROM NEW.ipv4_default_prefix_length THEN
+			NEW.free_prefixes_v4 := calc_pool_free_prefixes(NEW, 4);
+			NEW.total_prefixes_v4 := NEW.used_prefixes_v4 + NEW.free_prefixes_v4;
+		END IF;
+
+		IF OLD.ipv6_default_prefix_length IS DISTINCT FROM NEW.ipv6_default_prefix_length THEN
+			NEW.free_prefixes_v6 := calc_pool_free_prefixes(NEW, 6);
+			NEW.total_prefixes_v6 := NEW.used_prefixes_v6 + NEW.free_prefixes_v6;
+		END IF;
+	END IF;
+
+	RETURN NEW;
+END;
+$_$ LANGUAGE plpgsql;
+
 
 
 --
@@ -1239,6 +1342,9 @@ BEGIN
 	END LOOP;
 	FOR r IN (SELECT DISTINCT trigger_name FROM information_schema.triggers WHERE event_object_table = 'ip_net_plan' AND trigger_schema NOT IN ('pg_catalog', 'information_schema')) LOOP
 		EXECUTE 'DROP TRIGGER ' || r.trigger_name || ' ON ip_net_plan';
+	END LOOP;
+	FOR r IN (SELECT DISTINCT trigger_name FROM information_schema.triggers WHERE event_object_table = 'ip_net_pool' AND trigger_schema NOT IN ('pg_catalog', 'information_schema')) LOOP
+		EXECUTE 'DROP TRIGGER ' || r.trigger_name || ' ON ip_net_pool';
 	END LOOP;
 
 	RETURN true;
@@ -1339,10 +1445,24 @@ CREATE TRIGGER trigger_ip_net_plan__indent_children__u_before
 	WHEN (OLD.prefix != NEW.prefix)
 	EXECUTE PROCEDURE tf_ip_net_plan__indent_children__iu_before();
 
-
---
 CREATE TRIGGER trigger_ip_net_plan_prefix__d_before
 	BEFORE DELETE
 	ON ip_net_plan
 	FOR EACH ROW
 	EXECUTE PROCEDURE tf_ip_net_prefix_d_before();
+
+
+-- ip_net_pool
+CREATE TRIGGER trigger_ip_net_pool__i_before
+	BEFORE INSERT
+	ON ip_net_pool
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_ip_net_pool__iu_before();
+
+CREATE TRIGGER trigger_ip_net_pool__u_before
+	BEFORE UPDATE OF ipv4_default_prefix_length, ipv6_default_prefix_length
+	ON ip_net_pool
+	FOR EACH ROW
+	WHEN (OLD.ipv4_default_prefix_length IS DISTINCT FROM NEW.ipv4_default_prefix_length
+		OR OLD.ipv6_default_prefix_length IS DISTINCT FROM NEW.ipv6_default_prefix_length)
+	EXECUTE PROCEDURE tf_ip_net_pool__iu_before();
