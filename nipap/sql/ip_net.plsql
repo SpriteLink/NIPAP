@@ -85,10 +85,10 @@ CREATE TABLE ip_net_pool (
 	used_addresses_v6 numeric(40) DEFAULT 0,
 	free_addresses_v4 numeric(40) DEFAULT 0,
 	free_addresses_v6 numeric(40) DEFAULT 0,
-	free_prefixes_v4 numeric(40) DEFAULT 0,
-	free_prefixes_v6 numeric(40) DEFAULT 0,
-	total_prefixes_v4 numeric(40) DEFAULT 0,
-	total_prefixes_v6 numeric(40) DEFAULT 0,
+	free_prefixes_v4 numeric(40) DEFAULT NULL,
+	free_prefixes_v6 numeric(40) DEFAULT NULL,
+	total_prefixes_v4 numeric(40) DEFAULT NULL,
+	total_prefixes_v6 numeric(40) DEFAULT NULL,
 	tags text[] DEFAULT '{}'
 );
 
