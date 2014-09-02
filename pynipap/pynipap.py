@@ -563,6 +563,10 @@ class Pool(Pynipap):
     member_prefixes_v6 = None
     used_prefixes_v4 = None
     used_prefixes_v6 = None
+    free_prefixes_v4 = None
+    free_prefixes_v6 = None
+    total_prefixes_v4 = None
+    total_prefixes_v6 = None
     total_addresses_v4 = None
     total_addresses_v6 = None
     used_addresses_v4 = None
@@ -737,16 +741,13 @@ class Pool(Pynipap):
         pool.default_type = parm['default_type']
         pool.ipv4_default_prefix_length = parm['ipv4_default_prefix_length']
         pool.ipv6_default_prefix_length = parm['ipv6_default_prefix_length']
-        pool.member_prefixes_v4 = long(parm['member_prefixes_v4'])
-        pool.member_prefixes_v6 = long(parm['member_prefixes_v6'])
-        pool.used_prefixes_v4 = long(parm['used_prefixes_v4'])
-        pool.used_prefixes_v6 = long(parm['used_prefixes_v6'])
-        pool.total_addresses_v4 = long(parm['total_addresses_v4'])
-        pool.total_addresses_v6 = long(parm['total_addresses_v6'])
-        pool.used_addresses_v4 = long(parm['used_addresses_v4'])
-        pool.used_addresses_v6 = long(parm['used_addresses_v6'])
-        pool.free_addresses_v4 = long(parm['free_addresses_v4'])
-        pool.free_addresses_v6 = long(parm['free_addresses_v6'])
+        for val in ('member_prefixes_v4', 'member_prefixes_v6',
+                'used_prefixes_v4', 'used_prefixes_v6', 'free_prefixes_v4',
+                'free_prefixes_v6', 'total_prefixes_v4', 'total_prefixes_v6',
+                'total_addresses_v4', 'total_addresses_v6', 'used_addresses_v4',
+                'used_addresses_v6', 'free_addresses_v4', 'free_addresses_v6'):
+            if parm[val] is not None:
+                setattr(pool, val, long(parm[val]))
 
         pool.tags = {}
         for tag_name in parm['tags']:
