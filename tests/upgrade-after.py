@@ -218,6 +218,10 @@ class TestCheckdata(unittest.TestCase):
         expected = [{
             'used_prefixes_v4': '3',
             'used_prefixes_v6': '1',
+            'free_prefixes_v4': None,
+            'free_prefixes_v6': None,
+            'total_prefixes_v4': None,
+            'total_prefixes_v6': None,
             'default_type': None,
             'description': None,
             'free_addresses_v4': '3328',
@@ -247,6 +251,10 @@ class TestCheckdata(unittest.TestCase):
         expected = [{
             'used_prefixes_v4': '0',
             'used_prefixes_v6': '0',
+            'free_prefixes_v4': None,
+            'free_prefixes_v6': None,
+            'total_prefixes_v4': None,
+            'total_prefixes_v6': None,
             'default_type': None,
             'description': None,
             'free_addresses_v4': '0',
