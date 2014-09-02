@@ -76,6 +76,8 @@ class TestLoad(unittest.TestCase):
 
         pool1 = Pool()
         pool1.name = 'upgrade-test'
+        pool1.ipv4_default_prefix_length = 31
+        pool1.ipv6_default_prefix_length = 112
         pool1.save()
         p2.pool = pool1
         p2.save()
