@@ -120,13 +120,26 @@ if __name__ == '__main__':
             print >> sys.stderr, "Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group)
             sys.exit(1)
 
-    if options.dbversion:
-        from nipap.backend import Nipap
+
+    from nipap.backend import Nipap
+    try:
         nip = Nipap()
+    except NipapError as exc:
+        print >> sys.stderr, str(exc)
+        sys.exit(1)
+
+    if options.dbversion:
         print "nipap db schema:", nip._get_db_version()
         sys.exit(0)
 
-    # pre-start checks
+    # check nipap database schema version
+    import nipap
+    current_db_version = nip._get_db_version()
+    if current_db_version != nipap.__db_version__:
+        print >> sys.stderr, "NIPAP PostgreSQL database is outdated. Schema version '%s' is required to run but you are using '%s'" % (nipap.__db_version__, current_db_version)
+        sys.exit(1)
+
+    # check local auth db version
     from nipap import authlib
     a = authlib.SqliteAuth('local', 'a', 'b', 'c')
     try:
@@ -139,15 +152,6 @@ if __name__ == '__main__':
         print >> sys.stderr, "Error checking version of Sqlite database for local auth: %s" % e
         sys.exit(1)
     del a
-
-    #check nipap database schema version
-    from nipap.backend import Nipap
-    import nipap
-    nip = Nipap()
-    current_db_version = nip._get_db_version()
-    if current_db_version != nipap.__db_version__:
-        print >> sys.stderr, "NIPAP PostgreSQL database is outdated. Schema version '%s' is required to run but you are using '%s'" % (nipap.__db_version__, current_db_version)
-        sys.exit(1)
 
 
     if not cfg.getboolean('nipapd', 'foreground'):
