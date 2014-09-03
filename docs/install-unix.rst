@@ -36,12 +36,6 @@ On modern versions of PostgreSQL you should be able to install ip4r by running::
 
     CREATE EXTENSION ip4r;
 
-Make sure you run that for the correct database ('nipap'). If 'CREATE
-EXTENSION' is not available, ip4r can be loaded manually by locating ip4r.sql
-somewhere in the source directory of ip4r and running it::
-
-    psql -d nipap -f <path to ip4r.sql>
-
 Continue with the tables file followed by the functions::
 
     psql -d nipap -f /usr/share/nipap/sql/ip_net.plsql
