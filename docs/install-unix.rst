@@ -42,10 +42,11 @@ somewhere in the source directory of ip4r and running it::
 
     psql -d nipap -f <path to ip4r.sql>
 
-Continue with the tables file followed by the functions::
+Continue with the functions, tables and triggers files::
 
     psql -d nipap -f /usr/share/nipap/sql/ip_net.plsql
     psql -d nipap -f /usr/share/nipap/sql/functions.plsql
+    psql -d nipap -f /usr/share/nipap/sql/triggers.plsql
 
 Your database should now be ready to go!
 
