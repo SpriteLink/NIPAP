@@ -738,6 +738,23 @@ def view_pool(arg, opts, shell_opts):
 
     # statistics
     print "-- Statistics"
+    # total / used / free prefixes
+    if p.total_prefixes_v4 == 0:
+        used_percent_v4 = 0
+    else:
+        used_percent_v4 = (float(p.used_prefixes_v4)/p.total_prefixes_v4)*100
+    if p.total_prefixes_v6 == 0:
+        used_percent_v6 = 0
+    else:
+        used_percent_v6 = (float(p.used_prefixes_v6)/p.total_prefixes_v6)*100
+    print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 prefixes Used / Free",
+            p.used_prefixes_v4, p.free_prefixes_v4, used_percent_v4,
+            p.total_prefixes_v4)
+    print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 prefixes Used / Free",
+            p.used_prefixes_v6, p.free_prefixes_v6, used_percent_v6,
+            p.total_prefixes_v6)
+
+    # total / used / free addresses
     if p.total_addresses_v4 == 0:
         used_percent_v4 = 0
     else:
@@ -752,6 +769,7 @@ def view_pool(arg, opts, shell_opts):
     print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
             p.used_addresses_v6, p.free_addresses_v6, used_percent_v6,
             p.total_addresses_v6)
+
     print "\n-- Prefixes in pool - v4: %d  v6: %d" % (p.member_prefixes_v4,
             p.member_prefixes_v6)
 
