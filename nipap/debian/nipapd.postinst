@@ -80,6 +80,10 @@ case "$1" in
 				# should we do the upgrade dance?
 				db_get nipapd/upgrade
 				if [ "$RET" = "true" ]; then
+					# load latest NIPAP database functions
+					echo -n "Loading NIPAP SQL database functions..."
+					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1 && echo "DONE"
+
 					# iterate through and upgrade in steps of one version at a time
 					for FROM_VERSION in `seq ${NIPAP_DB_VERSION} $((${CURRENT_DB_VERSION}-1))`; do
 						TO_VERSION=$((${FROM_VERSION}+1))
@@ -89,9 +93,9 @@ case "$1" in
 						su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/${PSQL_FILE}" postgres >/dev/null 2>&1 && echo "DONE"
 					done
 
-					# load latest NIPAP database functions
-					echo -n "Loading NIPAP SQL database functions..."
-					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1 && echo "DONE"
+					# load latest NIPAP database triggers
+					echo -n "Loading NIPAP SQL database triggers..."
+					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/triggers.plsql" postgres >/dev/null 2>&1 && echo "DONE"
 
 					# reset the DB upgrade question
 					db_reset nipapd/upgrade
@@ -112,6 +116,7 @@ case "$1" in
 					# load NIPAP database structure
 					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/ip_net.plsql" postgres >/dev/null 2>&1
 					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
+					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/triggers.plsql" postgres >/dev/null 2>&1
 
 					# grant necessary privileges on tables, views, sequences and functions to NIPAP db user
 					su -c "psql -q -d $DB_NAME -c 'GRANT SELECT, UPDATE, INSERT, DELETE ON ALL TABLES IN SCHEMA public TO nipap'" postgres >/dev/null 2>&1
