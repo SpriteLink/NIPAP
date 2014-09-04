@@ -1217,6 +1217,38 @@ class TestPrefixStatistics(unittest.TestCase):
         self.assertEqual(0, res['result'][0].free_addresses)
 
 
+    def test_stats8(self):
+        """ Make sure stats are correct
+        """
+        # we ran into this problem with #590
+        th = TestHelper()
+
+        p1 = th.add_prefix('1.0.0.0/24', 'reservation', 'test')
+        p2 = th.add_prefix('1.0.0.0/32', 'reservation', 'test')
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(256, res['result'][0].total_addresses)
+        self.assertEqual(1, res['result'][0].used_addresses)
+        self.assertEqual(255, res['result'][0].free_addresses)
+
+        p3 = th.add_prefix('1.0.0.2/31', 'reservation', 'test')
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(256, res['result'][0].total_addresses)
+        self.assertEqual(3, res['result'][0].used_addresses)
+        self.assertEqual(253, res['result'][0].free_addresses)
+
+        p3.prefix = '1.0.0.2/32'
+        p3.save()
+
+        # check stats for p1
+        res = Prefix.smart_search('1.0.0.0/24', {})
+        self.assertEqual(256, res['result'][0].total_addresses)
+        self.assertEqual(2, res['result'][0].used_addresses)
+        self.assertEqual(254, res['result'][0].free_addresses)
+
 
 
 class TestVrfStatistics(unittest.TestCase):
