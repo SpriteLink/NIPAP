@@ -506,6 +506,7 @@ class NipapXmlTest(unittest.TestCase):
                 'pool_name': None,
                 'pool_id': None,
                 'tags': [],
+                'status': 'active',
                 'vrf_rt': None,
                 'vrf_id': 0,
                 'vrf_name': 'default',
@@ -602,7 +603,8 @@ class NipapXmlTest(unittest.TestCase):
                 'vrf_name': None,
                 'vlan': None,
                 'inherited_tags': [],
-                'tags': []
+                'tags': [],
+                'status': 'active'
             }
 
         # add VRF
@@ -696,7 +698,8 @@ class NipapXmlTest(unittest.TestCase):
                 'vrf_rt': None,
                 'vrf_name': 'default',
                 'inherited_tags': [],
-                'vlan': None
+                'vlan': None,
+                'status': 'active'
             }
 
         # add the "top" prefix - 1.0.0.0/8
@@ -807,7 +810,8 @@ class NipapXmlTest(unittest.TestCase):
                 'vrf_rt': None,
                 'vrf_id': 0,
                 'vrf_name': 'default',
-                'vlan': None
+                'vlan': None,
+                'status': 'active'
             }
         expected_list = []
 
@@ -1038,7 +1042,8 @@ class NipapXmlTest(unittest.TestCase):
                 'authoritative_source': 'nipap',
                 'vlan': None,
                 'inherited_tags': [],
-                'tags': []
+                'tags': [],
+                'status': 'active'
                 }
         child = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
         expected['id'] = child['id']
@@ -1138,7 +1143,8 @@ class NipapXmlTest(unittest.TestCase):
                         'display': True,
                         'vlan': None,
                         'inherited_tags': [],
-                        'tags': []
+                        'tags': [],
+                        'status': 'active'
                         }
                     ]
             }
