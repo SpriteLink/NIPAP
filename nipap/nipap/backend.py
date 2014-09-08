@@ -2269,7 +2269,7 @@ class Nipap:
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool_id', 'tags', 'node', 'type', 'country',
             'order_id', 'customer_id', 'vrf_id', 'alarm_priority', 
-            'monitor', 'external_key', 'vlan']
+            'monitor', 'external_key', 'vlan', 'status']
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('node' not in attr):
             raise NipapMissingInputError('Either description or node must be specified.')
@@ -2372,7 +2372,7 @@ class Nipap:
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool_id', 'tags', 'node', 'type', 'country',
             'order_id', 'customer_id', 'vrf_id', 'alarm_priority', 
-            'monitor', 'external_key', 'vlan' ]
+            'monitor', 'external_key', 'vlan', 'status' ]
 
         self._check_attr(attr, [], allowed_attr)
 
@@ -2666,7 +2666,8 @@ class Nipap:
             inp.last_modified,
             inp.total_addresses,
             inp.used_addresses,
-            inp.free_addresses
+            inp.free_addresses,
+            inp.status
             FROM ip_net_plan inp
             JOIN ip_net_vrf vrf ON (inp.vrf_id = vrf.id)
             LEFT JOIN ip_net_pool pool ON (inp.pool_id = pool.id) %s
@@ -3020,6 +3021,7 @@ class Nipap:
         pool_id,
         pool_name,
         type,
+        status,
         indent,
         country,
         order_id,
@@ -3062,6 +3064,7 @@ class Nipap:
             p1.total_addresses,
             p1.used_addresses,
             p1.free_addresses,
+            p1.status,
             vrf.id AS vrf_id,
             vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,
