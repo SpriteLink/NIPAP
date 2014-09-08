@@ -502,6 +502,7 @@ class XhrController(BaseController):
             comment         Longer comment
             node            Hostname of node
             type            Type of prefix; reservation, assignment, host
+            status          Status of prefix; active, reserved, quarantine
             pool            ID of pool
             country         Country where the prefix is used
             order_id        Order identifier
@@ -540,6 +541,9 @@ class XhrController(BaseController):
         if 'node' in request.params:
             if request.params['node'].strip() != '':
                 p.node = request.params['node'].strip()
+
+        if 'status' in request.params:
+            p.status = request.params['status'].strip()
 
         if 'type' in request.params:
             p.type = request.params['type'].strip()
