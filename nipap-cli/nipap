@@ -5,6 +5,7 @@
 """
 import logging
 import sys
+import socket
 
 import nipap_cli
 import nipap_cli.nipap_cli
@@ -95,6 +96,9 @@ if __name__ == '__main__':
         cmd.exe(cmd.arg, cmd.exe_options, options)
     except KeyboardInterrupt:
         sys.exit(130)
+    except socket.error as exc:
+        print >> sys.stderr, "Failed to connect to the backend:\n  %s" % str(exc)
+        sys.exit(141)
     except (IOError, OSError):
         sys.exit(141)
     except NipapError as exc:
