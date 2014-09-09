@@ -40,7 +40,8 @@ install:
     - wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -
     - sudo apt-get update -qq
     # install dependencies for installing & running nipap
-    - sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-ldap python-docutils postgresql postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress
+    - sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-docutils postgresql postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress
+    - sudo pip install python3-ldap
     # install dependencies for building packages and build NIPAP debian packages
     - sudo apt-get install -qq -y --force-yes devscripts python-docutils
     # if we are testing the upgrade, first install NIPAP packages from official repo
