@@ -2,6 +2,11 @@
 
 from distutils.core import setup
 
+requirements = []
+import sys
+if sys.version < '3':
+    requirements = ['xmlrpclib']
+
 import pynipap
 
 long_desc = open('README.rst').read()
@@ -13,12 +18,12 @@ setup(
 	description = short_desc,
 	long_description = long_desc,
 	author = pynipap.__author__,
-    author_email = pynipap.__author_email__,
+	author_email = pynipap.__author_email__,
 	license = pynipap.__license__,
 	url = pynipap.__url__,
 	py_modules = ['pynipap'],
 	keywords = ['nipap'],
-	requires = ['xmlrpclib'],
+	requires = requirements,
 	classifiers = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -26,7 +31,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
 		'Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware'
 	]
 )

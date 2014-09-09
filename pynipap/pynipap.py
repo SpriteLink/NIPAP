@@ -100,7 +100,7 @@
 
         # Fetch VRF with ID 1 and print its name
         vrf = VRF.get(1)
-        print vrf.name
+        print(vrf.name)
 
     To list all objects each object has a :func:`list`-function. ::
 
@@ -109,7 +109,7 @@
 
         # print the name of the pools
         for p in pools:
-            print p.name
+            print(p.name)
 
     Each of the list functions can also take a `spec`-dict as a second
     argument. With the spec you can perform a simple search operation by
@@ -147,7 +147,12 @@
     Classes
     -------
 """
-import xmlrpclib
+try:
+    import xmlrpc.client as xmlrpclib
+except ImportError:
+    import xmlrpclib
+    int = long
+
 import logging
 
 __version__		= "0.26.4"
@@ -396,14 +401,14 @@ class VRF(Pynipap):
             tag = Tag.from_dict({'name': tag_name })
             vrf.tags[tag_name] = tag
 
-        vrf.num_prefixes_v4 = long(parm['num_prefixes_v4'])
-        vrf.num_prefixes_v6 = long(parm['num_prefixes_v6'])
-        vrf.total_addresses_v4 = long(parm['total_addresses_v4'])
-        vrf.total_addresses_v6 = long(parm['total_addresses_v6'])
-        vrf.used_addresses_v4 = long(parm['used_addresses_v4'])
-        vrf.used_addresses_v6 = long(parm['used_addresses_v6'])
-        vrf.free_addresses_v4 = long(parm['free_addresses_v4'])
-        vrf.free_addresses_v6 = long(parm['free_addresses_v6'])
+        vrf.num_prefixes_v4 = int(parm['num_prefixes_v4'])
+        vrf.num_prefixes_v6 = int(parm['num_prefixes_v6'])
+        vrf.total_addresses_v4 = int(parm['total_addresses_v4'])
+        vrf.total_addresses_v6 = int(parm['total_addresses_v6'])
+        vrf.used_addresses_v4 = int(parm['used_addresses_v4'])
+        vrf.used_addresses_v6 = int(parm['used_addresses_v6'])
+        vrf.free_addresses_v4 = int(parm['free_addresses_v4'])
+        vrf.free_addresses_v6 = int(parm['free_addresses_v6'])
 
         return vrf
 
@@ -737,16 +742,16 @@ class Pool(Pynipap):
         pool.default_type = parm['default_type']
         pool.ipv4_default_prefix_length = parm['ipv4_default_prefix_length']
         pool.ipv6_default_prefix_length = parm['ipv6_default_prefix_length']
-        pool.member_prefixes_v4 = long(parm['member_prefixes_v4'])
-        pool.member_prefixes_v6 = long(parm['member_prefixes_v6'])
-        pool.used_prefixes_v4 = long(parm['used_prefixes_v4'])
-        pool.used_prefixes_v6 = long(parm['used_prefixes_v6'])
-        pool.total_addresses_v4 = long(parm['total_addresses_v4'])
-        pool.total_addresses_v6 = long(parm['total_addresses_v6'])
-        pool.used_addresses_v4 = long(parm['used_addresses_v4'])
-        pool.used_addresses_v6 = long(parm['used_addresses_v6'])
-        pool.free_addresses_v4 = long(parm['free_addresses_v4'])
-        pool.free_addresses_v6 = long(parm['free_addresses_v6'])
+        pool.member_prefixes_v4 = int(parm['member_prefixes_v4'])
+        pool.member_prefixes_v6 = int(parm['member_prefixes_v6'])
+        pool.used_prefixes_v4 = int(parm['used_prefixes_v4'])
+        pool.used_prefixes_v6 = int(parm['used_prefixes_v6'])
+        pool.total_addresses_v4 = int(parm['total_addresses_v4'])
+        pool.total_addresses_v6 = int(parm['total_addresses_v6'])
+        pool.used_addresses_v4 = int(parm['used_addresses_v4'])
+        pool.used_addresses_v6 = int(parm['used_addresses_v6'])
+        pool.free_addresses_v4 = int(parm['free_addresses_v4'])
+        pool.free_addresses_v6 = int(parm['free_addresses_v6'])
 
         pool.tags = {}
         for tag_name in parm['tags']:
@@ -1106,9 +1111,9 @@ class Prefix(Pynipap):
         prefix.vlan = pref['vlan']
         prefix.added = pref['added']
         prefix.last_modified = pref['last_modified']
-        prefix.total_addresses = long(pref['total_addresses'])
-        prefix.used_addresses = long(pref['used_addresses'])
-        prefix.free_addresses = long(pref['free_addresses'])
+        prefix.total_addresses = int(pref['total_addresses'])
+        prefix.used_addresses = int(pref['used_addresses'])
+        prefix.free_addresses = int(pref['free_addresses'])
 
         prefix.inherited_tags = {}
         for tag_name in pref['inherited_tags']:
