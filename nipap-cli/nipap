@@ -92,16 +92,21 @@ if __name__ == '__main__':
         print "valid completions: %s" % " ".join(cmd.next_values())
         sys.exit(1)
 
+    # for more info on the used exit codes, see:
+    #  - http://www.tldp.org/LDP/abs/html/exitcodes.html
+    #  - http://people.cs.pitt.edu/~alanjawi/cs449/code/shell/UnixSignals.htm
     try:
         cmd.exe(cmd.arg, cmd.exe_options, options)
     except KeyboardInterrupt:
+        # exit code for SIGINT (2) + 128 = 130
         sys.exit(130)
     except socket.error as exc:
         print >> sys.stderr, "Failed to connect to the backend: %s" % str(exc)
-        sys.exit(141)
+        sys.exit(1)
     except (IOError, OSError):
+        # exit code for SIGPIPE (13) + 128 = 141
         sys.exit(141)
     except NipapError as exc:
-        print >> sys.stderr, "Command failed:\n  %s" % str(exc)
+        print >> sys.stderr, "Command failed: %s" % str(exc)
         sys.exit(1)
 
