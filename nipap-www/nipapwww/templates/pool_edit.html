@@ -277,7 +277,47 @@
 			<div class="option">
 				<dl>
 					<dt>
-					IPv4
+					IPv4 prefixes
+					</dt>
+					<dd>
+					{% if c.pool.member_prefixes_v4 == 0 %}
+					No IPv4 member prefixes.
+					{% elif c.pool.ipv4_default_prefix_length is none %}
+					Unable to calculate number of total and free prefixes; IPv4 default prefix length is not set.
+					{% else %}
+					<canvas id="canvas_pool_prefixes_v4" style="float: right;" width="250px;" height="100"></canvas>
+					Pool {{c.pool.name}} consists of {{c.pool.member_prefixes_v4}} member IPv4 prefixes. There are {{c.pool.used_prefixes_v4}} used IPv4 prefixes (direct subnets) and {{c.pool.free_prefixes_v4}} free prefixes of the default IPv4 prefix length ({{c.pool.ipv4_default_prefix_length}}) allowing for a total of {{c.pool.total_prefixes_v4}} prefixes.
+					{% endif %}
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+					IPv6 prefixes
+					</dt>
+					<dd>
+					{% if c.pool.member_prefixes_v6 == 0 %}
+					No IPv6 member prefixes.
+					{% elif c.pool.ipv6_default_prefix_length is none %}
+					Unable to calculate number of total and free prefixes; IPv6 default prefix length is not set.
+					{% else %}
+					<canvas id="canvas_pool_prefixes_v6" style="float: right;" width="250px;" height="100"></canvas>
+					Pool {{c.pool.name}} consists of {{c.pool.member_prefixes_v6}} member IPv6 prefixes. There are {{c.pool.used_prefixes_v6}} used IPv4 prefixes (direct subnets) and {{c.pool.free_prefixes_v6}} free prefixes of the default IPv6 prefix length ({{c.pool.ipv6_default_prefix_length}}) allowing for a total of {{c.pool.total_prefixes_v6}} prefixes.
+					{% endif %}
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+					IPv4 addresses
 					</dt>
 					<dd>
 					{% if c.pool.member_prefixes_v4 == 0 %}
@@ -295,7 +335,7 @@
 			<div class="option">
 				<dl>
 					<dt>
-					IPv6
+					IPv6 addresses
 					</dt>
 					<dd>
 					{% if c.pool.member_prefixes_v6 == 0 %}
@@ -325,6 +365,7 @@ var data_charts = [
 	}
 	];
 
+
 var data_pool_addresses_v4 = $.extend(true, [], data_charts);
 data_pool_addresses_v4[0]['value'] = {{c.pool.used_addresses_v4}};
 data_pool_addresses_v4[1]['value'] = {{c.pool.free_addresses_v4}};
@@ -333,6 +374,20 @@ data_pool_addresses_v6[0]['value'] = {{c.pool.used_addresses_v6}};
 data_pool_addresses_v6[1]['value'] = {{c.pool.free_addresses_v6}};
 
 var options = { animationSteps : 20, animationEasing: "easeOutQuart" };
+
+{% if c.pool.member_prefixes_v4 > 0 and c.pool.free_prefixes_v4 is not none %}
+	var data_pool_prefixes_v4 = $.extend(true, [], data_charts);
+	data_pool_prefixes_v4[0]['value'] = {{c.pool.used_prefixes_v4}};
+	data_pool_prefixes_v4[1]['value'] = {{c.pool.free_prefixes_v4}};
+	var chart_pool_prefixes_v4 = new Chart($("#canvas_pool_prefixes_v4")[0].getContext("2d")).Doughnut(data_pool_prefixes_v4, options);
+{% endif %}
+{% if c.pool.member_prefixes_v6 > 0 and c.pool.free_prefixes_v6 is not none %}
+	var data_pool_prefixes_v6 = $.extend(true, [], data_charts);
+	data_pool_prefixes_v6[0]['value'] = {{c.pool.used_prefixes_v6}};
+	data_pool_prefixes_v6[1]['value'] = {{c.pool.free_prefixes_v6}};
+	var chart_pool_prefixes_v6 = new Chart($("#canvas_pool_prefixes_v6")[0].getContext("2d")).Doughnut(data_pool_prefixes_v6, options);
+{% endif %}
+
 {% if c.pool.member_prefixes_v4 > 0 %}
 var chart_pool_addresses_v4 = new Chart($("#canvas_pool_addresses_v4")[0].getContext("2d")).Doughnut(data_pool_addresses_v4, options);
 {% endif %}

@@ -26,6 +26,7 @@ def get_data_files():
                 'sql/upgrade-3-4.plsql',
                 'sql/upgrade-4-5.plsql',
                 'sql/functions.plsql',
+                'sql/triggers.plsql',
                 'sql/ip_net.plsql'
                 ]),
             ('/usr/share/man/man8/', ['nipapd.8']),

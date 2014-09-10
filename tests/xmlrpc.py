@@ -94,6 +94,10 @@ class NipapXmlTest(unittest.TestCase):
                 self.assertIn('member_prefixes_v6', p)
                 self.assertIn('used_prefixes_v4', p)
                 self.assertIn('used_prefixes_v6', p)
+                self.assertIn('free_prefixes_v4', p)
+                self.assertIn('free_prefixes_v6', p)
+                self.assertIn('total_prefixes_v4', p)
+                self.assertIn('total_prefixes_v6', p)
                 del(p['total_addresses_v4'])
                 del(p['total_addresses_v6'])
                 del(p['used_addresses_v4'])
@@ -104,6 +108,10 @@ class NipapXmlTest(unittest.TestCase):
                 del(p['member_prefixes_v6'])
                 del(p['used_prefixes_v4'])
                 del(p['used_prefixes_v6'])
+                del(p['free_prefixes_v4'])
+                del(p['free_prefixes_v6'])
+                del(p['total_prefixes_v4'])
+                del(p['total_prefixes_v6'])
 
         elif isinstance(res, dict) and 'result' in res:
             # res from smart search
@@ -118,6 +126,10 @@ class NipapXmlTest(unittest.TestCase):
                 self.assertIn('member_prefixes_v6', p)
                 self.assertIn('used_prefixes_v4', p)
                 self.assertIn('used_prefixes_v6', p)
+                self.assertIn('free_prefixes_v4', p)
+                self.assertIn('free_prefixes_v6', p)
+                self.assertIn('total_prefixes_v4', p)
+                self.assertIn('total_prefixes_v6', p)
                 del(p['total_addresses_v4'])
                 del(p['total_addresses_v6'])
                 del(p['used_addresses_v4'])
@@ -128,6 +140,10 @@ class NipapXmlTest(unittest.TestCase):
                 del(p['member_prefixes_v6'])
                 del(p['used_prefixes_v4'])
                 del(p['used_prefixes_v6'])
+                del(p['free_prefixes_v4'])
+                del(p['free_prefixes_v6'])
+                del(p['total_prefixes_v4'])
+                del(p['total_prefixes_v6'])
 
         elif isinstance(res, dict):
             # just one single pool
@@ -141,6 +157,10 @@ class NipapXmlTest(unittest.TestCase):
             self.assertIn('member_prefixes_v6', res)
             self.assertIn('used_prefixes_v4', res)
             self.assertIn('used_prefixes_v6', res)
+            self.assertIn('free_prefixes_v4', res)
+            self.assertIn('free_prefixes_v6', res)
+            self.assertIn('total_prefixes_v4', res)
+            self.assertIn('total_prefixes_v6', res)
             del(res['total_addresses_v4'])
             del(res['total_addresses_v6'])
             del(res['used_addresses_v4'])
@@ -151,6 +171,10 @@ class NipapXmlTest(unittest.TestCase):
             del(res['member_prefixes_v6'])
             del(res['used_prefixes_v4'])
             del(res['used_prefixes_v6'])
+            del(res['free_prefixes_v4'])
+            del(res['free_prefixes_v6'])
+            del(res['total_prefixes_v4'])
+            del(res['total_prefixes_v6'])
 
         return res
 
