@@ -72,7 +72,7 @@ from nipapconfig import NipapConfig
 
 # Used by auth modules
 import sqlite3
-import ldap
+import ldap3
 import string
 import random
 
@@ -298,7 +298,7 @@ class LdapAuth(BaseAuth):
         self._logger.debug('Creating LdapAuth instance')
 
         self._logger.debug('LDAP URI: ' + self._ldap_uri)
-        self._ldap_conn = ldap.initialize(self._ldap_uri)
+        self._ldap_conn = ldap3.Server(self._ldap_uri)
 
 
 
@@ -314,28 +314,26 @@ class LdapAuth(BaseAuth):
             return self._authenticated
 
         try:
-            self._ldap_conn.simple_bind_s('uid=' + self.username + ',' + self._ldap_basedn, self.password)
-        except ldap.SERVER_DOWN as exc:
+            with ldap3.Connection(self._ldap_conn, 'uid=' + self.username + ',' + self._ldap_basedn, self.password, raise_exceptions = True) as con:
+                res = con.search(self._ldap_basedn, '(uid=' + self.username + ')', ldap3.SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn'], size_limit = 1)
+                if (not res) or (not con.response):
+                    self.full_name = ''
+                else:
+                    self.full_name = con.response[0]['attributes']['cn'][0]
+        except ldap3.LDAPSocketOpenError as exc:
             raise AuthError('Could not connect to LDAP server')
-        except (ldap.INVALID_CREDENTIALS, ldap.INVALID_DN_SYNTAX,
-                ldap.UNWILLING_TO_PERFORM) as exc:
+        except (ldap3.LDAPInvalidCredentialsResult, ldap3.LDAPInvalidDNSyntaxResult,
+                ldap3.LDAPUnwillingToPerformResult) as exc:
             # Auth failed
             self._logger.debug('erroneous password for user %s' % self.username)
             self._authenticated = False
             return self._authenticated
-
 
         # auth succeeded
         self.authenticated_as = self.username
         self._authenticated = True
         self.trusted = False
         self.readonly = False
-
-        try:
-            res = self._ldap_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, 'uid=' + self.username, ['cn'])
-            self.full_name = res[0][1]['cn'][0]
-        except:
-            self.full_name = ''
 
         self._logger.debug('successfully authenticated as %s, username %s' % (self.authenticated_as, self.username))
         return self._authenticated
