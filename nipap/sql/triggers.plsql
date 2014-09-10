@@ -505,8 +505,8 @@ BEGIN
 			-- removal of 'this' prefix while increasing for previous indirect
 			-- children that are now direct children of old parent
 			UPDATE ip_net_plan SET
-				used_addresses = old_parent.used_addresses - (OLD.total_addresses - CASE WHEN OLD.type = 'host' THEN 0 ELSE OLD.used_addresses END),
-				free_addresses = total_addresses - (old_parent.used_addresses - (OLD.total_addresses - CASE WHEN OLD.type = 'host' THEN 0 ELSE OLD.used_addresses END))
+				used_addresses = old_parent.used_addresses - (OLD.total_addresses - CASE WHEN masklen(OLD.prefix) = i_max_pref_len THEN 0 ELSE OLD.used_addresses END),
+				free_addresses = total_addresses - (old_parent.used_addresses - (OLD.total_addresses - CASE WHEN masklen(OLD.prefix) = i_max_pref_len THEN 0 ELSE OLD.used_addresses END))
 				WHERE id = old_parent.id;
 		END IF;
 	ELSIF TG_OP = 'INSERT' THEN
@@ -517,16 +517,16 @@ BEGIN
 			-- addition of 'this' prefix while decreasing for previous direct
 			-- children that are now covered by 'this'
 			UPDATE ip_net_plan SET
-				used_addresses = new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END),
-				free_addresses = total_addresses - (new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END))
+				used_addresses = new_parent.used_addresses + (NEW.total_addresses - CASE WHEN masklen(NEW.prefix) = i_max_pref_len THEN 0 ELSE NEW.used_addresses END),
+				free_addresses = total_addresses - (new_parent.used_addresses + (NEW.total_addresses - CASE WHEN masklen(NEW.prefix) = i_max_pref_len THEN 0 ELSE NEW.used_addresses END))
 				WHERE id = new_parent.id;
 		END IF;
 	ELSIF TG_OP = 'UPDATE' THEN
 		IF OLD.prefix != NEW.prefix THEN
 			IF old_parent.id = new_parent.id THEN
 				UPDATE ip_net_plan SET
-					used_addresses = (new_parent.used_addresses - (OLD.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE OLD.used_addresses END)) + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END),
-					free_addresses = total_addresses - ((new_parent.used_addresses - (OLD.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE OLD.used_addresses END)) + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END))
+					used_addresses = (new_parent.used_addresses - (OLD.total_addresses - CASE WHEN masklen(OLD.prefix) = i_max_pref_len THEN 0 ELSE OLD.used_addresses END)) + (NEW.total_addresses - CASE WHEN masklen(NEW.prefix) = i_max_pref_len THEN 0 ELSE NEW.used_addresses END),
+					free_addresses = total_addresses - ((new_parent.used_addresses - (OLD.total_addresses - CASE WHEN masklen(OLD.prefix) = i_max_pref_len THEN 0 ELSE OLD.used_addresses END)) + (NEW.total_addresses - CASE WHEN masklen(NEW.prefix) = i_max_pref_len THEN 0 ELSE NEW.used_addresses END))
 					WHERE id = new_parent.id;
 			ELSE
 				IF old_parent.id IS NOT NULL THEN
@@ -534,8 +534,8 @@ BEGIN
 					-- removal of 'this' prefix while increasing for previous indirect
 					-- children that are now direct children of old parent
 					UPDATE ip_net_plan SET
-						used_addresses = old_parent.used_addresses - (OLD.total_addresses - CASE WHEN OLD.type = 'host' THEN 0 ELSE OLD.used_addresses END),
-						free_addresses = total_addresses - (old_parent.used_addresses - (OLD.total_addresses - CASE WHEN OLD.type = 'host' THEN 0 ELSE OLD.used_addresses END))
+						used_addresses = old_parent.used_addresses - (OLD.total_addresses - CASE WHEN masklen(OLD.prefix) = i_max_pref_len THEN 0 ELSE OLD.used_addresses END),
+						free_addresses = total_addresses - (old_parent.used_addresses - (OLD.total_addresses - CASE WHEN masklen(OLD.prefix) = i_max_pref_len THEN 0 ELSE OLD.used_addresses END))
 						WHERE id = old_parent.id;
 				END IF;
 				IF new_parent.id IS NOT NULL THEN
@@ -543,8 +543,8 @@ BEGIN
 					-- addition of 'this' prefix while decreasing for previous direct
 					-- children that are now covered by 'this'
 					UPDATE ip_net_plan SET
-						used_addresses = new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END),
-						free_addresses = total_addresses - (new_parent.used_addresses + (NEW.total_addresses - CASE WHEN NEW.type = 'host' THEN 0 ELSE NEW.used_addresses END))
+						used_addresses = new_parent.used_addresses + (NEW.total_addresses - CASE WHEN masklen(NEW.prefix) = i_max_pref_len THEN 0 ELSE NEW.used_addresses END),
+						free_addresses = total_addresses - (new_parent.used_addresses + (NEW.total_addresses - CASE WHEN masklen(NEW.prefix) = i_max_pref_len THEN 0 ELSE NEW.used_addresses END))
 						WHERE id = new_parent.id;
 				END IF;
 			END IF;
