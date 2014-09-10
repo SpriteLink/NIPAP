@@ -69,6 +69,7 @@ class TestLoad(unittest.TestCase):
         p5 = th.add_prefix('192.168.2.0/24', 'reservation', 'test')
         p6 = th.add_prefix('192.168.32.0/20', 'reservation', 'test')
         p7 = th.add_prefix('192.168.32.0/24', 'reservation', 'test')
+        p8 = th.add_prefix('192.168.32.1/32', 'reservation', 'test')
 
         ps1 = th.add_prefix('2001:db8:1::/48', 'reservation', 'test')
         ps2 = th.add_prefix('2001:db8:1::/64', 'reservation', 'test')

@@ -154,7 +154,6 @@ class TestCheckdata(unittest.TestCase):
                 'comment': None,
                 'country': None,
                 'description': 'test',
-                'display_prefix': '1.3.3.0/24',
                 'external_key': None,
                 'family': 4,
                 'indent': 0,
@@ -186,7 +185,10 @@ class TestCheckdata(unittest.TestCase):
                 { 'prefix': '192.168.32.0/20', 'indent': 1, 'total_addresses':
                     '4096', 'used_addresses': '256', 'free_addresses': '3840' },
                 { 'prefix': '192.168.32.0/24', 'indent': 2, 'total_addresses':
-                    '256', 'used_addresses': '0', 'free_addresses': '256' },
+                    '256', 'used_addresses': '1', 'free_addresses': '255' },
+                { 'prefix': '192.168.32.1/32', 'display_prefix': '192.168.32.1',
+                    'indent': 3, 'total_addresses': '1', 'used_addresses': '1',
+                    'free_addresses': '0' },
                 { 'prefix': '2001:db8:1::/48', 'indent': 0, 'family': 6,
                     'pool_name': 'upgrade-test',
                     'total_addresses': '1208925819614629174706176',
@@ -205,7 +207,8 @@ class TestCheckdata(unittest.TestCase):
             pexp = expected_base.copy()
             for key in p:
                 pexp[key] = p[key]
-            pexp['display_prefix'] = p['prefix']
+            if 'display_prefix' not in pexp:
+                pexp['display_prefix'] = p['prefix']
             expected.append(pexp)
 
         self.assertEqual(expected, self._mangle_prefix_result(s.list_prefix({ 'auth': ad, })))
@@ -310,7 +313,7 @@ class TestCheckdata(unittest.TestCase):
             'free_addresses_v4': '57344',
             'free_addresses_v6': '2417833192485184639860736',
             'name': 'default',
-            'num_prefixes_v4': '7',
+            'num_prefixes_v4': '8',
             'num_prefixes_v6': '3',
             'rt': None,
             'total_addresses_v4': '65536',
