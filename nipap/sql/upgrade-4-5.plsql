@@ -26,5 +26,9 @@ UPDATE ip_net_plan SET total_addresses = power(2::numeric, (CASE WHEN family(pre
 UPDATE ip_net_plan AS inp SET used_addresses = COALESCE((SELECT SUM(total_addresses) FROM ip_net_plan AS inp2 WHERE inp2.prefix << inp.prefix AND inp2.indent = inp.indent + 1), CASE WHEN (family(prefix) = 4 AND masklen(prefix) = 32) OR (family(prefix) = 6 AND masklen(prefix) = 128) THEN 1 ELSE 0 END);
 UPDATE ip_net_plan SET free_addresses = total_addresses - used_addresses;
 
+-- add status field
+CREATE TYPE ip_net_plan_status AS ENUM ('active', 'reserved', 'quarantine');
+ALTER TABLE ip_net_plan ADD COLUMN status ip_net_plan_status NOT NULL DEFAULT 'active';
+
 -- update database schema version
 COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';

@@ -7,6 +7,7 @@
 COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';
 
 CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
+CREATE TYPE ip_net_plan_status AS ENUM ('active', 'reserved', 'quarantine');
 
 CREATE TYPE priority_5step AS ENUM ('warning', 'low', 'medium', 'high', 'critical');
 
@@ -147,7 +148,8 @@ CREATE TABLE ip_net_plan (
 	last_modified timestamp with time zone DEFAULT NOW(),
 	total_addresses numeric(40),
 	used_addresses numeric(40),
-	free_addresses numeric(40)
+	free_addresses numeric(40),
+	status ip_net_plan_status NOT NULL DEFAULT 'active'
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';

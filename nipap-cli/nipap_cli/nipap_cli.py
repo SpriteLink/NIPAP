@@ -26,6 +26,7 @@ valid_countries = [
     'GB', 'HR', 'LT', 'LV', 'KZ', 'NL',
     'RU', 'SE', 'US' ] # test test, fill up! :)
 valid_prefix_types = [ 'host', 'reservation', 'assignment' ]
+valid_prefix_status = [ 'active', 'reserved', 'quarantine' ]
 valid_families = [ 'ipv4', 'ipv6', 'dual-stack' ]
 valid_bools = [ 'true', 'false' ]
 valid_priorities = [ 'warning', 'low', 'medium', 'high', 'critical' ]
@@ -433,6 +434,7 @@ def add_prefix(arg, opts, shell_opts):
     p.comment = opts.get('comment')
     p.monitor = _str_to_bool(opts.get('monitor'))
     p.vlan = opts.get('vlan')
+    p.status = opts.get('status')
     p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
 
     p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
@@ -582,6 +584,7 @@ def add_prefix_from_pool(arg, opts):
         p.comment = opts.get('comment')
         p.monitor = _str_to_bool(opts.get('monitor'))
         p.vlan = opts.get('vlan')
+        p.status = opts.get('status')
         p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
 
         p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
@@ -805,6 +808,7 @@ def view_prefix(arg, opts, shell_opts):
     print "  %-26s : %s" % ("Prefix", p.prefix)
     print "  %-26s : %s" % ("Display prefix", p.display_prefix)
     print "  %-26s : %s" % ("Type", p.type)
+    print "  %-26s : %s" % ("Status", p.status)
     print "  %-26s : IPv%s" % ("Family", p.family)
     print "  %-26s : %s" % ("VRF", vrf)
     print "  %-26s : %s" % ("Description", p.description)
@@ -1232,6 +1236,8 @@ def modify_prefix(arg, opts, shell_opts):
         p.node = opts['node']
     if 'type' in opts:
         p.type = opts['type']
+    if 'status' in opts:
+        p.status = opts['status']
     if 'country' in opts:
         p.country = opts['country']
     if 'order_id' in opts:
@@ -1346,6 +1352,13 @@ def complete_prefix_type(arg):
     """ Complete NIPAP prefix type
     """
     return _complete_string(arg, valid_prefix_types)
+
+
+
+def complete_prefix_status(arg):
+    """ Complete NIPAP prefix status
+    """
+    return _complete_string(arg, valid_prefix_status)
 
 
 
@@ -1490,6 +1503,15 @@ cmds = {
                                 'type': 'value',
                                 'content_type': unicode,
                                 'complete': complete_family,
+                            }
+                        },
+                        'status': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'description': 'Prefix status: %s' % ' | '.join(valid_prefix_status),
+                                'content_type': unicode,
+                                'complete': complete_prefix_status,
                             }
                         },
                         'type': {
@@ -1670,6 +1692,15 @@ cmds = {
                                         'type': 'value',
                                         'content_type': unicode,
                                         'complete': complete_family,
+                                    }
+                                },
+                                'status': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'description': 'Prefix status: %s' % ' | '.join(valid_prefix_status),
+                                        'content_type': unicode,
+                                        'complete': complete_prefix_status,
                                     }
                                 },
                                 'type': {
