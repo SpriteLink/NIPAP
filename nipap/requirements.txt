@@ -1,0 +1,14 @@
+Flask==0.10.1
+Flask-Compress==1.0.2
+Flask-XML-RPC==0.1.2
+IPy==0.81
+Jinja2==2.7.3
+MarkupSafe==0.23
+Werkzeug==0.9.6
+backports.ssl-match-hostname==3.4.0.2
+certifi==14.05.14
+itsdangerous==0.24
+psycopg2==2.5.3
+python-ldap==2.4.15
+tornado==4.0.1
+wsgiref==0.1.2
