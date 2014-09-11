@@ -297,7 +297,7 @@ PREFIX DATA
 						Node
 						</dt>
 						<dd>
-						<input type="text" name="prefix_node" class="tooltip" title="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured." ng-model="prefix.node">
+						<input type="text" name="prefix_node" class="tooltip" title="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured." ng-model="prefix.node" ng-disabled="prefix.type != 'host'">
 						</dd>
 					</dl>
 				</div>
@@ -397,11 +397,12 @@ PREFIX DATA
 	</div>
 </div>
 
-<div id="prefix_added_container" style="display: none;">
+<div id="prefix_added_container" ng-show="added_prefixes.length > 0">
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Result</h3>
-			<div id="prefix_added_list">
+			<div id="prefix_added_list" ng-repeat="prefix in added_prefixes | orderBy:'id':true">
+				<div class="prefix_added_entry">Added prefix: {{ prefix.prefix }} - {{ prefix.description }}</div>
 			</div>
 		</div>
 	</div>

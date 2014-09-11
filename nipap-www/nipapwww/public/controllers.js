@@ -144,14 +144,14 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 
 	$scope.type_input_enabled = true;
 
-	$scope.prefix_family = 6;
+	$scope.prefix_family = 4;
 	$scope.prefix_length = null;
 
 	$scope.vrf = null;
 
 	$scope.prefix = {
 		prefix: null,
-		vrf: null,
+		vrf_id: null,
 		description: null,
 		comment: null,
 		node: null,
@@ -166,13 +166,15 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 		alarm_priority: null
 	};
 
+	$scope.added_prefixes = [];
+
 	/*
 	 * Watch for change to 'from_pool'-variable
 	 */
 	$scope.$watchCollection('[ from_pool, prefix_family ]', function(newValue, oldvalue){
 
 		if ($scope.from_pool !== null) {
-			$scope.prefix_type = $scope.from_pool.default_type;
+			$scope.prefix.type = $scope.from_pool.default_type;
 			$scope.type_input_enabled = false;
 
 			var def_preflen;
@@ -191,7 +193,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 
 			if ($scope.from_pool.vrf_id !== null) {
 				// fetch VRF data for pool's implied VRF
-				$http.get('', { 'params': {
+				$http.get('/xhr/smart_search_vrf', { 'params': {
 					'vrf_id': $scope.from_pool.vrf_id,
 					'query_string': ''
 				} })
@@ -215,6 +217,48 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 	 * Add prefix to NIPAP
 	 */
 	$scope.addPrefix = function () {
+
+		/*
+		 * Create object specifying prefix attributes and how it should be
+		 * added. For simplicity, we start with a copy of the prefix object
+		 * from the scope and add/remove attributes according to what's
+		 * required by the different allocation methods.
+		 */
+		var query_data = angular.copy($scope.prefix);
+		delete query_data.inherited_tags;
+
+		if ($scope.prefix_allo_method == 'manual') {
+			// For manually added prefixes no changes are needed
+
+		} else if ($scope.prefix_alloc_method == 'from-pool') {
+			// Allocation from pool requires prefix length, family and pool to
+			// allocate from. Prefix not needed.
+			delete query_data.prefix;
+			query_data.family = $scope.prefix_family;
+			query_data.prefix_length = $scope.prefix_length;
+			query_data.from_pool = $scope.from_pool.id;
+
+		} else if ($scope.prefix_alloc_method == 'from-prefix') {
+			// Allocation from prefix requires prefix length and prefix to
+			// allocate from. Prefix not needed.
+			delete query_data.prefix;
+			query_data.prefix_length = $scope.prefix_length;
+			query_data.from_prefix = new Array($scope.from_prefix.prefix);
+
+		}
+
+		$http.get('/xhr/add_prefix', { 'params': query_data })
+			.success(function (data){
+				if (data.hasOwnProperty('error')) {
+					showDialogNotice('Error', data.message);
+				} else {
+					$scope.added_prefixes.push(data);
+				}
+			})
+			.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+			});
 
 	}
 
