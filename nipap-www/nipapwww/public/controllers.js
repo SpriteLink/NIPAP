@@ -157,7 +157,6 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 		comment: null,
 		node: null,
 		tags: [],
-		inherited_tags: [],
 		type: null,
 		country: null,
 		order_id: null,
@@ -226,12 +225,11 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 		 * required by the different allocation methods.
 		 */
 		var query_data = angular.copy($scope.prefix);
-		delete query_data.inherited_tags;
 
-		if ($scope.prefix_allo_method == 'manual') {
-			// For manually added prefixes no changes are needed
+		query_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
 
-		} else if ($scope.prefix_alloc_method == 'from-pool') {
+		// For manually added prefixes no changes are needed
+		if ($scope.prefix_alloc_method == 'from-pool') {
 			// Allocation from pool requires prefix length, family and pool to
 			// allocate from. Prefix not needed.
 			delete query_data.prefix;

@@ -4,6 +4,7 @@
 var nipapApp = angular.module('nipapApp', [
 	'ngRoute',
 	'ui.bootstrap',
+	'ngTagsInput',
 	'nipapApp.controllers',
 	'nipapApp.directives',
 	'nipapApp.filters'
