@@ -16,20 +16,6 @@ else
 DB_PASS:=$(PGPASSWORD)
 endif
 
-#
-# TODO: need install thingy for ip4r
-# psql -f /usr/lib/postgresql/8.4/lib/ip4r.so nipap
-#
-# 	- how do we determine if the system has ip4r modules at all?
-# 		* can we ask psql?
-# 			- Yes we can, just run a iprange() function and see
-# 			  what happens
-# 		* if it's a debian / ubuntu system we can use apt-cache
-# 	- how do we determine where the .sql file is?
-# 		* we can guess on a few well known paths
-# 		* we know where it's at on debian like systems
-#
-
 # test database version
 PG_VER := $(shell pg_config --version | awk '{print $$2}')
 PG_VER_MAJOR := $(shell echo $(PG_VER) | awk -F. '{ print ($$1 + 0) }')
@@ -42,7 +28,7 @@ endif
 
 
 all:
-	@echo "Run this as the postgres user!"
+	@echo "Please run \"make install\" as postgres user."
 
 
 db:
@@ -50,13 +36,12 @@ db:
 	createdb -O $(DB_USER) $(DB_NAME)
 	-createlang -d $(DB_NAME) plpgsql
 	-psql -q -c "ALTER USER $(DB_USER) ENCRYPTED PASSWORD '$(DB_PASS)'"
-# TODO: The ip4r extension needs to be added to the newly created
-# 	database.  How do we do that?
+	-psql -d $(DB_NAME) -c "CREATE EXTENSION ip4r;"
 
 
 tables:
-	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f functions.plsql
-	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f ip_net.plsql
+	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) < ip_net.plsql
+	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) < functions.plsql
 
 
 install: db tables
@@ -83,7 +68,7 @@ clean-db:
 
 
 clean-tables:
-	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) -f clean.plsql
+	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) < clean.plsql
 # TODO: If no password is specified with PGPASSWORD, this operation
 # 	will in all likeliness result in a failure, so we should
 # 	require a PGPASSWORD
