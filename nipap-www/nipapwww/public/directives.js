@@ -41,7 +41,7 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 			scope.internal_seleted_vrf = scope.selected_vrf || { 'id': null };
 
 			/*
-			 * Function ran when VRF search query string has changed
+			 * Function to run when VRF search query string has changed
 			 */
 			scope.vrfQueryStringChanged = function () {
 				// cancel earlier timeout if it exists
@@ -108,7 +108,10 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 				// TODO: close selector box
 
 			}
+
+			// Perform search (with empty query string) to fetch default VRF
+			scope.performVRFSearch();
+
 		}
 	};
-
 });

@@ -205,26 +205,25 @@ PREFIX DATA
 						</dt>
 						<dd>
 						<div style="position: relative;">
-							<div class="dropdown">
-								<div id="prefix_vrf_text" class="prefix_vrf_text">
-									<span ng-show="vrf == null">
-										No VRF currently selected, please choose destination VRF for new prefix manually.
-									</span>
-								</div>
-								<div class="selector">
-									<div id="prefix_vrf_display" style="width: 80%; border: 1px solid #CCCCCC; float: left;">
-										<div class="vrf_filter_entry" ng-show="vrf !== null">
-											<div class="vrf_filter_entry_rt">RT:&nbsp; {{ vrf.rt || '-' }} </div>
-											<div class="selector_entry_name" style="margin-left: 5px;">{{ vrf.name }}</div>
-											<div class="selector_entry_description" style="clear: both;">{{ vrf.description }}</div>
-										</div>
-										<span ng-show="vrf == null">No VRF selected.</span>
+							<div id="prefix_vrf_text" class="prefix_vrf_text">
+								<span ng-show="vrf == null">
+									No VRF currently selected, please choose destination VRF for new prefix manually.
+								</span>
+							</div>
+							<div class="selector">
+								<div id="prefix_vrf_display" style="width: 80%; border: 1px solid #CCCCCC; float: left;">
+									<div class="vrf_filter_entry" ng-show="vrf !== null">
+										<div class="vrf_filter_entry_rt">RT:&nbsp; {{ vrf.rt || '-' }} </div>
+										<div class="selector_entry_name" style="margin-left: 5px;">{{ vrf.name }}</div>
+										<div class="selector_entry_description" style="clear: both;">{{ vrf.description }}</div>
 									</div>
-									<!-- TODO: handle pools without implied VRF (empty VRFs) -->
+									<span ng-show="vrf == null">No VRF selected.</span>
+								</div>
+								<!-- TODO: handle pools without implied VRF (empty VRFs) -->
+								<span class="dropdown" on-toggle="VRFMenuToggled(open)">
 									<input type="button" class="button button_red dropdown-toggle" style="margin-left: 15px; float: left;" name="prefix_vrf_btn" value="Change VRF" ng-show="from_pool == null">
-									<div class="dropdown-menu popup_menu selector" nipap-vrf-selector selected-vrf="vrf">
-									</div>
-								</div>
+									<div class="dropdown-menu popup_menu selector" id="vrf_selector_menu" nipap-vrf-selector selected-vrf="vrf"></div>
+								</span>
 							</div>
 						</div>
 						<input type="hidden" name="prefix_vrf_id" value="">

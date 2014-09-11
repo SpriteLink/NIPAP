@@ -9,7 +9,7 @@
                 <span ng-show="internal_selected_vrf.id == vrf.id">&#10003;</span>
                 <span ng-show="internal_selected_vrf.id != vrf.id">&nbsp;</span>
             </div>
-            <div class="vrf_filter_entry_rt">RT: {{ vrf.id == 0 ? '' : vrf.rt }}</div>
+            <div class="vrf_filter_entry_rt">RT: {{ vrf.id == 0 ? '-' : vrf.rt }}</div>
             {{ vrf.name }}
         </div>
         <div class="selector_entry_description">{{ vrf.description == null ? '' : vrf.description }}</div>
@@ -18,5 +18,5 @@
             <span ng-show="internal_selected_vrf.id != vrf.id">&nbsp;</span>
         </div>
     </a>
-    <div style="padding: 10px;" ng-show="search_result.length == 0">No VRF found</div>'
+    <div style="padding: 10px;" ng-show="search_result.length == 0">No VRF found</div>
 </div>

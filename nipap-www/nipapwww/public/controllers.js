@@ -263,4 +263,15 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 
 	}
 
+	/*
+	 * Run when the VRF select menu is toggled.
+	 * TODO: This feels wrong, should probably belong somewhere else...
+	 */
+	$scope.VRFMenuToggled = function (open) {
+		if (open) {
+			// TODO: Also this is probably wrong; the controller should not really be aware such things...
+			$('input[name="vrf_search_string"]').focus();
+		}
+	}
+
 });
