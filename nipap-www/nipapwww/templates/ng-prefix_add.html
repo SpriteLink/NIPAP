@@ -161,7 +161,7 @@ PREFIX DATA
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Prefix options</h3>
-			<form>
+			<form ng-submit="addPrefix()">
 
 				<div class="option" ng-show="prefix_alloc_method == 'manual'" id="prefix-row">
 					<dl>
@@ -169,7 +169,7 @@ PREFIX DATA
 						Prefix <span class="required tooltip" title="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
-						<input type="text" name="prefix_prefix" class="tooltip" title="The prefix, i.e. 192.0.2.16/28">
+						<input type="text" name="prefix_prefix" class="tooltip" title="The prefix, i.e. 192.0.2.16/28" ng-model="prefix.prefix">
 						</dd>
 					</dl>
 				</div>
@@ -184,11 +184,11 @@ PREFIX DATA
 						<dd>
 						<span id="default_prefix_type" style="cursor: pointer;" ng-show="from_pool !== null && type_input_enabled == false" ng-click="type_input_enabled = true">Default prefix type for pool is <b>{{ from_pool.default_type }}</b>. Click to change.</span>
 						<span id="prefix_type_selection" ng-show="type_input_enabled == true">
-							<input type="radio" id="radio-prefix-type-reservation" name="prefix_type" value="reservation" class="tooltip" title="" ng-model="prefix_type">
+							<input type="radio" id="radio-prefix-type-reservation" name="prefix_type" value="reservation" class="tooltip" title="" ng-model="prefix.type">
 							<label for="radio-prefix-type-reservation">Reservation</label>
-							<input type="radio" id="radio-prefix-type-assignment" name="prefix_type" value="assignment" class="tooltip" title="" ng_model="prefix_type">
+							<input type="radio" id="radio-prefix-type-assignment" name="prefix_type" value="assignment" class="tooltip" title="" ng_model="prefix.type">
 							<label for="radio-prefix-type-assignment">Assignment</label>
-							<input type="radio" id="radio-prefix-type-host" name="prefix_type" value="host" class="tooltip" title="" ng_model="prefix_type">
+							<input type="radio" id="radio-prefix-type-host" name="prefix_type" value="host" class="tooltip" title="" ng_model="prefix.type">
 							<label for="radio-prefix-type-host">Host</label>
 							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
 						</span>
@@ -240,7 +240,7 @@ PREFIX DATA
 						Description
 						</dt>
 						<dd>
-						<input type="text" name="prefix_description" style="width: 80%;" class="tooltip" title="A brief description of the prefix." value="">
+						<input type="text" name="prefix_description" style="width: 80%;" class="tooltip" title="A brief description of the prefix." ng-model="prefix.description">
 						</dd>
 					</dl>
 				</div>
@@ -253,7 +253,7 @@ PREFIX DATA
 						Comment
 						</dt>
 						<dd>
-						<input type="text" name="prefix_comment" value="">
+						<input type="text" name="prefix_comment" ng-model="prefix.comment">
 						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer; display: none;">add comment</span><input type="text" name="prefix_comment" style="width: 80%;">
 						</dd>
 					</dl>
@@ -297,7 +297,7 @@ PREFIX DATA
 						Node
 						</dt>
 						<dd>
-						<input type="text" name="prefix_node" class="tooltip" title="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured.">
+						<input type="text" name="prefix_node" class="tooltip" title="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured." ng-model="prefix.node">
 						</dd>
 					</dl>
 				</div>
@@ -310,7 +310,7 @@ PREFIX DATA
 						Country
 						</dt>
 						<dd>
-						<input type="text" name="prefix_country" size=3 class="tooltip" title="Two-letter country code according to ISO-3166-1'">
+						<input type="text" name="prefix_country" size=3 class="tooltip" title="Two-letter country code according to ISO-3166-1'" ng-model="prefix.country">
 						</dd>
 					</dl>
 				</div>
@@ -323,7 +323,7 @@ PREFIX DATA
 						Order ID
 						</dt>
 						<dd>
-						<input type="text" name="prefix_order_id" size=10>
+						<input type="text" name="prefix_order_id" size=10 ng-model="prefix.order_id">
 						</dd>
 					</dl>
 				</div>
@@ -336,7 +336,7 @@ PREFIX DATA
 						Customer ID
 						</dt>
 						<dd>
-						<input type="text" name="prefix_customer_id" size=10>
+						<input type="text" name="prefix_customer_id" size=10 ng-model="prefix.customer_id">
 						</dd>
 					</dl>
 				</div>
@@ -349,7 +349,7 @@ PREFIX DATA
 						VLAN
 						</dt>
 						<dd>
-						<input type="text" name="prefix_vlan" size=10>
+						<input type="text" name="prefix_vlan" size=10 ng-model="prefix.vlan">
 						</dd>
 					</dl>
 				</div>
@@ -362,18 +362,18 @@ PREFIX DATA
 						Monitor
 						</dt>
 						<dd>
-						<input type="checkbox" name="prefix_monitor" title="Check to monitor this prefix.">
-						<span id="alarm_priority_container">
+						<input type="checkbox" name="prefix_monitor" title="Check to monitor this prefix." ng-model="prefix.monitor">
+						<span id="alarm_priority_container" ng-show="prefix.monitor === true">
 							Priority:
-							<input type="radio" id="radio-prefix-alarm-prio-warning" name="prefix_alarm_priority" value="warning">
+							<input type="radio" id="radio-prefix-alarm-prio-warning" name="prefix_alarm_priority" value="warning" ng-model="prefix.alarm_priority">
 							<label for="radio-prefix-alarm-prio-warning">Warning</label>
-							<input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low">
+							<input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low" ng-model="prefix.alarm_priority">
 							<label for="radio-prefix-alarm-prio-low">Low</label>
-							<input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium">
+							<input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium" ng-model="prefix.alarm_priority">
 							<label for="radio-prefix-alarm-prio-medium">Medium</label>
-							<input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high">
+							<input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high" ng-model="prefix.alarm_priority">
 							<label for="radio-prefix-alarm-prio-high">High</label>
-							<input type="radio" id="radio-prefix-alarm-prio-critical" name="prefix_alarm_priority" value="critical">
+							<input type="radio" id="radio-prefix-alarm-prio-critical" name="prefix_alarm_priority" value="critical" ng-model="prefix.alarm_priority">
 							<label for="radio-prefix-alarm-prio-critical">Critical</label>
 						</span>
 						</dd>

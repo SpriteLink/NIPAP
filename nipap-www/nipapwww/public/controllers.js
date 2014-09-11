@@ -145,10 +145,26 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
     $scope.type_input_enabled = true;
 
     $scope.prefix_family = 6;
-    $scope.prefix_type = null;
     $scope.prefix_length = null;
 
     $scope.vrf = null;
+
+	$scope.prefix = {
+		prefix: null,
+		vrf: null,
+		description: null,
+		comment: null,
+		node: null,
+		tags: [],
+		inherited_tags: [],
+		type: null,
+		country: null,
+		order_id: null,
+		customer_id: null,
+		vlan: null,
+		monitor: false,
+		alarm_priority: null
+	};
 
     /*
      * Watch for change to 'from_pool'-variable
@@ -193,5 +209,13 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
             }
         }
     });
+
+
+	/*
+	 * Add prefix to NIPAP
+	 */
+	$scope.addPrefix = function () {
+
+	}
 
 });

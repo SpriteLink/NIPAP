@@ -103,7 +103,7 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
             scope.selectVRF = function (vrf) {
 
                 // set VRF
-                scope.internal_selected_vrf = vrf;
+                scope.selected_vrf = vrf;
 
                 // TODO: close selector box
 
