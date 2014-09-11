@@ -378,31 +378,33 @@ input[type="submit"] {
 	margin-bottom: 15px;
 }
 
-.option div,dl,dt,dd {
+.option dl,dt,dd {
 	padding: 1px;
 	margin: 0;
 }
 
-.option dl {
+.option > dl {
 	display: block;
 }
-.option dt,dd {
+.option > dl > dt,dd {
 	padding: 8px;
 	display: inline-block;
 }
-.option dt {
+.option > dl > dt {
 	width: 160px;
 	vertical-align: top;
 	text-align: right;
 	padding-right: 0;
 	font-weight: bold;
 }
-.option dd {
+.option > dl > dd {
 	width: 70%;
 }
 
 .option input[type="text"],input[type="password"],textarea {
 	border: 1px solid #999999;
+	padding: 1px;
+	margin: 0;
 }
 
 .option:hover {
