@@ -253,8 +253,8 @@ PREFIX DATA
 						Comment
 						</dt>
 						<dd>
-						<input type="text" name="prefix_comment" ng-model="prefix.comment">
-						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer; display: none;">add comment</span><input type="text" name="prefix_comment" style="width: 80%;">
+						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer;" ng-click="display_comment = true" ng-show="display_comment == false">add comment</span>
+						<input type="text" name="prefix_comment" style="width: 80%;" ng-model="prefix.comment" ng-show="display_comment == true">
 						</dd>
 					</dl>
 				</div>

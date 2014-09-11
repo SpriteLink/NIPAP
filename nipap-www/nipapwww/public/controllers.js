@@ -143,6 +143,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 	$scope.pool_preflen = null;
 
 	$scope.type_input_enabled = true;
+	$scope.display_comment = false;
 
 	$scope.prefix_family = 4;
 	$scope.prefix_length = null;
