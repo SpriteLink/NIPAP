@@ -813,6 +813,9 @@ function showPrefixMenu(prefix_id) {
 			hidePopupMenu();
 			var dialog = showDialogYesNo('Really remove prefix?', confirmation_text, confirmation_action);
         });
+
+		menu.append('<a href="/ng/prefix#/prefix/add/from-prefix/' + prefix_id + '">Add prefix from prefix</a>');
+
 	}
 
 	menu.slideDown('fast');

@@ -16,7 +16,7 @@ var nipapApp = angular.module('nipapApp', [
 nipapApp.config(['$routeProvider',
 	function($routeProvider) {
 		$routeProvider
-			.when('/prefix/add/:allocation_method?/:allocation_method_parameter?', {
+			.when('/prefix/add/:allocation_method/:allocation_method_parameter?', {
 				'controller': 'PrefixAddController',
 				'templateUrl': '/templates/prefix_add.html'
 			});
