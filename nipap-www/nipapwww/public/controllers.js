@@ -152,7 +152,6 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 
 	$scope.prefix = {
 		prefix: null,
-		vrf_id: null,
 		description: null,
 		comment: null,
 		node: null,
@@ -193,21 +192,22 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 
 			if ($scope.from_pool.vrf_id !== null) {
 				// fetch VRF data for pool's implied VRF
-				$http.get('/xhr/smart_search_vrf', { 'params': {
-					'vrf_id': $scope.from_pool.vrf_id,
-					'query_string': ''
-				} })
-				.success(function (data) {
-					if (data.hasOwnProperty('error')) {
-						showDialogNotice('Error', data.message);
-					} else {
-						$scope.vrf = data.result[0];
-					}
-				})
-				.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
-				});
+				$http.get('/xhr/smart_search_vrf',
+					{ 'params': {
+						'vrf_id': $scope.from_pool.vrf_id,
+						'query_string': ''
+				}})
+					.success(function (data) {
+						if (data.hasOwnProperty('error')) {
+							showDialogNotice('Error', data.message);
+						} else {
+							$scope.vrf = data.result[0];
+						}
+					})
+					.error(function (data, stat) {
+						var msg = data || "Unknown failure";
+						showDialogNotice('Error', stat + ': ' + msg);
+					});
 			}
 		}
 	});
@@ -227,9 +227,13 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 		var query_data = angular.copy($scope.prefix);
 
 		query_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
+		if ($scope.vrf != null) {
+			query_data.vrf = $scope.vrf.id;
+		}
 
 		// For manually added prefixes no changes are needed
 		if ($scope.prefix_alloc_method == 'from-pool') {
+
 			// Allocation from pool requires prefix length, family and pool to
 			// allocate from. Prefix not needed.
 			delete query_data.prefix;
@@ -238,6 +242,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 			query_data.from_pool = $scope.from_pool.id;
 
 		} else if ($scope.prefix_alloc_method == 'from-prefix') {
+
 			// Allocation from prefix requires prefix length and prefix to
 			// allocate from. Prefix not needed.
 			delete query_data.prefix;
@@ -263,7 +268,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 
 	/*
 	 * Run when the VRF select menu is toggled.
-	 * TODO: This feels wrong, should probably belong somewhere else...
+	 * TODO: This feels wrong, probably belongs somewhere else...
 	 */
 	$scope.VRFMenuToggled = function (open) {
 		if (open) {

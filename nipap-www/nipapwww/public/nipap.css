@@ -75,6 +75,7 @@ a.menu_link:hover {
 /*
  * Things related to the VRF prefix search filter
  */
+
 .vrf_filter_heading {
 	float: left;
 	font-size: 10pt;
@@ -86,6 +87,7 @@ a.menu_link:hover {
 
 .vrf_filter_entry {
 	position: relative;
+	padding: 2px;
 }
 
 .vrf_filter_entry_rt {
