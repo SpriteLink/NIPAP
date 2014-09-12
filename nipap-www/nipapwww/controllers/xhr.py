@@ -24,11 +24,11 @@ class XhrController(BaseController):
         # TODO: add more?
         attr = {}
         if 'id' in request.params:
-            attr['id'] = request.params['id']
+            attr['id'] = int(request.params['id'])
         if 'prefix' in request.params:
             attr['prefix'] = request.params['prefix']
         if 'pool' in request.params:
-            attr['pool'] = { 'id': request.params['pool'] }
+            attr['pool'] = { 'id': int(request.params['pool']) }
         if 'node' in request.params:
             attr['node'] = request.params['node']
         if 'type' in request.params:
@@ -49,7 +49,7 @@ class XhrController(BaseController):
 
         attr = {}
         if 'id' in request.params:
-            attr['id'] = request.params['id']
+            attr['id'] = int(request.params['id'])
         if 'name' in request.params:
             attr['name'] = request.params['name']
         if 'description' in request.params:
@@ -57,9 +57,9 @@ class XhrController(BaseController):
         if 'default_type' in request.params:
             attr['default_type'] = request.params['default_type']
         if 'ipv4_default_prefix_length' in request.params:
-            attr['ipv4_default_prefix_length'] = request.params['ipv4_default_prefix_length']
+            attr['ipv4_default_prefix_length'] = int(request.params['ipv4_default_prefix_length'])
         if 'ipv6_default_prefix_length' in request.params:
-            attr['ipv6_default_prefix_length'] = request.params['ipv6_default_prefix_length']
+            attr['ipv6_default_prefix_length'] = int(request.params['ipv6_default_prefix_length'])
 
         return attr
 
