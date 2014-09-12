@@ -15,12 +15,9 @@ var nipapApp = angular.module('nipapApp', [
  */
 nipapApp.config(['$routeProvider',
 	function($routeProvider) {
-		$routeProvider.
-			when('/prefix/add/from_pool', {
-				'controller': 'AddPrefixFromPoolController'
-			}).
-			when('/prefix/add/from_pool/:pool_id', {
-				'controller': 'AddPrefixFromPoolController'
-			})
-
+		$routeProvider
+			.when('/prefix/add/:allocation_method?/:allocation_method_parameter?', {
+				'controller': 'PrefixAddController',
+				'templateUrl': '/templates/prefix_add.html'
+			});
 }]);

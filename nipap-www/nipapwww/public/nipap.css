@@ -1002,10 +1002,6 @@ tbody.listing > tr:hover {
 	color: #777777;
 }
 
-#length_info_row {
-    background-color: #ffffee;
-}
-
 /*
  * $("#length_info_row").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
 */

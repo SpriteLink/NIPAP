@@ -132,17 +132,21 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 /*
  * PrefixAddController - Used to add prefixes to NIPAP
  */
-nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
+nipapAppControllers.controller('PrefixAddController', function ($scope, $routeParams, $http) {
 
+	// Set to true if allocation method was provided in URL
+	$scope.prefix_alloc_method_provided = false;
 	$scope.prefix_alloc_method = null;
 	$scope.from_pool = null;
+	$scope.from_pool_provided = false;
 	$scope.from_prefix = null;
+	$scope.from_prefix_provided = false;
 
 	$scope.pool_has_default_preflen = null;
 	$scope.pool_use_default_preflen = true;
 	$scope.pool_preflen = null;
 
-	$scope.type_input_enabled = true;
+	$scope.type_input_pool = true;
 	$scope.display_comment = false;
 
 	$scope.prefix_family = 4;
@@ -168,13 +172,68 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 	$scope.added_prefixes = [];
 
 	/*
+	 * Handle route parameters
+	 */
+	// Is allocation method set?
+	if ($routeParams.hasOwnProperty('allocation_method')) {
+		$scope.prefix_alloc_method = $routeParams.allocation_method;
+		$scope.prefix_alloc_method_provided = true;
+	}
+
+	// Did we get any allocation parameters (pool ID or prefix ID)?
+	if ($routeParams.hasOwnProperty('allocation_method_parameter')) {
+
+		var allocation_parameter = parseInt($routeParams.allocation_method_parameter);
+
+		if ($scope.prefix_alloc_method == 'from-pool') {
+
+			// Fetch pool
+			$scope.from_pool_provided = true;
+			$http.get('/xhr/list_pool', { 'params': { 'id': allocation_parameter } })
+				.success(function (data) {
+					if (data.hasOwnProperty('error')) {
+						showDialogNotice('Error', data.message);
+					} else {
+						$scope.from_pool = data[0];
+					}
+				})
+				.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+				});
+
+		} else if ($scope.prefix_alloc_method == 'from-prefix') {
+
+			// Fetch prefix
+			$scope.from_prefix_provided = true;
+			$http.get('/xhr/list_prefix', { 'params': { 'id': allocation_parameter } })
+				.success(function (data) {
+					if (data.hasOwnProperty('error')) {
+						showDialogNotice('Error', data.message);
+					} else {
+						$scope.from_prefix = data[0];
+					}
+				})
+				.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+				});
+
+		}
+	}
+
+	/*
 	 * Watch for change to 'from_pool'-variable
 	 */
-	$scope.$watchCollection('[ from_pool, prefix_family ]', function(newValue, oldvalue){
+	$scope.$watchCollection('[ from_pool, prefix_family ]', function(newValue, oldValue){
 
 		if ($scope.from_pool !== null) {
+
+			// reset from_prefix
+			$scope.from_prefix = null;
+
 			$scope.prefix.type = $scope.from_pool.default_type;
-			$scope.type_input_enabled = false;
+			$scope.type_input_pool = false;
 
 			var def_preflen;
 
@@ -208,6 +267,47 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 						var msg = data || "Unknown failure";
 						showDialogNotice('Error', stat + ': ' + msg);
 					});
+			}
+		}
+	});
+
+	/*
+	 * Watch for changes to the 'from_prefix' variable
+	 */
+	$scope.$watch('from_prefix', function() {
+
+		if ($scope.from_prefix !== null) {
+
+			// reset from_pool
+			$scope.from_pool = null;
+
+			// Fetch prefix's VRF
+			$http.get('/xhr/smart_search_vrf',
+				{ 'params': {
+					'vrf_id': $scope.from_prefix.vrf_id,
+					'query_string': ''
+			}})
+				.success(function (data) {
+					if (data.hasOwnProperty('error')) {
+						showDialogNotice('Error', data.message);
+					} else {
+						$scope.vrf = data.result[0];
+					}
+				})
+				.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+				});
+
+			// If we're allocating from an assignment, set prefix type to host
+			// and prefix length to max prefix length for address family.
+			if ($scope.from_prefix.type == 'assignment') {
+				$scope.prefix.type = 'host';
+				if ($scope.from_prefix.family == 4) {
+					$scope.prefix_length = 32;
+				} else {
+					$scope.prefix_length = 128;
+				}
 			}
 		}
 	});
@@ -247,7 +347,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $http) {
 			// allocate from. Prefix not needed.
 			delete query_data.prefix;
 			query_data.prefix_length = $scope.prefix_length;
-			query_data.from_prefix = new Array($scope.from_prefix.prefix);
+			query_data['from_prefix[]'] = $scope.from_prefix.prefix;
 
 		}
 
