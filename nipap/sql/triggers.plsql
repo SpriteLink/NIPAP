@@ -81,7 +81,7 @@ DECLARE
 	child RECORD;
 	i_max_pref_len integer;
 	p RECORD;
-	num_used integer;
+	num_used numeric(40);
 BEGIN
 	-- this is a shortcut to avoid running the rest of this trigger as it
 	-- can be fairly costly performance wise
@@ -365,7 +365,6 @@ DECLARE
 	new_parent_pool RECORD;
 	child RECORD;
 	i_max_pref_len integer;
-	num_used integer;
 	p RECORD;
 	free_prefixes numeric(40);
 BEGIN
