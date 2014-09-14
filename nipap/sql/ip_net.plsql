@@ -20,6 +20,9 @@ CREATE TABLE ip_net_asn (
 	name text
 );
 
+COMMENT ON COLUMN ip_net_asn.asn IS 'AS Number';
+COMMENT ON COLUMN ip_net_asn.name IS 'ASN name';
+
 --
 -- This is where we store VRFs
 --
@@ -53,6 +56,9 @@ CREATE UNIQUE INDEX ip_net_vrf__name__index ON ip_net_vrf (name) WHERE name IS N
 COMMENT ON TABLE ip_net_vrf IS 'IP Address VRFs';
 COMMENT ON INDEX ip_net_vrf__rt__index IS 'VRF RT';
 COMMENT ON INDEX ip_net_vrf__name__index IS 'VRF name';
+COMMENT ON COLUMN ip_net_vrf.rt IS 'VRF RT';
+COMMENT ON COLUMN ip_net_vrf.name IS 'VRF name';
+COMMENT ON COLUMN ip_net_vrf.description IS 'VRF description';
 COMMENT ON COLUMN ip_net_vrf.num_prefixes_v4 IS 'Number of IPv4 prefixes in this VRF';
 COMMENT ON COLUMN ip_net_vrf.num_prefixes_v6 IS 'Number of IPv6 prefixes in this VRF';
 COMMENT ON COLUMN ip_net_vrf.total_addresses_v4 IS 'Total number of IPv4 addresses in this VRF';
@@ -99,6 +105,12 @@ COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 
 COMMENT ON INDEX ip_net_pool_name_key IS 'pool name';
 
+COMMENT ON COLUMN ip_net_pool.id IS 'Unique ID of pool';
+COMMENT ON COLUMN ip_net_pool.name IS 'Pool name';
+COMMENT ON COLUMN ip_net_pool.description IS 'Pool description';
+COMMENT ON COLUMN ip_net_pool.default_type IS 'Default type for prefix allocated from pool';
+COMMENT ON COLUMN ip_net_pool.ipv4_default_prefix_length IS 'Default prefix-length for IPv4 prefix allocated from pool';
+COMMENT ON COLUMN ip_net_pool.ipv6_default_prefix_length IS 'Default prefix-length for IPv6 prefix allocated from pool';
 COMMENT ON COLUMN ip_net_pool.member_prefixes_v4 IS 'Number of IPv4 prefixes that are members of this pool';
 COMMENT ON COLUMN ip_net_pool.member_prefixes_v6 IS 'Number of IPv6 prefixes that are members of this pool';
 COMMENT ON COLUMN ip_net_pool.used_prefixes_v4 IS 'Number of IPv4 prefixes allocated from this pool';
