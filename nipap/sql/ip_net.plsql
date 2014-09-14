@@ -6,6 +6,9 @@
 
 COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';
 
+CREATE EXTENSION IF NOT EXISTS ip4r;
+CREATE EXTENSION IF NOT EXISTS hstore;
+
 CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
 CREATE TYPE ip_net_plan_status AS ENUM ('assigned', 'reserved', 'quarantine');
 
