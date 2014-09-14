@@ -49,7 +49,6 @@ INSERT INTO ip_net_vrf (id, rt, name, description) VALUES (0, NULL, 'default', '
 
 CREATE UNIQUE INDEX ip_net_vrf__rt__index ON ip_net_vrf (rt) WHERE rt IS NOT NULL;
 CREATE UNIQUE INDEX ip_net_vrf__name__index ON ip_net_vrf (name) WHERE name IS NOT NULL;
--- TODO: add trigger function on I/U to validate vrf format (123.123.123.123:4567 or 1234:5678 - 32:16 or 16:32)
 
 COMMENT ON TABLE ip_net_vrf IS 'IP Address VRFs';
 COMMENT ON INDEX ip_net_vrf__rt__index IS 'VRF RT';
