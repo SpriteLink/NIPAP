@@ -142,11 +142,18 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	$scope.from_prefix = null;
 	$scope.from_prefix_provided = false;
 
-	$scope.pool_has_default_preflen = null;
-	$scope.pool_use_default_preflen = true;
-	$scope.pool_preflen = null;
+	// Set to true if pool has default prefix length for current address family
+	$scope.pool_has_default_preflen = false;
 
-	$scope.type_input_pool = true;
+	// Keep track on whether the user wants to use the pool's default prefix
+	// length or not
+	$scope.pool_use_default_preflen = true;
+	$scope.pool_default_preflen = null;
+
+	// Keep track of if the user has chosen to enable the prefix type input
+	// fields when allocating prefix from pool (ie. to not use the pool's
+	// default prefix length)
+	$scope.type_input_pool = false;
 	$scope.display_comment = false;
 
 	$scope.prefix_family = 4;
@@ -169,10 +176,11 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		alarm_priority: null
 	};
 
+	// List of prefixes added to NIPAP
 	$scope.added_prefixes = [];
 
 	/*
-	 * Handle route parameters
+	 * Handle route parameters (extracted from the URL)
 	 */
 	// Is allocation method set?
 	if ($routeParams.hasOwnProperty('allocation_method')) {
@@ -187,7 +195,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 		if ($scope.prefix_alloc_method == 'from-pool') {
 
-			// Fetch pool
+			// Allocation method parameter is pool ID - fetch pool
 			$scope.from_pool_provided = true;
 			$http.get('/xhr/list_pool', { 'params': { 'id': allocation_parameter } })
 				.success(function (data) {
@@ -204,7 +212,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 		} else if ($scope.prefix_alloc_method == 'from-prefix') {
 
-			// Fetch prefix
+			// Allocation method parameter is prefix ID - fetch prefix
 			$scope.from_prefix_provided = true;
 			$http.get('/xhr/list_prefix', { 'params': { 'id': allocation_parameter } })
 				.success(function (data) {
@@ -218,25 +226,24 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 					var msg = data || "Unknown failure";
 					showDialogNotice('Error', stat + ': ' + msg);
 				});
-
 		}
 	}
 
 	/*
-	 * Watch for change to 'from_pool'-variable
+	 * Watch for change to 'from_pool' and 'prefix_family' variables
 	 */
 	$scope.$watchCollection('[ from_pool, prefix_family ]', function(newValue, oldValue){
 
 		if ($scope.from_pool !== null) {
 
-			// reset from_prefix
+			// We're allocating from a pool - reset from_prefix
 			$scope.from_prefix = null;
 
 			$scope.prefix.type = $scope.from_pool.default_type;
 			$scope.type_input_pool = false;
 
+			// Extract default prefix length for selected address family
 			var def_preflen;
-
 			if ($scope.prefix_family == "4") {
 				def_preflen = "ipv4_default_prefix_length";
 			} else {
@@ -245,7 +252,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 			if ($scope.from_pool[def_preflen] !== null) {
 				$scope.pool_has_default_preflen = true;
-				$scope.pool_preflen = $scope.from_pool[def_preflen];
+				$scope.pool_default_preflen = $scope.from_pool[def_preflen];
 				$scope.prefix_length = $scope.from_pool[def_preflen];
 			}
 
@@ -278,7 +285,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 		if ($scope.from_prefix !== null) {
 
-			// reset from_pool
+			// We're allocating from a prefix - reset from_pool
 			$scope.from_pool = null;
 
 			// Fetch prefix's VRF
@@ -300,7 +307,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 				});
 
 			// If we're allocating from an assignment, set prefix type to host
-			// and prefix length to max prefix length for address family.
+			// and prefix length to max prefix length for the selected address family.
 			if ($scope.from_prefix.type == 'assignment') {
 				$scope.prefix.type = 'host';
 				if ($scope.from_prefix.family == 4) {
@@ -326,19 +333,23 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		 */
 		var query_data = angular.copy($scope.prefix);
 
+		// Tags & VRFs are needed no matter allocation method
 		query_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
 		if ($scope.vrf != null) {
 			query_data.vrf = $scope.vrf.id;
 		}
 
-		// For manually added prefixes no changes are needed
 		if ($scope.prefix_alloc_method == 'from-pool') {
 
 			// Allocation from pool requires prefix length, family and pool to
 			// allocate from. Prefix not needed.
 			delete query_data.prefix;
 			query_data.family = $scope.prefix_family;
-			query_data.prefix_length = $scope.prefix_length;
+			if ($scope.pool_use_default_preflen) {
+				query_data.prefix_length = $scope.pool_default_preflen;
+			} else {
+				query_data.prefix_length = $scope.prefix_length;
+			}
 			query_data.from_pool = $scope.from_pool.id;
 
 		} else if ($scope.prefix_alloc_method == 'from-prefix') {
@@ -351,6 +362,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 		}
 
+		// Send query!
 		$http.get('/xhr/add_prefix', { 'params': query_data })
 			.success(function (data){
 				if (data.hasOwnProperty('error')) {
@@ -367,12 +379,14 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	}
 
 	/*
-	 * Run when the VRF select menu is toggled.
+	 * Run when the VRF select menu is toggled. So far only used to move focus
+	 * to the search query text box in the menu.
+	 *
 	 * TODO: This feels wrong, probably belongs somewhere else...
 	 */
 	$scope.VRFMenuToggled = function (open) {
 		if (open) {
-			// TODO: Also this is probably wrong; the controller should not really be aware such things...
+			// TODO: Also this is probably wrong; the controller should not really be aware of these things...
 			$('input[name="vrf_search_string"]').focus();
 		}
 	}
