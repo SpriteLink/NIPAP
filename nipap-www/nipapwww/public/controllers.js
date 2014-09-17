@@ -383,17 +383,4 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 	}
 
-	/*
-	 * Run when the VRF select menu is toggled. So far only used to move focus
-	 * to the search query text box in the menu.
-	 *
-	 * TODO: This feels wrong, probably belongs somewhere else...
-	 */
-	$scope.VRFMenuToggled = function (open) {
-		if (open) {
-			// TODO: Also this is probably wrong; the controller should not really be aware of these things...
-			$('input[name="vrf_search_string"]').focus();
-		}
-	}
-
 });

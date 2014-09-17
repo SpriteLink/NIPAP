@@ -210,10 +210,7 @@ PREFIX DATA
 	                                    <span ng-show="vrf == null">No VRF selected.</span>
 	                                </div>
 	                                <!-- TODO: handle pools without implied VRF (empty VRFs) -->
-	                                <span class="dropdown" on-toggle="VRFMenuToggled(open)" style="float: left; margin-left: 15px;">
-	                                    <input type="button" class="button button_red dropdown-toggle" name="prefix_vrf_btn" value="Change VRF" ng-show="from_pool == null">
-	                                    <div class="dropdown-menu popup_menu selector" id="vrf_selector_menu" nipap-vrf-selector selected-vrf="vrf"></div>
-	                                </span>
+									<span nipap-vrf-selector selected-vrf="vrf" ng-show="from_pool == null"></span>
 	                            </div>
 	                        </div>
 						</dd>

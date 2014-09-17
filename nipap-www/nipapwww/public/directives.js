@@ -39,6 +39,7 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 			scope.selected_vrf = null;
 			scope.query_id = 0;
 			scope.internal_seleted_vrf = scope.selected_vrf || { 'id': null };
+			scope.popup_open = false;
 
 			/*
 			 * Function to run when VRF search query string has changed
@@ -102,11 +103,20 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 			 */
 			scope.selectVRF = function (vrf) {
 
-				// set VRF
+				// set VRF & close popup
 				scope.selected_vrf = vrf;
+				scope.popup_open = false;
 
-				// TODO: close selector box
+			}
 
+			/*
+			 * Run when popup menu is toggled
+			 */
+			scope.toggled = function (open) {
+				if (open) {
+					// If menu was opened, place focus on text input field
+					$('input[name="vrf_search_string"]').focus();
+				}
 			}
 
 			// Perform search (with empty query string) to fetch default VRF
