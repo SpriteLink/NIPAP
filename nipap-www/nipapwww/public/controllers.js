@@ -254,6 +254,11 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 				$scope.pool_has_default_preflen = true;
 				$scope.pool_default_preflen = $scope.from_pool[def_preflen];
 				$scope.prefix_length = $scope.from_pool[def_preflen];
+			} else {
+				$scope.pool_has_default_preflen = false;
+				$scope.pool_default_preflen = null;
+				$scope.pool_use_default_preflen = false;
+				$scope.prefix_length = null;
 			}
 
 			if ($scope.from_pool.vrf_id !== null) {

@@ -92,14 +92,14 @@ FROM-POOL
 						Prefix-length
 					</dt>
 					<dd id="length_edit_row">
-						<input type="radio" id="edit_length_default_radio" name="edit_length" ng-model="pool_use_default_preflen" ng-value="true">
+						<input type="radio" id="edit_length_default_radio" name="edit_length" ng-model="pool_use_default_preflen" ng-value="true" ng-disabled="!pool_has_default_preflen">
 						<label for="edit_length_default_radio">Use pools default prefix-length of /{{ pool_default_preflen }}</label>
 						<br/>
 						<input type="radio" id="edit_length_override_radio" name="edit_length" ng-model="pool_use_default_preflen" ng-value="false">
 						<label for="edit_length_override_radio">Override pools default prefix-length</label>
 						<br/>
 						<div id="length_row" ng-show="pool_use_default_preflen == false">
-							Use prefix-length: <input type="text" size=3 name="prefix_length_pool" ng-model="prefix_length">
+							Use prefix-length: <span class="required tiptip" title="Pool is missing default prefix length for IPv{{ prefix_family }}, thus is this field required." ng-show="pool_has_default_preflen !== true">*&nbsp;</span><input type="text" size=3 name="prefix_length_pool" ng-model="prefix_length">
 						</div>
 					</dd>
 				</dl>
