@@ -137,8 +137,10 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	// Set to true if allocation method was provided in URL
 	$scope.prefix_alloc_method_provided = false;
 	$scope.prefix_alloc_method = null;
+
 	$scope.from_pool = null;
 	$scope.from_pool_provided = false;
+
 	$scope.from_prefix = null;
 	$scope.from_prefix_provided = false;
 
@@ -150,10 +152,11 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	$scope.pool_use_default_preflen = true;
 	$scope.pool_default_preflen = null;
 
-	// Keep track of if the user has chosen to enable the prefix type input
-	// fields when allocating prefix from pool (ie. to not use the pool's
-	// default prefix length)
+	// Keep track of whether the user has chosen to enable the prefix type
+	// input fields, when allocating prefix from a pool (ie. to not use the
+	// pool's default prefix type)
 	$scope.type_input_pool = false;
+
 	$scope.display_comment = false;
 
 	$scope.prefix_family = 4;

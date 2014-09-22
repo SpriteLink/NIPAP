@@ -11,13 +11,18 @@ nipapAppDirectives.directive('nipapPoolSelector', function ($http) {
 		templateUrl: '/templates/pool_selector.html',
 		link: function (scope, elem, attrs) {
 			// Fetch Pools from backend
-			$http.get('/xhr/list_pool').success(function (data) {
-				if (data.hasOwnProperty('error')) {
-					// TODO: display some error message
-				} else {
-					scope.pools = data;
-				}
-			});
+			$http.get('/xhr/list_pool')
+				.success(function (data) {
+					if (data.hasOwnProperty('error')) {
+						showDialogNotice('Error', data.message);
+					} else {
+						scope.pools = data;
+					}
+				})
+				.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+				});
 		}
 	};
 
@@ -42,7 +47,9 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 			scope.popup_open = false;
 
 			/*
-			 * Function to run when VRF search query string has changed
+			 * Function to run when VRF search query string has changed.
+			 * Waits 200 ms for further changes to the query string to let the
+			 * user finish typing before sending the query.
 			 */
 			scope.vrfQueryStringChanged = function () {
 				// cancel earlier timeout if it exists
