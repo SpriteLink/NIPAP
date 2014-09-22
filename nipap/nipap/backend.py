@@ -19,6 +19,7 @@
         (eg. 65000:123).
     * :attr:`name` - A short name, such as 'VPN Customer A'.
     * :attr:`description` - A longer description of what the VRF is used for.
+    * :attr:`tags` - Tag keywords for simple searching and filtering of VRFs.
 
     VRF functions
     ^^^^^^^^^^^^^
@@ -53,10 +54,13 @@
     * :attr:`pool_id` - ID of pool, if the prefix belongs to a pool.
     * :attr:`pool_name` - Name of pool, if the prefix belongs to a pool.
     * :attr:`type` - Prefix type, string 'reservation', 'assignment' or 'host'.
+    * :attr:`status` - Status, string 'assigned', 'reserved' or 'quarantine'.
     * :attr:`indent` - Depth in prefix tree. Set by NIPAP.
     * :attr:`country` - Two letter country code where the prefix resides.
     * :attr:`order_id` - Order identifier.
     * :attr:`customer_id` - Customer identifier.
+    * :attr:`vlan` - VLAN identifier, 0-4096.
+    * :attr:`tags` - Tag keywords for simple searching and filtering of prefixes.
     * :attr:`external_key` - A field for use by external systems which needs to
         store references to its own dataset.
     * :attr:`authoritative_source` - String identifying which system last
@@ -95,6 +99,7 @@
     * :attr:`default_type` - Default prefix type (see prefix types above.
     * :attr:`ipv4_default_prefix_length` - Default prefix length of IPv4 prefixes.
     * :attr:`ipv6_default_prefix_length` - Default prefix length of IPv6 prefixes.
+    * :attr:`tags` - Tag keywords for simple searching and filtering of pools.
 
     Pool functions
     ^^^^^^^^^^^^^^
