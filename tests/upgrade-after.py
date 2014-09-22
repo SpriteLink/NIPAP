@@ -169,7 +169,7 @@ class TestCheckdata(unittest.TestCase):
                 'vrf_id': 0,
                 'vrf_name': 'default',
                 'vlan': None,
-                'status': 'active'
+                'status': 'assigned'
             }
         expected_prefixes = [
                 { 'prefix': '192.168.0.0/16', 'indent': 0, 'total_addresses':

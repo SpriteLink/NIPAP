@@ -55,7 +55,7 @@ class TestHelper:
         p = Prefix()
         p.prefix = prefix
         p.type = type
-        p.status = 'active'
+        p.status = 'assigned'
         p.description = description
         p.tags = tags
         if pool_id:
@@ -71,7 +71,7 @@ class TestHelper:
         args['from-pool'] = pool
         args['family'] = family
         p.type = pool.default_type
-        p.status = 'active'
+        p.status = 'assigned'
 
         p.save(args)
         return p
@@ -146,7 +146,7 @@ class TestParentPrefix(unittest.TestCase):
         p = Prefix()
         p.prefix = prefix
         p.type = type
-        p.status = 'active'
+        p.status = 'assigned'
         p.description = description
         p.save()
         return p
@@ -606,7 +606,7 @@ class TestCountryCodeValue(unittest.TestCase):
         p = Prefix()
         p.prefix = '1.3.3.0/24'
         p.type = 'assignment'
-        p.status = 'active'
+        p.status = 'assigned'
         # try to input one character - should fail - this will be a INSERT operation
         p.country = 'a'
         with self.assertRaisesRegexp(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):

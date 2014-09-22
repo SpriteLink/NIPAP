@@ -121,7 +121,7 @@ class NipapCliTest(unittest.TestCase):
         ref = {
                 'prefix': '1.3.3.0/24',
                 'type': 'assignment',
-                'status': 'active',
+                'status': 'assigned',
                 'description': 'foo description',
                 'comment': 'comment bar',
                 'country': 'AB',

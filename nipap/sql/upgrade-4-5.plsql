@@ -27,8 +27,8 @@ UPDATE ip_net_plan AS inp SET used_addresses = COALESCE((SELECT SUM(total_addres
 UPDATE ip_net_plan SET free_addresses = total_addresses - used_addresses;
 
 -- add status field
-CREATE TYPE ip_net_plan_status AS ENUM ('active', 'reserved', 'quarantine');
-ALTER TABLE ip_net_plan ADD COLUMN status ip_net_plan_status NOT NULL DEFAULT 'active';
+CREATE TYPE ip_net_plan_status AS ENUM ('assigned', 'reserved', 'quarantine');
+ALTER TABLE ip_net_plan ADD COLUMN status ip_net_plan_status NOT NULL DEFAULT 'assigned';
 
 -- update database schema version
 COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';

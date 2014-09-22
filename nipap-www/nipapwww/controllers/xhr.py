@@ -502,7 +502,7 @@ class XhrController(BaseController):
             comment         Longer comment
             node            Hostname of node
             type            Type of prefix; reservation, assignment, host
-            status          Status of prefix; active, reserved, quarantine
+            status          Status of prefix; assigned, reserved, quarantine
             pool            ID of pool
             country         Country where the prefix is used
             order_id        Order identifier

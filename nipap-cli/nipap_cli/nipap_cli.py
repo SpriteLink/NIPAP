@@ -26,7 +26,7 @@ valid_countries = [
     'GB', 'HR', 'LT', 'LV', 'KZ', 'NL',
     'RU', 'SE', 'US' ] # test test, fill up! :)
 valid_prefix_types = [ 'host', 'reservation', 'assignment' ]
-valid_prefix_status = [ 'active', 'reserved', 'quarantine' ]
+valid_prefix_status = [ 'assigned', 'reserved', 'quarantine' ]
 valid_families = [ 'ipv4', 'ipv6', 'dual-stack' ]
 valid_bools = [ 'true', 'false' ]
 valid_priorities = [ 'warning', 'low', 'medium', 'high', 'critical' ]
@@ -434,7 +434,7 @@ def add_prefix(arg, opts, shell_opts):
     p.comment = opts.get('comment')
     p.monitor = _str_to_bool(opts.get('monitor'))
     p.vlan = opts.get('vlan')
-    p.status = opts.get('status')
+    p.status = opts.get('status') or 'assigned'
     p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
 
     p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
