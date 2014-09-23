@@ -169,8 +169,10 @@ PREFIX DATA
 							Type <span class="required tiptip" title="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
-						<span id="default_prefix_type" style="cursor: pointer;" ng-show="prefix_alloc_method == 'from-pool' && type_input_pool === false" ng-click="type_input_pool = true">Default prefix type for pool is <b>{{ from_pool.default_type }}</b>. Click to change.</span>
-						<span id="prefix_type_selection" ng-show="prefix_alloc_method != 'from-pool' || type_input_pool === true">
+						<span id="default_prefix_type" style="cursor: pointer;" ng-show="prefix_alloc_method == 'from-pool' && display_type_input_pool === false" ng-click="display_type_input_pool = true">
+							Default prefix type for pool is <b>{{ from_pool.default_type }}</b>. Click to change.
+						</span>
+						<span id="prefix_type_selection" ng-show="prefix_alloc_method != 'from-pool' || display_type_input_pool === true">
 							<input type="radio" id="radio-prefix-type-reservation" name="prefix_type" value="reservation" class="tiptip" title="" ng-model="prefix.type" ng-disabled="from_prefix.type == 'assignment'">
 							<label for="radio-prefix-type-reservation">Reservation</label>
 							<input type="radio" id="radio-prefix-type-assignment" name="prefix_type" value="assignment" class="tiptip" title="" ng_model="prefix.type" ng-disabled="from_prefix.type == 'assignment'">

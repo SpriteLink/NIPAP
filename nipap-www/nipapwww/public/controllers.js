@@ -134,17 +134,19 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
  */
 nipapAppControllers.controller('PrefixAddController', function ($scope, $routeParams, $http) {
 
+	$scope.prefix_alloc_method = null;
 	// Set to true if allocation method was provided in URL
 	$scope.prefix_alloc_method_provided = false;
-	$scope.prefix_alloc_method = null;
 
 	$scope.from_pool = null;
+	// Set to true if the pool to allocate from was provided in the URL
 	$scope.from_pool_provided = false;
 
 	$scope.from_prefix = null;
+	// Set to true if the prefix to allocate from was provided in the URL
 	$scope.from_prefix_provided = false;
 
-	// Set to true if pool has default prefix length for current address family
+	// Set to true if pool has a default prefix length for current address family
 	$scope.pool_has_default_preflen = false;
 
 	// Keep track on whether the user wants to use the pool's default prefix
@@ -155,7 +157,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	// Keep track of whether the user has chosen to enable the prefix type
 	// input fields, when allocating prefix from a pool (ie. to not use the
 	// pool's default prefix type)
-	$scope.type_input_pool = false;
+	$scope.display_type_input_pool = false;
 
 	$scope.display_comment = false;
 
@@ -245,9 +247,9 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 			if ($scope.from_pool.default_type !== null) {
 				$scope.prefix.type = $scope.from_pool.default_type;
-				$scope.type_input_pool = false;
+				$scope.display_type_input_pool = false;
 			} else {
-				$scope.type_input_pool = true;
+				$scope.display_type_input_pool = true;
 			}
 
 			// Extract default prefix length for selected address family
