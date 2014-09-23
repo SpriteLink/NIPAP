@@ -166,6 +166,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 	$scope.prefix = {
 		prefix: null,
+		status: 'assigned',
 		description: null,
 		comment: null,
 		node: null,

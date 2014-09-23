@@ -227,6 +227,23 @@ PREFIX DATA
 				<div class="option">
 					<dl>
 						<dt>
+						Status <span class="required tiptip" title="This field is required, please fill in! :-)">*</span>
+						</dt>
+						<dd>
+						<select id="prefix_status" ng-model="prefix.status">
+							<option value="assigned">Assigned</option>
+							<option value="reserved">Reserved</option>
+							<option value="quarantine">Quarantine</option>
+						</select>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
 						Description
 						</dt>
 						<dd>
