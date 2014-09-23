@@ -1,0 +1,27 @@
+<div dropdown on-toggle="toggled(open)" is-open="popup_open">
+	<input type="button" class="button button_red dropdown-toggle" name="prefix_vrf_btn" value="Change VRF" style="margin-left: 15px;">
+	<div class="dropdown-menu popup_menu selector" id="vrf_selector_menu">
+		<h3>Select VRF</h3>
+		<div class="selector_filterbar">
+			<input type="text" class="selector_search_string" name="vrf_search_string" ng-model="query_string" ng-change="vrfQueryStringChanged()">
+		</div>
+		<div class="selector_result">
+			<a ng-click="selectVRF(vrf)" class="vrf_filter_entry" ng-repeat="vrf in search_result">
+				<div>
+					<div class="selector_tick">
+						<span ng-show="internal_selected_vrf.id == vrf.id">&#10003;</span>
+						<span ng-show="internal_selected_vrf.id != vrf.id">&nbsp;</span>
+					</div>
+					<div class="vrf_filter_entry_rt">RT: {{ vrf.id == 0 ? '-' : vrf.rt }}</div>
+					{{ vrf.name }}
+				</div>
+				<div class="selector_entry_description">{{ vrf.description == null ? '' : vrf.description }}</div>
+				<div class="selector_x">
+					<img src="/images/x-mark-3-16.png" ng-show="internal_selected_vrf.id == vrf.id">
+					<span ng-show="internal_selected_vrf.id != vrf.id">&nbsp;</span>
+				</div>
+			</a>
+			<div style="padding: 10px;" ng-show="search_result.length == 0">No VRF found</div>
+		</div>
+	</div>
+</div>
