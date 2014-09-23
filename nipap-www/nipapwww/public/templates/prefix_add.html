@@ -169,8 +169,8 @@ PREFIX DATA
 							Type <span class="required tiptip" title="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
-						<span id="default_prefix_type" style="cursor: pointer;" ng-show="from_pool !== null && type_input_pool == false" ng-click="type_input_pool = true">Default prefix type for pool is <b>{{ from_pool.default_type }}</b>. Click to change.</span>
-						<span id="prefix_type_selection" ng-show="prefix_alloc_method != 'from-pool' || type_input_pool == true">
+						<span id="default_prefix_type" style="cursor: pointer;" ng-show="prefix_alloc_method == 'from-pool' && type_input_pool === false" ng-click="type_input_pool = true">Default prefix type for pool is <b>{{ from_pool.default_type }}</b>. Click to change.</span>
+						<span id="prefix_type_selection" ng-show="prefix_alloc_method != 'from-pool' || type_input_pool === true">
 							<input type="radio" id="radio-prefix-type-reservation" name="prefix_type" value="reservation" class="tiptip" title="" ng-model="prefix.type" ng-disabled="from_prefix.type == 'assignment'">
 							<label for="radio-prefix-type-reservation">Reservation</label>
 							<input type="radio" id="radio-prefix-type-assignment" name="prefix_type" value="assignment" class="tiptip" title="" ng_model="prefix.type" ng-disabled="from_prefix.type == 'assignment'">
@@ -191,15 +191,21 @@ PREFIX DATA
 						VRF
 						</dt>
 						<dd>
-	                        <div style="position: relative;">
-	                            <div id="prefix_vrf_text" class="prefix_vrf_text">
-	                                <span ng-show="vrf == null">
-	                                    No VRF currently selected, please choose destination VRF for new prefix manually.
-	                                </span>
-	                                <span ng-show="vrf !== null && from_prefix !== null">
-	                                    VRF from parent prefix:
-	                                </span>
-	                            </div>
+							<div style="position: relative;">
+								<div id="prefix_vrf_text" class="prefix_vrf_text">
+									<span ng-show="vrf === null && from_pool === null">
+										No VRF currently selected, please choose destination VRF for new prefix manually.
+									</span>
+									<span ng-show="vrf === null && from_pool !== null ">
+										Pool is missing implied VRF. Is it empty?
+									</span>
+									<span ng-show="vrf !== null && from_pool !== null ">
+										Destination VRF for new prefix taken from pool's implied VRF.
+									</span>
+									<span ng-show="vrf !== null && from_prefix !== null">
+										VRF from parent prefix:
+									</span>
+								</div>
 	                            <div class="selector">
 	                                <div id="prefix_vrf_display" style="width: 80%; border: 1px solid #CCCCCC; float: left;">
 	                                    <div class="vrf_filter_entry" ng-show="vrf !== null">
@@ -207,10 +213,9 @@ PREFIX DATA
 	                                        <div class="selector_entry_name" style="margin-left: 5px;">{{ vrf.name }}</div>
 	                                        <div class="selector_entry_description" style="clear: both;">{{ vrf.description }}</div>
 	                                    </div>
-	                                    <span ng-show="vrf == null">No VRF selected.</span>
+	                                    <span ng-show="vrf === null">No VRF selected.</span>
 	                                </div>
-	                                <!-- TODO: handle pools without implied VRF (empty VRFs) -->
-									<span nipap-vrf-selector selected-vrf="vrf" ng-show="from_pool == null"></span>
+									<span nipap-vrf-selector selected-vrf="vrf" ng-show="from_pool === null"></span>
 	                            </div>
 	                        </div>
 						</dd>

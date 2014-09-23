@@ -242,8 +242,12 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 			// We're allocating from a pool - reset from_prefix
 			$scope.from_prefix = null;
 
-			$scope.prefix.type = $scope.from_pool.default_type;
-			$scope.type_input_pool = false;
+			if ($scope.from_pool.default_type !== null) {
+				$scope.prefix.type = $scope.from_pool.default_type;
+				$scope.type_input_pool = false;
+			} else {
+				$scope.type_input_pool = true;
+			}
 
 			// Extract default prefix length for selected address family
 			var def_preflen;
@@ -282,6 +286,9 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 						var msg = data || "Unknown failure";
 						showDialogNotice('Error', stat + ': ' + msg);
 					});
+			} else {
+				// Pool is missing implied VRF - means the pool is empty!
+				$scope.vrf = null;
 			}
 		}
 	});
