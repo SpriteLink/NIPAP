@@ -38,6 +38,23 @@
 			<div class="option">
 				<dl>
 					<dt>
+					Tags
+					</dt>
+					<dd>
+					<ul id="tags" style="font-size: 1.0em;">
+						{%- if c.pool is defined -%}
+						{% for tag in c.pool.tags|sort() %}<li>{{ tag }}</li>{% endfor %}
+						{% endif %}
+					</ul>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
 					Default type
 					</dt>
 					<dd>
@@ -66,24 +83,6 @@
 			</div>
 
 			<div class="rule"></div>
-
-			<div class="option">
-				<dl>
-					<dt>
-					Tags
-					</dt>
-					<dd>
-					<ul id="tags" style="font-size: 1.0em;">
-						{%- if c.pool is defined -%}
-						{% for tag in c.pool.tags|sort() %}<li>{{ tag }}</li>{% endfor %}
-						{% endif %}
-					</ul>
-					</dd>
-				</dl>
-			</div>
-
-			<div class="rule"></div>
-
 
 			<div class="option">
 				<dl>
