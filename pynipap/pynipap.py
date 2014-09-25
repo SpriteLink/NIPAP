@@ -822,6 +822,7 @@ class Prefix(Pynipap):
         Pynipap.__init__(self)
         self.inherited_tags = {}
         self.tags = {}
+        self.avps = {}
 
 
 
@@ -972,7 +973,8 @@ class Prefix(Pynipap):
             'alarm_priority': self.alarm_priority,
             'monitor': self.monitor,
             'vlan': self.vlan,
-            'status': self.status
+            'status': self.status,
+            'avps': self.avps
         }
         for tag_name in self.tags:
             data['tags'].append(tag_name)
@@ -1113,6 +1115,7 @@ class Prefix(Pynipap):
         prefix.used_addresses = long(pref['used_addresses'])
         prefix.free_addresses = long(pref['free_addresses'])
         prefix.status = pref['status']
+        prefix.avps = pref['avps']
 
         prefix.inherited_tags = {}
         for tag_name in pref['inherited_tags']:
