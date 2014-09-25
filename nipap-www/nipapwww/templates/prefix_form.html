@@ -78,7 +78,7 @@ PREFIX DATA
 						Status <span class="required tiptip" title="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
-						<select id="prefix_status">
+						<select name="prefix_status">
 							<option {% if c.prefix.status == 'assigned' %}selected{% endif %} value="assigned">Assigned</option>
 							<option {% if c.prefix.status == 'reserved' %}selected{% endif %} value="reserved">Reserved</option>
 							<option {% if c.prefix.status == 'quarantine' %}selected{% endif %} value="quarantine">Quarantine</option>

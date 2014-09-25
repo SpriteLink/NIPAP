@@ -2234,7 +2234,7 @@ function prefixFormSubmit(e) {
 		'tags': $('input[name="prefix_tags"]').val(),
 		'node': $('input[name="prefix_node"]').val(),
 		'type': $('input[name="prefix_type"]:checked').val(),
-		'status': $('input[name="prefix_status"]').val(),
+		'status': $('select[name="prefix_status"]').val(),
 		'country': $('input[name="prefix_country"]').val(),
 		'order_id': $('input[name="prefix_order_id"]').val(),
 		'customer_id': $('input[name="prefix_customer_id"]').val(),

@@ -643,6 +643,9 @@ class XhrController(BaseController):
                 else:
                     p.node = request.params['node'].strip()
 
+            if 'status' in request.params:
+                p.status = request.params['status'].strip()
+
             if 'pool' in request.params:
                 if request.params['pool'].strip() == '':
                     p.pool = None
