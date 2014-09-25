@@ -102,7 +102,13 @@ class Command:
 
                 # there is - save it
                 if key_val['type'] == 'option':
-                    self.exe_options[key_name] = self.inp_cmd[i+1]
+                    # if argument is of type multiple, store result in a list
+                    if 'multiple' in key_val and key_val['multiple'] == True:
+                        if key_name not in self.exe_options:
+                            self.exe_options[key_name] = []
+                        self.exe_options[key_name].append(self.inp_cmd[i+1])
+                    else:
+                        self.exe_options[key_name] = self.inp_cmd[i+1]
                 else:
                     self.arg = self.inp_cmd[i+1]
 
@@ -136,8 +142,15 @@ class Command:
                 # and set children to the option argument
                 self.children = { 'argument': key_val['argument'] }
 
+            # remove option from further tab completion as it has been filled in,
+            # unless it has the 'multiple' key set, which means it can be filled
+            # in multiple types and will return a list of all values
             if option_parsing and p == key_name and key_name in self.children:
-                del self.children[key_name]
+                # if multiple, then pass
+                if 'multiple' in self.children[key_name] and self.children[key_name]['multiple'] == True:
+                    pass
+                else:
+                    del self.children[key_name]
 
 
         # otherwise we are handling a command without arguments
