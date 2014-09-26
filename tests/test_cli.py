@@ -151,6 +151,7 @@ class NipapCliTest(unittest.TestCase):
         ref['vlan'] = None
         ref['inherited_tags'] = []
         ref['tags'] = []
+        ref['avps'] = {}
 
         self._run_cmd(cmd)
 

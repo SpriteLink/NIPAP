@@ -151,6 +151,7 @@ class TestCheckdata(unittest.TestCase):
         expected_base = {
                 'alarm_priority': None,
                 'authoritative_source': 'nipap',
+                'avps': {},
                 'comment': None,
                 'country': None,
                 'description': 'test',
