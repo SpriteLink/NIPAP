@@ -42,6 +42,16 @@
 				);
 				$.getJSON('/xhr/get_current_vrfs', receiveCurrentVRFs);
 				{% endif %}
+
+				/*
+				 * Get scope & $compile from AngularJS, needed when adding
+				 * elements containing AngularJS directives from jQuery.
+				 *
+				 * This is wrong, but used to assist during the transition
+				 * to a full AngularJS application.
+				 */
+				ng_scope = angular.element($('html')).scope();
+				ng_compile = angular.element($('html')).injector().get('$compile');
 			});
 		</script>
 		{% block head %}
