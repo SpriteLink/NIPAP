@@ -7,7 +7,6 @@
 		<link rel="stylesheet" href="/jquery-ui-1.10.0.custom.css">
 		<link rel="stylesheet" href="/bootstrap.min.css">
 		<link rel="stylesheet" href="/nipap.css">
-		<link rel="stylesheet" href="/tipTip.css">
 		<link rel="stylesheet" href="/jquery.tagit.css">
 		<link rel="stylesheet" href="/ng-tags-input.min.css">
 		<script src="/angular.js"></script>
@@ -19,7 +18,6 @@
 		<script src="/controllers.js"></script>
 		<script src="/jquery-1.9.1.min.js"></script>
 		<script src="/jquery.url.js"></script>
-		<script src="/jquery.tipTip.minified.js"></script>
 		<script src="/jquery-ui-1.10.0.custom.min.js"></script>
 		<script src="/tag-it.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="/ng-tags-input.min.js"></script>
@@ -31,7 +29,6 @@
 				popped = ('state' in window.history && window.history.state !== null);
 				initialURL = location.href;
 
-				$(".tiptip").tipTip({delay: 100});
 				$(document).ajaxError(ajaxErrorHandler);
 				{% if session.user is defined %}
 				$('#add_vrf_filter_btn').click(
