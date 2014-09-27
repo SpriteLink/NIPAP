@@ -30,7 +30,7 @@
 	<tbody class="listing">
 		<tr ng-repeat="pool in pools | filter:query" id="pool_row{{ pool.id }}" data-pool-id="{{pool.id}}">
 			<td style="padding-left: 30px;">{{ pool.name }}</td>
-			<td><img ng-if="pool.tags|notEmpty" src="/images/tag-16.png" tooltip-trigger="mouseenter" tooltip-placement="bottom" tooltip-html-unsafe="{{pool.tags|popoverFormatTags}}"></td>
+			<td><img ng-if="pool.tags|notEmpty" src="/images/tag-16.png" tooltip-html-unsafe="{{pool.tags|popoverFormatTags}}"></td>
 			<td>{{ pool.description }}</td>
 			<td>{{ pool.default_type }}</td>
 			<td>{{ pool.ipv4_default_prefix_length || '-' }} / {{ pool.ipv6_default_prefix_length || '-' }}</td>

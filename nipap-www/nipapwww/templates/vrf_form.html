@@ -15,7 +15,7 @@
 						RT
 						</dt>
 						<dd>
-						<input type="text" name="rt" value="{%- if c.action == 'edit' -%}{{ c.edit_vrf.rt or '' }}{%- endif -%}" class="tiptip" title="VRF RT (e.g. 123:4567 or 192.0.2.12:345).">
+						<input type="text" name="rt" value="{%- if c.action == 'edit' -%}{{ c.edit_vrf.rt or '' }}{%- endif -%}" tooltip="VRF RT (e.g. 123:4567 or 192.0.2.12:345).">
 						</dd>
 					</dl>
 				</div>
@@ -25,10 +25,10 @@
 				<div class="option">
 					<dl>
 						<dt>
-						Name <span class="required tiptip" title="This field is required, please fill in! :-)">*</span>
+						Name <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
-						<input type="text" name="name" value="{%- if c.action == 'edit' %}{{ c.edit_vrf.name or '' }}{%- endif %}" class="tiptip" title="Name of the VRF. Try to use less than 20 characters and no spaces.">
+						<input type="text" name="name" value="{%- if c.action == 'edit' %}{{ c.edit_vrf.name or '' }}{%- endif %}" tooltip="Name of the VRF. Try to use less than 20 characters and no spaces.">
 						</dd>
 					</dl>
 				</div>
@@ -41,7 +41,7 @@
 						Description
 						</dt>
 						<dd>
-						<input type="text" style="width: 80%;" name="description" value="{%- if c.action == 'edit' -%}{{ c.edit_vrf.description or '' }}{%- endif -%}" class="tiptip" title="Enter a short description of what this VRF is used for.">
+						<input type="text" style="width: 80%;" name="description" value="{%- if c.action == 'edit' -%}{{ c.edit_vrf.description or '' }}{%- endif -%}" tooltip="Enter a short description of what this VRF is used for.">
 						</dd>
 					</dl>
 				</div>
