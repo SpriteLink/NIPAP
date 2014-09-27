@@ -839,7 +839,7 @@ def view_prefix(arg, opts, shell_opts):
     print "-- Extra Attributes"
     if p.avps is not None:
         for key in sorted(p.avps, key=lambda s: s.lower()):
-            print "  %s : %s" % (key, p.avps[key])
+            print "  %-26s : %s" % (key, p.avps[key])
     print "-- Tags"
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
         print "  %s" % tag_name
