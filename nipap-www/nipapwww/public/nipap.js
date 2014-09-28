@@ -605,7 +605,8 @@ function showPrefix(prefix, reference, offset) {
 	// Add tooltip to prefix type icon
 	prefix_type_icon.attr('tooltip', prefix.type[0].toUpperCase() + prefix.type.slice(1));
 	prefix_type_icon.html(prefix.type[0].toUpperCase());
-	// Replace with version with compiled angular directives (for tooltip)
+	// Run element through AngularJS compiler to "activate" directives (the
+	// AngularUI/Bootstrap tooltip)
 	prefix_type_icon.replaceWith(ng_compile(prefix_type_icon)(ng_scope));
 	ng_scope.$apply();
 
@@ -632,7 +633,8 @@ function showPrefix(prefix, reference, offset) {
 
 		prefix_tags.html('<img src="/images/tag-16.png">');
 		prefix_tags.children().attr('tooltip-html-unsafe', tags_html);
-		// Replace with version with compiled angular directives (for tooltip)
+		// Run element through AngularJS compiler to "activate" directives (the
+		// AngularUI/Bootstrap tooltip)
 		prefix_tags.replaceWith(ng_compile(prefix_tags)(ng_scope));
 		ng_scope.$apply();
 	}
@@ -1144,7 +1146,8 @@ function receivePrefixList(search_result) {
 	newest_prefix_query = parseInt(search_result.search_options.query_id);
 
 	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" tooltip="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
-	// Replace with version with compiled angular directives (for tooltip)
+	// Run element through AngularJS compiler to "activate" directives (the
+	// AngularUI/Bootstrap tooltip)
 	$(".search_interpretation_text").replaceWith(ng_compile($(".search_interpretation_text"))(ng_scope));
 
 	/*
@@ -1196,9 +1199,11 @@ function receivePrefixList(search_result) {
 
 	}
 
-	// Replace whole shebang with version with compiled angular directives (for tooltip)
+	// Run element through AngularJS compiler to "activate" directives (the
+	// AngularUI/Bootstrap tooltip)
 	intp_cont.replaceWith(ng_compile(intp_cont)(ng_scope));
 	ng_scope.$apply();
+
 	stats.draw_intp_finished = new Date().getTime();
 
 	/*
@@ -2335,7 +2340,8 @@ function selectPrefix(prefix_id) {
 		}
 
 		$('#length_info_text').html('<span tooltip="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' + maxpreflen+ '>');
-		// Replace with compiled angular directives (for tooltip)
+		// Run element through AngularJS compiler to "activate" directives (the
+		// AngularUI/Bootstrap tooltip)
 		$('#length_info_text').replaceWith(ng_compile($('#length_info_text'))(ng_scope));
 		ng_scope.$apply();
 
