@@ -439,6 +439,13 @@ def add_prefix(arg, opts, shell_opts):
 
     p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
 
+    for avp in opts.get('extra-attribute', []):
+        try:
+            key, value = avp.split('=', 1)
+        except ValueError:
+            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            return
+        p.avps[key] = value
 
     if 'from-prefix' in opts:
         args['from-prefix'] = [ opts['from-prefix'], ]
@@ -829,6 +836,10 @@ def view_prefix(arg, opts, shell_opts):
         print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("Addresses Used / Free", p.used_addresses,
                 p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
                 p.total_addresses)
+    print "-- Extra Attributes"
+    if p.avps is not None:
+        for key in sorted(p.avps, key=lambda s: s.lower()):
+            print "  %-26s : %s" % (key, p.avps[key])
     print "-- Tags"
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
         print "  %s" % tag_name
@@ -1272,6 +1283,76 @@ def modify_prefix(arg, opts, shell_opts):
 
 
 
+def prefix_attr_add(arg, opts, shell_opts):
+    """ Add attributes to a prefix
+    """
+
+    spec = { 'prefix': arg }
+    v = get_vrf(opts.get('vrf_rt'), abort=True)
+    spec['vrf_rt'] = v.rt
+
+    res = Prefix.list(spec)
+    if len(res) == 0:
+        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_format(v))
+        return
+
+    p = res[0]
+
+    for avp in opts.get('extra-attribute', []):
+        try:
+            key, value = avp.split('=', 1)
+        except ValueError:
+            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            sys.exit(1)
+
+        if key in p.avps:
+            print >> sys.stderr, "Unable to add extra-attribute: '%s' already exists." % key
+            sys.exit(1)
+
+        p.avps[key] = value
+
+    try:
+        p.save()
+    except NipapError as exc:
+        print >> sys.stderr, "Could not save prefix changes: %s" % str(exc)
+        sys.exit(1)
+
+    print "Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf))
+
+
+
+def prefix_attr_remove(arg, opts, shell_opts):
+    """ Remove attributes from a prefix
+    """
+
+    spec = { 'prefix': arg }
+    v = get_vrf(opts.get('vrf_rt'), abort=True)
+    spec['vrf_rt'] = v.rt
+
+    res = Prefix.list(spec)
+    if len(res) == 0:
+        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_format(v))
+        return
+
+    p = res[0]
+
+    for key in opts.get('extra-attribute', []):
+        if key not in p.avps:
+            print >> sys.stderr, "Unable to remove extra-attribute: '%s' does not exist." % key
+            sys.exit(1)
+
+        del p.avps[key]
+
+    try:
+        p.save()
+    except NipapError as exc:
+        print >> sys.stderr, "Could not save prefix changes: %s" % str(exc)
+        sys.exit(1)
+
+    print "Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf))
+
+
+
 """
     COMPLETION FUNCTIONS
 """
@@ -1570,6 +1651,15 @@ cmds = {
                                 'complete': complete_tags,
                             }
                         },
+                        'extra-attribute': {
+                            'type': 'option',
+                            'multiple': True,
+                            'content_type': unicode,
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            },
+                        },
                         'vrf_rt': {
                             'type': 'option',
                             'argument': {
@@ -1659,6 +1749,36 @@ cmds = {
                                 'complete': complete_vrf,
                             },
                             'exec_immediately': get_vrf
+                        },
+                        'add': {
+                            'type': 'command',
+                            'exec': prefix_attr_add,
+                            'children': {
+                                'extra-attribute': {
+                                    'type': 'option',
+                                    'multiple': True,
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    },
+                                },
+                            }
+                        },
+                        'remove': {
+                            'type': 'command',
+                            'exec': prefix_attr_remove,
+                            'children': {
+                                'extra-attribute': {
+                                    'type': 'option',
+                                    'multiple': True,
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    },
+                                },
+                            }
                         },
                         'set': {
                             'type': 'command',

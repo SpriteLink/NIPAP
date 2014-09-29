@@ -2,6 +2,9 @@
 -- Upgrade from NIPAP database schema version 4 to 5
 --
 
+-- hstore extension is required for AVPs
+CREATE EXTENSION IF NOT EXISTS hstore;
+
 -- change default values for pool prefix statistics columns
 ALTER TABLE ip_net_pool ALTER COLUMN free_prefixes_v4 SET DEFAULT NULL;
 ALTER TABLE ip_net_pool ALTER COLUMN free_prefixes_v6 SET DEFAULT NULL;
@@ -29,6 +32,9 @@ UPDATE ip_net_plan SET free_addresses = total_addresses - used_addresses;
 -- add status field
 CREATE TYPE ip_net_plan_status AS ENUM ('assigned', 'reserved', 'quarantine');
 ALTER TABLE ip_net_plan ADD COLUMN status ip_net_plan_status NOT NULL DEFAULT 'assigned';
+
+-- add AVP column
+ALTER TABLE ip_net_plan ADD COLUMN avps hstore NOT NULL DEFAULT '';
 
 -- update database schema version
 COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';

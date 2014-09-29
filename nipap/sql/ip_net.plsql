@@ -6,6 +6,9 @@
 
 COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';
 
+CREATE EXTENSION IF NOT EXISTS ip4r;
+CREATE EXTENSION IF NOT EXISTS hstore;
+
 CREATE TYPE ip_net_plan_type AS ENUM ('reservation', 'assignment', 'host');
 CREATE TYPE ip_net_plan_status AS ENUM ('assigned', 'reserved', 'quarantine');
 
@@ -16,6 +19,9 @@ CREATE TABLE ip_net_asn (
 	asn integer NOT NULL PRIMARY KEY,
 	name text
 );
+
+COMMENT ON COLUMN ip_net_asn.asn IS 'AS Number';
+COMMENT ON COLUMN ip_net_asn.name IS 'ASN name';
 
 --
 -- This is where we store VRFs
@@ -46,11 +52,13 @@ INSERT INTO ip_net_vrf (id, rt, name, description) VALUES (0, NULL, 'default', '
 
 CREATE UNIQUE INDEX ip_net_vrf__rt__index ON ip_net_vrf (rt) WHERE rt IS NOT NULL;
 CREATE UNIQUE INDEX ip_net_vrf__name__index ON ip_net_vrf (name) WHERE name IS NOT NULL;
--- TODO: add trigger function on I/U to validate vrf format (123.123.123.123:4567 or 1234:5678 - 32:16 or 16:32)
 
 COMMENT ON TABLE ip_net_vrf IS 'IP Address VRFs';
 COMMENT ON INDEX ip_net_vrf__rt__index IS 'VRF RT';
 COMMENT ON INDEX ip_net_vrf__name__index IS 'VRF name';
+COMMENT ON COLUMN ip_net_vrf.rt IS 'VRF RT';
+COMMENT ON COLUMN ip_net_vrf.name IS 'VRF name';
+COMMENT ON COLUMN ip_net_vrf.description IS 'VRF description';
 COMMENT ON COLUMN ip_net_vrf.num_prefixes_v4 IS 'Number of IPv4 prefixes in this VRF';
 COMMENT ON COLUMN ip_net_vrf.num_prefixes_v6 IS 'Number of IPv6 prefixes in this VRF';
 COMMENT ON COLUMN ip_net_vrf.total_addresses_v4 IS 'Total number of IPv4 addresses in this VRF';
@@ -97,6 +105,12 @@ COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 
 COMMENT ON INDEX ip_net_pool_name_key IS 'pool name';
 
+COMMENT ON COLUMN ip_net_pool.id IS 'Unique ID of pool';
+COMMENT ON COLUMN ip_net_pool.name IS 'Pool name';
+COMMENT ON COLUMN ip_net_pool.description IS 'Pool description';
+COMMENT ON COLUMN ip_net_pool.default_type IS 'Default type for prefix allocated from pool';
+COMMENT ON COLUMN ip_net_pool.ipv4_default_prefix_length IS 'Default prefix-length for IPv4 prefix allocated from pool';
+COMMENT ON COLUMN ip_net_pool.ipv6_default_prefix_length IS 'Default prefix-length for IPv6 prefix allocated from pool';
 COMMENT ON COLUMN ip_net_pool.member_prefixes_v4 IS 'Number of IPv4 prefixes that are members of this pool';
 COMMENT ON COLUMN ip_net_pool.member_prefixes_v6 IS 'Number of IPv6 prefixes that are members of this pool';
 COMMENT ON COLUMN ip_net_pool.used_prefixes_v4 IS 'Number of IPv4 prefixes allocated from this pool';
@@ -149,7 +163,8 @@ CREATE TABLE ip_net_plan (
 	total_addresses numeric(40),
 	used_addresses numeric(40),
 	free_addresses numeric(40),
-	status ip_net_plan_status NOT NULL DEFAULT 'assigned'
+	status ip_net_plan_status NOT NULL DEFAULT 'assigned',
+	avps hstore NOT NULL DEFAULT ''
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
@@ -179,6 +194,7 @@ COMMENT ON COLUMN ip_net_plan.last_modified IS 'The date and time when the prefi
 COMMENT ON COLUMN ip_net_plan.total_addresses IS 'Total number of addresses in this prefix';
 COMMENT ON COLUMN ip_net_plan.used_addresses IS 'Number of used addresses in this prefix';
 COMMENT ON COLUMN ip_net_plan.free_addresses IS 'Number of free addresses in this prefix';
+COMMENT ON COLUMN ip_net_plan.avps IS 'Extra values / AVPs (Attribute Value Pairs)';
 
 CREATE UNIQUE INDEX ip_net_plan__vrf_id_prefix__index ON ip_net_plan (vrf_id, prefix);
 

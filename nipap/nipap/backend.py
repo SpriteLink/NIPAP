@@ -61,6 +61,9 @@
     * :attr:`customer_id` - Customer identifier.
     * :attr:`vlan` - VLAN identifier, 0-4096.
     * :attr:`tags` - Tag keywords for simple searching and filtering of prefixes.
+    * :attr:`avps` - Attribute-Value Pairs. This field can be used to add
+        various extra attributes that a user wishes to store together with a
+        prefix.
     * :attr:`external_key` - A field for use by external systems which needs to
         store references to its own dataset.
     * :attr:`authoritative_source` - String identifying which system last
@@ -398,6 +401,7 @@ class Nipap:
             self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
             self._register_inet()
+            psycopg2.extras.register_hstore(self._con_pg, globally=True, unicode=True)
         except psycopg2.Error as exc:
             self._logger.error("pgsql: %s" % exc)
             raise NipapError("Backend unable to connect to database")
@@ -2274,7 +2278,7 @@ class Nipap:
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool_id', 'tags', 'node', 'type', 'country',
             'order_id', 'customer_id', 'vrf_id', 'alarm_priority', 
-            'monitor', 'external_key', 'vlan', 'status']
+            'monitor', 'external_key', 'vlan', 'status', 'avps']
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('node' not in attr):
             raise NipapMissingInputError('Either description or node must be specified.')
@@ -2377,7 +2381,7 @@ class Nipap:
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool_id', 'tags', 'node', 'type', 'country',
             'order_id', 'customer_id', 'vrf_id', 'alarm_priority', 
-            'monitor', 'external_key', 'vlan', 'status' ]
+            'monitor', 'external_key', 'vlan', 'status', 'avps' ]
 
         self._check_attr(attr, [], allowed_attr)
 
@@ -2672,7 +2676,8 @@ class Nipap:
             inp.total_addresses,
             inp.used_addresses,
             inp.free_addresses,
-            inp.status
+            inp.status,
+            inp.avps
             FROM ip_net_plan inp
             JOIN ip_net_vrf vrf ON (inp.vrf_id = vrf.id)
             LEFT JOIN ip_net_pool pool ON (inp.pool_id = pool.id) %s
@@ -3041,7 +3046,8 @@ class Nipap:
         children,
         total_addresses,
         used_addresses,
-        free_addresses
+        free_addresses,
+        avps
     FROM (
         SELECT DISTINCT ON(vrf_rt_order(vrf.rt), p1.prefix) p1.id,
             p1.prefix,
@@ -3070,6 +3076,7 @@ class Nipap:
             p1.used_addresses,
             p1.free_addresses,
             p1.status,
+            p1.avps,
             vrf.id AS vrf_id,
             vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,

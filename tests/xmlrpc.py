@@ -490,6 +490,7 @@ class NipapXmlTest(unittest.TestCase):
         expected = {
                 'alarm_priority': None,
                 'authoritative_source': 'nipap',
+                'avps': {},
                 'comment': None,
                 'country': None,
                 'description': 'test prefix',
@@ -584,6 +585,7 @@ class NipapXmlTest(unittest.TestCase):
         expected = {
                 'alarm_priority': None,
                 'authoritative_source': 'nipap',
+                'avps': {},
                 'comment': None,
                 'country': None,
                 'description': 'test prefix',
@@ -681,6 +683,7 @@ class NipapXmlTest(unittest.TestCase):
         expected_top = {
                 'alarm_priority': None,
                 'authoritative_source': 'nipap',
+                'avps': {},
                 'comment': None,
                 'country': None,
                 'display_prefix': '1.0.0.0/8',
@@ -791,6 +794,7 @@ class NipapXmlTest(unittest.TestCase):
         expected = {
                 'alarm_priority': None,
                 'authoritative_source': 'nipap',
+                'avps': {},
                 'comment': None,
                 'country': None,
                 'type': 'assignment',
@@ -1040,6 +1044,7 @@ class NipapXmlTest(unittest.TestCase):
                 'indent': 1,
                 'alarm_priority': None,
                 'authoritative_source': 'nipap',
+                'avps': {},
                 'vlan': None,
                 'inherited_tags': [],
                 'tags': [],
@@ -1121,6 +1126,7 @@ class NipapXmlTest(unittest.TestCase):
                         'family': 4,
                         'prefix': '1.3.3.0/24',
                         'authoritative_source': 'nipap',
+                        'avps': {},
                         'id': p1['id'],
                         'display_prefix': '1.3.3.0/24',
                         'monitor': None,
