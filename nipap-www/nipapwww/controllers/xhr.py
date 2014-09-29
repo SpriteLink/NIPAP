@@ -836,6 +836,7 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'vrf_id': vrf_id,
                 'prefix': obj.prefix,
                 'display_prefix': obj.display_prefix,
+                'status': obj.status,
                 'description': obj.description,
                 'comment': obj.comment,
                 'inherited_tags': obj.inherited_tags,
