@@ -134,6 +134,9 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
  */
 nipapAppControllers.controller('PrefixAddController', function ($scope, $routeParams, $http) {
 
+	// prefix method is add - used to customize prefix form template
+	$scope.method = 'add';
+
 	$scope.prefix_alloc_method = null;
 	// Set to true if allocation method was provided in URL
 	$scope.prefix_alloc_method_provided = false;
@@ -158,8 +161,6 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	// input fields, when allocating prefix from a pool (ie. to not use the
 	// pool's default prefix type)
 	$scope.display_type_input_pool = false;
-
-	$scope.display_comment = false;
 
 	$scope.prefix_family = 4;
 	$scope.prefix_length = null;
@@ -339,9 +340,9 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 
 	/*
-	 * Add prefix to NIPAP
+	 * Submit prefix form - add prefix to NIPAP
 	 */
-	$scope.addPrefix = function () {
+	$scope.submitForm = function () {
 
 		/*
 		 * Create object specifying prefix attributes and how it should be
