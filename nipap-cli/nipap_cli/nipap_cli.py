@@ -661,6 +661,7 @@ def add_pool(arg, opts, shell_opts):
     p.default_type = opts.get('default-type')
     p.ipv4_default_prefix_length = opts.get('ipv4_default_prefix_length')
     p.ipv6_default_prefix_length = opts.get('ipv6_default_prefix_length')
+
     if 'tags' in opts:
         tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
         p.tags = {}
@@ -668,6 +669,14 @@ def add_pool(arg, opts, shell_opts):
             tag = Tag()
             tag.name = tag_name
             p.tags[tag_name] = tag
+
+    for avp in opts.get('extra-attribute', []):
+        try:
+            key, value = avp.split('=', 1)
+        except ValueError:
+            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            return
+        p.avps[key] = value
 
     try:
         p.save()
@@ -764,6 +773,11 @@ def view_pool(arg, opts, shell_opts):
     print "  %-26s : %s" % ("Default type", p.default_type)
     print "  %-26s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name)
     print "  %-26s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
+
+    print "-- Extra Attributes"
+    if p.avps is not None:
+        for key in sorted(p.avps, key=lambda s: s.lower()):
+            print "  %-26s : %s" % (key, p.avps[key])
 
     print "-- Tags"
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
@@ -1169,6 +1183,15 @@ def modify_pool(arg, opts, shell_opts):
             tag.name = tag_name
             p.tags[tag_name] = tag
 
+    for avp in opts.get('extra-attribute', []):
+        try:
+            key, value = avp.split('=', 1)
+        except ValueError:
+            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            return
+        p.avps[key] = value
+
+
     p.save()
 
     print "Pool '%s' saved." % p.name
@@ -1475,6 +1498,67 @@ def vrf_attr_remove(arg, opts, shell_opts):
 
     print "%s saved." % vrf_format(v)
 
+
+
+def pool_attr_add(arg, opts, shell_opts):
+    """ Add attributes to a pool
+    """
+
+    res = Pool.list({ 'name': arg })
+    if len(res) < 1:
+        print >> sys.stderr, "No pool with name '%s' found." % arg
+        sys.exit(1)
+
+    p = res[0]
+
+    for avp in opts.get('extra-attribute', []):
+        try:
+            key, value = avp.split('=', 1)
+        except ValueError:
+            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            sys.exit(1)
+
+        if key in p.avps:
+            print >> sys.stderr, "Unable to add extra-attribute: '%s' already exists." % key
+            sys.exit(1)
+
+        p.avps[key] = value
+
+    try:
+        p.save()
+    except NipapError as exc:
+        print >> sys.stderr, "Could not save pool changes: %s" % str(exc)
+        sys.exit(1)
+
+    print "Pool '%s' saved." % p.name
+
+
+
+def pool_attr_remove(arg, opts, shell_opts):
+    """ Remove attributes from a prefix
+    """
+
+    res = Pool.list({ 'name': arg })
+    if len(res) < 1:
+        print >> sys.stderr, "No pool with name '%s' found." % arg
+        sys.exit(1)
+
+    p = res[0]
+
+    for key in opts.get('extra-attribute', []):
+        if key not in p.avps:
+            print >> sys.stderr, "Unable to remove extra-attribute: '%s' does not exist." % key
+            sys.exit(1)
+
+        del p.avps[key]
+
+    try:
+        p.save()
+    except NipapError as exc:
+        print >> sys.stderr, "Could not save pool changes: %s" % str(exc)
+        sys.exit(1)
+
+    print "Pool '%s' saved." % p.name
 
 
 
@@ -2347,7 +2431,16 @@ cmds = {
                                 'content_type': unicode,
                                 'complete': complete_tags,
                             }
-                        }
+                        },
+                        'extra-attribute': {
+                            'type': 'option',
+                            'multiple': True,
+                            'content_type': unicode,
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            },
+                        },
                     }
                 },
 
@@ -2477,6 +2570,36 @@ cmds = {
                         'complete': complete_pool_name,
                     },
                     'children': {
+                        'add': {
+                            'type': 'command',
+                            'exec': pool_attr_add,
+                            'children': {
+                                'extra-attribute': {
+                                    'type': 'option',
+                                    'multiple': True,
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    },
+                                },
+                            }
+                        },
+                        'remove': {
+                            'type': 'command',
+                            'exec': pool_attr_remove,
+                            'children': {
+                                'extra-attribute': {
+                                    'type': 'option',
+                                    'multiple': True,
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    },
+                                },
+                            }
+                        },
                         'set': {
                             'type': 'command',
                             'exec': modify_pool,
@@ -2530,7 +2653,16 @@ cmds = {
                                         'content_type': unicode,
                                         'complete': complete_tags,
                                     }
-                                }
+                                },
+                                'extra-attribute': {
+                                    'type': 'option',
+                                    'multiple': True,
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    },
+                                },
                             }
                         }
                     }
