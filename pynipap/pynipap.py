@@ -581,6 +581,7 @@ class Pool(Pynipap):
     def __init__(self):
         Pynipap.__init__(self)
         self.tags = {}
+        self.avps = {}
 
 
     def save(self):
@@ -594,7 +595,8 @@ class Pool(Pynipap):
             'default_type': self.default_type,
             'ipv4_default_prefix_length': self.ipv4_default_prefix_length,
             'ipv6_default_prefix_length': self.ipv6_default_prefix_length,
-            'tags': []
+            'tags': [],
+            'avps': self.avps
         }
         for tag_name in self.tags:
             data['tags'].append(tag_name)
@@ -757,7 +759,9 @@ class Pool(Pynipap):
             tag = Tag.from_dict({'name': tag_name })
             pool.tags[tag_name] = tag
 
-        # TODO: WTF is this?
+        pool.avps = parm['avps']
+
+        # store VRF object in pool.vrf
         if parm['vrf_id'] is not None:
             pool.vrf = VRF.get(parm['vrf_id'])
 
