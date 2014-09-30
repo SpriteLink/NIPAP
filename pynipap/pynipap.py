@@ -351,6 +351,7 @@ class VRF(Pynipap):
     def __init__(self):
         Pynipap.__init__(self)
         self.tags = {}
+        self.avps = {}
 
 
     @classmethod
@@ -395,6 +396,7 @@ class VRF(Pynipap):
         for tag_name in parm['tags']:
             tag = Tag.from_dict({'name': tag_name })
             vrf.tags[tag_name] = tag
+        vrf.avps = parm['avps']
 
         vrf.num_prefixes_v4 = long(parm['num_prefixes_v4'])
         vrf.num_prefixes_v6 = long(parm['num_prefixes_v6'])
@@ -492,7 +494,8 @@ class VRF(Pynipap):
             'rt': self.rt,
             'name': self.name,
             'description': self.description,
-            'tags': []
+            'tags': [],
+            'avps': self.avps
         }
         for tag_name in self.tags:
             data['tags'].append(tag_name)
