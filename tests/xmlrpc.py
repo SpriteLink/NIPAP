@@ -340,6 +340,7 @@ class NipapXmlTest(unittest.TestCase):
         attr['tags'] = []
 
         attr['description'] = 'my test vrf'
+        attr['avps'] = {'foo': 'bar'}
         vrf = s.add_vrf({ 'auth': ad, 'attr': attr })
 
         self.assertGreater(vrf['id'], 0)
@@ -367,7 +368,7 @@ class NipapXmlTest(unittest.TestCase):
         res_list = s.list_vrf({ 'auth': ad, 'vrf': { } })[0]
         del(res_list['id'])
         self.assertEqual(self._mangle_vrf_result(res_list), { 'rt': None,
-            'name': 'FOO', 'description': 'BAR', 'tags': [] }, 'VRF change incorrect')
+            'name': 'FOO', 'description': 'BAR', 'tags': [], 'avps': {} }, 'VRF change incorrect')
 
 
 
@@ -378,7 +379,8 @@ class NipapXmlTest(unittest.TestCase):
             'rt': '65000:123',
             'name': '65k:123',
             'description': 'VRF 65000:123',
-            'tags': []
+            'tags': [],
+            'avps': {}
         }
         spec = { 'rt': '65000:123' }
         vrf = s.add_vrf({ 'auth': ad, 'attr': attr })
@@ -434,7 +436,8 @@ class NipapXmlTest(unittest.TestCase):
             'rt': '65000:1235',
             'name': '65k:1235',
             'description': 'Virtual Routing and Forwarding instance 65000:123',
-            'tags': []
+            'tags': [],
+            'avps': {}
         }
         vrf = s.add_vrf({ 'auth': ad, 'attr': attr })
         attr['id'] = vrf['id']
@@ -1305,6 +1308,7 @@ class NipapXmlTest(unittest.TestCase):
         expected['vrf_rt'] = None
         expected['vrf_name'] = None
         expected['tags'] = []
+        expected['avps'] = {}
 
         # list pool and verify data in NIPAP
         p = s.list_pool({ 'auth': ad, 'pool': { 'id': expected['id'] } })
@@ -1345,6 +1349,7 @@ class NipapXmlTest(unittest.TestCase):
         expected['vrf_rt'] = None
         expected['vrf_name'] = None
         expected['tags'] = []
+        expected['avps'] = {}
 
         self.assertEquals(self._mangle_pool_result(s.list_pool({ 'auth': ad,
             'pool': { 'id': res['id'] } })[0]), expected)
