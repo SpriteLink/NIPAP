@@ -34,6 +34,7 @@ CREATE TYPE ip_net_plan_status AS ENUM ('assigned', 'reserved', 'quarantine');
 ALTER TABLE ip_net_plan ADD COLUMN status ip_net_plan_status NOT NULL DEFAULT 'assigned';
 
 -- add AVP column
+ALTER TABLE ip_net_vrf ADD COLUMN avps hstore NOT NULL DEFAULT '';
 ALTER TABLE ip_net_plan ADD COLUMN avps hstore NOT NULL DEFAULT '';
 
 -- update database schema version
