@@ -99,7 +99,8 @@ CREATE TABLE ip_net_pool (
 	free_prefixes_v6 numeric(40) DEFAULT NULL,
 	total_prefixes_v4 numeric(40) DEFAULT NULL,
 	total_prefixes_v6 numeric(40) DEFAULT NULL,
-	tags text[] DEFAULT '{}'
+	tags text[] DEFAULT '{}',
+	avps hstore NOT NULL DEFAULT ''
 );
 
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';

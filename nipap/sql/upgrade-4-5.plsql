@@ -36,6 +36,7 @@ ALTER TABLE ip_net_plan ADD COLUMN status ip_net_plan_status NOT NULL DEFAULT 'a
 -- add AVP column
 ALTER TABLE ip_net_vrf ADD COLUMN avps hstore NOT NULL DEFAULT '';
 ALTER TABLE ip_net_plan ADD COLUMN avps hstore NOT NULL DEFAULT '';
+ALTER TABLE ip_net_pool ADD COLUMN avps hstore NOT NULL DEFAULT '';
 
 -- update database schema version
 COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';
