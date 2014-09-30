@@ -106,6 +106,9 @@
     * :attr:`ipv4_default_prefix_length` - Default prefix length of IPv4 prefixes.
     * :attr:`ipv6_default_prefix_length` - Default prefix length of IPv6 prefixes.
     * :attr:`tags` - Tag keywords for simple searching and filtering of pools.
+    * :attr:`avps` - Attribute-Value Pairs. This field can be used to add
+        various extra attributes that a user wishes to store together with a
+        pool.
 
     Pool functions
     ^^^^^^^^^^^^^^
@@ -1514,6 +1517,7 @@ class Nipap:
                         po.free_addresses_v4,
                         po.free_addresses_v6,
                         po.tags,
+                        po.avps,
                         vrf.id AS vrf_id,
                         vrf.rt AS vrf_rt,
                         vrf.name AS vrf_name,
@@ -1555,7 +1559,8 @@ class Nipap:
                 'description',
                 'ipv4_default_prefix_length',
                 'ipv6_default_prefix_length',
-                'tags'
+                'tags',
+                'avps'
                 ]
         self._check_attr(attr, req_attr, allowed_attr)
 
@@ -1783,6 +1788,7 @@ class Nipap:
                         po.free_addresses_v4,
                         po.free_addresses_v6,
                         po.tags,
+                        po.avps,
                         vrf.id AS vrf_id,
                         vrf.rt AS vrf_rt,
                         vrf.name AS vrf_name,
