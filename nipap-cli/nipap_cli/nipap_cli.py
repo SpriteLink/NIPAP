@@ -422,6 +422,7 @@ def add_prefix(arg, opts, shell_opts):
 
     args = {}
 
+    # XXX: don't forget to add value parsing in add_prefix_from_pool as well
     p = Prefix()
     p.prefix = opts.get('prefix')
     p.type = opts.get('type')
@@ -600,6 +601,15 @@ def add_prefix_from_pool(arg, opts):
             if args['from-pool'].default_type is None:
                 print >> sys.stderr, "ERROR: Type not specified and no default-type specified for pool: %s" % opts['from-pool']
             p.type = args['from-pool'].default_type
+
+        for avp in opts.get('extra-attribute', []):
+            try:
+                key, value = avp.split('=', 1)
+            except ValueError:
+                print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+                return
+            p.avps[key] = value
+
 
         args['family'] = afi
 
