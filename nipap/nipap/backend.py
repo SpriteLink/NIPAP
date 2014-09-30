@@ -20,6 +20,9 @@
     * :attr:`name` - A short name, such as 'VPN Customer A'.
     * :attr:`description` - A longer description of what the VRF is used for.
     * :attr:`tags` - Tag keywords for simple searching and filtering of VRFs.
+    * :attr:`avps` - Attribute-Value Pairs. This field can be used to add
+        various extra attributes that a user wishes to store together with a
+        VRF.
 
     VRF functions
     ^^^^^^^^^^^^^
@@ -823,7 +826,8 @@ class Nipap:
 
         # sanity check - do we have all attributes?
         req_attr = [ 'rt', 'name' ]
-        self._check_attr(attr, req_attr, req_attr + [ 'description', 'tags' ])
+        self._check_attr(attr, req_attr, req_attr + [ 'description', 'tags',
+            'avps' ])
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_vrf " + insert
@@ -986,7 +990,7 @@ class Nipap:
 
         # sanity check - do we have all attributes?
         req_attr = [ ]
-        allowed_attr = [ 'rt', 'name', 'description', 'tags' ]
+        allowed_attr = [ 'rt', 'name', 'description', 'tags', 'avps' ]
         self._check_attr(attr, req_attr, allowed_attr)
 
         # get list of VRFs which will be changed before changing them
