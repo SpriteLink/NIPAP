@@ -1293,6 +1293,15 @@ def modify_prefix(arg, opts, shell_opts):
     if 'monitor' in opts:
         p.monitor = _str_to_bool(opts['monitor'])
 
+    for avp in opts.get('extra-attribute', []):
+        try:
+            key, value = avp.split('=', 1)
+        except ValueError:
+            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            return
+        p.avps[key] = value
+
+
     # Promt user if prefix has authoritative source != nipap
     if not modify_confirmed and p.authoritative_source.lower() != 'nipap':
 
@@ -1947,6 +1956,15 @@ cmds = {
                                         'content_type': unicode,
                                         'complete': complete_prefix_type,
                                     }
+                                },
+                                'extra-attribute': {
+                                    'type': 'option',
+                                    'multiple': True,
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    },
                                 },
                                 'node': {
                                     'type': 'option',
