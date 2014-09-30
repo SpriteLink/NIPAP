@@ -633,6 +633,14 @@ def add_vrf(arg, opts, shell_opts):
     v.description = opts.get('description')
     v.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
 
+    for avp in opts.get('extra-attribute', []):
+        try:
+            key, value = avp.split('=', 1)
+        except ValueError:
+            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            return
+        v.avps[key] = value
+
     try:
         v.save()
     except pynipap.NipapError as exc:
@@ -701,6 +709,11 @@ def view_vrf(arg, opts, shell_opts):
     print "  %-26s : %s" % ("RT", v.rt)
     print "  %-26s : %s" % ("Name", v.name)
     print "  %-26s : %s" % ("Description", v.description)
+
+    print "-- Extra Attributes"
+    if v.avps is not None:
+        for key in sorted(v.avps, key=lambda s: s.lower()):
+            print "  %-26s : %s" % (key, v.avps[key])
 
     print "-- Tags"
     for tag_name in sorted(v.tags, key=lambda s: s.lower()):
@@ -1113,6 +1126,14 @@ def modify_vrf(arg, opts, shell_opts):
             tag.name = tag_name
             v.tags[tag_name] = tag
 
+    for avp in opts.get('extra-attribute', []):
+        try:
+            key, value = avp.split('=', 1)
+        except ValueError:
+            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            return
+        v.avps[key] = value
+
     v.save()
 
     print "%s saved." % vrf_format(v)
@@ -1360,6 +1381,91 @@ def prefix_attr_remove(arg, opts, shell_opts):
         sys.exit(1)
 
     print "Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf))
+
+
+
+def vrf_attr_add(arg, opts, shell_opts):
+    """ Add attributes to a VRF
+    """
+
+    if arg is None:
+        print >> sys.stderr, "ERROR: Please specify the RT of the VRF to view."
+        sys.exit(1)
+
+    # interpret as default VRF (ie, RT = None)
+    if arg.lower() in ('-', 'none'):
+        arg = None
+
+    try:
+        v = VRF.search({
+            'val1': 'rt',
+            'operator': 'equals',
+            'val2': arg }
+            )['result'][0]
+    except (KeyError, IndexError):
+        print >> sys.stderr, "VRF with [RT: %s] not found." % str(arg)
+        sys.exit(1)
+
+    for avp in opts.get('extra-attribute', []):
+        try:
+            key, value = avp.split('=', 1)
+        except ValueError:
+            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            sys.exit(1)
+
+        if key in v.avps:
+            print >> sys.stderr, "Unable to add extra-attribute: '%s' already exists." % key
+            sys.exit(1)
+
+        v.avps[key] = value
+
+    try:
+        v.save()
+    except NipapError as exc:
+        print >> sys.stderr, "Could not save VRF changes: %s" % str(exc)
+        sys.exit(1)
+
+    print "%s saved." % vrf_format(v)
+
+
+
+def vrf_attr_remove(arg, opts, shell_opts):
+    """ Remove attributes from a prefix
+    """
+
+    if arg is None:
+        print >> sys.stderr, "ERROR: Please specify the RT of the VRF to view."
+        sys.exit(1)
+
+    # interpret as default VRF (ie, RT = None)
+    if arg.lower() in ('-', 'none'):
+        arg = None
+
+    try:
+        v = VRF.search({
+            'val1': 'rt',
+            'operator': 'equals',
+            'val2': arg }
+            )['result'][0]
+    except (KeyError, IndexError):
+        print >> sys.stderr, "VRF with [RT: %s] not found." % str(arg)
+        sys.exit(1)
+
+    for key in opts.get('extra-attribute', []):
+        if key not in v.avps:
+            print >> sys.stderr, "Unable to remove extra-attribute: '%s' does not exist." % key
+            sys.exit(1)
+
+        del v.avps[key]
+
+    try:
+        v.save()
+    except NipapError as exc:
+        print >> sys.stderr, "Could not save VRF changes: %s" % str(exc)
+        sys.exit(1)
+
+    print "%s saved." % vrf_format(v)
+
 
 
 
@@ -2080,6 +2186,36 @@ cmds = {
                         'complete': complete_vrf,
                     },
                     'children': {
+                        'add': {
+                            'type': 'command',
+                            'exec': vrf_attr_add,
+                            'children': {
+                                'extra-attribute': {
+                                    'type': 'option',
+                                    'multiple': True,
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    },
+                                },
+                            }
+                        },
+                        'remove': {
+                            'type': 'command',
+                            'exec': vrf_attr_remove,
+                            'children': {
+                                'extra-attribute': {
+                                    'type': 'option',
+                                    'multiple': True,
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    },
+                                },
+                            }
+                        },
                         'set': {
                             'type': 'command',
                             'exec': modify_vrf,
@@ -2117,7 +2253,16 @@ cmds = {
                                         'content_type': unicode,
                                         'complete': complete_tags,
                                     }
-                                }
+                                },
+                                'extra-attribute': {
+                                    'type': 'option',
+                                    'multiple': True,
+                                    'content_type': unicode,
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
+                                    },
+                                },
                             }
                         }
                     }
