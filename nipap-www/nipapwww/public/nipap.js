@@ -603,9 +603,12 @@ function showPrefix(prefix, reference, offset) {
 	prefix_type_icon.addClass('prefix_type_' + prefix.type);
 
 	// Add tooltip to prefix type icon
-	prefix_type_icon.addClass('tiptip');
-	prefix_type_icon.attr('title', prefix.type[0].toUpperCase() + prefix.type.slice(1));
+	prefix_type_icon.attr('tooltip', prefix.type[0].toUpperCase() + prefix.type.slice(1));
 	prefix_type_icon.html(prefix.type[0].toUpperCase());
+	// Run element through AngularJS compiler to "activate" directives (the
+	// AngularUI/Bootstrap tooltip)
+	prefix_type_icon.replaceWith(ng_compile(prefix_type_icon)(ng_scope));
+	ng_scope.$apply();
 
 	// Add tags
 	prefix_row.append('<div id="prefix_tags' + prefix.id + '">');
@@ -615,28 +618,27 @@ function showPrefix(prefix, reference, offset) {
 	if ((prefix.tags == null || $.isEmptyObject(prefix.tags)) && (prefix.inherited_tags == null || $.isEmptyObject(prefix.inherited_tags))) {
 		prefix_tags.html("&nbsp;");
 	} else {
-		tags_html = 'Tags:<br/>';
-		// XXX: so much code for so little
-		// convert objects to array, sort it and render
-		var tags = [];
-		for (var tag in prefix.tags) { tags.push(tag); }
-		var inherited_tags = [];
-		for (var tag in prefix.inherited_tags) { inherited_tags.push(tag); }
-		var sorted_tags = tags.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
-		var sorted_inherited_tags = inherited_tags.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		sort_func = function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); }
 
-		for (var i = 0; i < sorted_tags.length; i++) {
-			tags_html += "&nbsp;&nbsp;" + sorted_tags[i] + "<br/>";
+		var tag_list = Object.keys(prefix.tags).sort(sort_func).join('<br/>');
+		if (prefix.tags.length == 1 ) {
+			tag_list += '<br/>'
 		}
-		tags_html += 'Inherited tags:<br/>';
-		for (var i = 0; i < sorted_inherited_tags.length; i++) {
-			tags_html += "&nbsp;&nbsp;" + sorted_inherited_tags[i] + "<br/>";
-		}
-		prefix_tags.addClass('tiptip');
-		prefix_tags.prop('title', tags_html)
+
+		tags_html = '<div style="text-align: left;">Tags:<br/>' +
+			tag_list +
+			'<br>Inherited tags:<br/>' +
+			Object.keys(prefix.inherited_tags).sort(sort_func).join('<br/>') +
+			'</div>';
+
 		prefix_tags.html('<img src="/images/tag-16.png">');
-		prefix_tags.tipTip({ delay: 100 });
+		prefix_tags.children().attr('tooltip-html-unsafe', tags_html);
+		// Run element through AngularJS compiler to "activate" directives (the
+		// AngularUI/Bootstrap tooltip)
+		prefix_tags.replaceWith(ng_compile(prefix_tags)(ng_scope));
+		ng_scope.$apply();
 	}
+
 
 	// Add node
 	prefix_row.append('<div id="prefix_node' + prefix.id + '">');
@@ -679,10 +681,9 @@ function showPrefix(prefix, reference, offset) {
 	if (prefix.comment == null || prefix.comment == '') {
 		prefix_comment.html("&nbsp;");
 	} else {
-		prefix_comment.addClass('tiptip');
-		prefix_comment.prop('title', prefix.comment)
+		prefix_comment.prop('tooltip', prefix.comment)
+		prefix_comment.prop('tooltip-placement', 'bottom')
 		prefix_comment.html('<img src="/images/comments-16.png">');
-		prefix_comment.tipTip({ delay: 100 });
 	}
 
 	// Add prefix description
@@ -1144,8 +1145,10 @@ function receivePrefixList(search_result) {
 	if (!verifyPrefixListResponse(search_result)) return;
 	newest_prefix_query = parseInt(search_result.search_options.query_id);
 
-	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left tiptip" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" title="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
-	$('#search_interpretation_text').tipTip({delay: 100});
+	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" tooltip="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
+	// Run element through AngularJS compiler to "activate" directives (the
+	// AngularUI/Bootstrap tooltip)
+	$(".search_interpretation_text").replaceWith(ng_compile($(".search_interpretation_text"))(ng_scope));
 
 	/*
 	 * Interpretation list
@@ -1191,11 +1194,16 @@ function receivePrefixList(search_result) {
 			tooltip = "The description OR node OR order id OR the comment should regexp match '" + interp.string + "'";
 		}
 
-		intp_cont.append('<div class="search_interpretation tiptip" id="intp' + key + '" title="' + tooltip + '">');
+		intp_cont.append('<div class="search_interpretation" id="intp' + key + '" tooltip="' + tooltip + '">');
 		$('#intp' + key).html(text);
-		$('#intp' + key).tipTip({delay: 100});
 
 	}
+
+	// Run element through AngularJS compiler to "activate" directives (the
+	// AngularUI/Bootstrap tooltip)
+	intp_cont.replaceWith(ng_compile(intp_cont)(ng_scope));
+	ng_scope.$apply();
+
 	stats.draw_intp_finished = new Date().getTime();
 
 	/*
@@ -2331,8 +2339,11 @@ function selectPrefix(prefix_id) {
 			maxpreflen = 128;
 		}
 
-		$('#length_info_text').html('<span class="tiptip" title="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' + maxpreflen+ '>');
-		$('.tiptip').tipTip({delay: 100});
+		$('#length_info_text').html('<span tooltip="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' + maxpreflen+ '>');
+		// Run element through AngularJS compiler to "activate" directives (the
+		// AngularUI/Bootstrap tooltip)
+		$('#length_info_text').replaceWith(ng_compile($('#length_info_text'))(ng_scope));
+		ng_scope.$apply();
 
 		// enable / disable types
 		$('#radio-prefix-type-reservation').attr('disabled', 'disabled');
