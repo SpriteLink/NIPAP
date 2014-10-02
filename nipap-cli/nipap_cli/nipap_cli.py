@@ -2684,9 +2684,23 @@ cmds = {
     }
 }
 
+userrcfile = os.path.expanduser('~/.nipaprc')
+
+try:
+    nipaprc_perms = oct(os.stat(userrcfile).st_mode & 0777)
+except OSError:
+    print "%s file could not be opened, does it exist?" % userrcfile
+    sys.exit(2)
+
+if not nipaprc_perms == '0600':
+    sys.stderr.write("Permissions %s for '%s' are too open."
+                     % (nipaprc_perms, userrcfile))
+    print "HINT: do chmod 0600 ~/.nipaprc"
+    sys.exit(1)
+
 # read configuration
 cfg = ConfigParser.ConfigParser()
-cfg.read(os.path.expanduser('~/.nipaprc'))
+cfg.read(userrcfile)
 
 setup_connection()
 
