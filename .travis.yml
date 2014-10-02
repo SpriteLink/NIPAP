@@ -49,6 +49,7 @@ install:
     - sudo apt-get install -qq -y --force-yes devscripts python-docutils
     # configure .nipaprc
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
+    - chmod 0600 ~/.nipaprc
 
     # -- virtualenv build ------------------------------------------------------
     # install nipap dependencies
