@@ -449,6 +449,29 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 						var msg = data || "Unknown failure";
 						showDialogNotice('Error', stat + ': ' + msg);
 					});
+
+				// Display statistics
+				// TODO: Do in AngularJS-way, probably easiest to encapsulate
+				// in a directive
+				var data_prefix_addresses = [
+					{
+						value: $scope.prefix.used_addresses,
+						color: '#d74228',
+						highlight: '#e74228',
+						label: 'Used'
+					},
+					{
+						value: $scope.prefix.free_addresses,
+						color: '#368400',
+						highlight: '#36a200',
+						label: 'Free'
+					}
+				];
+
+
+				var options = { animationSteps : 20, animationEasing: "easeOutQuart" };
+				var chart_prefix_addresses = new Chart($("#canvas_prefix_addresses")[0].getContext("2d")).Doughnut(data_prefix_addresses, options);
+
 			}
 
 		})
@@ -464,6 +487,7 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 
 		// If prefix is owned by other system, ask user to veryfy the changes
 		if ($scope.prefix.authoritative_source != 'nipap') {
+			// TODO: Replace with AngularJS-style widget
 			showDialogYesNo(
 				'Confirm prefix edit',
 				'The prefix ' + $scope.prefix.authoritative_source + ' is managed by ' +

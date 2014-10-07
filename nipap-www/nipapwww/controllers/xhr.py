@@ -854,7 +854,10 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'display': obj.display,
                 'match': obj.match,
 				'children': obj.children,
-                'vlan': obj.vlan
+                'vlan': obj.vlan,
+                'total_addresses': obj.total_addresses,
+                'used_addresses': obj.used_addresses,
+                'free_addresses': obj.free_addresses
             }
         else:
             return json.JSONEncoder.default(self, obj)
