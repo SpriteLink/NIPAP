@@ -164,15 +164,15 @@ PREFIX DATA
 					</dl>
 				</div>
 
-				<div class="rule"></div>
+				<div class="rule" ng-show="method == 'edit'"></div>
 
-				<div class="option">
+				<div class="option" ng-show="method == 'edit'">
 					<dl>
 						<dt>
 							Inherited tags
 						</dt>
 						<dd>
-							<tags-input ng-model="prefix.inherited_tags"></tags-input>
+							<tags-input ng-model="prefix.inherited_tags" add-from-autocomplete-only="true"></tags-input>
 						</dd>
 					</dl>
 				</div>
