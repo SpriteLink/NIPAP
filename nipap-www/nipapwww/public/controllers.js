@@ -398,3 +398,114 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	}
 
 });
+
+/*
+ * PrefixEditController - used to edit prefixes
+ */
+nipapAppControllers.controller('PrefixEditController', function ($scope, $routeParams, $http) {
+
+	// Prefix method is edit - used to customize prefix form template
+	$scope.method = 'edit';
+
+	$scope.vrf = null;
+
+	// The tags-attributes needs to be initialized due to bug,
+	// see https://github.com/mbenford/ngTagsInput/issues/204
+	$scope.prefix = { 'tags': [], 'inherited_tags': [] };
+
+	$scope.edited_prefixes = [];
+
+	// Fetch prefix to edit from backend
+	$http.get('/xhr/list_prefix', { 'params': { 'id': $routeParams.prefix_id } })
+		.success(function (data) {
+			if (data.hasOwnProperty('error')) {
+				showDialogNotice('Error', data.message);
+			} else {
+				pref = data[0];
+
+				// Tags needs to be mangled for use with tags-input
+				// TODO: When all interaction with prefix add & edit functions
+				// are moved to AngularJS, change XHR functions to use the same
+				// format as tags-input
+				pref.tags = Object.keys(pref.tags).map(function (elem) { return { 'text': elem }; } );
+				pref.inherited_tags = Object.keys(pref.inherited_tags).map(function (elem) { return { 'text': elem }; } );
+
+				$scope.prefix = pref;
+
+				// Fetch prefix's VRF
+				$http.get('/xhr/smart_search_vrf',
+					{ 'params': {
+						'vrf_id': $scope.prefix.vrf_id,
+						'query_string': ''
+				}})
+					.success(function (data) {
+						if (data.hasOwnProperty('error')) {
+							showDialogNotice('Error', data.message);
+						} else {
+							$scope.vrf = data.result[0];
+						}
+					})
+					.error(function (data, stat) {
+						var msg = data || "Unknown failure";
+						showDialogNotice('Error', stat + ': ' + msg);
+					});
+			}
+
+		})
+		.error(function (data, stat) {
+			var msg = data || "Unknown failure";
+			showDialogNotice('Error', stat + ': ' + msg);
+		});
+
+	/*
+	 * Form submitted
+	 */
+	$scope.submitForm = function () {
+
+		// If prefix is owned by other system, ask user to veryfy the changes
+		if ($scope.prefix.authoritative_source != 'nipap') {
+			showDialogYesNo(
+				'Confirm prefix edit',
+				'The prefix ' + $scope.prefix.authoritative_source + ' is managed by ' +
+				'\'' + $scope.prefix.authoritative_source + '\'.<br><br>' +
+				'Are you sure you want to edit it?',
+				function() {
+					$scope.savePrefix();
+					$(this).dialog("close");
+				}
+
+			);
+		} else {
+			$scope.savePrefix();
+		}
+
+	}
+
+	/*
+	 * Save changes made to prefix
+	 */
+	$scope.savePrefix = function() {
+
+		// Create new object with prefix data
+		var prefix_data = angular.copy($scope.prefix);
+
+		// Mangle tags
+		prefix_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
+
+		// Send query!
+		$http.get('/xhr/edit_prefix/' + $scope.prefix.id, { 'params': prefix_data })
+			.success(function (data){
+				if (data.hasOwnProperty('error')) {
+					showDialogNotice('Error', data.message);
+				} else {
+					$scope.edited_prefixes.push(data);
+				}
+			})
+			.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+			});
+
+	}
+
+});

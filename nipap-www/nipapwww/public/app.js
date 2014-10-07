@@ -22,6 +22,10 @@ nipapApp.config(function($routeProvider, $tooltipProvider) {
 			.when('/prefix/add/:allocation_method/:allocation_method_parameter?', {
 				'controller': 'PrefixAddController',
 				'templateUrl': '/templates/prefix_add.html'
+			})
+			.when('/prefix/edit/:prefix_id', {
+				'controller': 'PrefixEditController',
+				'templateUrl': '/templates/prefix_edit.html'
 			});
 
 		/*

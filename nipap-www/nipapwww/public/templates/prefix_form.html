@@ -33,12 +33,35 @@ PREFIX DATA
 							Default prefix type for pool is <b>{{ from_pool.default_type }}</b>. Click to change.
 						</span>
 						<span id="prefix_type_selection" ng-show="method == 'add' && (prefix_alloc_method != 'from-pool' || display_type_input_pool === true) || method == 'edit'">
-							<input type="radio" id="radio-prefix-type-reservation" name="prefix_type" value="reservation" tooltip="Reservation are for reserving a network for later assigning as specific assignments" ng-model="prefix.type" ng-disabled="from_prefix.type == 'assignment'">
-							<label for="radio-prefix-type-reservation" tooltip="Reservation are for reserving a network for later assigning as specific assignments">Reservation</label>
-							<input type="radio" id="radio-prefix-type-assignment" name="prefix_type" value="assignment" tooltip="A single subnet, for a specific use in the network" ng_model="prefix.type" ng-disabled="from_prefix.type == 'assignment'">
-							<label for="radio-prefix-type-assignment" tooltip="A single subnet, for a specific use in the network">Assignment</label>
-							<input type="radio" id="radio-prefix-type-host" name="prefix_type" value="host" tooltip="A single host within an assignment" ng_model="prefix.type" ng-disabled="from_prefix.type == 'assignment' || from_prefix.type == 'reservation'">
-							<label for="radio-prefix-type-host" tooltip="A single host within an assignment">Host</label>
+							<input type="radio"
+								id="radio-prefix-type-reservation"
+								name="prefix_type"
+								value="reservation"
+								tooltip="Reservation are for reserving a network for later assigning as specific assignments"
+								ng-model="prefix.type"
+								ng-disabled="(method == 'edit' && prefix.type == 'host') || (method == 'add' && from_prefix.type == 'assignment')">
+							<label for="radio-prefix-type-reservation" tooltip="Reservation are for reserving a network for later assigning as specific assignments">
+								Reservation
+							</label>
+							<input type="radio"
+								id="radio-prefix-type-assignment"
+								name="prefix_type"
+								value="assignment"
+								tooltip="A single subnet, for a specific use in the network"
+								ng_model="prefix.type"
+								ng-disabled="(method == 'edit' && prefix.type == 'host') || (method == 'add' && from_prefix.type == 'assignment')">
+							<label for="radio-prefix-type-assignment" tooltip="A single subnet, for a specific use in the network">
+								Assignment
+							</label>
+							<input type="radio" id="radio-prefix-type-host"
+								name="prefix_type"
+								value="host"
+								tooltip="A single host within an assignment"
+								ng_model="prefix.type"
+								ng-disabled="(method == 'edit' && prefix.type != 'host') || (method == 'add' && from_prefix.type == 'assignment' || from_prefix.type == 'reservation')">
+							<label for="radio-prefix-type-host" tooltip="A single host within an assignment">
+								Host
+							</label>
 							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
 						</span>
 						</dd>
