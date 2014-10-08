@@ -1,0 +1,287 @@
+<!--
+
+PREFIX DATA
+
+-->
+
+<div id="prefix_data_container" ng-show="method == 'edit' || method == 'add' && (prefix_alloc_method == 'manual' || from_pool != null || from_prefix != null)">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Prefix options</h3>
+			<form ng-submit="submitForm()">
+
+				<div class="option" ng-show="method == 'edit' || method == 'add' && prefix_alloc_method == 'manual'" id="prefix-row">
+					<dl>
+						<dt>
+							Prefix <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
+						</dt>
+						<dd>
+							<input type="text" name="prefix_prefix" tooltip="The prefix, i.e. 192.0.2.16/28" ng-model="prefix.prefix">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+							Type <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
+						</dt>
+						<dd>
+						<span id="default_prefix_type" style="cursor: pointer;" ng-show="method == 'add' && (prefix_alloc_method == 'from-pool' && display_type_input_pool === false)" ng-click="display_type_input_pool = true">
+							Default prefix type for pool is <b>{{ from_pool.default_type }}</b>. Click to change.
+						</span>
+						<span id="prefix_type_selection" ng-show="method == 'add' && (prefix_alloc_method != 'from-pool' || display_type_input_pool === true) || method == 'edit'">
+							<input type="radio"
+								id="radio-prefix-type-reservation"
+								name="prefix_type"
+								value="reservation"
+								tooltip="Reservation are for reserving a network for later assigning as specific assignments"
+								ng-model="prefix.type"
+								ng-disabled="(method == 'edit' && prefix.type == 'host') || (method == 'add' && from_prefix.type == 'assignment')">
+							<label for="radio-prefix-type-reservation" tooltip="Reservation are for reserving a network for later assigning as specific assignments">
+								Reservation
+							</label>
+							<input type="radio"
+								id="radio-prefix-type-assignment"
+								name="prefix_type"
+								value="assignment"
+								tooltip="A single subnet, for a specific use in the network"
+								ng_model="prefix.type"
+								ng-disabled="(method == 'edit' && prefix.type == 'host') || (method == 'add' && from_prefix.type == 'assignment')">
+							<label for="radio-prefix-type-assignment" tooltip="A single subnet, for a specific use in the network">
+								Assignment
+							</label>
+							<input type="radio" id="radio-prefix-type-host"
+								name="prefix_type"
+								value="host"
+								tooltip="A single host within an assignment"
+								ng_model="prefix.type"
+								ng-disabled="(method == 'edit' && prefix.type != 'host') || (method == 'add' && from_prefix.type == 'assignment' || from_prefix.type == 'reservation')">
+							<label for="radio-prefix-type-host" tooltip="A single host within an assignment">
+								Host
+							</label>
+							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
+						</span>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+							VRF
+						</dt>
+						<dd>
+							<div style="position: relative;">
+								<div id="prefix_vrf_text" class="prefix_vrf_text">
+									<span ng-show="method == 'add' && (vrf === null && from_pool === null)">
+										No VRF currently selected, please choose destination VRF for new prefix manually.
+									</span>
+									<span ng-show="method == 'add' && (vrf === null && from_pool !== null)">
+										Pool is missing implied VRF. Is it empty?
+									</span>
+									<span ng-show="method == 'add' && (vrf !== null && from_pool !== null)">
+										Destination VRF for new prefix taken from pool's implied VRF.
+									</span>
+									<span ng-show="method == 'add' && (vrf !== null && from_prefix !== null)">
+										VRF from parent prefix:
+									</span>
+								</div>
+	                            <div class="selector">
+	                                <div id="prefix_vrf_display" style="width: 80%; border: 1px solid #CCCCCC; float: left;">
+	                                    <div class="vrf_filter_entry" ng-show="vrf !== null">
+	                                        <div class="vrf_filter_entry_rt">RT:&nbsp; {{ vrf.rt || '-' }} </div>
+	                                        <div class="selector_entry_name" style="margin-left: 5px;">{{ vrf.name }}</div>
+	                                        <div class="selector_entry_description" style="clear: both;">{{ vrf.description }}</div>
+	                                    </div>
+	                                    <span ng-show="vrf === null">No VRF selected.</span>
+	                                </div>
+									<span nipap-vrf-selector selected-vrf="vrf" ng-show="method == 'add' && (from_pool === null)"></span>
+	                            </div>
+	                        </div>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Status <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
+						</dt>
+						<dd>
+						<select id="prefix_status" ng-model="prefix.status">
+							<option value="assigned">Assigned</option>
+							<option value="reserved">Reserved</option>
+							<option value="quarantine">Quarantine</option>
+						</select>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						Description
+						</dt>
+						<dd>
+							<input type="text" name="prefix_description" style="width: 80%;" tooltip="A brief description of the prefix." ng-model="prefix.description">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option" id="prefix_comment_container">
+					<dl>
+						<dt>
+						Comment
+						</dt>
+						<dd>
+						<span id="add_comment" style="font-size: 10px; color: gray; cursor: pointer;" ng-click="prefix.comment = ''" ng-show="prefix.comment === null">add comment</span>
+						<input type="text" name="prefix_comment" style="width: 80%;" ng-model="prefix.comment" ng-show="prefix.comment !== null">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule" id="prefix_comment_rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+							Tags
+						</dt>
+						<dd>
+							<tags-input ng-model="prefix.tags"></tags-input>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule" ng-show="method == 'edit'"></div>
+
+				<div class="option" ng-show="method == 'edit'">
+					<dl>
+						<dt>
+							Inherited tags
+						</dt>
+						<dd>
+							<tags-input ng-model="prefix.inherited_tags" add-from-autocomplete-only="true"></tags-input>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+							Node
+						</dt>
+						<dd>
+							<input type="text" name="prefix_node" tooltip="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured." ng-model="prefix.node" ng-disabled="prefix.type != 'host'">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+							Country
+						</dt>
+						<dd>
+							<input type="text" name="prefix_country" size=3 tooltip="Two-letter country code according to ISO-3166-1" ng-model="prefix.country">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+							Order ID
+						</dt>
+						<dd>
+						<input type="text" name="prefix_order_id" size=10 ng-model="prefix.order_id">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+							Customer ID
+						</dt>
+						<dd>
+						<input type="text" name="prefix_customer_id" size=10 ng-model="prefix.customer_id">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+							VLAN
+						</dt>
+						<dd>
+						<input type="text" name="prefix_vlan" size=10 ng-model="prefix.vlan">
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+							Monitor
+						</dt>
+						<dd>
+						<input type="checkbox" name="prefix_monitor" title="Check to monitor this prefix." ng-model="prefix.monitor">
+						<span id="alarm_priority_container" ng-show="prefix.monitor === true">
+							Priority:
+							<input type="radio" id="radio-prefix-alarm-prio-warning" name="prefix_alarm_priority" value="warning" ng-model="prefix.alarm_priority">
+							<label for="radio-prefix-alarm-prio-warning">Warning</label>
+							<input type="radio" id="radio-prefix-alarm-prio-low" name="prefix_alarm_priority" value="low" ng-model="prefix.alarm_priority">
+							<label for="radio-prefix-alarm-prio-low">Low</label>
+							<input type="radio" id="radio-prefix-alarm-prio-medium" name="prefix_alarm_priority" value="medium" ng-model="prefix.alarm_priority">
+							<label for="radio-prefix-alarm-prio-medium">Medium</label>
+							<input type="radio" id="radio-prefix-alarm-prio-high" name="prefix_alarm_priority" value="high" ng-model="prefix.alarm_priority">
+							<label for="radio-prefix-alarm-prio-high">High</label>
+							<input type="radio" id="radio-prefix-alarm-prio-critical" name="prefix_alarm_priority" value="critical" ng-model="prefix.alarm_priority">
+							<label for="radio-prefix-alarm-prio-critical">Critical</label>
+						</span>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+						</dt>
+						<dd>
+							<input class="button button_green" type="submit" value="Add" ng-show="method == 'add'">
+							<input class="button button_green" type="submit" value="Save" ng-show="method == 'edit'">
+						</dd>
+					</dl>
+				</div>
+
+			</form>
+		</div>
+	</div>
+</div>

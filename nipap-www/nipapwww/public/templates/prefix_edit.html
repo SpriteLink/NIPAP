@@ -1,0 +1,43 @@
+<div class="page-title">
+	Prefix administration &mdash;&gt; edit prefix
+</div>
+
+<ng-include src="'/templates/prefix_form.html'"></ng-include>
+
+<div id="prefix_success_container" ng-show="edited_prefixes.length > 0">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Result</h3>
+			<div ng-repeat="prefix in edited_prefixes" style="padding: 15px; background-color: #ccffcc;">
+				The prefix {{ prefix.prefix }} was successfully edited.
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--
+
+STATISTICS
+
+-->
+<div class="options-group">
+	<div class="options-content">
+		<h3 class="options-group-heading">Statistics for prefix {{ prefix.prefix }}</h3>
+
+		<div class="option">
+			<dl>
+				<dt>
+				</dt>
+				<dd>
+					<canvas id="canvas_prefix_addresses" style="float: right;" width="250px;" height="100"></canvas>
+					Prefix {{ prefix.prefix }} contains {{ prefix.total_addresses }}
+					addresses out of which {{ prefix.used_addresses }} are
+					in use while {{ prefix.free_addresses }} are free,
+					representing a usage of
+					{{ (prefix.used_addresses / prefix.total_addresses * 100) | number: 1 }}%.
+				</dd>
+			</dl>
+		</div>
+
+	</div>
+</div>

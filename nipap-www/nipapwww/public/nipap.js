@@ -762,7 +762,7 @@ function showPrefixMenu(prefix_id) {
 		// Add to pool (Add prefix to pool on edit pool page)
 	} else {
 		// ordinary prefix list
-		menu.append('<a href="/prefix/edit/' + prefix_id + '">Edit</a>');
+		menu.append('<a href="/ng/prefix#/prefix/edit/' + prefix_id + '">Edit</a>');
 		menu.append('<a id="prefix_remove' + prefix_id + '" href="/prefix/remove/' + prefix_id + '">Remove</a>');
 
         // Create prefix remove dialog text and actions dependent on
