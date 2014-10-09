@@ -21,6 +21,12 @@ class NgController(BaseController):
         redirect(url(controller = 'ng', action = 'prefix'))
 
 
+    def pool(self):
+        """ Action for handling the pool-section
+        """
+        return render('/ng-pool.html')
+
+
     def prefix(self):
         """ Action for handling the prefix-section
         """

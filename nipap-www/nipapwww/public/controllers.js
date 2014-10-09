@@ -812,3 +812,51 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 	}
 
 });
+
+/*
+ * PoolAddController - used to add pools
+ */
+nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
+
+	$scope.method = 'add';
+	$scope.added_pools = [];
+	$scope.pool = {
+		'name': null,
+		'description': null,
+		'tags': [],
+		'default_type': null,
+		'ipv4_default_prefix_length': null,
+		'ipv6_default_prefix_length': null
+	};
+
+	/*
+	 * Submit pool form - add pool
+	 */
+	$scope.submitForm = function() {
+
+		/*
+		 * Create object specifying pool attributes. Start with a copy of the
+		 * pool object from the scope.
+		 */
+		var query_data = angular.copy($scope.pool);
+
+		// Rewrite tags list to match what's expected by the XHR functions
+		query_data.tags = JSON.stringify($scope.pool.tags.map(function (elem) { return elem.text; }));
+
+		// Send query!
+		$http.get('/xhr/add_pool', { 'params': query_data })
+			.success(function (data){
+				if (data.hasOwnProperty('error')) {
+					showDialogNotice('Error', data.message);
+				} else {
+					$scope.added_pools.push(data);
+				}
+			})
+			.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+			});
+
+	}
+
+});

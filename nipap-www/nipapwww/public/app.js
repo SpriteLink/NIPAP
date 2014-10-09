@@ -19,6 +19,10 @@ nipapApp.config(function($routeProvider, $tooltipProvider) {
 		 * Define application routes
 		 */
 		$routeProvider
+			.when('/pool/add', {
+				'controller': 'PoolAddController',
+				'templateUrl': '/templates/pool_add.html'
+			})
 			.when('/prefix/add/:allocation_method/:allocation_method_parameter?', {
 				'controller': 'PrefixAddController',
 				'templateUrl': '/templates/prefix_add.html'

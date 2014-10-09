@@ -1,0 +1,145 @@
+<form ng-submit="submitForm()">
+	<div class="options-group">
+		<div class="options-content">
+
+			<h3 ng-show="method == 'edit'" class="options-group-heading">Properties of pool {{ c.pool.name }}</h3>
+			<h3 ng-show="method == 'add'" class="options-group-heading">Properties of new pool</h3>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Name <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
+					</dt>
+					<dd>
+						<input type="text" name="name" ng-model="pool.name"></td>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Description
+					</dt>
+					<dd>
+					<input type="text" style="width: 80%;"
+						name="description"
+						ng-model="pool.description"
+						tooltip="Enter a short description of what this pool is used for.">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Tags
+					</dt>
+					<dd>
+						<tags-input ng-model="pool.tags"></tags-input>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Default type
+					</dt>
+					<dd>
+					<input type="radio" id="radio-default-type-reservation"
+						tooltip="Reservation are for reserving a network for later assigning as specific assignments"
+						name="default_type"
+						value="reservation"
+						ng-model="pool.default_type">
+					<label for="radio-default-type-reservation" tooltip="Reservation are for reserving a network for later assigning as specific assignments">
+						Reservation
+					</label>
+					<input type="radio" id="radio-default-type-assignment"
+						tooltip="A single subnet, for a specific use in the network"
+						name="default_type"
+						value="assignment"
+						ng-model="pool.default_type">
+					<label for="radio-default-type-assignment" tooltip="A single subnet, for a specific use in the network">
+						Assignment
+					</label>
+					<input type="radio" id="radio-default-type-host"
+						tooltip="A single host within an assignment"
+						name="default_type"
+						value="host"
+						ng-model="pool.default_type">
+					<label for="radio-default-type-host" tooltip="A single host within an assignment" >
+						Host
+					</label>
+					<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Default IPv4 prefix length
+					</dt>
+					<dd>
+					<input type="text" name="ipv4_default_prefix_length"
+						ng-model="pool.ipv4_default_prefix_length"
+						tooltip="The default IPv4 prefix length of prefixes assigned from this pool. Should be an integer value, for example 24 or 31.">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Default IPv6 prefix length
+					</dt>
+					<dd>
+					<input type="text" name="ipv6_default_prefix_length"
+						ng-model="pool.ipv6_default_prefix_length"
+						tooltip="The default IPv6 prefix length of prefixes assigned from this pool. Should be an integer value, for example 64 or 112.">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option" ng-show="method == 'edit'">
+				<dl>
+					<dt>
+						Implied VRF
+					</dt>
+					<dd>
+					<span tooltip="The implied VRF is the VRF to which prefixes that are members of this pool belong.">
+						{{ pool.vrf.rt }} - {{ pool.vrf.name }}
+					</span>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule" ng-show="method == 'edit'"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+					</dt>
+					<dd>
+						<input type="submit" class="button button_green" value="Add pool" ng-show="method == 'add'">
+						<input type="submit" class="button button_green" value="Save pool" ng-show="method == 'edit'">
+					</dd>
+				</dl>
+	 		</div>
+
+		</div>
+	</div>
+</form>
