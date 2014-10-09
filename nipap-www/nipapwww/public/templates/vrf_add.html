@@ -1,0 +1,16 @@
+<div class="page-title">
+	VRF administration &mdash;&gt; add VRF
+</div>
+
+<ng-include src="'/templates/vrf_form.html'"></ng-include>
+
+<div id="vrf_success_container" ng-show="added_vrfs.length > 0">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Result</h3>
+			<div id="vrf_success_bg" ng-repeat="vrf in added_vrfs | orderBy:'id':true" style="padding: 15px; background-color: #ccffcc;">
+				The VRF {{ vrf.rt }} was successfully added.
+			</div>
+		</div>
+	</div>
+</div>

@@ -533,3 +533,50 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 	}
 
 });
+
+/*
+ * VRFAddController - used to add VRFs
+ */
+nipapAppControllers.controller('VRFAddController', function ($scope, $http) {
+
+	$scope.method = 'add';
+	$scope.added_vrfs = [];
+
+	$scope.vrf = {
+		'rt': null,
+		'name': null,
+		'description': null,
+		'tags': []
+	};
+
+	/*
+	 * Submit VRF form - add VRF to NIPAP
+	 */
+	$scope.submitForm = function () {
+
+		/*
+		 * Create object specifying VRF attributes. Start with a copy of the
+		 * VRF object from the scope.
+		 */
+		var query_data = angular.copy($scope.vrf);
+
+		// Rewrite tags list to match what's expected by the XHR functions
+		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
+
+		// Send query!
+		$http.get('/xhr/add_vrf', { 'params': query_data })
+			.success(function (data){
+				if (data.hasOwnProperty('error')) {
+					showDialogNotice('Error', data.message);
+				} else {
+					$scope.added_vrfs.push(data);
+				}
+			})
+			.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+			});
+
+	}
+
+});
