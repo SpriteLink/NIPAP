@@ -6,7 +6,7 @@
 {% block content %}
 
 <div style="position: absolute; right: 20px; top: 14px;">
-	{{ nipap.button('Add VRF', color='red', url=h.url(controller = 'vrf', action = 'add')) }}
+	{{ nipap.button('Add VRF', color='red', url='/ng/vrf#/vrf/add') }}
 </div>
 
 <div style="text-align: center; padding: 20px;">
@@ -41,7 +41,7 @@
                     </div>
                     <div class="dropdown-menu popup_menu">
                         <h3>VRF</h3>
-                        <a href="/vrf/edit/{{ vrf.id }}">Edit</a>
+                        <a href="/ng/vrf#/vrf/edit/{{ vrf.id }}">Edit</a>
                         <a href="#" ng-click="vrfConfirmRemove($event, vrf)">Remove</a>
                     </div>
                 </div>
