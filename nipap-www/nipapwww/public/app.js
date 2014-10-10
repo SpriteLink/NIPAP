@@ -26,6 +26,14 @@ nipapApp.config(function($routeProvider, $tooltipProvider) {
 			.when('/prefix/edit/:prefix_id', {
 				'controller': 'PrefixEditController',
 				'templateUrl': '/templates/prefix_edit.html'
+			})
+			.when('/vrf/add', {
+				'controller': 'VRFAddController',
+				'templateUrl': '/templates/vrf_add.html'
+			})
+			.when('/vrf/edit/:vrf_id', {
+				'controller': 'VRFEditController',
+				'templateUrl': '/templates/vrf_edit.html'
 			});
 
 		/*

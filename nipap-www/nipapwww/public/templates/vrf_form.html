@@ -1,0 +1,91 @@
+<!--
+
+VRF DATA
+
+-->
+
+<form ng-submit="submitForm()">
+
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading" ng-show="method == 'add'">
+				Properties of new VRF
+			</h3>
+			<h3 class="options-group-heading" ng-show="method == 'edit'">
+				Properties of VRF {{ vrf.name }}
+			</h3>
+
+			<div class="option">
+				<dl>
+					<dt>
+						RT
+					</dt>
+					<dd>
+						<input type="text"
+							name="rt"
+							ng-model="vrf.rt"
+							tooltip="VRF RT (e.g. 123:4567 or 192.0.2.12:345).">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Name <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
+					</dt>
+					<dd>
+						<input type="text"
+							name="name"
+							ng-model="vrf.name"
+							tooltip="Name of the VRF. Try to use less than 20 characters and no spaces.">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Description
+					</dt>
+					<dd>
+						<input type="text"
+							style="width: 80%;"
+							name="description"
+							ng-model="vrf.description"
+							tooltip="Enter a short description of what this VRF is used for.">
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Tags
+					</dt>
+					<dd>
+						<tags-input ng-model="vrf.tags"></tags-input>
+					</dd>
+				</dl>
+			</div>
+
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt></dt>
+					<dd>
+						<input class="button button_green" type="submit" value="Add" ng-show="method == 'add'">
+						<input class="button button_green" type="submit" value="Save" ng-show="method == 'edit'">
+					</dd>
+				</dl>
+			</div>
+		</div>
+	</div>
+</form>

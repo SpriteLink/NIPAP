@@ -533,3 +533,156 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 	}
 
 });
+
+/*
+ * VRFAddController - used to add VRFs
+ */
+nipapAppControllers.controller('VRFAddController', function ($scope, $http) {
+
+	$scope.method = 'add';
+	$scope.added_vrfs = [];
+
+	$scope.vrf = {
+		'rt': null,
+		'name': null,
+		'description': null,
+		'tags': []
+	};
+
+	/*
+	 * Submit VRF form - add VRF to NIPAP
+	 */
+	$scope.submitForm = function () {
+
+		/*
+		 * Create object specifying VRF attributes. Start with a copy of the
+		 * VRF object from the scope.
+		 */
+		var query_data = angular.copy($scope.vrf);
+
+		// Rewrite tags list to match what's expected by the XHR functions
+		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
+
+		// Send query!
+		$http.get('/xhr/add_vrf', { 'params': query_data })
+			.success(function (data){
+				if (data.hasOwnProperty('error')) {
+					showDialogNotice('Error', data.message);
+				} else {
+					$scope.added_vrfs.push(data);
+				}
+			})
+			.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+			});
+
+	}
+
+});
+
+/*
+ * VRFEditController - used to edit VRFs
+ */
+nipapAppControllers.controller('VRFEditController', function ($scope, $routeParams, $http) {
+
+	$scope.method = 'edit';
+	$scope.edited_vrfs = [];
+
+	$scope.vrf = {
+		'tags': []
+	};
+
+	// Fetch VRF to edit from backend
+	$http.get('/xhr/smart_search_vrf',
+		{ 'params': {
+			'vrf_id': $routeParams.vrf_id,
+			'query_string': ''
+			}
+		})
+		.success(function (data) {
+			if (data.hasOwnProperty('error')) {
+				showDialogNotice('Error', data.message);
+			} else {
+				vrf = data.result[0];
+
+				// Tags needs to be mangled for use with tags-input
+				// TODO: When all interaction with prefix add & edit functions
+				// are moved to AngularJS, change XHR functions to use the same
+				// format as tags-input
+				vrf.tags = Object.keys(vrf.tags).map(function (elem) { return { 'text': elem }; } );
+
+				$scope.vrf = vrf;
+
+				// Display statistics
+				// TODO: Do in AngularJS-way, probably easiest to encapsulate
+				// in a directive
+				var data_charts = [
+					{
+						color: '#d74228',
+						highlight: '#e74228',
+						label: 'Used'
+					},
+					{
+						color: '#368400',
+						highlight: '#36a200',
+						label: 'Free'
+					}
+				];
+
+				var data_vrf_addresses_v4 = angular.copy(data_charts);
+				data_vrf_addresses_v4[0]['value'] = vrf.used_addresses_v4;
+				data_vrf_addresses_v4[1]['value'] = vrf.free_addresses_v4;
+
+				var data_vrf_addresses_v6 = angular.copy(data_charts);
+				data_vrf_addresses_v6[0]['value'] = vrf.used_addresses_v6;
+				data_vrf_addresses_v6[1]['value'] = vrf.free_addresses_v6;
+
+				var options = { animationSteps : 20, animationEasing: "easeOutQuart" };
+				if (vrf.num_prefixes_v4 > 0) {
+					var chart_vrf_addresses_v4 = new Chart($("#canvas_vrf_addresses_v4")[0].getContext("2d")).Doughnut(data_vrf_addresses_v4, options);
+				}
+
+				if (vrf.num_prefixes_v6 > 0) {
+					var chart_vrf_addresses_v6 = new Chart($("#canvas_vrf_addresses_v6")[0].getContext("2d")).Doughnut(data_vrf_addresses_v6, options);
+				}
+
+			}
+
+		})
+		.error(function (data, stat) {
+			var msg = data || "Unknown failure";
+			showDialogNotice('Error', stat + ': ' + msg);
+		});
+
+	/*
+	 * Submit VRF form - edit VRF
+	 */
+	$scope.submitForm = function () {
+
+		/*
+		 * Create object specifying VRF attributes. Start with a copy of the
+		 * VRF object from the scope.
+		 */
+		var query_data = angular.copy($scope.vrf);
+
+		// Rewrite tags list to match what's expected by the XHR functions
+		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
+
+		// Send query!
+		$http.get('/xhr/edit_vrf/' + vrf.id, { 'params': query_data })
+			.success(function (data){
+				if (data.hasOwnProperty('error')) {
+					showDialogNotice('Error', data.message);
+				} else {
+					$scope.edited_vrfs.push(data);
+				}
+			})
+			.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+			});
+
+	}
+
+});
