@@ -28,7 +28,7 @@ class XhrController(BaseController):
         if 'prefix' in request.params:
             attr['prefix'] = request.params['prefix']
         if 'pool' in request.params:
-            attr['pool'] = { 'id': int(request.params['pool']) }
+            attr['pool_id'] = int(request.params['pool'])
         if 'node' in request.params:
             attr['node'] = request.params['node']
         if 'type' in request.params:
@@ -848,7 +848,21 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'default_type': obj.default_type,
                 'ipv4_default_prefix_length': obj.ipv4_default_prefix_length,
                 'ipv6_default_prefix_length': obj.ipv6_default_prefix_length,
-                'tags': obj.tags
+                'tags': obj.tags,
+                'member_prefixes_v4': obj.member_prefixes_v4,
+                'member_prefixes_v6': obj.member_prefixes_v6,
+                'used_prefixes_v4': obj.used_prefixes_v4,
+                'used_prefixes_v6': obj.used_prefixes_v6,
+                'free_prefixes_v4': obj.free_prefixes_v4,
+                'free_prefixes_v6': obj.free_prefixes_v6,
+                'total_prefixes_v4': obj.total_prefixes_v4,
+                'total_prefixes_v6': obj.total_prefixes_v6,
+                'total_addresses_v4': obj.total_addresses_v4,
+                'total_addresses_v6': obj.total_addresses_v6,
+                'used_addresses_v4': obj.used_addresses_v4,
+                'used_addresses_v6': obj.used_addresses_v6,
+                'free_addresses_v4': obj.free_addresses_v4,
+                'free_addresses_v6': obj.free_addresses_v6
             }
 
         elif isinstance(obj, Prefix):

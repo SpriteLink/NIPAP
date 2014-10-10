@@ -121,7 +121,8 @@
 					</dt>
 					<dd>
 					<span tooltip="The implied VRF is the VRF to which prefixes that are members of this pool belong.">
-						{{ pool.vrf.rt }} - {{ pool.vrf.name }}
+						<span ng-show="pool.vrf !== null">{{ pool.vrf.rt }} - {{ pool.vrf.name }}</span>
+						<span ng-show="pool.vrf === null">No implied VRF available as the pool does not contain any prefixes.</span>
 					</span>
 					</dd>
 				</dl>

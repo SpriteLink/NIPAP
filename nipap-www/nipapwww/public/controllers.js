@@ -24,22 +24,6 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 		});
 
 	/*
-	 * Callback function after a vrf has been removed
-	 */
-	$scope.vrfRemoved = function (data, vrf) {
-
-		if ('error' in data) {
-			showDialogNotice('Error', data.message);
-			return;
-		}
-
-		var index = $scope.vrfs.indexOf(vrf);
-		$scope.vrfs.splice(index, 1);
-
-	}
-
-
-	/*
 	 * Display remove confirmation dialog
 	 */
 	$scope.vrfConfirmRemove = function (evt, vrf) {
@@ -54,7 +38,8 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
 					} else {
-						$scope.vrfRemoved(data, vrf);
+						var index = $scope.vrfs.indexOf(vrf);
+						$scope.vrfs.splice(index, 1);
 					}
 				})
 				.error(function (data, stat) {
@@ -89,22 +74,6 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 		});
 
 	/*
-	 * Callback function after a pool has been removed
-	 */
-	$scope.poolRemoved = function (data, pool) {
-
-		if ('error' in data) {
-			showDialogNotice('Error', data.message);
-			return;
-		}
-
-		var index = $scope.pools.indexOf(pool);
-		$scope.pools.splice(index, 1);
-
-	}
-
-
-	/*
 	 * Display remove confirmation dialog
 	 */
 	$scope.poolConfirmRemove = function (evt, pool) {
@@ -116,7 +85,12 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 			};
 			$http.get('/xhr/remove_pool', { 'params': data })
 				.success(function (data) {
-					$scope.poolRemoved(data, pool);
+					if (data.hasOwnProperty('error')) {
+						showDialogNotice('Error', data.message);
+					} else {
+						var index = $scope.pools.indexOf(pool);
+						$scope.pools.splice(index, 1);
+					}
 				})
 				.error(function (data, stat) {
 					var msg = data || "Unknown failure";
@@ -796,7 +770,7 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 		query_data.avps = JSON.stringify(query_data.avps);
 
 		// Send query!
-		$http.get('/xhr/edit_vrf/' + vrf.id, { 'params': query_data })
+		$http.get('/xhr/edit_vrf/' + $scope.vrf.id, { 'params': query_data })
 			.success(function (data){
 				if (data.hasOwnProperty('error')) {
 					showDialogNotice('Error', data.message);
@@ -856,6 +830,202 @@ nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
 					var msg = data || "Unknown failure";
 					showDialogNotice('Error', stat + ': ' + msg);
 			});
+
+	}
+
+});
+
+/*
+ * PoolEditController - used to edit pools
+ */
+nipapAppControllers.controller('PoolEditController', function ($scope, $routeParams, $http) {
+
+	$scope.method = 'edit';
+	$scope.edited_pools = [];
+
+	$scope.pool = {
+		'tags': []
+	};
+	$scope.pool_prefixes = [];
+
+	// Fetch VRF to edit from backend
+	$http.get('/xhr/list_pool', { 'params': { 'id': $routeParams.pool_id, } })
+		.success(function (data) {
+			if (data.hasOwnProperty('error')) {
+				showDialogNotice('Error', data.message);
+			} else {
+				pool = data[0];
+
+				// Tags needs to be mangled for use with tags-input
+				// TODO: When all interaction with prefix add & edit functions
+				// are moved to AngularJS, change XHR functions to use the same
+				// format as tags-input
+				pool.tags = Object.keys(pool.tags).map(function (elem) { return { 'text': elem }; } );
+
+				// Fetch pool's VRF
+				if (pool.vrf_id !== null) {
+					$http.get('/xhr/smart_search_vrf',
+						{ 'params': {
+							'vrf_id': $scope.pool.vrf_id,
+							'query_string': ''
+					}})
+						.success(function (data) {
+							if (data.hasOwnProperty('error')) {
+								showDialogNotice('Error', data.message);
+							} else {
+								$scope.pool.vrf = data.result[0];
+							}
+						})
+						.error(function (data, stat) {
+							var msg = data || "Unknown failure";
+							showDialogNotice('Error', stat + ': ' + msg);
+						});
+				} else {
+					pool.vrf = null;
+				}
+
+				$scope.pool = pool;
+
+				// Fetch pool's prefixes
+				$http.get('/xhr/list_prefix',
+					{ 'params': {
+						'pool': pool.id
+				}})
+					.success(function (data) {
+						if (data.hasOwnProperty('error')) {
+							showDialogNotice('Error', data.message);
+						} else {
+							$scope.pool_prefixes = data;
+						}
+					})
+					.error(function (data, stat) {
+						var msg = data || "Unknown failure";
+						showDialogNotice('Error', stat + ': ' + msg);
+					});
+
+				// Display statistics
+				// TODO: Do in AngularJS-way, probably easiest to encapsulate
+				// in a directive
+				var data_charts = [
+					{
+						color: '#d74228',
+						highlight: '#e74228',
+						label: 'Used'
+					},
+					{
+						color: '#368400',
+						highlight: '#36a200',
+						label: 'Free'
+					}
+				];
+
+				var options = { animationSteps : 20, animationEasing: "easeOutQuart" };
+
+				if (pool.member_prefixes_v4 > 0 && pool.ipv4_default_prefix_length !== null > 0) {
+					var data_pool_prefixes_v4 = angular.copy(data_charts);
+					data_pool_prefixes_v4[0]['value'] = pool.used_prefixes_v4;
+					data_pool_prefixes_v4[1]['value'] = pool.free_prefixes_v4;
+
+					var chart_pool_prefixes_v4 = new Chart($("#canvas_pool_prefixes_v4")[0]
+						.getContext("2d"))
+						.Doughnut(data_pool_prefixes_v4, options);
+				}
+
+				if (pool.member_prefixes_v6 > 0 && pool.ipv6_default_prefix_length !== null) {
+					var data_pool_prefixes_v6 = angular.copy(data_charts);
+					data_pool_prefixes_v6[0]['value'] = pool.used_prefixes_v6;
+					data_pool_prefixes_v6[1]['value'] = pool.free_prefixes_v6;
+
+					var chart_pool_prefixes_v6 = new Chart($("#canvas_pool_prefixes_v6")[0]
+						.getContext("2d"))
+						.Doughnut(data_pool_prefixes_v6, options);
+				}
+
+				if (pool.member_prefixes_v4 > 0) {
+					var data_pool_addresses_v4 = angular.copy(data_charts);
+					data_pool_addresses_v4[0]['value'] = pool.used_addresses_v4;
+					data_pool_addresses_v4[1]['value'] = pool.free_addresses_v4;
+
+					var chart_pool_addresses_v4 = new Chart($("#canvas_pool_addresses_v4")[0]
+						.getContext("2d"))
+						.Doughnut(data_pool_addresses_v4, options);
+				}
+
+				if (pool.member_prefixes_v6 > 0) {
+					var data_pool_addresses_v6 = angular.copy(data_charts);
+					data_pool_addresses_v6[0]['value'] = pool.used_addresses_v6;
+					data_pool_addresses_v6[1]['value'] = pool.free_addresses_v6;
+
+					var chart_pool_addresses_v6 = new Chart($("#canvas_pool_addresses_v6")[0]
+						.getContext("2d"))
+						.Doughnut(data_pool_addresses_v6, options);
+				}
+
+			}
+
+		})
+		.error(function (data, stat) {
+			var msg = data || "Unknown failure";
+			showDialogNotice('Error', stat + ': ' + msg);
+		});
+
+	/*
+	 * Submit pool form - edit pool
+	 */
+	$scope.submitForm = function () {
+
+		/*
+		 * Create object specifying pool attributes. Start with a copy of the
+		 * pool object from the scope.
+		 */
+		var query_data = angular.copy($scope.pool);
+
+		// Rewrite tags list to match what's expected by the XHR functions
+		query_data.tags = JSON.stringify($scope.pool.tags.map(function (elem) { return elem.text; }));
+
+		// Send query!
+		$http.get('/xhr/edit_pool/' + $scope.pool.id, { 'params': query_data })
+			.success(function (data){
+				if (data.hasOwnProperty('error')) {
+					showDialogNotice('Error', data.message);
+				} else {
+					$scope.edited_pools.push(data);
+				}
+			})
+			.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+			});
+
+	}
+
+	/*
+	 * Confirm remove of prefix from pool
+	 */
+	$scope.prefixConfirmRemove = function (evt, prefix) {
+
+		var dialog = showDialogYesNo('Remove ' + prefix.display_prefix + '?',
+			'Are you sure you want to remove ' + prefix.display_prefix + ' from pool? You cannot undo this action.',
+			function () {
+
+				$http.get('/xhr/edit_prefix/' + prefix.id, { 'params': { 'pool': '' } })
+					.success(function (data) {
+						if (data.hasOwnProperty('error')) {
+							showDialogNotice('Error', data.message);
+						} else {
+							var index = $scope.pool_prefixes.indexOf(prefix);
+							$scope.pool_prefixes.splice(index, 1);
+						}
+					})
+					.error(function (data, stat) {
+						var msg = data || "Unknown failure";
+						showDialogNotice('Error', stat + ': ' + msg);
+					});
+
+				dialog.dialog('close');
+
+			}
+		);
 
 	}
 
