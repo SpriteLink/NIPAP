@@ -753,7 +753,7 @@ function showPrefixMenu(prefix_id) {
 
 	// Add prefix menu
 	var button = $('#prefix_button' + prefix_id);
-	var menu = getPopupMenu(button, 'prefix menu', prefix_id);
+	var menu = getPopupMenu(button, 'Prefix', prefix_id);
 
 	// Add different manu entries depending on where the prefix list is displayed
 	if (prefix_link_type == 'select') {
