@@ -166,7 +166,8 @@ CREATE TABLE ip_net_plan (
 	used_addresses numeric(40),
 	free_addresses numeric(40),
 	status ip_net_plan_status NOT NULL DEFAULT 'assigned',
-	avps hstore NOT NULL DEFAULT ''
+	avps hstore NOT NULL DEFAULT '',
+	expires timestamp with time zone DEFAULT 'infinity'
 );
 
 COMMENT ON TABLE ip_net_plan IS 'Actual address / prefix plan';
@@ -197,6 +198,7 @@ COMMENT ON COLUMN ip_net_plan.total_addresses IS 'Total number of addresses in t
 COMMENT ON COLUMN ip_net_plan.used_addresses IS 'Number of used addresses in this prefix';
 COMMENT ON COLUMN ip_net_plan.free_addresses IS 'Number of free addresses in this prefix';
 COMMENT ON COLUMN ip_net_plan.avps IS 'Extra values / AVPs (Attribute Value Pairs)';
+COMMENT ON COLUMN ip_net_plan.expires IS 'Expire time of prefix';
 
 CREATE UNIQUE INDEX ip_net_plan__vrf_id_prefix__index ON ip_net_plan (vrf_id, prefix);
 
