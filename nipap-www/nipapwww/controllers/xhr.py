@@ -795,7 +795,15 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'rt': obj.rt,
                 'name': obj.name,
                 'description': obj.description,
-                'tags': obj.tags
+                'tags': obj.tags,
+                'num_prefixes_v4': obj.num_prefixes_v4,
+                'num_prefixes_v6': obj.num_prefixes_v6,
+                'total_addresses_v4': obj.total_addresses_v4,
+                'total_addresses_v6': obj.total_addresses_v6,
+                'used_addresses_v4': obj.used_addresses_v4,
+                'used_addresses_v6': obj.used_addresses_v6,
+                'free_addresses_v4': obj.free_addresses_v4,
+                'free_addresses_v6': obj.free_addresses_v6
             }
 
         elif isinstance(obj, Pool):

@@ -25,3 +25,9 @@ class NgController(BaseController):
         """ Action for handling the prefix-section
         """
         return render('/ng-prefix.html')
+
+
+    def vrf(self):
+        """ Action for handling the vrf-section
+        """
+        return render('/ng-vrf.html')

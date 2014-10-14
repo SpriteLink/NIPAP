@@ -9,7 +9,7 @@
     VRF
     ------
     A VRF represents a Virtual Routing and Forwarding instance. By default, one
-    VRF which represents the global routing table ("no VRF") is defined. This
+    VRF which represents the global routing table (VRF "default") is defined. This
     VRF always has the ID 0.
 
     VRF attributes
@@ -965,8 +965,8 @@ class Nipap:
         elif prefix + 'name' in spec:
             vrf = self.list_vrf(auth, { 'name': spec[prefix + 'name'] })
         else:
-            # no VRF specified - return the no-VRF VRF
-            return { 'id': 0, 'rt': None, 'name': None }
+            # no VRF specified - return VRF "default"
+            vrf = self.list_vrf(auth, { 'id': 0 })
 
         if len(vrf) > 0:
             return vrf[0]

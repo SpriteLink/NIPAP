@@ -1,0 +1,63 @@
+<div class="page-title">
+	VRF administration &mdash;&gt; edit VRF
+</div>
+
+<ng-include src="'/templates/vrf_form.html'"></ng-include>
+
+<div id="vrf_success_container" ng-show="edited_vrfs.length > 0">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Result</h3>
+			<div id="vrf_success_bg" ng-repeat="vrf in edited_vrfs" style="padding: 15px; background-color: #ccffcc;">
+				The VRF {{ vrf.rt }} was successfully edited.
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- statistics -->
+<div class="options-group">
+	<div class="options-content">
+		<h3 class="options-group-heading">Statistics for VRF {{ vrf.name }}</h3>
+
+		<div class="option">
+			<dl>
+				<dt>
+					IPv4
+				</dt>
+				<dd>
+					<span ng-show="vrf.num_prefixes_v4 == 0">No IPv4 prefixes in VRF.</span>
+					<span ng-show="vrf.num_prefixes_v4 > 0">
+						<canvas id="canvas_vrf_addresses_v4" style="float: right;" width="250px;" height="100"></canvas>
+						VRF {{ vrf.name }} contains {{ vrf.num_prefixes_v4 }}
+						IPv4 prefixes containing a total of {{ vrf.total_addresses_v4 }}
+						addresses. {{ vrf.used_addresses_v4 }} of those are in use
+						while {{ vrf.free_addresses_v4 }} are free, representing a
+						usage of {{ ( vrf.used_addresses_v4 / vrf.total_addresses_v4 * 100) | number: 1 }}%.
+					</span>
+				</dd>
+			</dl>
+		</div>
+
+		<div class="rule"></div>
+
+		<div class="option">
+			<dl>
+				<dt>
+					IPv6
+				</dt>
+				<dd>
+					<span ng-show="vrf.num_prefixes_v6 == 0">No IPv6 prefixes in VRF.</span>
+					<span ng-show="vrf.num_prefixes_v6 > 0">
+						<canvas id="canvas_vrf_addresses_v6" style="float: right;" width="250px;" height="100"></canvas>
+						VRF {{ vrf.name }} contains {{ vrf.num_prefixes_v6 }}
+						IPv6 prefixes containing a total of {{ vrf.total_addresses_v6 }}
+						addresses. {{ vrf.used_addresses_v6 }} of those are in use
+						while {{ vrf.free_addresses_v6 }} are free, representing a
+						usage of {{ ( vrf.used_addresses_v6 / vrf.total_addresses_v6 * 100) | number: 1 }}%.
+					</span>
+				</dd>
+			</dl>
+		</div>
+	</div>
+</div>
