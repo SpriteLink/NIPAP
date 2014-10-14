@@ -16,7 +16,7 @@ Description: Neat IP Address Planner
 
 Package: nipapd
 Architecture: all
-Depends: debconf, nipap-common, python (>= 2.7), ${misc:Depends}, python-psycopg2, postgresql (>=9.1), postgresql-9.1-ip4r (>= 2.0) | postgresql-9.3-ip4r (>= 2.0), python-flask, python-flask-xml-rpc, python-flask-compress, python-tornado
+Depends: debconf, nipap-common, python (>= 2.7), ${misc:Depends}, python-psycopg2, postgresql (>=9.1), postgresql-9.1-ip4r (>= 2.0) | postgresql-9.3-ip4r (>= 2.0), python-flask, python-flask-xml-rpc, python-flask-compress, python-tornado, python-parsedatetime, python-tz
 Description: Neat IP Address Planner XML-RPC daemon
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the XML-RPC daemon.
