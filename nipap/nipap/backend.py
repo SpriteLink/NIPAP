@@ -178,17 +178,28 @@
     -------
 """
 from functools import wraps
+import datetime
 import exceptions
 import logging
 import psycopg2
 import psycopg2.extras
+import pytz
 import shlex
 import socket
+import time
 import re
 import IPy
 
 import authlib
 
+# support multiple versions of parsedatetime
+try:
+    import parsedatetime
+    pdt = parsedatetime.Calendar(parsedatetime.Constants(usePyICU=False))
+except:
+    import parsedatetime.parsedatetime
+    import parsedatetime.parsedatetime_consts as pdc
+    pdt = parsedatetime.parsedatetime.Calendar(pdc.Constants())
 
 _operation_map = {
     'and': 'AND',
@@ -264,6 +275,27 @@ class Inet(object):
     def __str__(self):
         return str(self.addr)
 
+
+def _parse_expires(expires):
+    # none is used to signify positive infinity
+    if expires is None or expires in ('never', 'infinity'):
+        return 'infinity'
+
+    import dateutil.parser
+    try:
+        return dateutil.parser.parse(str(expires))
+    except ValueError as exc:
+        pass
+
+    try:
+        # use parsedatetime for "human readable" time specs
+        exp = pdt.parse(expires)[0]
+        # and convert to datetime
+        return datetime.datetime.fromtimestamp(time.mktime(exp))
+    except ValueError as exc:
+        pass
+
+    raise NipapValueError("Invalid date specification for expires")
 
 
 class Nipap:
@@ -2076,6 +2108,7 @@ class Nipap:
             prefix_attr['total_addresses'] = 'inp.total_addresses'
             prefix_attr['used_addresses'] = 'inp.used_addresses'
             prefix_attr['free_addresses'] = 'inp.free_addresses'
+            prefix_attr['expires'] = 'inp.expires'
 
             if query['val1'] not in prefix_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
@@ -2284,14 +2317,16 @@ class Nipap:
 
         # do we have all attributes?
         req_attr = [ 'prefix', 'authoritative_source' ]
-        allowed_attr = [
-            'authoritative_source', 'prefix', 'description',
-            'comment', 'pool_id', 'tags', 'node', 'type', 'country',
-            'order_id', 'customer_id', 'vrf_id', 'alarm_priority', 
-            'monitor', 'external_key', 'vlan', 'status', 'avps']
+        allowed_attr = [ 'authoritative_source', 'prefix', 'description',
+                'comment', 'pool_id', 'tags', 'node', 'type', 'country',
+                'order_id', 'customer_id', 'vrf_id', 'alarm_priority',
+                'monitor', 'external_key', 'vlan', 'status', 'avps', 'expires']
         self._check_attr(attr, req_attr, allowed_attr)
         if ('description' not in attr) and ('node' not in attr):
             raise NipapMissingInputError('Either description or node must be specified.')
+
+        if 'expires' in attr:
+            attr['expires'] = _parse_expires(attr['expires'])
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_plan " + insert
@@ -2391,12 +2426,16 @@ class Nipap:
             'authoritative_source', 'prefix', 'description',
             'comment', 'pool_id', 'tags', 'node', 'type', 'country',
             'order_id', 'customer_id', 'vrf_id', 'alarm_priority', 
-            'monitor', 'external_key', 'vlan', 'status', 'avps' ]
+            'monitor', 'external_key', 'vlan', 'status', 'avps', 'expires' ]
 
         self._check_attr(attr, [], allowed_attr)
 
+        if 'expires' in attr:
+            attr['expires'] = _parse_expires(attr['expires'])
+
         prefixes = self.list_prefix(auth, spec)
         where, params1 = self._expand_prefix_spec(spec.copy())
+
         update, params2 = self._sql_expand_update(attr)
         params = dict(params2.items() + params1.items())
 
@@ -2687,7 +2726,8 @@ class Nipap:
             inp.used_addresses,
             inp.free_addresses,
             inp.status,
-            inp.avps
+            inp.avps,
+            inp.expires
             FROM ip_net_plan inp
             JOIN ip_net_vrf vrf ON (inp.vrf_id = vrf.id)
             LEFT JOIN ip_net_pool pool ON (inp.pool_id = pool.id) %s
@@ -3057,7 +3097,8 @@ class Nipap:
         total_addresses,
         used_addresses,
         free_addresses,
-        avps
+        avps,
+        expires
     FROM (
         SELECT DISTINCT ON(vrf_rt_order(vrf.rt), p1.prefix) p1.id,
             p1.prefix,
@@ -3087,6 +3128,7 @@ class Nipap:
             p1.free_addresses,
             p1.status,
             p1.avps,
+            p1.expires,
             vrf.id AS vrf_id,
             vrf.rt AS vrf_rt,
             vrf.name AS vrf_name,
