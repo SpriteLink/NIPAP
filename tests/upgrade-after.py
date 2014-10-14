@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: et :
 #
 # This is run by Travis-CI after an upgrade to verify that the data loaded by

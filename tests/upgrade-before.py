@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # This is run by Travis-CI before an upgrade to load some data into the
 # database. After the upgrade is complete, the data is verified by
