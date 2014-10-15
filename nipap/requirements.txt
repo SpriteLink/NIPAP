@@ -8,7 +8,9 @@ Werkzeug==0.9.6
 backports.ssl-match-hostname==3.4.0.2
 certifi==14.05.14
 itsdangerous==0.24
+parsedatetime==1.4
 psycopg2==2.5.3
 python-ldap==2.4.15
+pytz==2014.7
 tornado==4.0.1
 wsgiref==0.1.2
