@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """ Example script for CSV export
 
     This script likely need to be modified to meet your needs but can act as a
