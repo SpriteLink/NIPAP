@@ -7,6 +7,7 @@
 # it is recommended that you place it here rather than in xmlrpc.py.
 #
 
+import datetime
 import logging
 import unittest
 import sys
@@ -87,6 +88,40 @@ class TestHelper:
         pool.save()
         return pool
 
+
+
+class TestPrefixExpires(unittest.TestCase):
+    """ Test expires related stuff
+    """
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_expires1(self):
+        th = TestHelper()
+
+        # make sure default is infinite expiry time
+        p1 = th.add_prefix('1.3.0.0/16', 'reservation', 'test')
+        self.assertEqual(p1.expires, None)
+
+        # test absolute time by creating local datetime object and sending.
+        # set expires to now but skip the microseconds as the backend doesn't
+        # support that precision
+        now = datetime.datetime.now().replace(microsecond = 0)
+        p1.expires = now
+        p1.save()
+        self.assertEqual(p1.expires, now)
+
+        # test the relative time parsing of the backend by setting "tomorrow",
+        # which parsedatetime interprets as 09:00 the next day
+        # 
+        tomorrow = datetime.datetime.now().replace(hour = 9, minute = 0,
+                second = 0, microsecond = 0) + datetime.timedelta(days = 1)
+        p1.expires = "tomorrow"
+        p1.save()
+        self.assertEqual(p1.expires, tomorrow)
 
 
 
