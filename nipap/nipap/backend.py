@@ -67,6 +67,13 @@
     * :attr:`avps` - Attribute-Value Pairs. This field can be used to add
         various extra attributes that a user wishes to store together with a
         prefix.
+    * :attr:`expires` - Set a date and time for when the prefix assignment
+        expires. Multiple formats are supported for specifying time, for
+        absolute time ISO8601 style dates can be used and None or the text
+        strings 'never' or 'infinity' is treated as positive infinity and means
+        the assignment never expires. It is also possible to specify relative
+        time and a fuzzy parser is used to interpret strings such as "tomorrow"
+        or "2 years" into an absolute time.
     * :attr:`external_key` - A field for use by external systems which needs to
         store references to its own dataset.
     * :attr:`authoritative_source` - String identifying which system last
@@ -277,6 +284,9 @@ class Inet(object):
 
 
 def _parse_expires(expires):
+    """ Parse the 'expires' attribute, guessing what format it is in and
+        returning a datetime
+    """
     # none is used to signify positive infinity
     if expires is None or expires in ('never', 'infinity'):
         return 'infinity'
