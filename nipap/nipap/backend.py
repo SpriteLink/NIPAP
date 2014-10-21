@@ -185,6 +185,7 @@
     -------
 """
 from functools import wraps
+import dateutil.parser
 import datetime
 import exceptions
 import logging
@@ -291,7 +292,6 @@ def _parse_expires(expires):
     if expires is None or expires in ('never', 'infinity'):
         return 'infinity'
 
-    import dateutil.parser
     try:
         return dateutil.parser.parse(str(expires))
     except ValueError as exc:
