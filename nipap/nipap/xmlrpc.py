@@ -5,7 +5,9 @@
     the backend module.
 """
 
+import datetime
 import time
+import pytz
 from functools import wraps
 from flask import Flask
 from flask import request, Response
@@ -28,6 +30,25 @@ def setup():
     handler.register_instance(NipapXMLRPC())
 
     return app
+
+
+def _mangle_prefix(res):
+    """ Mangle prefix result
+    """
+    # fugly cast from large numbers to string to deal with XML-RPC
+    res['total_addresses'] = str(res['total_addresses'])
+    res['used_addresses'] = str(res['used_addresses'])
+    res['free_addresses'] = str(res['free_addresses'])
+
+    # postgres has notion of infinite while datetime hasn't, if expires
+    # is equal to the max datetime we assume it is infinity and instead
+    # represent that as None
+    if res['expires'].tzinfo is None:
+        res['expires'] = pytz.utc.localize(res['expires'])
+    if res['expires'] == pytz.utc.localize(datetime.datetime.max):
+        res['expires'] = None
+
+    return res
 
 
 def authenticate():
@@ -553,10 +574,8 @@ class NipapXMLRPC:
         """
         try:
             res = self.nip.add_prefix(args.get('auth'), args.get('attr'), args.get('args'))
-            # fugly cast from large numbers to string to deal with XML-RPC
-            res['total_addresses'] = str(res['total_addresses'])
-            res['used_addresses'] = str(res['used_addresses'])
-            res['free_addresses'] = str(res['free_addresses'])
+            # mangle result
+            res = _mangle_prefix(res)
             return res
         except (AuthError, NipapError) as exc:
             raise Fault(exc.error_code, str(exc))
@@ -581,11 +600,9 @@ class NipapXMLRPC:
         """
         try:
             res = self.nip.list_prefix(args.get('auth'), args.get('prefix') or {})
-            # fugly cast from large numbers to string to deal with XML-RPC
-            for pref in res:
-                pref['total_addresses'] = str(pref['total_addresses'])
-                pref['used_addresses'] = str(pref['used_addresses'])
-                pref['free_addresses'] = str(pref['free_addresses'])
+            # mangle result
+            for prefix in res:
+                prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
             raise Fault(exc.error_code, str(exc))
@@ -607,11 +624,9 @@ class NipapXMLRPC:
         """
         try:
             res = self.nip.edit_prefix(args.get('auth'), args.get('prefix'), args.get('attr'))
-            # fugly cast from large numbers to string to deal with XML-RPC
-            for pref in res:
-                pref['total_addresses'] = str(pref['total_addresses'])
-                pref['used_addresses'] = str(pref['used_addresses'])
-                pref['free_addresses'] = str(pref['free_addresses'])
+            # mangle result
+            for prefix in res:
+                prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
             raise Fault(exc.error_code, str(exc))
@@ -658,11 +673,9 @@ class NipapXMLRPC:
         """
         try:
             res = self.nip.search_prefix(args.get('auth'), args.get('query'), args.get('search_options') or {})
-            # fugly cast from large numbers to string to deal with XML-RPC
-            for pref in res['result']:
-                pref['total_addresses'] = str(pref['total_addresses'])
-                pref['used_addresses'] = str(pref['used_addresses'])
-                pref['free_addresses'] = str(pref['free_addresses'])
+            # mangle result
+            for prefix in res['result']:
+                prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
             raise Fault(exc.error_code, str(exc))
@@ -697,11 +710,9 @@ class NipapXMLRPC:
             res = self.nip.smart_search_prefix(args.get('auth'),
                     args.get('query_string'), args.get('search_options') or {},
                     args.get('extra_query'))
-            # fugly cast from large numbers to string to deal with XML-RPC
-            for pref in res['result']:
-                pref['total_addresses'] = str(pref['total_addresses'])
-                pref['used_addresses'] = str(pref['used_addresses'])
-                pref['free_addresses'] = str(pref['free_addresses'])
+            # mangle result
+            for prefix in res['result']:
+                prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
             raise Fault(exc.error_code, str(exc))

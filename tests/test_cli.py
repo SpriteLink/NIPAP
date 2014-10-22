@@ -152,6 +152,7 @@ class NipapCliTest(unittest.TestCase):
         ref['inherited_tags'] = []
         ref['tags'] = []
         ref['avps'] = {}
+        ref['expires'] = None
 
         self._run_cmd(cmd)
 

@@ -38,5 +38,8 @@ ALTER TABLE ip_net_vrf ADD COLUMN avps hstore NOT NULL DEFAULT '';
 ALTER TABLE ip_net_plan ADD COLUMN avps hstore NOT NULL DEFAULT '';
 ALTER TABLE ip_net_pool ADD COLUMN avps hstore NOT NULL DEFAULT '';
 
+-- add expires field
+ALTER TABLE ip_net_plan ADD COLUMN expires timestamp with time zone DEFAULT 'infinity';
+
 -- update database schema version
 COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';

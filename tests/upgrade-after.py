@@ -155,6 +155,7 @@ class TestCheckdata(unittest.TestCase):
                 'comment': None,
                 'country': None,
                 'description': 'test',
+                'expires': None,
                 'external_key': None,
                 'family': 4,
                 'indent': 0,

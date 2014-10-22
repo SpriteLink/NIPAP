@@ -437,6 +437,7 @@ def add_prefix(arg, opts, shell_opts):
     p.vlan = opts.get('vlan')
     p.status = opts.get('status') or 'assigned'
     p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
+    p.expires = opts.get('expires')
 
     p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
 
@@ -594,6 +595,7 @@ def add_prefix_from_pool(arg, opts):
         p.vlan = opts.get('vlan')
         p.status = opts.get('status')
         p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
+        p.expires = opts.get('expires')
 
         p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
         # set type to default type of pool unless already set
@@ -865,6 +867,7 @@ def view_prefix(arg, opts, shell_opts):
     print "  %-26s : %s" % ("Monitor", p.monitor)
     print "  %-26s : %s" % ("Added", p.added)
     print "  %-26s : %s" % ("Last modified", p.last_modified)
+    print "  %-26s : %s" % ("Expires", p.expires or '-')
     if p.family == 4:
         print "  %-26s : %s / %s (%.2f%% of %s)" % ("Addresses Used / Free", p.used_addresses,
                 p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
@@ -1315,6 +1318,8 @@ def modify_prefix(arg, opts, shell_opts):
         p.alarm_priority = opts['alarm_priority']
     if 'monitor' in opts:
         p.monitor = _str_to_bool(opts['monitor'])
+    if 'expires' in opts:
+        p.expires = opts['expires']
 
     for avp in opts.get('extra-attribute', []):
         try:
@@ -1914,6 +1919,13 @@ cmds = {
                                 'content_type': unicode,
                                 'complete': complete_priority,
                             }
+                        },
+                        'expires': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
                         }
                     },
                 },
@@ -2119,6 +2131,13 @@ cmds = {
                                         'type': 'value',
                                         'content_type': unicode,
                                         'complete': complete_priority,
+                                    }
+                                },
+                                'expires': {
+                                    'type': 'option',
+                                    'argument': {
+                                        'type': 'value',
+                                        'content_type': unicode,
                                     }
                                 }
                             }
