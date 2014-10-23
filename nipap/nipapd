@@ -9,8 +9,49 @@ import os
 import sys
 import ConfigParser
 
+from tornado.netutil import bind_sockets
+from tornado.httpserver import HTTPServer
+from tornado.wsgi import WSGIContainer
+import tornado.process
+from tornado.ioloop import IOLoop
+
 from nipap.nipapconfig import NipapConfig, NipapConfigError
 from nipap.backend import NipapError
+
+import psutil, psutil.error
+import signal
+import atexit
+
+def exit_cleanup():
+    """ Cleanup stuff on program exit
+    """
+    # stop the main tornado loop
+    IOLoop.instance().stop()
+    # find all our child processes and kill them off
+    try:
+        p = psutil.Process(os.getpid())
+    except psutil.error.NoSuchProcess:
+        return
+    for pid in p.get_children(recursive=True):
+        os.kill(pid.pid, signal.SIGTERM)
+
+
+@atexit.register
+def at_exit():
+    exit_cleanup()
+
+
+def handle_sigterm(sig, frame):
+    """ Handle SIGTERM
+    """
+    exit_cleanup()
+    # and make a clean exit ourselves
+    #sys.exit(0)
+
+# register signal handler for SIGTERM
+signal.signal(signal.SIGTERM, handle_sigterm)
+
+
 
 def drop_privileges(uid_name='nobody', gid_name='nogroup'):
     if os.getuid() != 0:
@@ -191,22 +232,11 @@ if __name__ == '__main__':
         logger.setLevel(logging.DEBUG)
         nipapxml.logger.setLevel(logging.DEBUG)
 
-    from tornado.netutil import bind_sockets
-    from tornado.httpserver import HTTPServer
-    from tornado.wsgi import WSGIContainer
-    import tornado.process
-    from tornado.ioloop import IOLoop
-
     if cfg.getboolean('nipapd', 'syslog'):
         log_syslog = logging.handlers.SysLogHandler(address = '/dev/log')
         log_syslog.setFormatter(logging.Formatter("%(levelname)-8s %(message)s"))
         logger.addHandler(log_syslog)
         nipapxml.logger.addHandler(log_syslog)
-
-    # pre-fork if we are not running in foreground
-    if not cfg.get('nipapd', 'foreground'):
-        # default is to fork as many processes as there are cores
-        tornado.process.fork_processes(None)
 
     http_server = HTTPServer(WSGIContainer(nipapxml))
     if cfg.get('nipapd', 'listen') is None or cfg.get('nipapd', 'listen') == '':
@@ -223,6 +253,11 @@ if __name__ == '__main__':
             socket = bind_sockets(port, address)
             sockets = sockets + socket
 
+    # pre-fork if we are not running in foreground
+    if not cfg.getboolean('nipapd', 'foreground'):
+        # default is to fork as many processes as there are cores
+        tornado.process.fork_processes(None)
+
     http_server.add_sockets(sockets)
 
     # start Tornado
@@ -233,4 +268,3 @@ if __name__ == '__main__':
     except Exception as exc:
         logger.error(exc)
         sys.exit(1)
-
