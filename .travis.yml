@@ -75,7 +75,7 @@ install:
     - if [ "$INSTALL" == "apt" ]; then wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -; fi
     - if [ "$INSTALL" == "apt" ]; then sudo apt-get update -qq; fi
     # install dependencies for installing & running nipap
-    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-ldap python-docutils postgresql postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-tz python-dateutil; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-ldap python-docutils postgresql postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-tz python-dateutil python-psutil; fi
     # if we are testing the upgrade, first install NIPAP packages from official repo
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo apt-get install -qq nipapd nipap-www nipap-cli; fi
     # bump version so that we know we are upgrading beyond what is installed
