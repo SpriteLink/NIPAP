@@ -1,8 +1,6 @@
 # $Id: Makefile,v 1.6 2011/04/18 17:14:00 lukagarb Exp $
 #
 
-# for use lates, when we have cleaned up a bit!
-#SUBPROJ=`find $(CURDIR)/* -maxdepth 0 -type d`
 SUBPROJ=nipap pynipap nipap-www nipap-cli whoisd
 APTDIR=apt
 CURBRANCH=$(shell git branch --no-color 2> /dev/null | awk '/\\*/ { printf("%s", $$2); }')
@@ -63,7 +61,7 @@ debrepo-stable-run:
 debrepo-testing-run:
 	for CHANGEFILE in `ls *.changes`; do \
 		cd repos/apt; \
-		reprepro --ignore=wrongdistribution -Vb . include stable ../../$$CHANGEFILE; \
+		reprepro --ignore=wrongdistribution -Vb . include testing ../../$$CHANGEFILE; \
 		cd ../.. ; \
 	done
 

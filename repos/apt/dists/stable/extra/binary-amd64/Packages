@@ -1,0 +1,148 @@
+Package: postgresql-8.4-ip4r
+Source: ip4r
+Version: 1.05cvs-1
+Architecture: amd64
+Maintainer: Robert S. Edmonds <edmonds@debian.org>
+Installed-Size: 248
+Depends: libc6 (>= 2.4)
+Recommends: postgresql-8.4
+Homepage: http://pgfoundry.org/projects/ip4r/
+Priority: extra
+Section: misc
+Filename: pool/extra/i/ip4r/postgresql-8.4-ip4r_1.05cvs-1_amd64.deb
+Size: 62784
+SHA256: 35c4e2cc640b248052949d7b89274916d54310ba609fe4b53973f6441e957f12
+SHA1: 4bb801e8f4f75b2958af30cf9c0a37da4a9f236b
+MD5sum: 8cfc022334b3ba444f4545113e1fe423
+Description: IPv4 and IPv4 range index types for PostgreSQL 8.4
+ This PostgreSQL module provides two data types, ip4 and ip4r, which can
+ contain a single IPv4 address or a range of IPv4 addresses,
+ respectively.
+ .
+ While PostgreSQL already has built-in types 'inet' and 'cidr', the
+ authors of this module found that they had a number of requirements
+ that were not addressed by the built-in type.
+ .
+ Firstly and most importantly, the built-in types have no support for
+ index lookups of the form (column >>= parameter), i.e. where you have
+ a table of IP address ranges and wish to find which ones include a
+ given IP address.  This requires an rtree or gist index to do
+ efficiently, and also requires a way to represent IP address ranges
+ that do not fall precisely on CIDR boundaries.
+ .
+ Secondly, the built-in inet/cidr are somewhat overloaded with
+ semantics, with inet combining two distinct concepts (a netblock, and
+ a specific IP within that netblock). Furthermore, they are variable
+ length types (to support IPv6) with non-trivial overheads, and the
+ authors (whose applications mainly deal in large volumes of single
+ IPv4 addresses) wanted a more lightweight representation.
+ .
+ ip4r therefore supports two distinct data types (so far):
+ .
+   ip4   - a single IPv4 address
+   ip4r  - an arbitrary range of IPv4 addresses
+
+Package: postgresql-9.1-ip4r
+Source: ip4r
+Version: 2.0-1
+Architecture: amd64
+Maintainer: Christoph Berg <myon@debian.org>
+Installed-Size: 310
+Depends: libc6 (>= 2.4), postgresql-9.1
+Homepage: http://pgfoundry.org/projects/ip4r/
+Priority: extra
+Section: misc
+Filename: pool/extra/i/ip4r/postgresql-9.1-ip4r_2.0-1_amd64.deb
+Size: 74308
+SHA256: 80b39b28081d12a43e4c7a67e562657eca472494cc97bb08d1c38d5ea55dfdd6
+SHA1: 01cc459d799ffdaa9f3e7fd050e1f8e5834457bb
+MD5sum: cf5ccae98fe39f9f152fe1d723fe187a
+Description: IPv4 and IPv6 types for PostgreSQL 9.1
+ This PostgreSQL module provides several data types which can contain
+ single IPv4 or IPv6 addresses or a range of such addresses.
+ .
+ ip4r supports these data types:
+ .
+  ip4:       IPv4 address '#.#.#.#'
+  ip4r:      IPv4 range '#.#.#.#-#.#.#.#' or '#.#.#.#/#' or '#.#.#.#'
+  ip6:       IPv6 address 'xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx'
+  ip6r:      IPv6 range '#-#' or '#/#' or '#'
+  ipaddress: IPv4 or IPv6 address
+  iprange:   IPv4 or IPv6 range
+ .
+ While PostgreSQL already has built-in types 'inet' and 'cidr', the
+ authors of this module found that they had a number of requirements
+ that were not addressed by the built-in types.
+
+Package: python-flask-compress
+Source: flask-compress
+Version: 1.0.0-1
+Architecture: all
+Maintainer: William Fagan <will@wichitacode.com>
+Installed-Size: 53
+Depends: python2.7, python (>= 2.7.1-0ubuntu2), python (<< 2.8), python-flask
+Priority: optional
+Section: extra
+Filename: pool/extra/f/flask-compress/python-flask-compress_1.0.0-1_all.deb
+Size: 3458
+SHA256: 13f73de2407e37719d64e4aca29979bec6a3907234b0efdcfd0dba2e4c87fd61
+SHA1: f3d7f9f31302164ae2d3733fe34804cbc8d24aca
+MD5sum: 7694286cb946678f5e8af1179fe48aa8
+Description: Compress responses in your Flask app with gzip.
+ .
+ Flask-Compress
+ ------------
+ .
+ Compress responses in your Flask app with gzip..
+
+Package: python-flask-xml-rpc
+Source: flask-xml-rpc
+Version: 0.1.2-1
+Architecture: all
+Maintainer: Matthew "LeafStorm" Frazier <leafstormrush@gmail.com>
+Installed-Size: 79
+Depends: python2.7, python (>= 2.7.1-0ubuntu2), python (<< 2.8), python-flask
+Priority: optional
+Section: extra
+Filename: pool/extra/f/flask-xml-rpc/python-flask-xml-rpc_0.1.2-1_all.deb
+Size: 6702
+SHA256: d672fc85162ec469a5725bab5cfe336099dcd1e49c289c9fdf865d92a0a8db9b
+SHA1: cc8f542637436803a666d4a4870fd545aea32fa9
+MD5sum: 6edd486272b1d04b6aa6b4fdb32dedae
+Description: Adds support for creating XML-RPC APIs to Flask
+ .
+ Flask-XML-RPC
+ -------------
+ Flask-XML-RPC adds XML-RPC support to Flask. This way, you can provide simple
+ APIs easily accessible from almost any programming language.
+ .
+ Links
+ `````
+ .
+ * `documentation <http://packages.python.org/Flask-XML-RPC>`_
+ * `development version
+   <http://bitbucket.org/leafstorm/flask-xml-rpc/get/tip.gz#egg=Flask-XML-RPC-dev>`_
+
+Package: python-pylons
+Source: pylons
+Version: 1.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 1584
+Depends: python2.7 | python2.6 | python2.5, python-routes (>= 1.12), python-webhelpers (>= 0.6.4), python-beaker (>= 1.3), python-paste (>= 1.7.2), python-pastedeploy (>= 1.3.3), python-pastescript (>= 1.7.3), python-formencode (>= 1.2.1), python-simplejson, python-decorator (>= 2.0.8), python-nose (>= 0.10.4), python-mako, python-webob (>= 0.9.6.1), python-weberror (>= 0.10.1), python-webtest (>= 1.1), python-tempita (>= 0.2)
+Breaks: python (>= 2.8), python (<< 2.5)
+Priority: optional
+Section: python
+Filename: pool/extra/p/pylons/python-pylons_1.0-1_all.deb
+Size: 116872
+SHA256: 1c02a14fc30529173db8f0c576b85de76c3e4ea85966f42e21d115fae9e4668f
+SHA1: 415ee8b67b4897be7987d3ed956e3af27e541126
+MD5sum: 28198caa1dc1cd73b5a947ffb95076f9
+Description: Pylons Web Framework
+ The Pylons web framework is aimed at making webapps and large programmatic
+ website development in Python easy. Several key points:
+ * A framework to make writing web applications in Python easy
+ * Utilizes a minimalist, component-based philosophy that makes it easy to
+   expand on
+ * Harness existing knowledge about Python
+
