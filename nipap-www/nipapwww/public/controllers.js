@@ -101,6 +101,7 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 
 		});
 	}
+
 });
 
 /*
@@ -866,7 +867,7 @@ nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
 /*
  * PoolEditController - used to edit pools
  */
-nipapAppControllers.controller('PoolEditController', function ($scope, $routeParams, $http) {
+nipapAppControllers.controller('PoolEditController', function ($scope, $routeParams, $http, $modal) {
 
 	$scope.method = 'edit';
 	$scope.edited_pools = [];
@@ -1054,6 +1055,19 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 
 			}
 		);
+
+	}
+
+	/*
+	 * Display a popup notice informing the user of how pools are expanded
+	 * nowadays.
+	 */
+	$scope.showExpandPoolNotice = function () {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'expand_pool_notice.html',
+			windowClass: 'nipap_modal'
+		});
 
 	}
 

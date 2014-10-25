@@ -124,7 +124,7 @@
 		<div class="options-content" style="position: relative;">
 			<h3 class="options-group-heading">Prefixes in pool</h3>
 			<div style="position: absolute; right: 20px; top: 48px; width: 100px;">
-				{{ nipap.button('Expand pool', color='red', url='', id='exp_pool_btn') }}
+				<button class="btn btn-danger" ng-click="showExpandPoolNotice()">Expand pool</button>
 			</div>
 			<table id="pool_prefix_list" style=" margin-top: 40px; border-spacing: 0px; width: 100%;">
 				<thead class="listing">
@@ -152,3 +152,16 @@
 			</table>
 		</div>
 	</div>
+
+	<script type="text/ng-template" id="expand_pool_notice.html">
+		<div class="modal-header">
+			<h3 class="">Expanding pools</h3>
+		</div>
+		<div class="modal-body">
+			Since version 0.27 pools are expanded from the prefix edit page.
+			<img src="/images/expand_pool_notice.png">
+			<div style="text-align: center">
+				<button class="btn btn-primary" ng-click="$close()">OK, got it!</botton>
+			</div>
+		</div>
+	</script>
