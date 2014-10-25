@@ -1,0 +1,7 @@
+Archive: testing
+Version: 3.1
+Component: main
+Origin: NIPAP
+Label: NIPAP
+Architecture: hurd-i386
+Description: NIPAP testing apt repository
