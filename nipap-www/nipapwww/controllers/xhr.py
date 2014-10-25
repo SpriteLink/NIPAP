@@ -889,7 +889,7 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'inherited_tags': obj.inherited_tags,
                 'tags': obj.tags,
                 'node': obj.node,
-                'pool': pool,
+                'pool_id': pool,
                 'type': obj.type,
                 'indent': obj.indent,
                 'country': obj.country,

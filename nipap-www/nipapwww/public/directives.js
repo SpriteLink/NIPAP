@@ -38,6 +38,61 @@ nipapAppDirectives.directive('nipapPoolSelector', function ($http) {
 
 });
 
+nipapAppDirectives.directive('nipapPoolSelectorPopup', function ($http) {
+
+	return {
+		restrict: 'AE',
+		templateUrl: '/templates/pool_selector_popup.html',
+		scope: {
+			selected_pool: '=selectedPool'
+		},
+		link: function (scope, elem, attr) {
+
+			scope.query_string = '';
+			scope.pools = [];
+			scope.query_id = 0;
+			scope.popup_open = false;
+
+			/*
+			 * Fetch pools
+			 */
+			$http.get('/xhr/list_pool')
+				.success(function (data) {
+					if (data.hasOwnProperty('error')) {
+						showDialogNotice('Error', data.message);
+					} else {
+						scope.pools = data;
+					}
+				})
+				.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+				});
+
+			/*
+			 * A pool is selected
+			 */
+			scope.selectPool = function (pool) {
+
+				// Set pool & close popup
+				scope.selected_pool = pool;
+				scope.popup_open = false;
+
+			}
+
+			/*
+			 * Run when popup menu is toggled
+			 */
+			scope.toggled = function (open) {
+				if (open) {
+					// If menu was opened, place focus on text input field
+					$('input[name="pool_search_string"]').focus();
+				}
+			}
+		}
+	};
+});
+
 nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 
 	return {

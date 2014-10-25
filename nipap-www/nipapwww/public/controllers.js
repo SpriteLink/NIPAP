@@ -180,10 +180,10 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	$scope.prefix_family = 4;
 	$scope.prefix_length = null;
 
-	$scope.vrf = null;
-
 	$scope.prefix = {
 		prefix: null,
+		vrf: null,
+		pool: null,
 		status: 'assigned',
 		description: null,
 		comment: null,
@@ -299,7 +299,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 						if (data.hasOwnProperty('error')) {
 							showDialogNotice('Error', data.message);
 						} else {
-							$scope.vrf = data.result[0];
+							$scope.prefix.vrf = data.result[0];
 						}
 					})
 					.error(function (data, stat) {
@@ -308,7 +308,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 					});
 			} else {
 				// Pool is missing implied VRF - means the pool is empty!
-				$scope.vrf = null;
+				$scope.prefix.vrf = null;
 			}
 		}
 	});
@@ -333,7 +333,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
 					} else {
-						$scope.vrf = data.result[0];
+						$scope.prefix.vrf = data.result[0];
 					}
 				})
 				.error(function (data, stat) {
@@ -377,11 +377,17 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		 * required by the different allocation methods.
 		 */
 		var query_data = angular.copy($scope.prefix);
+		query_data.vrf = null;
+		query_data.pool = null;
 
-		// Tags & VRFs are needed no matter allocation method
+		// Tags, VRF and pool are needed no matter allocation method
 		query_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
-		if ($scope.vrf != null) {
-			query_data.vrf = $scope.vrf.id;
+		if ($scope.prefix.vrf != null) {
+			query_data.vrf = $scope.prefix.vrf.id;
+		}
+
+		if ($scope.prefix.pool != null) {
+			query_data.pool = $scope.prefix.pool.id;
 		}
 
 		// Mangle avps
@@ -441,8 +447,6 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 	// Prefix method is edit - used to customize prefix form template
 	$scope.method = 'edit';
 
-	$scope.vrf = null;
-
 	// The tags-attributes needs to be initialized due to bug,
 	// see https://github.com/mbenford/ngTagsInput/issues/204
 	$scope.prefix = { 'tags': [], 'inherited_tags': [] };
@@ -475,6 +479,8 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 				showDialogNotice('Error', data.message);
 			} else {
 				pref = data[0];
+				pref.vrf = null;
+				pref.pool = null;
 
 				// Tags needs to be mangled for use with tags-input
 				// TODO: When all interaction with prefix add & edit functions
@@ -497,13 +503,29 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 						if (data.hasOwnProperty('error')) {
 							showDialogNotice('Error', data.message);
 						} else {
-							$scope.vrf = data.result[0];
+							$scope.prefix.vrf = data.result[0];
 						}
 					})
 					.error(function (data, stat) {
 						var msg = data || "Unknown failure";
 						showDialogNotice('Error', stat + ': ' + msg);
 					});
+
+				// Fetch prefix's pool, if any
+				if ($scope.prefix.pool_id !== null) {
+					$http.get('/xhr/list_pool', { 'params': { 'id': $scope.prefix.pool_id, } })
+						.success(function (data) {
+							if (data.hasOwnProperty('error')) {
+								showDialogNotice('Error', data.message);
+							} else {
+								$scope.prefix.pool = data[0];
+							}
+						})
+						.error(function (data, stat) {
+							var msg = data || "Unknown failure";
+							showDialogNotice('Error', stat + ': ' + msg);
+						});
+				}
 
 				// Display statistics
 				// TODO: Do in AngularJS-way, probably easiest to encapsulate
@@ -567,6 +589,7 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 
 		// Create new object with prefix data
 		var prefix_data = angular.copy($scope.prefix);
+		delete prefix_data.vrf;
 
 		// Mangle tags
 		prefix_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
@@ -579,6 +602,11 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 
 		// Mangle expires
 		prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss')
+
+		// Set pool, if any
+		if ($scope.prefix.pool !== null) {
+			prefix_data.pool = $scope.prefix.pool.id;
+		}
 
 		// Send query!
 		$http.get('/xhr/edit_prefix/' + $scope.prefix.id, { 'params': prefix_data })
