@@ -1,0 +1,72 @@
+Package: python-flask-compress
+Source: flask-compress
+Version: 1.0.0-1
+Architecture: all
+Maintainer: William Fagan <will@wichitacode.com>
+Installed-Size: 53
+Depends: python2.7, python (>= 2.7.1-0ubuntu2), python (<< 2.8), python-flask
+Priority: optional
+Section: extra
+Filename: pool/extra/f/flask-compress/python-flask-compress_1.0.0-1_all.deb
+Size: 3458
+SHA256: 13f73de2407e37719d64e4aca29979bec6a3907234b0efdcfd0dba2e4c87fd61
+SHA1: f3d7f9f31302164ae2d3733fe34804cbc8d24aca
+MD5sum: 7694286cb946678f5e8af1179fe48aa8
+Description: Compress responses in your Flask app with gzip.
+ .
+ Flask-Compress
+ ------------
+ .
+ Compress responses in your Flask app with gzip..
+
+Package: python-flask-xml-rpc
+Source: flask-xml-rpc
+Version: 0.1.2-1
+Architecture: all
+Maintainer: Matthew "LeafStorm" Frazier <leafstormrush@gmail.com>
+Installed-Size: 79
+Depends: python2.7, python (>= 2.7.1-0ubuntu2), python (<< 2.8), python-flask
+Priority: optional
+Section: extra
+Filename: pool/extra/f/flask-xml-rpc/python-flask-xml-rpc_0.1.2-1_all.deb
+Size: 6702
+SHA256: d672fc85162ec469a5725bab5cfe336099dcd1e49c289c9fdf865d92a0a8db9b
+SHA1: cc8f542637436803a666d4a4870fd545aea32fa9
+MD5sum: 6edd486272b1d04b6aa6b4fdb32dedae
+Description: Adds support for creating XML-RPC APIs to Flask
+ .
+ Flask-XML-RPC
+ -------------
+ Flask-XML-RPC adds XML-RPC support to Flask. This way, you can provide simple
+ APIs easily accessible from almost any programming language.
+ .
+ Links
+ `````
+ .
+ * `documentation <http://packages.python.org/Flask-XML-RPC>`_
+ * `development version
+   <http://bitbucket.org/leafstorm/flask-xml-rpc/get/tip.gz#egg=Flask-XML-RPC-dev>`_
+
+Package: python-pylons
+Source: pylons
+Version: 1.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 1584
+Depends: python2.7 | python2.6 | python2.5, python-routes (>= 1.12), python-webhelpers (>= 0.6.4), python-beaker (>= 1.3), python-paste (>= 1.7.2), python-pastedeploy (>= 1.3.3), python-pastescript (>= 1.7.3), python-formencode (>= 1.2.1), python-simplejson, python-decorator (>= 2.0.8), python-nose (>= 0.10.4), python-mako, python-webob (>= 0.9.6.1), python-weberror (>= 0.10.1), python-webtest (>= 1.1), python-tempita (>= 0.2)
+Breaks: python (>= 2.8), python (<< 2.5)
+Priority: optional
+Section: python
+Filename: pool/extra/p/pylons/python-pylons_1.0-1_all.deb
+Size: 116872
+SHA256: 1c02a14fc30529173db8f0c576b85de76c3e4ea85966f42e21d115fae9e4668f
+SHA1: 415ee8b67b4897be7987d3ed956e3af27e541126
+MD5sum: 28198caa1dc1cd73b5a947ffb95076f9
+Description: Pylons Web Framework
+ The Pylons web framework is aimed at making webapps and large programmatic
+ website development in Python easy. Several key points:
+ * A framework to make writing web applications in Python easy
+ * Utilizes a minimalist, component-based philosophy that makes it easy to
+   expand on
+ * Harness existing knowledge about Python
+

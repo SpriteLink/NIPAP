@@ -1,0 +1,7 @@
+Archive: stable
+Version: 3.1
+Component: main
+Origin: NIPAP
+Label: NIPAP
+Architecture: powerpc
+Description: Official NIPAP apt repository

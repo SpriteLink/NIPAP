@@ -1,0 +1,23 @@
+Origin: NIPAP
+Label: NIPAP
+Suite: stable
+Codename: stable
+Version: 3.1
+Architectures: i386 amd64 armel armhf ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc alpha arm AVR32 hppa hurd-i386 m32 mk68k netbsd-i386 netbsd-alpha sh source
+Components: main extra
+Description: Official NIPAP apt repository
+SignWith: A4650BBB
+Log:
+ --type=dsc changelogs
+
+Origin: NIPAP
+Label: NIPAP
+Suite: testing
+Codename: testing
+Version: 3.1
+Architectures: i386 amd64 armel armhf ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc alpha arm AVR32 hppa hurd-i386 m32 mk68k netbsd-i386 netbsd-alpha sh source
+Components: main extra
+Description: NIPAP testing apt repository
+SignWith: A4650BBB
+Log:
+ --type=dsc changelogs

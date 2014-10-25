@@ -1,0 +1,7 @@
+Archive: stable
+Version: 3.1
+Component: extra
+Origin: NIPAP
+Label: NIPAP
+Architecture: s390
+Description: Official NIPAP apt repository

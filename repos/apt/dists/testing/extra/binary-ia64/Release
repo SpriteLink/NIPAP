@@ -1,0 +1,7 @@
+Archive: testing
+Version: 3.1
+Component: extra
+Origin: NIPAP
+Label: NIPAP
+Architecture: ia64
+Description: NIPAP testing apt repository

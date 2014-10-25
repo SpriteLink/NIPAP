@@ -1,0 +1,47 @@
+ip4r (1.05cvs-1) oneiric; urgency=low
+
+  * Built from CVS snapshot 2011-11-09; adds support for IPv6 and
+    general ip/ipr-types.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 09 Nov 2011 12:56:30 +0100
+
+ip4r (1.04-1) unstable; urgency=low
+
+  * New upstream release; closes: #537693.
+  * Drop postgresql-8.3-ip4r and build postgresql-8.4-ip4r; closes: #559584.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Sun, 06 Dec 2009 13:56:15 -0800
+
+ip4r (1.03-2) unstable; urgency=low
+
+  * Drop postgresql-8.2-ip4r; closes: #474285.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Sat, 05 Apr 2008 12:43:15 -0400
+
+ip4r (1.03-1) unstable; urgency=low
+
+  * New upstream release (supports PostgreSQL 8.3).
+  * Build new binary package postgresql-8.3-ip4r.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Mon, 04 Feb 2008 18:32:21 -0500
+
+ip4r (1.01-2) unstable; urgency=low
+
+  * Use /usr/lib/postgresql/8.2/bin/pg_config instead of /usr/bin/pg_config in
+    upstream Makefile; closes: #460379.
+  * Drop cdbs packaging.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Sat, 12 Jan 2008 15:49:57 -0500
+
+ip4r (1.01-1) unstable; urgency=low
+
+  * New upstream release.
+  * Build extension module for postgresql-8.2, closes: #419295.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Mon, 16 Apr 2007 15:17:48 -0400
+
+ip4r (1.0-1) unstable; urgency=low
+
+  * Initial release, closes: #381811.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Mon,  7 Aug 2006 01:01:13 -0400
