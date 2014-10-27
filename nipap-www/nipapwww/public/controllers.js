@@ -546,7 +546,19 @@ nipapAppControllers.controller('VRFAddController', function ($scope, $http) {
 		'rt': null,
 		'name': null,
 		'description': null,
-		'tags': []
+		'tags': [],
+		'avps': []
+	};
+
+	// add another empty "extra attribute" (AVP) input row
+	$scope.addAvp = function() {
+		$scope.vrf.avps.push({ 'attribute': '', 'value': '' });
+	}
+
+	// remove AVP row
+	$scope.removeAvp = function(avp){
+		var index = $scope.vrf.avps.indexOf(avp);
+		$scope.vrf.avps.splice( index, 1 );
 	};
 
 	/*
@@ -562,6 +574,11 @@ nipapAppControllers.controller('VRFAddController', function ($scope, $http) {
 
 		// Rewrite tags list to match what's expected by the XHR functions
 		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
+		query_data.avps = {};
+		$scope.vrf.avps.forEach(function(avp) {
+			query_data.avps[avp.attribute] = avp.value;
+		});
+		query_data.avps = JSON.stringify(query_data.avps);
 
 		// Send query!
 		$http.get('/xhr/add_vrf', { 'params': query_data })
@@ -593,6 +610,19 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 		'tags': []
 	};
 
+	// add another empty "extra attribute" (AVP) input row
+	$scope.addAvp = function() {
+		$scope.vrf.avps.push({ 'attribute': '', 'value': '' });
+	}
+
+	// remove AVP row
+	$scope.removeAvp = function(avp){
+		var index = $scope.vrf.avps.indexOf(avp);
+		$scope.vrf.avps.splice( index, 1 );
+	};
+
+
+
 	// Fetch VRF to edit from backend
 	$http.get('/xhr/smart_search_vrf',
 		{ 'params': {
@@ -611,6 +641,7 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 				// are moved to AngularJS, change XHR functions to use the same
 				// format as tags-input
 				vrf.tags = Object.keys(vrf.tags).map(function (elem) { return { 'text': elem }; } );
+				vrf.avps = Object.keys(vrf.avps).sort().map(function (key) { return { 'attribute': key, 'value': vrf.avps[key] }; } );
 
 				$scope.vrf = vrf;
 
@@ -668,6 +699,11 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 
 		// Rewrite tags list to match what's expected by the XHR functions
 		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
+		query_data.avps = {};
+		$scope.vrf.avps.forEach(function(avp) {
+			query_data.avps[avp.attribute] = avp.value;
+		});
+		query_data.avps = JSON.stringify(query_data.avps);
 
 		// Send query!
 		$http.get('/xhr/edit_vrf/' + vrf.id, { 'params': query_data })
