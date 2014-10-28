@@ -676,6 +676,7 @@ tbody.listing > tr:hover {
 	-webkit-border-radius: 5px;
 	background-color: #ffffff;
 	color: hsl(0, 0%, 47%);
+	white-space: nowrap
 }
 
 .open > .popup_menu {
@@ -1000,6 +1001,10 @@ tbody.listing > tr:hover {
 
 .version > a {
 	color: #777777;
+}
+
+.nipap_modal .modal-content {
+	display: inline-block;
 }
 
 /*

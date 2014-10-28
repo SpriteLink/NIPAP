@@ -9,6 +9,9 @@ nipapAppDirectives.directive('nipapPoolSelector', function ($http) {
 	return {
 		restrict: 'AE',
 		templateUrl: '/templates/pool_selector.html',
+		scope: {
+			selected_pool: '=selectedPool'
+		},
 		link: function (scope, elem, attrs) {
 			// Fetch Pools from backend
 			$http.get('/xhr/list_pool')
@@ -23,6 +26,13 @@ nipapAppDirectives.directive('nipapPoolSelector', function ($http) {
 					var msg = data || "Unknown failure";
 					showDialogNotice('Error', stat + ': ' + msg);
 				});
+
+			/*
+			 * A pool is selected
+			 */
+			scope.selectPool = function (pool) {
+				scope.selected_pool = pool;
+			}
 		}
 	};
 

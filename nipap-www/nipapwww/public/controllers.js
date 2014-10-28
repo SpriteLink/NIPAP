@@ -130,6 +130,39 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 });
 
 /*
+ * PrefixListController - Display prefix list
+ */
+nipapAppControllers.controller('PrefixListController', function ($scope, $modal) {
+
+	/*
+	 * Display a popup notice informing the user of how prefixes are added from
+	 * a pool.
+	 */
+	$scope.showAddPrefixFromPoolNotice = function () {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'add_prefix_from_pool_notice.html',
+			windowClass: 'nipap_modal'
+		});
+
+	}
+
+	/*
+	 * Display a popup notice informing the user of how prefixes are added from
+	 * a prefix.
+	 */
+	$scope.showAddPrefixFromPrefixNotice = function () {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'add_prefix_from_prefix_notice.html',
+			windowClass: 'nipap_modal'
+		});
+
+	}
+
+});
+
+/*
  * PrefixAddController - Used to add prefixes to NIPAP
  */
 nipapAppControllers.controller('PrefixAddController', function ($scope, $routeParams, $http) {

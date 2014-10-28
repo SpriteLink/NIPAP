@@ -117,11 +117,22 @@
 
 {% endblock %}
 
+{% block body_attributes %}ng-controller="PrefixListController"{% endblock %}
+
 {% block menu %}
 <div id="search_box">
 	{{ nipap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
 	<div style="position: absolute; right: 20px; top: 55px;">
-		{{ nipap.button('Add prefix', color='red', url=h.url(controller = 'prefix', action = 'add')) }}
+        <div class="btn-group" dropdown>
+            <button type="button" class="btn btn-danger dropdown-toggle">
+                Add prefix <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" style="min-width: 120px">
+                <li><a href="/ng/prefix#/prefix/add/manual">Manual</a></li>
+                <li><a href ng-click="showAddPrefixFromPoolNotice()">From pool</a></li>
+                <li><a href ng-click="showAddPrefixFromPrefixNotice()">From prefix</a></li>
+            </ul>
+        </div>
 	</div>
 </div>
 
@@ -132,5 +143,31 @@
 {% block raw_content %}
 
 {{ nipap.prefix_search_result() }}
+
+<script type="text/ng-template" id="add_prefix_from_pool_notice.html">
+    <div class="modal-header">
+        <h3 class="modal-title">Adding prefix from pool</h3>
+    </div>
+    <div class="modal-body">
+        Since version 0.27 adding prefixes from a pool is done from the <a href="/pool/list">pool list</a>.
+        <img src="/images/add_prefix_from_pool_notice.png">
+        <div style="text-align: center;">
+            <button class="btn btn-primary" ng-click="$close()">OK, got it!</button>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="add_prefix_from_prefix_notice.html">
+    <div class="modal-header">
+        <h3 class="modal-title">Adding prefix from prefix</h3>
+    </div>
+    <div class="modal-body">
+        Since version 0.27 adding prefixes from a prefix is done directly from the prefix list.
+        <img src="/images/add_prefix_from_prefix_notice.png">
+        <div style="text-align: center;">
+            <button class="btn btn-primary" ng-click="$close()">OK, got it!</button>
+        </div>
+    </div>
+</script>
 
 {% endblock %}
