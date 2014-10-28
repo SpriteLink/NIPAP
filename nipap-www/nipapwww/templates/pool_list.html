@@ -24,7 +24,7 @@
 <table class="listing" id="pool_table" style="width: 100%;" border=0>
 	<thead class="listing">
 		<tr>
-			<th style="padding-left: 30px;">Name</th><th></th><th>Description</th><th>Default type</th><th width="75">4 / 6</th><th></th>
+			<th style="padding-left: 30px;">Name</th><th></th><th>Description</th><th>Default type</th><th width="75">4 / 6</th><th></th><th></th>
 		</tr>
 	</thead>
 	<tbody class="listing">
@@ -34,7 +34,7 @@
 			<td>{{ pool.description }}</td>
 			<td>{{ pool.default_type }}</td>
 			<td>{{ pool.ipv4_default_prefix_length || '-' }}&nbsp;/&nbsp;{{ pool.ipv6_default_prefix_length || '-' }}</td>
-			<td>
+			<td style="padding-right: 0;">
 				<div class="dropdown">
 					<div class="dropdown-toggle minibutton">
 						<div class="popup_button_icon">&nbsp;</div>
@@ -43,9 +43,11 @@
 						<h3>Pool</h3>
 						<a href="/pool/edit/{{ pool.id }}">Edit</a>
 						<a href="#" ng-click="poolConfirmRemove($event, pool)">Remove</a>
-						<a href="/ng/prefix#/prefix/add/from-pool/{{ pool.id }}">Add prefix from pool</a>
 					</div>
 				</div>
+			</td>
+			<td>
+				<a type="button" class="btn btn-xs btn-success" href="/ng/prefix#/prefix/add/from-pool/{{ pool.id }}" tooltip="Add a prefix from this pool"><span class="glyphicon glyphicon-cloud-download"></span></a>
 			</td>
 		</tr>
 	</tbody>
