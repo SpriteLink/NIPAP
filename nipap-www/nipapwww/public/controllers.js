@@ -170,6 +170,14 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	// prefix method is add - used to customize prefix form template
 	$scope.method = 'add';
 
+	// open up the datepicker
+	$scope.dp_open = function($event) {
+		$event.preventDefault();
+		$event.stopPropagation();
+
+		$scope.prefix.dp_opened = true;
+	};
+
 	$scope.prefix_alloc_method = null;
 	// Set to true if allocation method was provided in URL
 	$scope.prefix_alloc_method_provided = false;
@@ -435,7 +443,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 /*
  * PrefixEditController - used to edit prefixes
  */
-nipapAppControllers.controller('PrefixEditController', function ($scope, $routeParams, $http) {
+nipapAppControllers.controller('PrefixEditController', function ($scope, $routeParams, $http, $filter) {
 
 	// Prefix method is edit - used to customize prefix form template
 	$scope.method = 'edit';
@@ -447,6 +455,15 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 	$scope.prefix = { 'tags': [], 'inherited_tags': [] };
 
 	$scope.edited_prefixes = [];
+
+	// open up the datepicker
+	$scope.dp_open = function($event) {
+		$event.preventDefault();
+		$event.stopPropagation();
+
+		$scope.prefix.dp_opened = true;
+	};
+
 
 	// Fetch prefix to edit from backend
 	$http.get('/xhr/list_prefix', { 'params': { 'id': $routeParams.prefix_id } })
@@ -548,6 +565,9 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 
 		// Mangle tags
 		prefix_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
+
+		// Mangle expires
+		prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss')
 
 		// Send query!
 		$http.get('/xhr/edit_prefix/' + $scope.prefix.id, { 'params': prefix_data })
