@@ -171,11 +171,11 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	$scope.method = 'add';
 
 	// open up the datepicker
-	$scope.dp_open = function($event) {
+	$scope.dpOpen = function($event) {
 		$event.preventDefault();
 		$event.stopPropagation();
 
-		$scope.prefix.dp_opened = true;
+		$scope.dpOpened = !$scope.dpOpened;
 	};
 
 	$scope.prefix_alloc_method = null;
@@ -457,11 +457,11 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 	$scope.edited_prefixes = [];
 
 	// open up the datepicker
-	$scope.dp_open = function($event) {
+	$scope.dpOpen = function($event) {
 		$event.preventDefault();
 		$event.stopPropagation();
 
-		$scope.prefix.dp_opened = true;
+		$scope.dpOpened = !$scope.dpOpened;
 	};
 
 

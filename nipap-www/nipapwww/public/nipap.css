@@ -433,18 +433,17 @@ input[type="submit"] {
 	font-family: arial;
 }
 
-.listing th,td {
+.listing th {
+	border-bottom: 1px solid #333333;
+	font-size: 1.1em;
 	padding: 5px;
 	padding-left: 10px;
 }
 
-.listing th {
-	border-bottom: 1px solid #333333;
-	font-size: 1.1em;
-}
-
 .listing td {
 	padding-right: 30px;
+	padding: 5px;
+	padding-left: 10px;
 }
 
 table.listing {
