@@ -499,6 +499,7 @@ class XhrController(BaseController):
             prefix          the prefix to add if already known
             family          address family (4 or 6)
             description     A short description
+            expires         Expiry time of assignment
             comment         Longer comment
             node            Hostname of node
             type            Type of prefix; reservation, assignment, host
@@ -533,6 +534,10 @@ class XhrController(BaseController):
         if 'description' in request.params:
             if request.params['description'].strip() != '':
                 p.description = request.params['description'].strip()
+
+        if 'expires' in request.params:
+            if request.params['expires'].strip() != '':
+                p.expires = request.params['expires'].strip(' "')
 
         if 'comment' in request.params:
             if request.params['comment'].strip() != '':
@@ -630,6 +635,12 @@ class XhrController(BaseController):
                     p.description = None
                 else:
                     p.description = request.params['description'].strip()
+
+            if 'expires' in request.params:
+                if request.params['expires'].strip() == '':
+                    p.expires = None
+                else:
+                    p.expires = request.params['expires'].strip(' "')
 
             if 'comment' in request.params:
                 if request.params['comment'].strip() == '':
@@ -846,6 +857,7 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'display_prefix': obj.display_prefix,
                 'status': obj.status,
                 'description': obj.description,
+                'expires': str(obj.expires),
                 'comment': obj.comment,
                 'inherited_tags': obj.inherited_tags,
                 'tags': obj.tags,
