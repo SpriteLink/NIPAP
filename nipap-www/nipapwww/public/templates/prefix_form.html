@@ -129,6 +129,26 @@ PREFIX DATA
 				<div class="option">
 					<dl>
 						<dt>
+						Expires
+						</dt>
+						<dd>
+						<div class="col-md-6">
+							<p class="input-group">
+							<input type="text" class="form-control input-sm" datepicker-popup="yyyy-MM-dd HH:mm:ss" ng-model="prefix.expires" is-open="$parent.dpOpened" starting-day="1" ng-required="true" close-text="Close" />
+							<span class="input-group-btn">
+								<button type="button" class="btn btn-sm btn-default" ng-click="dpOpen($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+							</span>
+							</p>
+						</div>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
 						Description
 						</dt>
 						<dd>
