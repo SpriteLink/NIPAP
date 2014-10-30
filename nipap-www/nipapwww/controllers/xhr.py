@@ -594,6 +594,9 @@ class XhrController(BaseController):
         if 'tags' in request.params:
             p.tags = json.loads(request.params['tags'])
 
+        if 'avps' in request.params:
+            p.avps = json.loads(request.params['avps'])
+
         # arguments
         args = {}
         if 'from_prefix[]' in request.params:
@@ -717,6 +720,9 @@ class XhrController(BaseController):
 
             if 'tags' in request.params:
                 p.tags = json.loads(request.params['tags'])
+
+            if 'avps' in request.params:
+                p.avps = json.loads(request.params['avps'])
 
             p.save()
 
@@ -880,11 +886,12 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'alarm_priority': obj.alarm_priority,
                 'display': obj.display,
                 'match': obj.match,
-				'children': obj.children,
+                'children': obj.children,
                 'vlan': obj.vlan,
                 'total_addresses': obj.total_addresses,
                 'used_addresses': obj.used_addresses,
-                'free_addresses': obj.free_addresses
+                'free_addresses': obj.free_addresses,
+                'avps': obj.avps
             }
         else:
             return json.JSONEncoder.default(self, obj)

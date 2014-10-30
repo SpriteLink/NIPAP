@@ -221,7 +221,8 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		customer_id: null,
 		vlan: null,
 		monitor: false,
-		alarm_priority: null
+		alarm_priority: null,
+		avps: []
 	};
 
 	// List of prefixes added to NIPAP
@@ -379,6 +380,16 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		}
 	});
 
+	// add another empty "extra attribute" (AVP) input row
+	$scope.addAvp = function() {
+		$scope.prefix.avps.push({ 'attribute': '', 'value': '' });
+	}
+
+	// remove AVP row
+	$scope.removeAvp = function(avp) {
+		var index = $scope.prefix.avps.indexOf(avp);
+		$scope.prefix.avps.splice( index, 1 );
+	}
 
 	/*
 	 * Submit prefix form - add prefix to NIPAP
@@ -398,6 +409,14 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		if ($scope.vrf != null) {
 			query_data.vrf = $scope.vrf.id;
 		}
+
+		// Mangle avps
+		query_data.avps = {};
+		$scope.prefix.avps.forEach(function(avp) {
+			query_data.avps[avp.attribute] = avp.value;
+		});
+		query_data.avps = JSON.stringify(query_data.avps);
+
 
 		if ($scope.prefix_alloc_method == 'from-pool') {
 
@@ -464,6 +483,16 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 		$scope.dpOpened = !$scope.dpOpened;
 	};
 
+	// add another empty "extra attribute" (AVP) input row
+	$scope.addAvp = function() {
+		$scope.prefix.avps.push({ 'attribute': '', 'value': '' });
+	}
+
+	// remove AVP row
+	$scope.removeAvp = function(avp) {
+		var index = $scope.prefix.avps.indexOf(avp);
+		$scope.prefix.avps.splice( index, 1 );
+	}
 
 	// Fetch prefix to edit from backend
 	$http.get('/xhr/list_prefix', { 'params': { 'id': $routeParams.prefix_id } })
@@ -479,6 +508,8 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 				// format as tags-input
 				pref.tags = Object.keys(pref.tags).map(function (elem) { return { 'text': elem }; } );
 				pref.inherited_tags = Object.keys(pref.inherited_tags).map(function (elem) { return { 'text': elem }; } );
+
+				pref.avps = Object.keys(pref.avps).sort().map(function (key) { return { 'attribute': key, 'value': pref.avps[key] }; } );
 
 				$scope.prefix = pref;
 
@@ -565,6 +596,12 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 
 		// Mangle tags
 		prefix_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
+		// Mangle avps
+		prefix_data.avps = {};
+		$scope.prefix.avps.forEach(function(avp) {
+			prefix_data.avps[avp.attribute] = avp.value;
+		});
+		prefix_data.avps = JSON.stringify(prefix_data.avps);
 
 		// Mangle expires
 		prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss')
