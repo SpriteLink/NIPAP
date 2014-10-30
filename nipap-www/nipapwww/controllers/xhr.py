@@ -132,6 +132,9 @@ class XhrController(BaseController):
         if 'tags' in request.params:
             v.tags = json.loads(request.params['tags'])
 
+        if 'avps' in request.params:
+            v.avps = json.loads(request.params['avps'])
+
         try:
             v.save()
         except NipapError, e:
@@ -164,6 +167,9 @@ class XhrController(BaseController):
             v.description = request.params['description']
         if 'tags' in request.params:
             v.tags = json.loads(request.params['tags'])
+
+        if 'avps' in request.params:
+            v.avps = json.loads(request.params['avps'])
 
         try:
             v.save()
@@ -803,7 +809,8 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'used_addresses_v4': obj.used_addresses_v4,
                 'used_addresses_v6': obj.used_addresses_v6,
                 'free_addresses_v4': obj.free_addresses_v4,
-                'free_addresses_v6': obj.free_addresses_v6
+                'free_addresses_v6': obj.free_addresses_v6,
+                'avps': obj.avps
             }
 
         elif isinstance(obj, Pool):
