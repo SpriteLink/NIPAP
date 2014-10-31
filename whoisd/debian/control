@@ -2,7 +2,7 @@ Source: nipap-whoisd
 Maintainer: Kristian Larsson <kristian@spritelink.net>
 Section: python
 Priority: optional
-Build-Depends: python (>= 2.4), debhelper (>= 7), python-all
+Build-Depends: python (>= 2.4), debhelper (>= 7)
 Standards-Version: 3.9.1
 
 Package: nipap-whoisd
