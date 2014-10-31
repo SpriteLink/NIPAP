@@ -5,3 +5,4 @@
 *.tar.gz
 *.deb
 docs/sphinx/_build/
+!repos/**
