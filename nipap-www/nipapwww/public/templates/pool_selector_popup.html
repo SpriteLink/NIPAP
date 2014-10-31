@@ -1,0 +1,25 @@
+<div dropdown on-toggle="toggled(open)" is-open="popup_open">
+	<input type="button" class="btn btn-danger dropdown-toggle" value="Change pool" style="margin-left: 15px;">
+	<div class="dropdown-menu popup_menu selector">
+		<h3>Select pool</h3>
+		<div class="selector_filterbar">
+			<input type="text" class="selector_search_string" name="pool_search_string" ng-model="query_string">
+		</div>
+		<div class="selector_result">
+			<a ng-click="selectPool(pool)" class="vrf_filter_entry" ng-repeat="pool in pools | filter:query_string">
+				<div>
+					<div class="selector_tick">
+						<span ng-show="selected_pool.id == pool.id">&#10003;</span>
+						<span ng-show="selected_pool.id != pool.id">&nbsp;</span>
+					</div>
+					{{ pool.name }}
+				</div>
+				<div class="selector_entry_description">{{ pool.description == null ? '' : pool.description }}</div>
+				<div class="selector_x">
+					<img src="/images/x-mark-3-16.png" ng-show="selected_pool.id == pool.id">
+					<span ng-show="selected_pool.id != pool.id">&nbsp;</span>
+				</div>
+			</a>
+		</div>
+	</div>
+</div>

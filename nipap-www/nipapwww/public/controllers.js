@@ -24,22 +24,6 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 		});
 
 	/*
-	 * Callback function after a vrf has been removed
-	 */
-	$scope.vrfRemoved = function (data, vrf) {
-
-		if ('error' in data) {
-			showDialogNotice('Error', data.message);
-			return;
-		}
-
-		var index = $scope.vrfs.indexOf(vrf);
-		$scope.vrfs.splice(index, 1);
-
-	}
-
-
-	/*
 	 * Display remove confirmation dialog
 	 */
 	$scope.vrfConfirmRemove = function (evt, vrf) {
@@ -54,7 +38,8 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
 					} else {
-						$scope.vrfRemoved(data, vrf);
+						var index = $scope.vrfs.indexOf(vrf);
+						$scope.vrfs.splice(index, 1);
 					}
 				})
 				.error(function (data, stat) {
@@ -89,22 +74,6 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 		});
 
 	/*
-	 * Callback function after a pool has been removed
-	 */
-	$scope.poolRemoved = function (data, pool) {
-
-		if ('error' in data) {
-			showDialogNotice('Error', data.message);
-			return;
-		}
-
-		var index = $scope.pools.indexOf(pool);
-		$scope.pools.splice(index, 1);
-
-	}
-
-
-	/*
 	 * Display remove confirmation dialog
 	 */
 	$scope.poolConfirmRemove = function (evt, pool) {
@@ -116,7 +85,12 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 			};
 			$http.get('/xhr/remove_pool', { 'params': data })
 				.success(function (data) {
-					$scope.poolRemoved(data, pool);
+					if (data.hasOwnProperty('error')) {
+						showDialogNotice('Error', data.message);
+					} else {
+						var index = $scope.pools.indexOf(pool);
+						$scope.pools.splice(index, 1);
+					}
 				})
 				.error(function (data, stat) {
 					var msg = data || "Unknown failure";
@@ -127,6 +101,7 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 
 		});
 	}
+
 });
 
 /*
@@ -206,10 +181,10 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 	$scope.prefix_family = 4;
 	$scope.prefix_length = null;
 
-	$scope.vrf = null;
-
 	$scope.prefix = {
 		prefix: null,
+		vrf: null,
+		pool: null,
 		status: 'assigned',
 		description: null,
 		comment: null,
@@ -325,7 +300,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 						if (data.hasOwnProperty('error')) {
 							showDialogNotice('Error', data.message);
 						} else {
-							$scope.vrf = data.result[0];
+							$scope.prefix.vrf = data.result[0];
 						}
 					})
 					.error(function (data, stat) {
@@ -334,7 +309,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 					});
 			} else {
 				// Pool is missing implied VRF - means the pool is empty!
-				$scope.vrf = null;
+				$scope.prefix.vrf = null;
 			}
 		}
 	});
@@ -359,7 +334,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
 					} else {
-						$scope.vrf = data.result[0];
+						$scope.prefix.vrf = data.result[0];
 					}
 				})
 				.error(function (data, stat) {
@@ -403,11 +378,17 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		 * required by the different allocation methods.
 		 */
 		var query_data = angular.copy($scope.prefix);
+		query_data.vrf = null;
+		query_data.pool = null;
 
-		// Tags & VRFs are needed no matter allocation method
+		// Tags, VRF and pool are needed no matter allocation method
 		query_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
-		if ($scope.vrf != null) {
-			query_data.vrf = $scope.vrf.id;
+		if ($scope.prefix.vrf != null) {
+			query_data.vrf = $scope.prefix.vrf.id;
+		}
+
+		if ($scope.prefix.pool != null) {
+			query_data.pool = $scope.prefix.pool.id;
 		}
 
 		// Mangle avps
@@ -467,8 +448,6 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 	// Prefix method is edit - used to customize prefix form template
 	$scope.method = 'edit';
 
-	$scope.vrf = null;
-
 	// The tags-attributes needs to be initialized due to bug,
 	// see https://github.com/mbenford/ngTagsInput/issues/204
 	$scope.prefix = { 'tags': [], 'inherited_tags': [] };
@@ -501,6 +480,8 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 				showDialogNotice('Error', data.message);
 			} else {
 				pref = data[0];
+				pref.vrf = null;
+				pref.pool = null;
 
 				// Tags needs to be mangled for use with tags-input
 				// TODO: When all interaction with prefix add & edit functions
@@ -523,13 +504,29 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 						if (data.hasOwnProperty('error')) {
 							showDialogNotice('Error', data.message);
 						} else {
-							$scope.vrf = data.result[0];
+							$scope.prefix.vrf = data.result[0];
 						}
 					})
 					.error(function (data, stat) {
 						var msg = data || "Unknown failure";
 						showDialogNotice('Error', stat + ': ' + msg);
 					});
+
+				// Fetch prefix's pool, if any
+				if ($scope.prefix.pool_id !== null) {
+					$http.get('/xhr/list_pool', { 'params': { 'id': $scope.prefix.pool_id, } })
+						.success(function (data) {
+							if (data.hasOwnProperty('error')) {
+								showDialogNotice('Error', data.message);
+							} else {
+								$scope.prefix.pool = data[0];
+							}
+						})
+						.error(function (data, stat) {
+							var msg = data || "Unknown failure";
+							showDialogNotice('Error', stat + ': ' + msg);
+						});
+				}
 
 				// Display statistics
 				// TODO: Do in AngularJS-way, probably easiest to encapsulate
@@ -593,6 +590,7 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 
 		// Create new object with prefix data
 		var prefix_data = angular.copy($scope.prefix);
+		delete prefix_data.vrf;
 
 		// Mangle tags
 		prefix_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
@@ -605,6 +603,11 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 
 		// Mangle expires
 		prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss')
+
+		// Set pool, if any
+		if ($scope.prefix.pool !== null) {
+			prefix_data.pool = $scope.prefix.pool.id;
+		}
 
 		// Send query!
 		$http.get('/xhr/edit_prefix/' + $scope.prefix.id, { 'params': prefix_data })
@@ -796,7 +799,7 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 		query_data.avps = JSON.stringify(query_data.avps);
 
 		// Send query!
-		$http.get('/xhr/edit_vrf/' + vrf.id, { 'params': query_data })
+		$http.get('/xhr/edit_vrf/' + $scope.vrf.id, { 'params': query_data })
 			.success(function (data){
 				if (data.hasOwnProperty('error')) {
 					showDialogNotice('Error', data.message);
@@ -808,6 +811,263 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 					var msg = data || "Unknown failure";
 					showDialogNotice('Error', stat + ': ' + msg);
 			});
+
+	}
+
+});
+
+/*
+ * PoolAddController - used to add pools
+ */
+nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
+
+	$scope.method = 'add';
+	$scope.added_pools = [];
+	$scope.pool = {
+		'name': null,
+		'description': null,
+		'tags': [],
+		'default_type': null,
+		'ipv4_default_prefix_length': null,
+		'ipv6_default_prefix_length': null
+	};
+
+	/*
+	 * Submit pool form - add pool
+	 */
+	$scope.submitForm = function() {
+
+		/*
+		 * Create object specifying pool attributes. Start with a copy of the
+		 * pool object from the scope.
+		 */
+		var query_data = angular.copy($scope.pool);
+
+		// Rewrite tags list to match what's expected by the XHR functions
+		query_data.tags = JSON.stringify($scope.pool.tags.map(function (elem) { return elem.text; }));
+
+		// Send query!
+		$http.get('/xhr/add_pool', { 'params': query_data })
+			.success(function (data){
+				if (data.hasOwnProperty('error')) {
+					showDialogNotice('Error', data.message);
+				} else {
+					$scope.added_pools.push(data);
+				}
+			})
+			.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+			});
+
+	}
+
+});
+
+/*
+ * PoolEditController - used to edit pools
+ */
+nipapAppControllers.controller('PoolEditController', function ($scope, $routeParams, $http, $modal) {
+
+	$scope.method = 'edit';
+	$scope.edited_pools = [];
+
+	$scope.pool = {
+		'tags': []
+	};
+	$scope.pool_prefixes = [];
+
+	// Fetch VRF to edit from backend
+	$http.get('/xhr/list_pool', { 'params': { 'id': $routeParams.pool_id, } })
+		.success(function (data) {
+			if (data.hasOwnProperty('error')) {
+				showDialogNotice('Error', data.message);
+			} else {
+				pool = data[0];
+
+				// Tags needs to be mangled for use with tags-input
+				// TODO: When all interaction with prefix add & edit functions
+				// are moved to AngularJS, change XHR functions to use the same
+				// format as tags-input
+				pool.tags = Object.keys(pool.tags).map(function (elem) { return { 'text': elem }; } );
+
+				// Fetch pool's VRF
+				if (pool.vrf_id !== null) {
+					$http.get('/xhr/smart_search_vrf',
+						{ 'params': {
+							'vrf_id': $scope.pool.vrf_id,
+							'query_string': ''
+					}})
+						.success(function (data) {
+							if (data.hasOwnProperty('error')) {
+								showDialogNotice('Error', data.message);
+							} else {
+								$scope.pool.vrf = data.result[0];
+							}
+						})
+						.error(function (data, stat) {
+							var msg = data || "Unknown failure";
+							showDialogNotice('Error', stat + ': ' + msg);
+						});
+				} else {
+					pool.vrf = null;
+				}
+
+				$scope.pool = pool;
+
+				// Fetch pool's prefixes
+				$http.get('/xhr/list_prefix',
+					{ 'params': {
+						'pool': pool.id
+				}})
+					.success(function (data) {
+						if (data.hasOwnProperty('error')) {
+							showDialogNotice('Error', data.message);
+						} else {
+							$scope.pool_prefixes = data;
+						}
+					})
+					.error(function (data, stat) {
+						var msg = data || "Unknown failure";
+						showDialogNotice('Error', stat + ': ' + msg);
+					});
+
+				// Display statistics
+				// TODO: Do in AngularJS-way, probably easiest to encapsulate
+				// in a directive
+				var data_charts = [
+					{
+						color: '#d74228',
+						highlight: '#e74228',
+						label: 'Used'
+					},
+					{
+						color: '#368400',
+						highlight: '#36a200',
+						label: 'Free'
+					}
+				];
+
+				var options = { animationSteps : 20, animationEasing: "easeOutQuart" };
+
+				if (pool.member_prefixes_v4 > 0 && pool.ipv4_default_prefix_length !== null > 0) {
+					var data_pool_prefixes_v4 = angular.copy(data_charts);
+					data_pool_prefixes_v4[0]['value'] = pool.used_prefixes_v4;
+					data_pool_prefixes_v4[1]['value'] = pool.free_prefixes_v4;
+
+					var chart_pool_prefixes_v4 = new Chart($("#canvas_pool_prefixes_v4")[0]
+						.getContext("2d"))
+						.Doughnut(data_pool_prefixes_v4, options);
+				}
+
+				if (pool.member_prefixes_v6 > 0 && pool.ipv6_default_prefix_length !== null) {
+					var data_pool_prefixes_v6 = angular.copy(data_charts);
+					data_pool_prefixes_v6[0]['value'] = pool.used_prefixes_v6;
+					data_pool_prefixes_v6[1]['value'] = pool.free_prefixes_v6;
+
+					var chart_pool_prefixes_v6 = new Chart($("#canvas_pool_prefixes_v6")[0]
+						.getContext("2d"))
+						.Doughnut(data_pool_prefixes_v6, options);
+				}
+
+				if (pool.member_prefixes_v4 > 0) {
+					var data_pool_addresses_v4 = angular.copy(data_charts);
+					data_pool_addresses_v4[0]['value'] = pool.used_addresses_v4;
+					data_pool_addresses_v4[1]['value'] = pool.free_addresses_v4;
+
+					var chart_pool_addresses_v4 = new Chart($("#canvas_pool_addresses_v4")[0]
+						.getContext("2d"))
+						.Doughnut(data_pool_addresses_v4, options);
+				}
+
+				if (pool.member_prefixes_v6 > 0) {
+					var data_pool_addresses_v6 = angular.copy(data_charts);
+					data_pool_addresses_v6[0]['value'] = pool.used_addresses_v6;
+					data_pool_addresses_v6[1]['value'] = pool.free_addresses_v6;
+
+					var chart_pool_addresses_v6 = new Chart($("#canvas_pool_addresses_v6")[0]
+						.getContext("2d"))
+						.Doughnut(data_pool_addresses_v6, options);
+				}
+
+			}
+
+		})
+		.error(function (data, stat) {
+			var msg = data || "Unknown failure";
+			showDialogNotice('Error', stat + ': ' + msg);
+		});
+
+	/*
+	 * Submit pool form - edit pool
+	 */
+	$scope.submitForm = function () {
+
+		/*
+		 * Create object specifying pool attributes. Start with a copy of the
+		 * pool object from the scope.
+		 */
+		var query_data = angular.copy($scope.pool);
+
+		// Rewrite tags list to match what's expected by the XHR functions
+		query_data.tags = JSON.stringify($scope.pool.tags.map(function (elem) { return elem.text; }));
+
+		// Send query!
+		$http.get('/xhr/edit_pool/' + $scope.pool.id, { 'params': query_data })
+			.success(function (data){
+				if (data.hasOwnProperty('error')) {
+					showDialogNotice('Error', data.message);
+				} else {
+					$scope.edited_pools.push(data);
+				}
+			})
+			.error(function (data, stat) {
+					var msg = data || "Unknown failure";
+					showDialogNotice('Error', stat + ': ' + msg);
+			});
+
+	}
+
+	/*
+	 * Confirm remove of prefix from pool
+	 */
+	$scope.prefixConfirmRemove = function (evt, prefix) {
+
+		var dialog = showDialogYesNo('Remove ' + prefix.display_prefix + '?',
+			'Are you sure you want to remove ' + prefix.display_prefix + ' from pool? You cannot undo this action.',
+			function () {
+
+				$http.get('/xhr/edit_prefix/' + prefix.id, { 'params': { 'pool': '' } })
+					.success(function (data) {
+						if (data.hasOwnProperty('error')) {
+							showDialogNotice('Error', data.message);
+						} else {
+							var index = $scope.pool_prefixes.indexOf(prefix);
+							$scope.pool_prefixes.splice(index, 1);
+						}
+					})
+					.error(function (data, stat) {
+						var msg = data || "Unknown failure";
+						showDialogNotice('Error', stat + ': ' + msg);
+					});
+
+				dialog.dialog('close');
+
+			}
+		);
+
+	}
+
+	/*
+	 * Display a popup notice informing the user of how pools are expanded
+	 * nowadays.
+	 */
+	$scope.showExpandPoolNotice = function () {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'expand_pool_notice.html',
+			windowClass: 'nipap_modal'
+		});
 
 	}
 

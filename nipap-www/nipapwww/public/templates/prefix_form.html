@@ -78,29 +78,29 @@ PREFIX DATA
 						<dd>
 							<div style="position: relative;">
 								<div id="prefix_vrf_text" class="prefix_vrf_text">
-									<span ng-show="method == 'add' && (vrf === null && from_pool === null)">
+									<span ng-show="method == 'add' && (prefix.vrf === null && from_pool === null)">
 										No VRF currently selected, please choose destination VRF for new prefix manually.
 									</span>
-									<span ng-show="method == 'add' && (vrf === null && from_pool !== null)">
+									<span ng-show="method == 'add' && (prefix.vrf === null && from_pool !== null)">
 										Pool is missing implied VRF. Is it empty?
 									</span>
-									<span ng-show="method == 'add' && (vrf !== null && from_pool !== null)">
+									<span ng-show="method == 'add' && (prefix.vrf !== null && from_pool !== null)">
 										Destination VRF for new prefix taken from pool's implied VRF.
 									</span>
-									<span ng-show="method == 'add' && (vrf !== null && from_prefix !== null)">
+									<span ng-show="method == 'add' && (prefix.vrf !== null && from_prefix !== null)">
 										VRF from parent prefix:
 									</span>
 								</div>
 	                            <div class="selector">
 	                                <div id="prefix_vrf_display" style="width: 80%; border: 1px solid #CCCCCC; float: left;">
-	                                    <div class="vrf_filter_entry" ng-show="vrf !== null">
-	                                        <div class="vrf_filter_entry_rt">RT:&nbsp; {{ vrf.rt || '-' }} </div>
-	                                        <div class="selector_entry_name" style="margin-left: 5px;">{{ vrf.name }}</div>
-	                                        <div class="selector_entry_description" style="clear: both;">{{ vrf.description }}</div>
+	                                    <div class="vrf_filter_entry" ng-show="prefix.vrf !== null">
+	                                        <div class="vrf_filter_entry_rt">RT:&nbsp; {{ prefix.vrf.rt || '-' }} </div>
+	                                        <div class="selector_entry_name" style="margin-left: 5px;">{{ prefix.vrf.name }}</div>
+	                                        <div class="selector_entry_description" style="clear: both;">{{ prefix.vrf.description }}</div>
 	                                    </div>
-	                                    <span ng-show="vrf === null">No VRF selected.</span>
+	                                    <span ng-show="prefix.vrf === null">No VRF selected.</span>
 	                                </div>
-									<span nipap-vrf-selector selected-vrf="vrf" ng-show="method == 'add' && (from_pool === null)"></span>
+									<span nipap-vrf-selector selected-vrf="prefix.vrf" ng-show="method == 'add' && (from_pool === null)"></span>
 	                            </div>
 	                        </div>
 						</dd>
@@ -321,12 +321,43 @@ PREFIX DATA
 											<span class="glyphicon glyphicon-plus"></span> Add attribute
 										</button>
 									</td>
-								</tfoot>
-							</table>
-							</dd>
-						</dl>
-					</div>
+								</tr>
+							</tfoot>
+						</table>
+						</dd>
+					</dl>
+				</div>
 
+				<div class="rule"></div>
+
+				<div class="option">
+					<dl>
+						<dt>
+							Pool
+						</dt>
+						<dd>
+							<div style="position: relative;">
+								<div class="prefix_vrf_text">
+									<span ng-show="prefix.pool === null">
+										No pool currently selected.
+									</span>
+								</div>
+								<div class="selector">
+									<div style="width: 80%; border: 1px solid #CCCCCC; float: left;">
+										<div class="vrf_filter_entry" ng-show="prefix.pool !== null">
+											<div class="selector_entry_name" style="margin-left: 5px;">{{ prefix.pool.name }}</div>
+											<div class="selector_entry_description" style="clear: both;">{{ prefix.pool.description }}</div>
+										</div>
+										<span ng-show="prefix.pool === null">No pool selected.</span>
+									</div>
+									<span nipap-pool-selector-popup selected-pool="prefix.pool"></span>
+								</div>
+							</div>
+						</dd>
+					</dl>
+				</div>
+
+				<div class="rule"></div>
 
 				<div class="option">
 					<dl>
