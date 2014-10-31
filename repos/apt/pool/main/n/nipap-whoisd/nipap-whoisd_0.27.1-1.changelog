@@ -1,44 +1,16 @@
-nipap-whoisd (0.27.0-1) stable; urgency=medium
+nipap-whoisd (0.27.1-1) stable; urgency=medium
 
-  * Fix of backend forking (#653). Now real performance boost!
-  * AVP (Attribute-Value Pair) support allowing users to store custom
-    attributes associated with prefixes, VRFs or pools (#394, #631,
-    #629)
-  * Add tags to VRFs for easy categorization and searching (#484)
-  * Add tags to pools for easy categorization and searching (#566)
-  * New status field for prefixes, improving the experience for registry
-    type users. Status can be "assigned", "reserved" or "quarantine".
-    (#494)
-  * New expires field for prefixes allowing users (typically registry)
-    to set an expiration time of an assignment. No actions are actually
-    taken once the expiration time has passed (#599)
-  * Statistics improvements for pools, now shows number of
-    total/used/free prefixes as opposed to just showing it for
-    addresses. The number of free prefixes is calculated based on the
-    default prefix length of new prefixes assigned from the pool (#528).
-  * Rewrite of parts of web-UI using AngularJS (#635, #621, #628, #638)
-  * Add bootstrap CSS for easing web development. Replacement of our own
-    components (like buttons) is off to a soft-start. (#543, #660)
-  * Permission check of .nipaprc to prevent the world reading it (#632)
-  * Fix of open file handle leaks in backend (#485)
-  * Add DB version check for backend to prevent running the backend with
-    the wrong database schema version.
-  * Backend now ships with requirements.txt to ease running it in a
-    virtualenv. Travis-CI also runs a job for testing NIPAP in a
-    virtualenv.
-  * Some work on being more Python 3 friendly (#596, #583, #648)
-  * Fix statistics calculation bug (#590)
-  * Performance improvements (#589)
-  * Some documentation updates (#615)
-  * Various other feature improvements and bug fixes
+  * Allow configuration of number of forks in backend.
+  * Make the expires field not required in the web UI.
+  * Massive performance improvement to SQL upgrade script.
 
- -- Kristian Larsson <kll@spritelink.net>  Fri, 31 Oct 2014 13:07:52 +0100
+ -- Kristian Larsson <kll@spritelink.net>  Fri, 31 Oct 2014 15:42:19 +0100
 
 nipap-whoisd (0.26.4-1) stable; urgency=medium
 
   * Fix edit of VRF RT in web UI (#575)
 
- -- Kristian Larsson <kll@spritelink.net>  Fri, 31 Oct 2014 13:04:16 +0100
+ -- Kristian Larsson <kll@spritelink.net>  Wed, 13 Aug 2014 17:21:59 +0200
 
 nipap-whoisd (0.26.3-1) stable; urgency=medium
 
