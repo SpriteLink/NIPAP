@@ -257,6 +257,8 @@ class XhrController(BaseController):
                 p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
         if 'tags' in request.params:
             p.tags = json.loads(request.params['tags'])
+        if 'avps' in request.params:
+            p.avps = json.loads(request.params['avps'])
 
         try:
            p.save()
@@ -291,6 +293,8 @@ class XhrController(BaseController):
                 p.ipv6_default_prefix_length = None
         if 'tags' in request.params:
             p.tags = json.loads(request.params['tags'])
+        if 'avps' in request.params:
+            p.avps = json.loads(request.params['avps'])
 
         try:
            p.save()
@@ -862,7 +866,8 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'used_addresses_v4': obj.used_addresses_v4,
                 'used_addresses_v6': obj.used_addresses_v6,
                 'free_addresses_v4': obj.free_addresses_v4,
-                'free_addresses_v6': obj.free_addresses_v6
+                'free_addresses_v6': obj.free_addresses_v6,
+                'avps': obj.avps
             }
 
         elif isinstance(obj, Prefix):

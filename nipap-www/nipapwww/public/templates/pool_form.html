@@ -128,6 +128,46 @@
 				</dl>
 			</div>
 
+			<div class="rule"></div>
+
+			<div class="option">
+				<dl>
+					<dt>
+						Extra Attributes
+					</dt>
+					<dd>
+						<table style="width: 100%;">
+							<tbody>
+								<tr ng-repeat="avp in pool.avps">
+									<td class="col-md-4" style="padding: 0;">
+										<input type="text" style="width: 90%;" ng-model="avp.attribute"> <b>=</b>
+									</td>
+									<td class="col-md-7" style="padding: 0;">
+										<input type="text" style="width: 100%;" ng-model="avp.value">
+									</td>
+									<td class="col-md-1" style="padding-top: 3px; padding-bottom: 3px;">
+										<button type="button" class="btn btn-xs btn-danger" ng-click="removeAvp(avp)">
+											<span class="glyphicon glyphicon-minus"></span> Remove
+										</button>
+									</td>
+								</tr>
+							</tbody>
+							<tfoot>
+								<tr>
+									<td></td>
+									<td></td>
+									<td style="padding-top: 5px;">
+										<button type="button" class="btn btn-xs btn-success" ng-click="addAvp()">
+											<span class="glyphicon glyphicon-plus"></span> Add attribute
+									   </button>
+									</td>
+							</tfoot>
+						</table>
+					</dd>
+				</dl>
+			</div>
+
+
 			<div class="rule" ng-show="method == 'edit'"></div>
 
 			<div class="option">

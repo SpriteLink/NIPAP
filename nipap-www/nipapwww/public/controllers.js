@@ -829,8 +829,20 @@ nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
 		'tags': [],
 		'default_type': null,
 		'ipv4_default_prefix_length': null,
-		'ipv6_default_prefix_length': null
+		'ipv6_default_prefix_length': null,
+		'avps': []
 	};
+
+	// add another empty "extra attribute" (AVP) input row
+	$scope.addAvp = function() {
+		$scope.pool.avps.push({ 'attribute': '', 'value': '' });
+	}
+
+	// remove AVP row
+	$scope.removeAvp = function(avp) {
+		var index = $scope.pool.avps.indexOf(avp);
+		$scope.pool.avps.splice( index, 1 );
+	}
 
 	/*
 	 * Submit pool form - add pool
@@ -845,6 +857,13 @@ nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
 
 		// Rewrite tags list to match what's expected by the XHR functions
 		query_data.tags = JSON.stringify($scope.pool.tags.map(function (elem) { return elem.text; }));
+
+		// Mangle avps
+		query_data.avps = {};
+		$scope.pool.avps.forEach(function(avp) {
+			query_data.avps[avp.attribute] = avp.value;
+		});
+		query_data.avps = JSON.stringify(query_data.avps);
 
 		// Send query!
 		$http.get('/xhr/add_pool', { 'params': query_data })
@@ -877,6 +896,17 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 	};
 	$scope.pool_prefixes = [];
 
+	// add another empty "extra attribute" (AVP) input row
+	$scope.addAvp = function() {
+		$scope.pool.avps.push({ 'attribute': '', 'value': '' });
+	}
+
+	// remove AVP row
+	$scope.removeAvp = function(avp) {
+		var index = $scope.pool.avps.indexOf(avp);
+		$scope.pool.avps.splice( index, 1 );
+	}
+
 	// Fetch VRF to edit from backend
 	$http.get('/xhr/list_pool', { 'params': { 'id': $routeParams.pool_id, } })
 		.success(function (data) {
@@ -890,6 +920,8 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 				// are moved to AngularJS, change XHR functions to use the same
 				// format as tags-input
 				pool.tags = Object.keys(pool.tags).map(function (elem) { return { 'text': elem }; } );
+
+				pool.avps = Object.keys(pool.avps).sort().map(function (key) { return { 'attribute': key, 'value': pool.avps[key] }; } );
 
 				// Fetch pool's VRF
 				if (pool.vrf_id !== null) {
@@ -1011,6 +1043,13 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 
 		// Rewrite tags list to match what's expected by the XHR functions
 		query_data.tags = JSON.stringify($scope.pool.tags.map(function (elem) { return elem.text; }));
+
+		// Mangle avps
+		query_data.avps = {};
+		$scope.prefix.avps.forEach(function(avp) {
+			query_data.avps[avp.attribute] = avp.value;
+		});
+		query_data.avps = JSON.stringify(query_data.avps);
 
 		// Send query!
 		$http.get('/xhr/edit_pool/' + $scope.pool.id, { 'params': query_data })
