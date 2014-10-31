@@ -132,7 +132,7 @@ PREFIX DATA
 						Expires
 						</dt>
 						<dd>
-						<div class="col-md-6">
+						<div class="col-md-6" style="padding: 0px">
 							<p class="input-group">
 							<input type="text" class="form-control input-sm" datepicker-popup="yyyy-MM-dd HH:mm:ss" ng-model="prefix.expires" is-open="$parent.dpOpened" starting-day="1" ng-required="true" close-text="Close" />
 							<span class="input-group-btn">
@@ -364,8 +364,8 @@ PREFIX DATA
 						<dt>
 						</dt>
 						<dd>
-							<input class="button button_green" type="submit" value="Add" ng-show="method == 'add'">
-							<input class="button button_green" type="submit" value="Save" ng-show="method == 'edit'">
+							<button class="btn btn-success" ng-show="method == 'add'">Add prefix</button>
+							<button class="btn btn-success" ng-show="method == 'edit'">Save prefix</button>
 						</dd>
 					</dl>
 				</div>
