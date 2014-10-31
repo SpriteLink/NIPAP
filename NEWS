@@ -1,3 +1,9 @@
+Version 0.27.1 - Icarus
+-----------------------
+ * Allow configuration of number of forks in backend.
+ * Make the expires field not required in the web UI.
+ * Massive performance improvement to SQL upgrade script.
+
 Version 0.27.0 - Icarus
 -----------------------
  * Fix of backend forking (#653). Now real performance boost!
