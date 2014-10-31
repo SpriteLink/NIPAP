@@ -1,0 +1,112 @@
+nipap-whoisd (0.27.0-1) stable; urgency=medium
+
+  * Fix of backend forking (#653). Now real performance boost!
+  * AVP (Attribute-Value Pair) support allowing users to store custom
+    attributes associated with prefixes, VRFs or pools (#394, #631,
+    #629)
+  * Add tags to VRFs for easy categorization and searching (#484)
+  * Add tags to pools for easy categorization and searching (#566)
+  * New status field for prefixes, improving the experience for registry
+    type users. Status can be "assigned", "reserved" or "quarantine".
+    (#494)
+  * New expires field for prefixes allowing users (typically registry)
+    to set an expiration time of an assignment. No actions are actually
+    taken once the expiration time has passed (#599)
+  * Statistics improvements for pools, now shows number of
+    total/used/free prefixes as opposed to just showing it for
+    addresses. The number of free prefixes is calculated based on the
+    default prefix length of new prefixes assigned from the pool (#528).
+  * Rewrite of parts of web-UI using AngularJS (#635, #621, #628, #638)
+  * Add bootstrap CSS for easing web development. Replacement of our own
+    components (like buttons) is off to a soft-start. (#543, #660)
+  * Permission check of .nipaprc to prevent the world reading it (#632)
+  * Fix of open file handle leaks in backend (#485)
+  * Add DB version check for backend to prevent running the backend with
+    the wrong database schema version.
+  * Backend now ships with requirements.txt to ease running it in a
+    virtualenv. Travis-CI also runs a job for testing NIPAP in a
+    virtualenv.
+  * Some work on being more Python 3 friendly (#596, #583, #648)
+  * Fix statistics calculation bug (#590)
+  * Performance improvements (#589)
+  * Some documentation updates (#615)
+  * Various other feature improvements and bug fixes
+
+ -- Kristian Larsson <kll@spritelink.net>  Fri, 31 Oct 2014 13:07:52 +0100
+
+nipap-whoisd (0.26.4-1) stable; urgency=medium
+
+  * Fix edit of VRF RT in web UI (#575)
+
+ -- Kristian Larsson <kll@spritelink.net>  Fri, 31 Oct 2014 13:04:16 +0100
+
+nipap-whoisd (0.26.3-1) stable; urgency=medium
+
+  * Add support for Ubuntu 14.04 (#568)
+  * Add db schema version check in nipapd (#460)
+  * Fix CLI tab completion bug for colons (#422)
+  * Fix CLI family sanity checking (#558)
+  * Fix nipap-passwd version check (#557)
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 12 Aug 2014 17:27:13 +0200
+
+nipap-whoisd (0.26.1-1) stable; urgency=low
+
+  * Fix www icons (#551)
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 04 Aug 2014 09:25:41 +0200
+
+nipap-whoisd (0.26.0-1) stable; urgency=low
+
+  * Support for statistics! Total / used / free prefixes are now listed
+    for prefixes, VRFs and pool (#248)
+  * Travis-CI testing of package upgrade (#524 / #525)
+  * Introduced AngularJS framework, it is only used on a few pages at
+    this time but its use will become more widespread with time (#338)
+  * Web UI now supports searching for VRFs (#347)
+  * CLI dual-stack address assignment (#526)
+  * CLI remove now defaults to recursive when assignment contains hosts
+    (#520)
+  * CLI support for user impersonation via environment variables (#538)
+  * CLI support for suppressing interactive prompts (#499)
+  * Web UI pool list page converted to AngularJS (#503)
+  * Faster pool listing thanks to db index (#497)
+  * Fix CLI with regards to viewing default VRF (#527)
+  * Fix for Web UI prefix Save button (#523)
+  * Fix for CLI .nipaprc bug (#509)
+  * Fix bug for updating display_prefix on hosts (#515)
+  * Fix for CLI piping (#464)
+  * Fix for CLI address modification traceback (#516)
+  * Fix tag inheritance bugs (#507 & #519)
+  * Fix bug for calculation of children (#518)
+  * Fix nipap-passwd traceback (#548)
+
+ -- Kristian Larsson <kll@spritelink.net>  Sun, 03 Aug 2014 19:56:42 +0200
+
+nipap-whoisd (0.25.0-1) stable; urgency=low
+
+  * There's now a whois-server!
+  * Fix tab completion on non-closed quoted string (#493)
+  * Fix search on UTF-8 characters (#492)
+  * Fix CLI output of UTF-8 with redirected stdout (#491)
+  * Fix pool expansion with manually created prefix (#489)
+  * Fix CLI auto-calc of prefix type with from-prefix (#462)
+  * Remove some debug message (#476)
+  * Update nipapd man page (#479)
+  * Various installation improvements
+
+ -- Kristian Larsson <kll@spritelink.net>  Fri, 21 Mar 2014 23:27:28 +0100
+
+nipap-whoisd (0.24.4-1) stable; urgency=low
+
+  * Fix prefix add in VRF using from-prefix (#477)
+  * Fix web UI header misalignment (#475)
+  * Fix version of nipapd in web UI (#474)
+
+ -- Kristian Larsson <kll@spritelink.net>  Thu, 13 Feb 2014 08:32:29 +0100
+
+nipap-whoisd (0.1.0-1) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ -- Kristian Larsson <kll@spritelink.net>  Thu, 13 Feb 2014 08:28:07 +0100
