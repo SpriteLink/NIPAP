@@ -597,7 +597,12 @@ def add_prefix_from_pool(arg, opts):
         p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
         p.expires = opts.get('expires')
 
-        p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
+        if opts.get('vrf_rt') is None:
+            # if no VRF is specified use the pools implied VRF
+            p.vrf = args['from-pool'].vrf
+        else:
+            p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
+
         # set type to default type of pool unless already set
         if p.type is None:
             if args['from-pool'].default_type is None:
