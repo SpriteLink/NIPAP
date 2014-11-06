@@ -403,6 +403,30 @@ def list_prefix(arg, opts, shell_opts):
 """
     ADD FUNCTIONS
 """
+def _prefix_from_opts(opts):
+    """ Return a prefix based on options passed from command line
+
+        Used by add_prefix() and add_prefix_from_pool() to avoid duplicate
+        parsing
+    """
+    p = Prefix()
+    p.prefix = opts.get('prefix')
+    p.type = opts.get('type')
+    p.description = opts.get('description')
+    p.node = opts.get('node')
+    p.country = opts.get('country')
+    p.order_id = opts.get('order_id')
+    p.customer_id = opts.get('customer_id')
+    p.alarm_priority = opts.get('alarm_priority')
+    p.comment = opts.get('comment')
+    p.monitor = _str_to_bool(opts.get('monitor'))
+    p.vlan = opts.get('vlan')
+    p.status = opts.get('status') or 'assigned' # default to assigned
+    p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
+    p.expires = opts.get('expires')
+    return p
+
+
 
 def add_prefix(arg, opts, shell_opts):
     """ Add prefix to NIPAP
@@ -421,24 +445,7 @@ def add_prefix(arg, opts, shell_opts):
         return add_prefix_from_pool(arg, opts)
 
     args = {}
-
-    # XXX: don't forget to add value parsing in add_prefix_from_pool as well
-    p = Prefix()
-    p.prefix = opts.get('prefix')
-    p.type = opts.get('type')
-    p.description = opts.get('description')
-    p.node = opts.get('node')
-    p.country = opts.get('country')
-    p.order_id = opts.get('order_id')
-    p.customer_id = opts.get('customer_id')
-    p.alarm_priority = opts.get('alarm_priority')
-    p.comment = opts.get('comment')
-    p.monitor = _str_to_bool(opts.get('monitor'))
-    p.vlan = opts.get('vlan')
-    p.status = opts.get('status') or 'assigned'
-    p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
-    p.expires = opts.get('expires')
-
+    p = _prefix_from_opts(opts)
     p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
 
     for avp in opts.get('extra-attribute', []):
@@ -541,7 +548,26 @@ def add_prefix(arg, opts, shell_opts):
         print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
         sys.exit(1)
 
-    print "Prefix %s added to %s" % (p.display_prefix, vrf_format(p.vrf))
+    if p.type == 'host':
+        print "Host %s added to %s: %s" % (p.display_prefix,
+                vrf_format(p.vrf), p.node or p.description)
+    else:
+        print "Network %s added to %s: %s" % (p.display_prefix,
+                vrf_format(p.vrf), p.description)
+
+    if opts.get('add-hosts') is not None:
+        if p.type != 'assignment':
+            print >> sys.stderr, "ERROR: Not possible to add hosts to non-assignment"
+            sys.exit(1)
+
+        for host in opts.get('add-hosts').split(','):
+            h_opts = {
+                    'from-prefix': p.prefix,
+                    'vrf_rt': p.vrf.rt,
+                    'type': 'host',
+                    'node': host
+                    }
+            add_prefix({}, h_opts, {})
 
 
 
@@ -581,26 +607,13 @@ def add_prefix_from_pool(arg, opts):
         args['prefix_length'] = int(opts['prefix_length'])
 
     for afi in afis:
-        p = Prefix()
-        p.prefix = opts.get('prefix')
-        p.type = opts.get('type')
-        p.description = opts.get('description')
-        p.node = opts.get('node')
-        p.country = opts.get('country')
-        p.order_id = opts.get('order_id')
-        p.customer_id = opts.get('customer_id')
-        p.alarm_priority = opts.get('alarm_priority')
-        p.comment = opts.get('comment')
-        p.monitor = _str_to_bool(opts.get('monitor'))
-        p.vlan = opts.get('vlan')
-        p.status = opts.get('status')
-        p.tags = list(csv.reader([opts.get('tags', '')], escapechar='\\'))[0]
-        p.expires = opts.get('expires')
+        p = _prefix_from_opts(opts)
 
         if opts.get('vrf_rt') is None:
             # if no VRF is specified use the pools implied VRF
             p.vrf = args['from-pool'].vrf
         else:
+            # use the specified VRF
             p.vrf = get_vrf(opts.get('vrf_rt'), abort=True)
 
         # set type to default type of pool unless already set
@@ -626,7 +639,26 @@ def add_prefix_from_pool(arg, opts):
             print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
             sys.exit(1)
 
-        print "Prefix %s added to %s" % (p.display_prefix, vrf_format(p.vrf))
+        if p.type == 'host':
+            print "Host %s added to %s: %s" % (p.display_prefix,
+                    vrf_format(p.vrf), p.node or p.description)
+        else:
+            print "Network %s added to %s: %s" % (p.display_prefix,
+                    vrf_format(p.vrf), p.description)
+
+        if opts.get('add-hosts') is not None:
+            if p.type != 'assignment':
+                print >> sys.stderr, "ERROR: Not possible to add hosts to non-assignment"
+                sys.exit(1)
+
+            for host in opts.get('add-hosts').split(','):
+                h_opts = {
+                        'from-prefix': p.prefix,
+                        'vrf_rt': p.vrf.rt,
+                        'type': 'host',
+                        'node': host
+                        }
+                add_prefix({}, h_opts, {})
 
 
 
@@ -1775,6 +1807,13 @@ cmds = {
                     'type': 'command',
                     'exec': add_prefix,
                     'children': {
+                        'add-hosts': {
+                            'type': 'option',
+                            'argument': {
+                                'type': 'value',
+                                'content_type': unicode,
+                            }
+                        },
                         'comment': {
                             'type': 'option',
                             'argument': {
