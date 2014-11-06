@@ -1,0 +1,43 @@
+<div style="position: absolute; right: 20px; top: 14px;">
+	<a href="/ng/vrf#/vrf/add" class="btn btn-success">Add VRF</a>
+</div>
+
+<div style="text-align: center; padding: 20px;">
+	<div style="display: inline-block; text-align: justify; width: 80%; max-width: 600px;">
+		A prefix must be unique within the VRF where it is stored. Multiple
+		VRFs can thus be used to document the address space which contain
+		overlapping addresses.
+		<br/><br/>
+	</div>
+</div>
+
+<div style="text-align: center; padding: 30px;">
+	<label>Search: <input type="text" ng-model="query"></label>
+</div>
+<table style="border-spacing: 0px; width: 100%;">
+	<thead class="listing">
+		<tr>
+			<th style="padding-left: 30px;">RT</th><th>Name</th><th></th><th>Description</th><th></th>
+		</tr>
+	</thead>
+	<tbody class="listing">
+		<tr ng-repeat="vrf in vrfs | filter:query">
+			<td style="padding-left: 30px;">{{ vrf.rt }}</a></td>
+			<td>{{ vrf.name }}</td>
+			<td><img ng-if="vrf.tags|notEmpty" src="/images/tag-16.png" tooltip-html-unsafe="{{vrf.tags|popoverFormatTags}}"></td>
+			<td>{{ vrf.description }}</td>
+			<td>
+				<div class="dropdown">
+					<div class="dropdown-toggle minibutton">
+						<div class="popup_button_icon">&nbsp;</div>
+					</div>
+					<div class="dropdown-menu popup_menu">
+						<h3>VRF</h3>
+						<a href="/ng/vrf#/vrf/edit/{{ vrf.id }}">Edit</a>
+						<a href="#" ng-click="vrfConfirmRemove($event, vrf)">Remove</a>
+					</div>
+				</div>
+			</td>
+		</tr>
+	</tbody>
+</table>
