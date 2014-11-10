@@ -239,7 +239,6 @@ if __name__ == '__main__':
         logger.addHandler(log_syslog)
         nipapxml.logger.addHandler(log_syslog)
 
-    http_server = HTTPServer(WSGIContainer(nipapxml))
     if cfg.get('nipapd', 'listen') is None or cfg.get('nipapd', 'listen') == '':
         sockets = bind_sockets(cfg.get('nipapd', 'port'))
     else:
@@ -268,6 +267,7 @@ if __name__ == '__main__':
         # default is to fork as many processes as there are cores
         tornado.process.fork_processes(num_forks)
 
+    http_server = HTTPServer(WSGIContainer(nipapxml))
     http_server.add_sockets(sockets)
 
     # start Tornado
