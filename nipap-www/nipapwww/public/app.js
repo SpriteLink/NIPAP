@@ -46,6 +46,10 @@ nipapApp.config(function($routeProvider, $tooltipProvider) {
 			.when('/vrf/edit/:vrf_id', {
 				'controller': 'VRFEditController',
 				'templateUrl': '/templates/vrf_edit.html'
+			})
+			.when('/vrf/list', {
+				'controller': 'VRFListController',
+				'templateUrl': '/templates/vrf_list.html'
 			});
 
 		/*
