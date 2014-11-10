@@ -1,18 +1,21 @@
-pynipap (0.27.1-1) stable; urgency=medium
+nipap (0.27.2-1) stable; urgency=medium
 
-  * Allow configuration of number of forks in backend.
-  * Make the expires field not required in the web UI.
-  * Massive performance improvement to SQL upgrade script.
+  * CLI can act hosts to new network in one command (#661)
+  * CLI now uses pool implied VRF per default (#662)
+  * Web UI VRF list rewritten with AngularJS
+  * Web UI pool list rewritten with AngularJS
+  * Improvements to backend forking
+  * Fix dependencies for nipapd APT package
 
- -- Kristian Larsson <kll@spritelink.net>  Fri, 31 Oct 2014 15:42:16 +0100
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Nov 2014 18:32:28 +0100
 
-pynipap (0.26.4-1) stable; urgency=medium
+nipap (0.26.4-1) stable; urgency=medium
 
   * Fix edit of VRF RT in web UI (#575)
 
  -- Kristian Larsson <kll@spritelink.net>  Wed, 13 Aug 2014 17:21:58 +0200
 
-pynipap (0.26.3-1) stable; urgency=medium
+nipap (0.26.3-1) stable; urgency=medium
 
   * Add support for Ubuntu 14.04 (#568)
   * Add db schema version check in nipapd (#460)
@@ -20,15 +23,15 @@ pynipap (0.26.3-1) stable; urgency=medium
   * Fix CLI family sanity checking (#558)
   * Fix nipap-passwd version check (#557)
 
- -- Kristian Larsson <kll@spritelink.net>  Tue, 12 Aug 2014 17:27:09 +0200
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 12 Aug 2014 17:27:08 +0200
 
-pynipap (0.26.1-1) stable; urgency=low
+nipap (0.26.1-1) stable; urgency=low
 
   * Fix www icons (#551)
 
  -- Kristian Larsson <kll@spritelink.net>  Mon, 04 Aug 2014 09:25:40 +0200
 
-pynipap (0.26.0-1) stable; urgency=low
+nipap (0.26.0-1) stable; urgency=low
 
   * Support for statistics! Total / used / free prefixes are now listed
     for prefixes, VRFs and pool (#248)
@@ -53,9 +56,9 @@ pynipap (0.26.0-1) stable; urgency=low
   * Fix bug for calculation of children (#518)
   * Fix nipap-passwd traceback (#548)
 
- -- Kristian Larsson <kll@spritelink.net>  Sun, 03 Aug 2014 19:56:28 +0200
+ -- Kristian Larsson <kll@spritelink.net>  Sun, 03 Aug 2014 19:56:24 +0200
 
-pynipap (0.25.0-1) stable; urgency=low
+nipap (0.25.0-1) stable; urgency=low
 
   * There's now a whois-server!
   * Fix tab completion on non-closed quoted string (#493)
@@ -67,42 +70,42 @@ pynipap (0.25.0-1) stable; urgency=low
   * Update nipapd man page (#479)
   * Various installation improvements
 
- -- Kristian Larsson <kll@spritelink.net>  Fri, 21 Mar 2014 23:27:21 +0100
+ -- Kristian Larsson <kll@spritelink.net>  Fri, 21 Mar 2014 23:27:19 +0100
 
-pynipap (0.24.5-1) stable; urgency=low
+nipap (0.24.5-1) stable; urgency=low
 
   * Semi-fix leaking files in backend (#485)
 
- -- Kristian Larsson <kll@spritelink.net>  Tue, 18 Mar 2014 22:09:51 +0100
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 18 Mar 2014 22:09:50 +0100
 
-pynipap (0.24.4-1) stable; urgency=low
+nipap (0.24.4-1) stable; urgency=low
 
   * Fix prefix add in VRF using from-prefix (#477)
   * Fix web UI header misalignment (#475)
   * Fix version of nipapd in web UI (#474)
 
- -- Kristian Larsson <kll@spritelink.net>  Tue, 11 Feb 2014 16:23:24 +0100
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 11 Feb 2014 16:23:23 +0100
 
-pynipap (0.24.3-1) stable; urgency=low
+nipap (0.24.3-1) stable; urgency=low
 
   * Prevent nipapd logging to stdout when run as daemon.
   * Improve Debian install scripts.
 
  -- Kristian Larsson <kll@spritelink.net>  Tue, 11 Feb 2014 09:02:58 +0100
 
-pynipap (0.24.2-1) stable; urgency=low
+nipap (0.24.2-1) stable; urgency=low
 
   * Add missing dependency on Tornado for nipapd!
 
- -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Feb 2014 15:59:35 +0100
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Feb 2014 15:59:34 +0100
 
-pynipap (0.24.1-1) stable; urgency=low
+nipap (0.24.1-1) stable; urgency=low
 
   * Add missing dependency on Flask-Compress library for nipapd
 
  -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Feb 2014 15:50:50 +0100
 
-pynipap (0.24.0-1) stable; urgency=low
+nipap (0.24.0-1) stable; urgency=low
 
   * nipaprc configuration option 'default_vrf' is replaced by
     'default_vrf_rt' which only affects address adds/edits/removals. A
@@ -132,9 +135,9 @@ pynipap (0.24.0-1) stable; urgency=low
   * Makefile target for bumping version - won't help you unless you're a
     developer ;)
 
- -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Feb 2014 15:30:37 +0100
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Feb 2014 15:30:34 +0100
 
-pynipap (0.23.0-1) stable; urgency=low
+nipap (0.23.0-1) stable; urgency=low
 
   * Add 'Customer ID' attribute to prefixes. This can be used to store a
     customer name or an ID referencing a customer database.
@@ -153,27 +156,33 @@ pynipap (0.23.0-1) stable; urgency=low
     when asked not to.
   * Some improved error handling for AJAX calls.
 
- -- Lukas Garberg <lukas@spritelink.net>  Thu, 14 Nov 2013 14:11:32 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 14 Nov 2013 14:09:27 +0100
 
-pynipap (0.22.4-1) stable; urgency=low
+nipap (0.22.4-1) stable; urgency=low
 
   * Added more usage examples to NIPAP CLI man page
 
- -- Lukas Garberg <lukas@spritelink.net>  Wed, 30 Oct 2013 15:06:27 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 30 Oct 2013 15:03:14 +0100
 
-pynipap (0.22.3-1) stable; urgency=low
+nipap (0.22.3-1) stable; urgency=low
 
   * Bugfix in edit_prefix API function
 
- -- Lukas Garberg <lukas@spritelink.net>  Wed, 30 Oct 2013 12:24:59 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 23 Oct 2013 16:47:52 +0200
 
-pynipap (0.22.1-1) precise; urgency=low
+nipap (0.22.2-1) precise; urgency=low
+
+  * Fix issue with SQL upgrade script
+
+ -- Kristian Larsson <kll@spritelink.net>  Wed, 25 Sep 2013 10:07:06 +0200
+
+nipap (0.22.1-1) precise; urgency=low
 
   * Fix debian repo build issue
 
- -- Kristian Larsson <kll@spritelink.net>  Wed, 25 Sep 2013 09:50:12 +0200
+ -- Kristian Larsson <kll@spritelink.net>  Wed, 25 Sep 2013 09:49:53 +0200
 
-pynipap (0.22.0-1) precise; urgency=low
+nipap (0.22.0-1) precise; urgency=low
 
   * Add support for Tags. Prefixes can be tagged with a tag for easier searching
     and categorisation of prefixes.
@@ -196,9 +205,9 @@ pynipap (0.22.0-1) precise; urgency=low
   * Improve defaults in .nipaprc skeleton file.
   * Various internal small fixes / refactoring.
 
- -- Kristian Larsson <kll@spritelink.net>  Sun, 22 Sep 2013 13:16:42 +0200
+ -- Kristian Larsson <kll@spritelink.net>  Sun, 22 Sep 2013 13:11:17 +0200
 
-pynipap (0.21.0-1) precise; urgency=low
+nipap (0.21.0-1) precise; urgency=low
 
   * CLI now supports pool resizing, ie growing or shrinking a pool by the
     addition or removal of member prefixes. Code by Kai Storbeck <kai@xs4all.nl>
@@ -216,9 +225,21 @@ pynipap (0.21.0-1) precise; urgency=low
   * Fix rendering bug in web UI
   * There is now a small unit test for the CLI
 
- -- Kristian Larsson <kll@spritelink.net>  Tue, 02 Jul 2013 14:00:49 +0200
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 02 Jul 2013 14:00:24 +0200
 
-pynipap (0.20.0-1) precise; urgency=low
+nipap (0.20.2-1) precise; urgency=low
+
+  * Fix for nipapd postinst and init script related to the pid file
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Jun 2013 19:19:50 +0200
+
+nipap (0.20.1-1) precise; urgency=low
+
+  * Fix for nipapd init script
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Jun 2013 14:07:21 +0200
+
+nipap (0.20.0-1) precise; urgency=low
 
   * For Debian, nipapd now runs per default as the nipap user which
     allows nipapd to connect to PostgreSQL via a UNIX socket instead of over
@@ -232,9 +253,15 @@ pynipap (0.20.0-1) precise; urgency=low
   * Added prefix help on more pages in the web UI
   * Fix for VRF tab completion
 
- -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Jun 2013 12:32:28 +0200
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Jun 2013 12:32:07 +0200
 
-pynipap (0.19.0-1) precise; urgency=low
+nipap (0.19.1-1) precise; urgency=low
+
+  * Fix automatic start for nipapd on system startup
+
+ -- Kristian Larsson <kll@lingloi320.tele2.net>  Fri, 07 Jun 2013 15:33:37 +0200
+
+nipap (0.19.0-1) precise; urgency=low
 
   * nipapd now requires postgresql-9.1 for apt package installation as well as
     postgresql-9.1-ip4r >= 2.0, which is available from the official NIPAP repo
@@ -249,18 +276,32 @@ pynipap (0.19.0-1) precise; urgency=low
   * Some updates to Java client library
   * Various other small fixes
 
- -- Kristian Larsson <kll@lingloi320.tele2.net>  Tue, 04 Jun 2013 16:13:37 +0200
+ -- Kristian Larsson <kll@lingloi320.tele2.net>  Tue, 04 Jun 2013 15:59:50 +0200
 
-pynipap (0.18.0-1) stable; urgency=low
+nipap (0.18.1-1) precise; urgency=low
+
+  * Looks like a version bump was necessary after all
+
+ -- Kristian Larsson <kll@lingloi320.tele2.net>  Wed, 22 May 2013 09:32:20 +0200
+
+nipap (0.18.0-2) precise; urgency=low
+
+  * Updated dependencies for nipapd to include postgresql-9.1-ip4r >= 2.0
+  * Let nipapd depend on Python 2.7, since we need that for Unicode
+  * Let nipapd depend on PostgreSQL 9.1
+
+ -- Kristian Larsson <kll@lingloi320.tele2.net>  Wed, 22 May 2013 08:59:32 +0200
+
+nipap (0.18.0-1) stable; urgency=low
 
   * Constraints for country code added to database backend
   * Added LICENSE file
   * Various smaller improvements to WWW UI and CLI client
   * Version information reachable from CLI and web UI
 
- -- Lukas Garberg <lukas@spritelink.net>  Fri, 03 May 2013 13:45:17 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Fri, 03 May 2013 13:42:45 +0200
 
-pynipap (0.17.0-1) stable; urgency=low
+nipap (0.17.0-1) stable; urgency=low
 
   * NIPAP backend now returns full object instead of only ID after add_* and
     edit_* operations
@@ -270,15 +311,15 @@ pynipap (0.17.0-1) stable; urgency=low
   * Various improvements to web UI and CLI, including fixing a few
     bugs/annoyances
 
- -- Lukas Garberg <lukas@spritelink.net>  Wed, 10 Apr 2013 09:09:04 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 10 Apr 2013 09:06:40 +0200
 
-pynipap (0.16.1-1) stable; urgency=low
+nipap (0.16.1-1) stable; urgency=low
 
   * Fix: Currently selected VRFs now shown in VRF selector (again)
 
- -- Lukas Garberg <lukas@spritelink.net>  Tue, 09 Apr 2013 22:27:36 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 09 Apr 2013 22:23:06 +0200
 
-pynipap (0.16.0-1) stable; urgency=low
+nipap (0.16.0-1) stable; urgency=low
 
   * Fix: from-prefix was completely broken in 0.15.0 and is now working again
   * Fix: pretty bad backend bug that didn't correctly order results rendering
@@ -298,9 +339,9 @@ pynipap (0.16.0-1) stable; urgency=low
   * Various small CLI and WWW UI bug fixes
   * NIPAP is now checked by Travis-CI - quality++
 
- -- Lukas Garberg <lukas@spritelink.net>  Thu, 28 Feb 2013 22:49:59 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 28 Feb 2013 22:46:16 +0100
 
-pynipap (0.15.0-1) stable; urgency=low
+nipap (0.15.0-1) stable; urgency=low
 
   * Improve bfcache support
   * All prefixes in a pool must now be in the same VRF (database check)
@@ -310,51 +351,45 @@ pynipap (0.15.0-1) stable; urgency=low
     type of the prefix
   * Various small CLI and WWW UI bug fixes
 
- -- Lukas Garberg <lukas@spritelink.net>  Tue, 12 Feb 2013 14:35:07 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 12 Feb 2013 14:29:04 +0100
 
-pynipap (0.14.0-1) stable; urgency=low
+nipap (0.14.0-1) stable; urgency=low
 
   * Varous fixes to the CLI client
   * Authoritative source honored in CLI client and web UI
   * Feature parity in smart_search_* API functions
 
- -- Lukas Garberg <lukas@spritelink.net>  Thu, 17 Jan 2013 21:22:50 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 17 Jan 2013 21:20:47 +0100
 
-pynipap (0.13.0-1) stable; urgency=low
+nipap (0.13.0-1) stable; urgency=low
 
   * Added recursive option to prefix remove function in CLI client
   * Lots of smaller fixes to CLI client
 
- -- Lukas Garberg <lukas@spritelink.net>  Thu, 10 Jan 2013 10:58:42 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 10 Jan 2013 10:46:13 +0100
 
-pynipap (0.12.0-1) stable; urgency=low
+nipap (0.12.0-1) stable; urgency=low
 
   * VRF RT now verified; must match xx:yy or x.y.z.x:aa
   * VRF RT:s now sorted as one would expect
   * Various bugfixes
 
- -- Lukas Garberg <lukas@spritelink.net>  Tue, 23 Oct 2012 16:42:18 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 23 Oct 2012 16:40:30 +0200
 
-pynipap (0.11.1-1) stable; urgency=low
+nipap (0.11.1-1) stable; urgency=low
 
   * Bugfix; limit prefix search to VRF now works and is fast
   * NIPAP cli now works in Python < 2.7
 
- -- Lukas Garberg <lukas@spritelink.net>  Wed, 10 Oct 2012 09:40:16 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 10 Oct 2012 09:37:39 +0200
 
-pynipap (0.11.0-2) stable; urgency=low
-
-  * Added MANIFEST to list of ignored files.
-
- -- Lukas Garberg <lukas@spritelink.net>  Mon, 08 Oct 2012 03:38:31 +0200
-
-pynipap (0.11.0-1) stable; urgency=low
+nipap (0.11.0-1) stable; urgency=low
 
   * Schemas removed from NIPAP and replaced with VRFs
 
- -- Lukas Garberg <lukas@spritelink.net>  Mon, 08 Oct 2012 01:18:08 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 08 Oct 2012 01:16:04 +0200
 
-pynipap (0.10.0-1) stable; urgency=low
+nipap (0.10.0-1) stable; urgency=low
 
   * Added a fancy floating header to the prefix search page
   * Improved tab completion, now handles entries containing space
@@ -365,17 +400,17 @@ pynipap (0.10.0-1) stable; urgency=low
   * Improved handling of authentication errors
   * Improved automatic scrolling in web UI
 
- -- Lukas Garberg <lukas@spritelink.net>  Mon, 06 Aug 2012 15:07:29 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 06 Aug 2012 15:04:34 +0200
 
-pynipap (0.9.0-1) stable; urgency=low
+nipap (0.9.0-1) stable; urgency=low
 
   * Add ability to show a custom welcome message on web UI login page
   * Simplify loading of NIPAP SQL structure
   * Vastly improve installation documentation
 
- -- Lukas Garberg <lukas@spritelink.net>  Mon, 30 Jul 2012 14:57:38 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 30 Jul 2012 14:55:40 +0200
 
-pynipap (0.8.0-1) stable; urgency=low
+nipap (0.8.0-1) stable; urgency=low
 
   * Bug in database inconsistency checks fixed
   * Regexp search improved; '.*' will now also match NULL values, which is
@@ -384,9 +419,9 @@ pynipap (0.8.0-1) stable; urgency=low
   * Prefix type can now, in certain cases, be changed from web UI and CLI
     application.
 
- -- Lukas Garberg <lukas@spritelink.net>  Thu, 26 Jul 2012 12:47:11 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 26 Jul 2012 12:39:00 +0200
 
-pynipap (0.7.0-1) UNRELEASED; urgency=low
+nipap (0.7.0-1) UNRELEASED; urgency=low
 
   * Fix; Rendering of prefix list in web UI improvements
   * CLI tab completion improvements
@@ -402,46 +437,107 @@ pynipap (0.7.0-1) UNRELEASED; urgency=low
   * Fix; find_free_prefix now handles /31s and /127 correctly
   * Vastly improve find_free_prefix lookup speed, relevant for IPv6
 
- -- Lukas Garberg <lukas@spritelink.net>  Wed, 25 Jul 2012 13:38:29 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 25 Jul 2012 13:34:02 +0200
 
-pynipap (0.6.0-1) oneiric; urgency=low
+nipap (0.6.1-1) oneiric; urgency=low
+
+  * Bugfix; list_prefix API function can now handle 'family' search key.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 31 May 2012 11:54:03 +0200
+
+nipap (0.6.0-1) oneiric; urgency=low
 
   * Added VRF attribute to prefixes.
 
- -- Lukas Garberg <lukas@spritelink.net>  Thu, 26 Apr 2012 09:02:24 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 26 Apr 2012 09:00:16 +0200
 
-pynipap (0.5.3-1) oneiric; urgency=low
-
-  * New upstream version.
-
- -- Lukas Garberg <lukas@spritelink.net>  Thu, 19 Apr 2012 09:21:44 +0200
-
-pynipap (0.5.2-1) oneiric; urgency=low
+nipap (0.5.12-1) oneiric; urgency=low
 
   * New upstream version.
 
- -- Lukas Garberg <lukas@spritelink.net>  Mon, 05 Dec 2011 14:36:38 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Sat, 21 Apr 2012 17:54:59 +0200
 
-pynipap (0.5.1-1) oneiric; urgency=low
+nipap (0.5.11-1) oneiric; urgency=low
 
   * New upstream version.
 
- -- Lukas Garberg <lukas@spritelink.net>  Mon, 05 Dec 2011 10:48:16 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 19 Apr 2012 09:14:20 +0200
 
-pynipap (0.5.0-3) oneiric; urgency=low
+nipap (0.5.10-1) oneiric; urgency=low
 
-  * Added hackish support for python 2.5...
+  * New upstream version.
 
- -- Lukas Garberg <lukas@spritelink.net>  Thu, 10 Nov 2011 17:12:42 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Sat, 25 Feb 2012 12:34:37 +0100
 
-pynipap (0.5.0-2) natty; urgency=low
+nipap (0.5.9-1) oneiric; urgency=low
 
-  * Added options file which ignores the Makefile.
+  * New upstream version.
 
- -- Lukas Garberg <lukas@spritelink.net>  Tue, 01 Nov 2011 10:32:26 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 05 Dec 2011 14:35:55 +0100
 
-pynipap (0.5.0-1) unstable; urgency=low
+nipap (0.5.8-1) oneiric; urgency=low
+
+  * New upstream version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 05 Dec 2011 10:08:30 +0100
+
+nipap (0.5.7-1) oneiric; urgency=low
+
+  * New upstream version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Fri, 25 Nov 2011 16:57:59 +0100
+
+nipap (0.5.6-1) oneiric; urgency=low
+
+  * New upstream (bugfix) version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Fri, 25 Nov 2011 13:53:06 +0100
+
+nipap (0.5.5-1) oneiric; urgency=low
+
+  * New upstream version. 
+
+ -- Lukas Garberg <lukas@spritelink.net>  Fri, 25 Nov 2011 12:41:45 +0100
+
+nipap (0.5.4-1) oneiric; urgency=low
+
+  * New upstream version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 22 Nov 2011 12:39:18 +0100
+
+nipap (0.5.3-1) oneiric; urgency=low
+
+  * New upstream version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 15 Nov 2011 15:48:28 +0100
+
+nipap (0.5.2-1) oneiric; urgency=low
+
+  * New upstream version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 14 Nov 2011 09:04:05 +0100
+
+nipap (0.5.1-3) oneiric; urgency=low
+
+  * Added hack to support python 2.5. Links the nipap-module to
+    /usr/lib/python2.5/dist-packages/.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 09 Nov 2011 16:52:00 +0100
+
+nipap (0.5.1-2) oneiric; urgency=low
+
+  * Changed dependency from python-sqlite to python-pysqlite2.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 09 Nov 2011 10:57:57 +0100
+
+nipap (0.5.1-1) natty; urgency=low
+
+  * New upstream version.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 08 Nov 2011 08:16:30 +0100
+
+nipap (0.5.0-1) unstable; urgency=low
 
   * source package automatically created by stdeb 0.6.0+git
 
- -- Lukas Garberg <lukas@spritelink.net>  Tue, 01 Nov 2011 09:48:50 +0100
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 18 Oct 2011 21:55:07 +0200
