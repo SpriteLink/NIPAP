@@ -1,10 +1,13 @@
-nipap-whoisd (0.27.1-1) stable; urgency=medium
+nipap-whoisd (0.27.2-1) stable; urgency=medium
 
-  * Allow configuration of number of forks in backend.
-  * Make the expires field not required in the web UI.
-  * Massive performance improvement to SQL upgrade script.
+  * CLI can act hosts to new network in one command (#661)
+  * CLI now uses pool implied VRF per default (#662)
+  * Web UI VRF list rewritten with AngularJS
+  * Web UI pool list rewritten with AngularJS
+  * Improvements to backend forking
+  * Fix dependencies for nipapd APT package
 
- -- Kristian Larsson <kll@spritelink.net>  Fri, 31 Oct 2014 15:42:19 +0100
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 10 Nov 2014 18:32:34 +0100
 
 nipap-whoisd (0.26.4-1) stable; urgency=medium
 
