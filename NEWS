@@ -1,3 +1,12 @@
+Version 0.27.2 - Icarus
+-----------------------
+ * CLI can act hosts to new network in one command (#661)
+ * CLI now uses pool implied VRF per default (#662)
+ * Web UI VRF list rewritten with AngularJS
+ * Web UI pool list rewritten with AngularJS
+ * Improvements to backend forking
+ * Fix dependencies for nipapd APT package
+
 Version 0.27.1 - Icarus
 -----------------------
  * Allow configuration of number of forks in backend.
