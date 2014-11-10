@@ -27,6 +27,10 @@ nipapApp.config(function($routeProvider, $tooltipProvider) {
 				'controller': 'PoolEditController',
 				'templateUrl': '/templates/pool_edit.html'
 			})
+			.when('/pool/list', {
+				'controller': 'PoolListController',
+				'templateUrl': '/templates/pool_list.html'
+			})
 			.when('/prefix/add/:allocation_method/:allocation_method_parameter?', {
 				'controller': 'PrefixAddController',
 				'templateUrl': '/templates/prefix_add.html'
