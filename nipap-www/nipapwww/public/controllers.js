@@ -1046,7 +1046,7 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 
 		// Mangle avps
 		query_data.avps = {};
-		$scope.prefix.avps.forEach(function(avp) {
+		$scope.pool.avps.forEach(function(avp) {
 			query_data.avps[avp.attribute] = avp.value;
 		});
 		query_data.avps = JSON.stringify(query_data.avps);
