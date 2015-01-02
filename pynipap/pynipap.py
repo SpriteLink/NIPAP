@@ -981,10 +981,13 @@ class Prefix(Pynipap):
             'alarm_priority': self.alarm_priority,
             'monitor': self.monitor,
             'vlan': self.vlan,
-            'status': self.status,
             'avps': self.avps,
             'expires': self.expires
         }
+
+        if self.status is not None:
+            data['status'] = self.status
+
         for tag_name in self.tags:
             data['tags'].append(tag_name)
 
