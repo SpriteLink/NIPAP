@@ -40,5 +40,6 @@ if __name__ == '__main__':
             'host'      : options.host or cfg.get('global', 'hostname'),
             'port'      : options.port or cfg.get('global', 'port')
             }
+    pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
     pynipap.xmlrpc_uri = xmlrpc_uri
 
