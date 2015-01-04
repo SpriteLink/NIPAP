@@ -7,7 +7,8 @@ var nipapApp = angular.module('nipapApp', [
 	'ngTagsInput',
 	'nipapApp.controllers',
 	'nipapApp.directives',
-	'nipapApp.filters'
+	'nipapApp.filters',
+	'nipapApp.services'
 ]);
 
 /*

@@ -140,10 +140,13 @@ nipapAppControllers.controller('PrefixListController', function ($scope, $modal)
 /*
  * PrefixAddController - Used to add prefixes to NIPAP
  */
-nipapAppControllers.controller('PrefixAddController', function ($scope, $routeParams, $http) {
+nipapAppControllers.controller('PrefixAddController', function ($scope, $routeParams, $http, prefixHelpers) {
 
 	// prefix method is add - used to customize prefix form template
 	$scope.method = 'add';
+
+	// Expose prefixHelpers.maxPreflen to templates
+	$scope.maxPreflen = prefixHelpers.maxPreflen;
 
 	// open up the datepicker
 	$scope.dpOpen = function($event) {
@@ -443,10 +446,13 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 /*
  * PrefixEditController - used to edit prefixes
  */
-nipapAppControllers.controller('PrefixEditController', function ($scope, $routeParams, $http, $filter) {
+nipapAppControllers.controller('PrefixEditController', function ($scope, $routeParams, $http, $filter, prefixHelpers) {
 
 	// Prefix method is edit - used to customize prefix form template
 	$scope.method = 'edit';
+
+	// Expose prefixHelpers.maxPreflen to templates
+	$scope.maxPreflen = prefixHelpers.maxPreflen;
 
 	// The tags-attributes needs to be initialized due to bug,
 	// see https://github.com/mbenford/ngTagsInput/issues/204
