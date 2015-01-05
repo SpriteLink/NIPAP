@@ -106,9 +106,7 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 			scope.query_string = '';
 			scope.timeout_promise = null;
 			scope.search_result = [];
-			scope.selected_vrf = null;
 			scope.query_id = 0;
-			scope.internal_seleted_vrf = scope.selected_vrf || { 'id': null };
 			scope.popup_open = false;
 
 			/*
