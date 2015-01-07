@@ -62,6 +62,7 @@ nipapwww/public/ng-tags-input.min.js
 nipapwww/public/nipap-ip.png
 nipapwww/public/nipap.css
 nipapwww/public/nipap.js
+nipapwww/public/services.js
 nipapwww/public/tag-it.min.js
 nipapwww/public/ui-bootstrap-tpls.js
 nipapwww/public/fonts/glyphicons-halflings-regular.eot

@@ -1,4 +1,4 @@
-__version__     = "0.27.2"
+__version__     = "0.27.3"
 __author__      = "Kristian Larsson, Lukas Garberg"
 __author_email__ = "kll@tele2.net, lukas@spritelink.net"
 __license__     = "MIT"

@@ -1,6 +1,17 @@
+Version 0.27.3 - Icarus
+-----------------------
+ * Fix of web-ui bug where the node field would stay disabled for non-host type
+   prefix (#675)
+ * Fix of web-ui bug where a race condition would result in the VRF not being
+   properly set (#673)
+ * Fix of pynipap bug so that the status attribute isn't required and will be
+   set to the default in the database (#668)
+ * Fix of web-ui bug in add pool page which prohibited changes from being saves
+   (#669)
+
 Version 0.27.2 - Icarus
 -----------------------
- * CLI can act hosts to new network in one command (#661)
+ * CLI can add hosts to new network in one command (#661)
  * CLI now uses pool implied VRF per default (#662)
  * Web UI VRF list rewritten with AngularJS
  * Web UI pool list rewritten with AngularJS
