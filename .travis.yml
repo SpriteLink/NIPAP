@@ -25,7 +25,6 @@ env:
 matrix:
     # NIPAP is not Python 3 compliant yet, so we allow failures
     allow_failures:
-        - env: INSTALL=apt UPGRADE=true
         - python: "3.2"
 
     # don't wait for the above jobs, which are allowed to fail, before marking
