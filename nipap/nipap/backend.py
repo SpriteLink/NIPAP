@@ -3279,9 +3279,8 @@ class Nipap:
 
         self._logger.debug("smart_search_prefix query string: %s" % query_str)
 
-        # find query parts
         try:
-            query_str_parts = self._get_query_parts(query_str)
+            query, interpretation = self._parse_prefix_query(query_str)
         except NipapValueError:
             return {
                 'interpretation': [
@@ -3294,6 +3293,32 @@ class Nipap:
                 'search_options': search_options,
                 'result': []
             }
+
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
+            }
+
+        self._logger.debug("Expanded to: %s" % str(query))
+
+        search_result = self.search_prefix(auth, query, search_options)
+        search_result['interpretation'] = interpretation
+
+        return search_result
+
+
+
+    def _parse_prefix_query(self, query_str):
+        """ Parse a smart search query for prefixes
+
+            This is a helper function to smart_search_prefix for easier unit
+            testing of the parser.
+        """
+
+        # find query parts
+        query_str_parts = self._get_query_parts(query_str)
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -3451,19 +3476,8 @@ class Nipap:
                     'val2': query
                 }
 
-        if extra_query is not None:
-            query = {
-                'operator': 'and',
-                'val1': query,
-                'val2': extra_query
-            }
+        return query, query_str_parts
 
-        self._logger.debug("Expanded to: %s" % str(query))
-
-        search_result = self.search_prefix(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
-
-        return search_result
 
 
     #

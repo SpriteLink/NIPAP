@@ -17,6 +17,7 @@ sys.path.insert(0, '../pynipap')
 sys.path.insert(0, '../nipap')
 sys.path.insert(0, '../nipap-cli')
 
+import nipap.backend
 from nipap.backend import Nipap
 from nipap.authlib import SqliteAuth
 from nipap.nipapconfig import NipapConfig
@@ -1553,6 +1554,132 @@ class TestNipapHelper(unittest.TestCase):
 
         cmd = Command(nipap_cli.cmds, ['pool', 'resize'])
         self.assertEqual(['resize'], sorted(cmd.complete()))
+
+
+class TestSmartParser(unittest.TestCase):
+    """ Test the smart parsing functions
+    """
+
+    def test_test1(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query, interp = n._parse_prefix_query('foo')
+        exp_query = {
+                'operator': 'or',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'or',
+                            'val1': {
+                                'operator': 'regex_match',
+                                'val1': 'comment',
+                                'val2': u'foo'
+                                },
+                            'val2': {
+                                'operator': 'regex_match',
+                                'val1': 'description',
+                                'val2': u'foo'
+                                }
+                            },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'node',
+                            'val2': u'foo'
+                            }
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'order_id',
+                        'val2': u'foo'
+                        }
+                    },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'customer_id',
+                    'val2': u'foo'
+                    }
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_test2(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query, interp = n._parse_prefix_query('1.3.3.0/24')
+        exp_query = {
+                'operator': 'contained_within_equals',
+                'val1': 'prefix',
+                'val2': '1.3.3.0/24'
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_test3(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query, interp = n._parse_prefix_query('1.3.3.0/24 foo')
+        self.maxDiff = None
+        exp_query = {
+                'operator': 'and',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'or',
+                            'val1': {
+                                'operator': 'or',
+                                'val1': {
+                                    'operator': 'regex_match',
+                                    'val1': 'comment',
+                                    'val2': u'foo'
+                                    },
+                                'val2': {
+                                    'operator': 'regex_match',
+                                    'val1': 'description',
+                                    'val2': u'foo'
+                                    }
+                                },
+                            'val2': {
+                                'operator': 'regex_match',
+                                'val1': 'node',
+                                'val2': u'foo'
+                                }
+                            },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'order_id',
+                            'val2': u'foo'
+                            }
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'customer_id',
+                        'val2': u'foo'
+                        }
+                    },
+                'val2': {
+                    'operator': 'contained_within_equals',
+                    'val1': 'prefix',
+                    'val2': '1.3.3.0/24'
+                    }
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_test4(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'No closing quotation'):
+            query, interp = n._parse_prefix_query('"')
 
 
 
