@@ -14,7 +14,7 @@ all:
 	@echo "make builddeb - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 	@echo "make bumpversion - Bump version to latest in NEWS file"
-	@echo "make debrepo - Copy packages from testing repo into stable repo"
+	@echo "make debrepo-stable - Copy packages from testing repo into stable repo"
 	@echo "make debrepo-testing - Create or update the testing repo"
 
 source:
@@ -37,23 +37,23 @@ builddeb:
 		cd $$PROJ; make builddeb; cd ..; \
 	done
 
-debrepo:
 ifeq ($(CURBRANCH), $(shell echo -n 'gh-pages'))
-	debrepo-run
+debrepo-stable: debrepo-stable-run
 else
+debrepo-stable:
 	@echo "Please switch to branch: gh-pages"
 	@echo "If you want to force the building of a debrepo, run 'make debrepo-run'"
 endif
 
-debrepo-testing:
 ifeq ($(CURBRANCH), $(shell echo -n 'gh-pages'))
-	debrepo-testing-run
+debrepo-testing: debrepo-testing-run
 else
+debrepo-testing:
 	@echo "Please switch to branch: gh-pages"
 	@echo "If you want to force the building of a debrepo, run 'make debrepo-testing-run'"
 endif
 
-debrepo-run:
+debrepo-stable-run:
 	cd repos/apt; \
 	for PACKAGE in `reprepro list testing | awk '{ print $$2 }' | sort | uniq`; do \
 		reprepro copy stable testing $$PACKAGE; \
