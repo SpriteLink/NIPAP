@@ -359,6 +359,48 @@ def list_prefix(arg, opts, shell_opts):
                 print "No addresses matching '%s' found." % search_string
                 return
 
+            if shell_opts.show_interpretation:
+                print "Query interpretation:"
+                for interp in res['interpretation']:
+                    text = interp['string']
+                    if interp['interpretation'] == 'unclosed quote':
+                        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
+                        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+                    elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
+                        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
+                        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+                    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contained_within_equals':
+                        if 'strict_prefix' in interp and 'expanded' in interp:
+                            text = "%s: %s within %s" % (interp['string'],
+                                    interp['interpretation'],
+                                    interp['strict_prefix'])
+                            text2 = "Prefix must be contained within %s, which is the base prefix of %s (automatically expanded from %s)." % (interp['strict_prefix'], interp['expanded'], interp['string'])
+                        elif 'strict_prefix' in interp:
+                            text = "%s: %s within %s" % (interp['string'],
+                                    interp['interpretation'],
+                                    interp['strict_prefix'])
+                            text2 = "Prefix must be contained within %s, which is the base prefix of %s." % (interp['strict_prefix'], interp['string'])
+                        elif 'expanded' in interp:
+                            text = "%s: %s within %s" % (interp['string'],
+                                    interp['interpretation'],
+                                    interp['expanded'])
+                            text2 = "Prefix must be contained within %s (automatically expanded from %s)." % (interp['expanded'], interp['string'])
+                        else:
+                            text = "%s: %s within %s" % (interp['string'],
+                                    interp['interpretation'],
+                                    interp['string'])
+                            text2 = "Prefix must be contained within %s." % (interp['string'])
+                    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
+                        text = "%s: Prefix that contains %s" % (interp['string'],
+                                interp['string'])
+                    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
+                        text = "%s: %s equal to %s" % (interp['string'],
+                                interp['interpretation'], interp['string'])
+                    else:
+                        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+                    print " -", text
+                    print "    ", text2
+
             # Guess the width of the prefix column by looking at the initial
             # result set.
             for p in res['result']:
