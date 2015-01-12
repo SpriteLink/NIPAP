@@ -3491,8 +3491,8 @@ class Nipap:
             for query_part in query_parts[1:]:
                 query = {
                     'interpretation': {
-                        'interpretation': 'or',
-                        'operator': 'or',
+                        'interpretation': 'and',
+                        'operator': 'and',
                     },
                     'operator': 'and',
                     'val1': query_part,

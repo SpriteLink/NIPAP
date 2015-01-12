@@ -1559,12 +1559,19 @@ class TestNipapHelper(unittest.TestCase):
 class TestSmartParser(unittest.TestCase):
     """ Test the smart parsing functions
     """
+    maxDiff = None
 
     def test_test1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query, interp = n._parse_prefix_query('foo')
+        query = n._parse_prefix_query('foo')
         exp_query = {
+                'interpretation': {
+                    'attribute': 'description or comment or node or order_id or customer_id',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': 'foo'
+                },
                 'operator': 'or',
                 'val1': {
                     'operator': 'or',
@@ -1609,8 +1616,14 @@ class TestSmartParser(unittest.TestCase):
     def test_test2(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query, interp = n._parse_prefix_query('1.3.3.0/24')
+        query = n._parse_prefix_query('1.3.3.0/24')
         exp_query = {
+                'interpretation': {
+                    'attribute': 'prefix',
+                    'interpretation': 'IPv4 prefix',
+                    'operator': 'contained_within_equals',
+                    'string': '1.3.3.0/24'
+                },
                 'operator': 'contained_within_equals',
                 'val1': 'prefix',
                 'val2': '1.3.3.0/24'
@@ -1623,11 +1636,20 @@ class TestSmartParser(unittest.TestCase):
     def test_test3(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query, interp = n._parse_prefix_query('1.3.3.0/24 foo')
-        self.maxDiff = None
+        query = n._parse_prefix_query('1.3.3.0/24 foo')
         exp_query = {
+                'interpretation': {
+                    'interpretation': 'and',
+                    'operator': 'and',
+                },
                 'operator': 'and',
                 'val1': {
+                    'interpretation': {
+                        'attribute': 'description or comment or node or order_id or customer_id',
+                        'interpretation': 'text',
+                        'operator': 'regex',
+                        'string': u'foo'
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'or',
@@ -1665,6 +1687,12 @@ class TestSmartParser(unittest.TestCase):
                         }
                     },
                 'val2': {
+                    'interpretation': {
+                        'attribute': 'prefix',
+                        'interpretation': 'IPv4 prefix',
+                        'operator': 'contained_within_equals',
+                        'string': u'1.3.3.0/24'
+                    },
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
                     'val2': '1.3.3.0/24'
