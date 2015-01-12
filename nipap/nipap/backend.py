@@ -3304,7 +3304,7 @@ class Nipap:
         self._logger.debug("Expanded to: %s" % str(query))
 
         search_result = self.search_prefix(auth, query, search_options)
-        search_result['interpretation'] = interpretation
+        search_result['interpretation'] = query
 
         return search_result
 
@@ -3327,11 +3327,14 @@ class Nipap:
             # tags
             if re.match('#', query_str_part['string']):
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-                query_str_part['interpretation'] = '(inherited) tag'
-                query_str_part['attribute'] = 'tag'
 
-                query_str_part['operator'] = 'equals_any'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': '(inherited) tag)',
+                        'attribute': 'tag',
+                        'operator': 'equals_any',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'equals_any',
@@ -3348,9 +3351,6 @@ class Nipap:
             # IPv4 prefix
             elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('/')) == 2:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
-                query_str_part['interpretation'] = 'IPv4 prefix'
-                query_str_part['attribute'] = 'prefix'
-
                 address, prefix_length = query_str_part['string'].split('/')
 
                 # complete a prefix to it's fully expanded form
@@ -3360,16 +3360,23 @@ class Nipap:
                     address += '.0'
 
                 prefix = address + '/' + prefix_length
+                strict_prefix = str(IPy.IP(query_str_part['string'], make_net = True))
+
+                interp = {
+                        'string': query_str_part['string'],
+                        'interpretation': 'IPv4 prefix',
+                        'attribute': 'prefix',
+                        'operator': 'contained_within_equals',
+                    }
 
                 if prefix != query_str_part['string']:
-                    query_str_part['expanded'] = prefix
+                    interp['expanded'] = prefix
 
-                strict_prefix = str(IPy.IP(query_str_part['string'], make_net = True))
                 if prefix != strict_prefix:
-                    query_str_part['strict_prefix'] = strict_prefix
+                    interp['strict_prefix'] = strict_prefix
 
-                query_str_part['operator'] = 'contained_within_equals'
                 query_parts.append({
+                    'interpretation': interp,
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
                     'val2': strict_prefix
@@ -3380,10 +3387,13 @@ class Nipap:
             # search
             elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('.')) == 4:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
-                query_str_part['interpretation'] = 'IPv4 address'
-                query_str_part['operator'] = 'contains_equals'
-                query_str_part['attribute'] = 'prefix'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'IPv4 address',
+                        'attribute': 'prefix',
+                        'operator': 'contains_equals',
+                    },
                     'operator': 'contains_equals',
                     'val1': 'prefix',
                     'val2': query_str_part['string']
@@ -3392,15 +3402,18 @@ class Nipap:
             # IPv6 prefix
             elif self._get_afi(query_str_part['string']) == 6 and len(query_str_part['string'].split('/')) == 2:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 prefix")
-                query_str_part['interpretation'] = 'IPv6 prefix'
-                query_str_part['operator'] = 'contained_within_equals'
-                query_str_part['attribute'] = 'prefix'
-
                 strict_prefix = str(IPy.IP(query_str_part['string'], make_net = True))
+                interp = {
+                        'string': query_str_part['string'],
+                        'interpretation': 'IPv6 prefix',
+                        'attribute': 'prefix',
+                        'operator': 'contained_within_equals'
+                    }
                 if query_str_part['string'] != strict_prefix:
-                    query_str_part['strict_prefix'] = strict_prefix
+                    interp['strict_prefix'] = strict_prefix
 
                 query_parts.append({
+                    'interpretation': interp,
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
                     'val2': strict_prefix
@@ -3409,10 +3422,13 @@ class Nipap:
             # IPv6 address
             elif self._get_afi(query_str_part['string']) == 6:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 address")
-                query_str_part['interpretation'] = 'IPv6 address'
-                query_str_part['operator'] = 'contains_equals'
-                query_str_part['attribute'] = 'prefix'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'IPv6 address',
+                        'attribute': 'prefix',
+                        'operator': 'contains_equals',
+                    },
                     'operator': 'contains_equals',
                     'val1': 'prefix',
                     'val2': query_str_part['string']
@@ -3422,10 +3438,13 @@ class Nipap:
             # TODO: add an equal search for VRF here
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as desc/comment")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'description or comment or node or order_id or customer_id'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'text',
+                        'attribute': 'description or comment or node or order_id or customer_id',
+                        'operator': 'regex',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'or',
@@ -3471,6 +3490,10 @@ class Nipap:
         if len(query_parts) > 1:
             for query_part in query_parts[1:]:
                 query = {
+                    'interpretation': {
+                        'interpretation': 'or',
+                        'operator': 'or',
+                    },
                     'operator': 'and',
                     'val1': query_part,
                     'val2': query
