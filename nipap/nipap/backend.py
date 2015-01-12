@@ -3331,7 +3331,7 @@ class Nipap:
                 query_parts.append({
                     'interpretation': {
                         'string': query_str_part['string'],
-                        'interpretation': '(inherited) tag)',
+                        'interpretation': '(inherited) tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
                     },

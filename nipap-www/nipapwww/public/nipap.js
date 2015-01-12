@@ -1134,34 +1134,18 @@ function hidePopupMenu() {
 }
 
 
-/*
- * Callback function called when prefixes are received.
- * Plots prefixes and adds them to list.
- */
-function receivePrefixList(search_result) {
+function parseInterp(query, container) {
 
-	stats.response_received = new Date().getTime();
-
-	if (!verifyPrefixListResponse(search_result)) return;
-	newest_prefix_query = parseInt(search_result.search_options.query_id);
-
-	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" tooltip="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
-	// Run element through AngularJS compiler to "activate" directives (the
-	// AngularUI/Bootstrap tooltip)
-	$(".search_interpretation_text").replaceWith(ng_compile($(".search_interpretation_text"))(ng_scope));
-
-	/*
-	 * Interpretation list
-	 */
-	var intp_cont = $("#search_interpret_container");
-	intp_cont.empty();
-	for (key in search_result.interpretation) {
-
-		var interp = search_result.interpretation[key];
+	if (query.interpretation) {
+		var interp = query.interpretation;
 		var text = '<b>' + interp.string + ':</b> ' + interp.interpretation;
 		var tooltip = '';
-
-		if (interp.interpretation == 'unclosed quote') {
+		if (interp.interpretation == 'or') {
+			text = "<b>OR</b>";
+		} else if (interp.interpretation == 'and') {
+			text = "<b>AND</b>";
+		} else if (interp.interpretation == 'and') {
+		} else if (interp.interpretation == 'unclosed quote') {
 			text += ', please close quote!';
 			tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';
 		} else if (interp.attribute == 'tag' && interp.operator == 'equals_any') {
@@ -1193,11 +1177,49 @@ function receivePrefixList(search_result) {
 			text += " matching '<b>" + interp.string + "</b>'";
 			tooltip = "The description OR node OR order id OR the comment should regexp match '" + interp.string + "'";
 		}
-
-		intp_cont.append('<div class="search_interpretation" id="intp' + key + '" tooltip="' + tooltip + '">');
-		$('#intp' + key).html(text);
-
+		container.append('<div class="search_interpretation" id="intp" tooltip="' + tooltip + '">' + text + '</div>');
+		if (interp.interpretation == 'or' || interp.interpretation == 'and') {
+			container.append('<div class="search_interperation" id="intp_' + container.attr('id') + '_andor" style="margin-left: 20px;"></div>');
+			container = $('#intp_' + container.attr('id') + '_andor');
+		}
 	}
+
+	if (typeof(query.val1) == 'object') {
+		container.append('<div class="search_interperation" id="intp_' + container.attr('id') + '_val1"></div>');
+		c1 = $('#intp_' + container.attr('id') + '_val1');
+		parseInterp(query.val1, c1);
+	}
+	if (typeof(query.val2) == 'object') {
+		container.append('<div class="search_interperation" id="intp_' + container.attr('id') + '_val2"></div>');
+		c2 = $('#intp_' + container.attr('id') + '_val2');
+		parseInterp(query.val2, c2);
+	}
+//	$('#intp' + key).html(text);
+}
+
+
+/*
+ * Callback function called when prefixes are received.
+ * Plots prefixes and adds them to list.
+ */
+function receivePrefixList(search_result) {
+
+	stats.response_received = new Date().getTime();
+
+	if (!verifyPrefixListResponse(search_result)) return;
+	newest_prefix_query = parseInt(search_result.search_options.query_id);
+
+	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" tooltip="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
+	// Run element through AngularJS compiler to "activate" directives (the
+	// AngularUI/Bootstrap tooltip)
+	$(".search_interpretation_text").replaceWith(ng_compile($(".search_interpretation_text"))(ng_scope));
+
+	/*
+	 * Interpretation list
+	 */
+	var intp_cont = $("#search_interpret_container");
+	intp_cont.empty();
+	parseInterp(search_result.interpretation, intp_cont);
 
 	// Run element through AngularJS compiler to "activate" directives (the
 	// AngularUI/Bootstrap tooltip)
