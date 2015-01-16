@@ -205,7 +205,7 @@ PREFIX DATA
 							Node
 						</dt>
 						<dd>
-							<input type="text" name="prefix_node" tooltip="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured." ng-model="prefix.node" ng-disabled="prefix.type != 'host' && !maxPreflen(prefix.prefix)">
+							<input type="text" name="prefix_node" tooltip="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured." ng-model="prefix.node" ng-disabled="!enableNodeInput(prefix.prefix, prefix_alloc_method, prefix.type, prefix_length, prefix_family)">
 						</dd>
 					</dl>
 				</div>
