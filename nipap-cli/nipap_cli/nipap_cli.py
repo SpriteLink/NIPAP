@@ -160,69 +160,6 @@ def _str_to_bool(arg):
     LIST FUNCTIONS
 """
 
-def _expand_list_query(opts):
-    """ Parse a dict and return a valid query dict
-
-        Parses a dict containing object attributes and values and return a
-        valid NIPAP query dict which regex matches the values and AND:s
-        together all individual queries. The regex match is anchored in the
-        beginning of the string.
-
-        Example:
-
-            {
-                'name': 'cust',
-                'vrf': '123:2'
-            }
-
-        will be expanded to the query dict
-
-            {
-                'operator': 'and',
-                'val1': {
-                        'operator': 'regex_match',
-                        'val1': 'name',
-                        'val2': '^cust'
-                    },
-                'val2': {
-                        'operator': 'regex_match',
-                        'val1': 'rt',
-                        'val2': '^123:2'
-                    }
-            }
-    """
-
-    # create list of query parts
-    query_parts = []
-    for key, val in opts.items():
-
-        # standard case
-        operator = 'regex_match'
-        val1 = key
-        val2 = "%s" % val
-
-        query_parts.append({
-            'operator': operator,
-            'val1': val1,
-            'val2': val2
-        })
-
-    # Sum all query parts to one query
-    query = {}
-    if len(query_parts) > 0:
-        query = query_parts[0]
-
-    if len(query_parts) > 1:
-        for query_part in query_parts[1:]:
-            query = {
-                'operator': 'and',
-                'val1': query_part,
-                'val2': query
-            }
-
-    return query
-
-
 def list_pool(arg, opts, shell_opts):
     """ List pools matching a search criteria
     """
@@ -288,16 +225,14 @@ def list_vrf(arg, opts, shell_opts):
     """ List VRFs matching a search criteria
     """
 
-    # rt is a regexp match on the VRF RT but as most people don't expect to see
-    # 123:123 in the result when searching for '123:1', we anchor it per default
-    if 'rt' in opts:
-        opts['rt'] = '^' + opts['rt'] + '$'
-    query = _expand_list_query(opts)
+    search_string = ''
+    if type(arg) == list or type(arg) == tuple:
+        search_string = ' '.join(arg)
 
     offset = 0
     limit = 100
     while True:
-        res = VRF.search(query, { 'offset': offset, 'max_result': limit })
+        res = VRF.smart_search(search_string, { 'offset': offset, 'max_result': limit })
         if offset == 0:
             if len(res['result']) == 0:
                 print "No matching VRFs found."
@@ -2329,33 +2264,11 @@ cmds = {
                 'list': {
                     'type': 'command',
                     'exec': list_vrf,
+                    'rest_argument': {
+                        'type': 'value',
+                        'content_type': unicode,
+                    },
                     'children': {
-                        'rt': {
-                            'type': 'option',
-                            'argument': {
-                                'type': 'value',
-                                'content_type': unicode,
-                                'description': 'VRF RT',
-                                'complete': complete_vrf,
-                            }
-                        },
-                        'name': {
-                            'type': 'option',
-                            'argument': {
-                                'type': 'value',
-                                'content_type': unicode,
-                                'description': 'VRF name',
-                            }
-
-                        },
-                        'description': {
-                            'type': 'option',
-                            'argument': {
-                                'type': 'value',
-                                'content_type': unicode,
-                                'description': 'Description of the VRF'
-                            }
-                        }
                     }
                 },
 
