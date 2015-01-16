@@ -1958,7 +1958,6 @@ cmds = {
                     'rest_argument': {
                         'type': 'value',
                         'content_type': unicode,
-                        'description': 'Prefix',
                     },
                     'children': {
                         'vrf_rt': {
@@ -2469,50 +2468,8 @@ cmds = {
                     'rest_argument': {
                         'type': 'value',
                         'content_type': unicode,
-                        'description': 'Pool',
                     },
                     'children': {
-                        'default-type': {
-                            'type': 'option',
-                            'argument': {
-                                'type': 'value',
-                                'content_type': unicode,
-                                'descripton': 'Default prefix type: reservation | assignment | host',
-                                'complete': complete_prefix_type,
-                            }
-                        },
-                        'name': {
-                            'type': 'option',
-                            'argument': {
-                                'type': 'value',
-                                'content_type': unicode,
-                                'descripton': 'Name of the pool'
-                            }
-                        },
-                        'description': {
-                            'type': 'option',
-                            'argument': {
-                                'type': 'value',
-                                'content_type': unicode,
-                                'descripton': 'A short description of the pool'
-                            }
-                        },
-                        'ipv4_default_prefix_length': {
-                            'type': 'option',
-                            'argument': {
-                                'type': 'value',
-                                'content_type': int,
-                                'descripton': 'Default IPv4 prefix length'
-                            }
-                        },
-                        'ipv6_default_prefix_length': {
-                            'type': 'option',
-                            'argument': {
-                                'type': 'value',
-                                'content_type': int,
-                                'descripton': 'Default IPv6 prefix length'
-                            }
-                        },
                         'vrf_rt': {
                             'type': 'option',
                             'argument': {
