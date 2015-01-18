@@ -2291,6 +2291,12 @@ class Nipap:
 
             if 'from-pool' in args:
                 from_pool = self._get_pool(auth, args['from-pool'])
+
+                # make sure there are prefixes in pool, if any prefix is present
+                # than the implied-vrf is set, otherwise the pool is empty
+                if from_pool['vrf_id'] is None:
+                    raise NipapInputError('No prefixes in pool')
+
                 # set default type from pool if missing
                 if 'type' not in attr:
                     attr['type'] = from_pool['default_type']
