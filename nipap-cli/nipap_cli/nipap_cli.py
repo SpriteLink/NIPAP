@@ -1060,42 +1060,43 @@ def remove_prefix(arg, opts, shell_opts):
     if p.authoritative_source != 'nipap':
         auth_src.add(p.authoritative_source)
 
-    if not remove_confirmed:
-        if recursive is True or p.type == 'assignment':
-            # recursive delete
+    if recursive is True or p.type == 'assignment':
+        # recursive delete
 
-            # get affected prefixes
-            query = {
-                    'val1': 'prefix',
-                    'operator': 'contained_within_equals',
-                    'val2': p.prefix
+        # get affected prefixes
+        query = {
+                'val1': 'prefix',
+                'operator': 'contained_within_equals',
+                'val2': p.prefix
+        }
+
+        # add VRF to query if we have one
+        if 'vrf_rt' in spec:
+            vrf_q = {
+                'val1': 'vrf_rt',
+                'operator': 'equals',
+                'val2': spec['vrf_rt']
             }
+            query = {
+                'val1': query,
+                'operator': 'and',
+                'val2': vrf_q
+            }
+        pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
 
-            # add VRF to query if we have one
-            if 'vrf_rt' in spec:
-                vrf_q = {
-                    'val1': 'vrf_rt',
-                    'operator': 'equals',
-                    'val2': spec['vrf_rt']
-                }
-                query = {
-                    'val1': query,
-                    'operator': 'and',
-                    'val2': vrf_q
-                }
-            pres = Prefix.search(query, { 'parents_depth': 0, 'max_result': 1200 })
+    if not remove_confirmed:
 
-            # if recursive is False, this delete will fail, ask user to do recursive
-            # delete instead
-            if recursive is False:
-                if len(pres['result']) > 1:
-                    print "WARNING: %s in %s contains %s hosts." % (p.prefix, vrf_format(p.vrf), len(pres['result']))
-                    res = raw_input("Would you like to recursively delete %s and all hosts? [y/N]: " % (p.prefix))
-                    if res.lower() in [ 'y', 'yes' ]:
-                        recursive = True
-                    else:
-                        print >> sys.stderr, "ERROR: Removal of assignment containing hosts is prohibited. Aborting removal of %s in %s." % (p.prefix, vrf_format(p.vrf))
-                        sys.exit(1)
+        # if recursive is False, this delete will fail, ask user to do recursive
+        # delete instead
+        if p.type == 'assignment':
+            if len(pres['result']) > 1:
+                print "WARNING: %s in %s contains %s hosts." % (p.prefix, vrf_format(p.vrf), len(pres['result']))
+                res = raw_input("Would you like to recursively delete %s and all hosts? [y/N]: " % (p.prefix))
+                if res.lower() in [ 'y', 'yes' ]:
+                    recursive = True
+                else:
+                    print >> sys.stderr, "ERROR: Removal of assignment containing hosts is prohibited. Aborting removal of %s in %s." % (p.prefix, vrf_format(p.vrf))
+                    sys.exit(1)
 
         if recursive is True:
             if len(pres['result']) <= 1:
