@@ -1,16 +1,16 @@
 Package: nipap-cli
-Version: 0.27.1-1
+Version: 0.27.4-1
 Architecture: all
 Maintainer: Lukas Garberg <lukas@spritelink.net>
-Installed-Size: 122
+Installed-Size: 124
 Depends: python (>= 2.4), python-pynipap
 Priority: optional
 Section: python
-Filename: pool/main/n/nipap-cli/nipap-cli_0.27.1-1_all.deb
-Size: 26560
-SHA256: 83f4560d0beff738b5ee56979a530143dbebf5acdf95f17edf6b69869fd31bc0
-SHA1: 6b03c82c55aec1d091bda25517e9833fd738dc96
-MD5sum: e7d31dcefa39423d5a3dc9eca09c3fe4
+Filename: pool/main/n/nipap-cli/nipap-cli_0.27.4-1_all.deb
+Size: 27230
+SHA256: 4c56620665132c242b36c60cc55e2ce12d5fb35115569bd7bb56a5c7b17b5e1c
+SHA1: 0bfa7483937b6c74cdb09f780fb48ac191018a01
+MD5sum: acf2ee1fd643e1495f68e908e6057f63
 Description: Neat IP Address Planner
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the shell command.
@@ -53,18 +53,18 @@ Description: Neat IP Address Planner
  format, back to the client.
 
 Package: nipap-www
-Version: 0.27.3-1
+Version: 0.27.4-1
 Architecture: all
 Maintainer: Lukas Garberg <lukas@spritelink.net>
-Installed-Size: 2213
+Installed-Size: 2231
 Depends: debconf, python (>= 2.4), debconf (>= 0.5) | debconf-2.0, python-pylons (>= 1.0), python-pynipap, nipap-common, python-jinja2
 Priority: optional
 Section: web
-Filename: pool/main/n/nipap-www/nipap-www_0.27.3-1_all.deb
-Size: 544092
-SHA256: 9dd078aee9a6738a1f27f7856de90dc150d7acad0f110cdbff8edf4aecd9953d
-SHA1: 50bfb495df5902b1326c90f545de66af73e3b7f5
-MD5sum: 24a715013610e28fd9c76bdd40d41e3a
+Filename: pool/main/n/nipap-www/nipap-www_0.27.4-1_all.deb
+Size: 545896
+SHA256: cc7aba8a4983890d8e1cc1c1d3ed9a12d8fa62d54a4c6ce155df2aa68ad60f3a
+SHA1: 6d9bda5bda83cb2159098d6a08ffac945e8797b7
+MD5sum: 7a39c427673656a21f9e4c469983821a
 Description: web frontend for NIPAP
  A web UI for the NIPAP IP address planning service.
 Python-Version: 2.7
