@@ -16,7 +16,7 @@ PREFIX DATA
 							Prefix <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
-							<input type="text" name="prefix_prefix" tooltip="The prefix, i.e. 192.0.2.16/28" ng-model="prefix.prefix">
+							<input type="text" name="prefix_prefix" tooltip="The prefix, i.e. 192.0.2.16/28" ng-model="prefix.prefix" ng-required="prefix_alloc_method == 'manual'">
 						</dd>
 					</dl>
 				</div>
