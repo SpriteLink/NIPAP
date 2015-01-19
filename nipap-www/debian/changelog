@@ -1,3 +1,14 @@
+nipap-www (0.27.4-1) stable; urgency=medium
+
+  * Real fix of web-ui bug where the node field would stay disabled for
+    non-host type prefix (#686/#675)
+  * Fix of CLI traceback on viewing pool (#672)
+  * Fix of CLI traceback on recursive remove (#670)
+  * Fix of CLI error message on from-pool assignment from empty pool
+    (#685)
+
+ -- Kristian Larsson <kll@spritelink.net>  Mon, 19 Jan 2015 20:02:26 +0100
+
 nipap-www (0.27.3-1) stable; urgency=medium
 
   * Fix of web-ui bug where the node field would stay disabled for non-

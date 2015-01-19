@@ -34,6 +34,7 @@ nipapwww/lib/app_globals.py
 nipapwww/lib/base.py
 nipapwww/lib/helpers.py
 nipapwww/model/__init__.py
+nipapwww/public/.controllers.js.swp
 nipapwww/public/Chart.min.js
 nipapwww/public/angular-route.js
 nipapwww/public/angular-route.min.js
