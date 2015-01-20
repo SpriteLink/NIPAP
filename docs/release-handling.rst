@@ -71,7 +71,6 @@ If you have changes to the database, don't forget to increment the version
 number in sql/ip_net.sql.
 
 From the project root, run::
-
     make bumpversion
 
 This will automatically update the debian changelog based on the content of the
@@ -79,10 +78,10 @@ NEWS file. You can bump the version for a single component (such as pynipap) by
 running the same command in the directory of that component.
 
 After having built packages for the new version, tag the git repo with the new
-version number;
-  git tag vX.Y.Z
-And for pushing to git:
-  git push origin refs/tags/vX.Y.Z
+version number::
+    git tag vX.Y.Z
+And for pushing to git::
+    git push origin refs/tags/vX.Y.Z
 
 
 Rolling the deb repo
@@ -91,23 +90,25 @@ Debian stable is the primary production platform targeted by NIPAP and new
 releases should be put in our Debian repo.
 
 To update the deb repo, make sure you are on branch 'master' and then build the
-bebian packages with:
-  make builddeb
+bebian packages with::
+    make builddeb
 
-Then checkout the 'gh-pages' branch and add them to the repo.
-Start by adding them to the testing repo:
-  make debrepo-testing
+Then checkout the 'gh-pages' branch and add them to the repo::
+    git checkout gh-pages
+
+Start by adding the packages the testing repo::
+    make debrepo-testing
 
 Once the new version has been tested out for a bit, it is time to copy it to
-stable, using:
-  make debrepo
+stable, using::
+    make debrepo-stable
 
 Regardless if you are putting the packages in testing or stable, you need to
 actually push them to the github repo. Make sure the new files are added to
-git, commit and push:
- git add --all repos
- git commit -a -m "Add nipapd vX.Y.Z to debian STABLE|TEST repo"
- git push
+git, commit and push::
+    git add --all repos
+    git commit -a -m "Add nipapd vX.Y.Z to debian STABLE|TESTING repo"
+    git push
 
 Once a stable version is release, update readthedocs.org to point to the latest
 tag and write a post on Google+ in the NIPAP community and share it from the
