@@ -45,7 +45,9 @@ class TestHelper:
         n._execute("DELETE FROM ip_net_asn")
 
 
-    def add_prefix(self, prefix, type, description, tags=[]):
+    def add_prefix(self, prefix, type, description, tags=None):
+        if tags is None:
+            tags = []
         p = Prefix()
         p.prefix = prefix
         p.type = type

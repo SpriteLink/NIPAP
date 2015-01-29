@@ -59,7 +59,9 @@ class Request():
 
 
 class Benchmark():
-    def __init__(self, concurrent = 10, total = 100, url = 'http://localhost:7080/XMLRPC', method = 'date', params=[]):
+    def __init__(self, concurrent = 10, total = 100, url = 'http://localhost:7080/XMLRPC', method = 'date', params=None):
+        if params is None:
+            params = {}
         self.url = url
         self.method = method
         self.params = params

@@ -694,9 +694,13 @@ class Nipap:
 
 
 
-    def _get_query_parts(self, query_str, search_options = {}):
+    def _get_query_parts(self, query_str, search_options=None):
         """ Split a query string into its parts
         """
+
+        if search_options is None:
+            search_options = {}
+
         if query_str is None:
             raise NipapValueError("'query_string' must not be None")
 
@@ -950,7 +954,7 @@ class Nipap:
 
 
 
-    def list_vrf(self, auth, spec = {}):
+    def list_vrf(self, auth, spec=None):
         """ Return a list of VRFs matching `spec`.
 
             * `auth` [BaseAuth]
@@ -960,6 +964,9 @@ class Nipap:
 
             Returns a list of dicts.
         """
+
+        if spec is None:
+            spec = {}
 
         self._logger.debug("list_vrf called; spec: %s" % str(spec))
 
@@ -1074,7 +1081,7 @@ class Nipap:
 
 
 
-    def search_vrf(self, auth, query, search_options = {}):
+    def search_vrf(self, auth, query, search_options=None):
         """ Search VRF list for VRFs matching `query`.
 
             * `auth` [BaseAuth]
@@ -1152,6 +1159,9 @@ class Nipap:
                 * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
         """
 
+        if search_options is None:
+            search_options = {}
+
         #
         # sanitize search options and set default if option missing
         #
@@ -1198,7 +1208,7 @@ class Nipap:
 
 
 
-    def smart_search_vrf(self, auth, query_str, search_options = {}, extra_query = None):
+    def smart_search_vrf(self, auth, query_str, search_options=None, extra_query=None):
         """ Perform a smart search on VRF list.
 
             * `auth` [BaseAuth]
@@ -1234,6 +1244,9 @@ class Nipap:
             See the :func:`search_vrf` function for an explanation of the
             `search_options` argument.
         """
+
+        if search_options is None:
+            search_options = {}
 
         self._logger.debug("smart_search_vrf query string: %s" % query_str)
 
@@ -1524,7 +1537,7 @@ class Nipap:
 
 
 
-    def list_pool(self, auth, spec = {}):
+    def list_pool(self, auth, spec=None):
         """ Return a list of pools.
 
             * `auth` [BaseAuth]
@@ -1534,6 +1547,9 @@ class Nipap:
 
             Returns a list of dicts.
         """
+
+        if spec is None:
+            spec = {}
 
         self._logger.debug("list_pool called; spec: %s" % str(spec))
 
@@ -1590,9 +1606,12 @@ class Nipap:
         return res
 
 
-    def _check_pool_attr(self, attr, req_attr = []):
+    def _check_pool_attr(self, attr, req_attr=None):
         """ Check pool attributes.
         """
+
+        if req_attr is None:
+            req_attr = []
 
         # check attribute names
         allowed_attr = [
@@ -1703,7 +1722,7 @@ class Nipap:
 
 
 
-    def search_pool(self, auth, query, search_options = {}):
+    def search_pool(self, auth, query, search_options=None):
         """ Search pool list for pools matching `query`.
 
             * `auth` [BaseAuth]
@@ -1781,6 +1800,9 @@ class Nipap:
                 * :attr:`offset` - Offset the result list this many pools (default :data:`0`).
         """
 
+        if search_options is None:
+            search_options = {}
+
         #
         # sanitize search options and set default if option missing
         #
@@ -1851,7 +1873,7 @@ class Nipap:
 
 
 
-    def smart_search_pool(self, auth, query_str, search_options = {}, extra_query = None):
+    def smart_search_pool(self, auth, query_str, search_options=None, extra_query=None):
         """ Perform a smart search on pool list.
 
             * `auth` [BaseAuth]
@@ -1886,6 +1908,9 @@ class Nipap:
             See the :func:`search_pool` function for an explanation of the
             `search_options` argument.
         """
+
+        if search_options is None:
+            search_options = {}
 
         self._logger.debug("smart_search_pool query string: %s" % query_str)
 
@@ -2177,7 +2202,7 @@ class Nipap:
 
 
     @requires_rw
-    def add_prefix(self, auth, attr, args = {}):
+    def add_prefix(self, auth, attr, args=None):
         """ Add a prefix and return its ID.
 
             * `auth` [BaseAuth]
@@ -2211,6 +2236,9 @@ class Nipap:
                 documentation for the :func:`find_free_prefix` for a description of how
                 the `args` argument is to be formatted.
         """
+
+        if args is None:
+            args = {}
 
         self._logger.debug("add_prefix called; attr: %s; args: %s" % (str(attr), str(args)))
 
@@ -2848,7 +2876,7 @@ class Nipap:
 
 
 
-    def search_prefix(self, auth, query, search_options = {}):
+    def search_prefix(self, auth, query, search_options=None):
         """ Search prefix list for prefixes matching `query`.
 
             * `auth` [BaseAuth]
@@ -2957,6 +2985,9 @@ class Nipap:
             useful for example when displaying prefixes in a tree without the
             need to implement client side IP address logic.
         """
+
+        if search_options is None:
+            search_options = {}
 
         #
         # sanitize search options and set default if option missing
@@ -3205,7 +3236,7 @@ class Nipap:
 
 
 
-    def smart_search_prefix(self, auth, query_str, search_options = {}, extra_query = None):
+    def smart_search_prefix(self, auth, query_str, search_options=None, extra_query=None):
         """ Perform a smart search on prefix list.
 
             * `auth` [BaseAuth]
@@ -3241,6 +3272,9 @@ class Nipap:
             See the :func:`search_prefix` function for an explanation of the
             `search_options` argument.
         """
+
+        if search_options is None:
+            search_options = {}
 
         self._logger.debug("smart_search_prefix query string: %s" % query_str)
 
@@ -3533,9 +3567,12 @@ class Nipap:
 
 
 
-    def list_asn(self, auth, asn = {}):
+    def list_asn(self, auth, asn=None):
         """ List AS numbers
         """
+
+        if asn is None:
+            asn = {}
 
         self._logger.debug("list_asn called; asn: %s" % str(asn))
 
@@ -3676,7 +3713,7 @@ class Nipap:
 
 
 
-    def search_asn(self, auth, query, search_options = {}):
+    def search_asn(self, auth, query, search_options=None):
         """ Search ASNs for entries matching 'query'
 
             * `auth` [BaseAuth]
@@ -3721,6 +3758,9 @@ class Nipap:
                 * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
                 * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
         """
+
+        if search_options is None:
+            search_options = {}
 
         #
         # sanitize search options and set default if option missing
@@ -3768,7 +3808,7 @@ class Nipap:
 
 
 
-    def smart_search_asn(self, auth, query_str, search_options = {}, extra_query = None):
+    def smart_search_asn(self, auth, query_str, search_options=None, extra_query=None):
         """ Perform a smart search operation among AS numbers
 
             * `auth` [BaseAuth]
@@ -3800,6 +3840,9 @@ class Nipap:
             See the :func:`search_asn` function for an explanation of the
             `search_options` argument.
         """
+
+        if search_options is None:
+            search_options = {}
 
         self._logger.debug("smart_search_asn called; query_str: %s" % query_str)
 
@@ -3946,7 +3989,7 @@ class Nipap:
 
 
 
-    def search_tag(self, auth, query, search_options = {}):
+    def search_tag(self, auth, query, search_options=None):
         """ Search Tags for entries matching 'query'
 
             * `auth` [BaseAuth]
@@ -3991,6 +4034,9 @@ class Nipap:
                 * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
                 * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
         """
+
+        if search_options is None:
+            search_options = {}
 
         #
         # sanitize search options and set default if option missing

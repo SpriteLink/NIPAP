@@ -13,11 +13,14 @@ class NipapConfig(ConfigParser.SafeConfigParser):
     _config = None
     _cfg_path = None
 
-    def __init__(self, cfg_path=None, default={}):
+    def __init__(self, cfg_path=None, default=None):
         """ Takes config file path and command line arguments.
         """
 
         self.__dict__ = self.__shared_state
+
+        if default is None:
+            default = {}
 
         if len(self.__shared_state) == 0:
             # First time - create new instance!

@@ -271,12 +271,16 @@ class Tag(Pynipap):
     """
 
     @classmethod
-    def from_dict(cls, tag = {}):
+    def from_dict(cls, tag=None):
         """ Create new Tag-object from dict.
 
             Suitable for creating objects from XML-RPC data.
             All available keys must exist.
         """
+
+        if tag is None:
+            tag = {}
+
         l = Tag()
         l.name = tag['name']
         return l
@@ -284,9 +288,12 @@ class Tag(Pynipap):
 
 
     @classmethod
-    def search(cls, query, search_opts={}):
+    def search(cls, query, search_opts=None):
         """ Search VRFs.
         """
+
+        if search_opts is None:
+            search_opts = {}
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -355,9 +362,12 @@ class VRF(Pynipap):
 
 
     @classmethod
-    def list(cls, vrf = {}):
+    def list(cls, vrf=None):
         """ List VRFs.
         """
+
+        if vrf is None:
+            vrf = {}
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -434,9 +444,12 @@ class VRF(Pynipap):
 
 
     @classmethod
-    def search(cls, query, search_opts={}):
+    def search(cls, query, search_opts=None):
         """ Search VRFs.
         """
+
+        if search_opts is None:
+            search_opts = {}
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -459,9 +472,12 @@ class VRF(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, query_string, search_options={}, extra_query = None):
+    def smart_search(cls, query_string, search_options=None, extra_query = None):
         """ Perform a smart VRF search.
         """
+
+        if search_options is None:
+            search_options = {}
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -676,9 +692,12 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def search(cls, query, search_opts={}):
+    def search(cls, query, search_opts=None):
         """ Search pools.
         """
+
+        if search_opts is None:
+            search_opts = {}
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -702,9 +721,12 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, query_string, search_options={}, extra_query = None):
+    def smart_search(cls, query_string, search_options=None, extra_query = None):
         """ Perform a smart pool search.
         """
+
+        if search_options is None:
+            search_options = {}
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -770,9 +792,12 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def list(self, spec = {}):
+    def list(self, spec=None):
         """ List pools.
         """
+
+        if spec is None:
+            spec = {}
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -887,9 +912,12 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def search(cls, query, search_opts={}):
+    def search(cls, query, search_opts=None):
         """ Search for prefixes.
         """
+
+        if search_opts is None:
+            search_opts = {}
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -913,9 +941,12 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, query_string, search_options={}, extra_query = None):
+    def smart_search(cls, query_string, search_options=None, extra_query = None):
         """ Perform a smart prefix search.
         """
+
+        if search_options is None:
+            search_options = {}
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -941,9 +972,12 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def list(cls, spec = {}):
+    def list(cls, spec=None):
         """ List prefixes.
         """
+
+        if spec is None:
+            spec = {}
 
         xmlrpc = XMLRPCConnection()
         try:
@@ -963,9 +997,12 @@ class Prefix(Pynipap):
 
 
 
-    def save(self, args = {}):
+    def save(self, args=None):
         """ Save prefix to NIPAP.
         """
+
+        if args is None:
+            args = {}
 
         xmlrpc = XMLRPCConnection()
         data = {
