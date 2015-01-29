@@ -110,6 +110,40 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 #
 #basedn = dc=test,dc=com                ; base DN
 #uri = ldaps://ldap.test.com            ; LDAP server URI
+#
+# LDAP style
+#binddn_fmt = uid={},dc=test,dc=com
+#search = uid={}                        ; LDAP search filter
+#
+# Active Directory (UPN) style
+#binddn_fmt = {}@test.com
+#search = sAMAccountName={}
+#
+# {} in binddn_fmt is replaced by the username of the authenticating user.
+#
+## Group permissions
+# Non-empty values for rw_group/ro_group requires the memberOf attribute to be
+# present in LDAP.
+#
+# Examples:
+#
+# Everyone with an account can login and gets read/write access:
+#rw_group =
+#ro_group =
+#
+# Users in rw_group gets read/write access, everyone else gets read only access:
+#rw_group = cn=tech,dc=test,dc=com	; Users in this group get rw access
+#ro_group =
+#
+# Users in rw_group gets read/write access, users in ro_group get read
+# only access. You need to be in either group to authenticate at all:
+#rw_group = cn=tech,dc=test,dc=com      ; Users in this group get rw access
+#ro_group = cn=staff,dc=test,dc=com     ; Users in this group get ro access
+#
+# Users get read/write access by default, users in ro_group gets read
+# only access:
+#rw_group =
+#ro_group = cn=untrusted,dc=test,dc=com ; Users in this group get ro access
 
 #
 # Options for the WWW UI
