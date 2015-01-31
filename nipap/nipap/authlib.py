@@ -124,7 +124,7 @@ class AuthFactory:
 
 
 
-    def get_auth(self, username, password, authoritative_source, auth_options={}):
+    def get_auth(self, username, password, authoritative_source, auth_options=None):
         """ Returns an authentication object.
     
             Examines the auth backend given after the '@' in the username and
@@ -140,6 +140,9 @@ class AuthFactory:
                 A dict which, if authenticated as a trusted user, can override
                 `username` and `authoritative_source`.
         """
+
+        if auth_options is None:
+            auth_options = {}
 
         # validate arguments
         if (authoritative_source is None):
@@ -208,7 +211,7 @@ class BaseAuth:
     _cfg = None
 
 
-    def __init__(self, username, password, authoritative_source, auth_backend, auth_options={}):
+    def __init__(self, username, password, authoritative_source, auth_backend, auth_options=None):
         """ Constructor.
 
             Note that the instance variables not are set by the constructor but
@@ -228,6 +231,9 @@ class BaseAuth:
                 A dict which, if authenticated as a trusted user, can override
                 `username` and `authoritative_source`.
         """
+
+        if auth_options is None:
+            auth_options = {}
 
         self._logger = logging.getLogger(self.__class__.__name__)
         self._cfg = NipapConfig()
@@ -270,7 +276,7 @@ class LdapAuth(BaseAuth):
     _ldap_conn = None
     _authenticated = None
 
-    def __init__(self, name, username, password, authoritative_source, auth_options={}):
+    def __init__(self, name, username, password, authoritative_source, auth_options=None):
         """ Constructor.
 
             Note that the instance variables not are set by the constructor but
@@ -290,6 +296,9 @@ class LdapAuth(BaseAuth):
                 A dict which, if authenticated as a trusted user, can override
                 `username` and `authoritative_source`.
         """
+
+        if auth_options is None:
+            auth_options = {}
 
         BaseAuth.__init__(self, username, password, authoritative_source, name, auth_options)
         self._ldap_uri = self._cfg.get('auth.backends.' + self.auth_backend, 'uri')
@@ -350,7 +359,7 @@ class SqliteAuth(BaseAuth):
     _db_curs = None
     _authenticated = None
 
-    def __init__(self, name, username, password, authoritative_source, auth_options={}):
+    def __init__(self, name, username, password, authoritative_source, auth_options=None):
         """ Constructor.
 
             Note that the instance variables not are set by the constructor but
@@ -372,6 +381,9 @@ class SqliteAuth(BaseAuth):
 
             If the user database and tables are not found, they are created.
         """
+
+        if auth_options is None:
+            auth_options = {}
 
         BaseAuth.__init__(self, username, password, authoritative_source, name, auth_options)
 
