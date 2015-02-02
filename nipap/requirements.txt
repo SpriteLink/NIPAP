@@ -9,7 +9,7 @@ backports.ssl-match-hostname==3.4.0.2
 certifi==14.05.14
 itsdangerous==0.24
 parsedatetime==1.1.2
-psutil==1.2.1
+psutil==1.2.1							# rq.filter: >= 1.0,<2.0
 psycopg2==2.5.3
 python-dateutil==1.5
 python-ldap==2.4.15
