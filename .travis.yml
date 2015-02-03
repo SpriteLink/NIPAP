@@ -55,8 +55,7 @@ install:
     # install nipap dependencies
     - if [ "$INSTALL" == "venv" ]; then pip install -r nipap/requirements.txt; fi
     # install postgresql module (can't get from pip).
-    # TODO: so weird; ldap doesn't work through pip...
-    - if [ "$INSTALL" == "venv" ]; then sudo apt-get install -qq -y python-ldap postgresql-9.1-ip4r; fi
+    - if [ "$INSTALL" == "venv" ]; then sudo apt-get install -qq -y postgresql-9.1-ip4r; fi
     # SQL
     - if [ "$INSTALL" == "venv" ]; then sudo su -c "cd nipap/sql; make install" postgres; fi
     # move configuration file into place
@@ -75,7 +74,7 @@ install:
     - if [ "$INSTALL" == "apt" ]; then wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -; fi
     - if [ "$INSTALL" == "apt" ]; then sudo apt-get update -qq; fi
     # install dependencies for installing & running nipap
-    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-ldap python-docutils postgresql-9.1 postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-tz python-dateutil python-psutil; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-docutils postgresql-9.1 postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-tz python-dateutil python-psutil; fi
     # if we are testing the upgrade, first install NIPAP packages from official repo
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo apt-get install -qq nipapd nipap-www nipap-cli; fi
     # bump version so that we know we are upgrading beyond what is installed
