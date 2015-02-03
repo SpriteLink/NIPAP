@@ -1,18 +1,18 @@
 Flask==0.10.1
 Flask-Compress==1.0.2
 Flask-XML-RPC==0.1.2
-IPy==0.81
+IPy==0.82
 Jinja2==2.7.3
 MarkupSafe==0.23
-Werkzeug==0.9.6
+Werkzeug==0.10
 backports.ssl-match-hostname==3.4.0.2
 certifi==14.05.14
 itsdangerous==0.24
-parsedatetime==1.1.2
+parsedatetime==1.4
 psutil==1.2.1							# rq.filter: >= 1.0,<2.0
-psycopg2==2.5.3
-python-dateutil==1.5
-python-ldap==2.4.15
-pytz==2014.7
-tornado==4.0.1
+psycopg2==2.5.4
+python-dateutil==2.4.0
+python-ldap==2.4.19
+pytz==2014.10
+tornado==4.0.2
 wsgiref==0.1.2
