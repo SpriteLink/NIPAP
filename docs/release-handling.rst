@@ -37,6 +37,27 @@ This implies that major version can be trusted, while the risk for bugs are
 higher in minor versions and again smaller with patch releases.
 
 
+Debian repository
+-----------------
+The repo itself is hosted by GitHub through their support for building a
+webpage via the branch gh-pages, please see http://help.github.com/pages/ for
+more information on that.
+
+The Makefile includes a two targets (debrepo-testing & debrepo-stable) to build
+the necessary files for a debian repo and put this in the correct place. As
+soon as a commit is pushed, github will copy the files and produce a webpage
+accessible via http://<github user>.github.com/<project name> (ie
+http://spritelink.github.com/NIPAP). We use this to build a simple apt
+repository hosted on GitHub.
+
+To update the apt repo, build the debian packages, then run 'make
+debrepo-testing' in the project root. This will put the packages in the testing
+repo. Commit to the gh-pages branch and then push and it should all work! :)
+Once a version is considered stable, run 'make debrepo-stable' to copy the
+packages from the testing branch into stable. Again, commit to gh-pages and so
+forth. Please see "Rolling the deb repo" section for more details.
+
+
 NEWS / Changelog
 ----------------
 There is a NEWS file outlining the differences with every version. It can
