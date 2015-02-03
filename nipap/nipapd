@@ -70,7 +70,7 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
     os.setuid(uid)
 
     # Ensure a very conservative umask
-    old_umask = os.umask(077)
+    old_umask = os.umask(0o077)
 
 
 if __name__ == '__main__':
