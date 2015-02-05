@@ -5,6 +5,19 @@ for installing NIPAP on other Unix like systems. Depending on what system you
 are trying to install on, you may need to compile dependencies manually or find
 third party ways of installing them.
 
+Download NIPAP
+--------------
+You can download NIPAP as a tar ball from GitHub at
+https://github.com/SpriteLink/NIPAP/releases or get the latest source via git::
+
+    git clone https://github.com/SpriteLink/NIPAP.git
+
+Please do note that the git master branch is a development branch and is not
+recommended for production environments. Check out the tag for the latest
+stable version instead::
+
+    git checkout v0.27.4
+
 PostgreSQL
 ----------
 NIPAP relies on the PostgreSQL database for storage of information. Since
@@ -98,18 +111,9 @@ Installation of the web UI
 --------------------------
 The NIPAP web UI performs all operations through the NIPAP XML-RPC API served
 by nipapd, which means they do not need to be installed on the same machine. It
-is built on the Pylons web framework and requires Pylons version >= 1.0. This
-version has unfortunately not yet made it into neither the Debian nor the
-Ubuntu official repositories yet. For you lycky enough to run an apt-based
-distribution, there is a Pylons 1.0 package in the NIPAP 'extra' repository
-which should work on any apt-based system running python 2.5, 2.6 or 2.7.  See
-how to enable the 'extra' repo under the ip4r-section above. With the 'extra'
-repository enabled, the NIPAP web UI is installed using the following command::
+is built on the Pylons web framework and requires Pylons version >= 1.0.
 
-    apt-get install nipap-www
-
-When apt-get has completed the installation, you should have all dependencies
-required for the NIPAP web UI as well as the web UI itself installed.
+You will find the source in nipap-www
 
 Configuration of the web UI
 ---------------------------
@@ -161,11 +165,8 @@ Using the default configuration, the web UI should now be reachable on port
 
 Apache httpd with mod_wsgi
 ==========================
-Begin by installing Apache httpd with mod_wsgi::
-
-	apt-get install libapache2-mod-wsgi
-
-Then, add a new virtual host or configure the default one with the line::
+Begin by installing Apache httpd with mod_wsgi, then add a new virtual host or
+configure the default one with the line::
 
 	WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
 
