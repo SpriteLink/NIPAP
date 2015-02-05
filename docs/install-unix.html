@@ -11,6 +11,20 @@
 for installing NIPAP on other Unix like systems. Depending on what system you
 are trying to install on, you may need to compile dependencies manually or find
 third party ways of installing them.</p>
+<div class="section" id="download-nipap">
+<h2>Download NIPAP</h2>
+<p>You can download NIPAP as a tar ball from GitHub at
+<a class="reference external" href="https://github.com/SpriteLink/NIPAP/releases">https://github.com/SpriteLink/NIPAP/releases</a> or get the latest source via git:</p>
+<pre class="literal-block">
+git clone https://github.com/SpriteLink/NIPAP.git
+</pre>
+<p>Please do note that the git master branch is a development branch and is not
+recommended for production environments. Check out the tag for the latest
+stable version instead:</p>
+<pre class="literal-block">
+git checkout v0.27.4
+</pre>
+</div>
 <div class="section" id="postgresql">
 <h2>PostgreSQL</h2>
 <p>NIPAP relies on the PostgreSQL database for storage of information. Since
@@ -39,16 +53,11 @@ we need to populate the database with some tables and functions.</p>
 <pre class="literal-block">
 CREATE EXTENSION ip4r;
 </pre>
-<p>Make sure you run that for the correct database ('nipap'). If 'CREATE
-EXTENSION' is not available, ip4r can be loaded manually by locating ip4r.sql
-somewhere in the source directory of ip4r and running it:</p>
-<pre class="literal-block">
-psql -d nipap -f &lt;path to ip4r.sql&gt;
-</pre>
-<p>Continue with the tables file followed by the functions:</p>
+<p>Continue with the functions, tables and triggers files:</p>
 <pre class="literal-block">
 psql -d nipap -f /usr/share/nipap/sql/ip_net.plsql
 psql -d nipap -f /usr/share/nipap/sql/functions.plsql
+psql -d nipap -f /usr/share/nipap/sql/triggers.plsql
 </pre>
 <p>Your database should now be ready to go!</p>
 </div>
@@ -107,18 +116,8 @@ nipap address list 0/0
 <h2>Installation of the web UI</h2>
 <p>The NIPAP web UI performs all operations through the NIPAP XML-RPC API served
 by nipapd, which means they do not need to be installed on the same machine. It
-is built on the Pylons web framework and requires Pylons version &gt;= 1.0. This
-version has unfortunately not yet made it into neither the Debian nor the
-Ubuntu official repositories yet. For you lycky enough to run an apt-based
-distribution, there is a Pylons 1.0 package in the NIPAP 'extra' repository
-which should work on any apt-based system running python 2.5, 2.6 or 2.7.  See
-how to enable the 'extra' repo under the ip4r-section above. With the 'extra'
-repository enabled, the NIPAP web UI is installed using the following command:</p>
-<pre class="literal-block">
-apt-get install nipap-www
-</pre>
-<p>When apt-get has completed the installation, you should have all dependencies
-required for the NIPAP web UI as well as the web UI itself installed.</p>
+is built on the Pylons web framework and requires Pylons version &gt;= 1.0.</p>
+<p>You will find the source in nipap-www</p>
 </div>
 <div class="section" id="configuration-of-the-web-ui">
 <h2>Configuration of the web UI</h2>
@@ -169,11 +168,8 @@ paster serve /etc/nipap/nipap-www.ini
 </div>
 <div class="section" id="apache-httpd-with-mod-wsgi">
 <h1>Apache httpd with mod_wsgi</h1>
-<p>Begin by installing Apache httpd with mod_wsgi:</p>
-<pre class="literal-block">
-apt-get install libapache2-mod-wsgi
-</pre>
-<p>Then, add a new virtual host or configure the default one with the line:</p>
+<p>Begin by installing Apache httpd with mod_wsgi, then add a new virtual host or
+configure the default one with the line:</p>
 <pre class="literal-block">
 WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
 </pre>
