@@ -10,9 +10,9 @@ certifi==14.05.14
 itsdangerous==0.24
 parsedatetime==1.4
 psutil==1.2.1							# rq.filter: >= 1.0,<2.0
-psycopg2==2.5.4
+psycopg2==2.6
 python-dateutil==2.4.0
 python-ldap==2.4.19
 pytz==2014.10
-tornado==4.0.2
+tornado==4.1
 wsgiref==0.1.2
