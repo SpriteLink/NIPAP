@@ -26,7 +26,7 @@ class NipapConfig(ConfigParser.SafeConfigParser):
             # First time - create new instance!
             self._cfg_path = cfg_path
 
-            ConfigParser.ConfigParser.__init__(self, default)
+            ConfigParser.SafeConfigParser.__init__(self, default)
 
             self.read_file()
 
