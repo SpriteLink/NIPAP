@@ -273,6 +273,10 @@ class LdapAuth(BaseAuth):
 
     _ldap_uri = None
     _ldap_basedn = None
+    _ldap_binddn_fmt = None
+    _ldap_search = None
+    _ldap_rw_group = None
+    _ldap_ro_group = None
     _ldap_conn = None
     _authenticated = None
 
@@ -303,6 +307,10 @@ class LdapAuth(BaseAuth):
         BaseAuth.__init__(self, username, password, authoritative_source, name, auth_options)
         self._ldap_uri = self._cfg.get('auth.backends.' + self.auth_backend, 'uri')
         self._ldap_basedn = self._cfg.get('auth.backends.' + self.auth_backend, 'basedn')
+        self._ldap_binddn_fmt = self._cfg.get('auth.backends.' + self.auth_backend, 'binddn_fmt')
+        self._ldap_search = self._cfg.get('auth.backends.' + self.auth_backend, 'search')
+        self._ldap_ro_group = self._cfg.get('auth.backends.' + self.auth_backend, 'ro_group')
+        self._ldap_rw_group = self._cfg.get('auth.backends.' + self.auth_backend, 'rw_group')
 
         self._logger.debug('Creating LdapAuth instance')
 
@@ -323,7 +331,7 @@ class LdapAuth(BaseAuth):
             return self._authenticated
 
         try:
-            self._ldap_conn.simple_bind_s('uid=' + self.username + ',' + self._ldap_basedn, self.password)
+            self._ldap_conn.simple_bind_s(self._ldap_binddn_fmt.format(ldap.dn.escape_dn_chars(self.username)), self.password)
         except ldap.SERVER_DOWN as exc:
             raise AuthError('Could not connect to LDAP server')
         except (ldap.INVALID_CREDENTIALS, ldap.INVALID_DN_SYNTAX,
@@ -336,17 +344,45 @@ class LdapAuth(BaseAuth):
 
         # auth succeeded
         self.authenticated_as = self.username
-        self._authenticated = True
         self.trusted = False
         self.readonly = False
 
         try:
-            res = self._ldap_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, 'uid=' + self.username, ['cn'])
+            res = self._ldap_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)), ['cn','memberOf'])
             self.full_name = res[0][1]['cn'][0]
-        except:
-            self.full_name = ''
+            # check for ro_group membership if ro_group is configured
+            if self._ldap_ro_group:
+                if self._ldap_ro_group in res[0][1]['memberOf']:
+                    self.readonly = True
+            # check for rw_group membership if rw_group is configured
+            if self._ldap_rw_group:
+                if self._ldap_rw_group in res[0][1]['memberOf']:
+                    self.readonly = False
+                else:
+                    # if ro_group is configured, and the user is a member of
+                    # neither the ro_group nor the rw_group, fail authentication.
+                    if self._ldap_ro_group:
+                        if self._ldap_ro_group not in res[0][1]['memberOf']:
+                            self._authenticated = False
+                            return self._authenticated
+                    else:
+                        self.readonly = True
 
-        self._logger.debug('successfully authenticated as %s, username %s' % (self.authenticated_as, self.username))
+        except (ldap.NO_SUCH_OBJECT,ldap.OPERATIONS_ERROR,ldap.FILTER_ERROR,ldap.INVALID_DN_SYNTAX,ldap.SERVER_DOWN) as exc:
+            raise AuthError(exc)
+        except KeyError:
+            raise AuthError('LDAP attribute missing')
+        except IndexError:
+            self.full_name = ''
+            # authentication fails if either ro_group or rw_group are configured
+            # and the user is not found.
+            if self._ldap_rw_group or self._ldap_ro_group:
+                self._authenticated = False
+                return self._authenticated
+
+        self._authenticated = True
+
+        self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s' % (self.authenticated_as, self.username, self.full_name, str(self.readonly)))
         return self._authenticated
 
 
