@@ -309,8 +309,12 @@ class LdapAuth(BaseAuth):
         self._ldap_basedn = self._cfg.get('auth.backends.' + self.auth_backend, 'basedn')
         self._ldap_binddn_fmt = self._cfg.get('auth.backends.' + self.auth_backend, 'binddn_fmt')
         self._ldap_search = self._cfg.get('auth.backends.' + self.auth_backend, 'search')
-        self._ldap_ro_group = self._cfg.get('auth.backends.' + self.auth_backend, 'ro_group')
-        self._ldap_rw_group = self._cfg.get('auth.backends.' + self.auth_backend, 'rw_group')
+        self._ldap_ro_group = None
+        self._ldap_rw_group = None
+        if self._cfg.has_option('auth.backends.' + self.auth_backend, 'ro_group'):
+            self._ldap_ro_group = self._cfg.get('auth.backends.' + self.auth_backend, 'ro_group')
+        if self._cfg.has_option('auth.backends.' + self.auth_backend, 'rw_group'):
+            self._ldap_rw_group = self._cfg.get('auth.backends.' + self.auth_backend, 'rw_group')
 
         self._logger.debug('Creating LdapAuth instance')
 
@@ -352,17 +356,17 @@ class LdapAuth(BaseAuth):
             self.full_name = res[0][1]['cn'][0]
             # check for ro_group membership if ro_group is configured
             if self._ldap_ro_group:
-                if self._ldap_ro_group in res[0][1]['memberOf']:
+                if self._ldap_ro_group in res[0][1].get('memberOf', []):
                     self.readonly = True
             # check for rw_group membership if rw_group is configured
             if self._ldap_rw_group:
-                if self._ldap_rw_group in res[0][1]['memberOf']:
+                if self._ldap_rw_group in res[0][1].get('memberOf', []):
                     self.readonly = False
                 else:
                     # if ro_group is configured, and the user is a member of
                     # neither the ro_group nor the rw_group, fail authentication.
                     if self._ldap_ro_group:
-                        if self._ldap_ro_group not in res[0][1]['memberOf']:
+                        if self._ldap_ro_group not in res[0][1].get('memberOf', []):
                             self._authenticated = False
                             return self._authenticated
                     else:
