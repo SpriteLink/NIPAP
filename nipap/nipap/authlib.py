@@ -72,7 +72,6 @@ from nipapconfig import NipapConfig
 
 # Used by auth modules
 import sqlite3
-import ldap
 import string
 import random
 
@@ -317,6 +316,12 @@ class LdapAuth(BaseAuth):
             self._ldap_rw_group = self._cfg.get('auth.backends.' + self.auth_backend, 'rw_group')
 
         self._logger.debug('Creating LdapAuth instance')
+
+        try:
+            import ldap
+        except ImportError:
+            self._logger.error('Unable to load Python ldap module, please verify it is installed')
+            raise AuthError('Unable to authenticate')
 
         self._logger.debug('LDAP URI: ' + self._ldap_uri)
         self._ldap_conn = ldap.initialize(self._ldap_uri)
