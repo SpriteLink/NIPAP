@@ -136,6 +136,13 @@ tag and write a post on Google+ in the NIPAP community and share it from the
 NIPAP account.
 
 
+Uploading to PyPi
+-----------------
+pynipap should be available on PyPi::
+    cd pynipap
+    python setup.py sdist upload
+
+
 Manually rolling a new version
 ------------------------------
 You probably don't want to roll a new release manually but this might help in
