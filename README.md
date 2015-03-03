@@ -5,6 +5,8 @@ NIPAP
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/SpriteLink/NIPAP/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SpriteLink/NIPAP/?branch=master)
 [![Requirements Status](https://requires.io/github/SpriteLink/NIPAP/requirements.svg?branch=master)](https://requires.io/github/SpriteLink/NIPAP/requirements/?branch=master)
 
+pynipap: [![Latest Version](https://pypip.in/version/pynipap/badge.svg?style=flat)](https://pypi.python.org/pypi/pynipap/) [![Downloads](https://pypip.in/download/pynipap/badge.svg?style=flat)](https://pypi.python.org/pypi/pynipap/)
+
 NIPAP is a sleek, intuitive and powerful IP address management system built to
 efficiently handle large amounts of IP addresses.
 
