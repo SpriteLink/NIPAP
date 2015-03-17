@@ -1,20 +1,20 @@
 CLI configuration
 -----------------
-This is pretty easy, once you have the nipap-cli package installed (or if
-you've installed it manually), a new command, 'nipap', is available to you. It
-reads .nipaprc in your home directory and expects to find things like the host
-address of nipapd and authentication credentials.
+Once you have the nipap-cli package installed (or if you've installed the CLI
+manually), a new command, 'nipap', is available to you. It reads .nipaprc in
+your home directory and expects to find things like the host address of nipapd
+and authentication credentials.
 
-If you haven't already done so, you can create a new user. Execute the
-following on the machine running nipapd to create a new user in the local
-authentication database::
+If you haven't already done so, you can create a new user so that you can
+authenticate against nipapd. Execute the following on the machine running
+nipapd to create a new user in the local authentication database::
 
     nipap-passwd -a *username* -p *username* -n "My CLI user"
 
 Where *username* and *password* is the username and password you wish to
 create. Use the same username and password to fill in your .nipaprc. Here's an
 example .nipaprc that will work towards localhost with the user you just
-crated::
+created (also see nipap-cli/nipaprc for a more complete example)::
 
     [global]
     hostname = localhost
