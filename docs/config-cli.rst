@@ -21,13 +21,20 @@ crated::
     port     = 1337
     username = *username*
     password = *password*
-    default_vrf = none
+    default_vrf_rt = none
+    default_list_vrf_rt = all
 
 Naturally, if you are running the CLI and nipapd on two different machines,
 'hostname' will need to be set to the machine where nipapd is running.
 
-The last option sets which VRF is the default to work with if nothin else is
-specified.
+'default_vrf_rt' specifies the RT of the VRF used as default by 'nipap address
+add/modify/remove/view' commands when no other VRF RT is explicitly specified
+on the command line. It is also used as default VRF when expanding a pool with
+a new prefix for the first time. 'nona' or '-' means VRF 'Default' (RT: -)
+
+'default_list_vrf_rt' is used by 'nipap address list' which per default will
+search in the following VRF RT when no VRF RT is explicitly specified on the
+command line.  'all' means that searches will include results from all VRFs.
 
 Let's try adding a prefix too::
 
