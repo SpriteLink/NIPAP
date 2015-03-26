@@ -3,6 +3,7 @@
 import fcntl
 import os
 import re
+import socket
 import sys
 
 import ConfigParser
