@@ -32,7 +32,10 @@
 user = nobody
 group = nogroup
 
-listen = 0.0.0.0                ; IP address to listen on.
+# listen on all addresses, both IPv4 and IPv6 per default. Note that if you
+# want to listen to an IPv4 address you need to specify it as a IPv4-mapped
+# IPv6 address, ie to listen on 127.0.0.1, specify ::FFFF:127.0.0.1
+listen = ::                     ; IPv6 address to listen on.
 port = 43                       ; XML-RPC listen port (change requires restart)
 pid_file = /var/run/nipap-whoisd/whoisd.pid
 
