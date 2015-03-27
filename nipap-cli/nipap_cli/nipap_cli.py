@@ -220,6 +220,30 @@ def list_pool(arg, opts, shell_opts):
         offset += limit
 
 
+def _parse_interp_vrf(query, indent=1):
+    if 'interpretation' not in query:
+        return
+    interp = query['interpretation']
+    text = None
+    text2 = None
+    if query['operator'] == 'and':
+        text = "AND"
+    elif interp['interpretation'] == 'unclosed quote':
+        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
+        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+    elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
+        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
+        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+    else:
+        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+    if text:
+        print "%s- %s" % (' '*indent, text)
+    if text2:
+        print "%s   %s" % (' '*indent, text2)
+    if type(query['val1']) is dict:
+        _parse_interp_vrf(query['val1'], indent+2)
+    if type(query['val2']) is dict:
+        _parse_interp_vrf(query['val2'], indent+2)
 
 def list_vrf(arg, opts, shell_opts):
     """ List VRFs matching a search criteria
@@ -235,8 +259,12 @@ def list_vrf(arg, opts, shell_opts):
         res = VRF.smart_search(search_string, { 'offset': offset, 'max_result': limit })
         if offset == 0:
             if len(res['result']) == 0:
-                print "No matching VRFs found."
+                print "No VRFs matching '%s' found." % search_string
                 return
+
+            if shell_opts.show_interpretation:
+                print "Query interpretation:"
+                _parse_interp_vrf(res['interpretation'])
 
             print "%-16s %-22s %-2s %-40s" % ("VRF RT", "Name", "#", "Description")
             print "--------------------------------------------------------------------------------"
@@ -256,7 +284,7 @@ def list_vrf(arg, opts, shell_opts):
         offset += limit
 
 
-def _parse_interp(query, indent=1):
+def _parse_interp_prefix(query, indent=-5, pandop=False):
     if 'interpretation' not in query:
         return
     interp = query['interpretation']
@@ -304,9 +332,9 @@ def _parse_interp(query, indent=1):
     if text2:
         print "%s   %s" % (' '*indent, text2)
     if type(query['val1']) is dict:
-        _parse_interp(query['val1'], indent+2)
+        _parse_interp_prefix(query['val1'], indent+2)
     if type(query['val2']) is dict:
-        _p_interp(query['val2'], indent+2)
+        _parse_interp_prefix(query['val2'], indent+2)
 
 
 def list_prefix(arg, opts, shell_opts):
@@ -348,7 +376,7 @@ def list_prefix(arg, opts, shell_opts):
 
             if shell_opts.show_interpretation:
                 print "Query interpretation:"
-                _p_interp(res['interpretation'])
+                _parse_interp_prefix(res['interpretation'])
 
             # Guess the width of the prefix column by looking at the initial
             # result set.
