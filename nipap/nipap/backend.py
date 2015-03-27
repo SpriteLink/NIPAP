@@ -1298,7 +1298,6 @@ class Nipap:
             # tags
             if re.match('#', query_str_part['string']):
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-
                 query_parts.append({
                     'interpretation': {
                         'string': query_str_part['string'],
@@ -1321,7 +1320,6 @@ class Nipap:
 
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-
                 query_parts.append({
                     'interpretation': {
                         'string': query_str_part['string'],
@@ -1926,21 +1924,44 @@ class Nipap:
 
         self._logger.debug("smart_search_pool query string: %s" % query_str)
 
-        # find query parts
         try:
-            query_str_parts = self._get_query_parts(query_str)
+            query = self._parse_pool_query(query_str)
         except NipapValueError:
             return {
-                'interpretation': [
-                    {
-                        'string': query_str,
-                        'interpretation': 'unclosed quote',
-                        'attribute': 'text'
-                    }
-                ],
-                'search_options': search_options,
-                'result': []
+                    'interpretation': [
+                        {
+                            'string': query_str,
+                            'interpretation': 'unclosed quote',
+                            'attribute': 'text'
+                        }
+                    ],
+                    'search_options': search_options,
+                    'result': []
+                }
+
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
             }
+
+        self._logger.debug("smart_search_pool; query expanded to: %s" % str(query))
+
+        search_result = self.search_pool(auth, query, search_options)
+        search_result['interpretation'] = query
+
+        return search_result
+
+
+    def _parse_pool_query(self, query_str):
+        """ Parse a smart search query for pools
+
+            This is a helper function to smart_search_pool for easier unit
+            testing of the parser.
+        """
+        # find query parts
+        query_str_parts = self._get_query_parts(query_str)
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -1949,11 +1970,13 @@ class Nipap:
             # tags
             if re.match('#', query_str_part['string']):
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-                query_str_part['interpretation'] = '(inherited) tag'
-                query_str_part['attribute'] = 'tag'
-
-                query_str_part['operator'] = 'equals_any'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': '(inherited) tag',
+                        'attribute': 'tag',
+                        'operator': 'equals_any',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'equals_any',
@@ -1969,10 +1992,13 @@ class Nipap:
 
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'name or description'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'text',
+                        'attribute': 'name or description',
+                        'operator': 'regex',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'regex_match',
@@ -1994,24 +2020,16 @@ class Nipap:
         if len(query_parts) > 1:
             for query_part in query_parts[1:]:
                 query = {
+                    'interpretation': {
+                        'interpretation': 'and',
+                        'operator': 'and',
+                    },
                     'operator': 'and',
                     'val1': query_part,
                     'val2': query
                 }
 
-        if extra_query is not None:
-            query = {
-                'operator': 'and',
-                'val1': query,
-                'val2': extra_query
-            }
-
-        self._logger.debug("Expanded to: %s" % str(query))
-
-        search_result = self.search_pool(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
-
-        return search_result
+        return query
 
 
 
@@ -3312,7 +3330,7 @@ class Nipap:
                 'val2': extra_query
             }
 
-        self._logger.debug("Expanded to: %s" % str(query))
+        self._logger.debug("smart_search_prefix: query expanded to: %s" % str(query))
 
         search_result = self.search_prefix(auth, query, search_options)
         search_result['interpretation'] = query
@@ -3338,7 +3356,6 @@ class Nipap:
             # tags
             if re.match('#', query_str_part['string']):
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-
                 query_parts.append({
                     'interpretation': {
                         'string': query_str_part['string'],
