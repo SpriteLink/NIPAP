@@ -1251,15 +1251,9 @@ class Nipap:
 
         self._logger.debug("smart_search_vrf query string: %s" % query_str)
 
-        if query_str is None:
-            raise NipapValueError("'query_string' must not be None")
-
-        # find query parts
-        query_str_parts = []
         try:
-            for part in shlex.split(query_str):
-                query_str_parts.append({ 'string': part })
-        except:
+            query = self._parse_vrf_query(query_str)
+        except NipapValueError:
             return {
                 'interpretation': [
                     {
@@ -1272,12 +1266,30 @@ class Nipap:
                 'result': []
             }
 
-        # Handle empty search.
-        # We need something to iterate over, but shlex.split() returns
-        # zero-element list for an empty string, so we have to append one
-        # manually
-        if len(query_str_parts) == 0:
-            query_str_parts.append({ 'string': '' })
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
+            }
+
+        self._logger.debug("smart_search_vrf; query expanded to: %s" % str(query))
+
+        search_result = self.search_vrf(auth, query, search_options)
+        search_result['interpretation'] = query
+
+        return search_result
+
+
+
+    def _parse_vrf_query(self, query_str):
+        """ Parse a smart search query for VRFs
+
+            This is a helper function to smart_search_vrf for easier unit
+            testing of the parser.
+        """
+        # find query parts
+        query_str_parts = self._get_query_parts(query_str)
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -1286,11 +1298,14 @@ class Nipap:
             # tags
             if re.match('#', query_str_part['string']):
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-                query_str_part['interpretation'] = '(inherited) tag'
-                query_str_part['attribute'] = 'tag'
 
-                query_str_part['operator'] = 'equals_any'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': '(inherited) tag',
+                        'attribute': 'tag',
+                        'operator': 'equals_any',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'equals_any',
@@ -1306,10 +1321,14 @@ class Nipap:
 
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'vrf or name or description'
+
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'text',
+                        'attribute': 'vrf or name or description',
+                        'operator': 'regex',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'or',
@@ -1339,24 +1358,16 @@ class Nipap:
         if len(query_parts) > 1:
             for query_part in query_parts[1:]:
                 query = {
+                    'interpretation': {
+                        'interpretation': 'and',
+                        'operator': 'and',
+                    },
                     'operator': 'and',
                     'val1': query_part,
                     'val2': query
                 }
 
-        if extra_query is not None:
-            query = {
-                'operator': 'and',
-                'val1': query,
-                'val2': extra_query
-            }
-
-        self._logger.debug("smart_search_vrf; query expanded to: %s" % str(query))
-
-        search_result = self.search_vrf(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
-
-        return search_result
+        return query
 
 
 
@@ -3280,7 +3291,7 @@ class Nipap:
         self._logger.debug("smart_search_prefix query string: %s" % query_str)
 
         try:
-            query, interpretation = self._parse_prefix_query(query_str)
+            query = self._parse_prefix_query(query_str)
         except NipapValueError:
             return {
                 'interpretation': [
@@ -3499,7 +3510,7 @@ class Nipap:
                     'val2': query
                 }
 
-        return query, query_str_parts
+        return query
 
 
 
