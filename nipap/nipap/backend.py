@@ -3912,21 +3912,45 @@ class Nipap:
 
         self._logger.debug("smart_search_asn called; query_str: %s" % query_str)
 
-        # find query parts
         try:
-            query_str_parts = self._get_query_parts(query_str)
+            query = self._parse_asn_query(query_str)
         except NipapValueError:
             return {
-                'interpretation': [
-                    {
-                        'string': query_str,
-                        'interpretation': 'unclosed quote',
-                        'attribute': 'text'
-                    }
-                ],
-                'search_options': search_options,
-                'result': []
+                    'interpretation': [
+                        {
+                            'string': query_str,
+                            'interpretation': 'unclosed quote',
+                            'attribute': 'text'
+                        }
+                    ],
+                    'search_options': search_options,
+                    'result': []
+                }
+
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
             }
+
+        self._logger.debug("smart_search_asn; query expanded to: %s" % str(query))
+
+        search_result = self.search_asn(auth, query, search_options)
+        search_result['interpretation'] = query
+
+        return search_result
+
+
+
+    def _parse_asn_query(self, query_str):
+        """ Parse a smart search query for ASNs
+
+            This is a helper function to smart_search_pool for easier unit
+            testing of the parser.
+        """
+        # find query parts
+        query_str_parts = self._get_query_parts(query_str)
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -3940,10 +3964,13 @@ class Nipap:
 
             if is_int:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as integer (ASN)")
-                query_str_part['interpretation'] = 'asn'
-                query_str_part['operator'] = 'equals'
-                query_str_part['attribute'] = 'asn'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'asn',
+                        'attribute': 'asn',
+                        'operator': 'equals',
+                    },
                     'operator': 'equals',
                     'val1': 'asn',
                     'val2': query_str_part['string']
@@ -3951,10 +3978,13 @@ class Nipap:
 
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'name'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'text',
+                        'attribute': 'name',
+                        'operator': 'regex',
+                    },
                     'operator': 'regex_match',
                     'val1': 'name',
                     'val2': query_str_part['string']
@@ -3968,24 +3998,16 @@ class Nipap:
         if len(query_parts) > 1:
             for query_part in query_parts[1:]:
                 query = {
+                    'interpretation': {
+                        'interpretation': 'and',
+                        'operator': 'and',
+                    },
                     'operator': 'and',
                     'val1': query_part,
                     'val2': query
                 }
 
-        if extra_query is not None:
-            query = {
-                'operator': 'and',
-                'val1': query,
-                'val2': extra_query
-            }
-
-        self._logger.debug("Expanded to: %s" % str(query))
-
-        search_result = self.search_asn(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
-
-        return search_result
+        return query
 
 
 
