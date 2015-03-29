@@ -1561,7 +1561,7 @@ class TestSmartParser(unittest.TestCase):
     """
     maxDiff = None
 
-    def test_test1(self):
+    def test_prefix1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('foo')
@@ -1613,7 +1613,7 @@ class TestSmartParser(unittest.TestCase):
 
 
 
-    def test_test2(self):
+    def test_prefix2(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('1.3.3.0/24')
@@ -1633,7 +1633,7 @@ class TestSmartParser(unittest.TestCase):
 
 
 
-    def test_test3(self):
+    def test_prefix3(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('1.3.3.0/24 foo')
@@ -1703,11 +1703,208 @@ class TestSmartParser(unittest.TestCase):
 
 
 
-    def test_test4(self):
+    def test_prefix4(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'No closing quotation'):
             query, interp = n._parse_prefix_query('"')
+
+
+
+    def test_vrf1(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_vrf_query('foo')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'vrf or name or description',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': u'foo'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': u'foo'
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'description',
+                        'val2': u'foo'
+                        }
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'rt',
+                    'val2': u'foo'
+                }
+            }
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_vrf2(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_vrf_query('123:456')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'vrf or name or description',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': u'123:456'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': u'123:456'
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'description',
+                        'val2': u'123:456'
+                        }
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'rt',
+                    'val2': u'123:456'
+                }
+            }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_vrf3(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_vrf_query('#bar')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'tag',
+                    'interpretation': '(inherited) tag',
+                    'operator': 'equals_any',
+                    'string': u'#bar'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'equals_any',
+                    'val1': 'tags',
+                    'val2': u'bar'
+                },
+                'val2': {
+                    'operator': 'equals_any',
+                    'val1': 'inherited_tags',
+                    'val2': u'bar'
+                }
+            }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_vrf4(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'No closing quotation'):
+            query, interp = n._parse_vrf_query('"')
+
+
+
+    def test_pool1(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_pool_query('foo')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'name or description',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': u'foo'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'regex_match',
+                    'val1': 'name',
+                    'val2': u'foo'
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'description',
+                    'val2': u'foo'
+                }
+            }
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_pool2(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_pool_query('123:456')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'name or description',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': u'123:456'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'regex_match',
+                    'val1': 'name',
+                    'val2': u'123:456'
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'description',
+                    'val2': u'123:456'
+                }
+            }
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_pool3(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_pool_query('#bar')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'tag',
+                    'interpretation': '(inherited) tag',
+                    'operator': 'equals_any',
+                    'string': u'#bar'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'equals_any',
+                    'val1': 'tags',
+                    'val2': u'bar'
+                },
+                'val2': {
+                    'operator': 'equals_any',
+                    'val1': 'inherited_tags',
+                    'val2': u'bar'
+                }
+            }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_pool4(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'No closing quotation'):
+            query, interp = n._parse_pool_query('"')
 
 
 
