@@ -209,13 +209,13 @@ def list_pool(arg, opts, shell_opts):
     while True:
         res = Pool.smart_search(search_string, { 'offset': offset, 'max_result': limit }, vrf_q)
         if offset == 0: # first time in loop?
-            if len(res['result']) == 0:
-                print "No matching pools found"
-                return
-
             if shell_opts.show_interpretation:
                 print "Query interpretation:"
                 _parse_interp_pool(res['interpretation'])
+
+            if len(res['result']) == 0:
+                print "No matching pools found"
+                return
 
             print "%-19s %-2s %-39s %-13s  %-8s %s" % (
                 "Name", "#", "Description", "Default type", "4 / 6", "Implied VRF"
@@ -287,13 +287,13 @@ def list_vrf(arg, opts, shell_opts):
     while True:
         res = VRF.smart_search(search_string, { 'offset': offset, 'max_result': limit })
         if offset == 0:
-            if len(res['result']) == 0:
-                print "No VRFs matching '%s' found." % search_string
-                return
-
             if shell_opts.show_interpretation:
                 print "Query interpretation:"
                 _parse_interp_vrf(res['interpretation'])
+
+            if len(res['result']) == 0:
+                print "No VRFs matching '%s' found." % search_string
+                return
 
             print "%-16s %-22s %-2s %-40s" % ("VRF RT", "Name", "#", "Description")
             print "--------------------------------------------------------------------------------"
@@ -399,13 +399,13 @@ def list_prefix(arg, opts, shell_opts):
             vrf_q)
 
         if offset == 0: # first time in loop?
-            if len(res['result']) == 0:
-                print "No addresses matching '%s' found." % search_string
-                return
-
             if shell_opts.show_interpretation:
                 print "Query interpretation:"
                 _parse_interp_prefix(res['interpretation'])
+
+            if len(res['result']) == 0:
+                print "No addresses matching '%s' found." % search_string
+                return
 
             # Guess the width of the prefix column by looking at the initial
             # result set.
