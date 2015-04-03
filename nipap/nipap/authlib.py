@@ -75,6 +75,12 @@ import sqlite3
 import string
 import random
 
+try:
+    import ldap
+except ImportError:
+    ldap = None
+
+
 class AuthFactory:
     """ An factory for authentication backends.
     """
@@ -304,29 +310,39 @@ class LdapAuth(BaseAuth):
             auth_options = {}
 
         BaseAuth.__init__(self, username, password, authoritative_source, name, auth_options)
-        self._ldap_uri = self._cfg.get('auth.backends.' + self.auth_backend, 'uri')
-        self._ldap_basedn = self._cfg.get('auth.backends.' + self.auth_backend, 'basedn')
-        self._ldap_binddn_fmt = self._cfg.get('auth.backends.' + self.auth_backend, 'binddn_fmt')
-        self._ldap_search = self._cfg.get('auth.backends.' + self.auth_backend, 'search')
+        base_auth_backend = 'auth.backends.' + self.auth_backend
+        self._ldap_uri = self._cfg.get(base_auth_backend, 'uri')
+        self._ldap_basedn = self._cfg.get(base_auth_backend, 'basedn')
+        self._ldap_binddn_fmt = self._cfg.get(base_auth_backend, 'binddn_fmt')
+        self._ldap_search = self._cfg.get(base_auth_backend, 'search')
+        self._ldap_tls = False
+
+        if self._cfg.has_option(base_auth_backend, 'tls'):
+            self._ldap_tls = self._cfg.getboolean(base_auth_backend, 'tls')
+
         self._ldap_ro_group = None
         self._ldap_rw_group = None
-        if self._cfg.has_option('auth.backends.' + self.auth_backend, 'ro_group'):
-            self._ldap_ro_group = self._cfg.get('auth.backends.' + self.auth_backend, 'ro_group')
-        if self._cfg.has_option('auth.backends.' + self.auth_backend, 'rw_group'):
-            self._ldap_rw_group = self._cfg.get('auth.backends.' + self.auth_backend, 'rw_group')
+        if self._cfg.has_option(base_auth_backend, 'ro_group'):
+            self._ldap_ro_group = self._cfg.get(base_auth_backend, 'ro_group')
+        if self._cfg.has_option(base_auth_backend, 'rw_group'):
+            self._ldap_rw_group = self._cfg.get(base_auth_backend, 'rw_group')
 
         self._logger.debug('Creating LdapAuth instance')
 
-        try:
-            import ldap
-        except ImportError:
+        if not ldap:
             self._logger.error('Unable to load Python ldap module, please verify it is installed')
             raise AuthError('Unable to authenticate')
 
         self._logger.debug('LDAP URI: ' + self._ldap_uri)
         self._ldap_conn = ldap.initialize(self._ldap_uri)
 
-
+        if self._ldap_tls:
+            try:
+                self._ldap_conn.start_tls_s()
+            except (ldap.CONNECT_ERROR, ldap.SERVER_DOWN) as exc:
+                self._logger.error('Attempted to start TLS with ldap server but failed.')
+                self._logger.exception(exc)
+                raise AuthError('Unable to establish secure connection to ldap server')
 
     def authenticate(self):
         """ Verify authentication.
