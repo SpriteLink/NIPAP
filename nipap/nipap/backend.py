@@ -3910,7 +3910,7 @@ class Nipap:
 
         return { 'search_options': search_options, 'result': result }
 
-    def audit_log(self, auth, action, message,
+    def audit_log(self, auth, action, message=None,
                   vrf=None, pool=None, prefix=None):
         # write to audit table
         audit_params = {
@@ -3918,23 +3918,29 @@ class Nipap:
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added VRF %s with attr: %s' % (vrf['rt'], str(vrf))
+            'description': message or 'no message provided',
         }
 
-        if isinstance(vrf, dict):
+        self._logger.info(
+            'USER:{username}({full_name})@{authenticated_as} '
+            'SOURCE:{authoritative_source} ACTION:{op} '
+            'DESC:{description}'.format(op=action, **audit_params))
+
+        # add in addition details for the DB portion
+        if vrf:
             audit_params.update({
-                'vrf_id': vrf['id'],
-                'vrf_rt': vrf['rt'],
-                'vrf_name': vrf['name'],
+                'vrf_id': vrf.get('vrf_id') or vrf.get('id'),
+                'vrf_rt': vrf.get('vrf_rt') or vrf.get('rt'),
+                'vrf_name': vrf.get('vrf_name') or vrf.get('name'),
             })
 
-        if isinstance(pool, dict):
+        if pool:
             audit_params.update({
                 'pool_id': pool['id'],
-                'name_name': pool['name'],
+                'pool_name': pool['name'],
             })
 
-        if isinstance(prefix, dict):
+        if prefix:
             audit_params.update({
                 'prefix_id': prefix['id'],
                 'prefix_prefix': prefix['prefix'],
