@@ -4,6 +4,10 @@
 
     pynipap is a Python client library for the NIPAP IP address planning
     system. It is structured as a simple ORM.
+    To make it easy to maintain it's quite "thin", passing many arguments
+    straight through to the backend. Thus, also the pynipap-specific
+    documentation is quite thin. For in-depth information please look at the
+    main :py:mod:`NIPAP API documentation <nipap.backend>`.
 
     There are three ORM-classes:
 
@@ -12,8 +16,8 @@
     * :class:`Prefix`
 
     Each of these maps to the NIPAP objects with the same name. See the main
-    NIPAP API documentation for an overview of the different object types and
-    what they are used for.
+    :py:mod:`NIPAP API documentation <nipap.backend>` for an overview of the
+    different object types and what they are used for.
 
     There are also a few supporting classes:
 
@@ -233,8 +237,8 @@ class XMLRPCConnection:
 class Pynipap:
     """ A base class for the pynipap model classes.
 
-        All Pynipap classes which maps to data in NIPAP (:py:class:VRF,
-        :py:class:Pool, :py:class:Prefix) extends this class.
+        All Pynipap classes which maps to data in NIPAP (:py:class:`VRF`,
+        :py:class:`Pool`, :py:class:`Prefix`) extends this class.
     """
 
     _logger = None
@@ -294,7 +298,10 @@ class Tag(Pynipap):
 
     @classmethod
     def search(cls, query, search_opts=None):
-        """ Search VRFs.
+        """ Search tags.
+
+            For more information, see the backend function
+            :py:func:`nipap.backend.Nipap.search_tag`.
         """
 
         if search_opts is None:
@@ -369,6 +376,10 @@ class VRF(Pynipap):
     @classmethod
     def list(cls, vrf=None):
         """ List VRFs.
+
+            Maps to the function :py:func:`nipap.backend.Nipap.list_vrf` in the
+            backend. Please see the documentation for the backend function for
+            information regarding input arguments and return values.
         """
 
         if vrf is None:
@@ -451,6 +462,10 @@ class VRF(Pynipap):
     @classmethod
     def search(cls, query, search_opts=None):
         """ Search VRFs.
+
+            Maps to the function :py:func:`nipap.backend.Nipap.search_vrf` in
+            the backend. Please see the documentation for the backend function
+            for information regarding input arguments and return values.
         """
 
         if search_opts is None:
@@ -479,6 +494,11 @@ class VRF(Pynipap):
     @classmethod
     def smart_search(cls, query_string, search_options=None, extra_query = None):
         """ Perform a smart VRF search.
+
+            Maps to the function
+            :py:func:`nipap.backend.Nipap.smart_search_vrf` in the backend.
+            Please see the documentation for the backend function for
+            information regarding input arguments and return values.
         """
 
         if search_options is None:
@@ -508,6 +528,15 @@ class VRF(Pynipap):
 
     def save(self):
         """ Save changes made to object to NIPAP.
+
+            If the object represents a new VRF unknown to NIPAP (attribute `id`
+            is `None`) this function maps to the function
+            :py:func:`nipap.backend.Nipap.add_vrf` in the backend, used to
+            create a new VRF. Otherwise it maps to the function
+            :py:func:`nipap.backend.Nipap.edit_vrf` in the backend, used to
+            modify the VRF. Please see the documentation for the backend
+            functions for information regarding input arguments and return
+            values.
         """
 
         xmlrpc = XMLRPCConnection()
@@ -557,6 +586,10 @@ class VRF(Pynipap):
 
     def remove(self):
         """ Remove VRF.
+
+            Maps to the function :py:func:`nipap.backend.Nipap.remove_vrf` in
+            the backend. Please see the documentation for the backend function
+            for information regarding input arguments and return values.
         """
 
         xmlrpc = XMLRPCConnection()
@@ -607,6 +640,15 @@ class Pool(Pynipap):
 
     def save(self):
         """ Save changes made to pool to NIPAP.
+
+            If the object represents a new pool unknown to NIPAP (attribute
+            `id` is `None`) this function maps to the function
+            :py:func:`nipap.backend.Nipap.add_pool` in the backend, used to
+            create a new pool. Otherwise it maps to the function
+            :py:func:`nipap.backend.Nipap.edit_pool` in the backend, used to
+            modify the pool. Please see the documentation for the backend
+            functions for information regarding input arguments and return
+            values.
         """
 
         xmlrpc = XMLRPCConnection()
@@ -658,6 +700,10 @@ class Pool(Pynipap):
 
     def remove(self):
         """ Remove pool.
+
+            Maps to the function :py:func:`nipap.backend.Nipap.remove_pool` in
+            the backend. Please see the documentation for the backend function
+            for information regarding input arguments and return values.
         """
 
         xmlrpc = XMLRPCConnection()
@@ -699,6 +745,10 @@ class Pool(Pynipap):
     @classmethod
     def search(cls, query, search_opts=None):
         """ Search pools.
+
+            Maps to the function :py:func:`nipap.backend.Nipap.search_pool` in
+            the backend. Please see the documentation for the backend function
+            for information regarding input arguments and return values.
         """
 
         if search_opts is None:
@@ -728,6 +778,11 @@ class Pool(Pynipap):
     @classmethod
     def smart_search(cls, query_string, search_options=None, extra_query = None):
         """ Perform a smart pool search.
+
+            Maps to the function
+            :py:func:`nipap.backend.Nipap.smart_search_pool` in the backend.
+            Please see the documentation for the backend function for
+            information regarding input arguments and return values.
         """
 
         if search_options is None:
@@ -799,6 +854,10 @@ class Pool(Pynipap):
     @classmethod
     def list(self, spec=None):
         """ List pools.
+
+            Maps to the function :py:func:`nipap.backend.Nipap.list_pool` in
+            the backend. Please see the documentation for the backend function
+            for information regarding input arguments and return values.
         """
 
         if spec is None:
@@ -889,6 +948,11 @@ class Prefix(Pynipap):
     @classmethod
     def find_free(cls, vrf, args):
         """ Finds a free prefix.
+
+            Maps to the function
+            :py:func:`nipap.backend.Nipap.find_free_prefix` in the backend.
+            Please see the documentation for the backend function for
+            information regarding input arguments and return values.
         """
 
         xmlrpc = XMLRPCConnection()
@@ -919,6 +983,11 @@ class Prefix(Pynipap):
     @classmethod
     def search(cls, query, search_opts=None):
         """ Search for prefixes.
+
+            Maps to the function :py:func:`nipap.backend.Nipap.search_prefix`
+            in the backend. Please see the documentation for the backend
+            function for information regarding input arguments and return
+            values.
         """
 
         if search_opts is None:
@@ -948,6 +1017,11 @@ class Prefix(Pynipap):
     @classmethod
     def smart_search(cls, query_string, search_options=None, extra_query = None):
         """ Perform a smart prefix search.
+
+            Maps to the function
+            :py:func:`nipap.backend.Nipap.smart_search_prefix` in the backend.
+            Please see the documentation for the backend function for
+            information regarding input arguments and return values.
         """
 
         if search_options is None:
@@ -979,6 +1053,10 @@ class Prefix(Pynipap):
     @classmethod
     def list(cls, spec=None):
         """ List prefixes.
+
+            Maps to the function :py:func:`nipap.backend.Nipap.list_prefix` in
+            the backend. Please see the documentation for the backend function
+            for information regarding input arguments and return values.
         """
 
         if spec is None:
@@ -1004,6 +1082,15 @@ class Prefix(Pynipap):
 
     def save(self, args=None):
         """ Save prefix to NIPAP.
+
+            If the object represents a new prefix unknown to NIPAP (attribute
+            `id` is `None`) this function maps to the function
+            :py:func:`nipap.backend.Nipap.add_prefix` in the backend, used to
+            create a new prefix. Otherwise it maps to the function
+            :py:func:`nipap.backend.Nipap.edit_prefix` in the backend, used to
+            modify the VRF. Please see the documentation for the backend
+            functions for information regarding input arguments and return
+            values.
         """
 
         if args is None:
@@ -1110,6 +1197,11 @@ class Prefix(Pynipap):
 
     def remove(self, recursive = False):
         """ Remove the prefix.
+
+            Maps to the function :py:func:`nipap.backend.Nipap.remove_prefix`
+            in the backend. Please see the documentation for the backend
+            function for information regarding input arguments and return
+            values.
         """
 
         xmlrpc = XMLRPCConnection()
@@ -1195,6 +1287,10 @@ class Prefix(Pynipap):
 
 def nipapd_version():
     """ Get version of nipapd we're connected to.
+
+        Maps to the function :py:func:`nipap.xmlrpc.NipapXMLRPC.version` in the
+        XML-RPC API. Please see the documentation for the XML-RPC function for
+        information regarding the return value.
     """
 
     xmlrpc = XMLRPCConnection()
@@ -1210,6 +1306,10 @@ def nipapd_version():
 
 def nipap_db_version():
     """ Get schema version of database we're connected to.
+
+        Maps to the function :py:func:`nipap.backend.Nipap._get_db_version` in
+        the backend. Please see the documentation for the backend function for
+        information regarding the return value.
     """
 
     xmlrpc = XMLRPCConnection()
