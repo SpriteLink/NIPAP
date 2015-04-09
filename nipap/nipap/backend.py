@@ -331,6 +331,12 @@ class Nipap:
 
         from nipapconfig import NipapConfig
         self._cfg = NipapConfig()
+        self._audit_syslog = False
+        if self._cfg.has_option('nipapd', 'audit_syslog'):
+            self._audit_syslog = self._cfg.getboolean('nipapd', 'audit_syslog')
+        self._audit_db = True
+        if self._cfg.has_option('nipapd', 'audit_db'):
+            self._audit_db = self._cfg.getboolean('nipapd', 'audit_db')
 
         self._connect_db()
 
@@ -3921,33 +3927,35 @@ class Nipap:
             'description': message or 'no message provided',
         }
 
-        self._logger.info(
-            'USER:{username}({full_name})@{authenticated_as} '
-            'SOURCE:{authoritative_source} ACTION:{op} '
-            'DESC:{description}'.format(op=action, **audit_params))
+        if self._audit_syslog:
+            self._logger.info(
+                'USER:{username}({full_name})@{authenticated_as} '
+                'SOURCE:{authoritative_source} ACTION:{op} '
+                'DESC:{description}'.format(op=action, **audit_params))
 
-        # add in addition details for the DB portion
-        if vrf:
-            audit_params.update({
-                'vrf_id': vrf.get('vrf_id') or vrf.get('id'),
-                'vrf_rt': vrf.get('vrf_rt') or vrf.get('rt'),
-                'vrf_name': vrf.get('vrf_name') or vrf.get('name'),
-            })
+        if self._audit_db:
+            # add in addition details for the DB portion
+            if vrf:
+                audit_params.update({
+                    'vrf_id': vrf.get('vrf_id') or vrf.get('id'),
+                    'vrf_rt': vrf.get('vrf_rt') or vrf.get('rt'),
+                    'vrf_name': vrf.get('vrf_name') or vrf.get('name'),
+                })
 
-        if pool:
-            audit_params.update({
-                'pool_id': pool['id'],
-                'pool_name': pool['name'],
-            })
+            if pool:
+                audit_params.update({
+                    'pool_id': pool['id'],
+                    'pool_name': pool['name'],
+                })
 
-        if prefix:
-            audit_params.update({
-                'prefix_id': prefix['id'],
-                'prefix_prefix': prefix['prefix'],
-            })
+            if prefix:
+                audit_params.update({
+                    'prefix_id': prefix['id'],
+                    'prefix_prefix': prefix['prefix'],
+                })
 
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 class NipapError(Exception):
