@@ -29,7 +29,7 @@ COMMENT ON COLUMN ip_net_asn.name IS 'ASN name';
 CREATE TABLE ip_net_vrf (
 	id serial PRIMARY KEY,
 	rt text,
-	name text,
+	name text NOT NULL,
 	description text,
 	num_prefixes_v4 numeric(40) DEFAULT 0,
 	num_prefixes_v6 numeric(40) DEFAULT 0,
@@ -52,7 +52,7 @@ CREATE UNIQUE INDEX ip_net_vrf__unique_name__index ON ip_net_vrf ((''::TEXT)) WH
 INSERT INTO ip_net_vrf (id, rt, name, description) VALUES (0, NULL, 'default', 'The default VRF, typically the Internet.');
 
 CREATE UNIQUE INDEX ip_net_vrf__rt__index ON ip_net_vrf (rt) WHERE rt IS NOT NULL;
-CREATE UNIQUE INDEX ip_net_vrf__name__index ON ip_net_vrf (name) WHERE name IS NOT NULL;
+CREATE UNIQUE INDEX ip_net_vrf__name__index ON ip_net_vrf (lower(name)) WHERE name IS NOT NULL;
 
 COMMENT ON TABLE ip_net_vrf IS 'IP Address VRFs';
 COMMENT ON INDEX ip_net_vrf__rt__index IS 'VRF RT';
@@ -80,7 +80,7 @@ COMMENT ON COLUMN ip_net_vrf.tags IS 'Tags associated with the VRF';
 --
 CREATE TABLE ip_net_pool (
 	id serial PRIMARY KEY,
-	name text NOT NULL UNIQUE,
+	name text NOT NULL,
 	description text,
 	default_type ip_net_plan_type,
 	ipv4_default_prefix_length integer,
@@ -102,6 +102,8 @@ CREATE TABLE ip_net_pool (
 	tags text[] DEFAULT '{}',
 	avps hstore NOT NULL DEFAULT ''
 );
+
+CREATE UNIQUE INDEX ON ip_net_pool__name__index ON (lower(name));
 
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 
