@@ -114,9 +114,11 @@ case "$1" in
 	status)
 		RUNNING=$(running)
 		if [ -n "$RUNNING" ]; then
-			log_action_msg "NIPAPd XML-RPC server running with PID $RUNNING"
+			log_success_msg "NIPAPd XML-RPC server running with PID $RUNNING"
+			exit 0
 		else
-			log_action_msg "NIPAPd XML-RPC not running"
+			log_failure_msg "NIPAPd XML-RPC not running"
+			exit 3
 		fi
 		;;
 	*)
