@@ -53,13 +53,12 @@ if __name__ == '__main__':
     nullh = NullHandler()
     logger.addHandler(nullh)
 
-    import optparse
-    parser = optparse.OptionParser()
-    parser.add_option("-f", "--force", action="store_true", help="disable interactive prompting of actions")
-    parser.add_option("--show-interpretation", action="store_true", help="show search interpretation")
-    parser.add_option("--version", action="store_true", help="display version information and exit")
-
-    (options, args) = parser.parse_args()
+    import argparse
+    parser = argparse.ArgumentParser(description='NIPAP command-line client')
+    parser.add_argument("-f", "--force", action="store_true", help="disable interactive prompting of actions")
+    parser.add_argument("--show-interpretation", action="store_true", help="show search interpretation")
+    parser.add_argument("--version", action="store_true", help="display version information and exit")
+    args, cmd_args = parser.parse_known_args()
 
     # make sure nipaprc exists and has correct permissions
     userrcfile = os.path.expanduser('~/.nipaprc')
@@ -82,7 +81,7 @@ if __name__ == '__main__':
     # setup our configuration
     nipap_cli.nipap_cli.setup_connection()
 
-    if options.version:
+    if args.version:
         import pynipap
         print "nipap CLI client version:", nipap_cli.__version__
         print "pynipap version:", pynipap.__version__
@@ -105,7 +104,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     try:
-        cmd = Command(nipap_cli.nipap_cli.cmds, args)
+        cmd = Command(nipap_cli.nipap_cli.cmds, cmd_args)
     except (ValueError, CommandError, NipapError) as exc:
         print >> sys.stderr, "Error: %s" % str(exc)
         sys.exit(1)
@@ -120,7 +119,7 @@ if __name__ == '__main__':
     #  - http://www.tldp.org/LDP/abs/html/exitcodes.html
     #  - http://people.cs.pitt.edu/~alanjawi/cs449/code/shell/UnixSignals.htm
     try:
-        cmd.exe(cmd.arg, cmd.exe_options, options)
+        cmd.exe(cmd.arg, cmd.exe_options, args)
     except KeyboardInterrupt:
         # exit code for SIGINT (2) + 128 = 130
         sys.exit(130)

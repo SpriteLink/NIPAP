@@ -4,7 +4,7 @@ nipap-passwd
 
 Synopsis
 --------
-``nipap-passwd`` [OPTIONS]
+**nipap-passwd** action [options...]
 
 Description
 -----------
@@ -16,65 +16,67 @@ Options
 -------
 **nipapd-passwd** accepts the following command-line arguments.
 
---create-database
+ positional arguments:
+	action {list, add, delete, test-user, create-database, upgrade-database, latest-version}      define an action to execute
 
-    Create an empty SqliteAuth database in the path specified in the config
-    or by option **-f**
+	list
+    	List all users in the SQLite database.
 
---latest-version
+	add
+		Add user with username specified with **-u** and password specified
+		with **-p** to the database.
 
-    Check if the SQLite database is of the latest version
+	delete
+    	Delete user with username specifies with **-u** from the database
 
---upgrade-database
+	test-user
+		Try to authenticate with user specified with the option **-u** and
+		password speficied with **-p**. The program will return exit code **2**
+		if the user does not exist or the password is wrong.
 
-    Upgrade SQLite database to latest version
+	create-database
+		Create an empty SqliteAuth database in the path specified in the config
+		or by option **-f**
 
--l, --list
+	upgrade-database
+    	Upgrade SQLite database to latest version
 
-    List all users in the SQLite database
+	latest-version
+    	Check if the SQLite database is of the latest version
 
--a ADD_USER, --add=ADD_USER
+ optional arguments:
+    -h, --help
+		Show a help message
 
-    Add user with username *ADD_USER* to the database
+	-u USER, --user=USER
+    	In combination with action **add**, the username of the user will be set to *USER*.
+	    In combination with option **test-user**, the authentication will be tested with *USER.
+		In combination with action **delete**, the user *USER* will be deleted.
 
--p PASSWORD, --password=PASSWORD
+    -p PASSWORD, --password=PASSWORD
+    	In combination with action **add**, the password of the user will be set to *PASSWORD*.
+	    In combination with option **test-user**, the authentication will be tested with *PASSWORD*.
 
-    In combination with option **-a**, the password of the user will be set to *PASSWORD*.
-    In combination with option **--test-user**, the authentication will be tested with *PASSWORD*.
+    -n NAME, --name=NAME
+    	Set user's name to *NAME*
 
--n NAME, --name=NAME
+    -t, --trusted
+    	Mark user as trusted. A trusted user will be able to impersonate other users
 
-    Set user's name to *NAME*
+    -r, --readonly
+    	Give the user read-only permissions, i.e. the user is not able to edit anything
 
--r, --readonly
+    -f DB_FILE, --file=DB_FILE
+    	Use the specified file as SQLite database file
+	    [default: read from config]
 
-    Give the user read-only permissions, i.e. the user is not able to edit anything
+    -c CONFIG, --config=CONFIG
+    	Read configuration from configuration file *CONFIG*
+	    [default: /etc/nipap/nipap.conf]
 
--t, --trusted
+    --version
+		Show program's version number and exit
 
-    Mark user as trusted. A trusted user will be able to impersonate other users
-
---test-user TEST_USER
-
-    Try to authenticate with *TEST_USER*. The program will return exit code **2** if the user does not exist or the password is wrong.
-
--d DELETE_USER, --delete=DELETE_USER
-
-    Delete user with username *DELETE_USER* from the database
-
--c CONFIG, --config=CONFIG
-
-    Read configuration from the specified file
-    [default: /etc/nipap/nipap.conf]
-
--f DB_FILE, --file=DB_FILE
-
-    Use the specified file as SQLite database file
-    [default: read from config]
-
--h, --help
-
-    Show a help message
 
 Return codes
 ------------
@@ -87,4 +89,4 @@ The program will either return one of the following codes
 
 Copyright
 ---------
-Kristian Larsson, Lukas Garberg 2011-2014
+Kristian Larsson, Lukas Garberg 2011-2015

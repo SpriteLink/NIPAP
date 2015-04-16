@@ -83,7 +83,7 @@ install:
     # populate answers to nipapd package install questions and reconfigure
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then echo 'set nipapd/autoconf true' | sudo debconf-communicate; echo 'set nipapd/startup true' | sudo debconf-communicate; echo 'set nipapd/upgrade true' | sudo debconf-communicate; sudo dpkg-reconfigure nipapd; fi
     # create local user for unittest and restart
-    - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n unittest; sudo /etc/init.d/nipapd restart; fi
+    - "if  [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest; sudo /etc/init.d/nipapd restart; fi"
     # if upgrade, add some data to the database that we can verify later
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then nosetests tests/upgrade-before.py; fi
     # build new NIPAP packages
@@ -97,8 +97,8 @@ install:
     # upgrade in which case this will upgrade everything for us
     - if [ "$INSTALL" == "apt" ]; then sudo dpkg-reconfigure nipapd; fi
     # create local user for unittests
-    - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n "User for running unit tests"; fi
-    - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"; fi
     # Don't need to restart, but I would like to make sure that all is updated
     # (like local_auth.db is re-read and so forth). Read #654 for more
     # information.
