@@ -15,7 +15,11 @@ if __name__ == '__main__':
 
     # parse arguments
     parser = argparse.ArgumentParser(description='NIPAP User configuration')
-    parser.add_argument('action', metavar='{list, add, delete, test-user}', nargs='?', type=str, choices=['list', 'add', 'delete', 'test-user'], help='define an action to execute')
+    parser.add_argument('action',
+        metavar='{list, add, delete, test-user, latest-version, create-database, upgrade-database}',
+        nargs='?', type=str,
+        choices=['list', 'add', 'delete', 'test-user', 'latest-version', 'create-database', 'upgrade-database'],
+        help='define an action to execute')
     parser.add_argument('-u', '--user', dest='user', type=str, help='username')
     parser.add_argument('-p', '--password', dest='password', type=str, help='set user\'s password to PASSWORD')
     parser.add_argument('-n', '--name', dest='name', type=str, help='set user\'s name to NAME')
@@ -25,12 +29,6 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--config', dest='config', default='/etc/nipap/nipap.conf', type=str, help=
             'read configuration from CONFIG [default:/etc/nipap/nipap.conf]')
     parser.add_argument('--version', action='version', version='nipap-passwd version %s' % nipap.__version__)
-    parser.add_argument('--latest-version', action='store_true',
-            help='check that the sqlite database is of latest version')
-    parser.add_argument('--create-database', action='store_true',
-            help='create SqliteAuth database')
-    parser.add_argument('--upgrade-database', action='store_true',
-            help='upgrade sqlite database to latest version')
     args = parser.parse_args()
 
     logger = logging.getLogger()
@@ -50,27 +48,6 @@ if __name__ == '__main__':
         cfg.set('auth.backends.local', 'db_path', args.db_file)
 
     a = nipap.authlib.SqliteAuth('local', 'a', 'b', 'c')
-
-    if args.latest_version:
-        try:
-            latest = a._latest_db_version()
-            if not latest:
-                print >> sys.stderr, "It seems your Sqlite database for local auth is out of date"
-                print >> sys.stderr, "Please run 'nipap-passwd --upgrade-database' to upgrade your database."
-                sys.exit(2)
-        except nipap.authlib.AuthSqliteError, e:
-            print >> sys.stderr, "Error checking version of Sqlite database for local auth: %s" % e
-            sys.exit(1)
-        print "Sqlite database for local auth is of the latest version."
-        sys.exit(0)
-
-    if args.create_database:
-        a._create_database()
-        sys.exit(0)
-
-    if args.upgrade_database:
-        a._upgrade_database()
-        sys.exit(0)
 
     if args.action == 'list':
         # print a nicely formatted list of users
@@ -132,6 +109,27 @@ if __name__ == '__main__':
                 print "You do not have sufficient rights to write to database: %s" % (cfg.get('auth.backends.local','db_path'))
             else:
                 print exc
+
+    elif args.action == 'upgrade-database':
+        a._upgrade_database()
+        sys.exit(0)
+
+    elif args.action == 'create-database':
+        a._create_database()
+        sys.exit(0)
+
+    elif args.action == 'latest-version':
+        try:
+            latest = a._latest_db_version()
+            if not latest:
+                print >> sys.stderr, "It seems your Sqlite database for local auth is out of date"
+                print >> sys.stderr, "Please run 'nipap-passwd upgrade-database' to upgrade your database."
+                sys.exit(2)
+        except nipap.authlib.AuthSqliteError, e:
+            print >> sys.stderr, "Error checking version of Sqlite database for local auth: %s" % e
+            sys.exit(1)
+        print "Sqlite database for local auth is of the latest version."
+        sys.exit(0)
 
     else:
         parser.print_help()

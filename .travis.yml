@@ -62,8 +62,8 @@ install:
     # move configuration file into place
     - if [ "$INSTALL" == "venv" ]; then sudo mkdir /etc/nipap; sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf; fi
     # create local user for unittest
-    - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd --create-database; sudo nipap/nipap-passwd -a unittest -p gottatest -n unittest; fi
-    - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"; fi
+    - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd create-database; sudo nipap/nipap-passwd add -u unittest -p gottatest -n unittest; fi
+    - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"; fi
     # install pynipap
     - if [ "$INSTALL" == "venv" ]; then cd pynipap; python setup.py install; cd ..; fi
     # start nipap backend
@@ -83,7 +83,7 @@ install:
     # populate answers to nipapd package install questions and reconfigure
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then echo 'set nipapd/autoconf true' | sudo debconf-communicate; echo 'set nipapd/startup true' | sudo debconf-communicate; echo 'set nipapd/upgrade true' | sudo debconf-communicate; sudo dpkg-reconfigure nipapd; fi
     # create local user for unittest and restart
-    - "if  [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest; sudo /etc/init.d/nipapd restart; fi"
+    - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest; sudo /etc/init.d/nipapd restart; fi
     # if upgrade, add some data to the database that we can verify later
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then nosetests tests/upgrade-before.py; fi
     # build new NIPAP packages
