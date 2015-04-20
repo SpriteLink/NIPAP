@@ -1,0 +1,21 @@
+<ncs-package xmlns="http://tail-f.com/ns/ncs-packages">
+  <name>nso-nipap</name>
+  <package-version>1.0</package-version>
+  <description>Client library for communcation with a NIPAP backend</description>
+  <ncs-min-version>3.0</ncs-min-version>
+
+  <component>
+    <name>nsoNipap</name>
+    <callback>
+      <java-class-name>net.spritelink.nsonipap.nsoNipap</java-class-name>
+    </callback>
+  </component>
+
+  <component>
+	  <name>Reactive FM CDB Config Subscriber</name>
+	  <application>
+		  <java-class-name>net.spritelink.nsonipap.ConfigCdbSub</java-class-name>
+	  </application>
+  </component>
+
+</ncs-package>

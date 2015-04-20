@@ -1,0 +1,140 @@
+module nipap {
+
+  namespace "http://spritelink.net/nipap/settings";
+  prefix nipap;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  import tailf-common {
+    prefix tailf;
+  }
+
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  augment /ncs:services {
+    description "NIPAP settings";
+
+    container nipap {
+
+      list backend {
+        description "Connectivity setting for a NIPAP backend";
+
+        key name;
+        leaf name {
+          tailf:info "Backend id";
+          tailf:cli-allow-range;
+          type string;
+        }
+
+        leaf hostname {
+          description "Hostname of NIPAP backend";
+          type inet:host;
+          mandatory true;
+        }
+        leaf port {
+          description "Port that NIPAP backend listens on";
+          type inet:port-number;
+          default 1337;
+        }
+        leaf username {
+          description "Username to authenticate with NIPAP backend";
+          type string;
+          mandatory true;
+        }
+        leaf password {
+          description "Password to authenticate with NIPAP backend";
+          // should we use type passwdStr isntead?
+          type string;
+          mandatory true;
+        }
+        leaf default {
+          type boolean;
+          default true;
+//          must "count(../backend/default) <= 1";
+          // TODO: make sure only one backend is marked as default
+        }
+      }
+
+      list pool {
+        key name;
+        leaf name {
+          tailf:info "Name of pool to request prefix from";
+          tailf:cli-allow-range;
+          type string;
+        }
+
+        list request {
+          key name;
+          leaf name {
+            tailf:info "Name of pool to request prefix from";
+            tailf:cli-allow-range;
+            type string;
+          }
+
+          leaf family {
+            description "Address-family to request";
+            default 4;
+            type enumeration {
+              enum 4 {
+                value 4;
+              }
+              enum 6 {
+                value 6;
+              }
+            }
+          }
+       
+          leaf prefix_id {
+            type uint64;
+            config false;
+            tailf:cdb-oper {
+              tailf:persistent true;
+            }
+          }
+
+          leaf prefix {
+            type inet:ip-prefix;
+            config false;
+            tailf:cdb-oper {
+              tailf:persistent true;
+            }
+          }
+        }
+
+
+      }
+
+      list prefix {
+        key name;
+        leaf name {
+          tailf:info "Name of request";
+          tailf:cli-allow-range;
+          type string;
+        }
+
+        leaf backend {
+          type leafref {
+            path "../../backend/name";
+          }
+        }
+
+        leaf from-pool {
+          type string;
+        }
+
+        leaf prefix {
+          type inet:ip-prefix;
+          config false;
+          tailf:cdb-oper {
+            tailf:persistent true;
+          }
+        }
+
+      }
+    }
+  }
+}
