@@ -5,7 +5,7 @@ JAR = jar
 JARFILE = jnipap.jar
 JARFLAGS = cf $(JARFILE)
 
-default: classes
+default: jar
 
 classes:
 	$(JC) $(JFLAGS) -source 1.4 jnipap/*.java
