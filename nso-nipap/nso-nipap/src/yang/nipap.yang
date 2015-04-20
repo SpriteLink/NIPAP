@@ -103,6 +103,12 @@ module nipap {
               tailf:persistent true;
             }
           }
+
+          leaf redeploy-service {
+            description "Redeploy service after succesful allocation";
+            type string;
+          }
+
         }
 
 
