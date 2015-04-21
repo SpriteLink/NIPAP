@@ -75,6 +75,16 @@ module nipap {
             type string;
           }
 
+          leaf description {
+            description "Description of prefix";
+            type string;
+          }
+
+          leaf node {
+            description "Node, e.g. FQDN";
+            type string;
+          }
+
           leaf family {
             description "Address-family to request";
             default 4;

@@ -151,7 +151,14 @@ public class ConfigCdbSub implements ApplicationComponent {
 							ConfEnumeration family = (ConfEnumeration)maapi.getElem(th, req.path + "/family");
 							opts.put("family", family.getOrdinalValue());
 
-							p.node = String.valueOf(req.request_key).replaceAll("[{}]", "");
+							ConfValue rDescription = maapi.getElem(th, req.path + "/description");
+							if (rDescription != null)
+								p.description = String.valueOf(rDescription);
+
+							ConfValue rNode = maapi.getElem(th, req.path + "/node");
+							if (rNode != null)
+								p.node = String.valueOf(rNode);
+
 							p.save(nipapCon, (Pool)poolRes.get(0), opts);
 
 						} catch (Exception e) {
