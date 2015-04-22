@@ -100,7 +100,7 @@
 
         # Fetch VRF with ID 1 and print its name
         vrf = VRF.get(1)
-        print vrf.name
+        print(vrf.name)
 
     To list all objects each object has a :func:`list`-function. ::
 
@@ -109,7 +109,7 @@
 
         # print the name of the pools
         for p in pools:
-            print p.name
+            print(p.name)
 
     Each of the list functions can also take a `spec`-dict as a second
     argument. With the spec you can perform a simple search operation by
@@ -147,8 +147,13 @@
     Classes
     -------
 """
-import xmlrpclib
+import sys
 import logging
+if sys.version_info[0] < 3:
+    import xmlrpclib
+    int = long
+else:
+    import xmlrpc.client as xmlrpclib
 
 __version__		= "0.27.3"
 __author__		= "Kristian Larsson, Lukas Garberg"
@@ -408,14 +413,14 @@ class VRF(Pynipap):
             vrf.tags[tag_name] = tag
         vrf.avps = parm['avps']
 
-        vrf.num_prefixes_v4 = long(parm['num_prefixes_v4'])
-        vrf.num_prefixes_v6 = long(parm['num_prefixes_v6'])
-        vrf.total_addresses_v4 = long(parm['total_addresses_v4'])
-        vrf.total_addresses_v6 = long(parm['total_addresses_v6'])
-        vrf.used_addresses_v4 = long(parm['used_addresses_v4'])
-        vrf.used_addresses_v6 = long(parm['used_addresses_v6'])
-        vrf.free_addresses_v4 = long(parm['free_addresses_v4'])
-        vrf.free_addresses_v6 = long(parm['free_addresses_v6'])
+        vrf.num_prefixes_v4 = int(parm['num_prefixes_v4'])
+        vrf.num_prefixes_v6 = int(parm['num_prefixes_v6'])
+        vrf.total_addresses_v4 = int(parm['total_addresses_v4'])
+        vrf.total_addresses_v6 = int(parm['total_addresses_v6'])
+        vrf.used_addresses_v4 = int(parm['used_addresses_v4'])
+        vrf.used_addresses_v6 = int(parm['used_addresses_v6'])
+        vrf.free_addresses_v4 = int(parm['free_addresses_v4'])
+        vrf.free_addresses_v6 = int(parm['free_addresses_v6'])
 
         return vrf
 
@@ -774,7 +779,7 @@ class Pool(Pynipap):
                 'total_addresses_v4', 'total_addresses_v6', 'used_addresses_v4',
                 'used_addresses_v6', 'free_addresses_v4', 'free_addresses_v6'):
             if parm[val] is not None:
-                setattr(pool, val, long(parm[val]))
+                setattr(pool, val, int(parm[val]))
 
         pool.tags = {}
         for tag_name in parm['tags']:
@@ -1160,9 +1165,9 @@ class Prefix(Pynipap):
         prefix.vlan = pref['vlan']
         prefix.added = pref['added']
         prefix.last_modified = pref['last_modified']
-        prefix.total_addresses = long(pref['total_addresses'])
-        prefix.used_addresses = long(pref['used_addresses'])
-        prefix.free_addresses = long(pref['free_addresses'])
+        prefix.total_addresses = int(pref['total_addresses'])
+        prefix.used_addresses = int(pref['used_addresses'])
+        prefix.free_addresses = int(pref['free_addresses'])
         prefix.status = pref['status']
         prefix.avps = pref['avps']
         prefix.expires = pref['expires']
