@@ -570,12 +570,12 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 	 */
 	$scope.submitForm = function () {
 
-		// If prefix is owned by other system, ask user to veryfy the changes
+		// If prefix is owned by other system, ask user to verify the changes
 		if ($scope.prefix.authoritative_source != 'nipap') {
 			// TODO: Replace with AngularJS-style widget
 			showDialogYesNo(
 				'Confirm prefix edit',
-				'The prefix ' + $scope.prefix.authoritative_source + ' is managed by ' +
+				'The prefix ' + $scope.prefix.prefix + ' is managed by ' +
 				'\'' + $scope.prefix.authoritative_source + '\'.<br><br>' +
 				'Are you sure you want to edit it?',
 				function() {
