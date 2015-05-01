@@ -22,9 +22,9 @@ class Command:
 
 
     key = {}
-    key_complete = True
     """ Contains the current value
     """
+    key_complete = True
     children = {}
     """ Contains the next valid values
     """
