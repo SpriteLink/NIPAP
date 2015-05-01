@@ -42,7 +42,7 @@ class AuthController(BaseController):
                 c.error = 'Invalid username or password'
                 return render('login.html')
         except AuthError as exc:
-            c.error = 'Authentication error: %s' % str(exc)
+            c.error = 'Authentication error'
             return render('login.html')
 
         # Mark user as logged in
