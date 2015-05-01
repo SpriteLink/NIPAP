@@ -9,11 +9,12 @@
     documentation is quite thin. For in-depth information please look at the
     main :py:mod:`NIPAP API documentation <nipap.backend>`.
 
-    There are three ORM-classes:
+    There are four ORM-classes:
 
     * :class:`VRF`
     * :class:`Pool`
     * :class:`Prefix`
+    * :class:`Tag`
 
     Each of these maps to the NIPAP objects with the same name. See the main
     :py:mod:`NIPAP API documentation <nipap.backend>` for an overview of the
