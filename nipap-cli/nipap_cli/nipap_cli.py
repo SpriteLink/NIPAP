@@ -4,6 +4,7 @@
     A shell command to interact with NIPAP.
 """
 
+#from __future__ import print_function
 
 import ConfigParser
 import csv
@@ -159,14 +160,15 @@ def _str_to_bool(arg):
 """
     LIST FUNCTIONS
 """
-def _parse_interp_pool(query, indent=1):
+def _parse_interp_pool(query, indent=-5, pandop=False):
     if 'interpretation' not in query:
         return
     interp = query['interpretation']
     text = None
     text2 = None
+    andop = False
     if query['operator'] == 'and':
-        text = "AND"
+        andop = True
     elif interp['interpretation'] == 'unclosed quote':
         text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
         text2 = "This is not a proper search term as it contains en uneven amount of quotes."
@@ -176,13 +178,19 @@ def _parse_interp_pool(query, indent=1):
     else:
         text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
     if text:
-        print "%s- %s" % (' '*indent, text)
+        if pandop:
+            a = '     '
+            if indent > 1:
+                a = ' `-- '
+            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+        else:
+            print "%s       `-- %s" % (' '*indent, text)
     if text2:
         print "%s   %s" % (' '*indent, text2)
     if type(query['val1']) is dict:
-        _parse_interp_pool(query['val1'], indent+2)
+        _parse_interp_pool(query['val1'], indent+6, andop)
     if type(query['val2']) is dict:
-        _parse_interp_pool(query['val2'], indent+2)
+        _parse_interp_pool(query['val2'], indent+6)
 
 
 def list_pool(arg, opts, shell_opts):
@@ -249,14 +257,15 @@ def list_pool(arg, opts, shell_opts):
         offset += limit
 
 
-def _parse_interp_vrf(query, indent=1):
+def _parse_interp_vrf(query, indent=-5, pandop=False):
     if 'interpretation' not in query:
         return
     interp = query['interpretation']
     text = None
     text2 = None
+    andop = False
     if query['operator'] == 'and':
-        text = "AND"
+        andop = True
     elif interp['interpretation'] == 'unclosed quote':
         text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
         text2 = "This is not a proper search term as it contains en uneven amount of quotes."
@@ -266,13 +275,19 @@ def _parse_interp_vrf(query, indent=1):
     else:
         text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
     if text:
-        print "%s- %s" % (' '*indent, text)
+        if pandop:
+            a = '     '
+            if indent > 1:
+                a = ' `-- '
+            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+        else:
+            print "%s       `-- %s" % (' '*indent, text)
     if text2:
         print "%s   %s" % (' '*indent, text2)
     if type(query['val1']) is dict:
-        _parse_interp_vrf(query['val1'], indent+2)
+        _parse_interp_vrf(query['val1'], indent+6, andop)
     if type(query['val2']) is dict:
-        _parse_interp_vrf(query['val2'], indent+2)
+        _parse_interp_vrf(query['val2'], indent+6)
 
 def list_vrf(arg, opts, shell_opts):
     """ List VRFs matching a search criteria
@@ -319,8 +334,9 @@ def _parse_interp_prefix(query, indent=-5, pandop=False):
     interp = query['interpretation']
     text = None
     text2 = None
+    andop = False
     if query['operator'] == 'and':
-        text = "AND"
+        andop = True
     elif interp['interpretation'] == 'unclosed quote':
         text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
         text2 = "This is not a proper search term as it contains en uneven amount of quotes."
@@ -357,13 +373,19 @@ def _parse_interp_prefix(query, indent=-5, pandop=False):
     else:
         text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
     if text:
-        print "%s- %s" % (' '*indent, text)
+        if pandop:
+            a = '     '
+            if indent > 1:
+                a = ' `-- '
+            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+        else:
+            print "%s       `-- %s" % (' '*indent, text)
     if text2:
         print "%s   %s" % (' '*indent, text2)
     if type(query['val1']) is dict:
-        _parse_interp_prefix(query['val1'], indent+2)
+        _parse_interp_prefix(query['val1'], indent+6, andop)
     if type(query['val2']) is dict:
-        _parse_interp_prefix(query['val2'], indent+2)
+        _parse_interp_prefix(query['val2'], indent+6)
 
 
 def list_prefix(arg, opts, shell_opts):
