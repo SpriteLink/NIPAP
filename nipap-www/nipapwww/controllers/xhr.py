@@ -879,6 +879,9 @@ class NipapJSONEncoder(json.JSONEncoder):
 
             vrf_id = obj.vrf.id
             vrf_rt = obj.vrf.rt
+            expires = None
+            if obj.expires is not None:
+                expires = str(obj.expires)
 
             return {
                 'id': obj.id,
@@ -889,7 +892,7 @@ class NipapJSONEncoder(json.JSONEncoder):
                 'display_prefix': obj.display_prefix,
                 'status': obj.status,
                 'description': obj.description,
-                'expires': str(obj.expires),
+                'expires': expires,
                 'comment': obj.comment,
                 'inherited_tags': obj.inherited_tags,
                 'tags': obj.tags,
