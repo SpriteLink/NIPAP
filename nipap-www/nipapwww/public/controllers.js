@@ -608,8 +608,14 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 		});
 		prefix_data.avps = JSON.stringify(prefix_data.avps);
 
-		// Mangle expires
-		prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss')
+		// handle null or 'infinity' as.. infinity
+		if ($scope.prefix.expires == null) {
+			// empty string signifies infinity
+			prefix_data.expires = '';
+		} else {
+			// mangle prefix into ISO8601 format
+			prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss');
+		}
 
 		// Set pool, if any
 		if ($scope.prefix.pool !== null) {
