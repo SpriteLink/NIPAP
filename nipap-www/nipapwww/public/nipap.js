@@ -1144,7 +1144,6 @@ function parseInterp(query, container) {
 			text = "<b>OR</b>";
 		} else if (interp.interpretation == 'and') {
 			text = "<b>AND</b>";
-		} else if (interp.interpretation == 'and') {
 		} else if (interp.interpretation == 'unclosed quote') {
 			text += ', please close quote!';
 			tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';
@@ -1168,7 +1167,7 @@ function parseInterp(query, container) {
 				tooltip = 'Prefix must be contained within ' + interp.string;
 			}
 		} else if (interp.attribute == 'prefix' && interp.operator == 'contains_equals') {
-			var text = '<b>' + interp.string + ':</b> ' + 'Prefix that contains ' + interp.string;
+			text = '<b>' + interp.string + ':</b> ' + 'Prefix that contains ' + interp.string;
 			tooltip = "The prefix must contain or be equal to " + interp.string;
 		} else if (interp.attribute == 'prefix' && interp.operator == 'equals') {
 			text += ' equal to <b>' + interp.string + '</b>';
@@ -1177,24 +1176,22 @@ function parseInterp(query, container) {
 			text += " matching '<b>" + interp.string + "</b>'";
 			tooltip = "The description OR node OR order id OR the comment should regexp match '" + interp.string + "'";
 		}
-		container.append('<div class="search_interpretation" id="intp" tooltip="' + tooltip + '">' + text + '</div>');
+
 		if (interp.interpretation == 'or' || interp.interpretation == 'and') {
-			container.append('<div class="search_interperation" id="intp_' + container.attr('id') + '_andor" style="margin-left: 20px;"></div>');
-			container = $('#intp_' + container.attr('id') + '_andor');
+			var andor_text = $('<div class="search_interpretation" style="display: inline-block; vertical-align: top;"></div>').appendTo(container);
+			container = $('<div class="search_interpretation" style="display: inline-block;"></div>').appendTo(container);
+			$('<div class="search_interpretation" id="' + container.attr('id') + '_intp" tooltip="' + tooltip + '" style="padding-top: 0.5em; display: inline-block;"><div style="display: inline-block;">' + text + '</div><div style="display: inline-block; border-left:2px solid #666; border-top:2px solid #666; border-bottom:2px solid #666; margin-top: 3px; margin-left: 4px; margin-right: 4px;">&nbsp;</div></div>').appendTo(andor_text);
+		} else {
+			$('<div class="search_interpretation" style="display: block;" id="' + container.attr('id') + '_intp" tooltip="' + tooltip + '">' + text + '</div>').appendTo(container);
 		}
 	}
 
 	if (typeof(query.val1) == 'object') {
-		container.append('<div class="search_interperation" id="intp_' + container.attr('id') + '_val1"></div>');
-		c1 = $('#intp_' + container.attr('id') + '_val1');
-		parseInterp(query.val1, c1);
+		parseInterp(query.val1, container);
 	}
 	if (typeof(query.val2) == 'object') {
-		container.append('<div class="search_interperation" id="intp_' + container.attr('id') + '_val2"></div>');
-		c2 = $('#intp_' + container.attr('id') + '_val2');
-		parseInterp(query.val2, c2);
+		parseInterp(query.val2, container);
 	}
-//	$('#intp' + key).html(text);
 }
 
 
