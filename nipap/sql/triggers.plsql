@@ -98,8 +98,8 @@ BEGIN
 		-- update last modified timestamp
 		NEW.last_modified = NOW();
 
-		-- if prefix, type and pool is the same, quick return!
-		IF OLD.type = NEW.type AND OLD.prefix = NEW.prefix AND OLD.pool_id = NEW.pool_id THEN
+		-- if vrf, type and prefix is the same, quick return!
+		IF OLD.vrf_id = NEW.vrf_id AND OLD.type = NEW.type AND OLD.prefix = NEW.prefix THEN
 			RETURN NEW;
 		END IF;
 	END IF;
@@ -860,12 +860,9 @@ CREATE TRIGGER trigger_ip_net_plan__i_before
 
 -- sanity checking of UPDATEs on ip_net_plan
 CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_before
-	BEFORE UPDATE OF vrf_id, prefix, type
+	BEFORE UPDATE
 	ON ip_net_plan
 	FOR EACH ROW
-	WHEN (OLD.vrf_id != NEW.vrf_id
-		OR OLD.prefix != NEW.prefix
-		OR OLD.type != NEW.type)
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_before();
 
 -- actions to be performed after an UPDATE on ip_net_plan

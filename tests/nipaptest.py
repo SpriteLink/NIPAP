@@ -11,6 +11,7 @@ import datetime
 import logging
 import unittest
 import sys
+import time
 sys.path.insert(0, '..')
 sys.path.insert(0, '../pynipap')
 sys.path.insert(0, '../nipap')
@@ -1487,6 +1488,37 @@ class TestAddressListing(unittest.TestCase):
         for prefix in res['result']:
             result.append(prefix.prefix)
         self.assertEqual(expected, result)
+
+
+
+class TestPrefixLastModified(unittest.TestCase):
+    """ Test updates of the last modified value
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+    def test1(self):
+        """ The last_modified timestamp should be updated when the prefix is
+            edited
+        """
+        th = TestHelper()
+        p1 = th.add_prefix('1.3.0.0/16', 'reservation', 'test')
+        # make sure added and last_modified are equal
+        self.assertEqual(p1.added, p1.last_modified)
+
+        # this is a bit silly, but as the last_modified time is returned with a
+        # precision of seconds, we need to make sure that we fall on the next
+        # second to actually notice that last_modified is not equal to added
+        time.sleep(1)
+
+        p1.description = 'updated description'
+        p1.save()
+
+        # last_modified should have a later timestamp than added
+        self.assertNotEqual(p1.added, p1.last_modified)
 
 
 
