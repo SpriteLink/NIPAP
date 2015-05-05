@@ -6,7 +6,6 @@
     tab completion of both commands and external values.
 """
 
-import re
 import string
 
 
@@ -22,39 +21,28 @@ class Command:
     """
 
 
+    key = {}
     """ Contains the current value
     """
-    key = {}
     key_complete = True
-
-
+    children = {}
     """ Contains the next valid values
     """
-    children = {}
-
-
+    exe = None
     """ Pointer to function to execute
     """
-    exe = None
-
-
+    arg = None
     """ Function argument - a single argument passed to the function
     """
-    arg = None
-
-
+    exe_options = {}
     """ Function options - a dict of options passed to the function
     """
-    exe_options = {}
-
-
+    inp_cmd = []
     """ List of the commands inputed
     """
-    inp_cmd = []
-
+    _scoop_rest_arguments = False
     """ Set when we're scooping up all unknown arguments
     """
-    _scoop_rest_arguments = False
 
 
 

@@ -1,7 +1,6 @@
 import cgi
 
 from paste.urlparser import PkgResourcesParser
-from pylons.middleware import error_document_template
 from webhelpers.html.builder import literal
 
 from nipapwww.lib.base import BaseController
