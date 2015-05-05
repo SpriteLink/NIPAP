@@ -1,2 +1,4 @@
+parsedatetime
+python-dateutil
 Flask-XML-RPC
 Flask-Compress
