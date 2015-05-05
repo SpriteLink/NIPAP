@@ -1251,15 +1251,9 @@ class Nipap:
 
         self._logger.debug("smart_search_vrf query string: %s" % query_str)
 
-        if query_str is None:
-            raise NipapValueError("'query_string' must not be None")
-
-        # find query parts
-        query_str_parts = []
         try:
-            for part in shlex.split(query_str):
-                query_str_parts.append({ 'string': part })
-        except:
+            query = self._parse_vrf_query(query_str)
+        except NipapValueError:
             return {
                 'interpretation': [
                     {
@@ -1272,12 +1266,30 @@ class Nipap:
                 'result': []
             }
 
-        # Handle empty search.
-        # We need something to iterate over, but shlex.split() returns
-        # zero-element list for an empty string, so we have to append one
-        # manually
-        if len(query_str_parts) == 0:
-            query_str_parts.append({ 'string': '' })
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
+            }
+
+        self._logger.debug("smart_search_vrf; query expanded to: %s" % str(query))
+
+        search_result = self.search_vrf(auth, query, search_options)
+        search_result['interpretation'] = query
+
+        return search_result
+
+
+
+    def _parse_vrf_query(self, query_str):
+        """ Parse a smart search query for VRFs
+
+            This is a helper function to smart_search_vrf for easier unit
+            testing of the parser.
+        """
+        # find query parts
+        query_str_parts = self._get_query_parts(query_str)
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -1286,11 +1298,13 @@ class Nipap:
             # tags
             if re.match('#', query_str_part['string']):
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-                query_str_part['interpretation'] = '(inherited) tag'
-                query_str_part['attribute'] = 'tag'
-
-                query_str_part['operator'] = 'equals_any'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': '(inherited) tag',
+                        'attribute': 'tag',
+                        'operator': 'equals_any',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'equals_any',
@@ -1306,10 +1320,13 @@ class Nipap:
 
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'vrf or name or description'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'text',
+                        'attribute': 'vrf or name or description',
+                        'operator': 'regex',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'or',
@@ -1339,24 +1356,16 @@ class Nipap:
         if len(query_parts) > 1:
             for query_part in query_parts[1:]:
                 query = {
+                    'interpretation': {
+                        'interpretation': 'and',
+                        'operator': 'and',
+                    },
                     'operator': 'and',
                     'val1': query_part,
                     'val2': query
                 }
 
-        if extra_query is not None:
-            query = {
-                'operator': 'and',
-                'val1': query,
-                'val2': extra_query
-            }
-
-        self._logger.debug("smart_search_vrf; query expanded to: %s" % str(query))
-
-        search_result = self.search_vrf(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
-
-        return search_result
+        return query
 
 
 
@@ -1915,21 +1924,44 @@ class Nipap:
 
         self._logger.debug("smart_search_pool query string: %s" % query_str)
 
-        # find query parts
         try:
-            query_str_parts = self._get_query_parts(query_str)
+            query = self._parse_pool_query(query_str)
         except NipapValueError:
             return {
-                'interpretation': [
-                    {
-                        'string': query_str,
-                        'interpretation': 'unclosed quote',
-                        'attribute': 'text'
-                    }
-                ],
-                'search_options': search_options,
-                'result': []
+                    'interpretation': [
+                        {
+                            'string': query_str,
+                            'interpretation': 'unclosed quote',
+                            'attribute': 'text'
+                        }
+                    ],
+                    'search_options': search_options,
+                    'result': []
+                }
+
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
             }
+
+        self._logger.debug("smart_search_pool; query expanded to: %s" % str(query))
+
+        search_result = self.search_pool(auth, query, search_options)
+        search_result['interpretation'] = query
+
+        return search_result
+
+
+    def _parse_pool_query(self, query_str):
+        """ Parse a smart search query for pools
+
+            This is a helper function to smart_search_pool for easier unit
+            testing of the parser.
+        """
+        # find query parts
+        query_str_parts = self._get_query_parts(query_str)
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -1938,11 +1970,13 @@ class Nipap:
             # tags
             if re.match('#', query_str_part['string']):
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-                query_str_part['interpretation'] = '(inherited) tag'
-                query_str_part['attribute'] = 'tag'
-
-                query_str_part['operator'] = 'equals_any'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': '(inherited) tag',
+                        'attribute': 'tag',
+                        'operator': 'equals_any',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'equals_any',
@@ -1958,10 +1992,13 @@ class Nipap:
 
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'name or description'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'text',
+                        'attribute': 'name or description',
+                        'operator': 'regex',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'regex_match',
@@ -1983,24 +2020,16 @@ class Nipap:
         if len(query_parts) > 1:
             for query_part in query_parts[1:]:
                 query = {
+                    'interpretation': {
+                        'interpretation': 'and',
+                        'operator': 'and',
+                    },
                     'operator': 'and',
                     'val1': query_part,
                     'val2': query
                 }
 
-        if extra_query is not None:
-            query = {
-                'operator': 'and',
-                'val1': query,
-                'val2': extra_query
-            }
-
-        self._logger.debug("Expanded to: %s" % str(query))
-
-        search_result = self.search_pool(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
-
-        return search_result
+        return query
 
 
 
@@ -3279,9 +3308,8 @@ class Nipap:
 
         self._logger.debug("smart_search_prefix query string: %s" % query_str)
 
-        # find query parts
         try:
-            query_str_parts = self._get_query_parts(query_str)
+            query = self._parse_prefix_query(query_str)
         except NipapValueError:
             return {
                 'interpretation': [
@@ -3295,6 +3323,32 @@ class Nipap:
                 'result': []
             }
 
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
+            }
+
+        self._logger.debug("smart_search_prefix: query expanded to: %s" % str(query))
+
+        search_result = self.search_prefix(auth, query, search_options)
+        search_result['interpretation'] = query
+
+        return search_result
+
+
+
+    def _parse_prefix_query(self, query_str):
+        """ Parse a smart search query for prefixes
+
+            This is a helper function to smart_search_prefix for easier unit
+            testing of the parser.
+        """
+
+        # find query parts
+        query_str_parts = self._get_query_parts(query_str)
+
         # go through parts and add to query_parts list
         query_parts = list()
         for query_str_part in query_str_parts:
@@ -3302,11 +3356,13 @@ class Nipap:
             # tags
             if re.match('#', query_str_part['string']):
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-                query_str_part['interpretation'] = '(inherited) tag'
-                query_str_part['attribute'] = 'tag'
-
-                query_str_part['operator'] = 'equals_any'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': '(inherited) tag',
+                        'attribute': 'tag',
+                        'operator': 'equals_any',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'equals_any',
@@ -3323,9 +3379,6 @@ class Nipap:
             # IPv4 prefix
             elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('/')) == 2:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
-                query_str_part['interpretation'] = 'IPv4 prefix'
-                query_str_part['attribute'] = 'prefix'
-
                 address, prefix_length = query_str_part['string'].split('/')
 
                 # complete a prefix to it's fully expanded form
@@ -3335,16 +3388,23 @@ class Nipap:
                     address += '.0'
 
                 prefix = address + '/' + prefix_length
+                strict_prefix = str(IPy.IP(query_str_part['string'], make_net = True))
+
+                interp = {
+                        'string': query_str_part['string'],
+                        'interpretation': 'IPv4 prefix',
+                        'attribute': 'prefix',
+                        'operator': 'contained_within_equals',
+                    }
 
                 if prefix != query_str_part['string']:
-                    query_str_part['expanded'] = prefix
+                    interp['expanded'] = prefix
 
-                strict_prefix = str(IPy.IP(query_str_part['string'], make_net = True))
                 if prefix != strict_prefix:
-                    query_str_part['strict_prefix'] = strict_prefix
+                    interp['strict_prefix'] = strict_prefix
 
-                query_str_part['operator'] = 'contained_within_equals'
                 query_parts.append({
+                    'interpretation': interp,
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
                     'val2': strict_prefix
@@ -3355,10 +3415,13 @@ class Nipap:
             # search
             elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('.')) == 4:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
-                query_str_part['interpretation'] = 'IPv4 address'
-                query_str_part['operator'] = 'contains_equals'
-                query_str_part['attribute'] = 'prefix'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'IPv4 address',
+                        'attribute': 'prefix',
+                        'operator': 'contains_equals',
+                    },
                     'operator': 'contains_equals',
                     'val1': 'prefix',
                     'val2': query_str_part['string']
@@ -3367,15 +3430,18 @@ class Nipap:
             # IPv6 prefix
             elif self._get_afi(query_str_part['string']) == 6 and len(query_str_part['string'].split('/')) == 2:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 prefix")
-                query_str_part['interpretation'] = 'IPv6 prefix'
-                query_str_part['operator'] = 'contained_within_equals'
-                query_str_part['attribute'] = 'prefix'
-
                 strict_prefix = str(IPy.IP(query_str_part['string'], make_net = True))
+                interp = {
+                        'string': query_str_part['string'],
+                        'interpretation': 'IPv6 prefix',
+                        'attribute': 'prefix',
+                        'operator': 'contained_within_equals'
+                    }
                 if query_str_part['string'] != strict_prefix:
-                    query_str_part['strict_prefix'] = strict_prefix
+                    interp['strict_prefix'] = strict_prefix
 
                 query_parts.append({
+                    'interpretation': interp,
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
                     'val2': strict_prefix
@@ -3384,10 +3450,13 @@ class Nipap:
             # IPv6 address
             elif self._get_afi(query_str_part['string']) == 6:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 address")
-                query_str_part['interpretation'] = 'IPv6 address'
-                query_str_part['operator'] = 'contains_equals'
-                query_str_part['attribute'] = 'prefix'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'IPv6 address',
+                        'attribute': 'prefix',
+                        'operator': 'contains_equals',
+                    },
                     'operator': 'contains_equals',
                     'val1': 'prefix',
                     'val2': query_str_part['string']
@@ -3397,10 +3466,13 @@ class Nipap:
             # TODO: add an equal search for VRF here
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as desc/comment")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'description or comment or node or order_id or customer_id'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'text',
+                        'attribute': 'description or comment or node or order_id or customer_id',
+                        'operator': 'regex',
+                    },
                     'operator': 'or',
                     'val1': {
                         'operator': 'or',
@@ -3446,24 +3518,17 @@ class Nipap:
         if len(query_parts) > 1:
             for query_part in query_parts[1:]:
                 query = {
+                    'interpretation': {
+                        'interpretation': 'and',
+                        'operator': 'and',
+                    },
                     'operator': 'and',
                     'val1': query_part,
                     'val2': query
                 }
 
-        if extra_query is not None:
-            query = {
-                'operator': 'and',
-                'val1': query,
-                'val2': extra_query
-            }
+        return query
 
-        self._logger.debug("Expanded to: %s" % str(query))
-
-        search_result = self.search_prefix(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
-
-        return search_result
 
 
     #
@@ -3847,21 +3912,45 @@ class Nipap:
 
         self._logger.debug("smart_search_asn called; query_str: %s" % query_str)
 
-        # find query parts
         try:
-            query_str_parts = self._get_query_parts(query_str)
+            query = self._parse_asn_query(query_str)
         except NipapValueError:
             return {
-                'interpretation': [
-                    {
-                        'string': query_str,
-                        'interpretation': 'unclosed quote',
-                        'attribute': 'text'
-                    }
-                ],
-                'search_options': search_options,
-                'result': []
+                    'interpretation': [
+                        {
+                            'string': query_str,
+                            'interpretation': 'unclosed quote',
+                            'attribute': 'text'
+                        }
+                    ],
+                    'search_options': search_options,
+                    'result': []
+                }
+
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
             }
+
+        self._logger.debug("smart_search_asn; query expanded to: %s" % str(query))
+
+        search_result = self.search_asn(auth, query, search_options)
+        search_result['interpretation'] = query
+
+        return search_result
+
+
+
+    def _parse_asn_query(self, query_str):
+        """ Parse a smart search query for ASNs
+
+            This is a helper function to smart_search_pool for easier unit
+            testing of the parser.
+        """
+        # find query parts
+        query_str_parts = self._get_query_parts(query_str)
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -3875,10 +3964,13 @@ class Nipap:
 
             if is_int:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as integer (ASN)")
-                query_str_part['interpretation'] = 'asn'
-                query_str_part['operator'] = 'equals'
-                query_str_part['attribute'] = 'asn'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'asn',
+                        'attribute': 'asn',
+                        'operator': 'equals',
+                    },
                     'operator': 'equals',
                     'val1': 'asn',
                     'val2': query_str_part['string']
@@ -3886,10 +3978,13 @@ class Nipap:
 
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'name'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'text',
+                        'attribute': 'name',
+                        'operator': 'regex',
+                    },
                     'operator': 'regex_match',
                     'val1': 'name',
                     'val2': query_str_part['string']
@@ -3903,24 +3998,16 @@ class Nipap:
         if len(query_parts) > 1:
             for query_part in query_parts[1:]:
                 query = {
+                    'interpretation': {
+                        'interpretation': 'and',
+                        'operator': 'and',
+                    },
                     'operator': 'and',
                     'val1': query_part,
                     'val2': query
                 }
 
-        if extra_query is not None:
-            query = {
-                'operator': 'and',
-                'val1': query,
-                'val2': extra_query
-            }
-
-        self._logger.debug("Expanded to: %s" % str(query))
-
-        search_result = self.search_asn(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
-
-        return search_result
+        return query
 
 
 

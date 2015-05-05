@@ -4,6 +4,7 @@
     A shell command to interact with NIPAP.
 """
 
+#from __future__ import print_function
 
 import ConfigParser
 import csv
@@ -159,6 +160,38 @@ def _str_to_bool(arg):
 """
     LIST FUNCTIONS
 """
+def _parse_interp_pool(query, indent=-5, pandop=False):
+    if 'interpretation' not in query:
+        return
+    interp = query['interpretation']
+    text = None
+    text2 = None
+    andop = False
+    if query['operator'] == 'and':
+        andop = True
+    elif interp['interpretation'] == 'unclosed quote':
+        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
+        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+    elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
+        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
+        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+    else:
+        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+    if text:
+        if pandop:
+            a = '     '
+            if indent > 1:
+                a = ' `-- '
+            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+        else:
+            print "%s       `-- %s" % (' '*indent, text)
+    if text2:
+        print "%s   %s" % (' '*indent, text2)
+    if type(query['val1']) is dict:
+        _parse_interp_pool(query['val1'], indent+6, andop)
+    if type(query['val2']) is dict:
+        _parse_interp_pool(query['val2'], indent+6)
+
 
 def list_pool(arg, opts, shell_opts):
     """ List pools matching a search criteria
@@ -184,6 +217,10 @@ def list_pool(arg, opts, shell_opts):
     while True:
         res = Pool.smart_search(search_string, { 'offset': offset, 'max_result': limit }, vrf_q)
         if offset == 0: # first time in loop?
+            if shell_opts.show_interpretation:
+                print "Query interpretation:"
+                _parse_interp_pool(res['interpretation'])
+
             if len(res['result']) == 0:
                 print "No matching pools found"
                 return
@@ -220,6 +257,37 @@ def list_pool(arg, opts, shell_opts):
         offset += limit
 
 
+def _parse_interp_vrf(query, indent=-5, pandop=False):
+    if 'interpretation' not in query:
+        return
+    interp = query['interpretation']
+    text = None
+    text2 = None
+    andop = False
+    if query['operator'] == 'and':
+        andop = True
+    elif interp['interpretation'] == 'unclosed quote':
+        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
+        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+    elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
+        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
+        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+    else:
+        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+    if text:
+        if pandop:
+            a = '     '
+            if indent > 1:
+                a = ' `-- '
+            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+        else:
+            print "%s       `-- %s" % (' '*indent, text)
+    if text2:
+        print "%s   %s" % (' '*indent, text2)
+    if type(query['val1']) is dict:
+        _parse_interp_vrf(query['val1'], indent+6, andop)
+    if type(query['val2']) is dict:
+        _parse_interp_vrf(query['val2'], indent+6)
 
 def list_vrf(arg, opts, shell_opts):
     """ List VRFs matching a search criteria
@@ -234,8 +302,12 @@ def list_vrf(arg, opts, shell_opts):
     while True:
         res = VRF.smart_search(search_string, { 'offset': offset, 'max_result': limit })
         if offset == 0:
+            if shell_opts.show_interpretation:
+                print "Query interpretation:"
+                _parse_interp_vrf(res['interpretation'])
+
             if len(res['result']) == 0:
-                print "No matching VRFs found."
+                print "No VRFs matching '%s' found." % search_string
                 return
 
             print "%-16s %-22s %-2s %-40s" % ("VRF RT", "Name", "#", "Description")
@@ -255,6 +327,65 @@ def list_vrf(arg, opts, shell_opts):
             break
         offset += limit
 
+
+def _parse_interp_prefix(query, indent=-5, pandop=False):
+    if 'interpretation' not in query:
+        return
+    interp = query['interpretation']
+    text = None
+    text2 = None
+    andop = False
+    if query['operator'] == 'and':
+        andop = True
+    elif interp['interpretation'] == 'unclosed quote':
+        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
+        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+    elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
+        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
+        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contained_within_equals':
+        if 'strict_prefix' in interp and 'expanded' in interp:
+            text = "%s: %s within %s" % (interp['string'],
+                    interp['interpretation'],
+                    interp['strict_prefix'])
+            text2 = "Prefix must be contained within %s, which is the base prefix of %s (automatically expanded from %s)." % (interp['strict_prefix'], interp['expanded'], interp['string'])
+        elif 'strict_prefix' in interp:
+            text = "%s: %s within %s" % (interp['string'],
+                    interp['interpretation'],
+                    interp['strict_prefix'])
+            text2 = "Prefix must be contained within %s, which is the base prefix of %s." % (interp['strict_prefix'], interp['string'])
+        elif 'expanded' in interp:
+            text = "%s: %s within %s" % (interp['string'],
+                    interp['interpretation'],
+                    interp['expanded'])
+            text2 = "Prefix must be contained within %s (automatically expanded from %s)." % (interp['expanded'], interp['string'])
+        else:
+            text = "%s: %s within %s" % (interp['string'],
+                    interp['interpretation'],
+                    interp['string'])
+            text2 = "Prefix must be contained within %s." % (interp['string'])
+    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
+        text = "%s: Prefix that contains %s" % (interp['string'],
+                interp['string'])
+    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
+        text = "%s: %s equal to %s" % (interp['string'],
+                interp['interpretation'], interp['string'])
+    else:
+        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+    if text:
+        if pandop:
+            a = '     '
+            if indent > 1:
+                a = ' `-- '
+            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+        else:
+            print "%s       `-- %s" % (' '*indent, text)
+    if text2:
+        print "%s   %s" % (' '*indent, text2)
+    if type(query['val1']) is dict:
+        _parse_interp_prefix(query['val1'], indent+6, andop)
+    if type(query['val2']) is dict:
+        _parse_interp_prefix(query['val2'], indent+6)
 
 
 def list_prefix(arg, opts, shell_opts):
@@ -290,51 +421,13 @@ def list_prefix(arg, opts, shell_opts):
             vrf_q)
 
         if offset == 0: # first time in loop?
+            if shell_opts.show_interpretation:
+                print "Query interpretation:"
+                _parse_interp_prefix(res['interpretation'])
+
             if len(res['result']) == 0:
                 print "No addresses matching '%s' found." % search_string
                 return
-
-            if shell_opts.show_interpretation:
-                print "Query interpretation:"
-                for interp in res['interpretation']:
-                    text = interp['string']
-                    if interp['interpretation'] == 'unclosed quote':
-                        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
-                        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
-                    elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
-                        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
-                        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
-                    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contained_within_equals':
-                        if 'strict_prefix' in interp and 'expanded' in interp:
-                            text = "%s: %s within %s" % (interp['string'],
-                                    interp['interpretation'],
-                                    interp['strict_prefix'])
-                            text2 = "Prefix must be contained within %s, which is the base prefix of %s (automatically expanded from %s)." % (interp['strict_prefix'], interp['expanded'], interp['string'])
-                        elif 'strict_prefix' in interp:
-                            text = "%s: %s within %s" % (interp['string'],
-                                    interp['interpretation'],
-                                    interp['strict_prefix'])
-                            text2 = "Prefix must be contained within %s, which is the base prefix of %s." % (interp['strict_prefix'], interp['string'])
-                        elif 'expanded' in interp:
-                            text = "%s: %s within %s" % (interp['string'],
-                                    interp['interpretation'],
-                                    interp['expanded'])
-                            text2 = "Prefix must be contained within %s (automatically expanded from %s)." % (interp['expanded'], interp['string'])
-                        else:
-                            text = "%s: %s within %s" % (interp['string'],
-                                    interp['interpretation'],
-                                    interp['string'])
-                            text2 = "Prefix must be contained within %s." % (interp['string'])
-                    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
-                        text = "%s: Prefix that contains %s" % (interp['string'],
-                                interp['string'])
-                    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
-                        text = "%s: %s equal to %s" % (interp['string'],
-                                interp['interpretation'], interp['string'])
-                    else:
-                        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
-                    print " -", text
-                    print "    ", text2
 
             # Guess the width of the prefix column by looking at the initial
             # result set.

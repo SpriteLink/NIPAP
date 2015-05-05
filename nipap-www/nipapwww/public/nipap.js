@@ -1134,34 +1134,17 @@ function hidePopupMenu() {
 }
 
 
-/*
- * Callback function called when prefixes are received.
- * Plots prefixes and adds them to list.
- */
-function receivePrefixList(search_result) {
+function parseInterp(query, container) {
 
-	stats.response_received = new Date().getTime();
-
-	if (!verifyPrefixListResponse(search_result)) return;
-	newest_prefix_query = parseInt(search_result.search_options.query_id);
-
-	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" tooltip="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
-	// Run element through AngularJS compiler to "activate" directives (the
-	// AngularUI/Bootstrap tooltip)
-	$(".search_interpretation_text").replaceWith(ng_compile($(".search_interpretation_text"))(ng_scope));
-
-	/*
-	 * Interpretation list
-	 */
-	var intp_cont = $("#search_interpret_container");
-	intp_cont.empty();
-	for (key in search_result.interpretation) {
-
-		var interp = search_result.interpretation[key];
+	if (query.interpretation) {
+		var interp = query.interpretation;
 		var text = '<b>' + interp.string + ':</b> ' + interp.interpretation;
 		var tooltip = '';
-
-		if (interp.interpretation == 'unclosed quote') {
+		if (interp.interpretation == 'or') {
+			text = "<b>OR</b>";
+		} else if (interp.interpretation == 'and') {
+			text = "<b>AND</b>";
+		} else if (interp.interpretation == 'unclosed quote') {
 			text += ', please close quote!';
 			tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';
 		} else if (interp.attribute == 'tag' && interp.operator == 'equals_any') {
@@ -1184,7 +1167,7 @@ function receivePrefixList(search_result) {
 				tooltip = 'Prefix must be contained within ' + interp.string;
 			}
 		} else if (interp.attribute == 'prefix' && interp.operator == 'contains_equals') {
-			var text = '<b>' + interp.string + ':</b> ' + 'Prefix that contains ' + interp.string;
+			text = '<b>' + interp.string + ':</b> ' + 'Prefix that contains ' + interp.string;
 			tooltip = "The prefix must contain or be equal to " + interp.string;
 		} else if (interp.attribute == 'prefix' && interp.operator == 'equals') {
 			text += ' equal to <b>' + interp.string + '</b>';
@@ -1194,10 +1177,46 @@ function receivePrefixList(search_result) {
 			tooltip = "The description OR node OR order id OR the comment should regexp match '" + interp.string + "'";
 		}
 
-		intp_cont.append('<div class="search_interpretation" id="intp' + key + '" tooltip="' + tooltip + '">');
-		$('#intp' + key).html(text);
-
+		if (interp.interpretation == 'or' || interp.interpretation == 'and') {
+			var andor_text = $('<div class="search_interpretation" style="display: inline-block; vertical-align: top;"></div>').appendTo(container);
+			container = $('<div class="search_interpretation" style="display: inline-block;"></div>').appendTo(container);
+			$('<div class="search_interpretation" id="' + container.attr('id') + '_intp" tooltip="' + tooltip + '" style="padding-top: 0.5em; display: inline-block;"><div style="display: inline-block;">' + text + '</div><div style="display: inline-block; border-left:2px solid #666; border-top:2px solid #666; border-bottom:2px solid #666; margin-top: 3px; margin-left: 4px; margin-right: 4px;">&nbsp;</div></div>').appendTo(andor_text);
+		} else {
+			$('<div class="search_interpretation" style="display: block;" id="' + container.attr('id') + '_intp" tooltip="' + tooltip + '">' + text + '</div>').appendTo(container);
+		}
 	}
+
+	if (typeof(query.val1) == 'object') {
+		parseInterp(query.val1, container);
+	}
+	if (typeof(query.val2) == 'object') {
+		parseInterp(query.val2, container);
+	}
+}
+
+
+/*
+ * Callback function called when prefixes are received.
+ * Plots prefixes and adds them to list.
+ */
+function receivePrefixList(search_result) {
+
+	stats.response_received = new Date().getTime();
+
+	if (!verifyPrefixListResponse(search_result)) return;
+	newest_prefix_query = parseInt(search_result.search_options.query_id);
+
+	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" tooltip="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
+	// Run element through AngularJS compiler to "activate" directives (the
+	// AngularUI/Bootstrap tooltip)
+	$(".search_interpretation_text").replaceWith(ng_compile($(".search_interpretation_text"))(ng_scope));
+
+	/*
+	 * Interpretation list
+	 */
+	var intp_cont = $("#search_interpret_container");
+	intp_cont.empty();
+	parseInterp(search_result.interpretation, intp_cont);
 
 	// Run element through AngularJS compiler to "activate" directives (the
 	// AngularUI/Bootstrap tooltip)

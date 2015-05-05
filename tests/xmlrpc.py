@@ -1121,9 +1121,49 @@ class NipapXmlTest(unittest.TestCase):
 
         res = s.smart_search_prefix({ 'auth': ad, 'query_string': 'F' })
         expected = {
-                'interpretation': [{'operator': 'regex', 'attribute':
-                    'description or comment or node or order_id or customer_id', 'interpretation':
-                    'text', 'string': 'F'}],
+                'interpretation': {
+                    'interpretation': {
+                        'operator': 'regex',
+                        'attribute': 'description or comment or node or order_id or customer_id',
+                        'interpretation': 'text',
+                        'string': 'F'
+                        },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'or',
+                            'val1': {
+                                'operator': 'or',
+                                'val1': {
+                                    'operator': 'regex_match',
+                                    'val1': 'comment',
+                                    'val2': 'F'
+                                },
+                                'val2': {
+                                    'operator': 'regex_match',
+                                    'val1': 'description',
+                                    'val2': 'F'
+                                }
+                            },
+                            'val2': {
+                                'operator': 'regex_match',
+                                'val1': 'node',
+                                'val2': 'F'
+                            }
+                        },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'order_id',
+                            'val2': 'F'
+                        }
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'customer_id',
+                        'val2': 'F'
+                    }
+                },
                 'search_options': {'include_all_children':
                 False, 'max_result': 50, 'include_all_parents': False,
                 'parents_depth': 0, 'offset': 0, 'children_depth': 0,
@@ -1270,12 +1310,12 @@ class NipapXmlTest(unittest.TestCase):
         res = s.smart_search_asn({ 'auth': ad, 'query_string': "Autonomous" })
         self.assertEquals(len(res['result']), 1, "search resulted in wrong number of hits")
         self.assertEquals(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
-        self.assertEquals(res['interpretation'][0]['attribute'], 'name', "search term interpretated as wrong type")
+        self.assertEquals(res['interpretation']['interpretation']['attribute'], 'name', 'search term interpreted as wrong type')
 
         res = s.smart_search_asn({ 'auth': ad, 'query_string': "5" })
         self.assertEquals(len(res['result']), 1, "search resulted in wrong number of hits")
         self.assertEquals(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
-        self.assertEquals(res['interpretation'][0]['attribute'], 'asn', "search term interpretated as wrong type")
+        self.assertEquals(res['interpretation']['interpretation']['attribute'], 'asn', "search term interpretated as wrong type")
 
 
 
