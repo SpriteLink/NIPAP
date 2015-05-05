@@ -1,10 +1,10 @@
 import logging
 
-from pylons import request, response, session, tmpl_context as c, url
-from pylons.controllers.util import abort, redirect
+from pylons import request, tmpl_context as c, url
+from pylons.controllers.util import redirect
 
 from nipapwww.lib.base import BaseController, render
-from pynipap import VRF, Pool, Prefix, NipapNonExistentError
+from pynipap import VRF, Prefix
 
 log = logging.getLogger(__name__)
 
