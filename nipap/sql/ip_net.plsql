@@ -4,7 +4,7 @@
 --
 --------------------------------------------
 
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';
+COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 6';
 
 CREATE EXTENSION IF NOT EXISTS ip4r;
 CREATE EXTENSION IF NOT EXISTS hstore;
