@@ -16,7 +16,7 @@ NIPAP_DB_EXISTS=0
 NIPAP_DB_VERSION=0
 
 # the most current DB version and the one that we are about to install
-CURRENT_DB_VERSION=5
+CURRENT_DB_VERSION=6
 
 # determine if postgres is installed
 su postgres -c 'psql --version' > /dev/null 2>&1

@@ -1,3 +1,29 @@
+nipap-www (0.28.0-1) stable; urgency=medium
+
+  * Note how this version makes VRF and pool names case-insensitive.
+    Make sure you do have any collisions!
+  * Improved LDAP support, now does proper TLS and is able to work with
+    a Windows AD server (#697, #726, #737)
+  * Documentation on nipap.readthedocs.org is now up to date and working
+    (#754)
+  * whoisd can now listen on IPv6 (#718, #719)
+  * pynipap is available via PyPi (#710)
+  * pynipap is now py3 compatible (#579)
+  * optparse has been replaced with argparse in some places, moving us
+    closer to py3 compatibility (#746)
+  * Added example import script from Infoblox (#741)
+  * Improved query interpretation format which lays the foundation for
+    enabling more complex queries using boolean operators, groupings and
+    similar (#683)
+  * Fix of last_modified timestamp not being updated (#753)
+  * Fix of web-ui expires field for infinity value (#721, #752)
+  * Fix of backend for db port not being passed from config file (#742)
+  * Fix of init script status now having LSB compliant return codes
+    (#739)
+  * Various other fixes and improvements
+
+ -- Kristian Larsson <kll@spritelink.net>  Wed, 06 May 2015 18:40:28 +0200
+
 nipap-www (0.27.4-1) stable; urgency=medium
 
   * Real fix of web-ui bug where the node field would stay disabled for

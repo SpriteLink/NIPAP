@@ -1,7 +1,7 @@
 Version 0.28.0 - Hades
 ----------------------
-Note how this version makes VRF and pool names case-insensitive. Make sure you
-do have any collisions!
+ * Note how this version makes VRF and pool names case-insensitive. Make sure
+   you do have any collisions!
  * Improved LDAP support, now does proper TLS and is able to work with a
    Windows AD server (#697, #726, #737)
  * Documentation on nipap.readthedocs.org is now up to date and working (#754)
