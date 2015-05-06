@@ -103,11 +103,11 @@ CREATE TABLE ip_net_pool (
 	avps hstore NOT NULL DEFAULT ''
 );
 
-CREATE UNIQUE INDEX ON ip_net_pool__name__index ON (lower(name));
+CREATE UNIQUE INDEX ip_net_pool__name__index ON ip_net_pool (lower(name));
 
 COMMENT ON TABLE ip_net_pool IS 'IP Pools for assigning prefixes from';
 
-COMMENT ON INDEX ip_net_pool_name_key IS 'pool name';
+COMMENT ON INDEX ip_net_pool__name__index IS 'pool name';
 
 COMMENT ON COLUMN ip_net_pool.id IS 'Unique ID of pool';
 COMMENT ON COLUMN ip_net_pool.name IS 'Pool name';
