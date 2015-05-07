@@ -71,6 +71,10 @@ class SmartParser:
             # handle operators joining together expressions
             if isinstance(part, basestring) and part.lower() in self.boolean_operators:
                 dss['operator'] = part.lower()
+                dss['interpretation'] = {
+                        'interpretation': part.lower(),
+                        'operator': part.lower()
+                        }
                 #self._logger.debug("operator part: %s" % part.lower())
                 continue
 
