@@ -1,3 +1,14 @@
+nipap-whoisd (0.28.1-1) stable; urgency=medium
+
+  * Fix of SQL upgrade script
+  * Fix of web-ui bug where VRF & pool selector would close when clicked
+    (#728)
+  * Search fields in web-ui now receive focus on page load (#744)
+  * Fix of web-ui so that pool can be deselected for new prefixes (#732)
+  * Fix query interpretation order to align with order in query (#764)
+
+ -- Kristian Larsson <kll@spritelink.net>  Thu, 07 May 2015 23:27:00 +0200
+
 nipap-whoisd (0.28.0-1) stable; urgency=medium
 
   * Note how this version makes VRF and pool names case-insensitive.
