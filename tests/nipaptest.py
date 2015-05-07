@@ -1645,6 +1645,17 @@ class TestSmartParser(unittest.TestCase):
                 'operator': 'and',
                 'val1': {
                     'interpretation': {
+                        'attribute': 'prefix',
+                        'interpretation': 'IPv4 prefix',
+                        'operator': 'contained_within_equals',
+                        'string': u'1.3.3.0/24'
+                    },
+                    'operator': 'contained_within_equals',
+                    'val1': 'prefix',
+                    'val2': '1.3.3.0/24'
+                    },
+                'val2': {
+                    'interpretation': {
                         'attribute': 'description or comment or node or order_id or customer_id',
                         'interpretation': 'text',
                         'operator': 'regex',
@@ -1685,17 +1696,6 @@ class TestSmartParser(unittest.TestCase):
                         'val1': 'customer_id',
                         'val2': u'foo'
                         }
-                    },
-                'val2': {
-                    'interpretation': {
-                        'attribute': 'prefix',
-                        'interpretation': 'IPv4 prefix',
-                        'operator': 'contained_within_equals',
-                        'string': u'1.3.3.0/24'
-                    },
-                    'operator': 'contained_within_equals',
-                    'val1': 'prefix',
-                    'val2': '1.3.3.0/24'
                     }
                 }
 
@@ -1707,7 +1707,7 @@ class TestSmartParser(unittest.TestCase):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'No closing quotation'):
-            query, interp = n._parse_prefix_query('"')
+            query = n._parse_prefix_query('"')
 
 
 
@@ -1818,6 +1818,75 @@ class TestSmartParser(unittest.TestCase):
 
 
 
+    def test_vrf5(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_vrf_query('foo bar')
+        exp_query = {
+                'interpretation': {
+                    'interpretation': 'and',
+                    'operator': 'and'
+                },
+                'operator': 'and',
+                'val1': {
+                    'interpretation': {
+                        'attribute': 'vrf or name or description',
+                        'interpretation': 'text',
+                        'operator': 'regex',
+                        'string': u'foo'
+                    },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'regex_match',
+                            'val1': 'name',
+                            'val2': u'foo'
+                            },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'description',
+                            'val2': u'foo'
+                            }
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'rt',
+                        'val2': u'foo'
+                    }
+                },
+                'val2': {
+                    'interpretation': {
+                        'attribute': 'vrf or name or description',
+                        'interpretation': 'text',
+                        'operator': 'regex',
+                        'string': u'bar'
+                    },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'regex_match',
+                            'val1': 'name',
+                            'val2': u'bar'
+                            },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'description',
+                            'val2': u'bar'
+                            }
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'rt',
+                        'val2': u'bar'
+                    }
+                }
+            }
+        self.assertEqual(query, exp_query)
+
+
+
     def test_pool1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
@@ -1905,6 +1974,60 @@ class TestSmartParser(unittest.TestCase):
         n = Nipap()
         with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'No closing quotation'):
             query, interp = n._parse_pool_query('"')
+
+
+
+    def test_pool5(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_pool_query('foo bar')
+        exp_query = {
+                'interpretation': {
+                    'interpretation': 'and',
+                    'operator': 'and'
+                },
+                'operator': 'and',
+                'val1': {
+                    'interpretation': {
+                        'attribute': 'name or description',
+                        'interpretation': 'text',
+                        'operator': 'regex',
+                        'string': u'foo'
+                    },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': u'foo'
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'description',
+                        'val2': u'foo'
+                    }
+                },
+                'val2': {
+                    'interpretation': {
+                        'attribute': 'name or description',
+                        'interpretation': 'text',
+                        'operator': 'regex',
+                        'string': u'bar'
+                    },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': u'bar'
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'description',
+                        'val2': u'bar'
+                    }
+                }
+            }
+        self.assertEqual(query, exp_query)
+
 
 
 
