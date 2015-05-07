@@ -1354,7 +1354,8 @@ class Nipap:
             query = query_parts[0]
 
         if len(query_parts) > 1:
-            for query_part in query_parts[1:]:
+            query = query_parts[-1]
+            for query_part in reversed(query_parts[:-1]):
                 query = {
                     'interpretation': {
                         'interpretation': 'and',
@@ -2018,7 +2019,8 @@ class Nipap:
             query = query_parts[0]
 
         if len(query_parts) > 1:
-            for query_part in query_parts[1:]:
+            query = query_parts[-1]
+            for query_part in reversed(query_parts[:-1]):
                 query = {
                     'interpretation': {
                         'interpretation': 'and',
@@ -3516,7 +3518,8 @@ class Nipap:
             query = query_parts[0]
 
         if len(query_parts) > 1:
-            for query_part in query_parts[1:]:
+            query = query_parts[-1]
+            for query_part in reversed(query_parts[:-1]):
                 query = {
                     'interpretation': {
                         'interpretation': 'and',
