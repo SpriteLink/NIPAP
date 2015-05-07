@@ -5,12 +5,18 @@
 # Source debconf library.
 . /usr/share/debconf/confmodule
 
-# autostart?
-db_get nipap-whoisd/startup
-if [ "$RET" = "true" ]; then
-	sed -i -e 's/RUN=.*/RUN=yes/' /etc/default/nipap-whoisd
-	update-rc.d nipap-whoisd defaults >/dev/null 2>&1
-else
-	sed -i -e 's/RUN=.*/RUN=no/' /etc/default/nipap-whoisd
-	update-rc.d nipap-whoisd remove >/dev/null 2>&1
-fi
+case "$1" in
+	configure)
+		# autostart?
+		db_get nipap-whoisd/startup
+		if [ "$RET" = "true" ]; then
+			sed -i -e 's/RUN=.*/RUN=yes/' /etc/default/nipap-whoisd
+			update-rc.d nipap-whoisd defaults >/dev/null 2>&1
+		else
+			sed -i -e 's/RUN=.*/RUN=no/' /etc/default/nipap-whoisd
+			update-rc.d nipap-whoisd remove >/dev/null 2>&1
+		fi
+	;;
+esac
+
+exit 0
