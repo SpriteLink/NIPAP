@@ -80,6 +80,13 @@ nipapAppDirectives.directive('nipapPoolSelectorPopup', function ($http, $timeout
 
 			}
 
+			scope.deselectPool = function (pool) {
+				// deselect pool & close popup
+				scope.selected_pool = null;
+				scope.pools = [];
+				scope.popup_open = false;
+			}
+
 			/*
 			 * Run when popup menu is toggled
 			 */
