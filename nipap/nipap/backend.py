@@ -2247,6 +2247,11 @@ class Nipap:
             This is a helper function to smart_search_pool for easier unit
             testing of the parser.
         """
+        from smart_parsing import PoolSmartParser
+        sp = PoolSmartParser()
+        query = sp.parse(query_str)
+        return query
+
         # find query parts
         query_str_parts = self._get_query_parts(query_str)
 
