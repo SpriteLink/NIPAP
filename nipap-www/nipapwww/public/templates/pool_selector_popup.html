@@ -1,4 +1,4 @@
-<div dropdown on-toggle="toggled(open)" is-open="popup_open">
+<div dropdown on-toggle="toggled(open)" is-open="popup_open" ng-click="$event.stopPropagation()">
 	<input type="button" class="btn btn-danger dropdown-toggle" value="Change pool" style="margin-left: 15px;">
 	<div class="dropdown-menu popup_menu selector">
 		<h3>Select pool</h3>
