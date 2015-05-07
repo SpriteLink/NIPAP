@@ -1,4 +1,4 @@
-__version__		= "0.28.0"
+__version__		= "0.28.1"
 __db_version__	= 6
 __author__		= "Kristian Larsson, Lukas Garberg"
 __author_email__ = "kll@tele2.net, lukas@spritelink.net"
