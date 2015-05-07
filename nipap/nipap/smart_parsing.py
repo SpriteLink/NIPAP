@@ -2,6 +2,8 @@
 
 from itertools import izip_longest
 import logging
+import re
+
 from pyparsing import Forward, Group, nestedExpr, ParseResults, QuotedString, Word, ZeroOrMore, alphanums, nums, oneOf
 
 op_text = {
@@ -129,34 +131,7 @@ class SmartParser:
     def _string_to_dictsql(self, string):
         """ Do magic matching of single words or quoted string
         """
-        #self._logger.debug("parsing string: " + str(string))
-        #self._logger.debug("Query part '" + string + "' interpreted as text")
-
-        dictsql = {
-                'operator': 'or',
-                'val1': {
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'regex_match',
-                        'val1': 'description',
-                        'val2': string
-                    },
-                    'val2': {
-                        'operator': 'regex_match',
-                        'val1': 'comment',
-                        'val2': string
-                    }
-                },
-                'val2': {
-                    'operator': 'regex_match',
-                    'val1': 'node',
-                    'val2': string
-                },
-                'interpretation': 'text',
-                'attribute': 'vrf or name or description'
-            }
-
-        return dictsql
+        raise NotImplemented()
 
 
     def _parse_expr(self, part):
@@ -213,6 +188,62 @@ class VrfSmartParser(SmartParser):
             'description',
             'tags'
             }
+
+
+class PoolSmartParser(SmartParser):
+
+    def _string_to_dictsql(self, string):
+        """ Do magic matching of single words or quoted string
+        """
+        self._logger.debug("parsing string: " + str(string))
+        #self._logger.debug("Query part '" + string + "' interpreted as text")
+
+        if re.match('#', string):
+            self._logger.debug("Query part '" + string + "' interpreted as tag")
+            dictsql = {
+                    'interpretation': {
+                        'string': string,
+                        'interpretation': '(inherited) tag',
+                        'attribute': 'tag',
+                        'operator': 'equals_any',
+                        },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'equals_any',
+                        'val1': 'tags',
+                        'val2': string[1:]
+                        },
+                    'val2': {
+                        'operator': 'equals_any',
+                        'val1': 'inherited_tags',
+                        'val2': string[1:]
+                        }
+                    }
+
+        else:
+            self._logger.debug("Query part '" + string + "' interpreted as text")
+            dictsql = {
+                    'interpretation': {
+                        'attribute': 'name or description',
+                        'interpretation': 'text',
+                        'operator': 'regex',
+                        'string': string
+                        },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': string
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'description',
+                        'val2': string
+                        }
+                    }
+
+        return dictsql
+
 
 
 class ParserError(Exception):
