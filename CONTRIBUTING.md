@@ -13,6 +13,11 @@ As a user of NIPAP it is possible you may hit bugs or find areas that need
 improvement. Please report any bugs or improvement requests through GitHub's
 issues on [the GitHub issue page](http://github.com/SpriteLink/NIPAP/issues).
 
+One of the easiest and best ways to start contributing is by simply giving
+input on existing issues. How do you think a bug should be solved or how should
+a new feature be designed to give you the most use? Go through a few issues and
+comment!
+
 If you would like to submit code, you are welcome to do so by submitting a Pull
 Request. Start by reading through our guidelines on [code submission](#code-submission).
 
