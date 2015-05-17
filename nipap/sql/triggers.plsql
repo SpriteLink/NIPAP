@@ -11,6 +11,7 @@ DECLARE
 	rt_part_one text;
 	rt_part_two text;
 	ip text;
+	rt_style text;
 BEGIN
 	-- don't allow setting an RT for VRF id 0
 	IF NEW.id = 0 THEN
@@ -20,14 +21,37 @@ BEGIN
 	ELSE -- make sure all VRF except for VRF id 0 has a proper RT
 		-- make sure we only have two fields delimited by a colon
 		IF (SELECT COUNT(1) FROM regexp_matches(NEW.rt, '(:)', 'g')) != 1 THEN
-			RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+			RAISE EXCEPTION '1200:Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
 		END IF;
 
-		-- check first part
+		-- determine RT style, ie 123:456 or IP:id
 		BEGIN
 			-- either it's a integer (AS number)
 			rt_part_one := split_part(NEW.rt, ':', 1)::bigint;
+			rt_style := 'simple';
 		EXCEPTION WHEN others THEN
+			rt_style := 'ip';
+		END;
+
+		-- second part
+		BEGIN
+			rt_part_two := split_part(NEW.rt, ':', 2)::bigint;
+		EXCEPTION WHEN others THEN
+			RAISE EXCEPTION '1200:Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+		END;
+
+		-- first part
+		IF rt_style = 'simple' THEN
+			BEGIN
+				rt_part_one := split_part(NEW.rt, ':', 1)::bigint;
+			EXCEPTION WHEN others THEN
+				RAISE EXCEPTION '1200:1Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+			END;
+
+			-- reconstruct value
+			NEW.rt := rt_part_one::text || ':' || rt_part_two::text;
+
+		ELSIF rt_style = 'ip' THEN
 			BEGIN
 				-- or an IPv4 address
 				ip := host(split_part(NEW.rt, ':', 1)::inet);
@@ -36,17 +60,18 @@ BEGIN
 							(split_part(ip, '.', 3)::bigint << 8) +
 							(split_part(ip, '.', 4)::bigint);
 			EXCEPTION WHEN others THEN
-				RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+				RAISE EXCEPTION '1200:Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
 			END;
-		END;
 
-		-- check part two
-		BEGIN
-			rt_part_two := split_part(NEW.rt, ':', 2)::bigint;
-		EXCEPTION WHEN others THEN
-			RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
-		END;
-		NEW.rt := rt_part_one::text || ':' || rt_part_two::text;
+			-- reconstruct IP value
+			NEW.rt := (split_part(ip, '.', 1)::bigint) || '.' ||
+							(split_part(ip, '.', 2)::bigint) || '.' ||
+							(split_part(ip, '.', 3)::bigint) || '.' ||
+							(split_part(ip, '.', 4)::bigint) || ':' ||
+							rt_part_two::text;
+		ELSE
+			RAISE EXCEPTION '1200:Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+		END IF;
 	END IF;
 
 	RETURN NEW;
