@@ -1295,6 +1295,54 @@ class TestPrefixStatistics(unittest.TestCase):
 
 
 
+class TestVrf(unittest.TestCase):
+    """ Test various VRF related things
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_vrf1(self):
+        """ Test VRF RT input values
+        """
+
+        v = VRF()
+        v.name = "test-vrf"
+
+        broken_values = [
+                "foo",
+                "123:foo",
+                "foo:123",
+                "123.456.789.123:123",
+                "123.123.200. 1:123",
+                " 123.456.789.123:123"
+                ]
+
+        for bv in broken_values:
+            with self.assertRaisesRegexp(pynipap.NipapValueError, 'Invalid input for column rt'):
+                v.rt = bv
+                v.save()
+
+        # valid value
+        v.rt = "123:456"
+        v.save()
+        self.assertEqual("123:456", VRF.list({"name": "test-vrf"})[0].rt)
+
+        # valid value but with whitespace which should be stripped
+        v.rt = " 123:456"
+        v.save()
+        self.assertEqual("123:456", VRF.list({"name": "test-vrf"})[0].rt)
+
+        # valid IP:id value
+        v.rt = "123.123.123.123:456"
+        v.save()
+        self.assertEqual("123.123.123.123:456", VRF.list({"name": "test-vrf"})[0].rt)
+
+
+
 class TestVrfStatistics(unittest.TestCase):
     """ Test calculation of statistics for VRFs
     """
