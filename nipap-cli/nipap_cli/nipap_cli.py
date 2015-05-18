@@ -981,7 +981,7 @@ def view_prefix(arg, opts, shell_opts):
     try:
         # this fails if bits are set on right side of mask
         ip = IPy.IP(arg)
-    except:
+    except ValueError:
         arg = arg.split('/')[0]
 
     q = { 'prefix': arg }
