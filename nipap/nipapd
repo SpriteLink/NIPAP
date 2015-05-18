@@ -18,7 +18,7 @@ from tornado.ioloop import IOLoop
 from nipap.nipapconfig import NipapConfig, NipapConfigError
 from nipap.backend import NipapError
 
-import psutil, psutil.error
+import psutil
 import signal
 import atexit
 
@@ -30,7 +30,7 @@ def exit_cleanup():
     # find all our child processes and kill them off
     try:
         p = psutil.Process(os.getpid())
-    except psutil.error.NoSuchProcess:
+    except psutil.NoSuchProcess:
         return
     for pid in p.get_children(recursive=True):
         os.kill(pid.pid, signal.SIGTERM)
