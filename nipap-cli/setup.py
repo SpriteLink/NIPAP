@@ -41,9 +41,9 @@ setup(
     author_email = nipap_cli.__author_email__,
     license = nipap_cli.__license__,
     url = nipap_cli.__url__,
-    packages = [ 'nipap_cli', ],
-    keywords = ['nipap_cli', ],
-    requires = ['pynipap', ],
+    packages = ['nipap_cli'],
+    keywords = ['nipap_cli'],
+    requires = ['IPy', 'pynipap'],
     data_files = get_data_files(),
     classifiers = [
         'Development Status :: 4 - Beta',

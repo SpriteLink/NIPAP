@@ -16,6 +16,8 @@ import string
 import subprocess
 import sys
 
+import IPy
+
 import pynipap
 from pynipap import Pool, Prefix, Tag, VRF, NipapError
 from command import Command
@@ -966,6 +968,21 @@ def view_pool(arg, opts, shell_opts):
 def view_prefix(arg, opts, shell_opts):
     """ View a single prefix.
     """
+    # Internally, this function searches in the prefix column which means that
+    # hosts have a prefix length of 32/128 while they are normally displayed
+    # with the prefix length of the network they are in. To allow the user to
+    # input either, e.g. 1.0.0.1 or 1.0.0.1/31 we strip the prefix length bits
+    # to assume /32 if the address is not a network address. If it is the
+    # network address we always search using the specified mask. In certain
+    # cases there is a host with the network address, typically when /31 or /127
+    # prefix lengths are used, for example 1.0.0.0/31 and 1.0.0.0/32 (first host
+    # in /31 network) in which case it becomes necessary to distinguish between
+    # the two using the mask.
+    try:
+        # this fails if bits are set on right side of mask
+        ip = IPy.IP(arg)
+    except ValueError:
+        arg = arg.split('/')[0]
 
     q = { 'prefix': arg }
 
