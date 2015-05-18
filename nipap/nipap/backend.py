@@ -1301,21 +1301,13 @@ class Nipap:
                 query_parts.append({
                     'interpretation': {
                         'string': query_str_part['string'],
-                        'interpretation': '(inherited) tag',
+                        'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
                     },
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'equals_any',
-                        'val1': 'tags',
-                        'val2': query_str_part['string'][1:]
-                    },
-                    'val2': {
-                        'operator': 'equals_any',
-                        'val1': 'inherited_tags',
-                        'val2': query_str_part['string'][1:]
-                    }
+                    'operator': 'equals_any',
+                    'val1': 'tags',
+                    'val2': query_str_part['string'][1:]
                 })
 
             else:
