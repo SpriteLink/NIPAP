@@ -1996,21 +1996,13 @@ class TestSmartParser(unittest.TestCase):
         exp_query = {
                 'interpretation': {
                     'attribute': 'tag',
-                    'interpretation': '(inherited) tag',
+                    'interpretation': 'tag',
                     'operator': 'equals_any',
                     'string': u'#bar'
                 },
-                'operator': 'or',
-                'val1': {
-                    'operator': 'equals_any',
-                    'val1': 'tags',
-                    'val2': u'bar'
-                },
-                'val2': {
-                    'operator': 'equals_any',
-                    'val1': 'inherited_tags',
-                    'val2': u'bar'
-                }
+                'operator': 'equals_any',
+                'val1': 'tags',
+                'val2': u'bar'
             }
 
         self.assertEqual(query, exp_query)
