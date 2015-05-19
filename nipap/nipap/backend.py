@@ -1449,20 +1449,26 @@ class Nipap:
             if query['val1'] not in pool_attr:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
+            # build where clause
+            if query['operator'] not in _operation_map:
+                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
+
             # workaround for handling equal matches of NULL-values
             if query['operator'] == 'equals' and query['val2'] is None:
                 query['operator'] = 'is'
             elif query['operator'] == 'not_equals' and query['val2'] is None:
                 query['operator'] = 'is_not'
 
-            # build where clause
-            if query['operator'] not in _operation_map:
-                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
+            if query['operator'] in ('equals_any',):
+                where = str(" %%s = ANY (%s%s) " %
+                        ( col_prefix, pool_attr[query['val1']])
+                        )
 
-            where = str(" %s%s %s %%s " %
-                ( col_prefix, pool_attr[query['val1']],
-                _operation_map[query['operator']] )
-            )
+            else:
+                where = str(" %s%s %s %%s " %
+                    ( col_prefix, pool_attr[query['val1']],
+                    _operation_map[query['operator']] )
+                )
 
             opt.append(query['val2'])
 
@@ -1974,21 +1980,13 @@ class Nipap:
                 query_parts.append({
                     'interpretation': {
                         'string': query_str_part['string'],
-                        'interpretation': '(inherited) tag',
+                        'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
                     },
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'equals_any',
-                        'val1': 'tags',
-                        'val2': query_str_part['string'][1:]
-                    },
-                    'val2': {
-                        'operator': 'equals_any',
-                        'val1': 'inherited_tags',
-                        'val2': query_str_part['string'][1:]
-                    }
+                    'operator': 'equals_any',
+                    'val1': 'tags',
+                    'val2': query_str_part['string'][1:]
                 })
 
             else:
