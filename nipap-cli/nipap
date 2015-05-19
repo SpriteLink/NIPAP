@@ -74,7 +74,11 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # read configuration
-    cfg = ConfigParser.ConfigParser()
+    cfg_defaults = {
+        'scheme': 'http',
+        'port': '1337',
+    }
+    cfg = ConfigParser.ConfigParser(cfg_defaults)
     cfg.read(userrcfile)
     nipap_cli.nipap_cli.cfg = cfg
 

@@ -48,11 +48,12 @@ def setup_connection():
 
     # build XML-RPC URI
     try:
-        pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
+        pynipap.xmlrpc_uri = "%(scheme)s://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
+                'scheme': cfg.get('global', 'scheme'),
                 'username': cfg.get('global', 'username'),
                 'password': cfg.get('global', 'password'),
                 'hostname': cfg.get('global', 'hostname'),
-                'port'    : cfg.get('global', 'port')
+                'port': cfg.get('global', 'port'),
             }
     except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
         print >> sys.stderr, "Please define the username, password, hostname and port in your .nipaprc under the section 'global'"
