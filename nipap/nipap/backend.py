@@ -213,7 +213,6 @@ _operation_map = {
     'and': 'AND',
     'or': 'OR',
     'equals_any': '= ANY',
-    'equals_any_ci': '= ANY',
     'equals': '=',
     'less': '<',
     'less_or_equal': '<=',
@@ -849,11 +848,6 @@ class Nipap:
                 query['operator'] = 'is_not'
 
             if query['operator'] in ('equals_any',):
-                where = str(" %%s = ANY (%s%s) " %
-                        ( col_prefix, vrf_attr[query['val1']])
-                        )
-
-            elif query['operator'] in ('equals_any_ci',):
                 where = str(" %%s = ANY (%s%s::citext[]) " %
                         ( col_prefix, vrf_attr[query['val1']])
                         )
@@ -1315,9 +1309,9 @@ class Nipap:
                         'string': query_str_part['string'],
                         'interpretation': 'tag',
                         'attribute': 'tag',
-                        'operator': 'equals_any_ci',
+                        'operator': 'equals_any',
                     },
-                    'operator': 'equals_any_ci',
+                    'operator': 'equals_any',
                     'val1': 'tags',
                     'val2': query_str_part['string'][1:]
                 })
@@ -1464,11 +1458,6 @@ class Nipap:
                 query['operator'] = 'is_not'
 
             if query['operator'] in ('equals_any',):
-                where = str(" %%s = ANY (%s%s) " %
-                        ( col_prefix, pool_attr[query['val1']])
-                        )
-
-            elif query['operator'] in ('equals_any_ci',):
                 where = str(" %%s = ANY (%s%s::citext[]) " %
                         ( col_prefix, pool_attr[query['val1']])
                         )
@@ -1991,9 +1980,9 @@ class Nipap:
                         'string': query_str_part['string'],
                         'interpretation': 'tag',
                         'attribute': 'tag',
-                        'operator': 'equals_any_ci',
+                        'operator': 'equals_any',
                     },
-                    'operator': 'equals_any_ci',
+                    'operator': 'equals_any',
                     'val1': 'tags',
                     'val2': query_str_part['string'][1:]
                 })
@@ -2212,11 +2201,6 @@ class Nipap:
                         }
 
             elif query['operator'] in ('equals_any',):
-                where = str(" %%s = ANY (%s%s) " %
-                        ( col_prefix, prefix_attr[query['val1']])
-                        )
-
-            elif query['operator'] in ('equals_any_ci',):
                 where = str(" %%s = ANY (%s%s::citext[]) " %
                         ( col_prefix, prefix_attr[query['val1']])
                         )
@@ -3375,16 +3359,16 @@ class Nipap:
                         'string': query_str_part['string'],
                         'interpretation': '(inherited) tag',
                         'attribute': 'tag',
-                        'operator': 'equals_any_ci',
+                        'operator': 'equals_any',
                     },
                     'operator': 'or',
                     'val1': {
-                        'operator': 'equals_any_ci',
+                        'operator': 'equals_any',
                         'val1': 'tags',
                         'val2': query_str_part['string'][1:]
                     },
                     'val2': {
-                        'operator': 'equals_any_ci',
+                        'operator': 'equals_any',
                         'val1': 'inherited_tags',
                         'val2': query_str_part['string'][1:]
                     }

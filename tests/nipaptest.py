@@ -1838,10 +1838,10 @@ class TestSmartParser(unittest.TestCase):
                 'interpretation': {
                     'attribute': 'tag',
                     'interpretation': 'tag',
-                    'operator': 'equals_any_ci',
+                    'operator': 'equals_any',
                     'string': u'#bar'
                 },
-                'operator': 'equals_any_ci',
+                'operator': 'equals_any',
                 'val1': 'tags',
                 'val2': u'bar'
             }
@@ -1989,10 +1989,10 @@ class TestSmartParser(unittest.TestCase):
                 'interpretation': {
                     'attribute': 'tag',
                     'interpretation': 'tag',
-                    'operator': 'equals_any_ci',
+                    'operator': 'equals_any',
                     'string': u'#bar'
                 },
-                'operator': 'equals_any_ci',
+                'operator': 'equals_any',
                 'val1': 'tags',
                 'val2': u'bar'
             }
