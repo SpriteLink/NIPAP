@@ -209,6 +209,133 @@ except:
     import parsedatetime.parsedatetime_consts as pdc
     pdt = parsedatetime.parsedatetime.Calendar(pdc.Constants())
 
+
+# list of all attributes on a prefix, including both writable and read-only
+# values
+_prefix_spec = {
+        'added': {
+            'column': 'inp.added',
+            'ro': True,
+        },
+        'alarm_priority': {
+            'column': 'inp.alarm_priority',
+            'ro': False,
+        },
+        'authoritative_source': {
+            'column': 'inp.authoritative_source',
+            'ro': False,
+        },
+        'avps': {
+            'column': 'inp.avps',
+            'ro': False,
+        },
+        'comment': {
+            'column': 'inp.comment',
+            'ro': False,
+        },
+        'country': {
+            'column': 'inp.country',
+            'ro': False,
+        },
+        'customer_id': {
+            'column': 'inp.customer_id',
+            'ro': False,
+        },
+        'description': {
+            'column': 'inp.description',
+            'ro': False,
+        },
+        'expires': {
+            'column': 'inp.expires',
+            'ro': False,
+        },
+        'external_key': {
+            'column': 'inp.external_key',
+            'ro': False,
+        },
+        'family': {
+            'column': 'family(inp.prefix)',
+            'ro': True,
+        },
+        'free_addresses': {
+            'column': 'inp.free_addresses',
+            'ro': True,
+        },
+        'id': {
+            'column': 'inp.id',
+            'ro': True,
+        },
+        'indent': {
+            'column': 'inp.indent',
+            'ro': True,
+        },
+        'last_modified': {
+            'column': 'inp.last_modified',
+            'ro': True,
+        },
+        'monitor': {
+            'column': 'inp.monitor',
+            'ro': False,
+        },
+        'node': {
+            'column': 'inp.node',
+            'ro': False,
+        },
+        'order_id': {
+            'column': 'inp.order_id',
+            'ro': False,
+        },
+        'pool_id': {
+            'column': 'inp.pool_id',
+            'ro': False,
+        },
+        'prefix': {
+            'column': 'inp.prefix',
+            'ro': False,
+        },
+        'status': {
+            'column': 'inp.status',
+            'ro': False,
+        },
+        'tags': {
+            'column': 'inp.tags',
+            'ro': False,
+        },
+        'total_addresses': {
+            'column': 'inp.total_addresses',
+            'ro': True,
+        },
+        'type': {
+            'column': 'inp.type',
+            'ro': False,
+        },
+        'used_addresses': {
+            'column': 'inp.used_addresses',
+            'ro': True,
+        },
+        'vlan': {
+            'column': 'inp.vlan',
+            'ro': False,
+        },
+        'vrf_id': {
+            'column': 'inp.vrf_id',
+            'ro': False,
+        },
+        'vrf_name': {
+            'column': 'vrf.name',
+            'ro': True,
+        },
+        'vrf_rt': {
+            'column': 'vrf.rt',
+            'ro': True,
+        },
+    }
+
+# _prefix_attrs contain the editable attributes, ie the ones that are not
+# read-only from _prefix_spec
+_prefix_attrs = {k: v for k, v in _prefix_spec.items() if not _prefix_spec[k]['ro']}
+
+
 _operation_map = {
     'and': 'AND',
     'or': 'OR',
@@ -2042,11 +2169,8 @@ class Nipap:
         if type(spec) is not dict:
             raise NipapInputError('invalid prefix specification')
 
-        allowed_keys = [ 'id', 'family', 'type', 'pool_id', 'pool_name',
-                'prefix', 'monitor', 'external_key', 'vrf_id',
-                'vrf_rt', 'vrf_name' ]
         for key in spec.keys():
-            if key not in allowed_keys:
+            if key not in _prefix_spec:
                 raise NipapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
 
         where = ""
@@ -2141,39 +2265,9 @@ class Nipap:
 
             # TODO: raise exception if someone passes one dict and one "something else"?
 
-            # val1 is variable, val2 is string.
-            prefix_attr = dict()
-            prefix_attr['id'] = 'inp.id'
-            prefix_attr['prefix'] = 'inp.prefix'
-            prefix_attr['description'] = 'inp.description'
-            prefix_attr['pool_id'] = 'pool.id'
-            prefix_attr['pool_name'] = 'pool.name'
-            prefix_attr['family'] = 'family(inp.prefix)'
-            prefix_attr['comment'] = 'inp.comment'
-            prefix_attr['type'] = 'inp.type'
-            prefix_attr['inherited_tags'] = 'inp.inherited_tags'
-            prefix_attr['tags'] = 'inp.tags'
-            prefix_attr['node'] = 'inp.node'
-            prefix_attr['country'] = 'inp.country'
-            prefix_attr['order_id'] = 'inp.order_id'
-            prefix_attr['customer_id'] = 'inp.customer_id'
-            prefix_attr['vrf_id'] = 'inp.vrf_id'
-            prefix_attr['vrf_rt'] = 'vrf.rt'
-            prefix_attr['vrf_name'] = 'vrf.name'
-            prefix_attr['external_key'] = 'inp.external_key'
-            prefix_attr['authoritative_source'] = 'inp.authoritative_source'
-            prefix_attr['alarm_priority'] = 'inp.alarm_priority'
-            prefix_attr['monitor'] = 'inp.monitor'
-            prefix_attr['vlan'] = 'inp.vlan'
-            prefix_attr['indent'] = 'inp.indent'
-            prefix_attr['added'] = 'inp.added'
-            prefix_attr['last_modified'] = 'inp.last_modified'
-            prefix_attr['total_addresses'] = 'inp.total_addresses'
-            prefix_attr['used_addresses'] = 'inp.used_addresses'
-            prefix_attr['free_addresses'] = 'inp.free_addresses'
-            prefix_attr['expires'] = 'inp.expires'
+            # val1 is key, val2 is value.
 
-            if query['val1'] not in prefix_attr:
+            if query['val1'] not in _prefix_spec:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
             # build where clause
@@ -2213,13 +2307,13 @@ class Nipap:
                 # search on '.*' to match columns which are NULL in the
                 # database
                 where = str(" COALESCE(%s%s, '') %s %%s " %
-                        ( col_prefix, prefix_attr[query['val1']],
+                        ( col_prefix, _prefix_spec[query['val1']]['column'],
                         _operation_map[query['operator']] )
                         )
 
             else:
                 where = str(" %s%s %s %%s " %
-                        ( col_prefix, prefix_attr[query['val1']],
+                        ( col_prefix, _prefix_spec[query['val1']]['column'],
                         _operation_map[query['operator']] )
                         )
 
@@ -2389,11 +2483,7 @@ class Nipap:
 
         # do we have all attributes?
         req_attr = [ 'prefix', 'authoritative_source' ]
-        allowed_attr = [ 'authoritative_source', 'prefix', 'description',
-                'comment', 'pool_id', 'tags', 'node', 'type', 'country',
-                'order_id', 'customer_id', 'vrf_id', 'alarm_priority',
-                'monitor', 'external_key', 'vlan', 'status', 'avps', 'expires']
-        self._check_attr(attr, req_attr, allowed_attr)
+        self._check_attr(attr, req_attr, _prefix_attrs)
         if ('description' not in attr) and ('node' not in attr):
             raise NipapMissingInputError('Either description or node must be specified.')
 
@@ -2494,13 +2584,7 @@ class Nipap:
             del(attr['vrf_name'])
         attr['vrf_id'] = vrf['id']
 
-        allowed_attr = [
-            'authoritative_source', 'prefix', 'description',
-            'comment', 'pool_id', 'tags', 'node', 'type', 'country',
-            'order_id', 'customer_id', 'vrf_id', 'alarm_priority', 
-            'monitor', 'external_key', 'vlan', 'status', 'avps', 'expires' ]
-
-        self._check_attr(attr, [], allowed_attr)
+        self._check_attr(attr, [], _prefix_attrs)
 
         if 'expires' in attr:
             attr['expires'] = _parse_expires(attr['expires'])
