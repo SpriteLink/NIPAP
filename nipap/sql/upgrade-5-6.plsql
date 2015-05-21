@@ -2,6 +2,8 @@
 -- Upgrade from NIPAP database schema version 5 to 6
 --
 
+CREATE EXTENSION IF NOT EXISTS citext;
+
 ALTER TABLE ip_net_vrf ALTER COLUMN name SET NOT NULL;
 
 DROP INDEX ip_net_vrf__name__index;

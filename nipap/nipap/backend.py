@@ -848,7 +848,7 @@ class Nipap:
                 query['operator'] = 'is_not'
 
             if query['operator'] in ('equals_any',):
-                where = str(" %%s = ANY (%s%s) " %
+                where = str(" %%s = ANY (%s%s::citext[]) " %
                         ( col_prefix, vrf_attr[query['val1']])
                         )
 
@@ -1458,7 +1458,7 @@ class Nipap:
                 query['operator'] = 'is_not'
 
             if query['operator'] in ('equals_any',):
-                where = str(" %%s = ANY (%s%s) " %
+                where = str(" %%s = ANY (%s%s::citext[]) " %
                         ( col_prefix, pool_attr[query['val1']])
                         )
 
@@ -2201,7 +2201,7 @@ class Nipap:
                         }
 
             elif query['operator'] in ('equals_any',):
-                where = str(" %%s = ANY (%s%s) " %
+                where = str(" %%s = ANY (%s%s::citext[]) " %
                         ( col_prefix, prefix_attr[query['val1']])
                         )
 
