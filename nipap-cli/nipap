@@ -55,6 +55,7 @@ if __name__ == '__main__':
 
     import argparse
     parser = argparse.ArgumentParser(description='NIPAP command-line client')
+    parser.add_argument("-c", "--columns", type=str, help="define columns")
     parser.add_argument("-f", "--force", action="store_true", help="disable interactive prompting of actions")
     parser.add_argument("--show-interpretation", action="store_true", help="show search interpretation")
     parser.add_argument("--version", action="store_true", help="display version information and exit")
