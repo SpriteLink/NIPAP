@@ -412,11 +412,51 @@ def list_prefix(arg, opts, shell_opts):
         }
     print "Searching for prefixes in %s..." % vrf_text
 
+    col_def = {
+            'added': { 'title': 'Added' },
+            'alarm_priority': { 'title': 'Alarm Prio' },
+            'authoritative_source': { 'title': 'Auth source' },
+            'children': { 'title': 'Children' },
+            'comment': { 'title': 'Comment' },
+            'customer_id': { 'title': 'Customer ID' },
+            'description': { 'title': 'Description' },
+            'expires': { 'title': 'Expires' },
+            'free_addresses': { 'title': 'Free addresses' },
+            'monitor': { 'title': 'Monitor' },
+            'last_modified': { 'title': 'Last mod' },
+            'node': { 'title': 'Node' },
+            'order_id': { 'title': 'Order ID' },
+            'pool_name': { 'title': 'Pool name' },
+            'prefix': { 'title': 'Prefix' },
+            'status': { 'title': 'Status' },
+            'tags': { 'title': '#' },
+            'total_addresses': { 'title': 'Total addresses' },
+            'type': { 'title': '' },
+            'used_addresses': { 'title': 'Used addresses' },
+            'vlan': { 'title': 'VLAN' },
+            'vrf_rt': { 'title': 'VRF RT' },
+            }
+    # default columns
+    columns = [ 'vrf_rt', 'prefix', 'type', 'tags', 'node', 'order_id', 'customer_id', 'description' ]
+
+    # should we append columns or replace default?
+    if shell_opts.columns[0] == '+':
+        col_append = True
+    else:
+        col_append = False
+        columns = []
+
+    # read in custom columns
+    for col in list(csv.reader([shell_opts.columns.lstrip('+') or ''], escapechar='\\'))[0]:
+        if col not in col_def:
+            print >> sys.stderr, "Invalid column:", col
+            sys.exit(1)
+        columns.append(col)
 
     offset = 0
     # small initial limit for "instant" result
     limit = 50
-    min_indent = 0
+    prefix_str = ""
     while True:
         res = Prefix.smart_search(search_string, { 'parents_depth': -1,
             'include_neighbors': True, 'offset': offset, 'max_result': limit },
@@ -431,18 +471,34 @@ def list_prefix(arg, opts, shell_opts):
                 print "No addresses matching '%s' found." % search_string
                 return
 
-            # Guess the width of the prefix column by looking at the initial
-            # result set.
+            # guess column width by looking at the initial result set
             for p in res['result']:
-                indent = p.indent * 2 + len(p.prefix)
-                if indent > min_indent:
-                    min_indent = indent
-            min_indent += 15
+                for colname, col in col_def.items():
+                    val = getattr(p, colname, '')
+                    col['width'] = max(len(colname), col.get('width', 0),
+                                       len(str(val)))
 
-            # print column headers
-            prefix_str = "%%-14s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-s" % min_indent
-            column_header = prefix_str % ('VRF', 'Prefix', '', '#', 'Node',
-                    'Order', 'Customer', 'Description')
+                # special handling of a few columns
+                col_def['vrf_rt']['width'] = max(col_def['vrf_rt'].get('width', 8),
+                                                 len(str(p.vrf.rt)))
+                col_def['prefix']['width'] = max(col_def['prefix'].get('width', 0)-12,
+                                                 p.indent * 2 + len(p.prefix)) + 12
+                try:
+                    col_def['pool_name']['width'] = max(col_def['pool_name'].get('width', 8),
+                                                        len(str(p.pool.name)))
+                except:
+                    pass
+            # override certain column widths
+            col_def['type']['width'] = 1
+            col_def['tags']['width'] = 1
+
+            col_header_data = {}
+            # build prefix formatting string
+            for colname, col in [(k, col_def[k]) for k in columns]:
+                prefix_str += "{%s:<%d}  " % (colname, col['width'])
+                col_header_data[colname] = col['title']
+
+            column_header = prefix_str.format(**col_header_data)
             print column_header
             print "".join("=" for i in xrange(len(column_header)))
 
@@ -450,15 +506,27 @@ def list_prefix(arg, opts, shell_opts):
             if p.display == False:
                 continue
 
+            col_data = {}
             try:
-                tags = '-'
+                for colname, col in col_def.items():
+                    col_data[colname] = str(getattr(p, colname, None))
+
+                # overwrite some columns due to special handling
+                col_data['tags'] = '-'
                 if len(p.tags) > 0:
-                    tags = '#%d' % len(p.tags)
-                print prefix_str % (p.vrf.rt or '-',
-                    "".join("  " for i in xrange(p.indent)) + p.display_prefix,
-                    p.type[0].upper(), tags, p.node, p.order_id,
-                    p.customer_id, p.description
-                )
+                    col_data['tags'] = '#%d' % len(p.tags)
+
+                try: 
+                    col_data['pool_name'] = p.pool.name
+                except:
+                    pass
+
+                col_data['prefix'] = "".join("  " for i in xrange(p.indent)) + p.display_prefix
+                col_data['type'] = p.type[0].upper()
+                col_data['vrf_rt'] = p.vrf.rt or '-'
+
+                print prefix_str.format(**col_data)
+
             except UnicodeEncodeError, e:
                 print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
 
