@@ -210,6 +210,107 @@ except:
     pdt = parsedatetime.parsedatetime.Calendar(pdc.Constants())
 
 
+# list of all attributes on a pool, including both writable and read-only
+# values
+_pool_spec = {
+        'avps': {
+            'column': 'po.avps',
+            'ro': False,
+        },
+        'default_type': {
+            'column': 'po.default_type',
+            'ro': False,
+        },
+        'description': {
+            'column': 'po.description',
+            'ro': False,
+        },
+        'free_addresses_v4': {
+            'column': 'free_addresses_v4',
+            'ro': True
+        },
+        'free_addresses_v6': {
+            'column': 'free_addresses_v6',
+            'ro': True
+        },
+        'free_prefixes_v4': {
+            'column': 'free_prefixes_v4',
+            'ro': True
+        },
+        'free_prefixes_v6': {
+            'column': 'free_prefixes_v6',
+            'ro': True
+        },
+        'id': {
+            'column': 'po.id',
+            'ro': True,
+        },
+        'ipv4_default_prefix_length': {
+            'column': 'po.ipv4_default_prefix_length',
+            'ro': False,
+        },
+        'ipv6_default_prefix_length': {
+            'column': 'po.ipv6_default_prefix_length',
+            'ro': False,
+        },
+        'member_prefixes_v4': {
+            'column': 'po.member_prefixes_v4',
+            'ro': False,
+        },
+        'member_prefixes_v6': {
+            'column': 'po.member_prefixes_v',
+            'ro': False,
+        },
+        'name': {
+            'column': 'po.name',
+            'ro': False,
+        },
+        'tags': {
+            'column': 'po.tags',
+            'ro': False,
+        },
+        'total_addresses_v4': {
+            'column': 'total_addresses_v4',
+            'ro': True
+        },
+        'total_addresses_v6': {
+            'column': 'total_addresses_v6',
+            'ro': True
+        },
+        'total_prefixes_v4': {
+            'column': 'total_prefixes_v4',
+            'ro': True
+        },
+        'total_prefixes_v6': {
+            'column': 'total_prefixes_v6',
+            'ro': True
+        },
+        'used_addresses_v4': {
+            'column': 'used_addresses_v4',
+            'ro': True
+        },
+        'used_addresses_v6': {
+            'column': 'used_addresses_v6',
+            'ro': True
+        },
+        'used_prefixes_v4': {
+            'column': 'used_prefixes_v4',
+            'ro': True
+        },
+        'used_prefixes_v6': {
+            'column': 'used_prefixes_v6',
+            'ro': True
+        },
+        'vrf_rt': {
+            'column': 'vrf.rt',
+            'ro': True,
+        },
+    }
+# _pool_attrs contain the editable attributes, ie the ones that are not
+# read-only from _pool_spec
+_pool_attrs = {k: v for k, v in _pool_spec.items() if not _pool_spec[k]['ro']}
+
+
 # list of all attributes on a prefix, including both writable and read-only
 # values
 _prefix_spec = {
@@ -1563,15 +1664,8 @@ class Nipap:
             # TODO: raise exception if someone passes one dict and one "something else"?
 
             # val1 is variable, val2 is string.
-            pool_attr = dict()
-            pool_attr['id'] = 'po.id'
-            pool_attr['name'] = 'po.name'
-            pool_attr['description'] = 'po.description'
-            pool_attr['default_type'] = 'po.default_type'
-            pool_attr['vrf_rt'] = 'vrf.rt'
-            pool_attr['tags'] = 'po.tags'
 
-            if query['val1'] not in pool_attr:
+            if query['val1'] not in _pool_spec:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
             # build where clause
@@ -1586,12 +1680,12 @@ class Nipap:
 
             if query['operator'] in ('equals_any',):
                 where = str(" %%s = ANY (%s%s::citext[]) " %
-                        ( col_prefix, pool_attr[query['val1']])
+                        ( col_prefix, _pool_spec[query['val1']]['column'])
                         )
 
             else:
                 where = str(" %s%s %s %%s " %
-                    ( col_prefix, pool_attr[query['val1']],
+                    ( col_prefix, _pool_spec[query['val1']]['column'],
                     _operation_map[query['operator']] )
                 )
 
@@ -1756,16 +1850,7 @@ class Nipap:
             req_attr = []
 
         # check attribute names
-        allowed_attr = [
-                'name',
-                'default_type',
-                'description',
-                'ipv4_default_prefix_length',
-                'ipv6_default_prefix_length',
-                'tags',
-                'avps'
-                ]
-        self._check_attr(attr, req_attr, allowed_attr)
+        self._check_attr(attr, req_attr, _pool_attrs)
 
         # validate IPv4 prefix length
         if attr.get('ipv4_default_prefix_length') is not None:
@@ -2296,7 +2381,7 @@ class Nipap:
 
             elif query['operator'] in ('equals_any',):
                 where = str(" %%s = ANY (%s%s::citext[]) " %
-                        ( col_prefix, prefix_attr[query['val1']])
+                        ( col_prefix, _prefix_spec[query['val1']])
                         )
 
             elif query['operator'] in (
