@@ -1,3 +1,19 @@
+nipap-whoisd (0.28.2-1) stable; urgency=medium
+
+  * All smart search tag searches are now case-insensitive (#743)
+  * Smart search using tag search now works for VRFs and pool (#773,
+    #774)
+  * CLI prefix view now accepts natural prefix mask as argument (#738)
+  * Fix of API attributes accepted by add_prefix/edit_prefix (#667)
+  * Fix VRF RT value using IP:id notation where IP would get converted
+    to integer (#767)
+  * Fix psutil exception handling. nipapd now starts on Debian Jessie
+    (#760)
+  * Fix database upgrade script (#759)
+  * Fix install problem with nipap-www (#775)
+
+ -- Kristian Larsson <kll@spritelink.net>  Sun, 24 May 2015 14:54:00 +0200
+
 nipap-whoisd (0.28.1-1) stable; urgency=medium
 
   * Fix of SQL upgrade script
