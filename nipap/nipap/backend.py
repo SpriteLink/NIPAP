@@ -436,6 +436,71 @@ _prefix_spec = {
 # read-only from _prefix_spec
 _prefix_attrs = {k: v for k, v in _prefix_spec.items() if not _prefix_spec[k]['ro']}
 
+# list of all attributes on a vrf, including both writable and read-only values
+_vrf_spec = {
+        'avps': {
+            'column': 'avps',
+            'ro': False,
+        },
+        'description': {
+            'column': 'description',
+            'ro': False,
+        },
+        'free_addresses_v4': {
+            'column': 'free_addresses_v4',
+            'ro': True,
+        },
+        'free_addresses_v6': {
+            'column': 'free_addresses_v6',
+            'ro': True,
+        },
+        'id': {
+            'column': 'id',
+            'ro': True,
+        },
+        'name': {
+            'column': 'name',
+            'ro': False,
+        },
+        'num_prefixes_v4': {
+            'column': 'num_prefixes_v4',
+            'ro': True,
+        },
+        'num_prefixes_v6': {
+            'column': 'num_prefixes_v6',
+            'ro': True,
+        },
+        'rt': {
+            'column': 'rt',
+            'ro': False,
+        },
+        'tags': {
+            'column': 'tags',
+            'ro': False,
+        },
+        'total_addresses_v4': {
+            'column': 'total_addresses_v4',
+            'ro': True,
+        },
+        'total_addresses_v6': {
+            'column': 'total_addresses_v6',
+            'ro': True,
+        },
+        'used_addresses_v4': {
+            'column': 'used_addresses_v4',
+            'ro': True,
+        },
+        'used_addresses_v6': {
+            'column': 'used_addresses_v6',
+            'ro': True,
+        },
+    }
+
+
+# _vrf_attrs contain the editable attributes, ie the ones that are not
+# read-only from _vrf_spec
+_vrf_attrs = {k: v for k, v in _vrf_spec.items() if not _vrf_spec[k]['ro']}
+
 
 _operation_map = {
     'and': 'AND',
@@ -1055,14 +1120,8 @@ class Nipap:
             # TODO: raise exception if someone passes one dict and one "something else"?
 
             # val1 is variable, val2 is string.
-            vrf_attr = dict()
-            vrf_attr['id'] = 'id'
-            vrf_attr['rt'] = 'rt'
-            vrf_attr['name'] = 'name'
-            vrf_attr['description'] = 'description'
-            vrf_attr['tags'] = 'tags'
 
-            if query['val1'] not in vrf_attr:
+            if query['val1'] not in _vrf_spec:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
             # build where clause
@@ -1077,12 +1136,12 @@ class Nipap:
 
             if query['operator'] in ('equals_any',):
                 where = str(" %%s = ANY (%s%s::citext[]) " %
-                        ( col_prefix, vrf_attr[query['val1']])
+                        ( col_prefix, _vrf_spec[query['val1']]['column'])
                         )
 
             else:
                 where = str(" %s%s %s %%s " %
-                    ( col_prefix, vrf_attr[query['val1']],
+                    ( col_prefix, _vrf_spec[query['val1']]['column'],
                     _operation_map[query['operator']] )
                 )
 
@@ -1110,8 +1169,7 @@ class Nipap:
 
         # sanity check - do we have all attributes?
         req_attr = [ 'rt', 'name' ]
-        self._check_attr(attr, req_attr, req_attr + [ 'description', 'tags',
-            'avps' ])
+        self._check_attr(attr, req_attr, _vrf_attrs)
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_vrf " + insert
@@ -1276,9 +1334,7 @@ class Nipap:
                 (str(spec), str(attr)))
 
         # sanity check - do we have all attributes?
-        req_attr = [ ]
-        allowed_attr = [ 'rt', 'name', 'description', 'tags', 'avps' ]
-        self._check_attr(attr, req_attr, allowed_attr)
+        self._check_attr(attr, [], _vrf_attrs)
 
         # get list of VRFs which will be changed before changing them
         vrfs = self.list_vrf(auth, spec)
