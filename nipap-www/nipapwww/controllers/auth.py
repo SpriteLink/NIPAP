@@ -5,7 +5,7 @@ from pylons.controllers.util import abort, redirect
 
 from nipapwww.lib.base import BaseController, render
 
-from nipap.authlib import AuthFactory
+from nipap.authlib import AuthFactory, AuthError
 from nipap.nipapconfig import NipapConfig
 
 from ConfigParser import NoOptionError
