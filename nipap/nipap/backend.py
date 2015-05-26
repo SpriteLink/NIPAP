@@ -245,10 +245,6 @@ _pool_spec = {
             'column': 'po.id',
             'ro': True,
         },
-        'inherited_tags': {
-            'column': 'po.inherited_tags',
-            'ro': True,
-        },
         'ipv4_default_prefix_length': {
             'column': 'po.ipv4_default_prefix_length',
             'ro': False,
@@ -368,6 +364,10 @@ _prefix_spec = {
         },
         'id': {
             'column': 'inp.id',
+            'ro': True,
+        },
+        'inherited_tags': {
+            'column': 'inp.inherited_tags',
             'ro': True,
         },
         'indent': {
