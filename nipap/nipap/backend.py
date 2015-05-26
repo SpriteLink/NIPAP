@@ -2441,7 +2441,7 @@ class Nipap:
 
             elif query['operator'] in ('equals_any',):
                 where = str(" %%s = ANY (%s%s::citext[]) " %
-                        ( col_prefix, _prefix_spec[query['val1']])
+                        ( col_prefix, _prefix_spec[query['val1']]['column'])
                         )
 
             elif query['operator'] in (
