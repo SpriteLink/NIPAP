@@ -5,7 +5,7 @@ from pylons.controllers.util import abort, redirect
 
 from nipapwww.lib.base import BaseController, render
 
-from nipap.authlib import AuthFactory
+from nipap.authlib import AuthFactory, AuthError
 from nipap.nipapconfig import NipapConfig
 
 from ConfigParser import NoOptionError
@@ -33,9 +33,9 @@ class AuthController(BaseController):
             return render('login.html')
 
         # Verify username and password.
-        auth_fact = AuthFactory()
-        auth = auth_fact.get_auth(request.params.get('username'), request.params.get('password'), 'nipap')
         try:
+            auth_fact = AuthFactory()
+            auth = auth_fact.get_auth(request.params.get('username'), request.params.get('password'), 'nipap')
             if not auth.authenticate():
                 c.error = 'Invalid username or password'
                 return render('login.html')
