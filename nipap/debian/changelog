@@ -1,3 +1,13 @@
+nipap (0.28.3-1) stable; urgency=medium
+
+  * Fix missing attributes inherited_spec in prefix spec (#790)
+  * Fix missing exception AuthError (#789)
+  * Fix prefix smart search bug due to merge conflict mistake
+  * Rework of attribute check for VRF & pool add / edit commands (#784,
+    #785)
+
+ -- Kristian Larsson <kll@spritelink.net>  Wed, 27 May 2015 22:00:47 +0200
+
 nipap (0.28.2-1) stable; urgency=medium
 
   * All smart search tag searches are now case-insensitive (#743)
