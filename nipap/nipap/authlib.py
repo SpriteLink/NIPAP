@@ -280,9 +280,12 @@ class LdapAuth(BaseAuth):
     _ldap_basedn = None
     _ldap_binddn_fmt = None
     _ldap_search = None
+    _ldap_search_binddn = None
+    _ldap_search_password = None
     _ldap_rw_group = None
     _ldap_ro_group = None
     _ldap_conn = None
+    _ldap_search_conn = None
     _authenticated = None
 
     def __init__(self, name, username, password, authoritative_source, auth_options=None):
@@ -336,13 +339,22 @@ class LdapAuth(BaseAuth):
         self._logger.debug('LDAP URI: ' + self._ldap_uri)
         self._ldap_conn = ldap.initialize(self._ldap_uri)
 
+        # Shall we use a separate connection for search?
+        if self._cfg.has_option(base_auth_backend, 'search_binddn'):
+            self._ldap_search_binddn = self._cfg.get(base_auth_backend, 'search_binddn')
+            self._ldap_search_password = self._cfg.get(base_auth_backend, 'search_password')
+            self._ldap_search_conn = ldap.initialize(self._ldap_uri)
+
         if self._ldap_tls:
             try:
                 self._ldap_conn.start_tls_s()
+                if self._ldap_search_conn is not None:
+                    self._ldap_search_conn.start_tls_s()
             except (ldap.CONNECT_ERROR, ldap.SERVER_DOWN) as exc:
                 self._logger.error('Attempted to start TLS with ldap server but failed.')
                 self._logger.exception(exc)
                 raise AuthError('Unable to establish secure connection to ldap server')
+
 
     def authenticate(self):
         """ Verify authentication.
@@ -373,7 +385,14 @@ class LdapAuth(BaseAuth):
         self.readonly = False
 
         try:
-            res = self._ldap_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)), ['cn','memberOf'])
+            # Create separate connection for search?
+            if self._ldap_search_conn is not None:
+                self._ldap_search_conn.simple_bind(self._ldap_search_binddn, self._ldap_search_password)
+                search_conn = self._ldap_search_conn
+            else:
+                search_conn = self._ldap_conn
+
+            res = search_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)), ['cn','memberOf'])
             self.full_name = res[0][1]['cn'][0]
             # check for ro_group membership if ro_group is configured
             if self._ldap_ro_group:
@@ -393,7 +412,7 @@ class LdapAuth(BaseAuth):
                     else:
                         self.readonly = True
 
-        except (ldap.NO_SUCH_OBJECT,ldap.OPERATIONS_ERROR,ldap.FILTER_ERROR,ldap.INVALID_DN_SYNTAX,ldap.SERVER_DOWN) as exc:
+        except ldap.LDAPError as exc:
             raise AuthError(exc)
         except KeyError:
             raise AuthError('LDAP attribute missing')
