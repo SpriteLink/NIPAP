@@ -66,3 +66,6 @@ doing 'dpkg-reconfigure nipap-www' in the case.
 
 The user added to the local authentication database by the installation script
 is merely used by the web interface to talk to the backend.
+
+See `config-www <config-www.rst>`_ for configuration of the web UI and how to
+serve it using a web server.
