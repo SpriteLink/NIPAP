@@ -557,12 +557,27 @@ def add_prefix(arg, opts, shell_opts):
         parent_prefix = args['from-prefix'][0]
         parent_op = 'equals'
     else:
-        parent_prefix = opts.get('prefix').split('/')[0]
-        parent_op = 'contains'
+        # If no prefix length is specified it is assumed to be a host and we do
+        # a search for prefixes that contains the specified prefix. The last
+        # entry will be the parent of the new prefix and we can look at it to
+        # determine type.
+        # If prefix length is specified (i.e. CIDR format) we check if prefix
+        # length equals max length in which case we assume a host prefix,
+        # otherwise we search for the network using an equal match and by
+        # zeroing out bits in the host part.
+        if len(opts.get('prefix').split("/")) == 2:
+            ip = IPy.IP(opts.get('prefix').split("/")[0])
+            plen = int(opts.get('prefix').split("/")[1])
+            if ip.version() == 4 and plen == 32 or ip.version() == 6 and plen == 128:
+                parent_prefix = str(ip)
+                parent_op = 'contains'
+            else:
+                parent_prefix = str(IPy.IP(opts.get('prefix'), make_net=True))
+                parent_op = 'equals'
+        else:
+            parent_prefix = opts.get('prefix')
+            parent_op = 'contains'
 
-    # prefix must be a CIDR network, ie no bits set in host part, so we
-    # remove the prefix length part of the prefix as then the backend will
-    # assume all bits being set
     auto_type_query = {
             'val1': {
                 'val1'      : 'prefix',
