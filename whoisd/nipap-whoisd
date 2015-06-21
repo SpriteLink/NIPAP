@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import unicode_literals
+
 import fcntl
 import os
 import re
@@ -77,6 +79,10 @@ class WhoisServer(SocketServer.BaseRequestHandler):
                 break
 
         query = query.strip()
+        try:
+            query = query.decode("idna")
+        except:
+            pass
 
         # respond!
         total_hits = 0
@@ -128,7 +134,7 @@ class WhoisServer(SocketServer.BaseRequestHandler):
             response += '%\n'
 
         response += "\n%% This query was served by the NIPAP whois server version %s\n" % nipap_whoisd.__version__
-        self.request.send(response)
+        self.request.send(response.encode("utf-8"))
 
 
 
