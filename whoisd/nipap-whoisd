@@ -66,19 +66,13 @@ class ForkingTCPServer(ForkingMixIn, TCPServer):
         SocketServer.TCPServer.server_bind(self)
 
 
-class WhoisServer(SocketServer.BaseRequestHandler):
+class WhoisServer(SocketServer.StreamRequestHandler):
     def handle(self):
         """ Called for every connection
         """
         # receive data
-        query = ''
-        while True:
-            data = self.request.recv(1024)
-            query += data
-            if len(data) < 1024:
-                break
+        query = self.rfile.readline().decode("utf-8").strip()
 
-        query = query.strip()
         try:
             query = query.decode("idna")
         except:
