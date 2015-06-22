@@ -5,10 +5,6 @@ import sys
 
 import pynipap
 
-requirements = []
-if sys.version_info[0] < 3:
-    requirements = ['xmlrpclib']
-
 long_desc = open('README.rst').read()
 short_desc = long_desc.split('\n')[0].split(' - ')[1].strip()
 
@@ -23,7 +19,6 @@ setup(
         url = pynipap.__url__,
         py_modules = ['pynipap'],
         keywords = ['nipap'],
-        requires = requirements,
         classifiers = [
             'Development Status :: 4 - Beta',
             'Intended Audience :: Developers',
