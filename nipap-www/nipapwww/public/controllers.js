@@ -40,6 +40,11 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 					} else {
 						var index = $scope.vrfs.indexOf(vrf);
 						$scope.vrfs.splice(index, 1);
+
+						// Update VRF filter - the removed VRF might be in the
+						// VRF filter list
+						$http.get('/xhr/get_current_vrfs')
+							.success(receiveCurrentVRFs);
 					}
 				})
 				.error(function (data, stat) {
