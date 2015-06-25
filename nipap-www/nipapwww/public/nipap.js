@@ -1034,7 +1034,7 @@ function clickFilterVRFSelector(evt) {
 
 		// show tick mark
 		$('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&#10003;');
-		$('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/remove-icon.png">');
+		$('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/images/x-mark-3-16.png">');
 
 	} else {
 
