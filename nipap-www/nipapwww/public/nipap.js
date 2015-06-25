@@ -1112,7 +1112,7 @@ function drawVRFHeader() {
  */
 function receiveCurrentVRFs(data) {
 
-	jQuery.extend(selected_vrfs, data);
+	selected_vrfs = data;
 	jQuery.extend(vrf_list, data);
 	drawVRFHeader();
 

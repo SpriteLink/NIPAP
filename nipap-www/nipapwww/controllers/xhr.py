@@ -763,7 +763,8 @@ class XhrController(BaseController):
             if vrf_id == 'null':
                 vrf = VRF()
             else:
-                vrf = VRF.get(int(vrf_id))
+                vrf_id = int(vrf_id)
+                vrf = VRF.get(vrf_id)
 
             session['current_vrfs'][vrf_id] = { 'id': vrf.id, 'rt': vrf.rt,
                     'name': vrf.name, 'description': vrf.description }
@@ -776,7 +777,7 @@ class XhrController(BaseController):
         """ Remove VRF to filter list session variable
         """
 
-        vrf_id = request.params.get('vrf_id')
+        vrf_id = int(request.params.get('vrf_id'))
         if vrf_id in session['current_vrfs']:
             del session['current_vrfs'][vrf_id]
 
@@ -787,7 +788,40 @@ class XhrController(BaseController):
 
     def get_current_vrfs(self):
         """ Return VRF filter list from session variable
+
+            Before returning list, make a search for all VRFs currently in the
+            list to verify that they still exist.
         """
+
+        # Verify that all currently selected VRFs still exists
+        cur_vrfs = session.get('current_vrfs', {}).items()
+        if len(cur_vrfs) > 0:
+            q = {
+                'operator': 'equals',
+                'val1': 'id',
+                'val2': cur_vrfs[0][0]
+            }
+
+            if len(cur_vrfs) > 1:
+                for vrf_id, vrf in cur_vrfs[1:]:
+                    q = {
+                        'operator': 'or',
+                        'val1': q,
+                        'val2': {
+                            'operator': 'equals',
+                            'val1': 'id',
+                            'val2': vrf_id
+                        }
+                    }
+
+            res = VRF.search(q)
+
+            session['current_vrfs'] = {}
+            for vrf in res['result']:
+                session['current_vrfs'][vrf.id] = { 'id': vrf.id, 'rt': vrf.rt,
+                    'name': vrf.name, 'description': vrf.description }
+
+            session.save()
 
         return json.dumps(session.get('current_vrfs', {}))
 

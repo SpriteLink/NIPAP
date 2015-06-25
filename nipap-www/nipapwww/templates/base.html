@@ -32,13 +32,24 @@
 
 				$(document).ajaxError(ajaxErrorHandler);
 				{% if session.user is defined %}
+
+				// Handle click to open VRF filter search box
 				$('#add_vrf_filter_btn').click(
-				function(evt) {
-					showVRFSelectorMenu(clickFilterVRFSelector, $('#add_vrf_filter_btn'));
-					evt.preventDefault();
-				}
+					function(evt) {
+
+						// Update list of selected VRFs - a selected VRF might have
+						// been removed by another user
+						$.getJSON('/xhr/get_current_vrfs', receiveCurrentVRFs);
+
+						showVRFSelectorMenu(clickFilterVRFSelector, $('#add_vrf_filter_btn'));
+						evt.preventDefault();
+
+					}
 				);
+
+				// Fetch currently selected VRFs
 				$.getJSON('/xhr/get_current_vrfs', receiveCurrentVRFs);
+
 				{% endif %}
 
 				/*
