@@ -1,14 +1,29 @@
-Installation and configuration of the web UI
---------------------------------------------
-This assumes you have installed the nipap-www package via apt or equivalent.
+Configuration of the web UI
+---------------------------
+Make sure the web UI is installed before proceeding with configuration of it.
 
-For login to the web interface, you should create one or more user accounts.
-You might have already created a user account when installing the nipap-www
-package but that account is for the web interface to talk to the backend.
-Adding the following accounts is for login to the web interface itself.
-Use the nipap-passwd utility to add a user::
+The web interface needs its own user account to authenticate towards the
+backend and it should be a *trusted* account. Create it with the following::
 
-    nipap-passwd -a *username* -p *password* -n "Name of my new user"
+    nipap-passwd add --username nipap-www --password s3cr3t --name "User account for the web UI" --trusted
+
+Obviously, replace "s3cr3t" with a better password and feel free to use
+whichever username you want, as long as you configure it accordingly. The user
+account for the web UI should not be used by any other user. Configure
+the web UI to use this account by configuring the xmlrpc_uri variable::
+
+    xmlrpc_uri = http://nipap-www@local:s3cret@127.0.0.1:1337
+
+This configuring assumes that you did indeed name the account "nipap-www",
+replace "s3cr3t" with your password. "@local" instructs the backend to use the
+"local" authentication backend. If you are running nipapd on a different host
+or port, then update the "127.0.0.1:1337" part accordingly.
+
+Finally, you can add a user for yourself and once you've configured your web
+server to serve the NIPAP web UI you should be able to login with this user::
+
+    nipap-passwd add --username myuser --password mypassword --name "my user"
+
 
 Serving the web UI
 ------------------
