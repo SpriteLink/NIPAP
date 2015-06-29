@@ -5,16 +5,29 @@
 <div class="container">
 
 
-<div class="section" id="installation-and-configuration-of-the-web-ui">
-<h1>Installation and configuration of the web UI</h1>
-<p>This assumes you have installed the nipap-www package via apt or equivalent.</p>
-<p>For login to the web interface, you should create one or more user accounts.
-You might have already created a user account when installing the nipap-www
-package but that account is for the web interface to talk to the backend.
-Adding the following accounts is for login to the web interface itself.
-Use the nipap-passwd utility to add a user:</p>
+<div class="section" id="configuration-of-the-web-ui">
+<h1>Configuration of the web UI</h1>
+<p>Make sure the web UI is installed before proceeding with configuration of it.</p>
+<p>The web interface needs its own user account to authenticate towards the
+backend and it should be a <em>trusted</em> account. Create it with the following:</p>
 <pre class="literal-block">
-nipap-passwd -a *username* -p *password* -n &quot;Name of my new user&quot;
+nipap-passwd add --username nipap-www --password s3cr3t --name &quot;User account for the web UI&quot; --trusted
+</pre>
+<p>Obviously, replace &quot;s3cr3t&quot; with a better password and feel free to use
+whichever username you want, as long as you configure it accordingly. The user
+account for the web UI should not be used by any other user. Configure
+the web UI to use this account by configuring the xmlrpc_uri variable:</p>
+<pre class="literal-block">
+xmlrpc_uri = http://nipap-www&#64;local:s3cret&#64;127.0.0.1:1337
+</pre>
+<p>This configuring assumes that you did indeed name the account &quot;nipap-www&quot;,
+replace &quot;s3cr3t&quot; with your password. &quot;&#64;local&quot; instructs the backend to use the
+&quot;local&quot; authentication backend. If you are running nipapd on a different host
+or port, then update the &quot;127.0.0.1:1337&quot; part accordingly.</p>
+<p>Finally, you can add a user for yourself and once you've configured your web
+server to serve the NIPAP web UI you should be able to login with this user:</p>
+<pre class="literal-block">
+nipap-passwd add --username myuser --password mypassword --name &quot;my user&quot;
 </pre>
 </div>
 <div class="section" id="serving-the-web-ui">

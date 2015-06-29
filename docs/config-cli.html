@@ -5,20 +5,20 @@
 <div class="container" id="cli-configuration">
 <h1 class="page-header">CLI configuration</h1>
 
-<p>This is pretty easy, once you have the nipap-cli package installed (or if
-you've installed it manually), a new command, 'nipap', is available to you. It
-reads .nipaprc in your home directory and expects to find things like the host
-address of nipapd and authentication credentials.</p>
-<p>If you haven't already done so, you can create a new user. Execute the
-following on the machine running nipapd to create a new user in the local
-authentication database:</p>
+<p>Once you have the nipap-cli package installed (or if you've installed the CLI
+manually), a new command, 'nipap', is available to you. It reads .nipaprc in
+your home directory and expects to find things like the host address of nipapd
+and authentication credentials.</p>
+<p>If you haven't already done so, you can create a new user so that you can
+authenticate against nipapd. Execute the following on the machine running
+nipapd to create a new user in the local authentication database:</p>
 <pre class="literal-block">
 nipap-passwd -a *username* -p *username* -n &quot;My CLI user&quot;
 </pre>
 <p>Where <em>username</em> and <em>password</em> is the username and password you wish to
 create. Use the same username and password to fill in your .nipaprc. Here's an
 example .nipaprc that will work towards localhost with the user you just
-crated:</p>
+created (also see nipap-cli/nipaprc for a more complete example):</p>
 <pre class="literal-block">
 [global]
 hostname = localhost
