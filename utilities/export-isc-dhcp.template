@@ -1,0 +1,17 @@
+#
+# ISC DHCP config file
+#
+
+option domain-name "example.com";
+default-lease-time 600;
+max-lease-time 7200;
+
+{% for prefix in prefixes %}
+# {{prefix.description}}
+subnet {{prefix.prefix_ipy.strNormal(0)}} {{prefix.prefix_ipy.strNetmask()}} {
+	range {{prefix.prefix_ipy[10]}} {{prefix.prefix_ipy[-2]}};
+	option routers {{prefix.prefix_ipy[1]}};
+	option subnet-mask {{prefix.prefix_ipy.strNetmask()}};
+	option broadcast-address {{prefix.prefix_ipy[-1]}};
+}
+{% endfor %}
