@@ -48,7 +48,7 @@ Object operations
 
 Bugs / Caveats
 ==============
-Not all operations supported by the NIPAP backend are possible to perform through the CLI, for example expanding or shrinking a pool. That needs to be done through the web interface.
+Not all operations supported by the NIPAP backend are possible to perform through the CLI.
 
 Examples
 ========
@@ -63,6 +63,12 @@ Add a new prefix:
 
 Create a pool called 'test-linknets' with a default type of 'assignment' and default prefix-length of 30 and 112 for IPv4 and IPv6 respectively:
     $ nipap pool add name test-linknets description "Link networks for my test network" default-type assignment ipv4_default_prefix_length 30 ipv6_default_prefix_length 112
+
+Add some IPspace to the pool test-linknets:
+    $ nipap pool resize test-linknets add 192.168.224.0/14
+
+Or remove:
+    $ nipap pool resize test-linknets remove 192.168.224.0/14
 
 Add a new IPv4 prefix from the pool 'test-linknets'. The type will be set to 'assignment' as that is the default-type for this pool (created in previous example) and the prefix-length will be /30 as that is the default for IPv4.
     $ nipap address add family ipv4 from-pool test-linknets description 'BAZINGA-CORE-1 <-> FOO-CORE-2'
