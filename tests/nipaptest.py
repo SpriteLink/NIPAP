@@ -1575,7 +1575,6 @@ class TestPrefixLastModified(unittest.TestCase):
 class TestCli(unittest.TestCase):
     """ CLI tests
     """
-
     def test_extra_args(self):
         """ Extra arg should raise exception
         """
@@ -1587,6 +1586,196 @@ class TestCli(unittest.TestCase):
         with self.assertRaisesRegexp(InvalidCommand, 'Invalid argument:'):
             cmd = Command(nipap_cli.cmds, ['address', 'modify', '1.3.3.1/32', 'vrf_rt', 'none', 'set', 'FOO' ])
 
+
+class TestCliPrefixAutoType(unittest.TestCase):
+    """ Test CLI prefix auto type guessing
+    """
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def mock_cfg(self):
+        import ConfigParser
+        cfg = ConfigParser.ConfigParser()
+        cfg.add_section('global')
+        cfg.set('global', 'default_vrf_rt', '-')
+        cfg.set('global', 'default_list_vrf_rt', 'all')
+        return cfg
+
+
+    def test_auto_type1(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.0/8',
+            'type': 'reservation',
+            'description': 'root'
+            }
+        expected.insert(0, [opts['prefix'], opts['type']])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type2(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.0/24',
+            'description': 'host'
+            }
+        expected.append(['10.0.0.0/32', 'host'])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type3(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.0',
+            'description': 'host'
+            }
+        expected.append([opts['prefix'] + '/32', 'host'])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type4(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.1/24',
+            'description': 'host'
+            }
+        expected.append(['10.0.0.1/32', 'host'])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type5(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.1',
+            'description': 'host'
+            }
+        expected.append([opts['prefix'] + '/32', 'host'])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type6(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.1/32',
+            'description': 'host'
+            }
+        expected.append([opts['prefix'], 'host'])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type7(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.1/25',
+            'description': 'host'
+            }
+
+        with self.assertRaisesRegexp(SystemExit, "^1$"):
+            nipap_cli.add_prefix({}, opts, {})
 
 
 class TestNipapHelper(unittest.TestCase):
