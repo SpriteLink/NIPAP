@@ -26,10 +26,10 @@ if __name__ == '__main__':
 
     import optparse
     parser = optparse.OptionParser()
-    parser.add_option('--username', default='', help="Username")
-    parser.add_option('--password', default='', help="Password")
+    parser.add_option('--username', help="NIPAP backend username")
+    parser.add_option('--password', help="NIPAP backend password")
     parser.add_option('--host', help="NIPAP backend host")
-    parser.add_option('--port', default=1337, help="NIPAP backend port")
+    parser.add_option('--port', help="NIPAP backend port")
     (options, args) = parser.parse_args()
 
     auth_uri = "%s:%s@" % (options.username or cfg.get('global', 'username'),
