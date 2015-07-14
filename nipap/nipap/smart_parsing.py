@@ -262,6 +262,9 @@ class SmartParser:
         stripped_line = paired_exprs.suppress().transformString(input_string)
         if '"' in stripped_line:
             raise NipapValueError('Unclosed quote')
+        # TODO: add test case for this
+        if '(' in stripped_line or ')' in stripped_line:
+            raise NipapValueError('Unclosed parentheses')
 
         raw_ast = self._string_to_ast(input_string)
         ast = self._add_implicit_ops(raw_ast)
