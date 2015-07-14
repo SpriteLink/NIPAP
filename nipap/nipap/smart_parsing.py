@@ -276,9 +276,28 @@ class SmartParser:
 
 class PoolSmartParser(SmartParser):
     attributes = {
+        'default_type': True,
+        'description': True,
+        'free_addresses_v4': True,
+        'free_addresses_v6': True,
+        'free_prefixes_v4': True,
+        'free_prefixes_v6': True,
+        'ipv4_default_prefix_length': True,
+        'ipv6_default_prefix_length': True,
+        'member_prefixes_v4': True,
+        'member_prefixes_v6': True,
         'name': True,
-        'description': True
+        'total_addresses_v4': True,
+        'total_addresses_v6': True,
+        'total_prefixes_v4': True,
+        'total_prefixes_v6': True,
+        'used_addresses_v4': True,
+        'used_addresses_v6': True,
+        'used_prefixes_v4': True,
+        'used_prefixes_v6': True,
+        'vrf': True,
         }
+
 
     def _string_to_dictsql(self, part):
         """ Do magic matching of single words or quoted string
@@ -362,7 +381,36 @@ class PoolSmartParser(SmartParser):
 
 
 class PrefixSmartParser(SmartParser):
-    attributes = {}
+    attributes = {
+        'added': True,
+        'alarm_priority': True,
+        'authoritative_source': True,
+        'children': True,
+        'comment': True,
+        'country': True,
+        'customer_id': True,
+        'description': True,
+        'display': True,
+        'display_prefix': True,
+        'expires': True,
+        'external_key': True,
+        'family': True,
+        'free_addreses': True,
+        'indent': True,
+        'last_modified': True,
+        'match': True,
+        'monitor': True,
+        'node': True,
+        'order_id': True,
+        'pool': True,
+        'prefix': True,
+        'status': True,
+        'total_addresses': True,
+        'type': True,
+        'used_addreses': True,
+        'vlan': True,
+        'vrf': True,
+        }
 
     def _string_to_dictsql(self, part):
         """ Do magic matching of single words or quoted string
@@ -561,7 +609,19 @@ class PrefixSmartParser(SmartParser):
 
 
 class VrfSmartParser(SmartParser):
-    attributes = {}
+    attributes = {
+        'description': True,
+        'free_addresses_v4': True,
+        'free_addresses_v6': True,
+        'name': True,
+        'num_prefixes_v4': True,
+        'num_prefixes_v6': True,
+        'rt': True,
+        'total_addresses_v4': True,
+        'total_addresses_v6': True,
+        'used_addresses_v4': True,
+        'used_addresses_v6': True,
+    }
 
     def _string_to_dictsql(self, part):
         """ Do magic matching of single words or quoted string
@@ -674,7 +734,7 @@ if __name__ == '__main__':
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
-    p = PoolSmartParser()
+    p = PrefixSmartParser()
     #dictsql, interpretation = p.parse('core (country=SE or country = NL OR (damp AND "foo bar")')
     #dictsql, interpretation = p.parse('core (country=SE or country = NL OR (damp AND "foo bar"))')
     import sys

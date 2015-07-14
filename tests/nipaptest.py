@@ -1948,6 +1948,52 @@ class TestSmartParser(unittest.TestCase):
 
 
 
+    def test_prefix5(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('foo-agg-1 vlan>100 vlan< 200')
+        exp_query = {
+            'interpretation': {'interpretation': 'and', 'operator': 'and'},
+            'operator': 'and',
+            'val1': {'interpretation': {'interpretation': 'and', 'operator': 'and'},
+                     'operator': 'and',
+                     'val1': {'interpretation': {'attribute': 'description or comment or node or order_id or customer_id',
+                                                 'interpretation': 'text',
+                                                 'operator': 'regex',
+                                                 'string': 'foo-agg-1'},
+                              'operator': 'or',
+                              'val1': {'operator': 'or',
+                                       'val1': {'operator': 'or',
+                                                'val1': {'operator': 'or',
+                                                         'val1': {'operator': 'regex_match',
+                                                                  'val1': 'comment',
+                                                                  'val2': 'foo-agg-1'},
+                                                         'val2': {'operator': 'regex_match',
+                                                                  'val1': 'description',
+                                                                  'val2': 'foo-agg-1'}},
+                                                'val2': {'operator': 'regex_match',
+                                                         'val1': 'node',
+                                                         'val2': 'foo-agg-1'}},
+                                       'val2': {'operator': 'regex_match',
+                                                'val1': 'order_id',
+                                                'val2': 'foo-agg-1'}},
+                              'val2': {'operator': 'regex_match',
+                                       'val1': 'customer_id',
+                                       'val2': 'foo-agg-1'}},
+                     'val2': {'interpretation': 'expression',
+                              'operator': '>',
+                              'val1': 'vlan',
+                              'val2': '100'}},
+            'val2': {'interpretation': 'expression',
+                     'operator': '<',
+                     'val1': 'vlan',
+                     'val2': '200'}}
+
+
+        self.assertEqual(query, exp_query)
+
+
+
     def test_vrf1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
