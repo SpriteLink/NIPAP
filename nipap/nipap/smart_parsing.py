@@ -122,11 +122,9 @@ class SmartParser:
 
         enclosed = Forward()
         parens = nestedExpr('(', ')', content=enclosed)
-#        enclosed << (
-#                atom | parens
-#                )
-# TODO: enable above, we skip parentheses for now
-        enclosed << ( atom )
+        enclosed << (
+                parens | atom
+                ).setResultsName('nested')
 
         content = Forward()
         content << (
@@ -137,13 +135,27 @@ class SmartParser:
         return res
 
 
-    def _ast_to_dictsql(self, ast):
+    def _ast_to_dictsql(self, input_ast):
         """
         """
-        #self._logger.debug("parsing AST: " + str(ast))
-        interp = []
+        # Add implicit AND operator between expressions if there is no explicit
+        # operator specified.
+        ast = []
+        for token, lookahead in izip_longest(input_ast, input_ast[1:]):
+            if token.getName() == "boolean":
+                # only add boolean operator if it is NOT the last token
+                if lookahead is not None:
+                    ast.append(token)
+                continue
+            else:
+                # add non-boolean token
+                ast.append(token)
+                # if next token is boolean, continue so it can be added
+                if lookahead is None or lookahead.getName() == "boolean":
+                    continue
+                # if next token is NOT a boolean, add implicit AND
+                ast.append(ParseResults('and', 'boolean'))
 
-        dse = None
 
         # dictSql stack
         dss = {
@@ -152,8 +164,9 @@ class SmartParser:
                 'val2': None
                 }
 
+        dse = None
         for part, lookahead in izip_longest(ast, ast[1:]):
-            self._logger.debug("part: %s %s" % (part, type(part)))
+            self._logger.debug("part: %s %s" % (part, part.getName()))
 
             # handle operators joining together expressions
             if part.getName() == 'boolean':
@@ -171,13 +184,15 @@ class SmartParser:
                     dse = self._parse_expr(part)
                 else:
                     dse = self._ast_to_dictsql(part)
+            elif part.getName() == 'nested':
+                dse = self._ast_to_dictsql(part)
             elif part.getName() in ('word', 'tag', 'vrf_rt'):
                 # dict sql expression
                 dse = self._string_to_dictsql(part)
                 self._logger.debug('string part: %s  => %s' % (part, dse))
             else:
-                raise ParserError("Unhandled part in AST: %s" % part)
-
+                raise ParserError("Unhandled part in AST: %s %s" % (part,
+                                                                    part.getName()))
 
             if dss['val1'] is None:
                 self._logger.debug('val1 not set, using dse: %s' % str(dse))
@@ -239,30 +254,6 @@ class SmartParser:
         return dictsql
 
 
-    def _add_implicit_ops(self, input_ast):
-        """ Add implicit AND operator between expressions if there is no
-            explicit operator specified.
-        """
-        res_ast = []
-
-        for token, lookahead in izip_longest(input_ast, input_ast[1:]):
-            if token.getName() == "boolean":
-                # only add boolean operator if it is NOT the last token
-                if lookahead is not None:
-                    res_ast.append(token)
-                continue
-            else:
-                # add non-boolean token
-                res_ast.append(token)
-                # if next token is boolean, continue so it can be added
-                if lookahead is None or lookahead.getName() == "boolean":
-                    continue
-                # if next token is NOT a boolean, add implicit AND
-                res_ast.append(ParseResults('and', 'boolean'))
-
-        return res_ast
-
-
 
     def parse(self, input_string):
         # check for unclosed quotes/parentheses
@@ -274,8 +265,7 @@ class SmartParser:
         if '(' in stripped_line or ')' in stripped_line:
             raise NipapValueError('Unclosed parentheses')
 
-        raw_ast = self._string_to_ast(input_string)
-        ast = self._add_implicit_ops(raw_ast)
+        ast = self._string_to_ast(input_string)
         return self._ast_to_dictsql(ast)
 
 
@@ -742,7 +732,7 @@ if __name__ == '__main__':
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
-    p = PrefixSmartParser()
+    p = VrfSmartParser()
     #dictsql, interpretation = p.parse('core (country=SE or country = NL OR (damp AND "foo bar")')
     #dictsql, interpretation = p.parse('core (country=SE or country = NL OR (damp AND "foo bar"))')
     import sys
