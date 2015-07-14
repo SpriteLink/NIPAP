@@ -1980,14 +1980,30 @@ class TestSmartParser(unittest.TestCase):
                               'val2': {'operator': 'regex_match',
                                        'val1': 'customer_id',
                                        'val2': 'foo-agg-1'}},
-                     'val2': {'interpretation': 'expression',
-                              'operator': '>',
-                              'val1': 'vlan',
-                              'val2': '100'}},
-            'val2': {'interpretation': 'expression',
+                     'val2': {
+                         'interpretation': {
+                             'interpretation': 'expression',
+                             'attribute': 'vlan',
+                             'operator': '>',
+                             'string': 'vlan>100'
+                         },
+                          'operator': '>',
+                          'val1': 'vlan',
+                          'val2': '100'
+                    }
+                    },
+            'val2': {
+                'interpretation': {
+                     'interpretation': 'expression',
+                     'attribute': 'vlan',
                      'operator': '<',
-                     'val1': 'vlan',
-                     'val2': '200'}}
+                     'string': 'vlan<200'
+                 },
+                 'operator': '<',
+                 'val1': 'vlan',
+                 'val2': '200'
+                }
+        }
 
 
         self.assertEqual(query, exp_query)

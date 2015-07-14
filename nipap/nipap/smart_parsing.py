@@ -91,19 +91,22 @@ class SmartParser:
         """
 
         # simple words
-        word = Word(alphanums + "-./").setResultsName('word')
+        comp_word = Word(alphanums + "-./_")
+        word = Word(alphanums + "-./_").setResultsName('word')
         # numbers
+        comp_number = Word(nums)
         number = Word(nums).setResultsName('number')
 
         # IPv4 address
         ipv4_oct = Regex("((2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?))")
+        comp_ipv4_address = Combine(ipv4_oct + ('.' + ipv4_oct*3))
         ipv4_address = Combine(ipv4_oct + ('.' + ipv4_oct*3)).setResultsName('ipv4_address')
 
         # VRF RTs of the form number:number
-        vrf_rt = Combine((ipv4_address | number) + Literal(':') + number).setResultsName('vrf_rt')
+        vrf_rt = Combine((comp_ipv4_address | comp_number) + Literal(':') + comp_number).setResultsName('vrf_rt')
 
         # tags
-        tags = Combine( Literal('#') + word).setResultsName('tag')
+        tags = Combine( Literal('#') + comp_word).setResultsName('tag')
 
         # operators for matching
         match_op = oneOf(' '.join(self.match_operators)).setResultsName('operator')
@@ -111,7 +114,7 @@ class SmartParser:
         # quoted string
         quoted_string = QuotedString('"', unquoteResults=True, escChar='\\').setResultsName('quoted_string')
         # expression to match a certain value for an attribute
-        expression = Group(word + match_op + (quoted_string | word | number)).setResultsName('expression')
+        expression = Group(word + match_op + (quoted_string | vrf_rt | word | number)).setResultsName('expression')
         # we work on atoms, which are single quoted strings, match expressions,
         # tags, VRF RT or simple words.
         # NOTE: Place them in order of most exact match first!
@@ -224,8 +227,13 @@ class SmartParser:
         dictsql = {
                 'operator': op,
                 'val1': key,
-                'val2': val,
-                'interpretation': 'expression'
+                'val2': str(val),
+                'interpretation': {
+                    'string': key + op + val,
+                    'interpretation': 'expression',
+                    'attribute': key,
+                    'operator': op
+                }
             }
 
         return dictsql
@@ -308,29 +316,29 @@ class PoolSmartParser(SmartParser):
             self._logger.debug("Query part '" + part[0][0] + "' interpreted as tag")
             dictsql = {
                     'interpretation': {
-                        'string': part[0][0],
+                        'string': part[0],
                         'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
                         },
                     'operator': 'equals_any',
                     'val1': 'tags',
-                    'val2': part[0]['word']
+                    'val2': part[0][1:]
                     }
 
         elif part.getName() == 'vrf_rt':
-            self._logger.debug("Query part '" + part.vrf_rt[0] + "' interpreted as VRF RT")
+            self._logger.debug("Query part '" + part.vrf_rt + "' interpreted as VRF RT")
             # TODO: enable this, our fancy new interpretation
             dictsql = {
                     'interpretation': {
                         'attribute': 'VRF RT',
                         'interpretation': 'vrf_rt',
                         'operator': 'equals',
-                        'string': part.vrf_rt[0]
+                        'string': part.vrf_rt
                         },
                     'operator': 'equals',
                     'val1': 'vrf_rt',
-                    'val2': part.vrf_rt[0]
+                    'val2': part.vrf_rt
                     }
             # using old interpretation for the time being to make sure we align
             # with old smart search interpreter
@@ -339,18 +347,18 @@ class PoolSmartParser(SmartParser):
                         'attribute': 'name or description',
                         'interpretation': 'text',
                         'operator': 'regex',
-                        'string': part.vrf_rt[0]
+                        'string': part.vrf_rt
                         },
                     'operator': 'or',
                     'val1': {
                         'operator': 'regex_match',
                         'val1': 'name',
-                        'val2': part.vrf_rt[0]
+                        'val2': part.vrf_rt
                         },
                     'val2': {
                         'operator': 'regex_match',
                         'val1': 'description',
-                        'val2': part.vrf_rt[0]
+                        'val2': part.vrf_rt
                         }
                     }
 
@@ -632,35 +640,35 @@ class VrfSmartParser(SmartParser):
             self._logger.debug("Query part '" + part[0][0] + "' interpreted as tag")
             dictsql = {
                     'interpretation': {
-                        'string': part[0][0],
+                        'string': part[0],
                         'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
                         },
                     'operator': 'equals_any',
                     'val1': 'tags',
-                    'val2': part[0]['word']
+                    'val2': part[0][1:]
                     }
 
         elif part.getName() == 'vrf_rt':
-            self._logger.debug("Query part '" + part.vrf_rt[0] + "' interpreted as VRF RT")
+            self._logger.debug("Query part '" + part.vrf_rt + "' interpreted as VRF RT")
             # TODO: enable this, our fancy new interpretation
             dictsql = {
                     'interpretation': {
                         'attribute': 'VRF RT',
                         'interpretation': 'vrf_rt',
                         'operator': 'equals',
-                        'string': part.vrf_rt[0]
+                        'string': part.vrf_rt
                         },
                     'operator': 'equals',
                     'val1': 'vrf_rt',
-                    'val2': part.vrf_rt[0]
+                    'val2': part.vrf_rt
                     }
             # using old interpretation for the time being to make sure we align
             # with old smart search interpreter
             dictsql = {
                     'interpretation': {
-                        'string': part.vrf_rt[0],
+                        'string': part.vrf_rt,
                         'interpretation': 'text',
                         'attribute': 'vrf or name or description',
                         'operator': 'regex',
@@ -671,18 +679,18 @@ class VrfSmartParser(SmartParser):
                         'val1': {
                             'operator': 'regex_match',
                             'val1': 'name',
-                            'val2': part.vrf_rt[0]
+                            'val2': part.vrf_rt
                         },
                         'val2': {
                             'operator': 'regex_match',
                             'val1': 'description',
-                            'val2': part.vrf_rt[0]
+                            'val2': part.vrf_rt
                         }
                     },
                     'val2': {
                         'operator': 'regex_match',
                         'val1': 'rt',
-                        'val2': part.vrf_rt[0]
+                        'val2': part.vrf_rt
                     }
                 }
 
