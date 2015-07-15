@@ -169,7 +169,7 @@ def _parse_interp_pool(query, indent=-5, pandop=False):
     text = None
     text2 = None
     andop = False
-    if query['operator'] == 'and':
+    if interp['operator'] in ['and', 'or']:
         andop = True
     elif interp['interpretation'] == 'unclosed quote':
         text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
@@ -266,7 +266,7 @@ def _parse_interp_vrf(query, indent=-5, pandop=False):
     text = None
     text2 = None
     andop = False
-    if query['operator'] == 'and':
+    if interp['operator'] in ['and', 'or']:
         andop = True
     elif interp['interpretation'] == 'unclosed quote':
         text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
@@ -337,7 +337,7 @@ def _parse_interp_prefix(query, indent=-5, pandop=False):
     text = None
     text2 = None
     andop = False
-    if query['operator'] == 'and':
+    if interp['operator'] in ['and', 'or']:
         andop = True
     elif interp['interpretation'] == 'unclosed quote':
         text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
