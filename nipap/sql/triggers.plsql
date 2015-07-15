@@ -135,7 +135,12 @@ BEGIN
 		i_max_pref_len := 128;
 	END IF;
 	-- contains the parent prefix
-	SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
+	IF TG_OP = 'INSERT' THEN
+		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
+	ELSE
+		-- avoid selecting our old self as parent
+		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) AND prefix != OLD.prefix ORDER BY masklen(prefix) DESC LIMIT 1;
+	END IF;
 
 	--
 	---- Various sanity checking -----------------------------------------------
@@ -269,6 +274,10 @@ BEGIN
 		ELSIF TG_OP = 'UPDATE' THEN
 			IF OLD.prefix = NEW.prefix THEN
 				-- NOOP
+			ELSIF NEW.prefix << OLD.prefix AND OLD.indent = NEW.indent THEN -- NEW is smaller and covered by OLD
+				FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = NEW.indent+1 ORDER BY prefix ASC) LOOP
+					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
+				END LOOP;
 			ELSIF NEW.prefix << OLD.prefix THEN -- NEW is smaller and covered by OLD
 				--
 				FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = NEW.indent ORDER BY prefix ASC) LOOP
