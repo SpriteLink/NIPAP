@@ -1,3 +1,25 @@
+nipap-whoisd (0.28.4-1) stable; urgency=medium
+
+  * Fix prefix type automatic guessing so it doesn't override the input
+    type for certain scenarios (#800)
+  * Fix parent prefix selection in database so that it is now possible
+    to shrink assignments (#817)
+  * Addition of a generic export script that can be used to render
+    configuration files for other daemons, for example a DHCP or DNS
+    server (#815)
+  * Improve LDAP configuration flexibility by allowing separate LDAP
+    search credentials which is useful in LDAP environments where the
+    ordinary user accounts are not permitted to search the LDAP database
+    (#794)
+  * Fix update of VRF filter list in web-ui to catch corner case where
+    VRF has been removed (#811)
+  * Updates to requirements.txt for backend
+  * Update boilerplate - update your scripts based on the boilerplate!
+    (#821)
+  * Documentation fixes and some other smaller fixes
+
+ -- Kristian Larsson <kristian@spritelink.net>  Thu, 16 Jul 2015 13:12:23 +0200
+
 nipap-whoisd (0.28.3-1) stable; urgency=medium
 
   * Fix missing attributes inherited_spec in prefix spec (#790)
