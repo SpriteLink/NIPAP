@@ -75,7 +75,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # read configuration
-    cfg = ConfigParser.ConfigParser()
+    cfg = ConfigParser.ConfigParser({'prefix_list_columns': None })
     cfg.read(userrcfile)
     nipap_cli.nipap_cli.cfg = cfg
 

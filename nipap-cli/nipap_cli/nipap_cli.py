@@ -439,19 +439,29 @@ def list_prefix(arg, opts, shell_opts):
     # default columns
     columns = [ 'vrf_rt', 'prefix', 'type', 'tags', 'node', 'order_id', 'customer_id', 'description' ]
 
-    # should we append columns or replace default?
-    if shell_opts.columns[0] == '+':
-        col_append = True
-    else:
-        col_append = False
-        columns = []
+    # custom columns? prefer shell opts, then look in config file
+    custom_columns = None
+    if shell_opts.columns and len(shell_opts.columns) > 0:
+        custom_columns = shell_opts.columns
+    elif cfg.get('global', 'prefix_list_columns'):
+        custom_columns = cfg.get('global', 'prefix_list_columns')
 
-    # read in custom columns
-    for col in list(csv.reader([shell_opts.columns.lstrip('+') or ''], escapechar='\\'))[0]:
-        if col not in col_def:
-            print >> sys.stderr, "Invalid column:", col
-            sys.exit(1)
-        columns.append(col)
+    # parse custom columns
+    if custom_columns:
+        # should we append columns or replace default?
+        if custom_columns[0] == '+':
+            col_append = True
+        else:
+            col_append = False
+            columns = []
+
+        # read in custom columns
+        for col in list(csv.reader([custom_columns.lstrip('+') or ''], escapechar='\\'))[0]:
+            col = col.strip()
+            if col not in col_def:
+                print >> sys.stderr, "Invalid column:", col
+                sys.exit(1)
+            columns.append(col)
 
     offset = 0
     # small initial limit for "instant" result
@@ -490,7 +500,7 @@ def list_prefix(arg, opts, shell_opts):
                     pass
             # override certain column widths
             col_def['type']['width'] = 1
-            col_def['tags']['width'] = 1
+            col_def['tags']['width'] = 2
 
             col_header_data = {}
             # build prefix formatting string
