@@ -2,8 +2,9 @@ NIPAP
 =====
 
 [![Build Status](https://travis-ci.org/SpriteLink/NIPAP.svg?branch=master)](https://travis-ci.org/SpriteLink/NIPAP)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/SpriteLink/NIPAP/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SpriteLink/NIPAP/?branch=master)
 [![Requirements Status](https://requires.io/github/SpriteLink/NIPAP/requirements.svg?branch=master)](https://requires.io/github/SpriteLink/NIPAP/requirements/?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/SpriteLink/NIPAP/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SpriteLink/NIPAP/?branch=master)
+[![Code Climate](https://codeclimate.com/github/SpriteLink/NIPAP/badges/gpa.svg)](https://codeclimate.com/github/SpriteLink/NIPAP)
 
 pynipap: [![Latest Version](https://pypip.in/version/pynipap/badge.svg?style=flat)](https://pypi.python.org/pypi/pynipap/) [![Downloads](https://pypip.in/download/pynipap/badge.svg?style=flat)](https://pypi.python.org/pypi/pynipap/)
 
