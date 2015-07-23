@@ -48,7 +48,7 @@ if __name__ == '__main__':
     try:
         cmd = Command(nipap_cli.cmds, args)
         comp = sorted(cmd.complete())
-    except (NipapError, InvalidCommand):
+    except Exception:
         # handle errors silently
         pass
 
