@@ -90,18 +90,18 @@ Description: Neat IP Address Planner XML-RPC daemon
 
 Package: python-flask-compress
 Source: flask-compress
-Version: 1.0.0-1
+Version: 1.2.1-1
 Architecture: all
 Maintainer: William Fagan <will@wichitacode.com>
-Installed-Size: 53
-Depends: python2.7, python (>= 2.7.1-0ubuntu2), python (<< 2.8), python-flask
+Installed-Size: 45
+Depends: python (>= 2.7), python (<< 2.8), python-flask
 Priority: optional
 Section: python
-Filename: pool/main/f/flask-compress/python-flask-compress_1.0.0-1_all.deb
-Size: 3458
-SHA256: 13f73de2407e37719d64e4aca29979bec6a3907234b0efdcfd0dba2e4c87fd61
-SHA1: f3d7f9f31302164ae2d3733fe34804cbc8d24aca
-MD5sum: 7694286cb946678f5e8af1179fe48aa8
+Filename: pool/main/f/flask-compress/python-flask-compress_1.2.1-1_all.deb
+Size: 3402
+SHA256: 26aa472b8e1ecbdca144b9730f772b949a999408b38bcfc3f47450a6b225d9da
+SHA1: 978f0a810b9b9cbf5443b434b913ff22ce62d82f
+MD5sum: 85a539e211cd77c98ff82ba3374e1c34
 Description: Compress responses in your Flask app with gzip.
  .
  Flask-Compress
