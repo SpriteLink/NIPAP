@@ -79,26 +79,3 @@ Description: Adds support for creating XML-RPC APIs to Flask
  * `development version
    <http://bitbucket.org/leafstorm/flask-xml-rpc/get/tip.gz#egg=Flask-XML-RPC-dev>`_
 
-Package: python-pylons
-Source: pylons
-Version: 1.0-1
-Architecture: all
-Maintainer: Lukas Garberg <lukas@spritelink.net>
-Installed-Size: 1584
-Depends: python2.7 | python2.6 | python2.5, python-routes (>= 1.12), python-webhelpers (>= 0.6.4), python-beaker (>= 1.3), python-paste (>= 1.7.2), python-pastedeploy (>= 1.3.3), python-pastescript (>= 1.7.3), python-formencode (>= 1.2.1), python-simplejson, python-decorator (>= 2.0.8), python-nose (>= 0.10.4), python-mako, python-webob (>= 0.9.6.1), python-weberror (>= 0.10.1), python-webtest (>= 1.1), python-tempita (>= 0.2)
-Breaks: python (>= 2.8), python (<< 2.5)
-Priority: optional
-Section: python
-Filename: pool/extra/p/pylons/python-pylons_1.0-1_all.deb
-Size: 116872
-SHA256: 1c02a14fc30529173db8f0c576b85de76c3e4ea85966f42e21d115fae9e4668f
-SHA1: 415ee8b67b4897be7987d3ed956e3af27e541126
-MD5sum: 28198caa1dc1cd73b5a947ffb95076f9
-Description: Pylons Web Framework
- The Pylons web framework is aimed at making webapps and large programmatic
- website development in Python easy. Several key points:
- * A framework to make writing web applications in Python easy
- * Utilizes a minimalist, component-based philosophy that makes it easy to
-   expand on
- * Harness existing knowledge about Python
-
