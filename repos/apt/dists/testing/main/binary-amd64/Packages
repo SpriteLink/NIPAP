@@ -88,27 +88,6 @@ Description: Neat IP Address Planner XML-RPC daemon
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the XML-RPC daemon.
 
-Package: python-flask-compress
-Source: flask-compress
-Version: 1.2.1-1
-Architecture: all
-Maintainer: William Fagan <will@wichitacode.com>
-Installed-Size: 45
-Depends: python (>= 2.7), python (<< 2.8), python-flask
-Priority: optional
-Section: python
-Filename: pool/main/f/flask-compress/python-flask-compress_1.2.1-1_all.deb
-Size: 3402
-SHA256: 26aa472b8e1ecbdca144b9730f772b949a999408b38bcfc3f47450a6b225d9da
-SHA1: 978f0a810b9b9cbf5443b434b913ff22ce62d82f
-MD5sum: 85a539e211cd77c98ff82ba3374e1c34
-Description: Compress responses in your Flask app with gzip.
- .
- Flask-Compress
- ------------
- .
- Compress responses in your Flask app with gzip..
-
 Package: python-flask-xml-rpc
 Source: flask-xml-rpc
 Version: 0.1.2-1
