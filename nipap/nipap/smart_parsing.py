@@ -223,7 +223,7 @@ class SmartParser:
     def _string_to_dictsql(self, string):
         """ Do magic matching of single words or quoted string
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
     def _parse_expr(self, part):
