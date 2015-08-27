@@ -39,6 +39,8 @@ if __name__ == '__main__':
                       help="Remove all prefixes in NIPAP")
     parser.add_option('--clear-vrfs', action='store_true',
                       help="Remove all VRFs in NIPAP")
+    parser.add_option("-f", "--force", action="store_true", default=False,
+                      help="disable interactive prompting of actions")
     (options, args) = parser.parse_args()
 
     auth_uri = "%s:%s@" % (options.username or cfg.get('global', 'username'),
@@ -52,35 +54,18 @@ if __name__ == '__main__':
     pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
     pynipap.xmlrpc_uri = xmlrpc_uri
 
-    if options.clear_pools:
-        res = raw_input("Are you sure you want to remove all pools? [y/N]")
-        if len(res) > 0 and res.lower()[0] == 'y':
-            print "Removing: ",
-            for p in Pool.list():
-                p.remove()
-                sys.stdout.write(".")
-                sys.stdout.flush()
-            print " done!"
-        else:
-            print "Aborted"
-
-    if options.clear_prefixes:
-        res = raw_input("Are you sure you want to remove all prefixes? [y/N]")
-        if len(res) > 0 and res.lower()[0] == 'y':
-            print "Removing: ",
-            for p in Prefix.list({'indent': 0}):
-                p.remove(recursive=True)
-                sys.stdout.write(".")
-                sys.stdout.flush()
-            print " done!"
-        else:
-            print "Aborted"
-
     if options.clear_vrfs:
-        res = raw_input("Are you sure you want to remove all VRFs? Note how all" +
-                        " prefixes in these VRFs WILL BE DELETED. The default VRF" +
-                        " will NOT be deleted nor will it be emptied. [y/N]")
+        remove_confirmed = options.force
+        if not remove_confirmed:
+            res = raw_input("Are you sure you want to remove all VRFs? Note how all" +
+                            " prefixes in these VRFs WILL BE DELETED. The default VRF" +
+                            " will NOT be deleted nor will it be emptied. [y/N]")
         if len(res) > 0 and res.lower()[0] == 'y':
+            remove_confirmed = True
+        else:
+            print "Aborted"
+
+        if remove_confirmed:
             print "Removing: ",
             for v in VRF.list():
                 if v.id == 0:
@@ -89,5 +74,38 @@ if __name__ == '__main__':
                 sys.stdout.write(".")
                 sys.stdout.flush()
             print " done!"
-        else:
-            print "Aborted"
+
+    if options.clear_pools:
+        remove_confirmed = options.force
+        if not remove_confirmed:
+            res = raw_input("Are you sure you want to remove all pools? [y/N]")
+            if len(res) > 0 and res.lower()[0] == 'y':
+                remove_confirmed = True
+            else:
+                print "Operation aborted."
+
+        if remove_confirmed:
+            print "Removing: ",
+            for p in Pool.list():
+                p.remove()
+                sys.stdout.write(".")
+                sys.stdout.flush()
+            print " done!"
+
+    if options.clear_prefixes:
+        remove_confirmed = options.force
+        if not remove_confirmed:
+            res = raw_input("Are you sure you want to remove all prefixes? [y/N]")
+            if len(res) > 0 and res.lower()[0] == 'y':
+                remove_confirmed = True
+            else:
+                print "Aborted"
+
+        if remove_confirmed:
+            print "Removing: ",
+            for p in Prefix.list({'indent': 0}):
+                p.remove(recursive=True)
+                sys.stdout.write(".")
+                sys.stdout.flush()
+            print " done!"
+
