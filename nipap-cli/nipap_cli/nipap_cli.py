@@ -15,6 +15,7 @@ import shlex
 import string
 import subprocess
 import sys
+import getpass
 
 import IPy
 
@@ -48,12 +49,20 @@ def setup_connection():
 
     # build XML-RPC URI
     try:
-        pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
-                'username': cfg.get('global', 'username'),
-                'password': cfg.get('global', 'password'),
-                'hostname': cfg.get('global', 'hostname'),
-                'port'    : cfg.get('global', 'port')
-            }
+        try:
+            pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
+                    'username': cfg.get('global', 'username'),
+                    'password': cfg.get('global', 'password'),
+                    'hostname': cfg.get('global', 'hostname'),
+                    'port'    : cfg.get('global', 'port')
+                }
+        except:
+            pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
+                    'username': cfg.get('global', 'username'),
+                    'password': getpass.getpass(),
+                    'hostname': cfg.get('global', 'hostname'),
+                    'port'    : cfg.get('global', 'port')
+                    }
     except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
         print >> sys.stderr, "Please define the username, password, hostname and port in your .nipaprc under the section 'global'"
         sys.exit(1)
@@ -526,7 +535,7 @@ def list_prefix(arg, opts, shell_opts):
                 if len(p.tags) > 0:
                     col_data['tags'] = '#%d' % len(p.tags)
 
-                try: 
+                try:
                     col_data['pool_name'] = p.pool.name
                 except:
                     pass
