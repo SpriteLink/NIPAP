@@ -1295,7 +1295,7 @@ def remove_prefix(arg, opts, shell_opts):
                 if len(auth_src) == 0:
                     # Simple case; all prefixes were added from NIPAP
                     res = raw_input("Do you really want to recursively remove %s prefixes in %s? [y/N]: " % (len(pres['result']),
-                                vrf_format(vrf)))
+                                vrf_format(vrf).encode("utf-8")))
 
                     if res.lower() in [ 'y', 'yes' ]:
                         remove_confirmed = True
