@@ -67,7 +67,7 @@ def setup_connection():
 
 
 def vrf_format(vrf):
-    return "VRF '%s' [RT: %s]" % (vrf.name, vrf.rt or '-')
+    return "VRF '%s' [RT: %s]" % (vrf.name.encode("utf-8"), vrf.rt or '-')
 
 
 def get_pool(arg = None, opts = None, abort = False):
@@ -1295,7 +1295,7 @@ def remove_prefix(arg, opts, shell_opts):
                 if len(auth_src) == 0:
                     # Simple case; all prefixes were added from NIPAP
                     res = raw_input("Do you really want to recursively remove %s prefixes in %s? [y/N]: " % (len(pres['result']),
-                                vrf_format(vrf).encode("utf-8")))
+                                vrf_format(vrf)))
 
                     if res.lower() in [ 'y', 'yes' ]:
                         remove_confirmed = True
