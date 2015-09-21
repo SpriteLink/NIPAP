@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """ NIPAP shell command
 
     A shell command to interact with NIPAP.
@@ -15,11 +16,18 @@ from nipap_cli.command import Command, CommandError
 from pynipap import NipapError
 
 import codecs
-# do UTF-8 output for redirected stdout
-if sys.stdout.encoding is None:
-    # if encoding is None it means Python hasn't been able to determine the
-    # encoding from the terminal, so we are probably being redirected and so we
-    # default to UTF-8
+# is output a terminal?
+if sys.stdout.isatty():
+    # When output encoding is set to UTF-8 we will get proper UTF-8 output from
+    # print statements but raw_input() will fail when the prompt contains
+    # Unicode characters. Forcing the output to UTF-8 fixes that, despite
+    # setting UTF-8 output when output encoding already is UTF-8 should be a
+    # no-op. Note how we only do this when the encoding is already set to UTF-8
+    # so any legacy terminals should still work fine.
+    if sys.stdout.encoding == 'UTF-8':
+        sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+else: # we are likely being redirected / piped to something else
+    # force UTF-8 output for redirected stdout
     sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 # early close of stdout to avoid broken pipe, see #464
