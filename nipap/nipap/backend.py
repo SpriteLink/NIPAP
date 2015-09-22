@@ -987,16 +987,19 @@ class Nipap:
                 }
             )
 
-        # We can have zero modified rows. Deal with it.
-        if len(qps) > 0:
-            q = qps[0]
+        # if we didn't update anything return empty list
+        if len(qps) == 0:
+            return []
 
-            for qp in qps[1:]:
-                q = {
-                    'operator': 'or',
-                    'val1': q,
-                    'val2': qp
-                }
+        # fetch list of objects based on IDs
+        q = qps[0]
+
+        for qp in qps[1:]:
+            q = {
+                'operator': 'or',
+                'val1': q,
+                'val2': qp
+            }
 
         updated = function(auth, q, { 'max_result': 10000 })['result']
 
