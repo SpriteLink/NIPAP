@@ -16,6 +16,6 @@ python-dateutil==2.4.2
 # optional dependency on ldap
 #python-ldap==2.4.19
 pytz==2015.4
-pysqlite==2.6.3
+pysqlite==2.7.0
 tornado==4.2.1
 wsgiref==0.1.2
