@@ -3030,20 +3030,20 @@ class Nipap:
             Returns a list of dicts.
 
             The `query` argument passed to this function is designed to be
-            able to specify how quite advanced search operations should be
-            performed in a generic format. It is internally expanded to a SQL
-            WHERE-clause.
+            able to express quite advanced search filters. It is internally
+            expanded to an SQL WHERE-clause.
 
             The `query` is a dict with three elements, where one specifies the
             operation to perform and the two other specifies its arguments. The
-            arguments can themselves be `query` dicts, to build more complex
-            queries.
+            arguments can themselves be `query` dicts, i.e. nested, to build
+            more complex queries.
 
             The :attr:`operator` key specifies what operator should be used for the
             comparison. Currently the following operators are supported:
 
             * :data:`and` - Logical AND
             * :data:`or` - Logical OR
+            * :data:`equals_any` - Equality of any element in array
             * :data:`equals` - Equality; =
             * :data:`not_equals` - Inequality; !=
             * :data:`less` - Less than; <
@@ -3058,10 +3058,11 @@ class Nipap:
             * :data:`contained_within` - IP prefix is contained within
             * :data:`contained_within_equals` - IP prefix is contained within or equals
 
-            The :attr:`val1` and :attr:`val2` keys specifies the values which are subjected
-            to the comparison. :attr:`val1` can be either any prefix attribute or an
-            entire query dict. :attr:`val2` can be either the value you want to
-            compare the prefix attribute to, or an entire `query` dict.
+            The :attr:`val1` and :attr:`val2` keys specifies the values which
+            are subjected to the comparison. :attr:`val1` can be either any
+            prefix attribute or a query dict. :attr:`val2` can be either the
+            value you want to compare the prefix attribute to, or a `query`
+            dict.
 
             Example 1 - Find the prefixes which contains 192.0.2.0/24::
 
@@ -3095,13 +3096,40 @@ class Nipap:
 
                 SELECT * FROM prefix WHERE (type == 'assignment') AND (prefix contained within '192.0.2.0/24')
 
-            The `options` argument provides a way to alter the search result a
-            bit to assist in client implementations. Most options regard parent
-            and children prefixes, that is the prefixes which contain the
-            prefix(es) matching the search terms (parents) or the prefixes
-            which are contained by the prefix(es) matching the search terms.
-            The search options can also be used to limit the number of rows
-            returned.
+            If you want to combine more than two expressions together with a
+            boolean expression you need to nest them. For example, to match on
+            three values, in this case the tag 'foobar' and a prefix-length
+            between /10 and /24, the following could be used::
+
+                query = {
+                    'operator': 'and',
+                    'val1': {
+                        'operator': 'and',
+                        'val1': {
+                            'operator': 'greater',
+                            'val1': 'prefix_length',
+                            'val2': 9
+                        },
+                        'val2': {
+                            'operator': 'less_or_equal',
+                            'val1': 'prefix_length',
+                            'val2': 24
+                        }
+                    },
+                    'val2': {
+                        'operator': 'equals_any',
+                        'val1': 'tags',
+                        'val2': 'foobar'
+                    }
+                }
+
+
+            The `options` argument provides a way to alter the search result to
+            assist in client implementations. Most options regard parent and
+            children prefixes, that is the prefixes which contain the prefix(es)
+            matching the search terms (parents) or the prefixes which are
+            contained by the prefix(es) matching the search terms. The search
+            options can also be used to limit the number of rows returned.
 
             The following options are available:
                 * :attr:`parents_depth` - How many levels of parents to return. Set to :data:`-1` to include all parents.
