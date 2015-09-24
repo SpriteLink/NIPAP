@@ -400,6 +400,10 @@ _prefix_spec = {
             'column': 'inp.prefix',
             'ro': False,
         },
+        'prefix_length': {
+            'column': 'masklen(inp.prefix)',
+            'ro': True,
+        },
         'status': {
             'column': 'inp.status',
             'ro': False,
