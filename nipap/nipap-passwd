@@ -20,7 +20,7 @@ if __name__ == '__main__':
         nargs='?', type=str,
         choices=['list', 'add', 'delete', 'test-user', 'latest-version', 'create-database', 'upgrade-database'],
         help='define an action to execute')
-    parser.add_argument('-u', '--user', dest='user', type=str, help='username')
+    parser.add_argument('-u', '--username', dest='user', type=str, help='username')
     parser.add_argument('-p', '--password', dest='password', type=str, help='set user\'s password to PASSWORD')
     parser.add_argument('-n', '--name', dest='name', type=str, help='set user\'s name to NAME')
     parser.add_argument('-t', '--trusted', action='store_true', dest='trusted', default=False, help='mark user as trusted')
