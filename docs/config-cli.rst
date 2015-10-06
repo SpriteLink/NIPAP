@@ -26,6 +26,8 @@ created (also see nipap-cli/nipaprc for a more complete example)::
 
 Naturally, if you are running the CLI and nipapd on two different machines,
 'hostname' will need to be set to the machine where nipapd is running.
+Furthermore you can remove the 'password' line if you prefer to be asked for
+your password every time.
 
 'default_vrf_rt' specifies the RT of the VRF used as default by 'nipap address
 add/modify/remove/view' commands when no other VRF RT is explicitly specified
