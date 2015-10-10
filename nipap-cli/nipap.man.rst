@@ -46,9 +46,11 @@ Object operations
 
 **view** is used to get detailed information about one particular object.
 
-Bugs / Caveats
-==============
-Not all operations supported by the NIPAP backend are possible to perform through the CLI.
+Extra options
+=============
+**--force** disable interactive prompting of actions. Typically edit and remove operations will prompt the user and those prompts can be suppressed by the use of this option.
+
+**--columns** Comma-separated ordered list of columns.  Precede the list with '+' to append to the default selection of columns instead of replacing it.
 
 Examples
 ========
@@ -86,9 +88,9 @@ Delete 192.0.2.0/24 and all prefixes within it:
     $ nipap address remove 192.0.2.0/24 recursive
 
 Author
-=========
+======
 Kristian Larsson, Lukas Garberg
 
 Copyright
 =========
-Kristian Larsson, Lukas Garberg 2011-2014
+Kristian Larsson, Lukas Garberg 2011-2015
