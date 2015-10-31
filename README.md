@@ -74,3 +74,7 @@ Copyright and License
 ---------------------
 Code released under the [MIT license](LICENSE). Documentation released under
 [Creative Commons](docs/LICENSE).
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/SpriteLink/nipap/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
