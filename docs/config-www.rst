@@ -22,7 +22,7 @@ or port, then update the "127.0.0.1:1337" part accordingly.
 Finally, you can add a user for yourself and once you've configured your web
 server to serve the NIPAP web UI you should be able to login with this user::
 
-    nipap-passwd add --username myuser --password mypassword --name "my user"
+    nipap-passwd add --user myuser --password mypassword --name "my user"
 
 
 Serving the web UI
