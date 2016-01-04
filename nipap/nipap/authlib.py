@@ -638,7 +638,8 @@ class SqliteAuth(BaseAuth):
             (?, ?, ?, ?, ?, ?)'''
         try:
             self._db_curs.execute(sql, (username, salt,
-                self._gen_hash(password, salt), full_name, trusted, readonly))
+                self._gen_hash(password, salt), full_name, trusted or False,
+                                        readonly or False))
             self._db_conn.commit()
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
@@ -659,6 +660,29 @@ class SqliteAuth(BaseAuth):
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
         return self._db_curs.rowcount
+
+
+
+    def modify_user(self, username, data):
+        """ Modify user in SQLite database.
+
+            Since username is used as primary key and we only have a single
+            argument for it we can't modify the username right now.
+        """
+        sql = "UPDATE user SET "
+        sql += ', '.join("%s = ?" % k for k in sorted(data))
+        sql += " WHERE username = ?"
+
+        vals = []
+        for k in sorted(data):
+            vals.append(data[k])
+        vals.append(username)
+
+        try:
+            self._db_curs.execute(sql, vals)
+            self._db_conn.commit()
+        except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
+            raise AuthError(error)
 
 
 
