@@ -16,19 +16,31 @@ if __name__ == '__main__':
     # parse arguments
     parser = argparse.ArgumentParser(description='NIPAP User configuration')
     parser.add_argument('action',
-        metavar='{list, add, delete, test-user, latest-version, create-database, upgrade-database}',
+        metavar='{list, add, delete, modify, test-user, latest-version, create-database, upgrade-database}',
         nargs='?', type=str,
-        choices=['list', 'add', 'delete', 'test-user', 'latest-version', 'create-database', 'upgrade-database'],
+        choices=['list', 'add', 'delete', 'modify', 'test-user', 'latest-version', 'create-database', 'upgrade-database'],
         help='define an action to execute')
-    parser.add_argument('-u', '--username', dest='user', type=str, help='username')
-    parser.add_argument('-p', '--password', dest='password', type=str, help='set user\'s password to PASSWORD')
-    parser.add_argument('-n', '--name', dest='name', type=str, help='set user\'s name to NAME')
-    parser.add_argument('-t', '--trusted', action='store_true', dest='trusted', default=False, help='mark user as trusted')
-    parser.add_argument('-r', '--readonly', action='store_true', dest='readonly', default=False, help='set user to read only')
-    parser.add_argument('-f', '--file', dest='db_file', type=str, help="database file [default: read from config]")
-    parser.add_argument('-c', '--config', dest='config', default='/etc/nipap/nipap.conf', type=str, help=
+    parser.add_argument('-u', '--username', dest='user', type=str,
+                        help='username')
+    parser.add_argument('-p', '--password', dest='password', type=str,
+                        help='set user\'s password to PASSWORD')
+    parser.add_argument('-n', '--name', dest='name', type=str,
+                        help='set user\'s name to NAME')
+    parser.add_argument('-t', '--trusted', action='store_true', dest='trusted',
+                        default=None, help='mark user as trusted')
+    parser.add_argument('--no-trusted', action='store_false', dest='trusted',
+                        default=None, help='mark user as not trusted')
+    parser.add_argument('-r', '--readonly', action='store_true', dest='readonly',
+                        default=None, help='set user to read only')
+    parser.add_argument('--no-readonly', action='store_false', dest='readonly',
+                        default=None, help='set user to read write')
+    parser.add_argument('-f', '--file', dest='db_file', type=str,
+                        help="database file [default: read from config]")
+    parser.add_argument('-c', '--config', dest='config',
+                        default='/etc/nipap/nipap.conf', type=str, help=
             'read configuration from CONFIG [default:/etc/nipap/nipap.conf]')
-    parser.add_argument('--version', action='version', version='nipap-passwd version %s' % nipap.__version__)
+    parser.add_argument('--version', action='version',
+                        version='nipap-passwd version %s' % nipap.__version__)
     args = parser.parse_args()
 
     logger = logging.getLogger()
@@ -104,6 +116,33 @@ if __name__ == '__main__':
                 sys.exit(1)
             a.remove_user(args.user)
             print "User %s deleted from database %s" % (args.user, cfg.get('auth.backends.local', 'db_path'))
+        except nipap.authlib.AuthError as exc:
+            if str(exc) == 'attempt to write a readonly database':
+                print "You do not have sufficient rights to write to database: %s" % (cfg.get('auth.backends.local','db_path'))
+            else:
+                print exc
+
+    elif args.action == 'modify':
+        if not args.user:
+            print "Please specify user with --user"
+            sys.exit(1)
+
+        data = {}
+        if args.password is not None:
+            data['password'] = args.password
+        if args.name is not None:
+            data['full_name'] = args.name
+        if args.trusted is not None:
+            data['trusted'] = args.trusted
+        if args.readonly is not None:
+            data['readonly'] = args.readonly
+
+        if len(data) == 0:
+            print "Please specify value to change"
+            sys.exit(1)
+
+        try:
+            a.modify_user(args.user, data)
         except nipap.authlib.AuthError as exc:
             if str(exc) == 'attempt to write a readonly database':
                 print "You do not have sufficient rights to write to database: %s" % (cfg.get('auth.backends.local','db_path'))
