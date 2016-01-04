@@ -8,9 +8,14 @@ Synopsis
 
 Description
 -----------
-The **nipap-passwd** command administrates user accounts in a local (SQLite) database for use with the NIPAP backend. The NIPAP backend can be configured to use a "local" authentication backend, which is implemented with a SQLite database. This utility provides an easy way to add, remove or change users in such a database.
+The **nipap-passwd** command administrates user accounts in a local (SQLite)
+database for use with the NIPAP backend. The NIPAP backend can be configured to
+use a "local" authentication backend, which is implemented with a SQLite
+database. This utility provides an easy way to add, remove or change users in
+such a database.
 
-By default, **nipap-passwd** will read the NIPAP configuration file (/etc/nipap/nipap.conf) to find the location of the SQLite database.
+By default, **nipap-passwd** will read the NIPAP configuration file
+(/etc/nipap/nipap.conf) to find the location of the SQLite database.
 
 Options
 -------
@@ -28,6 +33,10 @@ Options
 
 	delete
     	Delete user with username specifies with **-u** from the database
+
+    modify
+        Modify an existing user. User to modify is specified with **-u**. It is
+        not possible to change the username of an existing user.
 
 	test-user
 		Try to authenticate with user specified with the option **-u** and
@@ -63,8 +72,16 @@ Options
     -t, --trusted
     	Mark user as trusted. A trusted user will be able to impersonate other users
 
+    --no-trusted
+        Mark user as not trusted. This is typically used to negate --trusted
+        when modifying an existing user
+
     -r, --readonly
     	Give the user read-only permissions, i.e. the user is not able to edit anything
+
+    --no-readonly
+        Mark user as not readonly. This is typically used to negate --readonly
+        when modifying an existing user
 
     -f DB_FILE, --file=DB_FILE
     	Use the specified file as SQLite database file
