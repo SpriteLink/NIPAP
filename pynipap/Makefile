@@ -41,7 +41,7 @@ upload:
 
 clean:
 	$(PYTHON) setup.py clean
-	rm -rf build/ MANIFEST dist/ debian/python-pynipap* debian/files
+	rm -rf .pybuild/ MANIFEST dist/ debian/files debian/python-pynipap* debian/python3-pynipap*
 	find . -name '*.pyc' -delete
 
 VER := $(shell head -n1 ../NEWS | awk '{print $$2}')
