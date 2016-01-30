@@ -37,7 +37,7 @@ Using paster is the easiest way to get the NIPAP web UI up and running, but
 it's not really suitable for production deployment. To serve the NIPAP web UI
 from paster, run the following::
 
-	paster serve /etc/nipap/nipap-www.ini
+    paster serve /etc/nipap/nipap-www.ini
 
 Using the default configuration, the web UI should now be reachable on port
 5000. To change the port, edit /etc/nipap/nipap-www.ini.
@@ -46,19 +46,25 @@ Apache httpd with mod_wsgi
 ==========================
 Begin by installing Apache httpd with mod_wsgi::
 
-	apt-get install libapache2-mod-wsgi
+    apt-get install libapache2-mod-wsgi
 
 Then, add a new virtual host or configure the default one with the line::
 
-	WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
+    WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
+
+If you are using Apache 2.4 you will also need to add the lines::
+
+    <Directory /etc/nipap/>
+        Require all granted
+    </Directory>
 
 The web server needs to be able to write to its cache, alter the permissions of
 /var/cache/nipap-www so that the web server can write to it and preferrably
 also make sure no one else has access to it. For a typical Debian install of
 Apache httpd, the following should suffice::
 
-	chown -R www-data:www-data /var/cache/nipap-www
-	chmod -R u=rwX /var/cache/nipap-www
+    chown -R www-data:www-data /var/cache/nipap-www
+    chmod -R u=rwX /var/cache/nipap-www
 
 Now, restart Apache httpd and the NIPAP web UI should be up and running!
 
