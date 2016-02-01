@@ -2304,6 +2304,75 @@ class TestSmartParser(unittest.TestCase):
         self.assertEqual(query, exp_query)
 
 
+class TestAvpEmptyName(unittest.TestCase):
+    """ Test AVP with empty name
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_pool_add_avp(self):
+        p = Pool()
+        p.name = 'test AVP with empty name'
+        p.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            p.save()
+
+
+    def test_pool_edit_avp(self):
+        th = TestHelper()
+
+        # add a pool
+        p = th.add_pool('test', 'assignment', 31, 112)
+
+        p.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            p.save()
+
+
+    def test_prefix_add_avp(self):
+        p = Prefix()
+        p.prefix = '1.2.3.0/24'
+        p.type = 'assignment'
+        p.status = 'assigned'
+        p.description = 'test AVP with empty name'
+        p.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            p.save()
+
+
+    def test_prefix_edit_avp(self):
+        th = TestHelper()
+        p = th.add_prefix('192.0.2.0/24', 'assignment', 'test AVP with empty name')
+
+        p.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            p.save()
+
+
+    def test_vrf_add_avp(self):
+        v = VRF()
+        v.rt = '123:456'
+        v.name = 'test AVP with empty name'
+        v.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            v.save()
+
+
+    def test_vrf_edit_avp(self):
+        v = VRF()
+        v.rt = '123:456'
+        v.name = 'test AVP with empty name'
+        v.save()
+
+        v.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            v.save()
+
+
 
 
 if __name__ == '__main__':
