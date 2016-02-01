@@ -1189,6 +1189,10 @@ class Nipap:
             Add a VRF based on the values stored in the `attr` dict.
 
             Returns a dict describing the VRF which was added.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.add_vrf` for full understanding.
         """
 
         self._logger.debug("add_vrf called; attr: %s" % str(attr))
@@ -1232,6 +1236,11 @@ class Nipap:
                 A VRF specification.
 
             Remove VRF matching the `spec` argument.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.remove_vrf` for full
+            understanding.
         """
 
         self._logger.debug("remove_vrf called; spec: %s" % str(spec))
@@ -1282,6 +1291,11 @@ class Nipap:
                 A VRF specification. If omitted, all VRFs are returned.
 
             Returns a list of dicts.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.list_vrf` for full
+            understanding.
         """
 
         if spec is None:
@@ -1354,6 +1368,11 @@ class Nipap:
                 Attibutes specifying what VRF to edit.
             * `attr` [vrf_attr]
                 Dict specifying fields to be updated and their new values.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.edit_vrf` for full
+            understanding.
         """
 
         self._logger.debug("edit_vrf called; spec: %s attr: %s" %
@@ -1474,6 +1493,11 @@ class Nipap:
             The following options are available:
                 * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
                 * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.search_vrf` for full
+            understanding.
         """
 
         if search_options is None:
@@ -1560,6 +1584,11 @@ class Nipap:
 
             See the :func:`search_vrf` function for an explanation of the
             `search_options` argument.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.smart_search_vrf` for full
+            understanding.
         """
 
         if search_options is None:
@@ -1719,6 +1748,11 @@ class Nipap:
                 A dict containing the attributes the new pool should have.
 
             Returns a dict describing the pool which was added.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.add_pool` for full
+            understanding.
         """
 
         self._logger.debug("add_pool called; attrs: %s" % str(attr))
@@ -1759,6 +1793,11 @@ class Nipap:
                 AAA options.
             * `spec` [pool_spec]
                 Specifies what pool(s) to remove.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.remove_pool` for full
+            understanding.
         """
 
         self._logger.debug("remove_pool called; spec: %s" % str(spec))
@@ -1796,6 +1835,11 @@ class Nipap:
                 Specifies what pool(s) to list. Of omitted, all will be listed.
 
             Returns a list of dicts.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.list_pool` for full
+            understanding.
         """
 
         if spec is None:
@@ -1920,6 +1964,11 @@ class Nipap:
                 Specifies what pool to edit.
             * `attr` [pool_attr]
                 Attributes to update and their new values.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.edit_pool` for full
+            understanding.
         """
 
         self._logger.debug("edit_pool called; spec: %s attr: %s" %
@@ -2039,6 +2088,11 @@ class Nipap:
             The following options are available:
                 * :attr:`max_result` - The maximum number of pools to return (default :data:`50`).
                 * :attr:`offset` - Offset the result list this many pools (default :data:`0`).
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.search_pool` for full
+            understanding.
         """
 
         if search_options is None:
@@ -2148,6 +2202,11 @@ class Nipap:
 
             See the :func:`search_pool` function for an explanation of the
             `search_options` argument.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.smart_search_pool` for full
+            understanding.
         """
 
         if search_options is None:
@@ -2396,6 +2455,11 @@ class Nipap:
                 the :attr:`prefix` key is omitted from the `attr` argument. See the
                 documentation for the :func:`find_free_prefix` for a description of how
                 the `args` argument is to be formatted.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.add_prefix` for full
+            understanding.
         """
 
         if args is None:
@@ -2578,6 +2642,11 @@ class Nipap:
             Note that there are restrictions on when and how a prefix's type
             can be changed; reservations can be changed to assignments and vice
             versa, but only if they contain no child prefixes.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.edit_prefix` for full
+            understanding.
         """
 
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
@@ -2751,9 +2820,12 @@ class Nipap:
             how many prefixes that should be returned. If omitted, the default
             value is 1000.
 
-            The :func:`find_free_prefix` function is used internally by the
-            :func:`add_prefix` function to find available prefixes from the given
-            sources.
+            The internal backend function :func:`find_free_prefix` is used
+            internally by the :func:`add_prefix` function to find available
+            prefixes from the given sources. It's also exposed over XML-RPC,
+            please see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.find_free_prefix` for full
+            understanding.
         """
 
         # input sanity
@@ -2877,6 +2949,11 @@ class Nipap:
             This is a quite blunt tool for finding prefixes, mostly useful for
             fetching data about a single prefix. For more capable alternatives,
             see the :func:`search_prefix` or :func:`smart_search_prefix` functions.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.list_prefix` for full
+            understanding.
         """
 
         self._logger.debug("list_prefix called; spec: %s" % str(spec))
@@ -2966,6 +3043,11 @@ class Nipap:
                 AAA options.
             * `spec` [prefix_spec]
                 Specifies prefixe to remove.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.remove_prefix` for full
+            understanding.
         """
 
         self._logger.debug("remove_prefix called; spec: %s" % str(spec))
@@ -3163,6 +3245,11 @@ class Nipap:
             usable obtain search results with some context given around them,
             useful for example when displaying prefixes in a tree without the
             need to implement client side IP address logic.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.search_prefix` for full
+            understanding.
         """
 
         if search_options is None:
@@ -3450,6 +3537,11 @@ class Nipap:
 
             See the :func:`search_prefix` function for an explanation of the
             `search_options` argument.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.smart_search_prefix` for full
+            understanding.
         """
 
         if search_options is None:
@@ -3603,7 +3695,20 @@ class Nipap:
 
 
     def list_asn(self, auth, asn=None):
-        """ List AS numbers
+        """ List AS numbers matching `spec`.
+
+            * `auth` [BaseAuth]
+                AAA options.
+            * `spec` [asn_spec]
+                An automous system number specification. If omitted, all ASNs
+                are returned.
+
+            Returns a list of dicts.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.list_asn` for full
+            understanding.
         """
 
         if asn is None:
@@ -3640,6 +3745,11 @@ class Nipap:
                 ASN attributes.
 
             Returns a dict describing the ASN which was added.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.add_asn` for full
+            understanding.
         """
 
         self._logger.debug("add_asn called; attr: %s" % str(attr))
@@ -3675,9 +3785,17 @@ class Nipap:
     def edit_asn(self, auth, asn, attr):
         """ Edit AS number
 
-            * `auth` [BaseAuth] AAA options.
-            * `asn` [integer] AS number to edit.
-            * `attr` [asn_attr] New AS attributes.
+            * `auth` [BaseAuth]
+                AAA options.
+            * `asn` [integer]
+                AS number to edit.
+            * `attr` [asn_attr]
+                New AS attributes.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.edit_asn` for full
+            understanding.
         """
 
         self._logger.debug("edit_asn called; asn: %s attr: %s" %
@@ -3721,7 +3839,19 @@ class Nipap:
 
     @requires_rw
     def remove_asn(self, auth, asn):
-        """ Remove AS number
+        """ Remove an AS number.
+
+            * `auth` [BaseAuth]
+                AAA options.
+            * `spec` [asn]
+                An ASN specification.
+
+            Remove ASNs matching the `asn` argument.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.remove_asn` for full
+            understanding.
         """
 
         self._logger.debug("remove_asn called; asn: %s" % str(asn))
@@ -3792,6 +3922,11 @@ class Nipap:
             The following options are available:
                 * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
                 * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.search_tag` for full
+            understanding.
         """
 
         if search_options is None:
@@ -3874,6 +4009,11 @@ class Nipap:
 
             See the :func:`search_asn` function for an explanation of the
             `search_options` argument.
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.smart_search_asn` for full
+            understanding.
         """
 
         if search_options is None:
@@ -4090,6 +4230,11 @@ class Nipap:
             The following options are available:
                 * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
                 * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
+
+            This is the documentation of the internal backend function. It's
+            exposed over XML-RPC, please also see the XML-RPC documentation for
+            :py:func:`nipap.xmlrpc.NipapXMLRPC.search_asn` for full
+            understanding.
         """
 
         if search_options is None:
