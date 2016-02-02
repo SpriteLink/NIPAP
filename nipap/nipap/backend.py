@@ -965,6 +965,9 @@ class Nipap:
             if a not in allowed_attr:
                 raise NipapExtraneousInputError("extraneous attribute %s" % a)
 
+        if 'avps' in attr and '' in attr['avps']:
+            raise NipapValueError('AVP with empty name is not allowed')
+
 
 
     def _get_updated_rows(self, auth, function):
