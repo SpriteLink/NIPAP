@@ -52,12 +52,12 @@ install:
     # configure .nipaprc
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
     - chmod 0600 ~/.nipaprc
+    # install postgresql + ip4r + contrib
+    - apt-get install -qq -y postgresql-9.1-ip4r postgresql-9.1-contrib
 
     # -- virtualenv build ------------------------------------------------------
     # install nipap dependencies
     - if [ "$INSTALL" == "venv" ]; then pip install -r nipap/requirements.txt; fi
-    # install postgresql module (can't get from pip).
-    - if [ "$INSTALL" == "venv" ]; then sudo apt-get install -qq -y postgresql-9.1-ip4r; fi
     # SQL
     - if [ "$INSTALL" == "venv" ]; then sudo su -c "cd nipap/sql; make install" postgres; fi
     # move configuration file into place
