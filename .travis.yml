@@ -53,7 +53,7 @@ install:
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
     - chmod 0600 ~/.nipaprc
     # install postgresql + ip4r + contrib
-    - apt-get install -qq -y postgresql-9.1-ip4r postgresql-9.1-contrib
+    - sudo apt-get install -qq -y postgresql-9.1-ip4r postgresql-9.1-contrib
 
     # -- virtualenv build ------------------------------------------------------
     # install nipap dependencies
