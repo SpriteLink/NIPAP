@@ -12,6 +12,20 @@ instructions on non-Debian like Unix systems.
 
 Debian installation
 -------------------
+Start by installing PostgreSQL, the contrib package and the ip4r extension.
+Depending on which Debian or Ubuntu release you are running, different versions
+are available. Anything after PostgreSQL 9.0 will do. Make sure you install
+ip4r and the contrib package for your version of Postgres or if this is a fresh
+install you can specify the version you want of ip4r and it will pull in the
+same version of postgresql::
+
+    root@debian:~# apt-cache search ip4r
+    postgresql-9.1-ip4r - IPv4 and IPv6 types for PostgreSQL 9.1
+    postgresql-8.4-ip4r - IPv4 and IPv4 range index types for PostgreSQL 8.4
+    root@debian:~# apt-cache search postgres contrib
+    postgresql-contrib-9.1 - additional facilities for PostgreSQL
+    root@debian:~# apt-get install postgresql-9.1-ip4r postgresql-contrib-9.1
+
 Add the NIPAP repo to your package sources, add our public key for proper
 authentication of our packages and update your lists::
 
