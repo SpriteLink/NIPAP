@@ -1,3 +1,5 @@
+sudo: required
+dist: trusty
 language: python
 python:
   - "2.7"
@@ -46,24 +48,23 @@ install:
     # -- common operations to apt install and virtualenv -----------------------
     # install dependencies for building packages and build NIPAP debian packages
     - sudo apt-get update
-    - sudo apt-get install -qq -y --force-yes devscripts python-docutils
+    - sudo apt-get install -qq -y --force-yes devscripts python-docutils debhelper dh-python
     # configure .nipaprc
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
     - chmod 0600 ~/.nipaprc
+    # install postgresql + ip4r + contrib
+    - sudo apt-get install -qq -y postgresql-9.1 postgresql-9.1-ip4r postgresql-contrib-9.1
 
     # -- virtualenv build ------------------------------------------------------
     # install nipap dependencies
     - if [ "$INSTALL" == "venv" ]; then pip install -r nipap/requirements.txt; fi
-    # install postgresql module (can't get from pip).
-    # TODO: so weird; ldap doesn't work through pip...
-    - if [ "$INSTALL" == "venv" ]; then sudo apt-get install -qq -y python-ldap postgresql-9.1-ip4r; fi
     # SQL
     - if [ "$INSTALL" == "venv" ]; then sudo su -c "cd nipap/sql; make install" postgres; fi
     # move configuration file into place
     - if [ "$INSTALL" == "venv" ]; then sudo mkdir /etc/nipap; sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf; fi
     # create local user for unittest
-    - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd --create-database; sudo nipap/nipap-passwd -a unittest -p gottatest -n unittest; fi
-    - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"; fi
+    - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd create-database; sudo nipap/nipap-passwd add -u unittest -p gottatest -n unittest; fi
+    - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"; fi
     # install pynipap
     - if [ "$INSTALL" == "venv" ]; then cd pynipap; python setup.py install; cd ..; fi
     # start nipap backend
@@ -75,7 +76,7 @@ install:
     - if [ "$INSTALL" == "apt" ]; then wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -; fi
     - if [ "$INSTALL" == "apt" ]; then sudo apt-get update -qq; fi
     # install dependencies for installing & running nipap
-    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-ldap python-docutils postgresql-9.1 postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-tz python-dateutil python-psutil; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-docutils postgresql-9.1 postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-pylons python-tz python-dateutil python-psutil python-pyparsing; fi
     # if we are testing the upgrade, first install NIPAP packages from official repo
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo apt-get install -qq nipapd nipap-www nipap-cli; fi
     # bump version so that we know we are upgrading beyond what is installed
@@ -83,7 +84,7 @@ install:
     # populate answers to nipapd package install questions and reconfigure
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then echo 'set nipapd/autoconf true' | sudo debconf-communicate; echo 'set nipapd/startup true' | sudo debconf-communicate; echo 'set nipapd/upgrade true' | sudo debconf-communicate; sudo dpkg-reconfigure nipapd; fi
     # create local user for unittest and restart
-    - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n unittest; sudo /etc/init.d/nipapd restart; fi
+    - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest; sudo /etc/init.d/nipapd restart; fi
     # if upgrade, add some data to the database that we can verify later
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then nosetests tests/upgrade-before.py; fi
     # build new NIPAP packages
@@ -97,8 +98,8 @@ install:
     # upgrade in which case this will upgrade everything for us
     - if [ "$INSTALL" == "apt" ]; then sudo dpkg-reconfigure nipapd; fi
     # create local user for unittests
-    - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a unittest -p gottatest -n "User for running unit tests"; fi
-    - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd -f /etc/nipap/local_auth.db -a readonly -p gottatest --readonly -n "Read-only user for running unit tests"; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"; fi
     # Don't need to restart, but I would like to make sure that all is updated
     # (like local_auth.db is re-read and so forth). Read #654 for more
     # information.

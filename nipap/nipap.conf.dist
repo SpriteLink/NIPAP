@@ -116,22 +116,46 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 #[auth.backends.ldap1]
 #type = LdapAuth
 #
-#basedn = dc=test,dc=com                ; base DN
-#uri = ldaps://ldap.test.com            ; LDAP server URI
+#basedn = ou=Users,dc=example,dc=com       ; base DN
+#uri = ldaps://ldap.example.com            ; LDAP server URI
+#tls = False                            ; initiate TLS, use ldap://
 #
 # LDAP style
-#binddn_fmt = uid={},dc=test,dc=com
+#binddn_fmt = uid={},ou=Users,dc=example,dc=com
 #search = uid={}                        ; LDAP search filter
 #
 # Active Directory (UPN) style
-#binddn_fmt = {}@test.com
+#binddn_fmt = {}@example.com
 #search = sAMAccountName={}
 #
 # {} in binddn_fmt is replaced by the username of the authenticating user.
 #
+## Secondary LDAP connection
+# Normally a bind to the LDAP server is performed using the credentials of the
+# user that is trying to login. A successful bind means that the user has the
+# correct credentials. This LDAP connection is then used to perform a search
+# query fetching the full name ("cn") and potentially the group membership of
+# the user ("memberOf").
+#
+# Depending on the access control configuration of the LDAP server, users may
+# or may not have privileges to perform this search. The following two options,
+# search_binddn and search_password, can be used to create a second LDAP
+# connection that is used to fetch the full name and group memberships in case
+# the user doesn't have sufficient privileges. A second user needs to be
+# created in LDAP for NIPAP that has sufficient privileges to read the "cn" and
+# "memberOf" attribute.
+#search_binddn = uid=foo,ou=Users,dc=example,dc=com
+#search_password = secret
+#
 ## Group permissions
+# Group permissions enables granting read-write or read-only privileges based
+# on a users group membership in LDAP.
+#
 # Non-empty values for rw_group/ro_group requires the memberOf attribute to be
-# present in LDAP.
+# present in LDAP. For OpenLDAP this requires a "memberof" overlay.
+#
+# Note how certain LDAP servers are case-sensitive on DN-specification, e.g.
+# "DC=example,DC=com" works while "dc=example,dc=com" does not or vice versa.
 #
 # Examples:
 #
@@ -139,19 +163,21 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 #rw_group =
 #ro_group =
 #
-# Users in rw_group gets read/write access, everyone else gets read only access:
-#rw_group = cn=tech,dc=test,dc=com	; Users in this group get rw access
+# Users specified by rw_group, i.e. 'tech', gets read/write access, everyone
+# else gets read only access:
+#rw_group = cn=tech,dc=example,dc=com      ; Users in this group get rw access
 #ro_group =
 #
-# Users in rw_group gets read/write access, users in ro_group get read
-# only access. You need to be in either group to authenticate at all:
-#rw_group = cn=tech,dc=test,dc=com      ; Users in this group get rw access
-#ro_group = cn=staff,dc=test,dc=com     ; Users in this group get ro access
+# Users specified by rw_group, i.e. 'tech', gets read/write access, users
+# specified by ro_group, i.e. 'staff', get read only access. You need to be in
+# either group to authenticate at all:
+#rw_group = cn=tech,dc=example,dc=com      ; Users in this group get rw access
+#ro_group = cn=staff,dc=example,dc=com     ; Users in this group get ro access
 #
-# Users get read/write access by default, users in ro_group gets read
-# only access:
+# Users get read/write access by default, users specified by ro_group, i.e.
+# 'untrusted', gets read only access:
 #rw_group =
-#ro_group = cn=untrusted,dc=test,dc=com ; Users in this group get ro access
+#ro_group = cn=untrusted,dc=example,dc=com ; Users in this group get ro access
 
 #
 # Options for the WWW UI

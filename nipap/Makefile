@@ -43,8 +43,8 @@ upload:
 clean:
 	$(PYTHON) setup.py clean
 	rm -rf build/ MANIFEST dist/ debian/tmp debian/nipap-common \
-		debian/$(PROJECT) debian/nipapd debian/files .pc/ nipapd.8 \
-		nipap-passwd.1 debian/nipapd.debhelper.log \
+		debian/$(PROJECT) debian/nipapd debian/files .pc/ nipapd.8* \
+		nipap-passwd.1* debian/nipapd.debhelper.log \
 		debian/nipapd.postinst.debhelper debian/nipapd.postrm.debhelper \
 		debian/nipapd.prerm.debhelper debian/nipapd.substvars \
 		debian/nipap-common.debhelper.log \

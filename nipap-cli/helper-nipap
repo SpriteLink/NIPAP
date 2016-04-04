@@ -6,6 +6,7 @@
     commands to for example bash.
 """
 
+import ConfigParser
 import os
 import shlex
 import sys
@@ -23,6 +24,16 @@ __url__         = "http://SpriteLink.github.com/NIPAP/"
 
 if __name__ == '__main__':
 
+    # make sure nipaprc exists and has correct permissions
+    userrcfile = os.path.expanduser('~/.nipaprc')
+
+    # read configuration
+    cfg = ConfigParser.ConfigParser({'prefix_list_columns': None })
+    cfg.read(userrcfile)
+    nipap_cli.cfg = cfg
+
+    # setup our configuration
+    nipap_cli.setup_connection()
 
     comp = []
 
@@ -48,7 +59,7 @@ if __name__ == '__main__':
     try:
         cmd = Command(nipap_cli.cmds, args)
         comp = sorted(cmd.complete())
-    except (NipapError, InvalidCommand):
+    except Exception:
         # handle errors silently
         pass
 

@@ -13,6 +13,7 @@ Synopsis
 Description
 ===========
 **nipap** is the NIPAP command-line client. It connects (over a network or locally) to a NIPAP backend, send requests and displays the results.
+The connection settings are saved in **~/.nipaprc**
 
 **nipap** ships with a bash completion file which greatly simplifies working with **nipap**.
 
@@ -45,9 +46,11 @@ Object operations
 
 **view** is used to get detailed information about one particular object.
 
-Bugs / Caveats
-==============
-Not all operations supported by the NIPAP backend are possible to perform through the CLI, for example expanding or shrinking a pool. That needs to be done through the web interface.
+Extra options
+=============
+**--force** disable interactive prompting of actions. Typically edit and remove operations will prompt the user and those prompts can be suppressed by the use of this option.
+
+**--columns** Comma-separated ordered list of columns.  Precede the list with '+' to append to the default selection of columns instead of replacing it.
 
 Examples
 ========
@@ -62,6 +65,12 @@ Add a new prefix:
 
 Create a pool called 'test-linknets' with a default type of 'assignment' and default prefix-length of 30 and 112 for IPv4 and IPv6 respectively:
     $ nipap pool add name test-linknets description "Link networks for my test network" default-type assignment ipv4_default_prefix_length 30 ipv6_default_prefix_length 112
+
+Add some IPspace to the pool test-linknets:
+    $ nipap pool resize test-linknets add 192.168.224.0/14
+
+Or remove:
+    $ nipap pool resize test-linknets remove 192.168.224.0/14
 
 Add a new IPv4 prefix from the pool 'test-linknets'. The type will be set to 'assignment' as that is the default-type for this pool (created in previous example) and the prefix-length will be /30 as that is the default for IPv4.
     $ nipap address add family ipv4 from-pool test-linknets description 'BAZINGA-CORE-1 <-> FOO-CORE-2'
@@ -79,9 +88,9 @@ Delete 192.0.2.0/24 and all prefixes within it:
     $ nipap address remove 192.0.2.0/24 recursive
 
 Author
-=========
+======
 Kristian Larsson, Lukas Garberg
 
 Copyright
 =========
-Kristian Larsson, Lukas Garberg 2011-2014
+Kristian Larsson, Lukas Garberg 2011-2015

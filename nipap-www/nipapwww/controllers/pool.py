@@ -4,7 +4,7 @@ from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
 from nipapwww.lib.base import BaseController, render
-from pynipap import VRF, Pool, Prefix
+from pynipap import Pool, Prefix
 
 log = logging.getLogger(__name__)
 

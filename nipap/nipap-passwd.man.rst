@@ -4,77 +4,96 @@ nipap-passwd
 
 Synopsis
 --------
-``nipap-passwd`` [OPTIONS]
+**nipap-passwd** action [options...]
 
 Description
 -----------
-The **nipap-passwd** command administrates user accounts in a local (SQLite) database for use with the NIPAP backend. The NIPAP backend can be configured to use a "local" authentication backend, which is implemented with a SQLite database. This utility provides an easy way to add, remove or change users in such a database.
+The **nipap-passwd** command administrates user accounts in a local (SQLite)
+database for use with the NIPAP backend. The NIPAP backend can be configured to
+use a "local" authentication backend, which is implemented with a SQLite
+database. This utility provides an easy way to add, remove or change users in
+such a database.
 
-By default, **nipap-passwd** will read the NIPAP configuration file (/etc/nipap/nipap.conf) to find the location of the SQLite database.
+By default, **nipap-passwd** will read the NIPAP configuration file
+(/etc/nipap/nipap.conf) to find the location of the SQLite database.
 
 Options
 -------
 **nipapd-passwd** accepts the following command-line arguments.
 
---create-database
+ positional arguments:
+    action {list, add, delete, test-user, create-database, upgrade-database, latest-version}      define an action to execute
 
-    Create an empty SqliteAuth database in the path specified in the config
-    or by option **-f**
+    list
+        List all users in the SQLite database.
 
---latest-version
+    add
+        Add user with username specified with **-u** and password specified
+        with **-p** to the database.
 
-    Check if the SQLite database is of the latest version
+    delete
+        Delete user with username specifies with **-u** from the database
 
---upgrade-database
+    modify
+        Modify an existing user. User to modify is specified with **-u**. It is
+        not possible to change the username of an existing user.
 
-    Upgrade SQLite database to latest version
+    test-user
+        Try to authenticate with user specified with the option **-u** and
+        password speficied with **-p**. The program will return exit code **2**
+        if the user does not exist or the password is wrong.
 
--l, --list
+    create-database
+        Create an empty SqliteAuth database in the path specified in the config
+        or by option **-f**
 
-    List all users in the SQLite database
+    upgrade-database
+        Upgrade SQLite database to latest version
 
--a ADD_USER, --add=ADD_USER
+    latest-version
+        Check if the SQLite database is of the latest version
 
-    Add user with username *ADD_USER* to the database
+ optional arguments:
+    -h, --help
+        Show a help message
 
--p PASSWORD, --password=PASSWORD
+    -u USER, --user=USER
+        In combination with action **add**, the username of the user will be set to *USER*.
+        In combination with option **test-user**, the authentication will be tested with *USER*.
+        In combination with action **delete**, the user *USER* will be deleted.
 
-    In combination with option **-a**, the password of the user will be set to *PASSWORD*.
-    In combination with option **--test-user**, the authentication will be tested with *PASSWORD*.
+    -p PASSWORD, --password=PASSWORD
+        In combination with action **add**, the password of the user will be set to *PASSWORD*.
+        In combination with option **test-user**, the authentication will be tested with *PASSWORD*.
 
--n NAME, --name=NAME
+    -n NAME, --name=NAME
+        Set user's name to *NAME*
 
-    Set user's name to *NAME*
+    -t, --trusted
+        Mark user as trusted. A trusted user will be able to impersonate other users
 
--r, --readonly
+    --no-trusted
+        Mark user as not trusted. This is typically used to negate --trusted
+        when modifying an existing user
 
-    Give the user read-only permissions, i.e. the user is not able to edit anything
+    -r, --readonly
+        Give the user read-only permissions, i.e. the user is not able to edit anything
 
--t, --trusted
+    --no-readonly
+        Mark user as not readonly. This is typically used to negate --readonly
+        when modifying an existing user
 
-    Mark user as trusted. A trusted user will be able to impersonate other users
+    -f DB_FILE, --file=DB_FILE
+        Use the specified file as SQLite database file
+        [default: read from config]
 
---test-user TEST_USER
+    -c CONFIG, --config=CONFIG
+        Read configuration from configuration file *CONFIG*
+        [default: /etc/nipap/nipap.conf]
 
-    Try to authenticate with *TEST_USER*. The program will return exit code **2** if the user does not exist or the password is wrong.
+    --version
+        Show program's version number and exit
 
--d DELETE_USER, --delete=DELETE_USER
-
-    Delete user with username *DELETE_USER* from the database
-
--c CONFIG, --config=CONFIG
-
-    Read configuration from the specified file
-    [default: /etc/nipap/nipap.conf]
-
--f DB_FILE, --file=DB_FILE
-
-    Use the specified file as SQLite database file
-    [default: read from config]
-
--h, --help
-
-    Show a help message
 
 Return codes
 ------------
@@ -83,8 +102,8 @@ The program will either return one of the following codes
 
 - ``0`` on success
 - ``1`` on error
-- ``2`` if the authentication with option *--test-user* failed
+- ``2`` if the authentication with option **--test-user** failed
 
 Copyright
 ---------
-Kristian Larsson, Lukas Garberg 2011-2014
+Kristian Larsson, Lukas Garberg 2011-2015

@@ -11,11 +11,13 @@ import datetime
 import logging
 import unittest
 import sys
+import time
 sys.path.insert(0, '..')
 sys.path.insert(0, '../pynipap')
 sys.path.insert(0, '../nipap')
 sys.path.insert(0, '../nipap-cli')
 
+import nipap.backend
 from nipap.backend import Nipap
 from nipap.authlib import SqliteAuth
 from nipap.nipapconfig import NipapConfig
@@ -1293,6 +1295,54 @@ class TestPrefixStatistics(unittest.TestCase):
 
 
 
+class TestVrf(unittest.TestCase):
+    """ Test various VRF related things
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_vrf1(self):
+        """ Test VRF RT input values
+        """
+
+        v = VRF()
+        v.name = "test-vrf"
+
+        broken_values = [
+                "foo",
+                "123:foo",
+                "foo:123",
+                "123.456.789.123:123",
+                "123.123.200. 1:123",
+                " 123.456.789.123:123"
+                ]
+
+        for bv in broken_values:
+            with self.assertRaisesRegexp(pynipap.NipapValueError, 'Invalid input for column rt'):
+                v.rt = bv
+                v.save()
+
+        # valid value
+        v.rt = "123:456"
+        v.save()
+        self.assertEqual("123:456", VRF.list({"name": "test-vrf"})[0].rt)
+
+        # valid value but with whitespace which should be stripped
+        v.rt = " 123:456"
+        v.save()
+        self.assertEqual("123:456", VRF.list({"name": "test-vrf"})[0].rt)
+
+        # valid IP:id value
+        v.rt = "123.123.123.123:456"
+        v.save()
+        self.assertEqual("123.123.123.123:456", VRF.list({"name": "test-vrf"})[0].rt)
+
+
+
 class TestVrfStatistics(unittest.TestCase):
     """ Test calculation of statistics for VRFs
     """
@@ -1490,11 +1540,41 @@ class TestAddressListing(unittest.TestCase):
 
 
 
+class TestPrefixLastModified(unittest.TestCase):
+    """ Test updates of the last modified value
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+    def test1(self):
+        """ The last_modified timestamp should be updated when the prefix is
+            edited
+        """
+        th = TestHelper()
+        p1 = th.add_prefix('1.3.0.0/16', 'reservation', 'test')
+        # make sure added and last_modified are equal
+        self.assertEqual(p1.added, p1.last_modified)
+
+        # this is a bit silly, but as the last_modified time is returned with a
+        # precision of seconds, we need to make sure that we fall on the next
+        # second to actually notice that last_modified is not equal to added
+        time.sleep(1)
+
+        p1.description = 'updated description'
+        p1.save()
+
+        # last_modified should have a later timestamp than added
+        self.assertNotEqual(p1.added, p1.last_modified)
+
+
+
 
 class TestCli(unittest.TestCase):
     """ CLI tests
     """
-
     def test_extra_args(self):
         """ Extra arg should raise exception
         """
@@ -1506,6 +1586,196 @@ class TestCli(unittest.TestCase):
         with self.assertRaisesRegexp(InvalidCommand, 'Invalid argument:'):
             cmd = Command(nipap_cli.cmds, ['address', 'modify', '1.3.3.1/32', 'vrf_rt', 'none', 'set', 'FOO' ])
 
+
+class TestCliPrefixAutoType(unittest.TestCase):
+    """ Test CLI prefix auto type guessing
+    """
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def mock_cfg(self):
+        import ConfigParser
+        cfg = ConfigParser.ConfigParser()
+        cfg.add_section('global')
+        cfg.set('global', 'default_vrf_rt', '-')
+        cfg.set('global', 'default_list_vrf_rt', 'all')
+        return cfg
+
+
+    def test_auto_type1(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.0/8',
+            'type': 'reservation',
+            'description': 'root'
+            }
+        expected.insert(0, [opts['prefix'], opts['type']])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type2(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.0/24',
+            'description': 'host'
+            }
+        expected.append(['10.0.0.0/32', 'host'])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type3(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.0',
+            'description': 'host'
+            }
+        expected.append([opts['prefix'] + '/32', 'host'])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type4(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.1/24',
+            'description': 'host'
+            }
+        expected.append(['10.0.0.1/32', 'host'])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type5(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.1',
+            'description': 'host'
+            }
+        expected.append([opts['prefix'] + '/32', 'host'])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type6(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.1/32',
+            'description': 'host'
+            }
+        expected.append([opts['prefix'], 'host'])
+        nipap_cli.add_prefix({}, opts, {})
+
+        result = [[p.prefix, p.type] for p in Prefix.smart_search('')['result']]
+
+        self.assertEqual(expected, result)
+
+
+    def test_auto_type7(self):
+        """ Test automatic prefix type guessing
+        """
+        from nipap_cli import nipap_cli
+        from pynipap import NipapError
+        nipap_cli.cfg = self.mock_cfg()
+
+        th = TestHelper()
+        expected = []
+        # add a few prefixes
+        expected.append([th.add_prefix('10.0.0.0/16', 'reservation', 'test').prefix, 'reservation'])
+        expected.append([th.add_prefix('10.0.0.0/24', 'assignment', 'test').prefix, 'assignment'])
+
+        opts = {
+            'prefix': '10.0.0.1/25',
+            'description': 'host'
+            }
+
+        with self.assertRaisesRegexp(SystemExit, "^1$"):
+            nipap_cli.add_prefix({}, opts, {})
 
 
 class TestNipapHelper(unittest.TestCase):
@@ -1521,6 +1791,587 @@ class TestNipapHelper(unittest.TestCase):
 
         cmd = Command(nipap_cli.cmds, ['pool', 'resize'])
         self.assertEqual(['resize'], sorted(cmd.complete()))
+
+
+class TestSmartParser(unittest.TestCase):
+    """ Test the smart parsing functions
+    """
+    maxDiff = None
+
+    def test_prefix1(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('foo')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'description or comment or node or order_id or customer_id',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': 'foo'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'or',
+                            'val1': {
+                                'operator': 'regex_match',
+                                'val1': 'comment',
+                                'val2': u'foo'
+                                },
+                            'val2': {
+                                'operator': 'regex_match',
+                                'val1': 'description',
+                                'val2': u'foo'
+                                }
+                            },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'node',
+                            'val2': u'foo'
+                            }
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'order_id',
+                        'val2': u'foo'
+                        }
+                    },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'customer_id',
+                    'val2': u'foo'
+                    }
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_prefix2(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('1.3.3.0/24')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'prefix',
+                    'interpretation': 'IPv4 prefix',
+                    'operator': 'contained_within_equals',
+                    'string': '1.3.3.0/24'
+                },
+                'operator': 'contained_within_equals',
+                'val1': 'prefix',
+                'val2': '1.3.3.0/24'
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_prefix3(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('1.3.3.0/24 foo')
+        exp_query = {
+                'interpretation': {
+                    'interpretation': 'and',
+                    'operator': 'and',
+                },
+                'operator': 'and',
+                'val1': {
+                    'interpretation': {
+                        'attribute': 'prefix',
+                        'interpretation': 'IPv4 prefix',
+                        'operator': 'contained_within_equals',
+                        'string': u'1.3.3.0/24'
+                    },
+                    'operator': 'contained_within_equals',
+                    'val1': 'prefix',
+                    'val2': '1.3.3.0/24'
+                    },
+                'val2': {
+                    'interpretation': {
+                        'attribute': 'description or comment or node or order_id or customer_id',
+                        'interpretation': 'text',
+                        'operator': 'regex',
+                        'string': u'foo'
+                    },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'or',
+                            'val1': {
+                                'operator': 'or',
+                                'val1': {
+                                    'operator': 'regex_match',
+                                    'val1': 'comment',
+                                    'val2': u'foo'
+                                    },
+                                'val2': {
+                                    'operator': 'regex_match',
+                                    'val1': 'description',
+                                    'val2': u'foo'
+                                    }
+                                },
+                            'val2': {
+                                'operator': 'regex_match',
+                                'val1': 'node',
+                                'val2': u'foo'
+                                }
+                            },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'order_id',
+                            'val2': u'foo'
+                            }
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'customer_id',
+                        'val2': u'foo'
+                        }
+                    }
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_prefix4(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
+            query = n._parse_prefix_query('"')
+
+
+
+    def test_prefix5(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('foo-agg-1 vlan>100 vlan< 200')
+        exp_query = {
+            'interpretation': {'interpretation': 'and', 'operator': 'and'},
+            'operator': 'and',
+            'val1': {'interpretation': {'interpretation': 'and', 'operator': 'and'},
+                     'operator': 'and',
+                     'val1': {'interpretation': {'attribute': 'description or comment or node or order_id or customer_id',
+                                                 'interpretation': 'text',
+                                                 'operator': 'regex',
+                                                 'string': 'foo-agg-1'},
+                              'operator': 'or',
+                              'val1': {'operator': 'or',
+                                       'val1': {'operator': 'or',
+                                                'val1': {'operator': 'or',
+                                                         'val1': {'operator': 'regex_match',
+                                                                  'val1': 'comment',
+                                                                  'val2': 'foo-agg-1'},
+                                                         'val2': {'operator': 'regex_match',
+                                                                  'val1': 'description',
+                                                                  'val2': 'foo-agg-1'}},
+                                                'val2': {'operator': 'regex_match',
+                                                         'val1': 'node',
+                                                         'val2': 'foo-agg-1'}},
+                                       'val2': {'operator': 'regex_match',
+                                                'val1': 'order_id',
+                                                'val2': 'foo-agg-1'}},
+                              'val2': {'operator': 'regex_match',
+                                       'val1': 'customer_id',
+                                       'val2': 'foo-agg-1'}},
+                     'val2': {
+                         'interpretation': {
+                             'interpretation': 'expression',
+                             'attribute': 'vlan',
+                             'operator': '>',
+                             'string': 'vlan>100'
+                         },
+                          'operator': '>',
+                          'val1': 'vlan',
+                          'val2': '100'
+                    }
+                    },
+            'val2': {
+                'interpretation': {
+                     'interpretation': 'expression',
+                     'attribute': 'vlan',
+                     'operator': '<',
+                     'string': 'vlan<200'
+                 },
+                 'operator': '<',
+                 'val1': 'vlan',
+                 'val2': '200'
+                }
+        }
+
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_vrf1(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_vrf_query('foo')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'vrf or name or description',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': u'foo'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': u'foo'
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'description',
+                        'val2': u'foo'
+                        }
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'rt',
+                    'val2': u'foo'
+                }
+            }
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_vrf2(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_vrf_query('123:456')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'vrf or name or description',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': u'123:456'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': u'123:456'
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'description',
+                        'val2': u'123:456'
+                        }
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'rt',
+                    'val2': u'123:456'
+                }
+            }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_vrf3(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_vrf_query('#bar')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'tag',
+                    'interpretation': 'tag',
+                    'operator': 'equals_any',
+                    'string': u'#bar'
+                },
+                'operator': 'equals_any',
+                'val1': 'tags',
+                'val2': u'bar'
+            }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_vrf4(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
+            query = n._parse_vrf_query('"')
+
+
+
+    def test_vrf5(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_vrf_query('foo bar')
+        exp_query = {
+                'interpretation': {
+                    'interpretation': 'and',
+                    'operator': 'and'
+                },
+                'operator': 'and',
+                'val1': {
+                    'interpretation': {
+                        'attribute': 'vrf or name or description',
+                        'interpretation': 'text',
+                        'operator': 'regex',
+                        'string': u'foo'
+                    },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'regex_match',
+                            'val1': 'name',
+                            'val2': u'foo'
+                            },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'description',
+                            'val2': u'foo'
+                            }
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'rt',
+                        'val2': u'foo'
+                    }
+                },
+                'val2': {
+                    'interpretation': {
+                        'attribute': 'vrf or name or description',
+                        'interpretation': 'text',
+                        'operator': 'regex',
+                        'string': u'bar'
+                    },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'regex_match',
+                            'val1': 'name',
+                            'val2': u'bar'
+                            },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'description',
+                            'val2': u'bar'
+                            }
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'rt',
+                        'val2': u'bar'
+                    }
+                }
+            }
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_pool1(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_pool_query('foo')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'name or description',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': u'foo'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'regex_match',
+                    'val1': 'name',
+                    'val2': u'foo'
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'description',
+                    'val2': u'foo'
+                }
+            }
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_pool2(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_pool_query('123:456')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'name or description',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': u'123:456'
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'regex_match',
+                    'val1': 'name',
+                    'val2': u'123:456'
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'description',
+                    'val2': u'123:456'
+                }
+            }
+        self.assertEqual(exp_query, query)
+
+
+
+    def test_pool3(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_pool_query('#bar')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'tag',
+                    'interpretation': 'tag',
+                    'operator': 'equals_any',
+                    'string': '#bar'
+                },
+                'operator': 'equals_any',
+                'val1': 'tags',
+                'val2': 'bar'
+            }
+
+        self.assertEqual(exp_query, query)
+
+
+
+    def test_pool4(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
+            query = n._parse_pool_query('"')
+
+
+
+    def test_pool5(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_pool_query('#foo and bar')
+        exp_query = {
+                'interpretation': {
+                    'interpretation': 'and',
+                    'operator': 'and'
+                },
+                'operator': 'and',
+                'val1': {
+                    'interpretation': {
+                        'attribute': 'tag',
+                        'interpretation': 'tag',
+                        'operator': 'equals_any',
+                        'string': '#foo'
+                    },
+                    'operator': 'equals_any',
+                    'val1': 'tags',
+                    'val2': 'foo'
+                },
+                'val2': {
+                    'interpretation': {
+                        'attribute': 'name or description',
+                        'interpretation': 'text',
+                        'operator': 'regex',
+                        'string': u'bar'
+                    },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'regex_match',
+                        'val1': 'name',
+                        'val2': u'bar'
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'description',
+                        'val2': u'bar'
+                    }
+                }
+            }
+        self.assertEqual(query, exp_query)
+
+
+class TestAvpEmptyName(unittest.TestCase):
+    """ Test AVP with empty name
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_pool_add_avp(self):
+        p = Pool()
+        p.name = 'test AVP with empty name'
+        p.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            p.save()
+
+
+    def test_pool_edit_avp(self):
+        th = TestHelper()
+
+        # add a pool
+        p = th.add_pool('test', 'assignment', 31, 112)
+
+        p.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            p.save()
+
+
+    def test_prefix_add_avp(self):
+        p = Prefix()
+        p.prefix = '1.2.3.0/24'
+        p.type = 'assignment'
+        p.status = 'assigned'
+        p.description = 'test AVP with empty name'
+        p.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            p.save()
+
+
+    def test_prefix_edit_avp(self):
+        th = TestHelper()
+        p = th.add_prefix('192.0.2.0/24', 'assignment', 'test AVP with empty name')
+
+        p.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            p.save()
+
+
+    def test_vrf_add_avp(self):
+        v = VRF()
+        v.rt = '123:456'
+        v.name = 'test AVP with empty name'
+        v.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            v.save()
+
+
+    def test_vrf_edit_avp(self):
+        v = VRF()
+        v.rt = '123:456'
+        v.name = 'test AVP with empty name'
+        v.save()
+
+        v.avps = { '': '1337' }
+        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+            v.save()
+
 
 
 

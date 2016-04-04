@@ -32,3 +32,16 @@ default_vrf_rt = -
 # VRF RT is specified on the command line.
 # 'all' means that searches will include results from all VRFs
 default_list_vrf_rt = all
+
+# Specify custom columns for 'nipap address list' using a comma separated list
+# of columns. If the list is prefixed with '+' it will add these columns in
+# addition to the standard set of columns.
+#
+# Example to list prefix usage statistics in addition to standard columns:
+#
+#   prefix_list_columns = +total_addresses,used_addresses,free_addresses
+#
+# Example to only listen VRF RT and prefix:
+#
+#   prefix_list_columns = vrf_rt,prefix
+#

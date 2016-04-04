@@ -40,6 +40,11 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 					} else {
 						var index = $scope.vrfs.indexOf(vrf);
 						$scope.vrfs.splice(index, 1);
+
+						// Update VRF filter - the removed VRF might be in the
+						// VRF filter list
+						$http.get('/xhr/get_current_vrfs')
+							.success(receiveCurrentVRFs);
 					}
 				})
 				.error(function (data, stat) {
@@ -570,12 +575,12 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 	 */
 	$scope.submitForm = function () {
 
-		// If prefix is owned by other system, ask user to veryfy the changes
+		// If prefix is owned by other system, ask user to verify the changes
 		if ($scope.prefix.authoritative_source != 'nipap') {
 			// TODO: Replace with AngularJS-style widget
 			showDialogYesNo(
 				'Confirm prefix edit',
-				'The prefix ' + $scope.prefix.authoritative_source + ' is managed by ' +
+				'The prefix ' + $scope.prefix.prefix + ' is managed by ' +
 				'\'' + $scope.prefix.authoritative_source + '\'.<br><br>' +
 				'Are you sure you want to edit it?',
 				function() {
@@ -608,8 +613,14 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 		});
 		prefix_data.avps = JSON.stringify(prefix_data.avps);
 
-		// Mangle expires
-		prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss')
+		// handle null or 'infinity' as.. infinity
+		if ($scope.prefix.expires == null) {
+			// empty string signifies infinity
+			prefix_data.expires = '';
+		} else {
+			// mangle prefix into ISO8601 format
+			prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss');
+		}
 
 		// Set pool, if any
 		if ($scope.prefix.pool !== null) {

@@ -160,7 +160,7 @@ a.add_btn:hover {
 	height: 27px;
 	padding: 5px;
 	padding-bottom: 0px;
-	margin-top: 30px;
+	margin-top: 15px;
 	margin-bottom: 15px;
 
 	font-weight: bold;
@@ -352,7 +352,7 @@ input[type="submit"] {
 .options-group {
 	background: none repeat scroll 0 0 #eeeeee;
 	padding: 5px;
-	margin: 0 0 30px;
+	margin: 0 0 10px;
 }
 
 .options-content {
@@ -389,7 +389,7 @@ input[type="submit"] {
 	display: block;
 }
 .option > dl > dt,dd {
-	padding: 8px;
+	padding: 3px;
 	display: inline-block;
 }
 .option > dl > dt {

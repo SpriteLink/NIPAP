@@ -1034,7 +1034,7 @@ function clickFilterVRFSelector(evt) {
 
 		// show tick mark
 		$('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&#10003;');
-		$('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/remove-icon.png">');
+		$('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/images/x-mark-3-16.png">');
 
 	} else {
 
@@ -1112,7 +1112,7 @@ function drawVRFHeader() {
  */
 function receiveCurrentVRFs(data) {
 
-	jQuery.extend(selected_vrfs, data);
+	selected_vrfs = data;
 	jQuery.extend(vrf_list, data);
 	drawVRFHeader();
 
@@ -1131,6 +1131,67 @@ function receiveCurrentVRFs(data) {
 function hidePopupMenu() {
 	$(".popup_menu").remove();
 	$(".popup_overlay").hide();
+}
+
+
+function parseInterp(query, container) {
+
+	if (query.interpretation) {
+		var interp = query.interpretation;
+		var text = '<b>' + interp.string + ':</b> ' + interp.interpretation;
+		var tooltip = '';
+		if (interp.interpretation == 'or') {
+			text = "<b>OR</b>";
+		} else if (interp.interpretation == 'and') {
+			text = "<b>AND</b>";
+		} else if (interp.interpretation == 'unclosed quote') {
+			text += ', please close quote!';
+			tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';
+		} else if (interp.attribute == 'tag' && interp.operator == 'equals_any') {
+			text += ' must contain <b>' + interp.string + '</b>';
+			tooltip = "The tag(s) or inherited tag(s) must contain " + interp.string;
+		} else if (interp.attribute == 'prefix' && interp.operator == 'contained_within_equals') {
+			text += ' within ';
+
+			if ('strict_prefix' in interp && 'expanded' in interp) {
+				text += '<b>' + interp.strict_prefix + '</b>';
+				tooltip = 'Prefix must be contained within ' + interp.strict_prefix + ', which is the base prefix of ' + interp.expanded + ' (automatically expanded from ' + interp.string + ')';
+			} else if ('strict_prefix' in interp) {
+				text += '<b>' + interp.strict_prefix + '</b>';
+				tooltip = 'Prefix must be contained within ' + interp.strict_prefix + ', which is the base prefix of ' + interp.string + '.';
+			} else if ('expanded' in interp) {
+				text += '<b>' + interp.expanded + '</b>';
+				tooltip = 'Prefix must be contained within ' + interp.expanded + ' (automatically expanded from ' + interp.string + ').';
+			} else {
+				text += '<b>' + interp.string + '</b>';
+				tooltip = 'Prefix must be contained within ' + interp.string;
+			}
+		} else if (interp.attribute == 'prefix' && interp.operator == 'contains_equals') {
+			text = '<b>' + interp.string + ':</b> ' + 'Prefix that contains ' + interp.string;
+			tooltip = "The prefix must contain or be equal to " + interp.string;
+		} else if (interp.attribute == 'prefix' && interp.operator == 'equals') {
+			text += ' equal to <b>' + interp.string + '</b>';
+			tooltip = "The " + interp.interpretation + " must equal " + interp.string;
+		} else {
+			text += " matching '<b>" + interp.string + "</b>'";
+			tooltip = "The description OR node OR order id OR the comment should regexp match '" + interp.string + "'";
+		}
+
+		if (interp.interpretation == 'or' || interp.interpretation == 'and') {
+			var andor_text = $('<div class="search_interpretation" style="display: inline-block; vertical-align: top;"></div>').appendTo(container);
+			container = $('<div class="search_interpretation" style="display: inline-block;"></div>').appendTo(container);
+			$('<div class="search_interpretation" id="' + container.attr('id') + '_intp" tooltip="' + tooltip + '" style="padding-top: 0.5em; display: inline-block;"><div style="display: inline-block;">' + text + '</div><div style="display: inline-block; border-left:2px solid #666; border-top:2px solid #666; border-bottom:2px solid #666; margin-top: 3px; margin-left: 4px; margin-right: 4px;">&nbsp;</div></div>').appendTo(andor_text);
+		} else {
+			$('<div class="search_interpretation" style="display: block;" id="' + container.attr('id') + '_intp" tooltip="' + tooltip + '">' + text + '</div>').appendTo(container);
+		}
+	}
+
+	if (typeof(query.val1) == 'object') {
+		parseInterp(query.val1, container);
+	}
+	if (typeof(query.val2) == 'object') {
+		parseInterp(query.val2, container);
+	}
 }
 
 
@@ -1155,49 +1216,7 @@ function receivePrefixList(search_result) {
 	 */
 	var intp_cont = $("#search_interpret_container");
 	intp_cont.empty();
-	for (key in search_result.interpretation) {
-
-		var interp = search_result.interpretation[key];
-		var text = '<b>' + interp.string + ':</b> ' + interp.interpretation;
-		var tooltip = '';
-
-		if (interp.interpretation == 'unclosed quote') {
-			text += ', please close quote!';
-			tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';
-		} else if (interp.attribute == 'tag' && interp.operator == 'equals_any') {
-			text += ' must contain <b>' + interp.string + '</b>';
-			tooltip = "The tag(s) or inherited tag(s) must contain " + interp.string;
-		} else if (interp.attribute == 'prefix' && interp.operator == 'contained_within_equals') {
-			text += ' within ';
-
-			if ('strict_prefix' in interp && 'expanded' in interp) {
-				text += '<b>' + interp.strict_prefix + '</b>';
-				tooltip = 'Prefix must be contained within ' + interp.strict_prefix + ', which is the base prefix of ' + interp.expanded + ' (automatically expanded from ' + interp.string + ')';
-			} else if ('strict_prefix' in interp) {
-				text += '<b>' + interp.strict_prefix + '</b>';
-				tooltip = 'Prefix must be contained within ' + interp.strict_prefix + ', which is the base prefix of ' + interp.string + '.';
-			} else if ('expanded' in interp) {
-				text += '<b>' + interp.expanded + '</b>';
-				tooltip = 'Prefix must be contained within ' + interp.expanded + ' (automatically expanded from ' + interp.string + ').';
-			} else {
-				text += '<b>' + interp.string + '</b>';
-				tooltip = 'Prefix must be contained within ' + interp.string;
-			}
-		} else if (interp.attribute == 'prefix' && interp.operator == 'contains_equals') {
-			var text = '<b>' + interp.string + ':</b> ' + 'Prefix that contains ' + interp.string;
-			tooltip = "The prefix must contain or be equal to " + interp.string;
-		} else if (interp.attribute == 'prefix' && interp.operator == 'equals') {
-			text += ' equal to <b>' + interp.string + '</b>';
-			tooltip = "The " + interp.interpretation + " must equal " + interp.string;
-		} else {
-			text += " matching '<b>" + interp.string + "</b>'";
-			tooltip = "The description OR node OR order id OR the comment should regexp match '" + interp.string + "'";
-		}
-
-		intp_cont.append('<div class="search_interpretation" id="intp' + key + '" tooltip="' + tooltip + '">');
-		$('#intp' + key).html(text);
-
-	}
+	parseInterp(search_result.interpretation, intp_cont);
 
 	// Run element through AngularJS compiler to "activate" directives (the
 	// AngularUI/Bootstrap tooltip)

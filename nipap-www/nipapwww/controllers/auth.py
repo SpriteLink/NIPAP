@@ -1,6 +1,4 @@
 import logging
-import sys
-import os
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
@@ -35,10 +33,14 @@ class AuthController(BaseController):
             return render('login.html')
 
         # Verify username and password.
-        auth_fact = AuthFactory()
-        auth = auth_fact.get_auth(request.params.get('username'), request.params.get('password'), 'nipap')
-        if not auth.authenticate():
-            c.error = 'Invalid username or password'
+        try:
+            auth_fact = AuthFactory()
+            auth = auth_fact.get_auth(request.params.get('username'), request.params.get('password'), 'nipap')
+            if not auth.authenticate():
+                c.error = 'Invalid username or password'
+                return render('login.html')
+        except AuthError as exc:
+            c.error = 'Authentication error'
             return render('login.html')
 
         # Mark user as logged in

@@ -38,7 +38,7 @@ nipapAppDirectives.directive('nipapPoolSelector', function ($http) {
 
 });
 
-nipapAppDirectives.directive('nipapPoolSelectorPopup', function ($http) {
+nipapAppDirectives.directive('nipapPoolSelectorPopup', function ($http, $timeout) {
 
 	return {
 		restrict: 'AE',
@@ -80,13 +80,22 @@ nipapAppDirectives.directive('nipapPoolSelectorPopup', function ($http) {
 
 			}
 
+			scope.deselectPool = function (pool) {
+				// deselect pool & close popup
+				scope.selected_pool = null;
+				scope.pools = [];
+				scope.popup_open = false;
+			}
+
 			/*
 			 * Run when popup menu is toggled
 			 */
 			scope.toggled = function (open) {
 				if (open) {
 					// If menu was opened, place focus on text input field
-					$('input[name="pool_search_string"]').focus();
+					$timeout(function () {
+						$('input[name="pool_search_string"]').focus();
+					});
 				}
 			}
 		}
@@ -185,7 +194,9 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 			scope.toggled = function (open) {
 				if (open) {
 					// If menu was opened, place focus on text input field
-					$('input[name="vrf_search_string"]').focus();
+					$timeout(function () {
+						$('input[name="vrf_search_string"]').focus();
+					});
 				}
 			}
 

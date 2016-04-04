@@ -198,7 +198,9 @@ import time
 import re
 import IPy
 
+from errors import *
 import authlib
+import smart_parsing
 
 # support multiple versions of parsedatetime
 try:
@@ -209,24 +211,335 @@ except:
     import parsedatetime.parsedatetime_consts as pdc
     pdt = parsedatetime.parsedatetime.Calendar(pdc.Constants())
 
+
+# list of all attributes on a pool, including both writable and read-only
+# values
+_pool_spec = {
+        'avps': {
+            'column': 'po.avps',
+            'ro': False,
+        },
+        'default_type': {
+            'column': 'po.default_type',
+            'ro': False,
+        },
+        'description': {
+            'column': 'po.description',
+            'ro': False,
+        },
+        'free_addresses_v4': {
+            'column': 'free_addresses_v4',
+            'ro': True
+        },
+        'free_addresses_v6': {
+            'column': 'free_addresses_v6',
+            'ro': True
+        },
+        'free_prefixes_v4': {
+            'column': 'free_prefixes_v4',
+            'ro': True
+        },
+        'free_prefixes_v6': {
+            'column': 'free_prefixes_v6',
+            'ro': True
+        },
+        'id': {
+            'column': 'po.id',
+            'ro': True,
+        },
+        'ipv4_default_prefix_length': {
+            'column': 'po.ipv4_default_prefix_length',
+            'ro': False,
+        },
+        'ipv6_default_prefix_length': {
+            'column': 'po.ipv6_default_prefix_length',
+            'ro': False,
+        },
+        'member_prefixes_v4': {
+            'column': 'po.member_prefixes_v4',
+            'ro': False,
+        },
+        'member_prefixes_v6': {
+            'column': 'po.member_prefixes_v',
+            'ro': False,
+        },
+        'name': {
+            'column': 'po.name',
+            'ro': False,
+        },
+        'tags': {
+            'column': 'po.tags',
+            'ro': False,
+        },
+        'total_addresses_v4': {
+            'column': 'total_addresses_v4',
+            'ro': True
+        },
+        'total_addresses_v6': {
+            'column': 'total_addresses_v6',
+            'ro': True
+        },
+        'total_prefixes_v4': {
+            'column': 'total_prefixes_v4',
+            'ro': True
+        },
+        'total_prefixes_v6': {
+            'column': 'total_prefixes_v6',
+            'ro': True
+        },
+        'used_addresses_v4': {
+            'column': 'used_addresses_v4',
+            'ro': True
+        },
+        'used_addresses_v6': {
+            'column': 'used_addresses_v6',
+            'ro': True
+        },
+        'used_prefixes_v4': {
+            'column': 'used_prefixes_v4',
+            'ro': True
+        },
+        'used_prefixes_v6': {
+            'column': 'used_prefixes_v6',
+            'ro': True
+        },
+        'vrf_rt': {
+            'column': 'vrf.rt',
+            'ro': True,
+        },
+    }
+# _pool_attrs contain the editable attributes, ie the ones that are not
+# read-only from _pool_spec
+_pool_attrs = {k: v for k, v in _pool_spec.items() if not _pool_spec[k]['ro']}
+
+
+# list of all attributes on a prefix, including both writable and read-only
+# values
+_prefix_spec = {
+        'added': {
+            'column': 'inp.added',
+            'ro': True,
+        },
+        'alarm_priority': {
+            'column': 'inp.alarm_priority',
+            'ro': False,
+        },
+        'authoritative_source': {
+            'column': 'inp.authoritative_source',
+            'ro': False,
+        },
+        'avps': {
+            'column': 'inp.avps',
+            'ro': False,
+        },
+        'comment': {
+            'column': 'inp.comment',
+            'ro': False,
+        },
+        'country': {
+            'column': 'inp.country',
+            'ro': False,
+        },
+        'customer_id': {
+            'column': 'inp.customer_id',
+            'ro': False,
+        },
+        'description': {
+            'column': 'inp.description',
+            'ro': False,
+        },
+        'expires': {
+            'column': 'inp.expires',
+            'ro': False,
+        },
+        'external_key': {
+            'column': 'inp.external_key',
+            'ro': False,
+        },
+        'family': {
+            'column': 'family(inp.prefix)',
+            'ro': True,
+        },
+        'free_addresses': {
+            'column': 'inp.free_addresses',
+            'ro': True,
+        },
+        'id': {
+            'column': 'inp.id',
+            'ro': True,
+        },
+        'inherited_tags': {
+            'column': 'inp.inherited_tags',
+            'ro': True,
+        },
+        'indent': {
+            'column': 'inp.indent',
+            'ro': True,
+        },
+        'last_modified': {
+            'column': 'inp.last_modified',
+            'ro': True,
+        },
+        'monitor': {
+            'column': 'inp.monitor',
+            'ro': False,
+        },
+        'node': {
+            'column': 'inp.node',
+            'ro': False,
+        },
+        'order_id': {
+            'column': 'inp.order_id',
+            'ro': False,
+        },
+        'pool_id': {
+            'column': 'inp.pool_id',
+            'ro': False,
+        },
+        'prefix': {
+            'column': 'inp.prefix',
+            'ro': False,
+        },
+        'prefix_length': {
+            'column': 'masklen(inp.prefix)',
+            'ro': True,
+        },
+        'status': {
+            'column': 'inp.status',
+            'ro': False,
+        },
+        'tags': {
+            'column': 'inp.tags',
+            'ro': False,
+        },
+        'total_addresses': {
+            'column': 'inp.total_addresses',
+            'ro': True,
+        },
+        'type': {
+            'column': 'inp.type',
+            'ro': False,
+        },
+        'used_addresses': {
+            'column': 'inp.used_addresses',
+            'ro': True,
+        },
+        'vlan': {
+            'column': 'inp.vlan',
+            'ro': False,
+        },
+        'vrf_id': {
+            'column': 'inp.vrf_id',
+            'ro': False,
+        },
+        'vrf_name': {
+            'column': 'vrf.name',
+            'ro': True,
+        },
+        'vrf_rt': {
+            'column': 'vrf.rt',
+            'ro': True,
+        },
+    }
+
+# _prefix_attrs contain the editable attributes, ie the ones that are not
+# read-only from _prefix_spec
+_prefix_attrs = {k: v for k, v in _prefix_spec.items() if not _prefix_spec[k]['ro']}
+
+# list of all attributes on a vrf, including both writable and read-only values
+_vrf_spec = {
+        'avps': {
+            'column': 'avps',
+            'ro': False,
+        },
+        'description': {
+            'column': 'description',
+            'ro': False,
+        },
+        'free_addresses_v4': {
+            'column': 'free_addresses_v4',
+            'ro': True,
+        },
+        'free_addresses_v6': {
+            'column': 'free_addresses_v6',
+            'ro': True,
+        },
+        'id': {
+            'column': 'id',
+            'ro': True,
+        },
+        'name': {
+            'column': 'name',
+            'ro': False,
+        },
+        'num_prefixes_v4': {
+            'column': 'num_prefixes_v4',
+            'ro': True,
+        },
+        'num_prefixes_v6': {
+            'column': 'num_prefixes_v6',
+            'ro': True,
+        },
+        'rt': {
+            'column': 'rt',
+            'ro': False,
+        },
+        'tags': {
+            'column': 'tags',
+            'ro': False,
+        },
+        'total_addresses_v4': {
+            'column': 'total_addresses_v4',
+            'ro': True,
+        },
+        'total_addresses_v6': {
+            'column': 'total_addresses_v6',
+            'ro': True,
+        },
+        'used_addresses_v4': {
+            'column': 'used_addresses_v4',
+            'ro': True,
+        },
+        'used_addresses_v6': {
+            'column': 'used_addresses_v6',
+            'ro': True,
+        },
+    }
+
+
+# _vrf_attrs contain the editable attributes, ie the ones that are not
+# read-only from _vrf_spec
+_vrf_attrs = {k: v for k, v in _vrf_spec.items() if not _vrf_spec[k]['ro']}
+
+
 _operation_map = {
     'and': 'AND',
     'or': 'OR',
     'equals_any': '= ANY',
+    '=': '=',
     'equals': '=',
+    '<': '<',
     'less': '<',
+    '<=': '<=',
     'less_or_equal': '<=',
+    '>': '>',
     'greater': '>',
+    '>=': '>=',
     'greater_or_equal': '>=',
     'is': 'IS',
     'is_not': 'IS NOT',
+    '!=': '!=',
     'not_equals': '!=',
     'like': 'LIKE',
     'regex_match': '~*',
     'regex_not_match': '!~*',
+    '>>': '>>',
     'contains': '>>',
+    '>>=': '>>=',
     'contains_equals': '>>=',
+    '<<': '<<',
     'contained_within': '<<',
+    '<<=': '<<=',
     'contained_within_equals': '<<='
     }
 """ Maps operators in a prefix query to SQL operators.
@@ -441,6 +754,7 @@ class Nipap:
         db_args['user'] = self._cfg.get('nipapd', 'db_user')
         db_args['password'] = self._cfg.get('nipapd', 'db_pass')
         db_args['sslmode'] = self._cfg.get('nipapd', 'db_sslmode')
+        db_args['port'] = self._cfg.get('nipapd', 'db_port')
         # delete keys that are None, for example if we want to connect over a
         # UNIX socket, the 'host' argument should not be passed into the DSN
         if db_args['host'] is not None and db_args['host'] == '':
@@ -657,6 +971,9 @@ class Nipap:
             if a not in allowed_attr:
                 raise NipapExtraneousInputError("extraneous attribute %s" % a)
 
+        if 'avps' in attr and '' in attr['avps']:
+            raise NipapValueError('AVP with empty name is not allowed')
+
 
 
     def _get_updated_rows(self, auth, function):
@@ -683,16 +1000,19 @@ class Nipap:
                 }
             )
 
-        # We can have zero modified rows. Deal with it.
-        if len(qps) > 0:
-            q = qps[0]
+        # if we didn't update anything return empty list
+        if len(qps) == 0:
+            return []
 
-            for qp in qps[1:]:
-                q = {
-                    'operator': 'or',
-                    'val1': q,
-                    'val2': qp
-                }
+        # fetch list of objects based on IDs
+        q = qps[0]
+
+        for qp in qps[1:]:
+            q = {
+                'operator': 'or',
+                'val1': q,
+                'val2': qp
+            }
 
         updated = function(auth, q, { 'max_result': 10000 })['result']
 
@@ -832,15 +1152,13 @@ class Nipap:
             # TODO: raise exception if someone passes one dict and one "something else"?
 
             # val1 is variable, val2 is string.
-            vrf_attr = dict()
-            vrf_attr['id'] = 'id'
-            vrf_attr['rt'] = 'rt'
-            vrf_attr['name'] = 'name'
-            vrf_attr['description'] = 'description'
-            vrf_attr['tags'] = 'tags'
 
-            if query['val1'] not in vrf_attr:
+            if query['val1'] not in _vrf_spec:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+
+            # build where clause
+            if query['operator'] not in _operation_map:
+                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
 
             # workaround for handling equal matches of NULL-values
             if query['operator'] == 'equals' and query['val2'] is None:
@@ -848,14 +1166,16 @@ class Nipap:
             elif query['operator'] == 'not_equals' and query['val2'] is None:
                 query['operator'] = 'is_not'
 
-            # build where clause
-            if query['operator'] not in _operation_map:
-                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
+            if query['operator'] in ('equals_any',):
+                where = str(" %%s = ANY (%s%s::citext[]) " %
+                        ( col_prefix, _vrf_spec[query['val1']]['column'])
+                        )
 
-            where = str(" %s%s %s %%s " %
-                ( col_prefix, vrf_attr[query['val1']],
-                _operation_map[query['operator']] )
-            )
+            else:
+                where = str(" %s%s %s %%s " %
+                    ( col_prefix, _vrf_spec[query['val1']]['column'],
+                    _operation_map[query['operator']] )
+                )
 
             opt.append(query['val2'])
 
@@ -881,8 +1201,7 @@ class Nipap:
 
         # sanity check - do we have all attributes?
         req_attr = [ 'rt', 'name' ]
-        self._check_attr(attr, req_attr, req_attr + [ 'description', 'tags',
-            'avps' ])
+        self._check_attr(attr, req_attr, _vrf_attrs)
 
         insert, params = self._sql_expand_insert(attr)
         sql = "INSERT INTO ip_net_vrf " + insert
@@ -1021,9 +1340,7 @@ class Nipap:
                 (str(spec), str(attr)))
 
         # sanity check - do we have all attributes?
-        req_attr = [ ]
-        allowed_attr = [ 'rt', 'name', 'description', 'tags', 'avps' ]
-        self._check_attr(attr, req_attr, allowed_attr)
+        self._check_attr(attr, [], _vrf_attrs)
 
         # get list of VRFs which will be changed before changing them
         vrfs = self.list_vrf(auth, spec)
@@ -1219,98 +1536,20 @@ class Nipap:
 
         self._logger.debug("smart_search_vrf query string: %s" % query_str)
 
-        if query_str is None:
-            raise NipapValueError("'query_string' must not be None")
-
-        # find query parts
-        query_str_parts = []
         try:
-            for part in shlex.split(query_str):
-                query_str_parts.append({ 'string': part })
-        except:
+            query = self._parse_vrf_query(query_str)
+        except NipapValueError as exc:
             return {
                 'interpretation': [
                     {
                         'string': query_str,
-                        'interpretation': 'unclosed quote',
+                        'interpretation': exc,
                         'attribute': 'text'
                     }
                 ],
                 'search_options': search_options,
                 'result': []
             }
-
-        # Handle empty search.
-        # We need something to iterate over, but shlex.split() returns
-        # zero-element list for an empty string, so we have to append one
-        # manually
-        if len(query_str_parts) == 0:
-            query_str_parts.append({ 'string': '' })
-
-        # go through parts and add to query_parts list
-        query_parts = list()
-        for query_str_part in query_str_parts:
-
-            # tags
-            if re.match('#', query_str_part['string']):
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-                query_str_part['interpretation'] = '(inherited) tag'
-                query_str_part['attribute'] = 'tag'
-
-                query_str_part['operator'] = 'equals_any'
-                query_parts.append({
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'equals_any',
-                        'val1': 'tags',
-                        'val2': query_str_part['string'][1:]
-                    },
-                    'val2': {
-                        'operator': 'equals_any',
-                        'val1': 'inherited_tags',
-                        'val2': query_str_part['string'][1:]
-                    }
-                })
-
-            else:
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'vrf or name or description'
-                query_parts.append({
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'or',
-                        'val1': {
-                            'operator': 'regex_match',
-                            'val1': 'name',
-                            'val2': query_str_part['string']
-                        },
-                        'val2': {
-                            'operator': 'regex_match',
-                            'val1': 'description',
-                            'val2': query_str_part['string']
-                        }
-                    },
-                    'val2': {
-                        'operator': 'regex_match',
-                        'val1': 'rt',
-                        'val2': query_str_part['string']
-                    }
-                })
-
-        # Sum all query parts to one query
-        query = {}
-        if len(query_parts) > 0:
-            query = query_parts[0]
-
-        if len(query_parts) > 1:
-            for query_part in query_parts[1:]:
-                query = {
-                    'operator': 'and',
-                    'val1': query_part,
-                    'val2': query
-                }
 
         if extra_query is not None:
             query = {
@@ -1322,9 +1561,21 @@ class Nipap:
         self._logger.debug("smart_search_vrf; query expanded to: %s" % str(query))
 
         search_result = self.search_vrf(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
+        search_result['interpretation'] = query
 
         return search_result
+
+
+
+    def _parse_vrf_query(self, query_str):
+        """ Parse a smart search query for VRFs
+
+            This is a helper function to smart_search_vrf for easier unit
+            testing of the parser.
+        """
+        sp = smart_parsing.VrfSmartParser()
+        query = sp.parse(query_str)
+        return query
 
 
 
@@ -1396,16 +1647,13 @@ class Nipap:
             # TODO: raise exception if someone passes one dict and one "something else"?
 
             # val1 is variable, val2 is string.
-            pool_attr = dict()
-            pool_attr['id'] = 'po.id'
-            pool_attr['name'] = 'po.name'
-            pool_attr['description'] = 'po.description'
-            pool_attr['default_type'] = 'po.default_type'
-            pool_attr['vrf_rt'] = 'vrf.rt'
-            pool_attr['tags'] = 'po.tags'
 
-            if query['val1'] not in pool_attr:
+            if query['val1'] not in _pool_spec:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+
+            # build where clause
+            if query['operator'] not in _operation_map:
+                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
 
             # workaround for handling equal matches of NULL-values
             if query['operator'] == 'equals' and query['val2'] is None:
@@ -1413,14 +1661,16 @@ class Nipap:
             elif query['operator'] == 'not_equals' and query['val2'] is None:
                 query['operator'] = 'is_not'
 
-            # build where clause
-            if query['operator'] not in _operation_map:
-                raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
+            if query['operator'] in ('equals_any',):
+                where = str(" %%s = ANY (%s%s::citext[]) " %
+                        ( col_prefix, _pool_spec[query['val1']]['column'])
+                        )
 
-            where = str(" %s%s %s %%s " %
-                ( col_prefix, pool_attr[query['val1']],
-                _operation_map[query['operator']] )
-            )
+            else:
+                where = str(" %s%s %s %%s " %
+                    ( col_prefix, _pool_spec[query['val1']]['column'],
+                    _operation_map[query['operator']] )
+                )
 
             opt.append(query['val2'])
 
@@ -1560,16 +1810,7 @@ class Nipap:
             req_attr = []
 
         # check attribute names
-        allowed_attr = [
-                'name',
-                'default_type',
-                'description',
-                'ipv4_default_prefix_length',
-                'ipv6_default_prefix_length',
-                'tags',
-                'avps'
-                ]
-        self._check_attr(attr, req_attr, allowed_attr)
+        self._check_attr(attr, req_attr, _pool_attrs)
 
         # validate IPv4 prefix length
         if attr.get('ipv4_default_prefix_length') is not None:
@@ -1848,77 +2089,19 @@ class Nipap:
 
         self._logger.debug("smart_search_pool query string: %s" % query_str)
 
-        # find query parts
         try:
-            query_str_parts = self._get_query_parts(query_str)
+            query = self._parse_pool_query(query_str)
         except NipapValueError:
             return {
-                'interpretation': [
-                    {
-                        'string': query_str,
-                        'interpretation': 'unclosed quote',
-                        'attribute': 'text'
-                    }
-                ],
-                'search_options': search_options,
-                'result': []
-            }
-
-        # go through parts and add to query_parts list
-        query_parts = list()
-        for query_str_part in query_str_parts:
-
-            # tags
-            if re.match('#', query_str_part['string']):
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-                query_str_part['interpretation'] = '(inherited) tag'
-                query_str_part['attribute'] = 'tag'
-
-                query_str_part['operator'] = 'equals_any'
-                query_parts.append({
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'equals_any',
-                        'val1': 'tags',
-                        'val2': query_str_part['string'][1:]
-                    },
-                    'val2': {
-                        'operator': 'equals_any',
-                        'val1': 'inherited_tags',
-                        'val2': query_str_part['string'][1:]
-                    }
-                })
-
-            else:
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'name or description'
-                query_parts.append({
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'regex_match',
-                        'val1': 'name',
-                        'val2': query_str_part['string']
-                    },
-                    'val2': {
-                        'operator': 'regex_match',
-                        'val1': 'description',
-                        'val2': query_str_part['string']
-                    }
-                })
-
-        # Sum all query parts to one query
-        query = {}
-        if len(query_parts) > 0:
-            query = query_parts[0]
-
-        if len(query_parts) > 1:
-            for query_part in query_parts[1:]:
-                query = {
-                    'operator': 'and',
-                    'val1': query_part,
-                    'val2': query
+                    'interpretation': [
+                        {
+                            'string': query_str,
+                            'interpretation': 'unclosed quote',
+                            'attribute': 'text'
+                        }
+                    ],
+                    'search_options': search_options,
+                    'result': []
                 }
 
         if extra_query is not None:
@@ -1928,12 +2111,23 @@ class Nipap:
                 'val2': extra_query
             }
 
-        self._logger.debug("Expanded to: %s" % str(query))
+        self._logger.debug("smart_search_pool; query expanded to: %s" % str(query))
 
         search_result = self.search_pool(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
+        search_result['interpretation'] = query
 
         return search_result
+
+
+    def _parse_pool_query(self, query_str):
+        """ Parse a smart search query for pools
+
+            This is a helper function to smart_search_pool for easier unit
+            testing of the parser.
+        """
+        sp = smart_parsing.PoolSmartParser()
+        query = sp.parse(query_str)
+        return query
 
 
 
@@ -1948,11 +2142,8 @@ class Nipap:
         if type(spec) is not dict:
             raise NipapInputError('invalid prefix specification')
 
-        allowed_keys = [ 'id', 'family', 'type', 'pool_id', 'pool_name',
-                'prefix', 'monitor', 'external_key', 'vrf_id',
-                'vrf_rt', 'vrf_name' ]
         for key in spec.keys():
-            if key not in allowed_keys:
+            if key not in _prefix_spec:
                 raise NipapExtraneousInputError("Key '" + key + "' not allowed in prefix spec.")
 
         where = ""
@@ -2047,39 +2238,9 @@ class Nipap:
 
             # TODO: raise exception if someone passes one dict and one "something else"?
 
-            # val1 is variable, val2 is string.
-            prefix_attr = dict()
-            prefix_attr['id'] = 'inp.id'
-            prefix_attr['prefix'] = 'inp.prefix'
-            prefix_attr['description'] = 'inp.description'
-            prefix_attr['pool_id'] = 'pool.id'
-            prefix_attr['pool_name'] = 'pool.name'
-            prefix_attr['family'] = 'family(inp.prefix)'
-            prefix_attr['comment'] = 'inp.comment'
-            prefix_attr['type'] = 'inp.type'
-            prefix_attr['inherited_tags'] = 'inp.inherited_tags'
-            prefix_attr['tags'] = 'inp.tags'
-            prefix_attr['node'] = 'inp.node'
-            prefix_attr['country'] = 'inp.country'
-            prefix_attr['order_id'] = 'inp.order_id'
-            prefix_attr['customer_id'] = 'inp.customer_id'
-            prefix_attr['vrf_id'] = 'inp.vrf_id'
-            prefix_attr['vrf_rt'] = 'vrf.rt'
-            prefix_attr['vrf_name'] = 'vrf.name'
-            prefix_attr['external_key'] = 'inp.external_key'
-            prefix_attr['authoritative_source'] = 'inp.authoritative_source'
-            prefix_attr['alarm_priority'] = 'inp.alarm_priority'
-            prefix_attr['monitor'] = 'inp.monitor'
-            prefix_attr['vlan'] = 'inp.vlan'
-            prefix_attr['indent'] = 'inp.indent'
-            prefix_attr['added'] = 'inp.added'
-            prefix_attr['last_modified'] = 'inp.last_modified'
-            prefix_attr['total_addresses'] = 'inp.total_addresses'
-            prefix_attr['used_addresses'] = 'inp.used_addresses'
-            prefix_attr['free_addresses'] = 'inp.free_addresses'
-            prefix_attr['expires'] = 'inp.expires'
+            # val1 is key, val2 is value.
 
-            if query['val1'] not in prefix_attr:
+            if query['val1'] not in _prefix_spec:
                 raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
 
             # build where clause
@@ -2107,8 +2268,8 @@ class Nipap:
                         }
 
             elif query['operator'] in ('equals_any',):
-                where = str(" %%s = ANY (%s%s) " %
-                        ( col_prefix, prefix_attr[query['val1']])
+                where = str(" %%s = ANY (%s%s::citext[]) " %
+                        ( col_prefix, _prefix_spec[query['val1']]['column'])
                         )
 
             elif query['operator'] in (
@@ -2119,13 +2280,13 @@ class Nipap:
                 # search on '.*' to match columns which are NULL in the
                 # database
                 where = str(" COALESCE(%s%s, '') %s %%s " %
-                        ( col_prefix, prefix_attr[query['val1']],
+                        ( col_prefix, _prefix_spec[query['val1']]['column'],
                         _operation_map[query['operator']] )
                         )
 
             else:
                 where = str(" %s%s %s %%s " %
-                        ( col_prefix, prefix_attr[query['val1']],
+                        ( col_prefix, _prefix_spec[query['val1']]['column'],
                         _operation_map[query['operator']] )
                         )
 
@@ -2295,11 +2456,7 @@ class Nipap:
 
         # do we have all attributes?
         req_attr = [ 'prefix', 'authoritative_source' ]
-        allowed_attr = [ 'authoritative_source', 'prefix', 'description',
-                'comment', 'pool_id', 'tags', 'node', 'type', 'country',
-                'order_id', 'customer_id', 'vrf_id', 'alarm_priority',
-                'monitor', 'external_key', 'vlan', 'status', 'avps', 'expires']
-        self._check_attr(attr, req_attr, allowed_attr)
+        self._check_attr(attr, req_attr, _prefix_attrs)
         if ('description' not in attr) and ('node' not in attr):
             raise NipapMissingInputError('Either description or node must be specified.')
 
@@ -2387,13 +2544,7 @@ class Nipap:
             del(attr['vrf_name'])
         attr['vrf_id'] = vrf['id']
 
-        allowed_attr = [
-            'authoritative_source', 'prefix', 'description',
-            'comment', 'pool_id', 'tags', 'node', 'type', 'country',
-            'order_id', 'customer_id', 'vrf_id', 'alarm_priority', 
-            'monitor', 'external_key', 'vlan', 'status', 'avps', 'expires' ]
-
-        self._check_attr(attr, [], allowed_attr)
+        self._check_attr(attr, [], _prefix_attrs)
 
         if 'expires' in attr:
             attr['expires'] = _parse_expires(attr['expires'])
@@ -2747,20 +2898,20 @@ class Nipap:
             Returns a list of dicts.
 
             The `query` argument passed to this function is designed to be
-            able to specify how quite advanced search operations should be
-            performed in a generic format. It is internally expanded to a SQL
-            WHERE-clause.
+            able to express quite advanced search filters. It is internally
+            expanded to an SQL WHERE-clause.
 
             The `query` is a dict with three elements, where one specifies the
             operation to perform and the two other specifies its arguments. The
-            arguments can themselves be `query` dicts, to build more complex
-            queries.
+            arguments can themselves be `query` dicts, i.e. nested, to build
+            more complex queries.
 
             The :attr:`operator` key specifies what operator should be used for the
             comparison. Currently the following operators are supported:
 
             * :data:`and` - Logical AND
             * :data:`or` - Logical OR
+            * :data:`equals_any` - Equality of any element in array
             * :data:`equals` - Equality; =
             * :data:`not_equals` - Inequality; !=
             * :data:`less` - Less than; <
@@ -2775,10 +2926,11 @@ class Nipap:
             * :data:`contained_within` - IP prefix is contained within
             * :data:`contained_within_equals` - IP prefix is contained within or equals
 
-            The :attr:`val1` and :attr:`val2` keys specifies the values which are subjected
-            to the comparison. :attr:`val1` can be either any prefix attribute or an
-            entire query dict. :attr:`val2` can be either the value you want to
-            compare the prefix attribute to, or an entire `query` dict.
+            The :attr:`val1` and :attr:`val2` keys specifies the values which
+            are subjected to the comparison. :attr:`val1` can be either any
+            prefix attribute or a query dict. :attr:`val2` can be either the
+            value you want to compare the prefix attribute to, or a `query`
+            dict.
 
             Example 1 - Find the prefixes which contains 192.0.2.0/24::
 
@@ -2812,13 +2964,40 @@ class Nipap:
 
                 SELECT * FROM prefix WHERE (type == 'assignment') AND (prefix contained within '192.0.2.0/24')
 
-            The `options` argument provides a way to alter the search result a
-            bit to assist in client implementations. Most options regard parent
-            and children prefixes, that is the prefixes which contain the
-            prefix(es) matching the search terms (parents) or the prefixes
-            which are contained by the prefix(es) matching the search terms.
-            The search options can also be used to limit the number of rows
-            returned.
+            If you want to combine more than two expressions together with a
+            boolean expression you need to nest them. For example, to match on
+            three values, in this case the tag 'foobar' and a prefix-length
+            between /10 and /24, the following could be used::
+
+                query = {
+                    'operator': 'and',
+                    'val1': {
+                        'operator': 'and',
+                        'val1': {
+                            'operator': 'greater',
+                            'val1': 'prefix_length',
+                            'val2': 9
+                        },
+                        'val2': {
+                            'operator': 'less_or_equal',
+                            'val1': 'prefix_length',
+                            'val2': 24
+                        }
+                    },
+                    'val2': {
+                        'operator': 'equals_any',
+                        'val1': 'tags',
+                        'val2': 'foobar'
+                    }
+                }
+
+
+            The `options` argument provides a way to alter the search result to
+            assist in client implementations. Most options regard parent and
+            children prefixes, that is the prefixes which contain the prefix(es)
+            matching the search terms (parents) or the prefixes which are
+            contained by the prefix(es) matching the search terms. The search
+            options can also be used to limit the number of rows returned.
 
             The following options are available:
                 * :attr:`parents_depth` - How many levels of parents to return. Set to :data:`-1` to include all parents.
@@ -3136,9 +3315,8 @@ class Nipap:
 
         self._logger.debug("smart_search_prefix query string: %s" % query_str)
 
-        # find query parts
         try:
-            query_str_parts = self._get_query_parts(query_str)
+            query = self._parse_prefix_query(query_str)
         except NipapValueError:
             return {
                 'interpretation': [
@@ -3152,162 +3330,6 @@ class Nipap:
                 'result': []
             }
 
-        # go through parts and add to query_parts list
-        query_parts = list()
-        for query_str_part in query_str_parts:
-
-            # tags
-            if re.match('#', query_str_part['string']):
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as tag")
-                query_str_part['interpretation'] = '(inherited) tag'
-                query_str_part['attribute'] = 'tag'
-
-                query_str_part['operator'] = 'equals_any'
-                query_parts.append({
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'equals_any',
-                        'val1': 'tags',
-                        'val2': query_str_part['string'][1:]
-                    },
-                    'val2': {
-                        'operator': 'equals_any',
-                        'val1': 'inherited_tags',
-                        'val2': query_str_part['string'][1:]
-                    }
-                })
-
-            # IPv4 prefix
-            elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('/')) == 2:
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
-                query_str_part['interpretation'] = 'IPv4 prefix'
-                query_str_part['attribute'] = 'prefix'
-
-                address, prefix_length = query_str_part['string'].split('/')
-
-                # complete a prefix to it's fully expanded form
-                # 10/8 will be expanded into 10.0.0.0/8 which PostgreSQL can
-                # parse correctly
-                while len(address.split('.')) < 4:
-                    address += '.0'
-
-                prefix = address + '/' + prefix_length
-
-                if prefix != query_str_part['string']:
-                    query_str_part['expanded'] = prefix
-
-                strict_prefix = str(IPy.IP(query_str_part['string'], make_net = True))
-                if prefix != strict_prefix:
-                    query_str_part['strict_prefix'] = strict_prefix
-
-                query_str_part['operator'] = 'contained_within_equals'
-                query_parts.append({
-                    'operator': 'contained_within_equals',
-                    'val1': 'prefix',
-                    'val2': strict_prefix
-                })
-
-            # IPv4 address
-            # split on dot to make sure we have all four octets before we do a
-            # search
-            elif self._get_afi(query_str_part['string']) == 4 and len(query_str_part['string'].split('.')) == 4:
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as prefix")
-                query_str_part['interpretation'] = 'IPv4 address'
-                query_str_part['operator'] = 'contains_equals'
-                query_str_part['attribute'] = 'prefix'
-                query_parts.append({
-                    'operator': 'contains_equals',
-                    'val1': 'prefix',
-                    'val2': query_str_part['string']
-                })
-
-            # IPv6 prefix
-            elif self._get_afi(query_str_part['string']) == 6 and len(query_str_part['string'].split('/')) == 2:
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 prefix")
-                query_str_part['interpretation'] = 'IPv6 prefix'
-                query_str_part['operator'] = 'contained_within_equals'
-                query_str_part['attribute'] = 'prefix'
-
-                strict_prefix = str(IPy.IP(query_str_part['string'], make_net = True))
-                if query_str_part['string'] != strict_prefix:
-                    query_str_part['strict_prefix'] = strict_prefix
-
-                query_parts.append({
-                    'operator': 'contained_within_equals',
-                    'val1': 'prefix',
-                    'val2': strict_prefix
-                })
-
-            # IPv6 address
-            elif self._get_afi(query_str_part['string']) == 6:
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as IPv6 address")
-                query_str_part['interpretation'] = 'IPv6 address'
-                query_str_part['operator'] = 'contains_equals'
-                query_str_part['attribute'] = 'prefix'
-                query_parts.append({
-                    'operator': 'contains_equals',
-                    'val1': 'prefix',
-                    'val2': query_str_part['string']
-                })
-
-            # Description or comment
-            # TODO: add an equal search for VRF here
-            else:
-                self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as desc/comment")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'description or comment or node or order_id or customer_id'
-                query_parts.append({
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'or',
-                        'val1': {
-                            'operator': 'or',
-                            'val1': {
-                                'operator': 'or',
-                                'val1': {
-                                    'operator': 'regex_match',
-                                    'val1': 'comment',
-                                    'val2': query_str_part['string']
-                                    },
-                                'val2': {
-                                    'operator': 'regex_match',
-                                    'val1': 'description',
-                                    'val2': query_str_part['string']
-                                    }
-                                },
-                            'val2': {
-                                'operator': 'regex_match',
-                                'val1': 'node',
-                                'val2': query_str_part['string']
-                                }
-                            },
-                        'val2': {
-                            'operator': 'regex_match',
-                            'val1': 'order_id',
-                            'val2': query_str_part['string']
-                            },
-                        },
-                    'val2': {
-                        'operator': 'regex_match',
-                        'val1': 'customer_id',
-                        'val2': query_str_part['string']
-                        }
-                    })
-
-        # Sum all query parts to one query
-        query = {}
-        if len(query_parts) > 0:
-            query = query_parts[0]
-
-        if len(query_parts) > 1:
-            for query_part in query_parts[1:]:
-                query = {
-                    'operator': 'and',
-                    'val1': query_part,
-                    'val2': query
-                }
-
         if extra_query is not None:
             query = {
                 'operator': 'and',
@@ -3315,12 +3337,25 @@ class Nipap:
                 'val2': extra_query
             }
 
-        self._logger.debug("Expanded to: %s" % str(query))
+        self._logger.debug("smart_search_prefix: query expanded to: %s" % str(query))
 
         search_result = self.search_prefix(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
+        search_result['interpretation'] = query
 
         return search_result
+
+
+
+    def _parse_prefix_query(self, query_str):
+        """ Parse a smart search query for prefixes
+
+            This is a helper function to smart_search_prefix for easier unit
+            testing of the parser.
+        """
+        sp = smart_parsing.PrefixSmartParser()
+        query = sp.parse(query_str)
+        return query
+
 
 
     #
@@ -3679,21 +3714,45 @@ class Nipap:
 
         self._logger.debug("smart_search_asn called; query_str: %s" % query_str)
 
-        # find query parts
         try:
-            query_str_parts = self._get_query_parts(query_str)
+            query = self._parse_asn_query(query_str)
         except NipapValueError:
             return {
-                'interpretation': [
-                    {
-                        'string': query_str,
-                        'interpretation': 'unclosed quote',
-                        'attribute': 'text'
-                    }
-                ],
-                'search_options': search_options,
-                'result': []
+                    'interpretation': [
+                        {
+                            'string': query_str,
+                            'interpretation': 'unclosed quote',
+                            'attribute': 'text'
+                        }
+                    ],
+                    'search_options': search_options,
+                    'result': []
+                }
+
+        if extra_query is not None:
+            query = {
+                'operator': 'and',
+                'val1': query,
+                'val2': extra_query
             }
+
+        self._logger.debug("smart_search_asn; query expanded to: %s" % str(query))
+
+        search_result = self.search_asn(auth, query, search_options)
+        search_result['interpretation'] = query
+
+        return search_result
+
+
+
+    def _parse_asn_query(self, query_str):
+        """ Parse a smart search query for ASNs
+
+            This is a helper function to smart_search_pool for easier unit
+            testing of the parser.
+        """
+        # find query parts
+        query_str_parts = self._get_query_parts(query_str)
 
         # go through parts and add to query_parts list
         query_parts = list()
@@ -3707,10 +3766,13 @@ class Nipap:
 
             if is_int:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as integer (ASN)")
-                query_str_part['interpretation'] = 'asn'
-                query_str_part['operator'] = 'equals'
-                query_str_part['attribute'] = 'asn'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'asn',
+                        'attribute': 'asn',
+                        'operator': 'equals',
+                    },
                     'operator': 'equals',
                     'val1': 'asn',
                     'val2': query_str_part['string']
@@ -3718,10 +3780,13 @@ class Nipap:
 
             else:
                 self._logger.debug("Query part '" + query_str_part['string'] + "' interpreted as text")
-                query_str_part['interpretation'] = 'text'
-                query_str_part['operator'] = 'regex'
-                query_str_part['attribute'] = 'name'
                 query_parts.append({
+                    'interpretation': {
+                        'string': query_str_part['string'],
+                        'interpretation': 'text',
+                        'attribute': 'name',
+                        'operator': 'regex',
+                    },
                     'operator': 'regex_match',
                     'val1': 'name',
                     'val2': query_str_part['string']
@@ -3735,24 +3800,16 @@ class Nipap:
         if len(query_parts) > 1:
             for query_part in query_parts[1:]:
                 query = {
+                    'interpretation': {
+                        'interpretation': 'and',
+                        'operator': 'and',
+                    },
                     'operator': 'and',
                     'val1': query_part,
                     'val2': query
                 }
 
-        if extra_query is not None:
-            query = {
-                'operator': 'and',
-                'val1': query,
-                'val2': extra_query
-            }
-
-        self._logger.debug("Expanded to: %s" % str(query))
-
-        search_result = self.search_asn(auth, query, search_options)
-        search_result['interpretation'] = query_str_parts
-
-        return search_result
+        return query
 
 
 
@@ -3958,71 +4015,5 @@ class Nipap:
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
-class NipapError(Exception):
-    """ NIPAP base error class.
-    """
-
-    error_code = 1000
-
-
-class NipapInputError(NipapError):
-    """ Erroneous input.
-
-        A general input error.
-    """
-
-    error_code = 1100
-
-
-class NipapMissingInputError(NipapInputError):
-    """ Missing input.
-
-        Most input is passed in dicts, this could mean a missing key in a dict.
-    """
-
-    error_code = 1110
-
-
-class NipapExtraneousInputError(NipapInputError):
-    """ Extraneous input.
-
-        Most input is passed in dicts, this could mean an unknown key in a dict.
-    """
-
-    error_code = 1120
-
-
-class NipapNoSuchOperatorError(NipapInputError):
-    """ A non existent operator was specified.
-    """
-
-    error_code = 1130
-
-
-class NipapValueError(NipapError):
-    """ Something wrong with a value
-
-        For example, trying to send an integer when an IP address is expected.
-    """
-
-    error_code = 1200
-
-
-class NipapNonExistentError(NipapError):
-    """ A non existent object was specified
-
-        For example, try to get a prefix from a pool which doesn't exist.
-    """
-
-    error_code = 1300
-
-
-class NipapDuplicateError(NipapError):
-    """ The passed object violates unique constraints
-
-        For example, create a VRF with a name of an already existing one.
-    """
-
-    error_code = 1400
 
 # vim: et ts=4 :

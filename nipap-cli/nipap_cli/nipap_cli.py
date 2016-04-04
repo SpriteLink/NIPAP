@@ -4,6 +4,7 @@
     A shell command to interact with NIPAP.
 """
 
+#from __future__ import print_function
 
 import ConfigParser
 import csv
@@ -14,6 +15,8 @@ import shlex
 import string
 import subprocess
 import sys
+
+import IPy
 
 import pynipap
 from pynipap import Pool, Prefix, Tag, VRF, NipapError
@@ -159,6 +162,38 @@ def _str_to_bool(arg):
 """
     LIST FUNCTIONS
 """
+def _parse_interp_pool(query, indent=-5, pandop=False):
+    if 'interpretation' not in query:
+        return
+    interp = query['interpretation']
+    text = None
+    text2 = None
+    andop = False
+    if interp['operator'] in ['and', 'or']:
+        andop = True
+    elif interp['interpretation'] == 'unclosed quote':
+        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
+        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+    elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
+        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
+        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+    else:
+        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+    if text:
+        if pandop:
+            a = '     '
+            if indent > 1:
+                a = ' `-- '
+            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+        else:
+            print "%s       `-- %s" % (' '*indent, text)
+    if text2:
+        print "%s   %s" % (' '*indent, text2)
+    if type(query['val1']) is dict:
+        _parse_interp_pool(query['val1'], indent+6, andop)
+    if type(query['val2']) is dict:
+        _parse_interp_pool(query['val2'], indent+6)
+
 
 def list_pool(arg, opts, shell_opts):
     """ List pools matching a search criteria
@@ -184,6 +219,10 @@ def list_pool(arg, opts, shell_opts):
     while True:
         res = Pool.smart_search(search_string, { 'offset': offset, 'max_result': limit }, vrf_q)
         if offset == 0: # first time in loop?
+            if shell_opts.show_interpretation:
+                print "Query interpretation:"
+                _parse_interp_pool(res['interpretation'])
+
             if len(res['result']) == 0:
                 print "No matching pools found"
                 return
@@ -220,6 +259,37 @@ def list_pool(arg, opts, shell_opts):
         offset += limit
 
 
+def _parse_interp_vrf(query, indent=-5, pandop=False):
+    if 'interpretation' not in query:
+        return
+    interp = query['interpretation']
+    text = None
+    text2 = None
+    andop = False
+    if interp['operator'] in ['and', 'or']:
+        andop = True
+    elif interp['interpretation'] == 'unclosed quote':
+        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
+        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+    elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
+        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
+        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+    else:
+        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+    if text:
+        if pandop:
+            a = '     '
+            if indent > 1:
+                a = ' `-- '
+            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+        else:
+            print "%s       `-- %s" % (' '*indent, text)
+    if text2:
+        print "%s   %s" % (' '*indent, text2)
+    if type(query['val1']) is dict:
+        _parse_interp_vrf(query['val1'], indent+6, andop)
+    if type(query['val2']) is dict:
+        _parse_interp_vrf(query['val2'], indent+6)
 
 def list_vrf(arg, opts, shell_opts):
     """ List VRFs matching a search criteria
@@ -234,8 +304,12 @@ def list_vrf(arg, opts, shell_opts):
     while True:
         res = VRF.smart_search(search_string, { 'offset': offset, 'max_result': limit })
         if offset == 0:
+            if shell_opts.show_interpretation:
+                print "Query interpretation:"
+                _parse_interp_vrf(res['interpretation'])
+
             if len(res['result']) == 0:
-                print "No matching VRFs found."
+                print "No VRFs matching '%s' found." % search_string
                 return
 
             print "%-16s %-22s %-2s %-40s" % ("VRF RT", "Name", "#", "Description")
@@ -255,6 +329,65 @@ def list_vrf(arg, opts, shell_opts):
             break
         offset += limit
 
+
+def _parse_interp_prefix(query, indent=-5, pandop=False):
+    if 'interpretation' not in query:
+        return
+    interp = query['interpretation']
+    text = None
+    text2 = None
+    andop = False
+    if interp['operator'] in ['and', 'or']:
+        andop = True
+    elif interp['interpretation'] == 'unclosed quote':
+        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
+        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+    elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
+        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
+        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contained_within_equals':
+        if 'strict_prefix' in interp and 'expanded' in interp:
+            text = "%s: %s within %s" % (interp['string'],
+                    interp['interpretation'],
+                    interp['strict_prefix'])
+            text2 = "Prefix must be contained within %s, which is the base prefix of %s (automatically expanded from %s)." % (interp['strict_prefix'], interp['expanded'], interp['string'])
+        elif 'strict_prefix' in interp:
+            text = "%s: %s within %s" % (interp['string'],
+                    interp['interpretation'],
+                    interp['strict_prefix'])
+            text2 = "Prefix must be contained within %s, which is the base prefix of %s." % (interp['strict_prefix'], interp['string'])
+        elif 'expanded' in interp:
+            text = "%s: %s within %s" % (interp['string'],
+                    interp['interpretation'],
+                    interp['expanded'])
+            text2 = "Prefix must be contained within %s (automatically expanded from %s)." % (interp['expanded'], interp['string'])
+        else:
+            text = "%s: %s within %s" % (interp['string'],
+                    interp['interpretation'],
+                    interp['string'])
+            text2 = "Prefix must be contained within %s." % (interp['string'])
+    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
+        text = "%s: Prefix that contains %s" % (interp['string'],
+                interp['string'])
+    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
+        text = "%s: %s equal to %s" % (interp['string'],
+                interp['interpretation'], interp['string'])
+    else:
+        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+    if text:
+        if pandop:
+            a = '     '
+            if indent > 1:
+                a = ' `-- '
+            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+        else:
+            print "%s       `-- %s" % (' '*indent, text)
+    if text2:
+        print "%s   %s" % (' '*indent, text2)
+    if type(query['val1']) is dict:
+        _parse_interp_prefix(query['val1'], indent+6, andop)
+    if type(query['val2']) is dict:
+        _parse_interp_prefix(query['val2'], indent+6)
 
 
 def list_prefix(arg, opts, shell_opts):
@@ -279,75 +412,103 @@ def list_prefix(arg, opts, shell_opts):
         }
     print "Searching for prefixes in %s..." % vrf_text
 
+    col_def = {
+            'added': { 'title': 'Added' },
+            'alarm_priority': { 'title': 'Alarm Prio' },
+            'authoritative_source': { 'title': 'Auth source' },
+            'children': { 'title': 'Children' },
+            'comment': { 'title': 'Comment' },
+            'customer_id': { 'title': 'Customer ID' },
+            'description': { 'title': 'Description' },
+            'expires': { 'title': 'Expires' },
+            'free_addresses': { 'title': 'Free addresses' },
+            'monitor': { 'title': 'Monitor' },
+            'last_modified': { 'title': 'Last mod' },
+            'node': { 'title': 'Node' },
+            'order_id': { 'title': 'Order ID' },
+            'pool_name': { 'title': 'Pool name' },
+            'prefix': { 'title': 'Prefix' },
+            'status': { 'title': 'Status' },
+            'tags': { 'title': '#' },
+            'total_addresses': { 'title': 'Total addresses' },
+            'type': { 'title': '' },
+            'used_addresses': { 'title': 'Used addresses' },
+            'vlan': { 'title': 'VLAN' },
+            'vrf_rt': { 'title': 'VRF RT' },
+            }
+    # default columns
+    columns = [ 'vrf_rt', 'prefix', 'type', 'tags', 'node', 'order_id', 'customer_id', 'description' ]
+
+    # custom columns? prefer shell opts, then look in config file
+    custom_columns = None
+    if shell_opts.columns and len(shell_opts.columns) > 0:
+        custom_columns = shell_opts.columns
+    elif cfg.get('global', 'prefix_list_columns'):
+        custom_columns = cfg.get('global', 'prefix_list_columns')
+
+    # parse custom columns
+    if custom_columns:
+        # should we append columns or replace default?
+        if custom_columns[0] == '+':
+            col_append = True
+        else:
+            col_append = False
+            columns = []
+
+        # read in custom columns
+        for col in list(csv.reader([custom_columns.lstrip('+') or ''], escapechar='\\'))[0]:
+            col = col.strip()
+            if col not in col_def:
+                print >> sys.stderr, "Invalid column:", col
+                sys.exit(1)
+            columns.append(col)
 
     offset = 0
     # small initial limit for "instant" result
     limit = 50
-    min_indent = 0
+    prefix_str = ""
     while True:
         res = Prefix.smart_search(search_string, { 'parents_depth': -1,
             'include_neighbors': True, 'offset': offset, 'max_result': limit },
             vrf_q)
 
         if offset == 0: # first time in loop?
+            if shell_opts.show_interpretation:
+                print "Query interpretation:"
+                _parse_interp_prefix(res['interpretation'])
+
             if len(res['result']) == 0:
                 print "No addresses matching '%s' found." % search_string
                 return
 
-            if shell_opts.show_interpretation:
-                print "Query interpretation:"
-                for interp in res['interpretation']:
-                    text = interp['string']
-                    if interp['interpretation'] == 'unclosed quote':
-                        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
-                        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
-                    elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
-                        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
-                        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
-                    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contained_within_equals':
-                        if 'strict_prefix' in interp and 'expanded' in interp:
-                            text = "%s: %s within %s" % (interp['string'],
-                                    interp['interpretation'],
-                                    interp['strict_prefix'])
-                            text2 = "Prefix must be contained within %s, which is the base prefix of %s (automatically expanded from %s)." % (interp['strict_prefix'], interp['expanded'], interp['string'])
-                        elif 'strict_prefix' in interp:
-                            text = "%s: %s within %s" % (interp['string'],
-                                    interp['interpretation'],
-                                    interp['strict_prefix'])
-                            text2 = "Prefix must be contained within %s, which is the base prefix of %s." % (interp['strict_prefix'], interp['string'])
-                        elif 'expanded' in interp:
-                            text = "%s: %s within %s" % (interp['string'],
-                                    interp['interpretation'],
-                                    interp['expanded'])
-                            text2 = "Prefix must be contained within %s (automatically expanded from %s)." % (interp['expanded'], interp['string'])
-                        else:
-                            text = "%s: %s within %s" % (interp['string'],
-                                    interp['interpretation'],
-                                    interp['string'])
-                            text2 = "Prefix must be contained within %s." % (interp['string'])
-                    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
-                        text = "%s: Prefix that contains %s" % (interp['string'],
-                                interp['string'])
-                    elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
-                        text = "%s: %s equal to %s" % (interp['string'],
-                                interp['interpretation'], interp['string'])
-                    else:
-                        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
-                    print " -", text
-                    print "    ", text2
-
-            # Guess the width of the prefix column by looking at the initial
-            # result set.
+            # guess column width by looking at the initial result set
             for p in res['result']:
-                indent = p.indent * 2 + len(p.prefix)
-                if indent > min_indent:
-                    min_indent = indent
-            min_indent += 15
+                for colname, col in col_def.items():
+                    val = getattr(p, colname, '')
+                    col['width'] = max(len(colname), col.get('width', 0),
+                                       len(str(val)))
 
-            # print column headers
-            prefix_str = "%%-14s %%-%ds %%-1s %%-2s %%-19s %%-14s %%-14s %%-s" % min_indent
-            column_header = prefix_str % ('VRF', 'Prefix', '', '#', 'Node',
-                    'Order', 'Customer', 'Description')
+                # special handling of a few columns
+                col_def['vrf_rt']['width'] = max(col_def['vrf_rt'].get('width', 8),
+                                                 len(str(p.vrf.rt)))
+                col_def['prefix']['width'] = max(col_def['prefix'].get('width', 0)-12,
+                                                 p.indent * 2 + len(p.prefix)) + 12
+                try:
+                    col_def['pool_name']['width'] = max(col_def['pool_name'].get('width', 8),
+                                                        len(str(p.pool.name)))
+                except:
+                    pass
+            # override certain column widths
+            col_def['type']['width'] = 1
+            col_def['tags']['width'] = 2
+
+            col_header_data = {}
+            # build prefix formatting string
+            for colname, col in [(k, col_def[k]) for k in columns]:
+                prefix_str += "{%s:<%d}  " % (colname, col['width'])
+                col_header_data[colname] = col['title']
+
+            column_header = prefix_str.format(**col_header_data)
             print column_header
             print "".join("=" for i in xrange(len(column_header)))
 
@@ -355,15 +516,27 @@ def list_prefix(arg, opts, shell_opts):
             if p.display == False:
                 continue
 
+            col_data = {}
             try:
-                tags = '-'
+                for colname, col in col_def.items():
+                    col_data[colname] = str(getattr(p, colname, None))
+
+                # overwrite some columns due to special handling
+                col_data['tags'] = '-'
                 if len(p.tags) > 0:
-                    tags = '#%d' % len(p.tags)
-                print prefix_str % (p.vrf.rt or '-',
-                    "".join("  " for i in xrange(p.indent)) + p.display_prefix,
-                    p.type[0].upper(), tags, p.node, p.order_id,
-                    p.customer_id, p.description
-                )
+                    col_data['tags'] = '#%d' % len(p.tags)
+
+                try: 
+                    col_data['pool_name'] = p.pool.name
+                except:
+                    pass
+
+                col_data['prefix'] = "".join("  " for i in xrange(p.indent)) + p.display_prefix
+                col_data['type'] = p.type[0].upper()
+                col_data['vrf_rt'] = p.vrf.rt or '-'
+
+                print prefix_str.format(**col_data)
+
             except UnicodeEncodeError, e:
                 print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
 
@@ -462,12 +635,27 @@ def add_prefix(arg, opts, shell_opts):
         parent_prefix = args['from-prefix'][0]
         parent_op = 'equals'
     else:
-        parent_prefix = opts.get('prefix').split('/')[0]
-        parent_op = 'contains'
+        # If no prefix length is specified it is assumed to be a host and we do
+        # a search for prefixes that contains the specified prefix. The last
+        # entry will be the parent of the new prefix and we can look at it to
+        # determine type.
+        # If prefix length is specified (i.e. CIDR format) we check if prefix
+        # length equals max length in which case we assume a host prefix,
+        # otherwise we search for the network using an equal match and by
+        # zeroing out bits in the host part.
+        if len(opts.get('prefix').split("/")) == 2:
+            ip = IPy.IP(opts.get('prefix').split("/")[0])
+            plen = int(opts.get('prefix').split("/")[1])
+            if ip.version() == 4 and plen == 32 or ip.version() == 6 and plen == 128:
+                parent_prefix = str(ip)
+                parent_op = 'contains'
+            else:
+                parent_prefix = str(IPy.IP(opts.get('prefix'), make_net=True))
+                parent_op = 'equals'
+        else:
+            parent_prefix = opts.get('prefix')
+            parent_op = 'contains'
 
-    # prefix must be a CIDR network, ie no bits set in host part, so we
-    # remove the prefix length part of the prefix as then the backend will
-    # assume all bits being set
     auto_type_query = {
             'val1': {
                 'val1'      : 'prefix',
@@ -873,6 +1061,21 @@ def view_pool(arg, opts, shell_opts):
 def view_prefix(arg, opts, shell_opts):
     """ View a single prefix.
     """
+    # Internally, this function searches in the prefix column which means that
+    # hosts have a prefix length of 32/128 while they are normally displayed
+    # with the prefix length of the network they are in. To allow the user to
+    # input either, e.g. 1.0.0.1 or 1.0.0.1/31 we strip the prefix length bits
+    # to assume /32 if the address is not a network address. If it is the
+    # network address we always search using the specified mask. In certain
+    # cases there is a host with the network address, typically when /31 or /127
+    # prefix lengths are used, for example 1.0.0.0/31 and 1.0.0.0/32 (first host
+    # in /31 network) in which case it becomes necessary to distinguish between
+    # the two using the mask.
+    try:
+        # this fails if bits are set on right side of mask
+        ip = IPy.IP(arg)
+    except ValueError:
+        arg = arg.split('/')[0]
 
     q = { 'prefix': arg }
 

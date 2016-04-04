@@ -1,4 +1,4 @@
-<div dropdown on-toggle="toggled(open)" is-open="popup_open">
+<div dropdown on-toggle="toggled(open)" is-open="popup_open" ng-click="$event.stopPropagation()">
 	<input type="button" class="btn btn-danger dropdown-toggle" value="Change pool" style="margin-left: 15px;">
 	<div class="dropdown-menu popup_menu selector">
 		<h3>Select pool</h3>
@@ -15,7 +15,7 @@
 					{{ pool.name }}
 				</div>
 				<div class="selector_entry_description">{{ pool.description == null ? '' : pool.description }}</div>
-				<div class="selector_x">
+				<div class="selector_x" ng-click="deselectPool(pool)">
 					<img src="/images/x-mark-3-16.png" ng-show="selected_pool.id == pool.id">
 					<span ng-show="selected_pool.id != pool.id">&nbsp;</span>
 				</div>

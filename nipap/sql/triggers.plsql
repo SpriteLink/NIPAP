@@ -11,6 +11,7 @@ DECLARE
 	rt_part_one text;
 	rt_part_two text;
 	ip text;
+	rt_style text;
 BEGIN
 	-- don't allow setting an RT for VRF id 0
 	IF NEW.id = 0 THEN
@@ -20,14 +21,37 @@ BEGIN
 	ELSE -- make sure all VRF except for VRF id 0 has a proper RT
 		-- make sure we only have two fields delimited by a colon
 		IF (SELECT COUNT(1) FROM regexp_matches(NEW.rt, '(:)', 'g')) != 1 THEN
-			RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+			RAISE EXCEPTION '1200:Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
 		END IF;
 
-		-- check first part
+		-- determine RT style, ie 123:456 or IP:id
 		BEGIN
 			-- either it's a integer (AS number)
 			rt_part_one := split_part(NEW.rt, ':', 1)::bigint;
+			rt_style := 'simple';
 		EXCEPTION WHEN others THEN
+			rt_style := 'ip';
+		END;
+
+		-- second part
+		BEGIN
+			rt_part_two := split_part(NEW.rt, ':', 2)::bigint;
+		EXCEPTION WHEN others THEN
+			RAISE EXCEPTION '1200:Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+		END;
+
+		-- first part
+		IF rt_style = 'simple' THEN
+			BEGIN
+				rt_part_one := split_part(NEW.rt, ':', 1)::bigint;
+			EXCEPTION WHEN others THEN
+				RAISE EXCEPTION '1200:1Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+			END;
+
+			-- reconstruct value
+			NEW.rt := rt_part_one::text || ':' || rt_part_two::text;
+
+		ELSIF rt_style = 'ip' THEN
 			BEGIN
 				-- or an IPv4 address
 				ip := host(split_part(NEW.rt, ':', 1)::inet);
@@ -36,17 +60,18 @@ BEGIN
 							(split_part(ip, '.', 3)::bigint << 8) +
 							(split_part(ip, '.', 4)::bigint);
 			EXCEPTION WHEN others THEN
-				RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+				RAISE EXCEPTION '1200:Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
 			END;
-		END;
 
-		-- check part two
-		BEGIN
-			rt_part_two := split_part(NEW.rt, ':', 2)::bigint;
-		EXCEPTION WHEN others THEN
-			RAISE EXCEPTION 'Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
-		END;
-		NEW.rt := rt_part_one::text || ':' || rt_part_two::text;
+			-- reconstruct IP value
+			NEW.rt := (split_part(ip, '.', 1)::bigint) || '.' ||
+							(split_part(ip, '.', 2)::bigint) || '.' ||
+							(split_part(ip, '.', 3)::bigint) || '.' ||
+							(split_part(ip, '.', 4)::bigint) || ':' ||
+							rt_part_two::text;
+		ELSE
+			RAISE EXCEPTION '1200:Invalid input for column rt, should be ASN:id (123:456) or IP:id (1.3.3.7:456)';
+		END IF;
 	END IF;
 
 	RETURN NEW;
@@ -98,8 +123,8 @@ BEGIN
 		-- update last modified timestamp
 		NEW.last_modified = NOW();
 
-		-- if prefix, type and pool is the same, quick return!
-		IF OLD.type = NEW.type AND OLD.prefix = NEW.prefix AND OLD.pool_id = NEW.pool_id THEN
+		-- if vrf, type and prefix is the same, quick return!
+		IF OLD.vrf_id = NEW.vrf_id AND OLD.type = NEW.type AND OLD.prefix = NEW.prefix THEN
 			RETURN NEW;
 		END IF;
 	END IF;
@@ -110,7 +135,12 @@ BEGIN
 		i_max_pref_len := 128;
 	END IF;
 	-- contains the parent prefix
-	SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
+	IF TG_OP = 'INSERT' THEN
+		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) ORDER BY masklen(prefix) DESC LIMIT 1;
+	ELSE
+		-- avoid selecting our old self as parent
+		SELECT * INTO new_parent FROM ip_net_plan WHERE vrf_id = NEW.vrf_id AND iprange(prefix) >> iprange(NEW.prefix) AND prefix != OLD.prefix ORDER BY masklen(prefix) DESC LIMIT 1;
+	END IF;
 
 	--
 	---- Various sanity checking -----------------------------------------------
@@ -244,6 +274,10 @@ BEGIN
 		ELSIF TG_OP = 'UPDATE' THEN
 			IF OLD.prefix = NEW.prefix THEN
 				-- NOOP
+			ELSIF NEW.prefix << OLD.prefix AND OLD.indent = NEW.indent THEN -- NEW is smaller and covered by OLD
+				FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = NEW.indent+1 ORDER BY prefix ASC) LOOP
+					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
+				END LOOP;
 			ELSIF NEW.prefix << OLD.prefix THEN -- NEW is smaller and covered by OLD
 				--
 				FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = NEW.indent ORDER BY prefix ASC) LOOP
@@ -860,12 +894,9 @@ CREATE TRIGGER trigger_ip_net_plan__i_before
 
 -- sanity checking of UPDATEs on ip_net_plan
 CREATE TRIGGER trigger_ip_net_plan__vrf_prefix_type__u_before
-	BEFORE UPDATE OF vrf_id, prefix, type
+	BEFORE UPDATE
 	ON ip_net_plan
 	FOR EACH ROW
-	WHEN (OLD.vrf_id != NEW.vrf_id
-		OR OLD.prefix != NEW.prefix
-		OR OLD.type != NEW.type)
 	EXECUTE PROCEDURE tf_ip_net_plan__prefix_iu_before();
 
 -- actions to be performed after an UPDATE on ip_net_plan

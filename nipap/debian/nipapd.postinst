@@ -16,7 +16,7 @@ NIPAP_DB_EXISTS=0
 NIPAP_DB_VERSION=0
 
 # the most current DB version and the one that we are about to install
-CURRENT_DB_VERSION=5
+CURRENT_DB_VERSION=6
 
 # determine if postgres is installed
 su postgres -c 'psql --version' > /dev/null 2>&1
@@ -129,7 +129,7 @@ case "$1" in
 				fi
 
 				# create local auth database
-				nipap-passwd --create-database > /dev/null 2>&1
+				nipap-passwd create-database > /dev/null 2>&1
 			fi
 		fi
 
@@ -140,7 +140,7 @@ case "$1" in
 		# upgrade sqlite?
 		db_get nipapd/sqlite_upgrade
 		if [ "$RET" = "true" ]; then
-			nipap-passwd --upgrade-database > /dev/null 2>&1
+			nipap-passwd upgrade-database > /dev/null 2>&1
 		fi
 
 		db_stop

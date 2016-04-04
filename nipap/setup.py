@@ -25,6 +25,7 @@ def get_data_files():
                 'sql/upgrade-2-3.plsql',
                 'sql/upgrade-3-4.plsql',
                 'sql/upgrade-4-5.plsql',
+                'sql/upgrade-5-6.plsql',
                 'sql/functions.plsql',
                 'sql/triggers.plsql',
                 'sql/ip_net.plsql'

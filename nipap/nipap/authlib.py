@@ -75,6 +75,12 @@ import sqlite3
 import string
 import random
 
+try:
+    import ldap
+except ImportError:
+    ldap = None
+
+
 class AuthFactory:
     """ An factory for authentication backends.
     """
@@ -274,9 +280,12 @@ class LdapAuth(BaseAuth):
     _ldap_basedn = None
     _ldap_binddn_fmt = None
     _ldap_search = None
+    _ldap_search_binddn = None
+    _ldap_search_password = None
     _ldap_rw_group = None
     _ldap_ro_group = None
     _ldap_conn = None
+    _ldap_search_conn = None
     _authenticated = None
 
     def __init__(self, name, username, password, authoritative_source, auth_options=None):
@@ -304,28 +313,47 @@ class LdapAuth(BaseAuth):
             auth_options = {}
 
         BaseAuth.__init__(self, username, password, authoritative_source, name, auth_options)
-        self._ldap_uri = self._cfg.get('auth.backends.' + self.auth_backend, 'uri')
-        self._ldap_basedn = self._cfg.get('auth.backends.' + self.auth_backend, 'basedn')
-        self._ldap_binddn_fmt = self._cfg.get('auth.backends.' + self.auth_backend, 'binddn_fmt')
-        self._ldap_search = self._cfg.get('auth.backends.' + self.auth_backend, 'search')
+        base_auth_backend = 'auth.backends.' + self.auth_backend
+        self._ldap_uri = self._cfg.get(base_auth_backend, 'uri')
+        self._ldap_basedn = self._cfg.get(base_auth_backend, 'basedn')
+        self._ldap_binddn_fmt = self._cfg.get(base_auth_backend, 'binddn_fmt')
+        self._ldap_search = self._cfg.get(base_auth_backend, 'search')
+        self._ldap_tls = False
+
+        if self._cfg.has_option(base_auth_backend, 'tls'):
+            self._ldap_tls = self._cfg.getboolean(base_auth_backend, 'tls')
+
         self._ldap_ro_group = None
         self._ldap_rw_group = None
-        if self._cfg.has_option('auth.backends.' + self.auth_backend, 'ro_group'):
-            self._ldap_ro_group = self._cfg.get('auth.backends.' + self.auth_backend, 'ro_group')
-        if self._cfg.has_option('auth.backends.' + self.auth_backend, 'rw_group'):
-            self._ldap_rw_group = self._cfg.get('auth.backends.' + self.auth_backend, 'rw_group')
+        if self._cfg.has_option(base_auth_backend, 'ro_group'):
+            self._ldap_ro_group = self._cfg.get(base_auth_backend, 'ro_group')
+        if self._cfg.has_option(base_auth_backend, 'rw_group'):
+            self._ldap_rw_group = self._cfg.get(base_auth_backend, 'rw_group')
 
         self._logger.debug('Creating LdapAuth instance')
 
-        try:
-            import ldap
-        except ImportError:
+        if not ldap:
             self._logger.error('Unable to load Python ldap module, please verify it is installed')
             raise AuthError('Unable to authenticate')
 
         self._logger.debug('LDAP URI: ' + self._ldap_uri)
         self._ldap_conn = ldap.initialize(self._ldap_uri)
 
+        # Shall we use a separate connection for search?
+        if self._cfg.has_option(base_auth_backend, 'search_binddn'):
+            self._ldap_search_binddn = self._cfg.get(base_auth_backend, 'search_binddn')
+            self._ldap_search_password = self._cfg.get(base_auth_backend, 'search_password')
+            self._ldap_search_conn = ldap.initialize(self._ldap_uri)
+
+        if self._ldap_tls:
+            try:
+                self._ldap_conn.start_tls_s()
+                if self._ldap_search_conn is not None:
+                    self._ldap_search_conn.start_tls_s()
+            except (ldap.CONNECT_ERROR, ldap.SERVER_DOWN) as exc:
+                self._logger.error('Attempted to start TLS with ldap server but failed.')
+                self._logger.exception(exc)
+                raise AuthError('Unable to establish secure connection to ldap server')
 
 
     def authenticate(self):
@@ -357,7 +385,14 @@ class LdapAuth(BaseAuth):
         self.readonly = False
 
         try:
-            res = self._ldap_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)), ['cn','memberOf'])
+            # Create separate connection for search?
+            if self._ldap_search_conn is not None:
+                self._ldap_search_conn.simple_bind(self._ldap_search_binddn, self._ldap_search_password)
+                search_conn = self._ldap_search_conn
+            else:
+                search_conn = self._ldap_conn
+
+            res = search_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)), ['cn','memberOf'])
             self.full_name = res[0][1]['cn'][0]
             # check for ro_group membership if ro_group is configured
             if self._ldap_ro_group:
@@ -377,7 +412,7 @@ class LdapAuth(BaseAuth):
                     else:
                         self.readonly = True
 
-        except (ldap.NO_SUCH_OBJECT,ldap.OPERATIONS_ERROR,ldap.FILTER_ERROR,ldap.INVALID_DN_SYNTAX,ldap.SERVER_DOWN) as exc:
+        except ldap.LDAPError as exc:
             raise AuthError(exc)
         except KeyError:
             raise AuthError('LDAP attribute missing')
@@ -603,7 +638,8 @@ class SqliteAuth(BaseAuth):
             (?, ?, ?, ?, ?, ?)'''
         try:
             self._db_curs.execute(sql, (username, salt,
-                self._gen_hash(password, salt), full_name, trusted, readonly))
+                self._gen_hash(password, salt), full_name, trusted or False,
+                                        readonly or False))
             self._db_conn.commit()
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
@@ -624,6 +660,29 @@ class SqliteAuth(BaseAuth):
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
         return self._db_curs.rowcount
+
+
+
+    def modify_user(self, username, data):
+        """ Modify user in SQLite database.
+
+            Since username is used as primary key and we only have a single
+            argument for it we can't modify the username right now.
+        """
+        sql = "UPDATE user SET "
+        sql += ', '.join("%s = ?" % k for k in sorted(data))
+        sql += " WHERE username = ?"
+
+        vals = []
+        for k in sorted(data):
+            vals.append(data[k])
+        vals.append(username)
+
+        try:
+            self._db_curs.execute(sql, vals)
+            self._db_conn.commit()
+        except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
+            raise AuthError(error)
 
 
 
