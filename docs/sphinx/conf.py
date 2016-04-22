@@ -217,7 +217,9 @@ if on_rtd:
             else:
                 return Mock()
 
-    MOCK_MODULES = ['ldap', 'IPy', 'psycopg2.extras', 'psycopg2']
+    MOCK_MODULES = [
+        'ldap', 'IPy', 'psycopg2.extras', 'psycopg2', 'pyparsing'
+    ]
 
     for mod_name in MOCK_MODULES:
         sys.modules[mod_name] = Mock()
