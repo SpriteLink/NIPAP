@@ -118,9 +118,9 @@ def remove(pattern):
         inp = inp[1:]
         invert = True
 
-    rename_all = False
+    remove_all = False
     if inp == 'all':
-        rename_all = True
+        remove_all = True
         selection = []
     else:
         selection = inp.split(",")
@@ -130,23 +130,21 @@ def remove(pattern):
             print >> sys.stderr, "Could not parse selection: %s" % str(e)
             sys.exit(1)
 
+    # Remove Hosts first:
     for i, prefix in enumerate(prefix_list):
-        # Removing Hosts:
         if prefix.match and prefix.type[0].upper() == "H":
             print prefix.type[0].upper()
-            if prefix.match and ((invert and i not in selection) or (not invert and i in selection) or rename_all):
-                print prefix.node
-                print prefix.description
+            if prefix.match and ((invert and i not in selection) or (not invert and i in selection) or remove_all):
+                print prefix.node, prefix.description # DEBUG, Remove before finalizing code
                 print "Removing prefix %s..." % prefix.display_prefix
                 prefix.remove()
 
-        # Removing Assignments:
+    # Remove Assignments if there are any:
     for i, prefix in enumerate(prefix_list):
         if prefix.match and prefix.type[0].upper() == "A":
             print prefix.type[0].upper()
-            if prefix.match and ((invert and i not in selection) or (not invert and i in selection) or rename_all):
-                print prefix.node
-                print prefix.description
+            if prefix.match and ((invert and i not in selection) or (not invert and i in selection) or remove_all):
+                print prefix.node, prefix.description # Debug, Remove before finalizing code
                 print "Removing prefix %s..." % prefix.display_prefix
                 prefix.remove(recursive=True)
 
