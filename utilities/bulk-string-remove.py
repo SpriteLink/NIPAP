@@ -131,15 +131,24 @@ def remove(pattern):
             sys.exit(1)
 
     for i, prefix in enumerate(prefix_list):
-
-        if prefix.match and ((invert and i not in selection) or (not invert and i in selection) or rename_all):
-            if prefix.node is not None:
+        # Removing Hosts:
+        if prefix.match and prefix.type[0].upper() == "H":
+            print prefix.type[0].upper()
+            if prefix.match and ((invert and i not in selection) or (not invert and i in selection) or rename_all):
                 print prefix.node
-            if prefix.description is not None:
                 print prefix.description
+                print "Removing prefix %s..." % prefix.display_prefix
+                prefix.remove()
 
-            print "Removing prefix %s..." % prefix.display_prefix
-            #prefix.remove(recursive=True)
+        # Removing Assignments:
+    for i, prefix in enumerate(prefix_list):
+        if prefix.match and prefix.type[0].upper() == "A":
+            print prefix.type[0].upper()
+            if prefix.match and ((invert and i not in selection) or (not invert and i in selection) or rename_all):
+                print prefix.node
+                print prefix.description
+                print "Removing prefix %s..." % prefix.display_prefix
+                prefix.remove(recursive=True)
 
 if __name__ == '__main__':
 
