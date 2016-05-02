@@ -79,7 +79,7 @@ def remove(pattern):
     print " done in %.1f seconds" % (t1 - t0)
 
     # Display list
-    print_pattern = "%-2s%-14s%-2s%-30s%-20s%s"
+    print_pattern = "%-2s%-14s%-2s%-40s%-20s%s"
     print "\n\nPrefixes to remove:"
     print print_pattern % ("", "VRF", "", "Prefix", "Node", "Description")
     i_match = 0
@@ -95,7 +95,7 @@ def remove(pattern):
             "-" if prefix.match else "",
             prefix.vrf.rt,
             prefix.type[0].upper(),
-            (("  " * prefix.indent) + prefix.display_prefix)[:min([ len(prefix.display_prefix) + 2*prefix.indent, 30 ])],
+            (("  " * prefix.indent) + prefix.display_prefix)[:min([ len(prefix.display_prefix) + 2*prefix.indent, 40 ])],
             (prefix.node or '')[:min([ len(prefix.node or ''), 20 ])],
             (prefix.description or '')[:min([ len(prefix.description or ''), 900 ])]
         )
@@ -133,18 +133,14 @@ def remove(pattern):
     # Remove Hosts first:
     for i, prefix in enumerate(prefix_list):
         if prefix.match and prefix.type[0].upper() == "H":
-            print prefix.type[0].upper()
             if prefix.match and ((invert and i not in selection) or (not invert and i in selection) or remove_all):
-                print prefix.node, prefix.description # DEBUG, Remove before finalizing code
                 print "Removing prefix %s..." % prefix.display_prefix
                 prefix.remove()
 
     # Remove Assignments if there are any:
     for i, prefix in enumerate(prefix_list):
         if prefix.match and prefix.type[0].upper() == "A":
-            print prefix.type[0].upper()
             if prefix.match and ((invert and i not in selection) or (not invert and i in selection) or remove_all):
-                print prefix.node, prefix.description # Debug, Remove before finalizing code
                 print "Removing prefix %s..." % prefix.display_prefix
                 prefix.remove(recursive=True)
 
