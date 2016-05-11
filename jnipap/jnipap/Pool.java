@@ -179,13 +179,7 @@ public class Pool extends Jnipap {
 		// extract data from result
 		HashMap ret = new HashMap();
 		ret.put("search_options", (Map)result.get("search_options"));
-
-		Object[] interpretation_result = (Object[])result.get("interpretation");
-		List ret_interpretation = new ArrayList();
-		for (int i = 0; i < interpretation_result.length; i++) {
-			ret_interpretation.add((Map)interpretation_result[i]);
-		}
-		ret.put("interpretation", ret_interpretation);
+		ret.put("interpretation", (Map)result.get("interpretation"));
 
 		ArrayList ret_pools = new ArrayList();
 		Object[] result_pools = (Object[])result.get("result");
