@@ -533,7 +533,7 @@ class NipapXMLRPC:
         try:
             res = self.nip.smart_search_pool(args.get('auth'),
                     args.get('query_string'), args.get('search_options') or {},
-                    args.get('extra_query', {}))
+                    args.get('extra_query'))
 
             # fugly cast from large numbers to string to deal with XML-RPC
             for pool in res['result']:
@@ -868,7 +868,9 @@ class NipapXMLRPC:
         """
 
         try:
-            return self.nip.smart_search_asn(args.get('auth'), args.get('query_string'), args.get('search_options') or {})
+            return self.nip.smart_search_asn(args.get('auth'),
+                args.get('query_string'), args.get('search_options') or {},
+                args.get('extra_query'))
         except (AuthError, NipapError) as exc:
             raise Fault(exc.error_code, str(exc))
 
