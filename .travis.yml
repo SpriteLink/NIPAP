@@ -48,7 +48,7 @@ install:
     # -- common operations to apt install and virtualenv -----------------------
     # install dependencies for building packages and build NIPAP debian packages
     - sudo apt-get update
-    - sudo apt-get install -qq -y --force-yes devscripts python-docutils debhelper dh-python
+    - sudo apt-get install -qq -y --force-yes devscripts python-docutils debhelper dh-python junit4
     # configure .nipaprc
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
     - chmod 0600 ~/.nipaprc
@@ -113,6 +113,8 @@ script:
     - nosetests nipaptest.py
     - nosetests test_cli.py
     - nosetests nipap-ro.py
+    - cd ../jnipap
+    - make test
 
 notifications:
     irc:
