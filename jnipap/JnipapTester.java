@@ -42,7 +42,7 @@ public class JnipapTester {
 		URL url;
 		try {
 			url = new URL("http://127.0.0.1:1337/RPC2");
-			this.connection = new Connection(url, "dev", "dev");
+			this.connection = new Connection(url, "unittest", "gottatest");
 			this.connection.authoritative_source = "test";
 		} catch (Exception e) {
 			fail("Operation resulted in " + e.getClass().getName() + " with message \"" + e.getMessage() + "\"");
