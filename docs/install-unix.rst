@@ -126,7 +126,7 @@ The '-t' option tells nipap-passwd to make the new user a 'trusted' user, that
 is a user which can authenticate against nipapd using one username but log all
 changes as made by another user. See the docs for the NIPAP authentication
 library for more information about this:
-http://spritelink.github.com/NIPAP/nipap/authlib.html
+http://nipap.readthedocs.io/en/stable/authlib.html
 
 Now we need to configure the web UI with the URI to the nipapd server. Edit
 /etc/nipap/nipap.conf and set the option 'xmlrpc_uri' under the section
