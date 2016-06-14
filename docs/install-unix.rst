@@ -75,6 +75,29 @@ earlier. Edit /etc/default/nipapd and set RUN=yes. Now you can go ahead and
 start nipapd by executing::
 
     /etc/init.d/nipapd start
+    
+Example of systemd (CentOS 7+):
+
+    [root@nipap ~]# cat /usr/lib/systemd/system/nipapd.service
+    [Unit]
+    Description=nipapd daemon
+    Documentation=man:nipapd(5)
+    After=network.target
+    [Service]
+    Type=forking
+    ExecStart=/usr/sbin/nipapd
+    PIDFile=/var/run/nipap/nipapd.pid
+    ExecStopPost=/usr/bin/echo $MAINPID
+    KillMode=process
+    Restart=on-failure
+    RestartSec=42s
+    [Install]
+    WantedBy=multi-user.target
+
+Start:
+
+    systemctl start nipapd
+    
 
 CLI configuration
 -----------------
