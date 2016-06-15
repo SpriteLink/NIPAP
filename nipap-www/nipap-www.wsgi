@@ -3,6 +3,7 @@
 #
 
 import os, sys
+sys.path.append('/path/to/nipap/NIPAP/nipap-www/')
 os.environ['PYTHON_EGG_CACHE'] = '/var/cache/nipap-www/eggs'
 
 from paste.deploy import loadapp
