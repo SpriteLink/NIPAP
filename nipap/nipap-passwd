@@ -80,7 +80,7 @@ if __name__ == '__main__':
             print "The user %s does not exist" % args.user
             sys.exit(2)
         af = nipap.authlib.AuthFactory()
-        auth = af.get_auth(options.username, options.password, "nipap", {})
+        auth = af.get_auth(args.user, args.password, "nipap", {})
         if not auth.authenticate():
             print "The password seems to be wrong"
             sys.exit(2)
