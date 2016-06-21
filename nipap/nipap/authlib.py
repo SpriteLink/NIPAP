@@ -669,6 +669,13 @@ class SqliteAuth(BaseAuth):
             Since username is used as primary key and we only have a single
             argument for it we can't modify the username right now.
         """
+        if 'password' in data:
+            # generate salt
+            char_set = string.ascii_letters + string.digits
+            data['pwd_salt'] = ''.join(random.choice(char_set) for x in range(8))
+            data['pwd_hash'] = self._gen_hash(data['password'], data['pwd_salt'])
+            del(data['password'])
+
         sql = "UPDATE user SET "
         sql += ', '.join("%s = ?" % k for k in sorted(data))
         sql += " WHERE username = ?"
