@@ -393,7 +393,8 @@ class LdapAuth(BaseAuth):
                 search_conn = self._ldap_conn
 
             res = search_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)), ['cn','memberOf'])
-            self.full_name = res[0][1]['cn'][0]
+            if res[0][1]['cn'][0] is not None:
+                self.full_name = res[0][1]['cn'][0].decode('utf-8')
             # check for ro_group membership if ro_group is configured
             if self._ldap_ro_group:
                 if self._ldap_ro_group in res[0][1].get('memberOf', []):
