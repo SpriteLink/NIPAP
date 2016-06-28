@@ -160,7 +160,7 @@ if sys.version_info[0] < 3:
 else:
     import xmlrpc.client as xmlrpclib
 
-__version__		= "0.28.4"
+__version__		= "0.29.0"
 __author__		= "Kristian Larsson, Lukas Garberg"
 __author_email__= "kll@tele2.net, lukas@spritelink.net"
 __copyright__	= "Copyright 2011, Kristian Larsson, Lukas Garberg"

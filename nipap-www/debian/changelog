@@ -1,3 +1,27 @@
+nipap-www (0.29.0-1) stable; urgency=medium
+
+  * Add search on prefix-length (#847)
+  * Add custom output colums for the CLI (#684)
+  * Add unicode support for whoisd (#808)
+  * Add utility script for bulk string replacements (#813)
+  * Add 'modify' support for nipap-passwd (#871)
+  * Fix Unicode/UTF-8 support for CLI (#841)
+  * Fix bash tab completion for dynamic data (#XXX)
+  * Fix backend modification of 0 entries (#843)
+  * Fix bash tab completion script errors (#711)
+  * Fix blocking of AVPs with empty name (#881)
+  * Fix psutil compatibility (#901)
+  * Fix nipap-passwd arg parsing (#929)
+  * Fix nipap-passwd modifying passwords (#931)
+  * Fix nipapd support for users with unicode chars (#922)
+  * Add Travis-CI test coverage for jnpipap (#918)
+  * Various documentation improvements (#712, #796, #919)
+  * Drop deb dependency on postgres (#894)
+  * Update CLI man page
+  * CSS fixes
+
+ -- Kristian Larsson <kll@spritelink.net>  Tue, 28 Jun 2016 13:14:40 +0200
+
 nipap-www (0.28.4-1) stable; urgency=medium
 
   * Fix prefix type automatic guessing so it doesn't override the input
