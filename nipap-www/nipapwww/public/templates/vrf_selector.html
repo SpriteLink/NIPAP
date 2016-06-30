@@ -1,6 +1,6 @@
-<div dropdown on-toggle="toggled(open)" is-open="popup_open" ng-click="$event.stopPropagation()">
-	<input type="button" class="btn btn-danger dropdown-toggle" name="prefix_vrf_btn" value="Change VRF" style="margin-left: 15px;">
-	<div class="dropdown-menu popup_menu selector" id="vrf_selector_menu">
+<div uib-dropdown on-toggle="toggled(open)" is-open="popup_open" ng-click="$event.stopPropagation()">
+	<input uib-dropdown-toggle type="button" class="btn btn-danger" name="prefix_vrf_btn" value="Change VRF" style="margin-left: 15px;">
+	<div uib-dropdown-menu class="popup_menu selector" id="vrf_selector_menu">
 		<h3>Select VRF</h3>
 		<div class="selector_filterbar">
 			<input type="text" class="selector_search_string" name="vrf_search_string" ng-model="query_string" ng-change="vrfQueryStringChanged()">

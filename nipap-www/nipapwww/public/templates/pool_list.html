@@ -28,16 +28,16 @@
 	<tbody class="listing">
 		<tr ng-repeat="pool in pools | filter:query" id="pool_row{{ pool.id }}" data-pool-id="{{pool.id}}">
 			<td style="padding-left: 30px;">{{ pool.name }}</td>
-			<td><img ng-if="pool.tags|notEmpty" src="/images/tag-16.png" tooltip-html-unsafe="{{pool.tags|popoverFormatTags}}"></td>
+			<td><img ng-if="pool.tags|notEmpty" src="/images/tag-16.png" uib-tooltip-html="pool.tags|popoverFormatTags"></td>
 			<td>{{ pool.description }}</td>
 			<td>{{ pool.default_type }}</td>
 			<td>{{ pool.ipv4_default_prefix_length || '-' }}&nbsp;/&nbsp;{{ pool.ipv6_default_prefix_length || '-' }}</td>
 			<td style="padding-right: 0;">
-				<div class="dropdown">
-					<div class="dropdown-toggle minibutton">
+				<div uib-dropdown>
+					<div uib-dropdown-toggle class="minibutton">
 						<div class="popup_button_icon">&nbsp;</div>
 					</div>
-					<div class="dropdown-menu popup_menu">
+					<div uib-dropdown-menu class="popup_menu">
 						<h3>Pool</h3>
 						<a href="/ng/pool#/pool/edit/{{ pool.id }}">Edit</a>
 						<a href="#" ng-click="poolConfirmRemove($event, pool)">Remove</a>
@@ -45,7 +45,7 @@
 				</div>
 			</td>
 			<td>
-				<a type="button" class="btn btn-xs btn-success" href="/ng/prefix#/prefix/add/from-pool/{{ pool.id }}" tooltip="Add a prefix from this pool">
+				<a type="button" class="btn btn-xs btn-success" href="/ng/prefix#/prefix/add/from-pool/{{ pool.id }}" uib-tooltip="Add a prefix from this pool">
 					<span class="glyphicon glyphicon-cloud-download"></span>
 				</a>
 			</td>

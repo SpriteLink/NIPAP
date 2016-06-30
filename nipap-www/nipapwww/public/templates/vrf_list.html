@@ -24,14 +24,14 @@
 		<tr ng-repeat="vrf in vrfs | filter:query">
 			<td style="padding-left: 30px;">{{ vrf.rt }}</a></td>
 			<td>{{ vrf.name }}</td>
-			<td><img ng-if="vrf.tags|notEmpty" src="/images/tag-16.png" tooltip-html-unsafe="{{vrf.tags|popoverFormatTags}}"></td>
+			<td><img ng-if="vrf.tags|notEmpty" src="/images/tag-16.png" uib-tooltip-html="vrf.tags|popoverFormatTags"></td>
 			<td>{{ vrf.description }}</td>
 			<td>
-				<div class="dropdown">
-					<div class="dropdown-toggle minibutton">
+				<div uib-dropdown>
+					<div uib-dropdown-toggle class="minibutton">
 						<div class="popup_button_icon">&nbsp;</div>
 					</div>
-					<div class="dropdown-menu popup_menu">
+					<div uib-dropdown-menu class="popup_menu">
 						<h3>VRF</h3>
 						<a href="/ng/vrf#/vrf/edit/{{ vrf.id }}">Edit</a>
 						<a href="#" ng-click="vrfConfirmRemove($event, vrf)">Remove</a>

@@ -14,7 +14,7 @@ var nipapApp = angular.module('nipapApp', [
 /*
  * App configuration
  */
-nipapApp.config(function($routeProvider, $tooltipProvider) {
+nipapApp.config(function($routeProvider, $uibTooltipProvider) {
 
 		/*
 		 * Define application routes
@@ -56,7 +56,7 @@ nipapApp.config(function($routeProvider, $tooltipProvider) {
 		/*
 		 * Default options for tooltips
 		 */
-		$tooltipProvider
+		$uibTooltipProvider
 			.options({
 				'placement': 'bottom',
 				'popupDelay': 100

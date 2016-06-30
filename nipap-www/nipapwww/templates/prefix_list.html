@@ -123,11 +123,11 @@
 <div id="search_box">
 	{{ nipap.prefix_search_form(c.search_opt_parent, c.search_opt_child) }}
 	<div style="position: absolute; right: 20px; top: 55px;">
-        <div class="btn-group" dropdown>
-            <button type="button" class="btn btn-success dropdown-toggle">
+        <div uib-dropdown class="btn-group">
+            <button uib-dropdown-toggle type="button" class="btn btn-success">
                 Add prefix <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu" style="min-width: 120px">
+            <ul uib-dropdown-menu class="dropdown-menu" style="min-width: 120px">
                 <li><a href="/ng/prefix#/prefix/add/manual">Manual</a></li>
                 <li><a href ng-click="showAddPrefixFromPoolNotice()">From pool</a></li>
                 <li><a href ng-click="showAddPrefixFromPrefixNotice()">From prefix</a></li>

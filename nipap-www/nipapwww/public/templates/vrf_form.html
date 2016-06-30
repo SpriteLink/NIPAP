@@ -24,7 +24,7 @@ VRF DATA
 						<input type="text"
 							name="rt"
 							ng-model="vrf.rt"
-							tooltip="VRF RT (e.g. 123:4567 or 192.0.2.12:345).">
+							uib-tooltip="VRF RT (e.g. 123:4567 or 192.0.2.12:345).">
 					</dd>
 				</dl>
 			</div>
@@ -34,13 +34,13 @@ VRF DATA
 			<div class="option">
 				<dl>
 					<dt>
-						Name <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
+						Name <span class="required" uib-tooltip="This field is required, please fill in! :-)">*</span>
 					</dt>
 					<dd>
 						<input type="text"
 							name="name"
 							ng-model="vrf.name"
-							tooltip="Name of the VRF. Try to use less than 20 characters and no spaces.">
+							uib-tooltip="Name of the VRF. Try to use less than 20 characters and no spaces.">
 					</dd>
 				</dl>
 			</div>
@@ -57,7 +57,7 @@ VRF DATA
 							style="width: 80%;"
 							name="description"
 							ng-model="vrf.description"
-							tooltip="Enter a short description of what this VRF is used for.">
+							uib-tooltip="Enter a short description of what this VRF is used for.">
 					</dd>
 				</dl>
 			</div>

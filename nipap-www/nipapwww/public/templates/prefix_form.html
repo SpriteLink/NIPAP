@@ -13,10 +13,10 @@ PREFIX DATA
 				<div class="option" ng-show="method == 'edit' || method == 'add' && prefix_alloc_method == 'manual'" id="prefix-row">
 					<dl>
 						<dt>
-							Prefix <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
+							Prefix <span class="required" uib-tooltip="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
-							<input type="text" name="prefix_prefix" tooltip="The prefix, i.e. 192.0.2.16/28" ng-model="prefix.prefix" ng-required="prefix_alloc_method == 'manual'">
+							<input type="text" name="prefix_prefix" uib-tooltip="The prefix, i.e. 192.0.2.16/28" ng-model="prefix.prefix" ng-required="prefix_alloc_method == 'manual'">
 						</dd>
 					</dl>
 				</div>
@@ -26,7 +26,7 @@ PREFIX DATA
 				<div class="option">
 					<dl>
 						<dt>
-							Type <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
+							Type <span class="required" uib-tooltip="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
 						<span id="default_prefix_type" style="cursor: pointer;" ng-show="method == 'add' && (prefix_alloc_method == 'from-pool' && display_type_input_pool === false)" ng-click="display_type_input_pool = true">
@@ -37,29 +37,29 @@ PREFIX DATA
 								id="radio-prefix-type-reservation"
 								name="prefix_type"
 								value="reservation"
-								tooltip="Reservation are for reserving a network for later assigning as specific assignments"
+								uib-tooltip="Reservation are for reserving a network for later assigning as specific assignments"
 								ng-model="prefix.type"
 								ng-disabled="(method == 'edit' && prefix.type == 'host') || (method == 'add' && from_prefix.type == 'assignment')">
-							<label for="radio-prefix-type-reservation" tooltip="Reservation are for reserving a network for later assigning as specific assignments">
+							<label for="radio-prefix-type-reservation" uib-tooltip="Reservation are for reserving a network for later assigning as specific assignments">
 								Reservation
 							</label>
 							<input type="radio"
 								id="radio-prefix-type-assignment"
 								name="prefix_type"
 								value="assignment"
-								tooltip="A single subnet, for a specific use in the network"
+								uib-tooltip="A single subnet, for a specific use in the network"
 								ng_model="prefix.type"
 								ng-disabled="(method == 'edit' && prefix.type == 'host') || (method == 'add' && from_prefix.type == 'assignment')">
-							<label for="radio-prefix-type-assignment" tooltip="A single subnet, for a specific use in the network">
+							<label for="radio-prefix-type-assignment" uib-tooltip="A single subnet, for a specific use in the network">
 								Assignment
 							</label>
 							<input type="radio" id="radio-prefix-type-host"
 								name="prefix_type"
 								value="host"
-								tooltip="A single host within an assignment"
+								uib-tooltip="A single host within an assignment"
 								ng_model="prefix.type"
 								ng-disabled="(method == 'edit' && prefix.type != 'host') || (method == 'add' && from_prefix.type == 'assignment' || from_prefix.type == 'reservation')">
-							<label for="radio-prefix-type-host" tooltip="A single host within an assignment">
+							<label for="radio-prefix-type-host" uib-tooltip="A single host within an assignment">
 								Host
 							</label>
 							<a href="javascript:void(0);" onclick="displayPrefixTypeHelp();" style="font-size: 10px; padding-left: 30px;">help on prefix types?</a>
@@ -112,7 +112,7 @@ PREFIX DATA
 				<div class="option">
 					<dl>
 						<dt>
-						Status <span class="required" tooltip="This field is required, please fill in! :-)">*</span>
+						Status <span class="required" uib-tooltip="This field is required, please fill in! :-)">*</span>
 						</dt>
 						<dd>
 						<select id="prefix_status" ng-model="prefix.status">
@@ -134,7 +134,7 @@ PREFIX DATA
 						<dd>
 						<div class="col-md-6" style="padding: 0px">
 							<p class="input-group">
-							<input type="text" class="form-control input-sm" datepicker-popup="yyyy-MM-dd HH:mm:ss" ng-model="prefix.expires" is-open="$parent.dpOpened" starting-day="1" close-text="Close" />
+							<input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd HH:mm:ss" ng-model="prefix.expires" is-open="$parent.dpOpened" starting-day="1" close-text="Close" />
 							<span class="input-group-btn">
 								<button type="button" class="btn btn-sm btn-default" ng-click="dpOpen($event)"><i class="glyphicon glyphicon-calendar"></i></button>
 							</span>
@@ -152,7 +152,7 @@ PREFIX DATA
 						Description
 						</dt>
 						<dd>
-							<input type="text" name="prefix_description" style="width: 80%;" tooltip="A brief description of the prefix." ng-model="prefix.description">
+							<input type="text" name="prefix_description" style="width: 80%;" uib-tooltip="A brief description of the prefix." ng-model="prefix.description">
 						</dd>
 					</dl>
 				</div>
@@ -205,7 +205,7 @@ PREFIX DATA
 							Node
 						</dt>
 						<dd>
-							<input type="text" name="prefix_node" tooltip="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured." ng-model="prefix.node" ng-disabled="!enableNodeInput(prefix.prefix, prefix_alloc_method, prefix.type, prefix_length, prefix_family)">
+							<input type="text" name="prefix_node" uib-tooltip="Name of the node, typically the hostname or FQDN of the node (router/switch/host) on which the address is configured." ng-model="prefix.node" ng-disabled="!enableNodeInput(prefix.prefix, prefix_alloc_method, prefix.type, prefix_length, prefix_family)">
 						</dd>
 					</dl>
 				</div>
@@ -218,7 +218,7 @@ PREFIX DATA
 							Country
 						</dt>
 						<dd>
-							<input type="text" name="prefix_country" size=3 tooltip="Two-letter country code according to ISO-3166-1" ng-model="prefix.country">
+							<input type="text" name="prefix_country" size=3 uib-tooltip="Two-letter country code according to ISO-3166-1" ng-model="prefix.country">
 						</dd>
 					</dl>
 				</div>

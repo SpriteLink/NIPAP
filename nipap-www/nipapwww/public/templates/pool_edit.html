@@ -137,11 +137,11 @@
 						<td>{{ prefix.display_prefix }}</td>
 						<td>{{ prefix.description }}</td>
 						<td>
-							<div class="dropdown">
-								<div class="dropdown-toggle minibutton">
+							<div uib-dropdown>
+								<div uib-dropdown-toggle class="minibutton">
 									<div class="popup_button_icon">&nbsp;</div>
 								</div>
-								<div class="dropdown-menu popup_menu">
+								<div uib-dropdown-menu class="popup_menu">
 									<h3>Prefix</h3>
 									<a href="" ng-click="prefixConfirmRemove($event, prefix)">Remove</a>
 								</div>

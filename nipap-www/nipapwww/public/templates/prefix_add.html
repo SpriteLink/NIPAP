@@ -100,7 +100,7 @@ FROM-POOL
 						<br/>
 						<div id="length_row" ng-show="pool_use_default_preflen == false">
 							Use prefix-length:
-							<span class="required" tooltip="Pool is missing default prefix length for IPv{{ prefix_family }}, thus is this field required." ng-show="pool_has_default_preflen !== true">*&nbsp;</span>
+							<span class="required" uib-tooltip="Pool is missing default prefix length for IPv{{ prefix_family }}, thus is this field required." ng-show="pool_has_default_preflen !== true">*&nbsp;</span>
 							<input type="text" size=3 name="prefix_length_pool" ng-model="prefix_length">
 						</div>
 					</dd>
@@ -133,7 +133,7 @@ FROM-PREFIX
 					</dt>
 					<dd>
 						<input type="text" name="prefix_length_prefix" ng-show="from_prefix.type != 'assignment'" ng-model="prefix_length">
-                        <span tooltip="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /{{ prefix_length }}." ng-show="from_prefix.type == 'assignment'">/{{ prefix_length }}</span>
+                        <span uib-tooltip="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /{{ prefix_length }}." ng-show="from_prefix.type == 'assignment'">/{{ prefix_length }}</span>
 					</dd>
 				</dl>
 			</div>
