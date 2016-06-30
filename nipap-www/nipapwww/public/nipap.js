@@ -692,9 +692,10 @@ function showPrefix(prefix, reference, offset) {
 	if (prefix.comment == null || prefix.comment == '') {
 		prefix_comment.html("&nbsp;");
 	} else {
-		prefix_comment.prop('uib-tooltip', prefix.comment)
-		prefix_comment.prop('uib-tooltip-placement', 'bottom')
 		prefix_comment.html('<img src="/images/comments-16.png">');
+		prefix_comment.children().attr('uib-tooltip', prefix.comment);
+		prefix_comment.replaceWith(ng_compile(prefix_comment)(ng_scope));
+		ng_scope.$apply();
 	}
 
 	// Add prefix description
