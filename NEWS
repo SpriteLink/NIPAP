@@ -1,5 +1,7 @@
 Version 0.29.0 - Zeus
 ---------------------
+ * NOTE how this version drops the dependency on postgres which means that you
+   might need to install it yourself
  * Add search on prefix-length (#847)
  * Add custom output colums for the CLI (#684)
  * Add unicode support for whoisd (#808)
