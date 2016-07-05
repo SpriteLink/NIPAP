@@ -13,8 +13,10 @@ import com.tailf.cdb.*;
 import com.tailf.maapi.*;
 import com.tailf.ncs.annotations.*;
 import com.tailf.navu.*;
+import com.tailf.ncs.NcsMain;
 import com.tailf.ncs.ns.Ncs;
 
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.InetAddress;
 import java.net.URL;
@@ -182,7 +184,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 						try {
 							ConfValue redeployPath = maapi.getElem(th, req.path + "/redeploy-service");
 							LOGGER.info("redeploy-service: " + redeployPath);
-							redeploy(maapi, redeployPath + "/re-deploy");
+							redeploy(redeployPath + "/re-deploy");
 						} catch (Exception e) {
 						}
                     }
@@ -293,31 +295,68 @@ public class ConfigCdbSub implements ApplicationComponent {
         } 
     }
 
-
-
     // redeploy MUST be done in another thread, if not system
     // hangs, since the CDB subscriber cannot do its work
-    private void redeploy(Maapi m, String path) {
-        Redeployer r = new Redeployer(m, path);
+    private void redeploy(String path) {
+        Redeployer r = new Redeployer(path);
         Thread t = new Thread(r);
         t.start();
     }
 
     private class Redeployer implements Runnable {
         private String path;
+        private ConfKey k;
         private Maapi m;
+        private Socket s;
 
-        public Redeployer(Maapi m, String path) {
-            this.path = path; this.m = m;
+        public Redeployer(String path) {
+            this.path = path; this.k = k;
+
+            try {
+                s = new Socket(NcsMain.getInstance().getNcsHost(),
+                               NcsMain.getInstance().getNcsPort());
+                m = new Maapi(s);
+
+                m.startUserSession("admin",
+                                   m.getSocket().getInetAddress(),
+                                   "system",
+                                   new String[] {"admin"},
+                                   MaapiUserSessionFlag.PROTO_TCP);
+            } catch (Exception e) {
+                System.err.println("redeployer exception: "+e);
+            }
+
         }
 
         public void run() {
             try {
+                // must be different, we want to redeploy owner if
+                // he exists
+                int tid = m.startTrans(Conf.DB_RUNNING, Conf.MODE_READ);
+                System.err.println("invoking redeploy on "+path);
+
+                int counter = 0;
+                while (true) {
+                  Thread.sleep(50);
+                  if (m.exists(tid, path))
+                    break;
+                  if (counter++ == 40) {
+                    break;
+                  }
+                  Thread.sleep(1000);
+                }
+
                 m.requestAction(new ConfXMLParam[] {},
-                        path);
+                                path+"/reactive-re-deploy");
+                try {
+                    m.finishTrans(tid);
+                }
+                catch (Throwable ignore) {
+                }
+                s.close();
             } catch (Exception e) {
-                LOGGER.error("error in re-deploy", e);
-                throw new RuntimeException("error in re-deploy", e);
+                LOGGER.error("error in reactive-re-deploy: "+path, e);
+                return;
             }
         }
     }
