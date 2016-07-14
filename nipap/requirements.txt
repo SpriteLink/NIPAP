@@ -15,7 +15,7 @@ pyparsing==2.1.5
 python-dateutil==2.5.3
 # optional dependency on ldap
 #python-ldap==2.4.19
-pytz==2016.6
+pytz==2016.6.1
 pysqlite==2.8.2
 tornado==4.3
 wsgiref==0.1.2
