@@ -22,7 +22,7 @@ if [ "$RET" = "true" ]; then
 	# check if there is already a www user configured in the
 	# configuration file and use that username for $WWW_USER
 	if [ -e /etc/nipap/nipap.conf ]; then
-		USER=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/\(.*\)@\?[^:]*:.*@.*/\1/'`
+		USER=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/\([^@]*\)@\?[^:]*:.*@.*/\1/'`
 		PASS=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/.*@\?[^:]*:\(.*\)@.*/\1/'`
 		if [ "$USER" != "" ] && [ "$PASS" != "" ]; then
 			WWW_USER=$USER
