@@ -3307,11 +3307,14 @@ class Nipap:
         if 'max_result' not in search_options:
             search_options['max_result'] = 50
         else:
-            try:
-                search_options['max_result'] = int(search_options['max_result'])
-            except (ValueError, TypeError):
-                raise NipapValueError('Invalid value for option' +
-                    ''' 'max_result'. Only integer values allowed.''')
+            if search_options['max_result'] in (False, None):
+                search_options['max_result'] = None
+            else:
+                try:
+                    search_options['max_result'] = int(search_options['max_result'])
+                except (ValueError, TypeError):
+                    raise NipapValueError('Invalid value for option' +
+                        ''' 'max_result'. Only integer values allowed.''')
 
         # offset
         if 'offset' not in search_options:
@@ -3370,6 +3373,11 @@ class Nipap:
         else:
             where_parent_prefix = ''
             left_join = ''
+
+        if search_options['max_result'] is None:
+            limit_string = ""
+        else:
+            limit_string = "LIMIT %d" % (search_options['max_result'] + search_options['offset'])
 
         display = '(p1.prefix << p2.display_prefix OR p2.prefix <<= p1.prefix %s) OR (p2.prefix >>= p1.prefix %s)' % (where_parents, where_children)
 
@@ -3472,7 +3480,7 @@ class Nipap:
                     SELECT inp.id FROM ip_net_plan AS inp JOIN ip_net_vrf AS vrf ON inp.vrf_id = vrf.id LEFT JOIN ip_net_pool AS pool ON inp.pool_id = pool.id
                         WHERE """ + where + """
                     ORDER BY vrf_rt_order(vrf.rt) NULLS FIRST, prefix
-                    LIMIT """ + str(int(search_options['max_result']) + int(search_options['offset'])) + """
+                    """ + limit_string + """
                 )
             )
             JOIN ip_net_vrf AS vrf ON (p1.vrf_id = vrf.id)
