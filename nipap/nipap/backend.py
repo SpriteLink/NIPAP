@@ -3503,8 +3503,9 @@ class Nipap:
             # LIMIT in Python. There is still a LIMIT on the inner query which
             # together with the OFFSET, which is still performed in PostgreSQL,
             # yields a rather small result set and thus high speed.
-            if len(result) >= int(search_options['max_result']):
-                break
+            if search_options['max_result'] not in (False, None):
+                if len(result) >= int(search_options['max_result']):
+                    break
 
         return { 'search_options': search_options, 'result': result }
 
