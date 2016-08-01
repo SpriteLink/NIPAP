@@ -1768,7 +1768,7 @@ function collapseClick(id) {
 		search_q.include_children = false;
 		search_q.children_depth = 1;
 		search_q.parents_depth = 0;
-		search_q.max_result = 1000;
+		search_q.max_result = false;
 		search_q.offset = 0;
 		delete search_q.indent;
 

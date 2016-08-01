@@ -438,7 +438,10 @@ class XhrController(BaseController):
             else:
                 search_options['include_neighbors'] = False
         if 'max_result' in request.params:
-            search_options['max_result'] = request.params['max_result']
+            if request.params['max_result'] == 'false':
+                search_options['max_result'] = False
+            else:
+                search_options['max_result'] = request.params['max_result']
         if 'offset' in request.params:
             search_options['offset'] = request.params['offset']
         if 'parent_prefix' in request.params:
