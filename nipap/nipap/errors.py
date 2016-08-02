@@ -65,3 +65,35 @@ class NipapDuplicateError(NipapError):
     """
 
     error_code = 1400
+
+
+class NipapDatabaseError(NipapError):
+    """ Database related errors
+    """
+
+
+class NipapDatabaseNonExistentError(NipapDatabaseError):
+    """ The nipap database does not exist
+    """
+
+
+class NipapDatabaseSchemaError(NipapDatabaseError):
+    """ Something wrong withe the database schema
+    """
+
+
+class NipapDatabaseNoVersionError(NipapDatabaseSchemaError):
+    """ The nipap database schema version number is missing
+
+        This is assumed to mean the database is empty
+    """
+
+
+class NipapDatabaseWrongVersionError(NipapDatabaseSchemaError):
+    """ The nipap database schema is of the wrong version
+    """
+
+
+class NipapDatabaseMissingExtensionError(NipapDatabaseSchemaError):
+    """ The nipap database is missing an extension
+    """

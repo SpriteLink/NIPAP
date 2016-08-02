@@ -16,6 +16,7 @@ import tornado.process
 from tornado.ioloop import IOLoop
 
 from nipap.nipapconfig import NipapConfig, NipapConfigError
+from nipap.errors import *
 from nipap.backend import NipapError
 
 import psutil
@@ -75,6 +76,8 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='NIPAP backend server')
+    parser.add_argument('--auto-install-db', action='store_true', help='automatically install db schema')
+    parser.add_argument('--auto-upgrade-db', action='store_true', help='automatically upgrade db schema')
     parser.add_argument('-d', '--debug', action='store_true', dest='debug', help='enable debugging')
     parser.add_argument('-f', '--foreground', action='store_true', dest='foreground', help='run in foreground and log to stdout')
     parser.add_argument('-l', '--listen', type=str, metavar='ADDRESS', help='listen to IPv4/6 ADDRESS')
@@ -163,21 +166,18 @@ if __name__ == '__main__':
 
     from nipap.backend import Nipap
     try:
-        nip = Nipap()
+        nip = Nipap(args.auto_install_db, args.auto_upgrade_db)
+    except NipapDatabaseSchemaError as exc:
+        print >> sys.stderr, "ERROR:", str(exc)
+        print >> sys.stderr, "HINT: You can automatically install required extensions and the nipap schema with --auto-install-db"
+        sys.exit(1)
     except NipapError as exc:
-        print >> sys.stderr, str(exc)
+        print >> sys.stderr, "ERROR:", str(exc)
         sys.exit(1)
 
     if args.dbversion:
         print "nipap db schema:", nip._get_db_version()
         sys.exit(0)
-
-    # check nipap database schema version
-    import nipap
-    current_db_version = nip._get_db_version()
-    if current_db_version != nipap.__db_version__:
-        print >> sys.stderr, "NIPAP PostgreSQL database is outdated. Schema version '%s' is required to run but you are using '%s'" % (nipap.__db_version__, current_db_version)
-        sys.exit(1)
 
     # check local auth db version
     from nipap import authlib
@@ -192,7 +192,6 @@ if __name__ == '__main__':
         print >> sys.stderr, "Error checking version of Sqlite database for local auth: %s" % e
         sys.exit(1)
     del a
-
 
     if not cfg.getboolean('nipapd', 'foreground'):
         import nipap.daemon

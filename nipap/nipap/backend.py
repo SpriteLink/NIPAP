@@ -201,6 +201,8 @@ import IPy
 from errors import *
 import authlib
 import smart_parsing
+import db_schema
+import nipap
 
 # support multiple versions of parsedatetime
 try:
@@ -633,7 +635,7 @@ class Nipap:
     _con_pg = None
     _curs_pg =  None
 
-    def __init__(self):
+    def __init__(self, auto_install_db=False, auto_upgrade_db=False):
         """ Constructor.
 
             Creates database connections n' stuff, yo.
@@ -644,6 +646,9 @@ class Nipap:
 
         from nipapconfig import NipapConfig
         self._cfg = NipapConfig()
+
+        self._auto_install_db = auto_install_db
+        self._auto_upgrade_db = auto_upgrade_db
 
         self._connect_db()
 
@@ -758,17 +763,53 @@ class Nipap:
                 del(db_args[key])
 
         # Create database connection
-        try:
-            self._con_pg = psycopg2.connect(**db_args)
-            self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-            self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            self._register_inet()
-            psycopg2.extras.register_hstore(self._con_pg, globally=True, unicode=True)
-        except psycopg2.Error as exc:
-            self._logger.error("pgsql: %s" % exc)
-            raise NipapError("Backend unable to connect to database")
-        except psycopg2.Warning as warn:
-            self._logger.warning('pgsql: %s' % warn)
+        while True:
+            try:
+                self._con_pg = psycopg2.connect(**db_args)
+                self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+                self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                self._register_inet()
+                psycopg2.extras.register_hstore(self._con_pg, globally=True, unicode=True)
+            except psycopg2.Error as exc:
+                if re.search("database.*does not exist", str(exc)):
+                    raise NipapDatabaseNonExistentError("Database '%s' does not exist" % db_args['database'])
+                # no hstore extension, assume empty db (it wouldn't work
+                # otherwise) and do auto upgrade?
+                if re.search("hstore type not found in the database", str(exc)):
+                    # automatically install if auto-install is enabled
+                    if self._auto_install_db:
+                        self._db_install()
+                        continue
+                    raise NipapDatabaseMissingExtensionError("hstore extension not found in the database")
+
+                self._logger.error("pgsql: %s" % exc)
+                raise NipapError("Backend unable to connect to database")
+            except psycopg2.Warning as warn:
+                self._logger.warning('pgsql: %s' % warn)
+
+            # check db version
+            try:
+                current_db_version = self._get_db_version()
+            except NipapDatabaseNoVersionError as exc:
+                # if there's no db schema version we assume the database is
+                # empty...
+                if self._auto_install_db:
+                    # automatically install schema?
+                    self._db_install()
+                    continue
+                raise exc
+            except NipapError as exc:
+                self._logger.error(str(exc))
+                raise exc
+
+            if current_db_version != nipap.__db_version__:
+                if self._auto_upgrade_db:
+                    self._db_upgrade()
+                    continue
+                raise NipapDatabaseWrongVersionError("NIPAP PostgreSQL database is outdated. Schema version %s is required to run but you are using %s" % (nipap.__db_version__, current_db_version))
+
+            # if we reach this we should be fine and done
+            break
 
 
 
@@ -1053,7 +1094,7 @@ class Nipap:
         self._execute("SELECT description FROM pg_shdescription JOIN pg_database ON objoid = pg_database.oid WHERE datname = '%s'" % dbname)
         comment = self._curs_pg.fetchone()
         if comment is None:
-            raise NipapError("Could not find comment of psql database %s" % dbname)
+            raise NipapDatabaseNoVersionError("Could not find comment of psql database %s" % dbname)
 
         db_version = None
         m = re.match('NIPAP database - schema version: ([0-9]+)', comment[0])
@@ -1064,6 +1105,28 @@ class Nipap:
 
         return db_version
 
+
+
+    def _db_install(self):
+        """ Install nipap database schema
+        """
+        self._logger.info("Installing NIPAP database schemas into db")
+        self._execute(db_schema.ip_net)
+        self._execute(db_schema.functions)
+        self._execute(db_schema.triggers)
+
+
+
+    def _db_upgrade(self):
+        """ Upgrade nipap database schema
+        """
+        current_db_version = self._get_db_version()
+        self._execute(db_schema.functions)
+        for i in range(current_db_version, nipap.__db_version__):
+            self._logger.info("Upgrading DB schema:", i, "to", i+1)
+            upgrade_sql = db_schema.upgrade[i-1] # 0 count on array
+            self._execute(upgrade_sql)
+        self._execute(db_schema.triggers)
 
 
 
