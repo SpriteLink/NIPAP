@@ -5,12 +5,20 @@ Description: Start nipapd automatically?
  The NIPAP backend daemon, nipapd, can be automatically started on system
  startup by inclusion in the system startup scripts.
 
-Template: nipapd/autoconf
+Template: nipapd/database_host
+Type: string
+Default: localhost
+Description: Where is the PostgreSQL database running?
+ Enter the hostname, FQDN or IP address of the machine running (or that will be
+ running) the PostgreSQL database. Use 'localhost' if it's running on the local
+ machine.
+
+Template: nipapd/local_db_autoconf
 Type: boolean
 Default: false
 Description: Automatically set up the database for nipapd?
- The database structure for nipapd can be setup automatically by this
- installation.
+ You have entered that a local database should be used by nipapd. The database
+ structure for nipapd can be setup automatically by this installation.
  .
  A new PostgreSQL user (called 'nipap') will be created with a random password.
  The database structure (tables, functions, indices) for NIPAP will then be
@@ -20,17 +28,76 @@ Description: Automatically set up the database for nipapd?
  nipap.conf and so no further steps need to be taken to have a running NIPAP
  daemon.
 
-Template: nipapd/upgrade
+Template: nipapd/local_db_upgrade
 Type: boolean
 Default: false
-Description: Upgrade database structure to new version?
- You are upgrading from an older version of nipapd and an old version of the
- NIPAP database structure has been found. The installation can try to
- automatically upgrade to the latest version of the database structure.
+Description: Automatically upgrade database structure to latest version?
+ You are upgrading from an older version of nipapd which might mean that you
+ need to upgrade the database schema. nipapd can do this automatically on
+ startup, would you like to enable this functionality?
  .
  WARNING: While this is designed and tested to be completely automatic and
  migrate all data to the new version, there is always a risk involved. It is
  recommended to back up your NIPAP database before proceeding.
+
+Template: nipapd/local_db_not_installed
+Type: note
+Description: PostgreSQL is not installed
+ You have entered that a local database should be used but PostgreSQL does not
+ appear to be correctly installed. You can try to rerun the configuration of
+ nipapd using 'dpkg-reconfigure nipapd' after you have correctly installed
+ PostgreSQL.
+
+Template: nipapd/local_db_not_running
+Type: note
+Description: PostgreSQL is not running
+ You have entered that a local database should be used but PostgreSQL does not
+ appear to be running and it is thus not possible to determine whether the
+ nipap database structure has already been loaded or if it needs upgrading.
+ .
+ You can either perform any updates to the database structure manually or try
+ to rerun the configuration of nipapd using 'dpkg-reconfigure nipapd' after
+ PostgreSQL has been started again.
+
+Template: nipapd/remote_db_install
+Type: boolean
+Default: false
+Description: Automatically install database schema on startup?
+ You have entered that a remote database should be used by nipapd. You will
+ have to manually create a user for nipapd and create a database owned by that
+ user. Upon start of nipapd, it can automatically detect if the database
+ tables, functions and triggers are missing and install the required database
+ schema by itself. Would you like nipapd to automatically install the database
+ schema?
+ .
+ To manually create a user and database execute something along these lines on
+ your database server:
+ .
+     createuser -S -D -R -w nipap
+     psql -q -c "ALTER USER nipap ENCRYPTED PASSWORD 'secret'"
+     createdb -O nipap nipap
+     createlang -d nipap plpgsql
+     psql -q -c "CREATE EXTENSION citext"
+     psql -q -c "CREATE EXTENSION hstore"
+     psql -q -c "CREATE EXTENSION ip4r"
+ .
+ See the nipapd documentation and postgres documentation for more information.
+
+Template: nipapd/remote_db_upgrade
+Type: boolean
+Default: false
+Description: Automatically upgrade database schema?
+ You have entered that a remote database should be used by nipapd. Upon start,
+ nipapd can automatically detect the database schema version and upgrade to the
+ latest schema if necessary. Would you like nipapd to automatically detect and
+ upgrade database schema if necesary?
+ .
+ Note that database schema upgrades can take some time. It is usually on the
+ order of minutes but it ultimately depends on the size of your database.
+ .
+ WARNING: While this is designed and tested to be completely automatic and
+ migrate all data to the new version, there is always a risk involved. It is
+ recommended that you always back up your NIPAP database.
 
 Template: nipapd/sqlite_upgrade
 Type: boolean
@@ -39,21 +106,3 @@ Description: Upgrade Sqlite database for local auth ?
  You are upgrading from an older version of nipapd and an old version of the
  Sqlite databse for local auth has been found. The installation can try to
  automatically upgrade to the latest version of the database structure.
-
-Template: nipapd/postgres_not_installed
-Type: note
-Description: PostgreSQL is not installed
- Unable to determine that PostgreSQL is correctly installed. You can try to
- rerun the configuration of nipapd using 'dpkg-reconfigure nipapd' after you
- have correctly installed PostgreSQL.
-
-Template: nipapd/postgres_not_running
-Type: note
-Description: PostgreSQL is not running
- PostgreSQL does not appear to be running and it is thus not possible to
- determine whether the nipap database structure has already been loaded or if
- it needs upgrading.
- .
- You can either perform any updates to the database structure manually or try
- to rerun the configuration of nipapd using 'dpkg-reconfigure nipapd' after
- PostgreSQL has been started again.

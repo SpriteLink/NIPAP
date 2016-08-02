@@ -9,16 +9,13 @@ DB_USER='nipap'
 DB_PASS=`</dev/urandom tr -dc [:alpha:] | head -c16`
 DB_NAME='nipap'
 
-
 POSTGRES_INSTALLED=0
 POSTGRES_RUNNING=0
 NIPAP_DB_EXISTS=0
-NIPAP_DB_VERSION=0
-
-# the most current DB version and the one that we are about to install
-CURRENT_DB_VERSION=6
 
 # determine if postgres is installed
+# TODO: even with a local database we don't know if we have psql since nipapd
+#		doesn't depend on the postgresql package
 su postgres -c 'psql --version' > /dev/null 2>&1
 if [ $? -eq 0 ]; then
 	POSTGRES_INSTALLED=1
@@ -29,22 +26,35 @@ if [ $? -eq 0 ]; then
 		# does the NIPAP database exist?
 		if [ "`su postgres -c "psql -c '\l+'" | awk -F"|" '{ if ($1~/^ *nipap *$/) { gsub(/^ */, "", $1); gsub(/ *$/, "", $1); print $1 } }'`" = "nipap" ]; then
 			NIPAP_DB_EXISTS=1
-
-			# figure out version of db
-			DB_COMMENT=`su postgres -c "psql -c '\l+'" | awk -F"|" '{ if ($1~/^ *nipap *$/) { print $9 } }'`
-			echo "$DB_COMMENT" | grep "schema version: [0-9]\+$" > /dev/null 2>&1
-			if [ $? -eq 0 ]; then
-				# seems to be a DB comment with proper version
-				NIPAP_DB_VERSION=`echo $DB_COMMENT | sed 's/.*schema version: //'`
-			fi
 		fi
 	fi
 fi
 
+if [ -e "/etc/nipap/nipap.conf" ]; then
+	# recover password if we already have one
+	CONF_DB_PASS=`awk -F'=' '/db_pass/ { print $2 }' /etc/nipap/nipap.conf | awk '{ print $1 }'`
+	if [ -n "$CONF_DB_PASS" -a "$CONF_DB_PASS" != "papin" ]; then
+		DB_PASS=$CONF_DB_PASS
+	fi
+fi
 
+# get database host
+db_get nipapd/database_host
+DB_HOST=$RET
 
 case "$1" in
 	configure)
+		if [ ! -e "/etc/nipap/nipap.conf" ]; then
+			# update nipap.conf with database credentials
+			cat /etc/nipap/nipap.conf.dist | sed -e "s/#user *= *[^ ]\+/user = nipap/" -e "s/db_user *= *[^ ]\+/db_user = $DB_USER /" -e "s/db_name *= *[^ ]\+/db_name = $DB_NAME /" -e "s/db_pass *= *[^ ]\+/db_pass = $DB_PASS /" > /etc/nipap/nipap.conf
+		fi
+		# fill in db_host
+		if [ $DB_HOST = "localhost" ]; then
+			sed -e 's/db_host *= *[^ ]\+/db_host = ""/' -i /etc/nipap/nipap.conf
+		else
+			sed -e "s/db_host *= *[^ ]\+/db_host = $DB_HOST/" -i /etc/nipap/nipap.conf
+		fi
+
 		# create group / user for nipapd
 		if [ -z "`getent passwd nipap`" ]; then
 			adduser --quiet --system --group --no-create-home nipap
@@ -60,50 +70,55 @@ case "$1" in
 			update-rc.d nipapd remove >/dev/null 2>&1
 		fi
 
-		# if database isn't running
-		if [ $POSTGRES_RUNNING -eq 0 ]; then
-			# are we asked to upgrade?
-			db_get nipapd/upgrade
+		# local or remote db?
+		if [ "$DB_HOST" = "localhost" ]; then
+			# automatically do install?
+			db_get nipapd/local_db_autoconf
 			if [ "$RET" = "true" ]; then
-				echo "PostgreSQL is not running. Unable to upgrade the NIPAP database structure." >&2
+				sed -i -e 's/AUTO_INSTALL=.*/AUTO_INSTALL=yes/' /etc/default/nipapd
+			else
+				sed -i -e 's/AUTO_INSTALL=.*/AUTO_INSTALL=no/' /etc/default/nipapd
 			fi
 
-			# are we asked to automagically install?
-			db_get nipapd/autoconf
+			# automatically do upgrades?
+			db_get nipapd/local_db_upgrade
 			if [ "$RET" = "true" ]; then
-				echo "PostgreSQL is not running. Unable to load the NIPAP database structure." >&2
+				sed -i -e 's/AUTO_UPGRADE=.*/AUTO_UPGRADE=yes/' /etc/default/nipapd
+			else
+				sed -i -e 's/AUTO_UPGRADE=.*/AUTO_UPGRADE=no/' /etc/default/nipapd
+			fi
+
+		else
+			# automatically do install?
+			db_get nipapd/remote_db_install
+			if [ "$RET" = "true" ]; then
+				sed -i -e 's/AUTO_INSTALL=.*/AUTO_INSTALL=yes/' /etc/default/nipapd
+			else
+				sed -i -e 's/AUTO_INSTALL=.*/AUTO_INSTALL=no/' /etc/default/nipapd
+			fi
+
+			# automatically do upgrade?
+			db_get nipapd/remote_db_upgrade
+			if [ "$RET" = "true" ]; then
+				sed -i -e 's/AUTO_UPGRADE=.*/AUTO_UPGRADE=yes/' /etc/default/nipapd
+			else
+				sed -i -e 's/AUTO_UPGRADE=.*/AUTO_UPGRADE=no/' /etc/default/nipapd
+			fi
+		fi
+
+
+		# if database isn't running
+		if [ $POSTGRES_RUNNING -eq 0 ]; then
+			# are we asked to automagically install?
+			db_get nipapd/local_db_autoconf
+			if [ "$RET" = "true" ]; then
+				echo "PostgreSQL is not running (or it's running on another machine). Either start postgres locally or if postgres is running on another machine you will need to create the user and database manually." >&2
 			fi
 
 		else # db is running, let's load some db files or upgrade!
-			# upgrade!
-			if [ $NIPAP_DB_EXISTS -eq 1 ]; then
-				# should we do the upgrade dance?
-				db_get nipapd/upgrade
-				if [ "$RET" = "true" ]; then
-					# load latest NIPAP database functions
-					echo -n "Loading NIPAP SQL database functions..."
-					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1 && echo "DONE"
-
-					# iterate through and upgrade in steps of one version at a time
-					for FROM_VERSION in `seq ${NIPAP_DB_VERSION} $((${CURRENT_DB_VERSION}-1))`; do
-						TO_VERSION=$((${FROM_VERSION}+1))
-						PSQL_FILE="upgrade-${FROM_VERSION}-${TO_VERSION}.plsql"
-
-						echo -n "Upgrading NIPAP SQL database schema from ${FROM_VERSION} to ${TO_VERSION}, please be patient, this can take a while..."
-						su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/${PSQL_FILE}" postgres >/dev/null 2>&1 && echo "DONE"
-					done
-
-					# load latest NIPAP database triggers
-					echo -n "Loading NIPAP SQL database triggers..."
-					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/triggers.plsql" postgres >/dev/null 2>&1 && echo "DONE"
-
-					# reset the DB upgrade question
-					db_reset nipapd/upgrade
-				fi
-
-			else # no db, ie first time install!
+			if [ $NIPAP_DB_EXISTS -eq 0 ]; then # no db, ie first time install!
 				# first time setup
-				db_get nipapd/autoconf
+				db_get nipapd/local_db_autoconf
 				if [ "$RET" = "true" ]; then
 					# setup new user
 					su -c "createuser -S -D -R -w $DB_USER" postgres >/dev/null 2>&1
@@ -111,27 +126,15 @@ case "$1" in
 					# create database and install plpgsql
 					su -c "createdb -O $DB_USER $DB_NAME" postgres >/dev/null 2>&1
 					su -c "createlang -d $DB_NAME plpgsql" postgres >/dev/null 2>&1
-					# load ip4r
-					su -c "psql -q -d $DB_NAME -c 'CREATE EXTENSION ip4r'" postgres >/dev/null 2>&1
-					# load NIPAP database structure
-					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/ip_net.plsql" postgres >/dev/null 2>&1
-					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/functions.plsql" postgres >/dev/null 2>&1
-					su -c "psql -q -d $DB_NAME -f /usr/share/nipap/sql/triggers.plsql" postgres >/dev/null 2>&1
-
-					# grant necessary privileges on tables, views, sequences and functions to NIPAP db user
-					su -c "psql -q -d $DB_NAME -c 'GRANT SELECT, UPDATE, INSERT, DELETE ON ALL TABLES IN SCHEMA public TO nipap'" postgres >/dev/null 2>&1
-					su -c "psql -q -d $DB_NAME -c 'GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public TO nipap'" postgres >/dev/null 2>&1
-					su -c "psql -q -d $DB_NAME -c 'GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO $DB_USER'" postgres >/dev/null 2>&1
-
-					# update nipap.conf with database credentials
-					cat /etc/nipap/nipap.conf.dist | sed -e "s/#user *= *[^ ]\+/user = nipap/" -e 's/db_host *= *[^ ]\+/db_host = ""/' -e "s/db_user *= *[^ ]\+/db_user = $DB_USER /" -e "s/db_name *= *[^ ]\+/db_name = $DB_NAME /" -e "s/db_pass *= *[^ ]\+/db_pass = $DB_PASS /" > /etc/nipap/nipap.conf
-
+					su -c "psql -q -d $DB_NAME -c \"CREATE EXTENSION citext\"" postgres >/dev/null 2>&1
+					su -c "psql -q -d $DB_NAME -c \"CREATE EXTENSION hstore\"" postgres >/dev/null 2>&1
+					su -c "psql -q -d $DB_NAME -c \"CREATE EXTENSION ip4r\"" postgres >/dev/null 2>&1
 				fi
-
-				# create local auth database
-				nipap-passwd create-database > /dev/null 2>&1
 			fi
 		fi
+
+		# create local auth database
+		nipap-passwd create-database > /dev/null 2>&1
 
 		# set ownership/permissions on the local auth db
 		chown -f :nipap /etc/nipap/local_auth.db

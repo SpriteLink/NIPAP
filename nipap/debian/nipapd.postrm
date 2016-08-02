@@ -8,5 +8,12 @@ if [ "$1" = "purge" ] ; then
 	deluser nipap > /dev/null 2>&1
 	delgroup nipap > /dev/null 2>&1
 
+	if [ -e /usr/share/debconf/confmodule ]; then
+		# Source debconf library.
+		. /usr/share/debconf/confmodule
+		# Remove my changes to the db.
+		db_purge
+	fi
+
 	exit 0
 fi
