@@ -2010,6 +2010,26 @@ class TestSmartParser(unittest.TestCase):
 
 
 
+    def test_prefix6(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('123:456')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'VRF RT',
+                    'string': '123:456',
+                    'interpretation': 'vrf_rt',
+                    'operator': 'equals',
+                },
+                'operator': 'equals',
+                'val1': 'vrf_rt',
+                'val2': u'123:456'
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
     def test_vrf1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
