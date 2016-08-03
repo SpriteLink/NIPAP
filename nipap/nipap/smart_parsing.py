@@ -432,39 +432,17 @@ class PrefixSmartParser(SmartParser):
         elif part.getName() == 'ipv4_address':
             dictsql = {}
         elif part.getName() == 'vrf_rt':
-            self._logger.debug("Query part '" + part.vrf_rt[0] + "' interpreted as VRF RT")
-            # TODO: enable this, our fancy new interpretation
+            self._logger.debug("Query part '" + part.vrf_rt + "' interpreted as VRF RT")
             dictsql = {
                     'interpretation': {
                         'attribute': 'VRF RT',
                         'interpretation': 'vrf_rt',
                         'operator': 'equals',
-                        'string': part.vrf_rt[0]
+                        'string': part.vrf_rt
                         },
                     'operator': 'equals',
                     'val1': 'vrf_rt',
-                    'val2': part.vrf_rt[0]
-                    }
-            # using old interpretation for the time being to make sure we align
-            # with old smart search interpreter
-            dictsql = {
-                    'interpretation': {
-                        'attribute': 'name or description',
-                        'interpretation': 'text',
-                        'operator': 'regex',
-                        'string': part.vrf_rt[0]
-                        },
-                    'operator': 'or',
-                    'val1': {
-                        'operator': 'regex_match',
-                        'val1': 'name',
-                        'val2': part.vrf_rt[0]
-                        },
-                    'val2': {
-                        'operator': 'regex_match',
-                        'val1': 'description',
-                        'val2': part.vrf_rt[0]
-                        }
+                    'val2': part.vrf_rt
                     }
 
         else:
