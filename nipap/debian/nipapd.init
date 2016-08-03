@@ -30,6 +30,15 @@ if [ "$RUN" != "yes" ]; then
 	exit 0
 fi
 
+ARGS=""
+if [ "$AUTO_INSTALL" = "yes" ]; then
+	ARGS="$ARGS --auto-install-db "
+fi
+
+if [ "$AUTO_UPGRADE" = "yes" ]; then
+	ARGS="$ARGS --auto-upgrade-db "
+fi
+
 running() {
 	# create dir for PID file if it doesn't exist
 	if [ ! -d "$PIDDIR" ]; then
@@ -54,7 +63,7 @@ case "$1" in
 			log_progress_msg "already running"
 			log_end_msg 0
 		else
-			if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE; then
+			if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE $ARGS; then
 				log_end_msg 0
 			else
 				log_end_msg 1
@@ -95,7 +104,7 @@ case "$1" in
 		RUNNING=$(running)
 		if [ -n "$RUNNING" ]; then
 			if start-stop-daemon --stop --pidfile $PIDFILE; then
-				if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE; then
+				if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE $ARGS; then
 					log_end_msg 0
 				else
 					log_end_msg 1
@@ -104,7 +113,7 @@ case "$1" in
 				log_end_msg 1
 			fi
 		else
-			if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE; then
+			if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE $ARGS; then
 				log_end_msg 0
 			else
 				log_end_msg 1

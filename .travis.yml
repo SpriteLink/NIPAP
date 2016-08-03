@@ -82,7 +82,7 @@ install:
     # bump version so that we know we are upgrading beyond what is installed
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then (echo -e 'Version 9999.9.9\n------------------\n * Test version for Travis-CI automatic upgrade test'; cat NEWS) > NEWS2; mv NEWS2 NEWS; make bumpversion; fi
     # populate answers to nipapd package install questions and reconfigure
-    - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then echo 'set nipapd/autoconf true' | sudo debconf-communicate; echo 'set nipapd/startup true' | sudo debconf-communicate; echo 'set nipapd/upgrade true' | sudo debconf-communicate; sudo dpkg-reconfigure nipapd; fi
+    - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then echo 'set nipapd/autoconf true' | sudo debconf-communicate; echo 'set nipapd/database_host localhost' | sudo debconf-communicate; echo 'set nipapd/local_db_autoconf true' | sudo debconf-communicate; echo 'set nipapd/startup true' | sudo debconf-communicate; echo 'set nipapd/local_db_upgrade true' | sudo debconf-communicate; sudo dpkg-reconfigure nipapd; fi
     # create local user for unittest and restart
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest; sudo /etc/init.d/nipapd restart; fi
     # if upgrade, add some data to the database that we can verify later
@@ -90,13 +90,9 @@ install:
     # build new NIPAP packages
     - if [ "$INSTALL" == "apt" ]; then make builddeb; fi
     # install the newly built nipap packages
-    - if [ "$INSTALL" == "apt" ]; then sudo dpkg -i nipap*.deb python-pynipap*.deb; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo dpkg --force-confnew -i nipap*.deb python-pynipap*.deb; fi
     # populate answers to nipapd package install questions and reconfigure
-    - if [ "$INSTALL" == "apt" ]; then echo "set nipapd/autoconf true" | sudo debconf-communicate; fi
-    - if [ "$INSTALL" == "apt" ]; then echo "set nipapd/startup true" | sudo debconf-communicate; fi
-    # reconfigure to do bootstrapping of db and stuff, unless we are trying
-    # upgrade in which case this will upgrade everything for us
-    - if [ "$INSTALL" == "apt" ]; then sudo dpkg-reconfigure nipapd; fi
+    - if [ "$INSTALL" == "apt" ]; then echo 'set nipapd/database_host localhost' | sudo debconf-communicate; echo 'set nipapd/local_db_autoconf true' | sudo debconf-communicate; echo 'set nipapd/startup true' | sudo debconf-communicate; echo 'set nipapd/local_db_upgrade true' | sudo debconf-communicate; sudo dpkg-reconfigure nipapd; fi
     # create local user for unittests
     - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"; fi
     - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"; fi

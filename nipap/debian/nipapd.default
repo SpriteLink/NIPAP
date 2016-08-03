@@ -1,3 +1,5 @@
 # defaults file for nipapd
 
 RUN=no
+AUTO_INSTALL=no
+AUTO_UPGRADE=no
