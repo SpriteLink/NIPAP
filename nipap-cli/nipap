@@ -82,8 +82,15 @@ if __name__ == '__main__':
         print >> sys.stderr, "HINT: chmod 0600 ~/.nipaprc"
         sys.exit(1)
 
+    # config defaults
+    cfg_defaults = {
+        'hostname': 'localhost',
+        'post': 1337,
+        'password': None,
+        'prefix_list_columns': None
+    }
     # read configuration
-    cfg = ConfigParser.ConfigParser({'prefix_list_columns': None })
+    cfg = ConfigParser.ConfigParser(cfg_defaults)
     cfg.read(userrcfile)
     nipap_cli.nipap_cli.cfg = cfg
 
