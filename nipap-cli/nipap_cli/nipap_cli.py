@@ -46,21 +46,32 @@ def setup_connection():
     """ Set up the global pynipap connection object
     """
 
-    # build XML-RPC URI
+    # get connection parameters, first from environment variables if they are
+    # defined, otherwise from .nipaprc
     try:
-        pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
-                'username': cfg.get('global', 'username'),
-                'password': cfg.get('global', 'password'),
-                'hostname': cfg.get('global', 'hostname'),
-                'port'    : cfg.get('global', 'port')
-            }
-    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
-        print >> sys.stderr, "Please define the username, password, hostname and port in your .nipaprc under the section 'global'"
+        con_params = {
+            'username': os.getenv('NIPAP_USERNAME') or cfg.get('global', 'username'),
+            'password': os.getenv('NIPAP_PASSWORD') or cfg.get('global', 'password'),
+            'hostname': os.getenv('NIPAP_HOST') or cfg.get('global', 'hostname'),
+            'port'    : os.getenv('NIPAP_PORT') or cfg.get('global', 'port')
+        }
+    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError) as exc:
+        print >> sys.stderr, "ERROR:", str(exc)
+        print >> sys.stderr, "HINT: Please define the username, password, hostname and port in your .nipaprc under the section 'global' or provide them through the environment variables NIPAP_HOST, NIPAP_PORT, NIPAP_USERNAME and NIPAP_PASSWORD."
         sys.exit(1)
+
+    # if we haven't got a password (from env var or config) we interactively
+    # prompt for one
+    if con_params['password'] is None:
+        import getpass
+        con_params['password'] = getpass.getpass()
+
+    # build XML-RPC URI
+    pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % con_params
 
     ao = pynipap.AuthOptions({
         'authoritative_source': 'nipap',
-        'username': os.getenv('NIPAP_IMPERSONATE_USERNAME') or cfg.get('global', 'username'),
+        'username': os.getenv('NIPAP_IMPERSONATE_USERNAME') or con_params['username'],
         'full_name': os.getenv('NIPAP_IMPERSONATE_FULL_NAME'),
         })
 
