@@ -71,7 +71,7 @@ def setup_connection():
 
     ao = pynipap.AuthOptions({
         'authoritative_source': 'nipap',
-        'username': os.getenv('NIPAP_IMPERSONATE_USERNAME') or cfg.get('global', 'username'),
+        'username': os.getenv('NIPAP_IMPERSONATE_USERNAME') or con_params['username'],
         'full_name': os.getenv('NIPAP_IMPERSONATE_FULL_NAME'),
         })
 
