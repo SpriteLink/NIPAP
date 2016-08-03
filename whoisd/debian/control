@@ -9,7 +9,7 @@ Package: nipap-whoisd
 Architecture: all
 Depends: ${misc:Depends}, python (>= 2.7), python-pynipap
 Description: Neat IP Address Planner
- The NIPAP whois daemon provides a whois-style interface for quering data in
+ The NIPAP whois daemon provides a whois-style interface for querying data in
  the NIPAP backend. It receives whois queries, translates these into search
  queries towards the nipapd backend and sends the result, with a whois style
  format, back to the client.
