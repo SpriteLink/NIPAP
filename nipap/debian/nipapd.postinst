@@ -15,7 +15,7 @@ NIPAP_DB_EXISTS=0
 
 # determine if postgres is installed
 # TODO: even with a local database we don't know if we have psql since nipapd
-#		doesn't depend on the postgresql package
+#		doesn't depend on the postgresql-client package
 su postgres -c 'psql --version' > /dev/null 2>&1
 if [ $? -eq 0 ]; then
 	POSTGRES_INSTALLED=1
