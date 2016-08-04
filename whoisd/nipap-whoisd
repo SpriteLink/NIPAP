@@ -134,19 +134,19 @@ class WhoisServer(SocketServer.StreamRequestHandler):
 
 if __name__ == '__main__':
 
-    import optparse
-    parser = optparse.OptionParser()
-    parser.add_option("--config", dest="config_file", type="string", default="/etc/nipap/nipap.conf", help="read configuration from file CONFIG_FILE")
-    parser.add_option("--foreground", action="store_true", help="run in foreground")
-    parser.add_option("--listen", metavar="ADDRESS", help="listen on IPv4/6 ADDRESS")
-    parser.add_option("--port", type=int, default=43, help="port to listen to")
-    parser.add_option("--pid-file", type="string", help="write a PID file to PID_FILE")
-    parser.add_option("--no-pid-file", action="store_true", default=False, help="turn off writing PID file (overrides config file)")
-    parser.add_option("--version", action="store_true", help="display version information and exit")
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", dest="config_file", default="/etc/nipap/nipap.conf", help="read configuration from file CONFIG_FILE")
+    parser.add_argument("--foreground", action="store_true", help="run in foreground")
+    parser.add_argument("--listen", metavar="ADDRESS", help="listen on IPv4/6 ADDRESS")
+    parser.add_argument("--port", help="port to listen to")
+    parser.add_argument("--pid-file", help="write a PID file to PID_FILE")
+    parser.add_argument("--no-pid-file", action="store_true", default=False, help="turn off writing PID file (overrides config file)")
+    parser.add_argument("--version", action="store_true", help="display version information and exit")
 
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
 
-    if options.version:
+    if args.version:
         print "nipap-whoisd version:", nipap_whoisd.__version__
         sys.exit(0)
 
@@ -161,28 +161,15 @@ if __name__ == '__main__':
         'group': None
     }
     cfg = ConfigParser.ConfigParser(default)
-    cfg.read(options.config_file)
+    cfg.read(args.config_file)
 
-    # Go through list of optparse options and set the config object to
-    # their values.
-    for val in parser.option_list:
-
-        if val.dest is None:
-            continue
-        # This is not very pretty... but how can I otherwise access elements
-        # in the options object from variables?
-        try:
-            if eval('options.' + val.dest) is None:
-                continue
-        except AttributeError:
-            continue
-
-        try:
-            cfg.set('whoisd', val.dest, str(eval("options." + val.dest)))
-        except ConfigParser.NoSectionError as exc:
-            print exc
-            print >> sys.stderr, "The configuration file contains errors:", exc
-            sys.exit(1)
+    # override config with command line args
+    if args.listen:
+        cfg.set('whoisd', 'listen', args.listen)
+    if args.port:
+        cfg.set('whoisd', 'port', args.port)
+    if args.pid_file:
+        cfg.set('whoisd', 'pid_file', args.pid_file)
 
     SocketServer.TCPServer.allow_reuse_address = True
     try:
@@ -210,11 +197,11 @@ if __name__ == '__main__':
             sys.exit(1)
 
     # daemonize
-    if not options.foreground:
+    if not args.foreground:
         nipap_whoisd.createDaemon()
 
     # pid file handling
-    if cfg.get('whoisd', 'pid_file') and not options.no_pid_file:
+    if cfg.get('whoisd', 'pid_file') and not args.no_pid_file:
         # need a+ to be able to read PID from file
         try:
             lf = open(cfg.get('whoisd', 'pid_file'), 'a+', 0)
