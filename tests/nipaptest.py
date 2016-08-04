@@ -2030,6 +2030,130 @@ class TestSmartParser(unittest.TestCase):
 
 
 
+    def test_prefix7(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('2001:1000::/32')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'prefix',
+                    'interpretation': 'IPv6 prefix',
+                    'operator': 'contained_within_equals',
+                    'string': '2001:1000::/32'
+                },
+                'operator': 'contained_within_equals',
+                'val1': 'prefix',
+                'val2': '2001:1000::/32'
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_prefix8(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('2001:1000:1234::/32')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'prefix',
+                    'interpretation': 'IPv6 prefix',
+                    'operator': 'contained_within_equals',
+                    'string': '2001:1000:1234::/32',
+                    'strict_prefix': '2001:1000::/32'
+                },
+                'operator': 'contained_within_equals',
+                'val1': 'prefix',
+                'val2': '2001:1000::/32'
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_prefix9(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('2001:1000::')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'prefix',
+                    'interpretation': 'IPv6 address',
+                    'operator': 'contains_equals',
+                    'string': '2001:1000::'
+                },
+                'operator': 'contains_equals',
+                'val1': 'prefix',
+                'val2': '2001:1000::'
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_prefix10(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('1.3.3.0')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'prefix',
+                    'interpretation': 'IPv4 address',
+                    'operator': 'contains_equals',
+                    'string': '1.3.3.0'
+                },
+                'operator': 'contains_equals',
+                'val1': 'prefix',
+                'val2': '1.3.3.0'
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_prefix11(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('1.3.3.0/16')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'prefix',
+                    'interpretation': 'IPv4 prefix',
+                    'operator': 'contained_within_equals',
+                    'string': '1.3.3.0/16',
+                    'strict_prefix': '1.3.0.0/16'
+                },
+                'operator': 'contained_within_equals',
+                'val1': 'prefix',
+                'val2': '1.3.0.0/16'
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
+    def test_prefix12(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        query = n._parse_prefix_query('1.3.3/16')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'prefix',
+                    'interpretation': 'IPv4 prefix',
+                    'operator': 'contained_within_equals',
+                    'string': '1.3.3/16',
+                    'strict_prefix': '1.3.0.0/16',
+                    'expanded': '1.3.3.0/16'
+                },
+                'operator': 'contained_within_equals',
+                'val1': 'prefix',
+                'val2': '1.3.0.0/16'
+                }
+
+        self.assertEqual(query, exp_query)
+
+
+
     def test_vrf1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()

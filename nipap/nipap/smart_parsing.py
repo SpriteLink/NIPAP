@@ -102,6 +102,10 @@ class SmartParser:
         comp_ipv4_address = Combine(ipv4_oct + ('.' + ipv4_oct*3))
         ipv4_address = Combine(ipv4_oct + ('.' + ipv4_oct*3)).setResultsName('ipv4_address')
 
+        # IPv6 address
+        ipv6_address = Regex("((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?").setResultsName('ipv6_address')
+        ipv6_prefix = Combine(ipv6_address + Regex("/(12[0-8]|1[01][0-9]|[0-9][0-9]?)")).setResultsName('ipv6_prefix')
+
         # VRF RTs of the form number:number
         vrf_rt = Combine((comp_ipv4_address | comp_number) + Literal(':') + comp_number).setResultsName('vrf_rt')
 
@@ -118,7 +122,7 @@ class SmartParser:
         # we work on atoms, which are single quoted strings, match expressions,
         # tags, VRF RT or simple words.
         # NOTE: Place them in order of most exact match first!
-        atom = Group(quoted_string | expression | tags | vrf_rt | boolean_op | word)
+        atom = Group(ipv6_prefix | ipv6_address | quoted_string | expression | tags | vrf_rt | boolean_op | word)
 
         enclosed = Forward()
         parens = nestedExpr('(', ')', content=enclosed)
@@ -186,7 +190,7 @@ class SmartParser:
                     dse = self._ast_to_dictsql(part)
             elif part.getName() == 'nested':
                 dse = self._ast_to_dictsql(part)
-            elif part.getName() in ('word', 'tag', 'vrf_rt'):
+            elif part.getName() in ('ipv6_prefix', 'ipv6_address', 'word', 'tag', 'vrf_rt'):
                 # dict sql expression
                 dse = self._string_to_dictsql(part)
                 self._logger.debug('string part: %s  => %s' % (part, dse))
@@ -429,8 +433,6 @@ class PrefixSmartParser(SmartParser):
                     'val2': part[0]['word']
                     }
 
-        elif part.getName() == 'ipv4_address':
-            dictsql = {}
         elif part.getName() == 'vrf_rt':
             self._logger.debug("Query part '" + part.vrf_rt + "' interpreted as VRF RT")
             dictsql = {
@@ -445,9 +447,43 @@ class PrefixSmartParser(SmartParser):
                     'val2': part.vrf_rt
                     }
 
+        elif part.getName() == 'ipv6_address':
+            self._logger.debug("Query part '" + part.ipv6_address + "' interpreted as IPv6 address")
+            dictsql = {
+                'interpretation': {
+                    'string': part.ipv6_address,
+                    'interpretation': 'IPv6 address',
+                    'attribute': 'prefix',
+                    'operator': 'contains_equals',
+                },
+                'operator': 'contains_equals',
+                'val1': 'prefix',
+                'val2': part.ipv6_address
+            }
+
+        elif part.getName() == 'ipv6_prefix':
+            self._logger.debug("Query part '" + part.ipv6_prefix[0] + "' interpreted as IPv6 prefix")
+
+            strict_prefix = str(IPy.IP(part.ipv6_prefix[0], make_net = True))
+            interp = {
+                    'string': part.ipv6_prefix[0],
+                    'interpretation': 'IPv6 prefix',
+                    'attribute': 'prefix',
+                    'operator': 'contained_within_equals'
+                }
+            if part.ipv6_prefix[0] != strict_prefix:
+                interp['strict_prefix'] = strict_prefix
+
+            dictsql = {
+                'interpretation': interp,
+                'operator': 'contained_within_equals',
+                'val1': 'prefix',
+                'val2': strict_prefix
+            }
+
         else:
-            # since it's difficult to parse IP addresses using pyparsing we do a
-            # bit of good ol parsing here
+            # since it's difficult to parse shortened IPv4 addresses (like 10/8)
+            # using pyparsing we do a bit of good ol parsing here
 
             if self._get_afi(part[0]) == 4 and len(part[0].split('/')) == 2:
                 self._logger.debug("Query part '" + part[0] + "' interpreted as prefix")
@@ -499,40 +535,6 @@ class PrefixSmartParser(SmartParser):
                     'val2': part[0]
                 }
 
-            # IPv6 prefix
-            elif self._get_afi(part[0]) == 6 and len(part[0].split('/')) == 2:
-                self._logger.debug("Query part '" + part[0] + "' interpreted as IPv6 prefix")
-                strict_prefix = str(IPy.IP(part[0], make_net = True))
-                interp = {
-                        'string': part[0],
-                        'interpretation': 'IPv6 prefix',
-                        'attribute': 'prefix',
-                        'operator': 'contained_within_equals'
-                    }
-                if part[0] != strict_prefix:
-                    interp['strict_prefix'] = strict_prefix
-
-                dictsql = {
-                    'interpretation': interp,
-                    'operator': 'contained_within_equals',
-                    'val1': 'prefix',
-                    'val2': strict_prefix
-                }
-
-            # IPv6 address
-            elif self._get_afi(part[0]) == 6:
-                self._logger.debug("Query part '" + part[0] + "' interpreted as IPv6 address")
-                dictsql = {
-                    'interpretation': {
-                        'string': part[0],
-                        'interpretation': 'IPv6 address',
-                        'attribute': 'prefix',
-                        'operator': 'contains_equals',
-                    },
-                    'operator': 'contains_equals',
-                    'val1': 'prefix',
-                    'val2': part[0]
-                }
             else:
                 # Description or comment
                 self._logger.debug("Query part '" + part[0] + "' interpreted as text")
