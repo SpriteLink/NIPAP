@@ -24,21 +24,21 @@ if __name__ == '__main__':
     cfg = ConfigParser.ConfigParser()
     cfg.read(os.path.expanduser('~/.nipaprc'))
 
-    import optparse
-    parser = optparse.OptionParser()
-    parser.add_option('--username', help="NIPAP backend username")
-    parser.add_option('--password', help="NIPAP backend password")
-    parser.add_option('--host', help="NIPAP backend host")
-    parser.add_option('--port', help="NIPAP backend port")
-    (options, args) = parser.parse_args()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--username', help="NIPAP backend username")
+    parser.add_argument('--password', help="NIPAP backend password")
+    parser.add_argument('--host', help="NIPAP backend host")
+    parser.add_argument('--port', help="NIPAP backend port")
+    args = parser.parse_args()
 
-    auth_uri = "%s:%s@" % (options.username or cfg.get('global', 'username'),
-            options.password or cfg.get('global', 'password'))
+    auth_uri = "%s:%s@" % (args.username or cfg.get('global', 'username'),
+            args.password or cfg.get('global', 'password'))
 
     xmlrpc_uri = "http://%(auth_uri)s%(host)s:%(port)s" % {
             'auth_uri'  : auth_uri,
-            'host'      : options.host or cfg.get('global', 'hostname'),
-            'port'      : options.port or cfg.get('global', 'port')
+            'host'      : args.host or cfg.get('global', 'hostname'),
+            'port'      : args.port or cfg.get('global', 'port')
             }
     pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
     pynipap.xmlrpc_uri = xmlrpc_uri
