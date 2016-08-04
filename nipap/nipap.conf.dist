@@ -46,10 +46,10 @@
 #group = nipap
 
 
-listen = 127.0.0.1              ; IP address to listen on.
+listen = {{LISTEN_ADDRESS}}      ; IP address to listen on.
 # The default is to listen to 127.0.0.1. Use 0.0.0.0 to listen on all addresses
 # (change requires restart).
-port = 1337                     ; XML-RPC listen port (change requires restart)
+port = {{LISTEN_PORT}}          ; XML-RPC listen port (change requires restart)
 
 foreground = false              ; run in foreground, won't work with init script
 debug = false                   ; enable debug logging
@@ -59,7 +59,7 @@ fork = 0                        ; number of forks
 # determine number of forks (same as number of CPUs). -1 = no forking, >0 =
 # number of forks
 
-syslog = true                   ; log to syslog
+syslog = {{SYSLOG}}             ; log to syslog
 
 pid_file = /var/run/nipap/nipapd.pid
 
@@ -70,7 +70,7 @@ pid_file = /var/run/nipap/nipapd.pid
 # backend database
 #
 
-db_host = localhost            ; database hostname
+db_host = {{DB_HOST}}           ; database hostname
 # The default is to connect via IP to localhost. This is preferred over
 # connecting over a UNIX socket as it supports MD5 authentication.
 # "" (ie, empty string without quotes), is a special case which means to
@@ -78,14 +78,14 @@ db_host = localhost            ; database hostname
 # using "ident" support so the user nipapd is run as needs to match with the
 # database username.
 
-db_port = 5432                  ; port that PostgreSQL listens to, defaults to
+db_port = {{DB_PORT}}           ; port that PostgreSQL listens to, defaults to
 # 5432, only applicable if connection is not over a UNIX socket
 
-db_name = nipap                 ; database name
-db_user = nipap                 ; database username
-db_pass = papin                 ; database password
+db_name = {{DB_NAME}}           ; database name
+db_user = {{DB_USERNAME}}       ; database username
+db_pass = {{DB_PASSWORD}}       ; database password
 
-db_sslmode = require            ; database SSL mode
+db_sslmode = {{DB_SSLMODE}}     ; database SSL mode
 # please see the PostgreSQL database documentation for further details
 
 

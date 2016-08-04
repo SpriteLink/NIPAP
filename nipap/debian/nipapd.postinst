@@ -46,13 +46,13 @@ case "$1" in
 	configure)
 		if [ ! -e "/etc/nipap/nipap.conf" ]; then
 			# update nipap.conf with database credentials
-			cat /etc/nipap/nipap.conf.dist | sed -e "s/#user *= *[^ ]\+/user = nipap/" -e "s/db_user *= *[^ ]\+/db_user = $DB_USER /" -e "s/db_name *= *[^ ]\+/db_name = $DB_NAME /" -e "s/db_pass *= *[^ ]\+/db_pass = $DB_PASS /" > /etc/nipap/nipap.conf
+			cat /etc/nipap/nipap.conf.dist | sed -e "s/#user *= *[^ ]\+/user = nipap/" -e "s/{{LISTEN_ADDRESS}}/127.0.0.1/" -e "s/{{LISTEN_PORT}}/1337/" -e "s/{{DB_USERNAME}}/$DB_USER/" -e "s/{{DB_NAME}}/$DB_NAME/" -e "s/{{DB_PASSWORD}}/$DB_PASS/" -e "s/{{DB_SSLMODE}}/require/" -e "s/{{DB_PORT}}/5432/" -e "s/{{SYSLOG}}/true/" > /etc/nipap/nipap.conf
 		fi
 		# fill in db_host
 		if [ $DB_HOST = "localhost" ]; then
-			sed -e 's/db_host *= *[^ ]\+/db_host = ""/' -i /etc/nipap/nipap.conf
+			sed -e 's/{{DB_HOST}}/""/' -i /etc/nipap/nipap.conf
 		else
-			sed -e "s/db_host *= *[^ ]\+/db_host = $DB_HOST/" -i /etc/nipap/nipap.conf
+			sed -e "s/{{DB_HOST}}/$DB_HOST/" -i /etc/nipap/nipap.conf
 		fi
 
 		# create group / user for nipapd
