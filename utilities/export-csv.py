@@ -41,34 +41,34 @@ class Export:
 
 
 if __name__ == '__main__':
-    import optparse
-    parser = optparse.OptionParser()
-    parser.add_option('--username', default='', help="Username")
-    parser.add_option('--password', default='', help="Password")
-    parser.add_option('--host', help="NIPAP backend host")
-    parser.add_option('--port', default=1337, help="NIPAP backend port")
-    parser.add_option('--query', default = '', help="A prefix query string")
-    parser.add_option('--file', help="Output file")
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--username', default='', help="Username")
+    parser.add_argument('--password', default='', help="Password")
+    parser.add_argument('--host', help="NIPAP backend host")
+    parser.add_argument('--port', default=1337, help="NIPAP backend port")
+    parser.add_argument('--query', default = '', help="A prefix query string")
+    parser.add_argument('--file', help="Output file")
 
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
 
-    if options.host is None:
+    if args.host is None:
         print >> sys.stderr, "Please specify the NIPAP backend host to work with"
         sys.exit(1)
 
-    if options.file is None:
+    if args.file is None:
         print >> sys.stderr, "Please specify an output file"
         sys.exit(1)
 
     auth_uri = ''
-    if options.username:
-        auth_uri = "%s:%s@" % (options.username, options.password)
+    if args.username:
+        auth_uri = "%s:%s@" % (args.username, args.password)
 
     xmlrpc_uri = "http://%(auth_uri)s%(host)s:%(port)s" % {
             'auth_uri'  : auth_uri,
-            'host'      : options.host,
-            'port'      : options.port
+            'host'      : args.host,
+            'port'      : args.port
             }
 
     wr = Export(xmlrpc_uri)
-    wr.write(options.file, options.query)
+    wr.write(args.file, args.query)
