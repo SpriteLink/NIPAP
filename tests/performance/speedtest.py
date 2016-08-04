@@ -183,28 +183,28 @@ class bonk:
 
 
 if __name__ == '__main__':
-    import optparse
-    parser = optparse.OptionParser()
-    parser.add_option('--add-prefix', metavar = 'PREFIX', help='Add PREFIX')
-    parser.add_option('--fill-prefix', metavar = 'PREFIX', help='fill PREFIX with hosts')
-    parser.add_option('--find-free-prefix', metavar = 'PREFIX', help='try to find the next free /32 in PREFIX')
-    parser.add_option('--remove-prefix', metavar = 'PREFIX', help='delete PREFIX')
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--add-prefix', metavar = 'PREFIX', help='Add PREFIX')
+    parser.add_argument('--fill-prefix', metavar = 'PREFIX', help='fill PREFIX with hosts')
+    parser.add_argument('--find-free-prefix', metavar = 'PREFIX', help='try to find the next free /32 in PREFIX')
+    parser.add_argument('--remove-prefix', metavar = 'PREFIX', help='delete PREFIX')
     b = bonk()
 
-    options, args = parser.parse_args()
+    args = parser.parse_args()
 
-    if options.fill_prefix is not None:
-        if not b.n._get_afi(options.fill_prefix):
+    if args.fill_prefix is not None:
+        if not b.n._get_afi(args.fill_prefix):
             print >> sys.stderr, "Please enter a valid prefix"
             sys.exit(1)
-        b.fill_prefix(options.fill_prefix)
+        b.fill_prefix(args.fill_prefix)
 
 
-    if options.find_free_prefix is not None:
-        b.find_free_prefix(options.find_free_prefix)
+    if args.find_free_prefix is not None:
+        b.find_free_prefix(args.find_free_prefix)
 
-    if options.add_prefix is not None:
-        b.add_prefix(options.add_prefix)
+    if args.add_prefix is not None:
+        b.add_prefix(args.add_prefix)
 
-    if options.remove_prefix is not None:
-        b.remove_prefix(options.remove_prefix)
+    if args.remove_prefix is not None:
+        b.remove_prefix(args.remove_prefix)
