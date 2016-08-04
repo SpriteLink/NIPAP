@@ -337,18 +337,18 @@ class TextImporter(Importer):
 
 
 if __name__ == '__main__':
-    import optparse
-    parser = optparse.OptionParser()
-    parser.add_option('--schema', help = 'Name of schema to import into')
-    parser.add_option('--url', default='http://127.0.0.1:1337/', help = 'the NIPAP XML-RPC server url')
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--schema', help = 'Name of schema to import into')
+    parser.add_argument('--url', default='http://127.0.0.1:1337/', help = 'the NIPAP XML-RPC server url')
 
-    options, args = parser.parse_args()
+    args = parser.parse_args()
 
-    if options.schema is None:
+    if args.schema is None:
         print >> sys.stderr, "You must specify a schema"
         sys.exit(1)
 
-    ti = TextImporter(options.url, options.schema)
+    ti = TextImporter(args.url, args.schema)
     for filename in args:
         ti.parse_file(filename)
 

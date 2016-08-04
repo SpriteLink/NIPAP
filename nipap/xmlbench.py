@@ -118,27 +118,27 @@ class Benchmark():
 
 
 if __name__ == '__main__':
-    import optparse
-    parser = optparse.OptionParser()
-    parser.add_option('-p', '--port', dest='port', type='int', default='1337', help="TCP port")
-    parser.add_option('-U', '--user')
-    parser.add_option('-P', '--password')
-    parser.add_option('--concurrent', type='int', default=10, help="Concurrent requests")
-    parser.add_option('--total', type='int', default=100, help="Total number of requests")
-    parser.add_option('--method', help="XML-RPC method to benchmark")
-    parser.add_option('--args', help="Args to XML-RPC method")
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--port', dest='port', type='int', default='1337', help="TCP port")
+    parser.add_argument('-U', '--user')
+    parser.add_argument('-P', '--password')
+    parser.add_argument('--concurrent', type='int', default=10, help="Concurrent requests")
+    parser.add_argument('--total', type='int', default=100, help="Total number of requests")
+    parser.add_argument('--method', help="XML-RPC method to benchmark")
+    parser.add_argument('--args', help="Args to XML-RPC method")
 
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
 
     cred = ''
-    if options.user and options.password:
-        cred = options.user + ':' + options.password + '@'
-    server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': options.port, 'cred': cred }
+    if args.user and args.password:
+        cred = args.user + ':' + args.password + '@'
+    server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': args.port, 'cred': cred }
 
     ad = { 'authoritative_source': 'nipap' }
     args = [{ 'auth': ad, 'message': 'test', 'sleep': 0.1 }]
     args = [{ 'auth': ad, 'query_string': 'foo' }]
-    b = Benchmark(concurrent = options.concurrent, total = options.total, url =
-            server_url, method = options.method, params = args)
+    b = Benchmark(concurrent = args.concurrent, total = args.total, url =
+            server_url, method = args.method, params = args)
     b.setupReqs()
     reactor.run()

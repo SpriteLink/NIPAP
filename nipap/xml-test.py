@@ -3,22 +3,22 @@
 
 import xmlrpclib
 
-import optparse
+import argparse
 import time
 import sys
 
-parser = optparse.OptionParser()
-parser.add_option('-p', '--port', dest='port', type='int', default='1337', help="TCP port")
-parser.add_option('-U', '--user')
-parser.add_option('-P', '--password')
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--port', dest='port', type='int', default='1337', help="TCP port")
+parser.add_argument('-U', '--user')
+parser.add_argument('-P', '--password')
 
-(options, args) = parser.parse_args()
+args = parser.parse_args()
 
 cred = ''
-if options.user and options.password:
-	cred = options.user + ':' + options.password + '@'
+if args.user and args.password:
+	cred = args.user + ':' + args.password + '@'
 
-server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': options.port, 'cred': cred }
+server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': args.port, 'cred': cred }
 server = xmlrpclib.Server(server_url, allow_none=1);
 
 ad = { 'authoritative_source': 'nipap' }

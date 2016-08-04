@@ -5,7 +5,7 @@
     template that can be used to produce a configuration file for another
     program, such as ISC DHCP.
 
-    It will read .nipaprc per default or rely on command line options for
+    It will read .nipaprc per default or rely on command line arguments for
     connection settings to the backend.
 """
 
@@ -68,38 +68,38 @@ if __name__ == '__main__':
     cfg = ConfigParser.ConfigParser()
     cfg.read(os.path.expanduser('~/.nipaprc'))
 
-    import optparse
-    parser = optparse.OptionParser()
-    # standard options to specify nipapd connection
-    parser.add_option('--username', help="NIPAP backend username")
-    parser.add_option('--password', help="NIPAP backend password")
-    parser.add_option('--host', help="NIPAP backend host")
-    parser.add_option('--port', help="NIPAP backend port")
+    import argparse
+    parser = argparse.ArgumentParser()
+    # standard arguments to specify nipapd connection
+    parser.add_argument('--username', help="NIPAP backend username")
+    parser.add_argument('--password', help="NIPAP backend password")
+    parser.add_argument('--host', help="NIPAP backend host")
+    parser.add_argument('--port', help="NIPAP backend port")
 
-    parser.add_option('--template', help="template file")
-    parser.add_option('--output-file', help="output file")
-    parser.add_option('--query', default='', help="query for filtering prefixes")
-    (options, args) = parser.parse_args()
+    parser.add_argument('--template', help="template file")
+    parser.add_argument('--output-file', help="output file")
+    parser.add_argument('--query', default='', help="query for filtering prefixes")
+    args = parser.parse_args()
 
-    auth_uri = "%s:%s@" % (options.username or cfg.get('global', 'username'),
-            options.password or cfg.get('global', 'password'))
+    auth_uri = "%s:%s@" % (args.username or cfg.get('global', 'username'),
+            args.password or cfg.get('global', 'password'))
 
     xmlrpc_uri = "http://%(auth_uri)s%(host)s:%(port)s" % {
             'auth_uri'  : auth_uri,
-            'host'      : options.host or cfg.get('global', 'hostname'),
-            'port'      : options.port or cfg.get('global', 'port')
+            'host'      : args.host or cfg.get('global', 'hostname'),
+            'port'      : args.port or cfg.get('global', 'port')
             }
     pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
     pynipap.xmlrpc_uri = xmlrpc_uri
 
-    if not options.template:
+    if not args.template:
         print("Please specify a template file", file=sys.stderr)
         sys.exit(1)
 
-    if not options.output_file:
+    if not args.output_file:
         print("Please specify an output file", file=sys.stderr)
         sys.exit(1)
 
-    ce = ConfigExport(options.template, options.output_file)
-    ce.get_prefixes(options.query)
+    ce = ConfigExport(args.template, args.output_file)
+    ce.get_prefixes(args.query)
     ce.write_conf()
