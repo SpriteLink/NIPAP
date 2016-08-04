@@ -27,35 +27,35 @@ if __name__ == '__main__':
     cfg = ConfigParser.ConfigParser()
     cfg.read(os.path.expanduser('~/.nipaprc'))
 
-    import optparse
-    parser = optparse.OptionParser()
-    parser.add_option('--username', help="NIPAP backend username")
-    parser.add_option('--password', help="NIPAP backend password")
-    parser.add_option('--host', help="NIPAP backend host")
-    parser.add_option('--port', help="NIPAP backend port")
-    parser.add_option('--clear-pools', action='store_true',
-                      help="Remove all pools in NIPAP")
-    parser.add_option('--clear-prefixes', action='store_true',
-                      help="Remove all prefixes in NIPAP")
-    parser.add_option('--clear-vrfs', action='store_true',
-                      help="Remove all VRFs in NIPAP")
-    parser.add_option("-f", "--force", action="store_true", default=False,
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--username', help="NIPAP backend username")
+    parser.add_argument('--password', help="NIPAP backend password")
+    parser.add_argument('--host', help="NIPAP backend host")
+    parser.add_argument('--port', help="NIPAP backend port")
+    parser.add_argument('--clear-pools', action='store_true',
+                        help="Remove all pools in NIPAP")
+    parser.add_argument('--clear-prefixes', action='store_true',
+                        help="Remove all prefixes in NIPAP")
+    parser.add_argument('--clear-vrfs', action='store_true',
+                        help="Remove all VRFs in NIPAP")
+    parser.add_argument("-f", "--force", action="store_true", default=False,
                       help="disable interactive prompting of actions")
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
 
-    auth_uri = "%s:%s@" % (options.username or cfg.get('global', 'username'),
-            options.password or cfg.get('global', 'password'))
+    auth_uri = "%s:%s@" % (args.username or cfg.get('global', 'username'),
+            args.password or cfg.get('global', 'password'))
 
     xmlrpc_uri = "http://%(auth_uri)s%(host)s:%(port)s" % {
             'auth_uri'  : auth_uri,
-            'host'      : options.host or cfg.get('global', 'hostname'),
-            'port'      : options.port or cfg.get('global', 'port')
+            'host'      : args.host or cfg.get('global', 'hostname'),
+            'port'      : args.port or cfg.get('global', 'port')
             }
     pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
     pynipap.xmlrpc_uri = xmlrpc_uri
 
-    if options.clear_vrfs:
-        remove_confirmed = options.force
+    if args.clear_vrfs:
+        remove_confirmed = args.force
         if not remove_confirmed:
             res = raw_input("Are you sure you want to remove all VRFs? Note how all" +
                             " prefixes in these VRFs WILL BE DELETED. The default VRF" +
@@ -75,8 +75,8 @@ if __name__ == '__main__':
                 sys.stdout.flush()
             print " done!"
 
-    if options.clear_pools:
-        remove_confirmed = options.force
+    if args.clear_pools:
+        remove_confirmed = args.force
         if not remove_confirmed:
             res = raw_input("Are you sure you want to remove all pools? [y/N]")
             if len(res) > 0 and res.lower()[0] == 'y':
@@ -92,8 +92,8 @@ if __name__ == '__main__':
                 sys.stdout.flush()
             print " done!"
 
-    if options.clear_prefixes:
-        remove_confirmed = options.force
+    if args.clear_prefixes:
+        remove_confirmed = args.force
         if not remove_confirmed:
             res = raw_input("Are you sure you want to remove all prefixes? [y/N]")
             if len(res) > 0 and res.lower()[0] == 'y':
