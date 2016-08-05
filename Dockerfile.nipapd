@@ -48,9 +48,10 @@ RUN apt-get update -qy && apt-get upgrade -qy \
     python-all \
     python-docutils \
     python-pip \
-    python-dev
+    python-dev \
+ && pip --no-input install envtpl
+ && rm -rf /var/lib/apt/lists/*
 
-RUN pip --no-input install envtpl
 
 COPY nipap /nipap
 WORKDIR /nipap
