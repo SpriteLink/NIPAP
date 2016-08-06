@@ -49,7 +49,7 @@ RUN apt-get update -qy && apt-get upgrade -qy \
     python-docutils \
     python-pip \
     python-dev \
- && pip --no-input install envtpl
+ && pip --no-input install envtpl \
  && rm -rf /var/lib/apt/lists/*
 
 
