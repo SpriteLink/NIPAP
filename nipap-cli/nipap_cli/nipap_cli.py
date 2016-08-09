@@ -507,7 +507,7 @@ def list_prefix(arg, opts, shell_opts):
                 try:
                     col_def['pool_name']['width'] = max(col_def['pool_name'].get('width', 8),
                                                         len(unicode(p.pool.name)))
-                except:
+                except AttributeError:
                     pass
             # override certain column widths
             col_def['type']['width'] = 1
@@ -539,7 +539,7 @@ def list_prefix(arg, opts, shell_opts):
 
                 try:
                     col_data['pool_name'] = p.pool.name
-                except:
+                except AttributeError:
                     pass
 
                 col_data['prefix'] = "".join("  " for i in xrange(p.indent)) + p.display_prefix
