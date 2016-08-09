@@ -4,7 +4,6 @@
 #
 
 import unittest
-import string
 
 import sys
 sys.path.insert(0, '..')
@@ -34,7 +33,7 @@ def complete_a_option1(arg):
 
     match = []
     for straw in [ 'FOO', 'FOD', 'BAR' ]:
-        if string.find(straw, arg) == 0:
+        if straw.find(arg) == 0:
             match.append(straw)
 
     return match
