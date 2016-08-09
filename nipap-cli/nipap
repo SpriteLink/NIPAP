@@ -77,7 +77,7 @@ if __name__ == '__main__':
         print("%s file could not be opened, does it exist?" % userrcfile)
         sys.exit(2)
 
-    if nipaprc_perms != '0600':
+    if nipaprc_perms != '0o600':
         print("Permissions %s for '%s' are too open." % (nipaprc_perms, userrcfile), file=sys.stderr)
         print("HINT: chmod 0600 ~/.nipaprc", file=sys.stderr)
         sys.exit(1)
