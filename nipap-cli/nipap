@@ -15,20 +15,6 @@ import nipap_cli.nipap_cli
 from nipap_cli.command import Command, CommandError
 from pynipap import NipapError
 
-import codecs
-# is output a terminal?
-if sys.stdout.isatty():
-    # When output encoding is set to UTF-8 we will get proper UTF-8 output from
-    # print statements but raw_input() will fail when the prompt contains
-    # Unicode characters. Forcing the output to UTF-8 fixes that, despite
-    # setting UTF-8 output when output encoding already is UTF-8 should be a
-    # no-op. Note how we only do this when the encoding is already set to UTF-8
-    # so any legacy terminals should still work fine.
-    if sys.stdout.encoding == 'UTF-8':
-        sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-else: # we are likely being redirected / piped to something else
-    # force UTF-8 output for redirected stdout
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 # early close of stdout to avoid broken pipe, see #464
 # If our output is being piped and the receiver of the pipe is killed off before
