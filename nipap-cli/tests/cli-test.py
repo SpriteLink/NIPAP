@@ -49,7 +49,7 @@ example_tree = {
             'exec': test_a,
             'argument': {
                 'type': 'value',
-                'content_type': unicode,
+                'content_type': str,
                 'description': 'Text'
             },
             'children': {
@@ -57,7 +57,7 @@ example_tree = {
                     'type': 'option',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'A_Option1',
                         'complete': complete_a_option1
                     }
@@ -66,7 +66,7 @@ example_tree = {
                     'type': 'option',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'A_Option2'
                     }
                 },
@@ -74,7 +74,7 @@ example_tree = {
                     'type': 'option',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'A_Option3'
                     }
                 }
@@ -85,7 +85,7 @@ example_tree = {
             'exec': test_b,
             'argument': {
                 'type': 'value',
-                'content_type': unicode,
+                'content_type': str,
                 'description': 'Text'
             },
             'children': {
@@ -105,7 +105,7 @@ example_tree = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'Text'
                             },
                         },
@@ -113,7 +113,7 @@ example_tree = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'Text'
                             }
                         }
@@ -129,7 +129,7 @@ example_tree = {
                     'exec': test_c,
                     'rest_argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'test rest argument'
                     },
                     'children': {
@@ -137,7 +137,7 @@ example_tree = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'Text'
                             },
                         },
@@ -145,7 +145,7 @@ example_tree = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'Text'
                             },
                         }

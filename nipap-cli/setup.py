@@ -19,7 +19,7 @@ def get_data_files():
     try:
         subprocess.call(["rst2man", "nipap.man.rst", "nipap.1"])
     except OSError as exc:
-        print >> sys.stderr, "rst2man failed to run:", str(exc)
+        print("rst2man failed to run:", str(exc), file=sys.stderr)
         sys.exit(1)
 
     files = [

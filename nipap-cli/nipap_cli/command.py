@@ -194,7 +194,7 @@ class Command:
             if self.children is not None:
                 self.key_complete = False
                 match = False
-                for param, content in self.children.items():
+                for param, content in list(self.children.items()):
 
                     # match string to command
                     if string.find(param, p) == 0:
@@ -228,7 +228,7 @@ class Command:
             # len(p) == 0
 
             if len(p) != 0 and len(self.key) == 1:
-                key, val = self.key.items()[0]
+                key, val = list(self.key.items())[0]
                 i, option_parsing = self._examine_key(key, val, p, i, option_parsing)
 
             i += 1
@@ -244,7 +244,7 @@ class Command:
         """
 
         comp = []
-        for k, v in self.key.items():
+        for k, v in list(self.key.items()):
 
             # if we have reached a value, try to fetch valid completions
             if v['type'] == 'value':
@@ -265,7 +265,7 @@ class Command:
 
         nval = []
 
-        for k, v in self.children.items():
+        for k, v in list(self.children.items()):
 
             # if we have reached a value, try to fetch valid completions
             if v['type'] == 'value':
