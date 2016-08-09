@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 """ NIPAP shell command
 
     A shell command to interact with NIPAP.
