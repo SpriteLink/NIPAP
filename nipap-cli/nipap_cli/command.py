@@ -191,7 +191,7 @@ class Command:
             if self.children is not None:
                 self.key_complete = False
                 match = False
-                for param, content in list(self.children.items()):
+                for param, content in self.children.items():
 
                     # match string to command
                     if param.find(p) == 0:
@@ -241,7 +241,7 @@ class Command:
         """
 
         comp = []
-        for k, v in list(self.key.items()):
+        for k, v in self.key.items():
 
             # if we have reached a value, try to fetch valid completions
             if v['type'] == 'value':
@@ -262,7 +262,7 @@ class Command:
 
         nval = []
 
-        for k, v in list(self.children.items()):
+        for k, v in self.children.items():
 
             # if we have reached a value, try to fetch valid completions
             if v['type'] == 'value':

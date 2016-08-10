@@ -589,7 +589,7 @@ def list_prefix(arg, opts, shell_opts):
 
             # guess column width by looking at the initial result set
             for p in res['result']:
-                for colname, col in list(col_def.items()):
+                for colname, col in col_def.items():
                     val = getattr(p, colname, '')
                     col['width'] = max(len(colname), col.get('width', 0),
                                        len(str(val)))
@@ -624,7 +624,7 @@ def list_prefix(arg, opts, shell_opts):
 
             col_data = {}
             try:
-                for colname, col in list(col_def.items()):
+                for colname, col in col_def.items():
                     col_data[colname] = str(getattr(p, colname, None))
 
                 # overwrite some columns due to special handling
