@@ -4,9 +4,13 @@
     A shell command to interact with NIPAP.
 """
 
-#from __future__ import print_function
+from __future__ import print_function
 
-import configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+
 import csv
 import os
 import pipes
