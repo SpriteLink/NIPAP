@@ -406,6 +406,7 @@ class PrefixSmartParser(SmartParser):
         'order_id': True,
         'pool': True,
         'prefix': True,
+        'prefix_length': True,
         'status': True,
         'total_addresses': True,
         'type': True,
