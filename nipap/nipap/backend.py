@@ -46,6 +46,7 @@
     ^^^^^^^^^^^^^^^^^
     * :attr:`id` - ID number of the prefix.
     * :attr:`prefix` - The IP prefix itself.
+    * :attr:`prefix_length` - Prefix length of the prefix.
     * :attr:`display_prefix` - A more user-friendly version of the prefix.
     * :attr:`family` - Address family (integer 4 or 6). Set by NIPAP.
     * :attr:`vrf_id` - ID of the VRF which the prefix belongs to.
