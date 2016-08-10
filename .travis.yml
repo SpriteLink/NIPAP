@@ -48,7 +48,7 @@ install:
     # -- common operations to apt install and virtualenv -----------------------
     # install dependencies for building packages and build NIPAP debian packages
     - sudo apt-get update
-    - sudo apt-get install -qq -y --force-yes devscripts python-docutils debhelper dh-python junit4
+    - sudo apt-get install -qq -y --force-yes devscripts python-docutils debhelper dh-python junit4 python3-pip
     # configure .nipaprc
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
     - chmod 0600 ~/.nipaprc
@@ -67,6 +67,8 @@ install:
     - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"; fi
     # install pynipap
     - if [ "$INSTALL" == "venv" ]; then cd pynipap; python setup.py install; cd ..; fi
+    # install nipap-cli dependencies
+    - if [ "$INSTALL" == "venv" ]; then sudo pip3 install -r nipap-cli/requirements.txt; fi
     # start nipap backend
     - if [ "$INSTALL" == "venv" ]; then nipap/nipapd --no-pid-file -c /etc/nipap/nipap.conf; fi
 
@@ -76,7 +78,7 @@ install:
     - if [ "$INSTALL" == "apt" ]; then wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -; fi
     - if [ "$INSTALL" == "apt" ]; then sudo apt-get update -qq; fi
     # install dependencies for installing & running nipap
-    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-docutils postgresql-9.1 postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-pylons python-tz python-dateutil python-psutil python-pyparsing; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python3-ipy python-docutils postgresql-9.1 postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-pylons python-tz python-dateutil python-psutil python-pyparsing; fi
     # if we are testing the upgrade, first install NIPAP packages from official repo
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo apt-get install -qq nipapd nipap-www nipap-cli; fi
     # bump version so that we know we are upgrading beyond what is installed
