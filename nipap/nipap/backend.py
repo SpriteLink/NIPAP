@@ -1664,13 +1664,17 @@ class Nipap:
             query = self._parse_vrf_query(query_str)
         except NipapValueError as exc:
             return {
-                'interpretation': [
-                    {
+                'interpretation': {
+                    'operator': None,
+                    'val1': None,
+                    'val2': None,
+                    'interpretation': {
                         'string': query_str,
-                        'interpretation': exc,
-                        'attribute': 'text'
+                        'interpretation': 'unclosed quote',
+                        'attribute': 'text',
+                        'operator': None
                     }
-                ],
+                },
                 'search_options': search_options,
                 'result': []
             }
@@ -2282,16 +2286,20 @@ class Nipap:
             query = self._parse_pool_query(query_str)
         except NipapValueError:
             return {
-                    'interpretation': [
-                        {
-                            'string': query_str,
-                            'interpretation': 'unclosed quote',
-                            'attribute': 'text'
-                        }
-                    ],
-                    'search_options': search_options,
-                    'result': []
-                }
+                'interpretation': {
+                    'operator': None,
+                    'val1': None,
+                    'val2': None,
+                    'interpretation': {
+                        'string': query_str,
+                        'interpretation': 'unclosed quote',
+                        'attribute': 'text',
+                        'operator': None
+                    }
+                },
+                'search_options': search_options,
+                'result': []
+            }
 
         if extra_query is not None:
             query = {
@@ -3626,13 +3634,17 @@ class Nipap:
             query = self._parse_prefix_query(query_str)
         except NipapValueError:
             return {
-                'interpretation': [
-                    {
+                'interpretation': {
+                    'operator': None,
+                    'val1': None,
+                    'val2': None,
+                    'interpretation': {
                         'string': query_str,
                         'interpretation': 'unclosed quote',
-                        'attribute': 'text'
+                        'attribute': 'text',
+                        'operator': None
                     }
-                ],
+                },
                 'search_options': search_options,
                 'result': []
             }
@@ -4098,13 +4110,17 @@ class Nipap:
             query = self._parse_asn_query(query_str)
         except NipapValueError:
             return {
-                    'interpretation': [
-                        {
+                    'interpretation': {
+                        'operator': None,
+                        'val1': None,
+                        'val2': None,
+                        'interpretation': {
                             'string': query_str,
                             'interpretation': 'unclosed quote',
-                            'attribute': 'text'
+                            'attribute': 'text',
+                            'operator': None
                         }
-                    ],
+                    },
                     'search_options': search_options,
                     'result': []
                 }
