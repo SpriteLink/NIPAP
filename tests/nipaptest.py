@@ -1540,6 +1540,40 @@ class TestAddressListing(unittest.TestCase):
 
 
 
+    def test_invalid_search_string(self):
+        """ Test error handling of prefix smart search
+        """
+
+        expected = {
+            'interpretation': {
+                'operator': None,
+                'val1': None,
+                'val2': None,
+                'interpretation': {
+                    'interpretation': None,
+                    'string': None,
+                    'attribute': 'text',
+                    'operator': None
+                },
+            },
+            'result': [],
+            'search_options': {}
+        }
+
+        # unclosed single quote
+        result = Prefix.smart_search('foo \'')
+        expected['interpretation']['interpretation']['interpretation'] = 'unclosed quote'
+        expected['interpretation']['interpretation']['string'] = 'foo \''
+        self.assertEquals(expected, result)
+
+        # unclosed double quote
+        result = Prefix.smart_search('"')
+        expected['interpretation']['interpretation']['interpretation'] = 'unclosed quote'
+        expected['interpretation']['interpretation']['string'] = '"'
+        self.assertEquals(expected, result)
+
+
+
 class TestPrefixLastModified(unittest.TestCase):
     """ Test updates of the last modified value
     """
