@@ -263,9 +263,8 @@ class SmartParser:
         # check for unclosed quotes/parentheses
         paired_exprs = nestedExpr('(', ')') | quotedString
         stripped_line = paired_exprs.suppress().transformString(input_string)
-        if '"' in stripped_line:
+        if '"' in stripped_line or "'" in stripped_line:
             raise NipapValueError('Unclosed quote')
-        # TODO: add test case for this
         if '(' in stripped_line or ')' in stripped_line:
             raise NipapValueError('Unclosed parentheses')
 

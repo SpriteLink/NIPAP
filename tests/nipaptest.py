@@ -1946,9 +1946,23 @@ class TestSmartParser(unittest.TestCase):
         with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
             query = n._parse_prefix_query('"')
 
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
+            query = n._parse_prefix_query('\'')
+
 
 
     def test_prefix5(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
+            query = n._parse_prefix_query('(')
+
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
+            query = n._parse_prefix_query(')')
+
+
+
+    def test_prefix6(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('foo-agg-1 vlan>100 vlan< 200')
@@ -2010,7 +2024,7 @@ class TestSmartParser(unittest.TestCase):
 
 
 
-    def test_prefix6(self):
+    def test_prefix7(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('123:456')
@@ -2030,7 +2044,7 @@ class TestSmartParser(unittest.TestCase):
 
 
 
-    def test_prefix7(self):
+    def test_prefix8(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('2001:1000::/32')
@@ -2050,7 +2064,7 @@ class TestSmartParser(unittest.TestCase):
 
 
 
-    def test_prefix8(self):
+    def test_prefix9(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('2001:1000:1234::/32')
@@ -2071,7 +2085,7 @@ class TestSmartParser(unittest.TestCase):
 
 
 
-    def test_prefix9(self):
+    def test_prefix10(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('2001:1000::')
@@ -2091,7 +2105,7 @@ class TestSmartParser(unittest.TestCase):
 
 
 
-    def test_prefix10(self):
+    def test_prefix11(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('1.3.3.0')
@@ -2111,7 +2125,7 @@ class TestSmartParser(unittest.TestCase):
 
 
 
-    def test_prefix11(self):
+    def test_prefix12(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('1.3.3.0/16')
@@ -2132,7 +2146,7 @@ class TestSmartParser(unittest.TestCase):
 
 
 
-    def test_prefix12(self):
+    def test_prefix13(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_prefix_query('1.3.3/16')
@@ -2251,9 +2265,23 @@ class TestSmartParser(unittest.TestCase):
         with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
             query = n._parse_vrf_query('"')
 
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
+            query = n._parse_vrf_query('\'')
+
 
 
     def test_vrf5(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
+            query = n._parse_vrf_query('(')
+
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
+            query = n._parse_vrf_query(')')
+
+
+
+    def test_vrf6(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_vrf_query('foo bar')
@@ -2402,9 +2430,23 @@ class TestSmartParser(unittest.TestCase):
         with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
             query = n._parse_pool_query('"')
 
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
+            query = n._parse_pool_query('\'')
+
 
 
     def test_pool5(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
+            query = n._parse_pool_query('(')
+
+        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
+            query = n._parse_pool_query(')')
+
+
+
+    def test_pool6(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
         query = n._parse_pool_query('#foo and bar')
