@@ -271,15 +271,30 @@ class SmartParser:
         # check for unclosed quotes/parentheses
         paired_exprs = nestedExpr('(', ')') | quotedString
         stripped_line = paired_exprs.suppress().transformString(input_string)
+
+        error_dictsql = {
+            'operator': None,
+            'val1': None,
+            'val2': None,
+            'interpretation': {
+                'interpretation': None,
+                'string': input_string,
+                'attribute': 'text',
+                'operator': None,
+                'error': True,
+                'error_message': None
+            }
+        }
+
         if '"' in stripped_line or "'" in stripped_line:
-            raise NipapValueError('Unclosed quote')
+            error_dictsql['interpretation']['error_message'] = 'unclosed quote'
+            return False, error_dictsql
         if '(' in stripped_line or ')' in stripped_line:
-            raise NipapValueError('Unclosed parentheses')
+            error_dictsql['interpretation']['error_message'] = 'unclosed parentheses'
+            return False, error_dictsql
 
         ast = self._string_to_ast(input_string)
         return self._ast_to_dictsql(ast)
-
-
 
 
 
