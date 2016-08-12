@@ -519,6 +519,9 @@ class VRF(Pynipap):
         result = dict()
         result['interpretation'] = smart_result['interpretation']
         result['search_options'] = smart_result['search_options']
+        result['error'] = smart_result['error']
+        if 'error_message' in smart_result:
+            result['error_message'] = smart_result['error_message']
         result['result'] = list()
         for v in smart_result['result']:
             result['result'].append(VRF.from_dict(v))
@@ -803,6 +806,9 @@ class Pool(Pynipap):
         result = dict()
         result['interpretation'] = smart_result['interpretation']
         result['search_options'] = smart_result['search_options']
+        result['error'] = smart_result['error']
+        if 'error_message' in smart_result:
+            result['error_message'] = smart_result['error_message']
         result['result'] = list()
         for pool in smart_result['result']:
             p = Pool.from_dict(pool)
@@ -1042,6 +1048,9 @@ class Prefix(Pynipap):
         result = dict()
         result['interpretation'] = smart_result['interpretation']
         result['search_options'] = smart_result['search_options']
+        result['error'] = smart_result['error']
+        if 'error_message' in smart_result:
+            result['error_message'] = smart_result['error_message']
         result['result'] = list()
         for prefix in smart_result['result']:
             p = Prefix.from_dict(prefix)
