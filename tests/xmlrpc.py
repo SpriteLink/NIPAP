@@ -1169,6 +1169,7 @@ class NipapXmlTest(unittest.TestCase):
                 False, 'max_result': 50, 'include_all_parents': False,
                 'parents_depth': 0, 'offset': 0, 'children_depth': 0,
                 'parent_prefix': None, 'include_neighbors': False },
+                'error': False,
                 'result': [
                     {'comment': None,
                         'expires': None,
