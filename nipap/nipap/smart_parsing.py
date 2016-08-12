@@ -167,7 +167,7 @@ class SmartParser:
                 'val1': None,
                 'val2': None
                 }
-
+        success = True
         dse = None
         for part, lookahead in izip_longest(ast, ast[1:]):
             self._logger.debug("part: %s %s" % (part, part.getName()))
@@ -185,11 +185,14 @@ class SmartParser:
             # string expr that we expand to dictsql expression
             elif part.getName() == 'expression':
                 if part.operator in self.match_operators:
-                    dse = self._parse_expr(part)
+                    tmp_success, dse = self._parse_expr(part)
+                    success = success and tmp_success
                 else:
-                    dse = self._ast_to_dictsql(part)
+                    tmp_success, dse = self._ast_to_dictsql(part)
+                    success = success and tmp_success
             elif part.getName() == 'nested':
-                dse = self._ast_to_dictsql(part)
+                tmp_success, dse = self._ast_to_dictsql(part)
+                success = success and tmp_success
             elif part.getName() in ('ipv6_prefix', 'ipv6_address', 'word', 'tag', 'vrf_rt'):
                 # dict sql expression
                 dse = self._string_to_dictsql(part)
@@ -221,7 +224,7 @@ class SmartParser:
             dss = self._string_to_dictsql(ParseResults('', 'word'))
 
         # return the final composed stack of dictsql expressions
-        return dss
+        return success, dss
 
 
     def _string_to_dictsql(self, string):
@@ -240,9 +243,7 @@ class SmartParser:
         self._logger.debug("parsing expression: " + str(part))
         key, op, val = part
 
-        if key not in self.attributes:
-            raise NotImplementedError()
-
+        success = True
         dictsql = {
                 'operator': op,
                 'val1': key,
@@ -255,7 +256,10 @@ class SmartParser:
                 }
             }
 
-        return dictsql
+        if key not in self.attributes:
+            success = False
+
+        return success, dictsql
 
 
 
