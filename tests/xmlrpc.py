@@ -1126,7 +1126,8 @@ class NipapXmlTest(unittest.TestCase):
                         'operator': 'regex',
                         'attribute': 'description or comment or node or order_id or customer_id',
                         'interpretation': 'text',
-                        'string': 'F'
+                        'string': 'F',
+                        'error': False
                         },
                     'operator': 'or',
                     'val1': {
