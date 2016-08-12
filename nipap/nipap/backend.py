@@ -1665,7 +1665,9 @@ class Nipap:
             return {
                 'interpretation': query,
                 'search_options': search_options,
-                'result': []
+                'result': [],
+                'error': True,
+                'error_message': 'query interpretation failed'
             }
 
         if extra_query is not None:
@@ -1679,6 +1681,7 @@ class Nipap:
 
         search_result = self.search_vrf(auth, query, search_options)
         search_result['interpretation'] = query
+        search_result['error'] = False
 
         return search_result
 
@@ -2276,7 +2279,9 @@ class Nipap:
             return {
                 'interpretation': query,
                 'search_options': search_options,
-                'result': []
+                'result': [],
+                'error': True,
+                'error_message': 'query interpretation failed'
         }
 
         if extra_query is not None:
@@ -2290,6 +2295,7 @@ class Nipap:
 
         search_result = self.search_pool(auth, query, search_options)
         search_result['interpretation'] = query
+        search_result['error'] = False
 
         return search_result
 
@@ -3613,7 +3619,9 @@ class Nipap:
             return {
                 'interpretation': query,
                 'search_options': search_options,
-                'result': []
+                'result': [],
+                'error': True,
+                'error_message': 'query interpretation failed'
             }
 
         if extra_query is not None:
@@ -3627,6 +3635,7 @@ class Nipap:
 
         search_result = self.search_prefix(auth, query, search_options)
         search_result['interpretation'] = query
+        search_result['error'] = False
 
         return search_result
 
@@ -4078,7 +4087,9 @@ class Nipap:
             return {
                     'interpretation': query,
                     'search_options': search_options,
-                    'result': []
+                    'result': [],
+                    'error': True,
+                    'error_message': 'query interpretaion failed'
             }
 
         if extra_query is not None:
@@ -4092,6 +4103,7 @@ class Nipap:
 
         search_result = self.search_asn(auth, query, search_options)
         search_result['interpretation'] = query
+        search_result['error'] = False
 
         return search_result
 
