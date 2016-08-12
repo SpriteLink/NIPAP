@@ -116,7 +116,9 @@ class SmartParser:
         match_op = oneOf(' '.join(self.match_operators)).setResultsName('operator')
         boolean_op = oneOf(' '.join(self.boolean_operators)).setResultsName('boolean')
         # quoted string
-        quoted_string = QuotedString('"', unquoteResults=True, escChar='\\').setResultsName('quoted_string')
+        d_quoted_string = QuotedString('"', unquoteResults=True, escChar='\\')
+        s_quoted_string = QuotedString('\'', unquoteResults=True, escChar='\\')
+        quoted_string = (s_quoted_string | d_quoted_string).setResultsName('quoted_string')
         # expression to match a certain value for an attribute
         expression = Group(word + match_op + (quoted_string | vrf_rt | word | number)).setResultsName('expression')
         # we work on atoms, which are single quoted strings, match expressions,
@@ -194,7 +196,7 @@ class SmartParser:
             elif part.getName() == 'nested':
                 tmp_success, dse = self._ast_to_dictsql(part)
                 success = success and tmp_success
-            elif part.getName() in ('ipv6_prefix', 'ipv6_address', 'word', 'tag', 'vrf_rt'):
+            elif part.getName() in ('ipv6_prefix', 'ipv6_address', 'word', 'tag', 'vrf_rt', 'quoted_string'):
                 # dict sql expression
                 dse = self._string_to_dictsql(part)
                 self._logger.debug('string part: %s  => %s' % (part, dse))
