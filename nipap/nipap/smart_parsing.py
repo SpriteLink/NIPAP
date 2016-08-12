@@ -260,7 +260,14 @@ class SmartParser:
                 }
             }
 
-        if key not in self.attributes:
+        if key in self.attributes:
+            if type(self.attributes[key]) is list:
+                if val not in self.attributes[key]:
+                    dictsql['interpretation']['error'] = True
+                    dictsql['interpretation']['error_message'] = 'invalid value'
+                    success = False
+
+        else:
             dictsql['interpretation']['error'] = True
             dictsql['interpretation']['error_message'] = 'unknown attribute'
             success = False
@@ -413,7 +420,7 @@ class PoolSmartParser(SmartParser):
 class PrefixSmartParser(SmartParser):
     attributes = {
         'added': True,
-        'alarm_priority': True,
+        'alarm_priority': ['warning', 'low', 'medium', 'high', 'critical'],
         'authoritative_source': True,
         'children': True,
         'comment': True,
@@ -435,9 +442,9 @@ class PrefixSmartParser(SmartParser):
         'pool': True,
         'prefix': True,
         'prefix_length': True,
-        'status': True,
+        'status': ['assigned', 'reserved', 'quarantine'],
         'total_addresses': True,
-        'type': True,
+        'type': ['assignment', 'host', 'reservation'],
         'used_addreses': True,
         'vlan': True,
         'vrf': True,
