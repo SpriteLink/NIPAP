@@ -178,7 +178,8 @@ class SmartParser:
                 dss['operator'] = op
                 dss['interpretation'] = {
                         'interpretation': op,
-                        'operator': op
+                        'operator': op,
+                        'error': False
                         }
                 continue
 
@@ -252,11 +253,14 @@ class SmartParser:
                     'string': key + op + val,
                     'interpretation': 'expression',
                     'attribute': key,
-                    'operator': op
+                    'operator': op,
+                    'error': False
                 }
             }
 
         if key not in self.attributes:
+            dictsql['interpretation']['error'] = True
+            dictsql['interpretation']['error_message'] = 'unknown attribute'
             success = False
 
         return success, dictsql
@@ -317,6 +321,7 @@ class PoolSmartParser(SmartParser):
                         'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
+                        'error': False
                         },
                     'operator': 'equals_any',
                     'val1': 'tags',
@@ -331,7 +336,8 @@ class PoolSmartParser(SmartParser):
                         'attribute': 'VRF RT',
                         'interpretation': 'vrf_rt',
                         'operator': 'equals',
-                        'string': part.vrf_rt
+                        'string': part.vrf_rt,
+                        'error': False
                         },
                     'operator': 'equals',
                     'val1': 'vrf_rt',
@@ -344,7 +350,8 @@ class PoolSmartParser(SmartParser):
                         'attribute': 'name or description',
                         'interpretation': 'text',
                         'operator': 'regex',
-                        'string': part.vrf_rt
+                        'string': part.vrf_rt,
+                        'error': False
                         },
                     'operator': 'or',
                     'val1': {
@@ -366,7 +373,8 @@ class PoolSmartParser(SmartParser):
                         'attribute': 'name or description',
                         'interpretation': 'text',
                         'operator': 'regex',
-                        'string': part[0]
+                        'string': part[0],
+                        'error': False
                         },
                     'operator': 'or',
                     'val1': {
@@ -431,6 +439,7 @@ class PrefixSmartParser(SmartParser):
                         'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
+                        'error': False
                         },
                     'operator': 'equals_any',
                     'val1': 'tags',
@@ -444,7 +453,8 @@ class PrefixSmartParser(SmartParser):
                         'attribute': 'VRF RT',
                         'interpretation': 'vrf_rt',
                         'operator': 'equals',
-                        'string': part.vrf_rt
+                        'string': part.vrf_rt,
+                        'error': False
                         },
                     'operator': 'equals',
                     'val1': 'vrf_rt',
@@ -459,6 +469,7 @@ class PrefixSmartParser(SmartParser):
                     'interpretation': 'IPv6 address',
                     'attribute': 'prefix',
                     'operator': 'contains_equals',
+                    'error': False
                 },
                 'operator': 'contains_equals',
                 'val1': 'prefix',
@@ -473,7 +484,8 @@ class PrefixSmartParser(SmartParser):
                     'string': part.ipv6_prefix[0],
                     'interpretation': 'IPv6 prefix',
                     'attribute': 'prefix',
-                    'operator': 'contained_within_equals'
+                    'operator': 'contained_within_equals',
+                    'error': False
                 }
             if part.ipv6_prefix[0] != strict_prefix:
                 interp['strict_prefix'] = strict_prefix
@@ -507,6 +519,7 @@ class PrefixSmartParser(SmartParser):
                         'interpretation': 'IPv4 prefix',
                         'attribute': 'prefix',
                         'operator': 'contained_within_equals',
+                        'error': False
                     }
 
                 if prefix != part[0]:
@@ -533,6 +546,7 @@ class PrefixSmartParser(SmartParser):
                         'interpretation': 'IPv4 address',
                         'attribute': 'prefix',
                         'operator': 'contains_equals',
+                        'error': False
                     },
                     'operator': 'contains_equals',
                     'val1': 'prefix',
@@ -548,6 +562,7 @@ class PrefixSmartParser(SmartParser):
                             'interpretation': 'text',
                             'attribute': 'description or comment or node or order_id or customer_id',
                             'operator': 'regex',
+                            'error': False
                         },
                         'operator': 'or',
                         'val1': {
@@ -618,6 +633,7 @@ class VrfSmartParser(SmartParser):
                         'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
+                        'error': False
                         },
                     'operator': 'equals_any',
                     'val1': 'tags',
@@ -632,7 +648,8 @@ class VrfSmartParser(SmartParser):
                         'attribute': 'VRF RT',
                         'interpretation': 'vrf_rt',
                         'operator': 'equals',
-                        'string': part.vrf_rt
+                        'string': part.vrf_rt,
+                        'error': False
                         },
                     'operator': 'equals',
                     'val1': 'vrf_rt',
@@ -646,6 +663,7 @@ class VrfSmartParser(SmartParser):
                         'interpretation': 'text',
                         'attribute': 'vrf or name or description',
                         'operator': 'regex',
+                        'error': False
                     },
                     'operator': 'or',
                     'val1': {
@@ -676,6 +694,7 @@ class VrfSmartParser(SmartParser):
                         'interpretation': 'text',
                         'attribute': 'vrf or name or description',
                         'operator': 'regex',
+                        'error': False
                     },
                     'operator': 'or',
                     'val1': {
