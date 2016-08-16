@@ -116,7 +116,9 @@ class SmartParser:
         match_op = oneOf(' '.join(self.match_operators)).setResultsName('operator')
         boolean_op = oneOf(' '.join(self.boolean_operators)).setResultsName('boolean')
         # quoted string
-        quoted_string = QuotedString('"', unquoteResults=True, escChar='\\').setResultsName('quoted_string')
+        d_quoted_string = QuotedString('"', unquoteResults=True, escChar='\\')
+        s_quoted_string = QuotedString('\'', unquoteResults=True, escChar='\\')
+        quoted_string = (s_quoted_string | d_quoted_string).setResultsName('quoted_string')
         # expression to match a certain value for an attribute
         expression = Group(word + match_op + (quoted_string | vrf_rt | word | number)).setResultsName('expression')
         # we work on atoms, which are single quoted strings, match expressions,
@@ -167,7 +169,7 @@ class SmartParser:
                 'val1': None,
                 'val2': None
                 }
-
+        success = True
         dse = None
         for part, lookahead in izip_longest(ast, ast[1:]):
             self._logger.debug("part: %s %s" % (part, part.getName()))
@@ -178,19 +180,23 @@ class SmartParser:
                 dss['operator'] = op
                 dss['interpretation'] = {
                         'interpretation': op,
-                        'operator': op
+                        'operator': op,
+                        'error': False
                         }
                 continue
 
             # string expr that we expand to dictsql expression
             elif part.getName() == 'expression':
                 if part.operator in self.match_operators:
-                    dse = self._parse_expr(part)
+                    tmp_success, dse = self._parse_expr(part)
+                    success = success and tmp_success
                 else:
-                    dse = self._ast_to_dictsql(part)
+                    tmp_success, dse = self._ast_to_dictsql(part)
+                    success = success and tmp_success
             elif part.getName() == 'nested':
-                dse = self._ast_to_dictsql(part)
-            elif part.getName() in ('ipv6_prefix', 'ipv6_address', 'word', 'tag', 'vrf_rt'):
+                tmp_success, dse = self._ast_to_dictsql(part)
+                success = success and tmp_success
+            elif part.getName() in ('ipv6_prefix', 'ipv6_address', 'word', 'tag', 'vrf_rt', 'quoted_string'):
                 # dict sql expression
                 dse = self._string_to_dictsql(part)
                 self._logger.debug('string part: %s  => %s' % (part, dse))
@@ -221,7 +227,7 @@ class SmartParser:
             dss = self._string_to_dictsql(ParseResults('', 'word'))
 
         # return the final composed stack of dictsql expressions
-        return dss
+        return success, dss
 
 
     def _string_to_dictsql(self, string):
@@ -240,9 +246,7 @@ class SmartParser:
         self._logger.debug("parsing expression: " + str(part))
         key, op, val = part
 
-        if key not in self.attributes:
-            raise NotImplementedError()
-
+        success = True
         dictsql = {
                 'operator': op,
                 'val1': key,
@@ -251,11 +255,24 @@ class SmartParser:
                     'string': key + op + val,
                     'interpretation': 'expression',
                     'attribute': key,
-                    'operator': op
+                    'operator': op,
+                    'error': False
                 }
             }
 
-        return dictsql
+        if key in self.attributes:
+            if type(self.attributes[key]) is list:
+                if val not in self.attributes[key]:
+                    dictsql['interpretation']['error'] = True
+                    dictsql['interpretation']['error_message'] = 'invalid value'
+                    success = False
+
+        else:
+            dictsql['interpretation']['error'] = True
+            dictsql['interpretation']['error_message'] = 'unknown attribute'
+            success = False
+
+        return success, dictsql
 
 
 
@@ -263,15 +280,30 @@ class SmartParser:
         # check for unclosed quotes/parentheses
         paired_exprs = nestedExpr('(', ')') | quotedString
         stripped_line = paired_exprs.suppress().transformString(input_string)
+
+        error_dictsql = {
+            'operator': None,
+            'val1': None,
+            'val2': None,
+            'interpretation': {
+                'interpretation': None,
+                'string': input_string,
+                'attribute': 'text',
+                'operator': None,
+                'error': True,
+                'error_message': None
+            }
+        }
+
         if '"' in stripped_line or "'" in stripped_line:
-            raise NipapValueError('Unclosed quote')
+            error_dictsql['interpretation']['error_message'] = 'unclosed quote'
+            return False, error_dictsql
         if '(' in stripped_line or ')' in stripped_line:
-            raise NipapValueError('Unclosed parentheses')
+            error_dictsql['interpretation']['error_message'] = 'unclosed parentheses'
+            return False, error_dictsql
 
         ast = self._string_to_ast(input_string)
         return self._ast_to_dictsql(ast)
-
-
 
 
 
@@ -313,6 +345,7 @@ class PoolSmartParser(SmartParser):
                         'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
+                        'error': False
                         },
                     'operator': 'equals_any',
                     'val1': 'tags',
@@ -327,7 +360,8 @@ class PoolSmartParser(SmartParser):
                         'attribute': 'VRF RT',
                         'interpretation': 'vrf_rt',
                         'operator': 'equals',
-                        'string': part.vrf_rt
+                        'string': part.vrf_rt,
+                        'error': False
                         },
                     'operator': 'equals',
                     'val1': 'vrf_rt',
@@ -340,7 +374,8 @@ class PoolSmartParser(SmartParser):
                         'attribute': 'name or description',
                         'interpretation': 'text',
                         'operator': 'regex',
-                        'string': part.vrf_rt
+                        'string': part.vrf_rt,
+                        'error': False
                         },
                     'operator': 'or',
                     'val1': {
@@ -362,7 +397,8 @@ class PoolSmartParser(SmartParser):
                         'attribute': 'name or description',
                         'interpretation': 'text',
                         'operator': 'regex',
-                        'string': part[0]
+                        'string': part[0],
+                        'error': False
                         },
                     'operator': 'or',
                     'val1': {
@@ -384,7 +420,7 @@ class PoolSmartParser(SmartParser):
 class PrefixSmartParser(SmartParser):
     attributes = {
         'added': True,
-        'alarm_priority': True,
+        'alarm_priority': ['warning', 'low', 'medium', 'high', 'critical'],
         'authoritative_source': True,
         'children': True,
         'comment': True,
@@ -406,9 +442,9 @@ class PrefixSmartParser(SmartParser):
         'pool': True,
         'prefix': True,
         'prefix_length': True,
-        'status': True,
+        'status': ['assigned', 'reserved', 'quarantine'],
         'total_addresses': True,
-        'type': True,
+        'type': ['assignment', 'host', 'reservation'],
         'used_addreses': True,
         'vlan': True,
         'vrf': True,
@@ -427,6 +463,7 @@ class PrefixSmartParser(SmartParser):
                         'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
+                        'error': False
                         },
                     'operator': 'equals_any',
                     'val1': 'tags',
@@ -440,7 +477,8 @@ class PrefixSmartParser(SmartParser):
                         'attribute': 'VRF RT',
                         'interpretation': 'vrf_rt',
                         'operator': 'equals',
-                        'string': part.vrf_rt
+                        'string': part.vrf_rt,
+                        'error': False
                         },
                     'operator': 'equals',
                     'val1': 'vrf_rt',
@@ -455,6 +493,7 @@ class PrefixSmartParser(SmartParser):
                     'interpretation': 'IPv6 address',
                     'attribute': 'prefix',
                     'operator': 'contains_equals',
+                    'error': False
                 },
                 'operator': 'contains_equals',
                 'val1': 'prefix',
@@ -469,7 +508,8 @@ class PrefixSmartParser(SmartParser):
                     'string': part.ipv6_prefix[0],
                     'interpretation': 'IPv6 prefix',
                     'attribute': 'prefix',
-                    'operator': 'contained_within_equals'
+                    'operator': 'contained_within_equals',
+                    'error': False
                 }
             if part.ipv6_prefix[0] != strict_prefix:
                 interp['strict_prefix'] = strict_prefix
@@ -503,6 +543,7 @@ class PrefixSmartParser(SmartParser):
                         'interpretation': 'IPv4 prefix',
                         'attribute': 'prefix',
                         'operator': 'contained_within_equals',
+                        'error': False
                     }
 
                 if prefix != part[0]:
@@ -529,6 +570,7 @@ class PrefixSmartParser(SmartParser):
                         'interpretation': 'IPv4 address',
                         'attribute': 'prefix',
                         'operator': 'contains_equals',
+                        'error': False
                     },
                     'operator': 'contains_equals',
                     'val1': 'prefix',
@@ -544,6 +586,7 @@ class PrefixSmartParser(SmartParser):
                             'interpretation': 'text',
                             'attribute': 'description or comment or node or order_id or customer_id',
                             'operator': 'regex',
+                            'error': False
                         },
                         'operator': 'or',
                         'val1': {
@@ -614,6 +657,7 @@ class VrfSmartParser(SmartParser):
                         'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
+                        'error': False
                         },
                     'operator': 'equals_any',
                     'val1': 'tags',
@@ -628,7 +672,8 @@ class VrfSmartParser(SmartParser):
                         'attribute': 'VRF RT',
                         'interpretation': 'vrf_rt',
                         'operator': 'equals',
-                        'string': part.vrf_rt
+                        'string': part.vrf_rt,
+                        'error': False
                         },
                     'operator': 'equals',
                     'val1': 'vrf_rt',
@@ -642,6 +687,7 @@ class VrfSmartParser(SmartParser):
                         'interpretation': 'text',
                         'attribute': 'vrf or name or description',
                         'operator': 'regex',
+                        'error': False
                     },
                     'operator': 'or',
                     'val1': {
@@ -672,6 +718,7 @@ class VrfSmartParser(SmartParser):
                         'interpretation': 'text',
                         'attribute': 'vrf or name or description',
                         'operator': 'regex',
+                        'error': False
                     },
                     'operator': 'or',
                     'val1': {

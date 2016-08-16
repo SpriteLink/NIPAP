@@ -75,6 +75,17 @@ var container = null;
 var popped = null;
 var initialURL = null;
 
+// Translate operators to text strings
+var operator_map = {
+	'=': 'equal',
+	'!=': 'not equal',
+	'>': 'greater than',
+	'>=': 'greater than or equal',
+	'<': 'smaller than than',
+	'<=': 'smaller than or equal',
+	'~': 'a regular expression match'
+};
+
 /**
  * A general log function
  *
@@ -1138,21 +1149,31 @@ function parseInterp(query, container) {
 
 	if (query.interpretation) {
 		var interp = query.interpretation;
-		var text = '<b>' + interp.string + ':</b> ' + interp.interpretation;
+		var text = '<b>' + interp.string + ':</b> ' + (interp.interpretation || '');
 		var tooltip = '';
-		if (interp.interpretation == 'or') {
+
+		// "Major" parser error - unable to parse string
+		if (interp.error === true && interp.operator === null) {
+			text += interp.error_message;
+			if (interp.error_message == 'unclosed quote') {
+				text += ', please close quote!';
+				tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';
+			} else if (interp.error_message == 'unclosed parentheses') {
+				text += ', please close parentheses!';
+				tooltip = 'This is not a proper search term as it contains an uneven amount of parentheses.';
+			} else {
+				text += '.';
+				tooltip = 'Invalid search term.';
+			}
+		} else if (interp.interpretation == 'or') {
 			text = "<b>OR</b>";
 		} else if (interp.interpretation == 'and') {
 			text = "<b>AND</b>";
-		} else if (interp.interpretation == 'unclosed quote') {
-			text += ', please close quote!';
-			tooltip = 'This is not a proper search term as it contains an uneven amount of quotes.';
 		} else if (interp.attribute == 'tag' && interp.operator == 'equals_any') {
 			text += ' must contain <b>' + interp.string + '</b>';
 			tooltip = "The tag(s) or inherited tag(s) must contain " + interp.string;
 		} else if (interp.attribute == 'prefix' && interp.operator == 'contained_within_equals') {
 			text += ' within ';
-
 			if ('strict_prefix' in interp && 'expanded' in interp) {
 				text += '<b>' + interp.strict_prefix + '</b>';
 				tooltip = 'Prefix must be contained within ' + interp.strict_prefix + ', which is the base prefix of ' + interp.expanded + ' (automatically expanded from ' + interp.string + ')';
@@ -1172,9 +1193,25 @@ function parseInterp(query, container) {
 		} else if (interp.attribute == 'prefix' && interp.operator == 'equals') {
 			text += ' equal to <b>' + interp.string + '</b>';
 			tooltip = "The " + interp.interpretation + " must equal " + interp.string;
+		} else if (interp.interpretation == 'expression') {
+			text += ", '" + interp.attribute + "' " + operator_map[interp.operator] + " value";
+			tooltip += "The attribute '" + interp.attribute + "' must be " + operator_map[interp.operator] + " to provided value.";
 		} else {
 			text += " matching '<b>" + interp.string + "</b>'";
 			tooltip = "The description OR node OR order id OR the comment should regexp match '" + interp.string + "'";
+		}
+
+		// Attach "minor" error - could parse string, but contained errors
+		if (interp.error === true && interp.operator !== null) {
+			if (interp.error_message == 'invalid value') {
+				text += ", invalid value!";
+				tooltip += "The value provided is not valid for the attribute '" + interp.attribute + "'.";
+			} else if (interp.error_message == 'unknown attribute') {
+				text += ", unknown attribute '" + interp.attribute + "'!";
+				tooltip += "There is not prefix attribute '" + interp.attribute + "'";
+			} else {
+				text += ", " + interp.error_message + "!";
+			}
 		}
 
 		if (interp.interpretation == 'or' || interp.interpretation == 'and') {

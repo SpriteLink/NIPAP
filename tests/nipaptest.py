@@ -1540,40 +1540,6 @@ class TestAddressListing(unittest.TestCase):
 
 
 
-    def test_invalid_search_string(self):
-        """ Test error handling of prefix smart search
-        """
-
-        expected = {
-            'interpretation': {
-                'operator': None,
-                'val1': None,
-                'val2': None,
-                'interpretation': {
-                    'interpretation': None,
-                    'string': None,
-                    'attribute': 'text',
-                    'operator': None
-                },
-            },
-            'result': [],
-            'search_options': {}
-        }
-
-        # unclosed single quote
-        result = Prefix.smart_search('foo \'')
-        expected['interpretation']['interpretation']['interpretation'] = 'unclosed quote'
-        expected['interpretation']['interpretation']['string'] = 'foo \''
-        self.assertEquals(expected, result)
-
-        # unclosed double quote
-        result = Prefix.smart_search('"')
-        expected['interpretation']['interpretation']['interpretation'] = 'unclosed quote'
-        expected['interpretation']['interpretation']['string'] = '"'
-        self.assertEquals(expected, result)
-
-
-
 class TestPrefixLastModified(unittest.TestCase):
     """ Test updates of the last modified value
     """
@@ -1835,13 +1801,15 @@ class TestSmartParser(unittest.TestCase):
     def test_prefix1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('foo')
+
+        success, query = n._parse_prefix_query('foo')
         exp_query = {
                 'interpretation': {
                     'attribute': 'description or comment or node or order_id or customer_id',
                     'interpretation': 'text',
                     'operator': 'regex',
-                    'string': 'foo'
+                    'string': 'foo',
+                    'error': False
                 },
                 'operator': 'or',
                 'val1': {
@@ -1880,6 +1848,7 @@ class TestSmartParser(unittest.TestCase):
                     }
                 }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -1887,19 +1856,22 @@ class TestSmartParser(unittest.TestCase):
     def test_prefix2(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('1.3.3.0/24')
+
+        success, query = n._parse_prefix_query('1.3.3.0/24')
         exp_query = {
                 'interpretation': {
                     'attribute': 'prefix',
                     'interpretation': 'IPv4 prefix',
                     'operator': 'contained_within_equals',
-                    'string': '1.3.3.0/24'
+                    'string': '1.3.3.0/24',
+                    'error': False
                 },
                 'operator': 'contained_within_equals',
                 'val1': 'prefix',
                 'val2': '1.3.3.0/24'
                 }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -1907,11 +1879,13 @@ class TestSmartParser(unittest.TestCase):
     def test_prefix3(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('1.3.3.0/24 foo')
+
+        success, query = n._parse_prefix_query('1.3.3.0/24 foo')
         exp_query = {
                 'interpretation': {
                     'interpretation': 'and',
                     'operator': 'and',
+                    'error': False
                 },
                 'operator': 'and',
                 'val1': {
@@ -1919,7 +1893,8 @@ class TestSmartParser(unittest.TestCase):
                         'attribute': 'prefix',
                         'interpretation': 'IPv4 prefix',
                         'operator': 'contained_within_equals',
-                        'string': u'1.3.3.0/24'
+                        'string': u'1.3.3.0/24',
+                        'error': False
                     },
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
@@ -1930,7 +1905,8 @@ class TestSmartParser(unittest.TestCase):
                         'attribute': 'description or comment or node or order_id or customer_id',
                         'interpretation': 'text',
                         'operator': 'regex',
-                        'string': u'foo'
+                        'string': u'foo',
+                        'error': False
                     },
                     'operator': 'or',
                     'val1': {
@@ -1970,45 +1946,90 @@ class TestSmartParser(unittest.TestCase):
                     }
                 }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
 
     def test_prefix4(self):
+        """ Test unclosed quotes
+        """
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
-            query = n._parse_prefix_query('"')
 
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
-            query = n._parse_prefix_query('\'')
+        expected = {
+            'operator': None,
+            'val1': None,
+            'val2': None,
+            'interpretation': {
+                'interpretation': None,
+                'string': None,
+                'attribute': 'text',
+                'operator': None,
+                'error': True,
+                'error_message': 'unclosed quote'
+            }
+        }
+
+        success, query = n._parse_vrf_query('"')
+        expected['interpretation']['string'] = '"'
+        self.assertEqual(success, False)
+        self.assertEquals(query, expected)
+
+        success, query = n._parse_prefix_query('\'')
+        expected['interpretation']['string'] = '\''
+        self.assertEqual(success, False)
+        self.assertEquals(query, expected)
 
 
 
     def test_prefix5(self):
+        """ Test unclosed parentheses
+        """
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
-            query = n._parse_prefix_query('(')
 
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
-            query = n._parse_prefix_query(')')
+        expected = {
+            'operator': None,
+            'val1': None,
+            'val2': None,
+            'interpretation': {
+                'interpretation': None,
+                'string': None,
+                'attribute': 'text',
+                'operator': None,
+                'error': True,
+                'error_message': 'unclosed parentheses'
+            }
+        }
+
+        success, query = n._parse_prefix_query('(')
+        expected['interpretation']['string'] = '('
+        self.assertEqual(success, False)
+        self.assertEquals(query, expected)
+
+        success, query = n._parse_prefix_query(')')
+        expected['interpretation']['string'] = ')'
+        self.assertEqual(success, False)
+        self.assertEquals(query, expected)
 
 
 
     def test_prefix6(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('foo-agg-1 vlan>100 vlan< 200')
+
+        success, query = n._parse_prefix_query('foo-agg-1 vlan>100 vlan< 200')
         exp_query = {
-            'interpretation': {'interpretation': 'and', 'operator': 'and'},
+            'interpretation': {'interpretation': 'and', 'operator': 'and', 'error': False},
             'operator': 'and',
-            'val1': {'interpretation': {'interpretation': 'and', 'operator': 'and'},
+            'val1': {'interpretation': {'interpretation': 'and', 'operator': 'and', 'error': False},
                      'operator': 'and',
                      'val1': {'interpretation': {'attribute': 'description or comment or node or order_id or customer_id',
                                                  'interpretation': 'text',
                                                  'operator': 'regex',
-                                                 'string': 'foo-agg-1'},
+                                                 'string': 'foo-agg-1',
+                                                 'error': False},
                               'operator': 'or',
                               'val1': {'operator': 'or',
                                        'val1': {'operator': 'or',
@@ -2033,7 +2054,8 @@ class TestSmartParser(unittest.TestCase):
                              'interpretation': 'expression',
                              'attribute': 'vlan',
                              'operator': '>',
-                             'string': 'vlan>100'
+                             'string': 'vlan>100',
+                             'error': False
                          },
                           'operator': '>',
                           'val1': 'vlan',
@@ -2045,7 +2067,8 @@ class TestSmartParser(unittest.TestCase):
                      'interpretation': 'expression',
                      'attribute': 'vlan',
                      'operator': '<',
-                     'string': 'vlan<200'
+                     'string': 'vlan<200',
+                     'error': False
                  },
                  'operator': '<',
                  'val1': 'vlan',
@@ -2054,6 +2077,7 @@ class TestSmartParser(unittest.TestCase):
         }
 
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2061,19 +2085,22 @@ class TestSmartParser(unittest.TestCase):
     def test_prefix7(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('123:456')
+
+        success, query = n._parse_prefix_query('123:456')
         exp_query = {
                 'interpretation': {
                     'attribute': 'VRF RT',
                     'string': '123:456',
                     'interpretation': 'vrf_rt',
                     'operator': 'equals',
+                    'error': False
                 },
                 'operator': 'equals',
                 'val1': 'vrf_rt',
                 'val2': u'123:456'
                 }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2081,19 +2108,22 @@ class TestSmartParser(unittest.TestCase):
     def test_prefix8(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('2001:1000::/32')
+
+        success, query = n._parse_prefix_query('2001:1000::/32')
         exp_query = {
                 'interpretation': {
                     'attribute': 'prefix',
                     'interpretation': 'IPv6 prefix',
                     'operator': 'contained_within_equals',
-                    'string': '2001:1000::/32'
+                    'string': '2001:1000::/32',
+                    'error': False
                 },
                 'operator': 'contained_within_equals',
                 'val1': 'prefix',
                 'val2': '2001:1000::/32'
                 }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2101,20 +2131,23 @@ class TestSmartParser(unittest.TestCase):
     def test_prefix9(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('2001:1000:1234::/32')
+
+        success, query = n._parse_prefix_query('2001:1000:1234::/32')
         exp_query = {
                 'interpretation': {
                     'attribute': 'prefix',
                     'interpretation': 'IPv6 prefix',
                     'operator': 'contained_within_equals',
                     'string': '2001:1000:1234::/32',
-                    'strict_prefix': '2001:1000::/32'
+                    'strict_prefix': '2001:1000::/32',
+                    'error': False
                 },
                 'operator': 'contained_within_equals',
                 'val1': 'prefix',
                 'val2': '2001:1000::/32'
                 }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2122,19 +2155,22 @@ class TestSmartParser(unittest.TestCase):
     def test_prefix10(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('2001:1000::')
+
+        success, query = n._parse_prefix_query('2001:1000::')
         exp_query = {
                 'interpretation': {
                     'attribute': 'prefix',
                     'interpretation': 'IPv6 address',
                     'operator': 'contains_equals',
-                    'string': '2001:1000::'
+                    'string': '2001:1000::',
+                    'error': False
                 },
                 'operator': 'contains_equals',
                 'val1': 'prefix',
                 'val2': '2001:1000::'
                 }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2142,19 +2178,22 @@ class TestSmartParser(unittest.TestCase):
     def test_prefix11(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('1.3.3.0')
+
+        success, query = n._parse_prefix_query('1.3.3.0')
         exp_query = {
                 'interpretation': {
                     'attribute': 'prefix',
                     'interpretation': 'IPv4 address',
                     'operator': 'contains_equals',
-                    'string': '1.3.3.0'
+                    'string': '1.3.3.0',
+                    'error': False
                 },
                 'operator': 'contains_equals',
                 'val1': 'prefix',
                 'val2': '1.3.3.0'
                 }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2162,20 +2201,23 @@ class TestSmartParser(unittest.TestCase):
     def test_prefix12(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('1.3.3.0/16')
+
+        success, query = n._parse_prefix_query('1.3.3.0/16')
         exp_query = {
                 'interpretation': {
                     'attribute': 'prefix',
                     'interpretation': 'IPv4 prefix',
                     'operator': 'contained_within_equals',
                     'string': '1.3.3.0/16',
-                    'strict_prefix': '1.3.0.0/16'
+                    'strict_prefix': '1.3.0.0/16',
+                    'error': False
                 },
                 'operator': 'contained_within_equals',
                 'val1': 'prefix',
                 'val2': '1.3.0.0/16'
                 }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2183,7 +2225,8 @@ class TestSmartParser(unittest.TestCase):
     def test_prefix13(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_prefix_query('1.3.3/16')
+
+        success, query = n._parse_prefix_query('1.3.3/16')
         exp_query = {
                 'interpretation': {
                     'attribute': 'prefix',
@@ -2191,27 +2234,253 @@ class TestSmartParser(unittest.TestCase):
                     'operator': 'contained_within_equals',
                     'string': '1.3.3/16',
                     'strict_prefix': '1.3.0.0/16',
-                    'expanded': '1.3.3.0/16'
+                    'expanded': '1.3.3.0/16',
+                    'error': False
                 },
                 'operator': 'contained_within_equals',
                 'val1': 'prefix',
                 'val2': '1.3.0.0/16'
                 }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
+
+
+
+    def test_prefix14(self):
+        """ Match against invalid attribute
+        """
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        expected = {
+            'operator': "=",
+            'val1': "foo",
+            'val2': "bar",
+            'interpretation': {
+                'interpretation': 'expression',
+                'string': 'foo=bar',
+                'attribute': 'foo',
+                'operator': '=',
+                'error': True,
+                'error_message': 'unknown attribute'
+            }
+        }
+
+        success, query = n._parse_vrf_query('foo=bar')
+
+        self.assertEqual(success, False)
+        self.assertEquals(expected, query)
+
+
+
+    def test_prefix15(self):
+        """ Match invalid prefix type
+        """
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        expected = {
+            'operator': "=",
+            'val1': "type",
+            'val2': "foo",
+            'interpretation': {
+                'interpretation': 'expression',
+                'string': 'type=foo',
+                'attribute': 'type',
+                'operator': '=',
+                'error': True,
+                'error_message': 'invalid value'
+            }
+        }
+
+        success, query = n._parse_prefix_query('type=foo')
+
+        self.assertEqual(success, False)
+        self.assertEquals(expected, query)
+
+
+
+    def test_prefix16(self):
+        """ Single quoted string, double quotes - "foo bar"
+        """
+
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        success, query = n._parse_prefix_query('"foo bar"')
+        expected = {
+            'interpretation': {
+                'string': 'foo bar',
+                'interpretation': 'text',
+                'operator': 'regex',
+                'attribute': 'description or comment or node or order_id or customer_id',
+                'error': False
+            },
+            'operator': 'or',
+            'val1': {
+                'operator': 'or',
+                 'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'regex_match',
+                            'val1': 'comment',
+                            'val2': 'foo bar',
+                        },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'description',
+                            'val2': 'foo bar'
+                        }
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'node',
+                        'val2': 'foo bar'
+                    }
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'order_id',
+                    'val2': 'foo bar'
+                 }
+            },
+            'val2': {
+                'operator': 'regex_match',
+                'val1': 'customer_id',
+                'val2': 'foo bar'
+            }
+        }
+
+        self.assertEqual(success, True)
+        self.assertEqual(query, expected)
+
+
+
+    def test_prefix17(self):
+        """ Mixed quoted and un-quoted strings, single quotes - 'foo bar' baz
+        """
+
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        success, query = n._parse_prefix_query('\'foo bar\' baz')
+        expected = {
+            'interpretation': {
+                'interpretation': 'and',
+                'operator': 'and',
+                'error': False
+            },
+            'operator': 'and',
+            'val1': {
+                'interpretation': {
+                    'string': 'foo bar',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'attribute': 'description or comment or node or order_id or customer_id',
+                    'error': False
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'or',
+                            'val1': {
+                                'operator': 'regex_match',
+                                'val1': 'comment',
+                                'val2': 'foo bar'
+                            },
+                            'val2': {
+                                'operator': 'regex_match',
+                                'val1': 'description',
+                                'val2': 'foo bar'
+                            }
+                        },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'node',
+                            'val2': 'foo bar'
+                        },
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'order_id',
+                        'val2': 'foo bar'
+                    },
+                },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'customer_id',
+                    'val2': 'foo bar'
+                }
+            },
+            'val2': {
+                'interpretation': {
+                    'string': 'baz',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'attribute': 'description or comment or node or order_id or customer_id',
+                    'error': False
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'or',
+                            'val1': {
+                                'operator': 'regex_match',
+                                'val1': 'comment',
+                                'val2': 'baz'
+                            },
+                            'val2': {
+                                'operator': 'regex_match',
+                                'val1': 'description',
+                                'val2': 'baz'
+                            }
+                        },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'node',
+                            'val2': 'baz'
+                        }
+                    },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'order_id',
+                        'val2': 'baz'
+                    }
+                },
+                'val2': {
+                    'val2': 'baz',
+                    'val1': 'customer_id',
+                    'operator': 'regex_match'
+                }
+            }
+        }
+
+        self.assertEqual(success, True)
+        self.assertEqual(query, expected)
 
 
 
     def test_vrf1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_vrf_query('foo')
+
+        success, query = n._parse_vrf_query('foo')
         exp_query = {
                 'interpretation': {
                     'attribute': 'vrf or name or description',
                     'interpretation': 'text',
                     'operator': 'regex',
-                    'string': u'foo'
+                    'string': u'foo',
+                    'error': False
                 },
                 'operator': 'or',
                 'val1': {
@@ -2233,6 +2502,8 @@ class TestSmartParser(unittest.TestCase):
                     'val2': u'foo'
                 }
             }
+
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2240,13 +2511,15 @@ class TestSmartParser(unittest.TestCase):
     def test_vrf2(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_vrf_query('123:456')
+
+        success, query = n._parse_vrf_query('123:456')
         exp_query = {
                 'interpretation': {
                     'attribute': 'vrf or name or description',
                     'interpretation': 'text',
                     'operator': 'regex',
-                    'string': u'123:456'
+                    'string': u'123:456',
+                    'error': False
                 },
                 'operator': 'or',
                 'val1': {
@@ -2269,6 +2542,7 @@ class TestSmartParser(unittest.TestCase):
                 }
             }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2276,53 +2550,100 @@ class TestSmartParser(unittest.TestCase):
     def test_vrf3(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_vrf_query('#bar')
+
+        success, query = n._parse_vrf_query('#bar')
         exp_query = {
                 'interpretation': {
                     'attribute': 'tag',
                     'interpretation': 'tag',
                     'operator': 'equals_any',
-                    'string': u'#bar'
+                    'string': u'#bar',
+                    'error': False
                 },
                 'operator': 'equals_any',
                 'val1': 'tags',
                 'val2': u'bar'
             }
 
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
 
     def test_vrf4(self):
+        """ Unclosed quotes
+        """
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
-            query = n._parse_vrf_query('"')
 
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
-            query = n._parse_vrf_query('\'')
+        expected = {
+            'operator': None,
+            'val1': None,
+            'val2': None,
+            'interpretation': {
+                'interpretation': None,
+                'string': None,
+                'attribute': 'text',
+                'operator': None,
+                'error': True,
+                'error_message': 'unclosed quote'
+            }
+        }
+
+        success, query = n._parse_vrf_query('"')
+        expected['interpretation']['string'] = '"'
+        self.assertEqual(success, False)
+        self.assertEqual(query, expected)
+
+        success, query = n._parse_vrf_query('\'')
+        expected['interpretation']['string'] = '\''
+        self.assertEqual(success, False)
+        self.assertEqual(query, expected)
 
 
 
     def test_vrf5(self):
+        """ Unclosed parentheses
+        """
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
-            query = n._parse_vrf_query('(')
 
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
-            query = n._parse_vrf_query(')')
+        expected = {
+            'operator': None,
+            'val1': None,
+            'val2': None,
+            'interpretation': {
+                'interpretation': None,
+                'string': None,
+                'attribute': 'text',
+                'operator': None,
+                'error': True,
+                'error_message': 'unclosed parentheses'
+            }
+        }
+
+        success, query = n._parse_vrf_query('(')
+        expected['interpretation']['string'] = '('
+        self.assertEqual(success, False)
+        self.assertEqual(query, expected)
+
+        success, query = n._parse_vrf_query(')')
+        expected['interpretation']['string'] = ')'
+        self.assertEqual(success, False)
+        self.assertEqual(query, expected)
 
 
 
     def test_vrf6(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_vrf_query('foo bar')
+
+        success, query = n._parse_vrf_query('foo bar')
         exp_query = {
                 'interpretation': {
                     'interpretation': 'and',
-                    'operator': 'and'
+                    'operator': 'and',
+                    'error': False
                 },
                 'operator': 'and',
                 'val1': {
@@ -2330,7 +2651,8 @@ class TestSmartParser(unittest.TestCase):
                         'attribute': 'vrf or name or description',
                         'interpretation': 'text',
                         'operator': 'regex',
-                        'string': u'foo'
+                        'string': u'foo',
+                        'error': False
                     },
                     'operator': 'or',
                     'val1': {
@@ -2357,7 +2679,8 @@ class TestSmartParser(unittest.TestCase):
                         'attribute': 'vrf or name or description',
                         'interpretation': 'text',
                         'operator': 'regex',
-                        'string': u'bar'
+                        'string': u'bar',
+                        'error': False
                     },
                     'operator': 'or',
                     'val1': {
@@ -2380,6 +2703,8 @@ class TestSmartParser(unittest.TestCase):
                     }
                 }
             }
+
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2387,13 +2712,15 @@ class TestSmartParser(unittest.TestCase):
     def test_pool1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_pool_query('foo')
+
+        success, query = n._parse_pool_query('foo')
         exp_query = {
                 'interpretation': {
                     'attribute': 'name or description',
                     'interpretation': 'text',
                     'operator': 'regex',
-                    'string': u'foo'
+                    'string': u'foo',
+                    'error': False
                 },
                 'operator': 'or',
                 'val1': {
@@ -2407,6 +2734,8 @@ class TestSmartParser(unittest.TestCase):
                     'val2': u'foo'
                 }
             }
+
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
@@ -2414,13 +2743,15 @@ class TestSmartParser(unittest.TestCase):
     def test_pool2(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_pool_query('123:456')
+
+        success, query = n._parse_pool_query('123:456')
         exp_query = {
                 'interpretation': {
                     'attribute': 'name or description',
                     'interpretation': 'text',
                     'operator': 'regex',
-                    'string': u'123:456'
+                    'string': u'123:456',
+                    'error': False
                 },
                 'operator': 'or',
                 'val1': {
@@ -2434,6 +2765,8 @@ class TestSmartParser(unittest.TestCase):
                     'val2': u'123:456'
                 }
             }
+
+        self.assertEqual(success, True)
         self.assertEqual(exp_query, query)
 
 
@@ -2441,53 +2774,100 @@ class TestSmartParser(unittest.TestCase):
     def test_pool3(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_pool_query('#bar')
+
+        success, query = n._parse_pool_query('#bar')
         exp_query = {
                 'interpretation': {
                     'attribute': 'tag',
                     'interpretation': 'tag',
                     'operator': 'equals_any',
-                    'string': '#bar'
+                    'string': '#bar',
+                    'error': False
                 },
                 'operator': 'equals_any',
                 'val1': 'tags',
                 'val2': 'bar'
             }
 
+        self.assertEqual(success, True)
         self.assertEqual(exp_query, query)
 
 
 
     def test_pool4(self):
+        """ Unclosed quote
+        """
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
-            query = n._parse_pool_query('"')
 
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed quote'):
-            query = n._parse_pool_query('\'')
+        expected = {
+            'operator': None,
+            'val1': None,
+            'val2': None,
+            'interpretation': {
+                'interpretation': None,
+                'string': None,
+                'attribute': 'text',
+                'operator': None,
+                'error': True,
+                'error_message': 'unclosed quote'
+            }
+        }
+
+        success, query = n._parse_pool_query('"')
+        expected['interpretation']['string'] = '"'
+        self.assertEqual(success, False)
+        self.assertEqual(query, expected)
+
+        success, query = n._parse_pool_query('\'')
+        expected['interpretation']['string'] = '\''
+        self.assertEqual(success, False)
+        self.assertEqual(query, expected)
 
 
 
     def test_pool5(self):
+        """ Unclosed parentheses
+        """
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
-            query = n._parse_pool_query('(')
 
-        with self.assertRaisesRegexp(nipap.backend.NipapValueError, 'Unclosed parentheses'):
-            query = n._parse_pool_query(')')
+        expected = {
+            'operator': None,
+            'val1': None,
+            'val2': None,
+            'interpretation': {
+                'interpretation': None,
+                'string': None,
+                'attribute': 'text',
+                'operator': None,
+                'error': True,
+                'error_message': 'unclosed parentheses'
+            }
+        }
+
+        success, query = n._parse_pool_query('(')
+        expected['interpretation']['string'] = '('
+        self.assertEqual(success, False)
+        self.assertEqual(query, expected)
+
+        success, query = n._parse_pool_query(')')
+        expected['interpretation']['string'] = ')'
+        self.assertEqual(success, False)
+        self.assertEqual(query, expected)
 
 
 
     def test_pool6(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
-        query = n._parse_pool_query('#foo and bar')
+
+        success, query = n._parse_pool_query('#foo and bar')
         exp_query = {
                 'interpretation': {
                     'interpretation': 'and',
-                    'operator': 'and'
+                    'operator': 'and',
+                    'error': False
                 },
                 'operator': 'and',
                 'val1': {
@@ -2495,7 +2875,8 @@ class TestSmartParser(unittest.TestCase):
                         'attribute': 'tag',
                         'interpretation': 'tag',
                         'operator': 'equals_any',
-                        'string': '#foo'
+                        'string': '#foo',
+                        'error': False
                     },
                     'operator': 'equals_any',
                     'val1': 'tags',
@@ -2506,7 +2887,8 @@ class TestSmartParser(unittest.TestCase):
                         'attribute': 'name or description',
                         'interpretation': 'text',
                         'operator': 'regex',
-                        'string': u'bar'
+                        'string': u'bar',
+                        'error': False
                     },
                     'operator': 'or',
                     'val1': {
@@ -2521,6 +2903,8 @@ class TestSmartParser(unittest.TestCase):
                     }
                 }
             }
+
+        self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 

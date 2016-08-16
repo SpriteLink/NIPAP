@@ -180,16 +180,42 @@ def _parse_interp_pool(query, indent=-5, pandop=False):
     text = None
     text2 = None
     andop = False
-    if interp['operator'] in ['and', 'or']:
+
+    # "Major" parser error, unable to parse string
+    if interp.get('error') is True and interp['operator'] is None:
+
+        if interp['error_message'] == 'unclosed quote':
+            text = "%s: %s, please close quote!" % (interp['string'], interp['error_message'])
+            text2 = "This is not a proper search term as it contains an uneven amount of quotes."
+
+        elif interp['error_message'] == 'unclosed parentheses':
+            text = "%s: %s, please close parentheses!" % (interp['string'], interp['error_message'])
+            text2 = "This is not a proper search term as it contains an uneven amount of parentheses."
+
+    elif interp['operator'] in ['and', 'or']:
         andop = True
-    elif interp['interpretation'] == 'unclosed quote':
-        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
-        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+
     elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
         text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
         text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+
     else:
         text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+
+    # "Minor" error messages, string could be parsed but contain errors
+    if interp.get('error') is True and interp['operator'] is not None: # .get() for backwards compatibiliy
+        if interp['error_message'] == 'invalid value':
+            text += ": invalid value!"
+            text2 = "The value provided is not valid for the attribute '%s'." % interp['attribute']
+
+        elif interp['error_message'] == 'unknown attribute':
+            text += ": unknown attribute '%s'!" % interp['attribute']
+            text2 = "There is no pool attribute '%s'." % interp['attribute']
+
+        else:
+            text += ": %s, invalid query" % interp['error_message']
+            text2 = "This is not a proper search query."
+
     if text:
         if pandop:
             a = '     '
@@ -234,6 +260,10 @@ def list_pool(arg, opts, shell_opts):
                 print "Query interpretation:"
                 _parse_interp_pool(res['interpretation'])
 
+            if res['error']:
+                print "Query failed: %s" % res['error_message']
+                return
+
             if len(res['result']) == 0:
                 print "No matching pools found"
                 return
@@ -277,16 +307,42 @@ def _parse_interp_vrf(query, indent=-5, pandop=False):
     text = None
     text2 = None
     andop = False
-    if interp['operator'] in ['and', 'or']:
+
+    # "Major" parser error, unable to parse string
+    if interp.get('error') is True and interp['operator'] is None:
+
+        if interp['error_message'] == 'unclosed quote':
+            text = "%s: %s, please close quote!" % (interp['string'], interp['error_message'])
+            text2 = "This is not a proper search term as it contains an uneven amount of quotes."
+
+        elif interp['error_message'] == 'unclosed parentheses':
+            text = "%s: %s, please close parentheses!" % (interp['string'], interp['error_message'])
+            text2 = "This is not a proper search term as it contains an uneven amount of parentheses."
+
+    elif interp['operator'] in ['and', 'or']:
         andop = True
-    elif interp['interpretation'] == 'unclosed quote':
-        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
-        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+
     elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
         text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
         text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+
     else:
         text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+
+    # "Minor" error messages, string could be parsed but contain errors
+    if interp.get('error') is True and interp['operator'] is not None: # .get() for backwards compatibiliy
+        if interp['error_message'] == 'invalid value':
+            text += ": invalid value!"
+            text2 = "The value provided is not valid for the attribute '%s'." % interp['attribute']
+
+        elif interp['error_message'] == 'unknown attribute':
+            text += ": unknown attribute '%s'!" % interp['attribute']
+            text2 = "There is no pool attribute '%s'." % interp['attribute']
+
+        else:
+            text += ": %s, invalid query" % interp['error_message']
+            text2 = "This is not a proper search query."
+
     if text:
         if pandop:
             a = '     '
@@ -319,6 +375,10 @@ def list_vrf(arg, opts, shell_opts):
                 print "Query interpretation:"
                 _parse_interp_vrf(res['interpretation'])
 
+            if res['error']:
+                print "Query failed: %s" % res['error_message']
+                return
+
             if len(res['result']) == 0:
                 print "No VRFs matching '%s' found." % search_string
                 return
@@ -348,25 +408,38 @@ def _parse_interp_prefix(query, indent=-5, pandop=False):
     text = None
     text2 = None
     andop = False
-    if interp['operator'] in ['and', 'or']:
+
+    # "Major" parser error, unable to parse string
+    if interp.get('error') is True and interp['operator'] is None:
+
+        if interp['error_message'] == 'unclosed quote':
+            text = "%s: %s, please close quote!" % (interp['string'], interp['error_message'])
+            text2 = "This is not a proper search term as it contains an uneven amount of quotes."
+
+        elif interp['error_message'] == 'unclosed parentheses':
+            text = "%s: %s, please close parentheses!" % (interp['string'], interp['error_message'])
+            text2 = "This is not a proper search term as it contains an uneven amount of parentheses."
+
+    elif interp['operator'] in ['and', 'or']:
         andop = True
-    elif interp['interpretation'] == 'unclosed quote':
-        text = "%s: %s, please close quote!" % (interp['string'], interp['interpretation'])
-        text2 = "This is not a proper search term as it contains en uneven amount of quotes."
+
     elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
         text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
         text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+
     elif interp['attribute'] == 'prefix' and interp['operator'] == 'contained_within_equals':
         if 'strict_prefix' in interp and 'expanded' in interp:
             text = "%s: %s within %s" % (interp['string'],
                     interp['interpretation'],
                     interp['strict_prefix'])
             text2 = "Prefix must be contained within %s, which is the base prefix of %s (automatically expanded from %s)." % (interp['strict_prefix'], interp['expanded'], interp['string'])
+
         elif 'strict_prefix' in interp:
             text = "%s: %s within %s" % (interp['string'],
                     interp['interpretation'],
                     interp['strict_prefix'])
             text2 = "Prefix must be contained within %s, which is the base prefix of %s." % (interp['strict_prefix'], interp['string'])
+
         elif 'expanded' in interp:
             text = "%s: %s within %s" % (interp['string'],
                     interp['interpretation'],
@@ -377,14 +450,32 @@ def _parse_interp_prefix(query, indent=-5, pandop=False):
                     interp['interpretation'],
                     interp['string'])
             text2 = "Prefix must be contained within %s." % (interp['string'])
+
     elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
         text = "%s: Prefix that contains %s" % (interp['string'],
                 interp['string'])
+
     elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
         text = "%s: %s equal to %s" % (interp['string'],
                 interp['interpretation'], interp['string'])
+
     else:
         text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+
+    # "Minor" error messages, string could be parsed but contain errors
+    if interp.get('error') is True and interp['operator'] is not None: # .get() for backwards compatibiliy
+        if interp['error_message'] == 'invalid value':
+            text += ": invalid value!"
+            text2 = "The value provided is not valid for the attribute '%s'." % interp['attribute']
+
+        elif interp['error_message'] == 'unknown attribute':
+            text += ": unknown attribute '%s'!" % interp['attribute']
+            text2 = "There is no prefix attribute '%s'." % interp['attribute']
+
+        else:
+            text += ": %s, invalid query" % interp['error_message']
+            text2 = "This is not a proper search query."
+
     if text:
         if pandop:
             a = '     '
@@ -487,6 +578,10 @@ def list_prefix(arg, opts, shell_opts):
             if shell_opts.show_interpretation:
                 print "Query interpretation:"
                 _parse_interp_prefix(res['interpretation'])
+
+            if res['error']:
+                print "Query failed: %s" % res['error_message']
+                return
 
             if len(res['result']) == 0:
                 print "No addresses matching '%s' found." % search_string

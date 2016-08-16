@@ -1660,23 +1660,14 @@ class Nipap:
 
         self._logger.debug("smart_search_vrf query string: %s" % query_str)
 
-        try:
-            query = self._parse_vrf_query(query_str)
-        except NipapValueError as exc:
+        success, query = self._parse_vrf_query(query_str)
+        if not success:
             return {
-                'interpretation': {
-                    'operator': None,
-                    'val1': None,
-                    'val2': None,
-                    'interpretation': {
-                        'string': query_str,
-                        'interpretation': 'unclosed quote',
-                        'attribute': 'text',
-                        'operator': None
-                    }
-                },
+                'interpretation': query,
                 'search_options': search_options,
-                'result': []
+                'result': [],
+                'error': True,
+                'error_message': 'query interpretation failed'
             }
 
         if extra_query is not None:
@@ -1690,6 +1681,7 @@ class Nipap:
 
         search_result = self.search_vrf(auth, query, search_options)
         search_result['interpretation'] = query
+        search_result['error'] = False
 
         return search_result
 
@@ -2282,24 +2274,15 @@ class Nipap:
 
         self._logger.debug("smart_search_pool query string: %s" % query_str)
 
-        try:
-            query = self._parse_pool_query(query_str)
-        except NipapValueError:
+        success, query = self._parse_pool_query(query_str)
+        if not success:
             return {
-                'interpretation': {
-                    'operator': None,
-                    'val1': None,
-                    'val2': None,
-                    'interpretation': {
-                        'string': query_str,
-                        'interpretation': 'unclosed quote',
-                        'attribute': 'text',
-                        'operator': None
-                    }
-                },
+                'interpretation': query,
                 'search_options': search_options,
-                'result': []
-            }
+                'result': [],
+                'error': True,
+                'error_message': 'query interpretation failed'
+        }
 
         if extra_query is not None:
             query = {
@@ -2312,6 +2295,7 @@ class Nipap:
 
         search_result = self.search_pool(auth, query, search_options)
         search_result['interpretation'] = query
+        search_result['error'] = False
 
         return search_result
 
@@ -3630,23 +3614,14 @@ class Nipap:
 
         self._logger.debug("smart_search_prefix query string: %s" % query_str)
 
-        try:
-            query = self._parse_prefix_query(query_str)
-        except NipapValueError:
+        success, query = self._parse_prefix_query(query_str)
+        if not success:
             return {
-                'interpretation': {
-                    'operator': None,
-                    'val1': None,
-                    'val2': None,
-                    'interpretation': {
-                        'string': query_str,
-                        'interpretation': 'unclosed quote',
-                        'attribute': 'text',
-                        'operator': None
-                    }
-                },
+                'interpretation': query,
                 'search_options': search_options,
-                'result': []
+                'result': [],
+                'error': True,
+                'error_message': 'query interpretation failed'
             }
 
         if extra_query is not None:
@@ -3660,6 +3635,7 @@ class Nipap:
 
         search_result = self.search_prefix(auth, query, search_options)
         search_result['interpretation'] = query
+        search_result['error'] = False
 
         return search_result
 
@@ -4106,24 +4082,15 @@ class Nipap:
 
         self._logger.debug("smart_search_asn called; query_str: %s" % query_str)
 
-        try:
-            query = self._parse_asn_query(query_str)
-        except NipapValueError:
+        success, query = self._parse_asn_query(query_str)
+        if not success:
             return {
-                    'interpretation': {
-                        'operator': None,
-                        'val1': None,
-                        'val2': None,
-                        'interpretation': {
-                            'string': query_str,
-                            'interpretation': 'unclosed quote',
-                            'attribute': 'text',
-                            'operator': None
-                        }
-                    },
+                    'interpretation': query,
                     'search_options': search_options,
-                    'result': []
-                }
+                    'result': [],
+                    'error': True,
+                    'error_message': 'query interpretaion failed'
+            }
 
         if extra_query is not None:
             query = {
@@ -4136,6 +4103,7 @@ class Nipap:
 
         search_result = self.search_asn(auth, query, search_options)
         search_result['interpretation'] = query
+        search_result['error'] = False
 
         return search_result
 
@@ -4144,7 +4112,7 @@ class Nipap:
     def _parse_asn_query(self, query_str):
         """ Parse a smart search query for ASNs
 
-            This is a helper function to smart_search_pool for easier unit
+            This is a helper function to smart_search_asn for easier unit
             testing of the parser.
         """
         # find query parts
@@ -4205,7 +4173,7 @@ class Nipap:
                     'val2': query
                 }
 
-        return query
+        return True, query
 
 
 
