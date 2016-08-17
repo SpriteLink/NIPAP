@@ -391,7 +391,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		query_data.pool = null;
 
 		// Tags, VRF and pool are needed no matter allocation method
-		query_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
+		query_data.tags = encodeURIComponent(JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; })));
 		if ($scope.prefix.vrf != null) {
 			query_data.vrf = $scope.prefix.vrf.id;
 		}
@@ -405,7 +405,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		$scope.prefix.avps.forEach(function(avp) {
 			query_data.avps[avp.attribute] = avp.value;
 		});
-		query_data.avps = JSON.stringify(query_data.avps);
+		query_data.avps = encodeURIComponent(JSON.stringify(query_data.avps));
 
 
 		if ($scope.prefix_alloc_method == 'from-pool') {
@@ -605,13 +605,13 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 		delete prefix_data.vrf;
 
 		// Mangle tags
-		prefix_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
+		prefix_data.tags = encodeURIComponent(JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; })));
 		// Mangle avps
 		prefix_data.avps = {};
 		$scope.prefix.avps.forEach(function(avp) {
 			prefix_data.avps[avp.attribute] = avp.value;
 		});
-		prefix_data.avps = JSON.stringify(prefix_data.avps);
+		prefix_data.avps = encodeURIComponent(JSON.stringify(prefix_data.avps));
 
 		// handle null or 'infinity' as.. infinity
 		if ($scope.prefix.expires == null) {
@@ -684,12 +684,12 @@ nipapAppControllers.controller('VRFAddController', function ($scope, $http) {
 		var query_data = angular.copy($scope.vrf);
 
 		// Rewrite tags list to match what's expected by the XHR functions
-		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
+		query_data.tags = encodeURIComponent(JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; })));
 		query_data.avps = {};
 		$scope.vrf.avps.forEach(function(avp) {
 			query_data.avps[avp.attribute] = avp.value;
 		});
-		query_data.avps = JSON.stringify(query_data.avps);
+		query_data.avps = encodeURIComponent(JSON.stringify(query_data.avps));
 
 		// Send query!
 		$http.get('/xhr/add_vrf', { 'params': query_data })
@@ -809,12 +809,12 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 		var query_data = angular.copy($scope.vrf);
 
 		// Rewrite tags list to match what's expected by the XHR functions
-		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
+		query_data.tags = encodeURIComponent(JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; })));
 		query_data.avps = {};
 		$scope.vrf.avps.forEach(function(avp) {
 			query_data.avps[avp.attribute] = avp.value;
 		});
-		query_data.avps = JSON.stringify(query_data.avps);
+		query_data.avps = encodeURIComponent(JSON.stringify(query_data.avps));
 
 		// Send query!
 		$http.get('/xhr/edit_vrf/' + $scope.vrf.id, { 'params': query_data })

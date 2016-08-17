@@ -1,4 +1,5 @@
 import logging
+import urllib
 try:
     import json
 except ImportError:
@@ -136,10 +137,10 @@ class XhrController(BaseController):
         if 'description' in request.params:
             v.description = request.params['description']
         if 'tags' in request.params:
-            v.tags = json.loads(request.params['tags'])
+            v.tags = json.loads(urllib.unquote(request.params['tags']))
 
         if 'avps' in request.params:
-            v.avps = json.loads(request.params['avps'])
+            v.avps = json.loads(urllib.unquote(request.params['avps']))
 
         try:
             v.save()
@@ -172,10 +173,10 @@ class XhrController(BaseController):
         if 'description' in request.params:
             v.description = request.params['description']
         if 'tags' in request.params:
-            v.tags = json.loads(request.params['tags'])
+            v.tags = json.loads(urllib.unquote(request.params['tags']))
 
         if 'avps' in request.params:
-            v.avps = json.loads(request.params['avps'])
+            v.avps = json.loads(urllib.unquote(request.params['avps']))
 
         try:
             v.save()
@@ -268,9 +269,9 @@ class XhrController(BaseController):
             if request.params['ipv6_default_prefix_length'].strip() != '':
                 p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
         if 'tags' in request.params:
-            p.tags = json.loads(request.params['tags'])
+            p.tags = json.loads(urllib.unquote(request.params['tags']))
         if 'avps' in request.params:
-            p.avps = json.loads(request.params['avps'])
+            p.avps = json.loads(urllib.unquote(request.params['avps']))
 
         try:
            p.save()
@@ -304,9 +305,9 @@ class XhrController(BaseController):
             else:
                 p.ipv6_default_prefix_length = None
         if 'tags' in request.params:
-            p.tags = json.loads(request.params['tags'])
+            p.tags = json.loads(urllib.unquote(request.params['tags']))
         if 'avps' in request.params:
-            p.avps = json.loads(request.params['avps'])
+            p.avps = json.loads(urllib.unquote(request.params['avps']))
 
         try:
            p.save()
@@ -617,10 +618,10 @@ class XhrController(BaseController):
                 p.vlan = request.params['vlan']
 
         if 'tags' in request.params:
-            p.tags = json.loads(request.params['tags'])
+            p.tags = json.loads(urllib.unquote(request.params['tags']))
 
         if 'avps' in request.params:
-            p.avps = json.loads(request.params['avps'])
+            p.avps = json.loads(urllib.unquote(request.params['avps']))
 
         # arguments
         args = {}
@@ -744,10 +745,10 @@ class XhrController(BaseController):
                     p.vlan = request.params['vlan']
 
             if 'tags' in request.params:
-                p.tags = json.loads(request.params['tags'])
+                p.tags = json.loads(urllib.unquote(request.params['tags']))
 
             if 'avps' in request.params:
-                p.avps = json.loads(request.params['avps'])
+                p.avps = json.loads(urllib.unquote(request.params['avps']))
 
             p.save()
 
