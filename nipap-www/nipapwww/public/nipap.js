@@ -964,7 +964,7 @@ function receiveVRFSelector(result) {
 	// If it's a search for the default VRF, ie empty search, then display the
 	// currently selected VRFs. For other search, we don't show the currently
 	// selected to avoid cluttering the result list.
-	if (result.interpretation.length == 1 && result.interpretation[0].string == '') {
+	if ($('input[name="vrf_search_string"]').val() == "") {
 		// add selected VRFs to the selectedbar
 		$.each(selected_vrfs, function (k, v) {
 			// except for the default VRF, since that will already be included
@@ -1028,7 +1028,7 @@ function clickFilterVRFSelector(evt) {
 	var tgt = evt.target;
 	while (true) {
 		if (tgt.hasAttribute('data-vrf_id')) {
-			break
+			break;
 		}
 		tgt = tgt.parentElement;
 	}
