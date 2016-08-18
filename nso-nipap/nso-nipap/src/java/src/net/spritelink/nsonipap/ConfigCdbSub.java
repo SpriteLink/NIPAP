@@ -130,7 +130,8 @@ public class ConfigCdbSub implements ApplicationComponent {
 						nipapCon.authoritative_source = "ncs";
 
 					} catch (Exception e) {
-						LOGGER.error("Unable to initiate connection to NIPAP");
+						LOGGER.error("Unable to initiate connection to NIPAP: " + e.getMessage());
+						continue;
 					}
 
 
@@ -164,7 +165,8 @@ public class ConfigCdbSub implements ApplicationComponent {
 							p.save(nipapCon, (Pool)poolRes.get(0), opts);
 
 						} catch (Exception e) {
-							LOGGER.error("Unable to get prefix from NIPAP", e);
+							LOGGER.error("Unable to get prefix from NIPAP: " + e.getMessage(), e);
+							continue;
 						}
 
                         // Write the result
@@ -186,6 +188,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 							LOGGER.info("redeploy-service: " + redeployPath);
 							redeploy(redeployPath + "/re-deploy");
 						} catch (Exception e) {
+							LOGGER.error("Redeploy failed: " + e.getMessage());
 						}
                     }
 
@@ -201,7 +204,8 @@ public class ConfigCdbSub implements ApplicationComponent {
 							wsess.delete(req.path + "/prefix_id");
 							wsess.delete(req.path + "/prefix");
                         } catch (Exception e) {
-                            LOGGER.error("Unable to remove prefix from NIPAP",e);
+                            LOGGER.error("Unable to remove prefix from NIPAP: " + e.getMessage(),e);
+                            continue;
                         }
 
                     }
