@@ -68,7 +68,7 @@
         pynipap.xmlrpc_uri = "http://user:pass@127.0.0.1:1337/XMLRPC"
 
     If you want to access the API externally, from another host, update the
-    corresponding lines in the nipap.conf file. Here you can also change the port.
+    corresponding lines in the nipap.conf file. Here you can also change the port. ::
         
         listen = 0.0.0.0              ; IP address to listen on.
         port = 1337             ; XML-RPC listen port (change requires restart)
@@ -132,6 +132,7 @@
     Performing searches
     ^^^^^^^^^^^^^^^^^^^
     Searches are easiest when using the object's :func:`smart_search`-method::
+
         #Returns a dict which includes search metadata and 
         #a 'result' : [array, of, prefix, objects]
         search_result = Prefix.smart_search('127.0.0.0/8')
@@ -139,14 +140,15 @@
         prefix_objects[0].description
         prefix_objects[0].prefix
 
-    You can also send query filters.
+    You can also send query filters. ::
+
         #Find the prefix for Vlan 901
         vlan = 901
         vlan_query = { 'val1': 'vlan', 'operator': 'equals', 'val2': vlan }
         vlan_901 = Prefix.smart_search('', { }, vlan_query)['result'][0]
         vlan_901.vlan
     
-    The following operators can be used.
+    The following operators can be used. ::
 
         * 'and'
         * 'or'
