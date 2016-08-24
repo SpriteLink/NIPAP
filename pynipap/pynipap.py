@@ -60,12 +60,18 @@
     Before you can access NIPAP you need to specify the URL to the NIPAP
     XML-RPC service and the authentication options to use for your connection.
     NIPAP has a authentication system which is somewhat involved, see the main
-    NIPAP documentation.
+    NIPAP documentation. 
 
     The URL, including the user credentials, is set in the pynipap module
     variable `xmlrpc_uri` as so::
 
-        pynipap.xmlrpc_uri = "http://user:pass@127.0.0.1:9002"
+        pynipap.xmlrpc_uri = "http://user:pass@127.0.0.1:1337/XMLRPC"
+
+    If you want to access the API externally, from another host, update the
+    corresponding lines in the nipap.conf file. Here you can also change the port.
+        
+        listen = 0.0.0.0              ; IP address to listen on.
+        port = 1337             ; XML-RPC listen port (change requires restart)
 
     The minimum authentication options which we need to set is the
     `authoritative_source` option, which specifies what system is accessing
@@ -125,7 +131,51 @@
 
     Performing searches
     ^^^^^^^^^^^^^^^^^^^
-    Commin' up, commin' up.
+    Searches are easiest when using the object's :func:`smart_search`-method::
+        #Returns a dict which includes search metadata and 
+        #a 'result' : [array, of, prefix, objects]
+        search_result = Prefix.smart_search('127.0.0.0/8')
+        prefix_objects = search_result['result']
+        prefix_objects[0].description
+        prefix_objects[0].prefix
+
+    You can also send query filters.
+        #Find the prefix for Vlan 901
+        vlan = 901
+        vlan_query = { 'val1': 'vlan', 'operator': 'equals', 'val2': vlan }
+        vlan_901 = Prefix.smart_search('', { }, vlan_query)['result'][0]
+        vlan_901.vlan
+    
+    The following operators can be used.
+
+        * 'and'
+        * 'or'
+        * 'equals_any'
+        * '='
+        * 'equals'
+        * '<'
+        * 'less'
+        * '<='
+        * 'less_or_equal'
+        * '>'
+        * 'greater'
+        * '>='
+        * 'greater_or_equal'
+        * 'is'
+        * 'is_not'
+        * '!='
+        * 'not_equals'
+        * 'like': '
+        * 'regex_match'
+        * 'regex_not_match'
+        * '>>':
+        * 'contains'
+        * '>>='
+        * 'contains_equals'
+        * '<<'
+        * 'contained_within'
+        * '<<='
+        * 'contained_within_equals'
 
     Saving changes
     ^^^^^^^^^^^^^^
