@@ -184,7 +184,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 						try {
 							ConfValue redeployPath = maapi.getElem(th, req.path + "/redeploy-service");
 							LOGGER.info("redeploy-service: " + redeployPath);
-							redeploy(redeployPath + "/re-deploy");
+							redeploy(redeployPath.toString());
 						} catch (Exception e) {
 						}
                     }
