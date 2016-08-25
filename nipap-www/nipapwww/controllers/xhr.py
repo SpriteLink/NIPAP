@@ -13,6 +13,16 @@ from pynipap import Tag, VRF, Prefix, Pool, NipapError
 
 log = logging.getLogger(__name__)
 
+
+
+def validate_string(req, key):
+
+    if isinstance(req[key], basestring) and req[key].strip() != '':
+        return req[key].strip()
+    else:
+        return None
+
+
 class XhrController(BaseController):
     """ Interface to a few of the NIPAP API functions.
     """
@@ -129,13 +139,11 @@ class XhrController(BaseController):
 
         v = VRF()
         if 'rt' in request.json:
-            if request.json['rt'] is not None and len(unicode(request.json['rt'])) != 0 :
-                v.rt = request.json['rt'].strip()
+            v.rt = validate_string(request.json, 'rt')
         if 'name' in request.json:
-            if request.json['name'] is not None and len(unicode(request.json['name'])) != 0:
-                v.name = request.json['name'].strip()
+            v.name = validate_string(request.json, 'name')
         if 'description' in request.json:
-            v.description = request.json['description']
+            v.description = validate_string(request.json, 'description')
         if 'tags' in request.json:
             v.tags = request.json['tags']
         if 'avps' in request.json:
@@ -160,17 +168,11 @@ class XhrController(BaseController):
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         if 'rt' in request.json:
-            if request.json['rt'] is not None:
-                v.rt = request.json['rt'].strip()
-            else:
-                v.rt = None
+            v.rt = validate_string(request.json, 'rt')
         if 'name' in request.json:
-            if request.json['name'] is not None:
-                v.name = request.json['name'].strip()
-            else:
-                v.name = None
+            v.name = validate_string(request.json, 'name')
         if 'description' in request.json:
-            v.description = request.json['description']
+            v.description = validate_string(request.json, 'description')
         if 'tags' in request.json:
             v.tags = request.json['tags']
         if 'avps' in request.json:
@@ -257,9 +259,13 @@ class XhrController(BaseController):
 
         # extract attributes
         p = Pool()
-        p.name = request.json.get('name')
-        p.description = request.json.get('description')
-        p.default_type = request.json.get('default_type')
+        if 'name' in request.json:
+            p.name = validate_string(request.json, 'name')
+        if 'description' in request.json:
+            p.description = validate_string(request.json, 'description')
+        if 'default_type' in request.json:
+            p.default_type = validate_string(request.json, 'default_type')
+        # TODO: handle integers
         if 'ipv4_default_prefix_length' in request.json:
             if request.json['ipv4_default_prefix_length'].strip() != '':
                 p.ipv4_default_prefix_length = request.json['ipv4_default_prefix_length']
@@ -287,11 +293,12 @@ class XhrController(BaseController):
         # extract attributes
         p = Pool.get(int(id))
         if 'name' in request.json:
-            p.name = request.json['name']
+            p.name = validate_string(request.json, 'name')
         if 'description' in request.json:
-            p.description = request.json['description']
+            p.description = validate_string(request.json, 'description')
         if 'default_type' in request.json:
-            p.default_type = request.json['default_type']
+            p.default_type = validate_string(request.json, 'default_type')
+        # TODO: handle integers
         if 'ipv4_default_prefix_length' in request.json:
             if request.json['ipv4_default_prefix_length'].strip() != '':
                 p.ipv4_default_prefix_length = request.json['ipv4_default_prefix_length']
@@ -562,28 +569,19 @@ class XhrController(BaseController):
                 return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         if 'description' in request.json:
-            if request.json['description'].strip() != '':
-                p.description = request.json['description'].strip()
-
+            p.description = validate_string(request.json, 'description')
         if 'expires' in request.json:
-            if request.json['expires'].strip() != '':
-                p.expires = request.json['expires'].strip(' "')
-
+            p.expires = validate_string(request.json, 'expires')
         if 'comment' in request.json:
-            if request.json['comment'].strip() != '':
-                p.comment = request.json['comment'].strip()
-
+            p.comment = validate_string(request.json, 'comment')
         if 'node' in request.json:
-            if request.json['node'].strip() != '':
-                p.node = request.json['node'].strip()
-
+            p.node = validate_string(request.json, 'node')
         if 'status' in request.json:
-            p.status = request.json['status'].strip()
-
+            p.status = validate_string(request.json, 'status')
         if 'type' in request.json:
-            p.type = request.json['type'].strip()
+            p.type = validate_string(request.json, 'type')
 
-        if 'pool' in request.json:
+        if isinstance(request.json.get('pool'), basestring):
             if request.json['pool'].strip() != '':
                 try:
                     p.pool = Pool.get(int(request.json['pool']))
@@ -591,20 +589,13 @@ class XhrController(BaseController):
                     return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         if 'country' in request.json:
-            if request.json['country'].strip() != '':
-                p.country = request.json['country'].strip()
-
+            p.country = validate_string(request.json, 'country')
         if 'order_id' in request.json:
-            if request.json['order_id'].strip() != '':
-                p.order_id = request.json['order_id'].strip()
-
+            p.order_id = validate_string(request.json, 'order_id')
         if 'customer_id' in request.json:
-            if request.json['customer_id'].strip() != '':
-                p.customer_id = request.json['customer_id'].strip()
-
+            p.customer_id = validate_string(request.json, 'customer_id')
         if 'alarm_priority' in request.json:
-            p.alarm_priority = request.json['alarm_priority'].strip()
-
+            p.alarm_priority = validate_string(request.json, 'alarm_priority')
         if 'monitor' in request.json:
             if request.json['monitor'] == 'true':
                 p.monitor = True
@@ -612,8 +603,7 @@ class XhrController(BaseController):
                 p.monitor = False
 
         if 'vlan' in request.json:
-            if request.json['vlan'].strip() != '':
-                p.vlan = request.json['vlan']
+            p.vlan = request.json['vlan']
 
         if 'tags' in request.json:
             p.tags = request.json['tags']
@@ -658,39 +648,21 @@ class XhrController(BaseController):
 
             # extract attributes
             if 'prefix' in request.json:
-                p.prefix = request.json['prefix']
-
+                p.prefix = validate_string(request.json, 'prefix')
             if 'type' in request.json:
-                p.type = request.json['type'].strip()
-
+                p.type = validate_string(request.json, 'type')
             if 'description' in request.json:
-                if request.json['description'].strip() == '':
-                    p.description = None
-                else:
-                    p.description = request.json['description'].strip()
-
+                p.description = validate_string(request.json, 'description')
             if 'expires' in request.json:
-                if request.json['expires'].strip() == '':
-                    p.expires = None
-                else:
-                    p.expires = request.json['expires'].strip(' "')
-
+                p.expires = validate_string(request.json, 'expires')
             if 'comment' in request.json:
-                if request.json['comment'].strip() == '':
-                    p.comment = None
-                else:
-                    p.comment = request.json['comment'].strip()
-
+                p.comment = validate_string(request.json, 'comment')
             if 'node' in request.json:
-                if request.json['node'].strip() == '':
-                    p.node = None
-                else:
-                    p.node = request.json['node'].strip()
-
+                p.node = validate_string(request.json, 'node')
             if 'status' in request.json:
-                p.status = request.json['status'].strip()
+                p.status = validate_string(request.json, 'status')
 
-            if 'pool' in request.json:
+            if isinstance(request.json.get('pool'), basestring):
                 if request.json['pool'].strip() == '':
                     p.pool = None
                 else:
@@ -700,8 +672,7 @@ class XhrController(BaseController):
                         return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
             if 'alarm_priority' in request.json:
-                p.alarm_priority = request.json['alarm_priority'].strip()
-
+                p.alarm_priority = validate_string(request.json, 'alarm_priority')
             if 'monitor' in request.json:
                 if request.json['monitor'] == 'true':
                     p.monitor = True
@@ -709,22 +680,11 @@ class XhrController(BaseController):
                     p.monitor = False
 
             if 'country' in request.json:
-                if request.json['country'].strip() == '':
-                    p.country = None
-                else:
-                    p.country = request.json['country'].strip()
-
+                p.country = validate_string(request.json, 'country')
             if 'order_id' in request.json:
-                if request.json['order_id'].strip() == '':
-                    p.order_id = None
-                else:
-                    p.order_id = request.json['order_id'].strip()
-
+                p.order_id = validate_string(request.json, 'order_id')
             if 'customer_id' in request.json:
-                if request.json['customer_id'].strip() == '':
-                    p.customer_id = None
-                else:
-                    p.customer_id = request.json['customer_id'].strip()
+                p.customer_id = validate_string(request.json, 'customer_id')
 
             if 'vrf' in request.json:
 
@@ -739,8 +699,7 @@ class XhrController(BaseController):
                     return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
             if 'vlan' in request.json:
-                if request.json['vlan'].strip() != '':
-                    p.vlan = request.json['vlan']
+                p.vlan = request.json['vlan']
 
             if 'tags' in request.json:
                 p.tags = request.json['tags']
