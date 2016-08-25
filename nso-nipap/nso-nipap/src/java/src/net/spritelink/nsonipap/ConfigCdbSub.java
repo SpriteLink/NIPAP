@@ -73,9 +73,6 @@ public class ConfigCdbSub implements ApplicationComponent {
             // Tell CDB we are ready for notifications
             sub.subscribeDone();
 
-            // Setup the external allocator
-            //externalAllocator.initialize();
-
         }
         catch (Exception e) {
             LOGGER.error("", e);
@@ -135,7 +132,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 					}
 
 
-					// allocate integer
+					// allocate prefix
                     if ((req.op == Operation.ALLOCATE) &&
                             (req.t == Type.Prefix)) {
 
@@ -143,8 +140,9 @@ public class ConfigCdbSub implements ApplicationComponent {
 						String poolName = String.valueOf(req.pool_key).replaceAll("[{}]", "");
 
 						Prefix p = new Prefix();
-						// get pool for
+						// Gather prefix data and perform NIPAP request
 						try {
+							// Pool
 							HashMap poolSpec = new HashMap();
 							poolSpec.put("name", poolName);
 							List poolRes = Pool.list(nipapCon, poolSpec);
