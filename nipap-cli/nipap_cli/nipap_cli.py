@@ -56,7 +56,7 @@ def setup_connection():
             'port'    : os.getenv('NIPAP_PORT') or cfg.get('global', 'port')
         }
     except (ConfigParser.NoOptionError, ConfigParser.NoSectionError) as exc:
-        print >> sys.stderr, "ERROR:", str(exc)
+        print >> sys.stderr, "ERROR:", unicode(exc)
         print >> sys.stderr, "HINT: Please define the username, password, hostname and port in your .nipaprc under the section 'global' or provide them through the environment variables NIPAP_HOST, NIPAP_PORT, NIPAP_USERNAME and NIPAP_PASSWORD."
         sys.exit(1)
 
@@ -93,7 +93,7 @@ def get_pool(arg = None, opts = None, abort = False):
         pool = Pool.list({ 'name': arg })[0]
     except IndexError:
         if abort:
-            print >> sys.stderr, "Pool '%s' not found." % str(arg)
+            print >> sys.stderr, "Pool '%s' not found." % unicode(arg)
             sys.exit(1)
         else:
             pool = None
@@ -142,7 +142,7 @@ def get_vrf(arg = None, default_var = 'default_vrf_rt', abort = False):
                 })['result'][0]
         except (KeyError, IndexError):
             if abort:
-                print >> sys.stderr, "VRF with [RT: %s] not found." % str(vrf_rt)
+                print >> sys.stderr, "VRF with [RT: %s] not found." % unicode(vrf_rt)
                 sys.exit(1)
             else:
                 vrf = False
@@ -274,7 +274,7 @@ def list_pool(arg, opts, shell_opts):
             print "------------------------------------------------------------------------------------------------"
 
         for p in res['result']:
-            if len(str(p.description)) > 38:
+            if len(unicode(p.description)) > 38:
                 desc = p.description[0:34] + "..."
             else:
                 desc = p.description
@@ -291,8 +291,8 @@ def list_pool(arg, opts, shell_opts):
 
             print "%-19s %-2s %-39s %-13s %-2s / %-3s  [RT: %s] %s" % (
                 p.name, tags, desc, p.default_type,
-                str(p.ipv4_default_prefix_length or '-'),
-                str(p.ipv6_default_prefix_length or '-'),
+                unicode(p.ipv4_default_prefix_length or '-'),
+                unicode(p.ipv6_default_prefix_length or '-'),
                 vrf_rt, vrf_name
             )
         if len(res['result']) < limit:
@@ -568,7 +568,7 @@ def list_prefix(arg, opts, shell_opts):
     offset = 0
     # small initial limit for "instant" result
     limit = 50
-    prefix_str = ""
+    prefix_str = u""
     while True:
         res = Prefix.smart_search(search_string, { 'parents_depth': -1,
             'include_neighbors': True, 'offset': offset, 'max_result': limit },
@@ -592,17 +592,17 @@ def list_prefix(arg, opts, shell_opts):
                 for colname, col in col_def.items():
                     val = getattr(p, colname, '')
                     col['width'] = max(len(colname), col.get('width', 0),
-                                       len(str(val)))
+                                       len(unicode(val)))
 
                 # special handling of a few columns
                 col_def['vrf_rt']['width'] = max(col_def['vrf_rt'].get('width', 8),
-                                                 len(str(p.vrf.rt)))
+                                                 len(unicode(p.vrf.rt)))
                 col_def['prefix']['width'] = max(col_def['prefix'].get('width', 0)-12,
                                                  p.indent * 2 + len(p.prefix)) + 12
                 try:
                     col_def['pool_name']['width'] = max(col_def['pool_name'].get('width', 8),
-                                                        len(str(p.pool.name)))
-                except:
+                                                        len(unicode(p.pool.name)))
+                except AttributeError:
                     pass
             # override certain column widths
             col_def['type']['width'] = 1
@@ -625,16 +625,16 @@ def list_prefix(arg, opts, shell_opts):
             col_data = {}
             try:
                 for colname, col in col_def.items():
-                    col_data[colname] = str(getattr(p, colname, None))
+                    col_data[colname] = unicode(getattr(p, colname, None))
 
                 # overwrite some columns due to special handling
                 col_data['tags'] = '-'
                 if len(p.tags) > 0:
                     col_data['tags'] = '#%d' % len(p.tags)
 
-                try: 
+                try:
                     col_data['pool_name'] = p.pool.name
-                except:
+                except AttributeError:
                     pass
 
                 col_data['prefix'] = "".join("  " for i in xrange(p.indent)) + p.display_prefix
@@ -753,10 +753,10 @@ def add_prefix(arg, opts, shell_opts):
             ip = IPy.IP(opts.get('prefix').split("/")[0])
             plen = int(opts.get('prefix').split("/")[1])
             if ip.version() == 4 and plen == 32 or ip.version() == 6 and plen == 128:
-                parent_prefix = str(ip)
+                parent_prefix = unicode(ip)
                 parent_op = 'contains'
             else:
-                parent_prefix = str(IPy.IP(opts.get('prefix'), make_net=True))
+                parent_prefix = unicode(IPy.IP(opts.get('prefix'), make_net=True))
                 parent_op = 'equals'
         else:
             parent_prefix = opts.get('prefix')
@@ -816,7 +816,7 @@ def add_prefix(arg, opts, shell_opts):
     try:
         p.save(args)
     except NipapError as exc:
-        print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
+        print >> sys.stderr, "Could not add prefix to NIPAP: %s" % unicode(exc)
         sys.exit(1)
 
     if p.type == 'host':
@@ -907,7 +907,7 @@ def add_prefix_from_pool(arg, opts):
         try:
             p.save(args)
         except NipapError as exc:
-            print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
+            print >> sys.stderr, "Could not add prefix to NIPAP: %s" % unicode(exc)
             sys.exit(1)
 
         if p.type == 'host':
@@ -954,7 +954,7 @@ def add_vrf(arg, opts, shell_opts):
     try:
         v.save()
     except pynipap.NipapError as exc:
-        print >> sys.stderr, "Could not add VRF to NIPAP: %s" % str(exc)
+        print >> sys.stderr, "Could not add VRF to NIPAP: %s" % unicode(exc)
         sys.exit(1)
 
     print "Added %s" % (vrf_format(v))
@@ -991,7 +991,7 @@ def add_pool(arg, opts, shell_opts):
     try:
         p.save()
     except pynipap.NipapError as exc:
-        print >> sys.stderr, "Could not add pool to NIPAP: %s" % str(exc)
+        print >> sys.stderr, "Could not add pool to NIPAP: %s" % unicode(exc)
         sys.exit(1)
 
     print "Pool '%s' created." % (p.name)
@@ -1020,7 +1020,7 @@ def view_vrf(arg, opts, shell_opts):
             'val2': arg }
             )['result'][0]
     except (KeyError, IndexError):
-        print >> sys.stderr, "VRF with [RT: %s] not found." % str(arg)
+        print >> sys.stderr, "VRF with [RT: %s] not found." % unicode(arg)
         sys.exit(1)
 
     print "-- VRF"
@@ -1082,7 +1082,7 @@ def view_pool(arg, opts, shell_opts):
     print "  %-26s : %s" % ("Description", p.description)
     print "  %-26s : %s" % ("Default type", p.default_type)
     print "  %-26s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name)
-    print "  %-26s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
+    print "  %-26s : %s / %s" % ("Preflen (v4/v6)", unicode(p.ipv4_default_prefix_length), unicode(p.ipv6_default_prefix_length))
 
     print "-- Extra Attributes"
     if p.avps is not None:
@@ -1696,7 +1696,7 @@ def modify_prefix(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save prefix changes: %s" % str(exc)
+        print >> sys.stderr, "Could not save prefix changes: %s" % unicode(exc)
         sys.exit(1)
 
     print "Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf))
@@ -1734,7 +1734,7 @@ def prefix_attr_add(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save prefix changes: %s" % str(exc)
+        print >> sys.stderr, "Could not save prefix changes: %s" % unicode(exc)
         sys.exit(1)
 
     print "Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf))
@@ -1766,7 +1766,7 @@ def prefix_attr_remove(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save prefix changes: %s" % str(exc)
+        print >> sys.stderr, "Could not save prefix changes: %s" % unicode(exc)
         sys.exit(1)
 
     print "Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf))
@@ -1792,7 +1792,7 @@ def vrf_attr_add(arg, opts, shell_opts):
             'val2': arg }
             )['result'][0]
     except (KeyError, IndexError):
-        print >> sys.stderr, "VRF with [RT: %s] not found." % str(arg)
+        print >> sys.stderr, "VRF with [RT: %s] not found." % unicode(arg)
         sys.exit(1)
 
     for avp in opts.get('extra-attribute', []):
@@ -1811,7 +1811,7 @@ def vrf_attr_add(arg, opts, shell_opts):
     try:
         v.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save VRF changes: %s" % str(exc)
+        print >> sys.stderr, "Could not save VRF changes: %s" % unicode(exc)
         sys.exit(1)
 
     print "%s saved." % vrf_format(v)
@@ -1837,7 +1837,7 @@ def vrf_attr_remove(arg, opts, shell_opts):
             'val2': arg }
             )['result'][0]
     except (KeyError, IndexError):
-        print >> sys.stderr, "VRF with [RT: %s] not found." % str(arg)
+        print >> sys.stderr, "VRF with [RT: %s] not found." % unicode(arg)
         sys.exit(1)
 
     for key in opts.get('extra-attribute', []):
@@ -1850,7 +1850,7 @@ def vrf_attr_remove(arg, opts, shell_opts):
     try:
         v.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save VRF changes: %s" % str(exc)
+        print >> sys.stderr, "Could not save VRF changes: %s" % unicode(exc)
         sys.exit(1)
 
     print "%s saved." % vrf_format(v)
@@ -1884,7 +1884,7 @@ def pool_attr_add(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save pool changes: %s" % str(exc)
+        print >> sys.stderr, "Could not save pool changes: %s" % unicode(exc)
         sys.exit(1)
 
     print "Pool '%s' saved." % p.name
@@ -1912,7 +1912,7 @@ def pool_attr_remove(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save pool changes: %s" % str(exc)
+        print >> sys.stderr, "Could not save pool changes: %s" % unicode(exc)
         sys.exit(1)
 
     print "Pool '%s' saved." % p.name
@@ -3003,7 +3003,7 @@ if __name__ == '__main__':
     try:
         cmd = Command(cmds, sys.argv[1::])
     except ValueError as exc:
-        print >> sys.stderr, "Error: %s" % str(exc)
+        print >> sys.stderr, "Error: %s" % unicode(exc)
         sys.exit(1)
 
     # execute command
@@ -3015,6 +3015,6 @@ if __name__ == '__main__':
     try:
         cmd.exe(cmd.arg, cmd.exe_options)
     except NipapError as exc:
-        print >> sys.stderr, "Command failed:\n  %s" % str(exc)
+        print >> sys.stderr, "Command failed:\n  %s" % unicode(exc)
         sys.exit(1)
 
