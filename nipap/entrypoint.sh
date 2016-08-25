@@ -1,6 +1,6 @@
 #!/bin/sh
 
-envtpl /nipap/nipap.conf.dist -o /etc/nipap/nipap.conf
+envtpl --allow-missing /nipap/nipap.conf.dist -o /etc/nipap/nipap.conf
 
 /usr/sbin/nipap-passwd create-database
 if [ -n "$NIPAP_USERNAME" -a -n "$NIPAP_PASSWORD" ]; then

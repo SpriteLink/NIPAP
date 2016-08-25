@@ -176,7 +176,7 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 # ----------------------
 #
 [www]
-xmlrpc_uri = http://@:@127.0.0.1:1337
+xmlrpc_uri = http://{{NIPAPD_USERNAME}}:{{NIPAPD_PASSWORD}}@{{NIPAPD_HOST}}:{{NIPAPD_PORT}}
 #connection uri to the backend
 #example using local authentication with username 'user' and password 'pass'
 #xmlrpc_uri = http://user@local:pass@127.0.0.1:1337
