@@ -73,9 +73,6 @@ public class ConfigCdbSub implements ApplicationComponent {
             // Tell CDB we are ready for notifications
             sub.subscribeDone();
 
-            // Setup the external allocator
-            //externalAllocator.initialize();
-
         }
         catch (Exception e) {
             LOGGER.error("", e);
@@ -130,11 +127,12 @@ public class ConfigCdbSub implements ApplicationComponent {
 						nipapCon.authoritative_source = "ncs";
 
 					} catch (Exception e) {
-						LOGGER.error("Unable to initiate connection to NIPAP");
+						LOGGER.error("Unable to initiate connection to NIPAP: " + e.getMessage());
+						continue;
 					}
 
 
-					// allocate integer
+					// allocate prefix
                     if ((req.op == Operation.ALLOCATE) &&
                             (req.t == Type.Prefix)) {
 
@@ -142,8 +140,9 @@ public class ConfigCdbSub implements ApplicationComponent {
 						String poolName = String.valueOf(req.pool_key).replaceAll("[{}]", "");
 
 						Prefix p = new Prefix();
-						// get pool for
+						// Gather prefix data and perform NIPAP request
 						try {
+							// Pool
 							HashMap poolSpec = new HashMap();
 							poolSpec.put("name", poolName);
 							List poolRes = Pool.list(nipapCon, poolSpec);
@@ -164,7 +163,8 @@ public class ConfigCdbSub implements ApplicationComponent {
 							p.save(nipapCon, (Pool)poolRes.get(0), opts);
 
 						} catch (Exception e) {
-							LOGGER.error("Unable to get prefix from NIPAP", e);
+							LOGGER.error("Unable to get prefix from NIPAP: " + e.getMessage(), e);
+							continue;
 						}
 
                         // Write the result
@@ -186,6 +186,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 							LOGGER.info("redeploy-service: " + redeployPath);
 							redeploy(redeployPath + "/re-deploy");
 						} catch (Exception e) {
+							LOGGER.error("Redeploy failed: " + e.getMessage());
 						}
                     }
 
@@ -201,7 +202,8 @@ public class ConfigCdbSub implements ApplicationComponent {
 							wsess.delete(req.path + "/prefix_id");
 							wsess.delete(req.path + "/prefix");
                         } catch (Exception e) {
-                            LOGGER.error("Unable to remove prefix from NIPAP",e);
+                            LOGGER.error("Unable to remove prefix from NIPAP: " + e.getMessage(),e);
+                            continue;
                         }
 
                     }
