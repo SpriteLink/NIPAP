@@ -74,6 +74,7 @@ install:
     # create local user for unittests
     - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"; fi
     - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo sed -e "s/db_host *= *[^ ]\+/db_host = localhost/" -i /etc/nipap/nipap.conf; fi
     # Don't need to restart, but I would like to make sure that all is updated
     # (like local_auth.db is re-read and so forth). Read #654 for more
     # information.
