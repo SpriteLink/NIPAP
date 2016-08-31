@@ -34,7 +34,7 @@ install:
     # install nipap dependencies
     - if [ "$INSTALL" == "venv" ]; then sudo -H pip install -r nipap/requirements.txt; fi
     # SQL
-    - if [ "$INSTALL" == "venv" ]; then sudo su -c "cd nipap/sql; make install" postgres; fi
+    - if [ "$INSTALL" == "venv" ]; then sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres; fi
     # move configuration file into place
     - if [ "$INSTALL" == "venv" ]; then sudo mkdir /etc/nipap; sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf; sudo sed -e "s/{{LISTEN_ADDRESS}}/127.0.0.1/" -e "s/{{LISTEN_PORT}}/1337/" -e "s/{{DB_USERNAME}}/nipap/" -e "s/{{DB_NAME}}/nipap/" -e "s/{{DB_PASSWORD}}/papin/" -e "s/{{DB_SSLMODE}}/require/" -e "s/{{DB_PORT}}/5432/" -e "s/{{DB_HOST}}/localhost/" -e "s/{{SYSLOG}}/true/" -i /etc/nipap/nipap.conf; fi
     # create local user for unittest
