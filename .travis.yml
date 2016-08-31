@@ -68,7 +68,7 @@ install:
     # build new NIPAP packages
     - if [ "$INSTALL" == "apt" ]; then make builddeb; fi
     # install the newly built nipap packages
-    - if [ "$INSTALL" == "apt" ]; then sudo dpkg --force-confnew -i nipap*.deb python-pynipap*.deb; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo dpkg --force-confnew -i nipap*.deb python*-pynipap*.deb; fi
     # populate answers to nipapd package install questions and reconfigure
     - if [ "$INSTALL" == "apt" ]; then echo 'set nipapd/database_host localhost' | sudo debconf-communicate; echo 'set nipapd/local_db_autoconf true' | sudo debconf-communicate; echo 'set nipapd/startup true' | sudo debconf-communicate; echo 'set nipapd/local_db_upgrade true' | sudo debconf-communicate; sudo dpkg-reconfigure nipapd; fi
     # create local user for unittests
