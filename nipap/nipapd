@@ -33,7 +33,14 @@ def exit_cleanup():
         p = psutil.Process(os.getpid())
     except psutil.NoSuchProcess:
         return
-    for pid in p.children(recursive=True):
+
+    # Handle API change in psutil 2.0.0
+    if int(psutil.__version__[0]) <= 2:
+        children = p.get_children
+    else:
+        children = p.children
+
+    for pid in children(recursive=True):
         os.kill(pid.pid, signal.SIGTERM)
 
 
