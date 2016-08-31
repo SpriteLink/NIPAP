@@ -265,7 +265,7 @@ def list_pool(arg, opts, shell_opts):
                 _parse_interp_pool(res['interpretation'])
 
             if res['error']:
-                print "Query failed: %s" % res['error_message']
+                print("Query failed: %s" % res['error_message'])
                 return
 
             if len(res['result']) == 0:
@@ -380,7 +380,7 @@ def list_vrf(arg, opts, shell_opts):
                 _parse_interp_vrf(res['interpretation'])
 
             if res['error']:
-                print "Query failed: %s" % res['error_message']
+                print("Query failed: %s" % res['error_message'])
                 return
 
             if len(res['result']) == 0:
@@ -584,7 +584,7 @@ def list_prefix(arg, opts, shell_opts):
                 _parse_interp_prefix(res['interpretation'])
 
             if res['error']:
-                print "Query failed: %s" % res['error_message']
+                print("Query failed: %s" % res['error_message'])
                 return
 
             if len(res['result']) == 0:
