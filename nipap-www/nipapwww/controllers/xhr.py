@@ -34,20 +34,20 @@ class XhrController(BaseController):
 
         # TODO: add more?
         attr = {}
-        if 'id' in request.params:
-            attr['id'] = int(request.params['id'])
-        if 'prefix' in request.params:
-            attr['prefix'] = request.params['prefix']
-        if 'pool' in request.params:
-            attr['pool_id'] = int(request.params['pool'])
-        if 'node' in request.params:
-            attr['node'] = request.params['node']
-        if 'type' in request.params:
-            attr['type'] = request.params['type']
-        if 'country' in request.params:
-            attr['country'] = request.params['country']
-        if 'indent' in request.params:
-            attr['indent'] = request.params['indent']
+        if 'id' in req:
+            attr['id'] = int(req['id'])
+        if 'prefix' in req:
+            attr['prefix'] = req['prefix']
+        if 'pool' in req:
+            attr['pool_id'] = int(req['pool'])
+        if 'node' in req:
+            attr['node'] = req['node']
+        if 'type' in req:
+            attr['type'] = req['type']
+        if 'country' in req:
+            attr['country'] = req['country']
+        if 'indent' in req:
+            attr['indent'] = req['indent']
 
         return attr
 
@@ -59,18 +59,18 @@ class XhrController(BaseController):
         """
 
         attr = {}
-        if 'id' in request.params:
-            attr['id'] = int(request.params['id'])
-        if 'name' in request.params:
-            attr['name'] = request.params['name']
-        if 'description' in request.params:
-            attr['description'] = request.params['description']
-        if 'default_type' in request.params:
-            attr['default_type'] = request.params['default_type']
-        if 'ipv4_default_prefix_length' in request.params:
-            attr['ipv4_default_prefix_length'] = int(request.params['ipv4_default_prefix_length'])
-        if 'ipv6_default_prefix_length' in request.params:
-            attr['ipv6_default_prefix_length'] = int(request.params['ipv6_default_prefix_length'])
+        if 'id' in req:
+            attr['id'] = int(req['id'])
+        if 'name' in req:
+            attr['name'] = req['name']
+        if 'description' in req:
+            attr['description'] = req['description']
+        if 'default_type' in req:
+            attr['default_type'] = req['default_type']
+        if 'ipv4_default_prefix_length' in req:
+            attr['ipv4_default_prefix_length'] = int(req['ipv4_default_prefix_length'])
+        if 'ipv6_default_prefix_length' in req:
+            attr['ipv6_default_prefix_length'] = int(req['ipv6_default_prefix_length'])
 
         return attr
 
@@ -100,24 +100,24 @@ class XhrController(BaseController):
         search_options = {}
         extra_query = None
 
-        if 'query_id' in request.params:
-            search_options['query_id'] = request.params['query_id']
+        if 'query_id' in request.json:
+            search_options['query_id'] = request.json['query_id']
 
-        if 'max_result' in request.params:
-            search_options['max_result'] = request.params['max_result']
+        if 'max_result' in request.json:
+            search_options['max_result'] = request.json['max_result']
 
-        if 'offset' in request.params:
-            search_options['offset'] = request.params['offset']
+        if 'offset' in request.json:
+            search_options['offset'] = request.json['offset']
 
-        if 'vrf_id' in request.params:
+        if 'vrf_id' in request.json:
             extra_query = {
                     'val1': 'id',
                     'operator': 'equals',
-                    'val2': request.params['vrf_id']
+                    'val2': request.json['vrf_id']
                 }
 
         try:
-            result = VRF.smart_search(request.params['query_string'],
+            result = VRF.smart_search(request.json['query_string'],
                 search_options, extra_query
                 )
             # Remove error key in result from backend as it interferes with the
@@ -206,8 +206,8 @@ class XhrController(BaseController):
         """ List pools and return JSON encoded result.
         """
 
-        # fetch attributes from request.params
-        attr = XhrController.extract_pool_attr(request.params)
+        # fetch attributes from request.json
+        attr = XhrController.extract_pool_attr(request.json)
 
         try:
             pools = Pool.list(attr)
@@ -228,16 +228,16 @@ class XhrController(BaseController):
 
         search_options = {}
 
-        if 'query_id' in request.params:
-            search_options['query_id'] = request.params['query_id']
+        if 'query_id' in request.json:
+            search_options['query_id'] = request.json['query_id']
 
-        if 'max_result' in request.params:
-            search_options['max_result'] = request.params['max_result']
-        if 'offset' in request.params:
-            search_options['offset'] = request.params['offset']
+        if 'max_result' in request.json:
+            search_options['max_result'] = request.json['max_result']
+        if 'offset' in request.json:
+            search_options['offset'] = request.json['offset']
 
         try:
-            result = Pool.smart_search(request.params['query_string'],
+            result = Pool.smart_search(request.json['query_string'],
                 search_options
                 )
             # Remove error key in result from backend as it interferes with the
@@ -342,8 +342,8 @@ class XhrController(BaseController):
         """ List prefixes and return JSON encoded result.
         """
 
-        # fetch attributes from request.params
-        attr = XhrController.extract_prefix_attr(request.params)
+        # fetch attributes from request.json
+        attr = XhrController.extract_prefix_attr(request.json)
 
         try:
             prefixes = Prefix.list(attr)
@@ -367,13 +367,13 @@ class XhrController(BaseController):
         """
 
         # extract operator
-        if 'operator' in request.params:
-            operator = request.params['operator']
+        if 'operator' in request.json:
+            operator = request.json['operator']
         else:
             operator = 'equals'
 
-        # fetch attributes from request.params
-        attr = XhrController.extract_prefix_attr(request.params)
+        # fetch attributes from request.json
+        attr = XhrController.extract_prefix_attr(request.json)
 
         # build query dict
         n = 0
@@ -399,16 +399,16 @@ class XhrController(BaseController):
 
         # extract search options
         search_opts = {}
-        if 'children_depth' in request.params:
-            search_opts['children_depth'] = request.params['children_depth']
-        if 'parents_depth' in request.params:
-            search_opts['parents_depth'] = request.params['parents_depth']
-        if 'include_neighbors' in request.params:
-            search_opts['include_neighbors'] = request.params['include_neighbors']
-        if 'max_result' in request.params:
-            search_opts['max_result'] = request.params['max_result']
-        if 'offset' in request.params:
-            search_opts['offset'] = request.params['offset']
+        if 'children_depth' in request.json:
+            search_opts['children_depth'] = request.json['children_depth']
+        if 'parents_depth' in request.json:
+            search_opts['parents_depth'] = request.json['parents_depth']
+        if 'include_neighbors' in request.json:
+            search_opts['include_neighbors'] = request.json['include_neighbors']
+        if 'max_result' in request.json:
+            search_opts['max_result'] = request.json['max_result']
+        if 'offset' in request.json:
+            search_opts['offset'] = request.json['offset']
 
         try:
             result = Prefix.search(q, search_opts)
@@ -431,45 +431,45 @@ class XhrController(BaseController):
         extra_query = None
         vrf_filter = None
 
-        if 'query_id' in request.params:
-            search_options['query_id'] = request.params['query_id']
+        if 'query_id' in request.json:
+            search_options['query_id'] = request.json['query_id']
 
-        if 'include_all_parents' in request.params:
-            if request.params['include_all_parents'] == 'true':
+        if 'include_all_parents' in request.json:
+            if request.json['include_all_parents'] == 'true':
                 search_options['include_all_parents'] = True
             else:
                 search_options['include_all_parents'] = False
 
-        if 'include_all_children' in request.params:
-            if request.params['include_all_children'] == 'true':
+        if 'include_all_children' in request.json:
+            if request.json['include_all_children'] == 'true':
                 search_options['include_all_children'] = True
             else:
                 search_options['include_all_children'] = False
 
-        if 'parents_depth' in request.params:
-            search_options['parents_depth'] = request.params['parents_depth']
-        if 'children_depth' in request.params:
-            search_options['children_depth'] = request.params['children_depth']
-        if 'include_neighbors' in request.params:
-            if request.params['include_neighbors'] == 'true':
+        if 'parents_depth' in request.json:
+            search_options['parents_depth'] = request.json['parents_depth']
+        if 'children_depth' in request.json:
+            search_options['children_depth'] = request.json['children_depth']
+        if 'include_neighbors' in request.json:
+            if request.json['include_neighbors'] == 'true':
                 search_options['include_neighbors'] = True
             else:
                 search_options['include_neighbors'] = False
-        if 'max_result' in request.params:
-            if request.params['max_result'] == 'false':
+        if 'max_result' in request.json:
+            if request.json['max_result'] == 'false':
                 search_options['max_result'] = False
             else:
-                search_options['max_result'] = request.params['max_result']
-        if 'offset' in request.params:
-            search_options['offset'] = request.params['offset']
-        if 'parent_prefix' in request.params:
-            search_options['parent_prefix'] = request.params['parent_prefix']
-        if 'vrf_filter[]' in request.params:
+                search_options['max_result'] = request.json['max_result']
+        if 'offset' in request.json:
+            search_options['offset'] = request.json['offset']
+        if 'parent_prefix' in request.json:
+            search_options['parent_prefix'] = request.json['parent_prefix']
+        if 'vrf_filter[]' in request.json:
             vrf_filter_parts = []
 
             # Fetch VRF IDs from search query and build extra query dict for
             # smart_search_prefix.
-            vrfs = request.params.getall('vrf_filter[]')
+            vrfs = request.json['vrf_filter']
 
             if len(vrfs) > 0:
                 vrf = vrfs[0]
@@ -493,7 +493,7 @@ class XhrController(BaseController):
         if vrf_filter:
             extra_query = vrf_filter
 
-        if 'indent' in request.params:
+        if 'indent' in request.json:
             if extra_query:
                 extra_query = {
                         'operator': 'and',
@@ -501,18 +501,18 @@ class XhrController(BaseController):
                         'val2': {
                             'operator': 'equals',
                             'val1': 'indent',
-                            'val2': request.params['indent']
+                            'val2': request.json['indent']
                         }
                     }
             else:
                 extra_query = {
                     'operator': 'equals',
                     'val1': 'indent',
-                    'val2': request.params['indent']
+                    'val2': request.json['indent']
                     }
 
         try:
-            result = Prefix.smart_search(request.params['query_string'],
+            result = Prefix.smart_search(request.json['query_string'],
                 search_options, extra_query)
             # Remove error key in result from backend as it interferes with the
             # error handling of the web interface.
@@ -735,7 +735,7 @@ class XhrController(BaseController):
         """ Add VRF to filter list session variable
         """
 
-        vrf_id = request.params.get('vrf_id')
+        vrf_id = request.json['vrf_id']
 
         if vrf_id is not None:
 
@@ -756,7 +756,7 @@ class XhrController(BaseController):
         """ Remove VRF to filter list session variable
         """
 
-        vrf_id = int(request.params.get('vrf_id'))
+        vrf_id = int(request.json['vrf_id'])
         if vrf_id in session['current_vrfs']:
             del session['current_vrfs'][vrf_id]
 
