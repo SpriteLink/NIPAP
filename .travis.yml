@@ -1,16 +1,6 @@
 sudo: required
 dist: trusty
-language: python
-python:
-  - "2.7"
-  - "3.2"
-# 3.3 doesn't work for some weird reason, it has issues activating the
-# virtualenv. Bug in Travis-CI?
-#  - "3.3"
-# 3.4 doesn't appear to be available on Travis-CI, despite it being listed at
-# http://docs.travis-ci.com/user/languages/python/
-#  - "3.4"
-
+language: generic
 
 env:
     matrix:
@@ -25,30 +15,15 @@ env:
         - INSTALL=apt UPGRADE=true
 
 matrix:
-    # NIPAP is not Python 3 compliant yet, so we allow failures
-    allow_failures:
-        - python: "3.2"
-
     # don't wait for the above jobs, which are allowed to fail, before marking
     # the whole build complete
     fast_finish: true
-
-    # Ubuntu doesn't come with python3 dependencies through apt, so we can't
-    # test anything but in a virtualenv.
-    exclude:
-        - python: "3.2"
-          env: INSTALL=apt UPGRADE=true
-        - python: "3.2"
-          env: INSTALL=apt UPGRADE=false
-
-virtualenv:
-    system_site_packages: true
 
 install:
     # -- common operations to apt install and virtualenv -----------------------
     # install dependencies for building packages and build NIPAP debian packages
     - sudo apt-get update
-    - sudo apt-get install -qq -y --force-yes devscripts python-docutils debhelper dh-python junit4
+    - sudo apt-get install -qq -y --force-yes devscripts python-dev python3-dev python-docutils debhelper dh-python junit4 python3-pip python-nose default-jdk
     # configure .nipaprc
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
     - chmod 0600 ~/.nipaprc
@@ -57,16 +32,19 @@ install:
 
     # -- virtualenv build ------------------------------------------------------
     # install nipap dependencies
-    - if [ "$INSTALL" == "venv" ]; then pip install -r nipap/requirements.txt; fi
+    - if [ "$INSTALL" == "venv" ]; then sudo -H pip install -r nipap/requirements.txt; fi
     # SQL
-    - if [ "$INSTALL" == "venv" ]; then sudo su -c "cd nipap/sql; make install" postgres; fi
+    - if [ "$INSTALL" == "venv" ]; then sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres; fi
     # move configuration file into place
     - if [ "$INSTALL" == "venv" ]; then sudo mkdir /etc/nipap; sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf; sudo sed -e "s/{{LISTEN_ADDRESS}}/127.0.0.1/" -e "s/{{LISTEN_PORT}}/1337/" -e "s/{{DB_USERNAME}}/nipap/" -e "s/{{DB_NAME}}/nipap/" -e "s/{{DB_PASSWORD}}/papin/" -e "s/{{DB_SSLMODE}}/require/" -e "s/{{DB_PORT}}/5432/" -e "s/{{DB_HOST}}/localhost/" -e "s/{{SYSLOG}}/true/" -i /etc/nipap/nipap.conf; fi
     # create local user for unittest
     - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd create-database; sudo nipap/nipap-passwd add -u unittest -p gottatest -n unittest; fi
     - if [ "$INSTALL" == "venv" ]; then sudo nipap/nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"; fi
     # install pynipap
-    - if [ "$INSTALL" == "venv" ]; then cd pynipap; python setup.py install; cd ..; fi
+    - if [ "$INSTALL" == "venv" ]; then cd pynipap; sudo python setup.py install; cd ..; fi
+    - if [ "$INSTALL" == "venv" ]; then cd pynipap; sudo python3 setup.py install; cd ..; fi
+    # install nipap-cli dependencies
+    - if [ "$INSTALL" == "venv" ]; then sudo -H pip3 install -r nipap-cli/requirements.txt; fi
     # start nipap backend
     - if [ "$INSTALL" == "venv" ]; then nipap/nipapd --no-pid-file -c /etc/nipap/nipap.conf; fi
 
@@ -76,7 +54,7 @@ install:
     - if [ "$INSTALL" == "apt" ]; then wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -; fi
     - if [ "$INSTALL" == "apt" ]; then sudo apt-get update -qq; fi
     # install dependencies for installing & running nipap
-    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python-docutils postgresql-9.1 postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-pylons python-tz python-dateutil python-psutil python-pyparsing; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y --force-yes python-pysqlite2 python-psycopg2 python-ipy python3-ipy python-docutils postgresql-9.1 postgresql-9.1-ip4r python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-pylons python-tz python-dateutil python-psutil python-pyparsing; fi
     # if we are testing the upgrade, first install NIPAP packages from official repo
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo apt-get install -qq nipapd nipap-www nipap-cli; fi
     # bump version so that we know we are upgrading beyond what is installed
@@ -90,12 +68,13 @@ install:
     # build new NIPAP packages
     - if [ "$INSTALL" == "apt" ]; then make builddeb; fi
     # install the newly built nipap packages
-    - if [ "$INSTALL" == "apt" ]; then sudo dpkg --force-confnew -i nipap*.deb python-pynipap*.deb; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo dpkg --force-confnew -i nipap*.deb python*-pynipap*.deb; fi
     # populate answers to nipapd package install questions and reconfigure
     - if [ "$INSTALL" == "apt" ]; then echo 'set nipapd/database_host localhost' | sudo debconf-communicate; echo 'set nipapd/local_db_autoconf true' | sudo debconf-communicate; echo 'set nipapd/startup true' | sudo debconf-communicate; echo 'set nipapd/local_db_upgrade true' | sudo debconf-communicate; sudo dpkg-reconfigure nipapd; fi
     # create local user for unittests
     - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"; fi
     - if [ "$INSTALL" == "apt" ]; then sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo sed -e "s/db_host *= *[^ ]\+/db_host = localhost/" -i /etc/nipap/nipap.conf; fi
     # Don't need to restart, but I would like to make sure that all is updated
     # (like local_auth.db is re-read and so forth). Read #654 for more
     # information.

@@ -1,7 +1,7 @@
 # $Id: Makefile,v 1.6 2012/02/29 08:55:00 lukagarb Exp $
 #
 
-PYTHON=`which python`
+PYTHON=`which python3`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/python-nipap-build
 PROJECT=nipap-cli

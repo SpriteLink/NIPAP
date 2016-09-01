@@ -6,9 +6,6 @@
     tab completion of both commands and external values.
 """
 
-import string
-
-
 class Command:
     """ A command parser and handler
 
@@ -197,7 +194,7 @@ class Command:
                 for param, content in self.children.items():
 
                     # match string to command
-                    if string.find(param, p) == 0:
+                    if param.find(p) == 0:
                         self.key[param] = content
                         match = True
 
@@ -228,7 +225,7 @@ class Command:
             # len(p) == 0
 
             if len(p) != 0 and len(self.key) == 1:
-                key, val = self.key.items()[0]
+                key, val = list(self.key.items())[0]
                 i, option_parsing = self._examine_key(key, val, p, i, option_parsing)
 
             i += 1

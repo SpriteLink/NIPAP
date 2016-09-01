@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from distutils.core import setup
 import subprocess
@@ -19,7 +19,7 @@ def get_data_files():
     try:
         subprocess.call(["rst2man", "nipap.man.rst", "nipap.1"])
     except OSError as exc:
-        print >> sys.stderr, "rst2man failed to run:", str(exc)
+        print("rst2man failed to run:", str(exc), file=sys.stderr)
         sys.exit(1)
 
     files = [
@@ -53,7 +53,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 3 :: Only',
         'Topic :: Internet'
     ]
 )

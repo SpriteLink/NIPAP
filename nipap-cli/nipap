@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """ NIPAP shell command
 
     A shell command to interact with NIPAP.
 """
-import ConfigParser
+import configparser
 import logging
 import os
 import sys
@@ -15,20 +15,6 @@ import nipap_cli.nipap_cli
 from nipap_cli.command import Command, CommandError
 from pynipap import NipapError
 
-import codecs
-# is output a terminal?
-if sys.stdout.isatty():
-    # When output encoding is set to UTF-8 we will get proper UTF-8 output from
-    # print statements but raw_input() will fail when the prompt contains
-    # Unicode characters. Forcing the output to UTF-8 fixes that, despite
-    # setting UTF-8 output when output encoding already is UTF-8 should be a
-    # no-op. Note how we only do this when the encoding is already set to UTF-8
-    # so any legacy terminals should still work fine.
-    if sys.stdout.encoding == 'UTF-8':
-        sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-else: # we are likely being redirected / piped to something else
-    # force UTF-8 output for redirected stdout
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 # early close of stdout to avoid broken pipe, see #464
 # If our output is being piped and the receiver of the pipe is killed off before
@@ -72,14 +58,14 @@ if __name__ == '__main__':
     # make sure nipaprc exists and has correct permissions
     userrcfile = os.path.expanduser('~/.nipaprc')
     try:
-        nipaprc_perms = oct(os.stat(userrcfile).st_mode & 0777)
+        nipaprc_perms = oct(os.stat(userrcfile).st_mode & 0o777)
     except OSError:
-        print "%s file could not be opened, does it exist?" % userrcfile
+        print("%s file could not be opened, does it exist?" % userrcfile)
         sys.exit(2)
 
-    if nipaprc_perms != '0600':
-        print >> sys.stderr, "Permissions %s for '%s' are too open." % (nipaprc_perms, userrcfile)
-        print >> sys.stderr, "HINT: chmod 0600 ~/.nipaprc"
+    if nipaprc_perms != '0o600':
+        print("Permissions %s for '%s' are too open." % (nipaprc_perms, userrcfile), file=sys.stderr)
+        print("HINT: chmod 0600 ~/.nipaprc", file=sys.stderr)
         sys.exit(1)
 
     # config defaults
@@ -90,7 +76,7 @@ if __name__ == '__main__':
         'prefix_list_columns': None
     }
     # read configuration
-    cfg = ConfigParser.ConfigParser(cfg_defaults)
+    cfg = configparser.ConfigParser(cfg_defaults)
     cfg.read(userrcfile)
     nipap_cli.nipap_cli.cfg = cfg
 
@@ -99,8 +85,8 @@ if __name__ == '__main__':
 
     if args.version:
         import pynipap
-        print "nipap CLI client version:", nipap_cli.__version__
-        print "pynipap version:", pynipap.__version__
+        print("nipap CLI client version:", nipap_cli.__version__)
+        print("pynipap version:", pynipap.__version__)
 
         nipapd_version = 'unknown'
         try:
@@ -115,20 +101,20 @@ if __name__ == '__main__':
         except:
             pass
 
-        print "nipapd version:", nipapd_version
+        print("nipapd version:", nipapd_version)
 
         sys.exit(0)
 
     try:
         cmd = Command(nipap_cli.nipap_cli.cmds, cmd_args)
     except (ValueError, CommandError, NipapError) as exc:
-        print >> sys.stderr, "Error: %s" % str(exc)
+        print("Error: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
     # execute command
     if cmd.exe is None:
-        print "Incomplete command specified"
-        print "valid completions: %s" % " ".join(cmd.next_values())
+        print("Incomplete command specified")
+        print("valid completions: %s" % " ".join(cmd.next_values()))
         sys.exit(1)
 
     # for more info on the used exit codes, see:
@@ -140,12 +126,12 @@ if __name__ == '__main__':
         # exit code for SIGINT (2) + 128 = 130
         sys.exit(130)
     except socket.error as exc:
-        print >> sys.stderr, "Failed to connect to the backend: %s" % str(exc)
+        print("Failed to connect to the backend: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
     except (IOError, OSError):
         # exit code for SIGPIPE (13) + 128 = 141
         sys.exit(141)
     except NipapError as exc:
-        print >> sys.stderr, "Command failed: %s" % str(exc)
+        print("Command failed: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 

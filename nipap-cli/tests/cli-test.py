@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Unit tests for the NIPAP CLI parser
 #
 
 import unittest
-import string
 
 import sys
 sys.path.insert(0, '..')
@@ -34,7 +33,7 @@ def complete_a_option1(arg):
 
     match = []
     for straw in [ 'FOO', 'FOD', 'BAR' ]:
-        if string.find(straw, arg) == 0:
+        if straw.find(arg) == 0:
             match.append(straw)
 
     return match
@@ -49,7 +48,7 @@ example_tree = {
             'exec': test_a,
             'argument': {
                 'type': 'value',
-                'content_type': unicode,
+                'content_type': str,
                 'description': 'Text'
             },
             'children': {
@@ -57,7 +56,7 @@ example_tree = {
                     'type': 'option',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'A_Option1',
                         'complete': complete_a_option1
                     }
@@ -66,7 +65,7 @@ example_tree = {
                     'type': 'option',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'A_Option2'
                     }
                 },
@@ -74,7 +73,7 @@ example_tree = {
                     'type': 'option',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'A_Option3'
                     }
                 }
@@ -85,7 +84,7 @@ example_tree = {
             'exec': test_b,
             'argument': {
                 'type': 'value',
-                'content_type': unicode,
+                'content_type': str,
                 'description': 'Text'
             },
             'children': {
@@ -105,7 +104,7 @@ example_tree = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'Text'
                             },
                         },
@@ -113,7 +112,7 @@ example_tree = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'Text'
                             }
                         }
@@ -129,7 +128,7 @@ example_tree = {
                     'exec': test_c,
                     'rest_argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'test rest argument'
                     },
                     'children': {
@@ -137,7 +136,7 @@ example_tree = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'Text'
                             },
                         },
@@ -145,7 +144,7 @@ example_tree = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'Text'
                             },
                         }

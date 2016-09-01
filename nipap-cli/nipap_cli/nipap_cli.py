@@ -1,12 +1,16 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 """ NIPAP shell command
 
     A shell command to interact with NIPAP.
 """
 
-#from __future__ import print_function
+from __future__ import print_function
 
-import ConfigParser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+
 import csv
 import os
 import pipes
@@ -20,7 +24,7 @@ import IPy
 
 import pynipap
 from pynipap import Pool, Prefix, Tag, VRF, NipapError
-from command import Command
+from .command import Command
 
 
 # definitions
@@ -55,9 +59,9 @@ def setup_connection():
             'hostname': os.getenv('NIPAP_HOST') or cfg.get('global', 'hostname'),
             'port'    : os.getenv('NIPAP_PORT') or cfg.get('global', 'port')
         }
-    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError) as exc:
-        print >> sys.stderr, "ERROR:", str(exc)
-        print >> sys.stderr, "HINT: Please define the username, password, hostname and port in your .nipaprc under the section 'global' or provide them through the environment variables NIPAP_HOST, NIPAP_PORT, NIPAP_USERNAME and NIPAP_PASSWORD."
+    except (configparser.NoOptionError, configparser.NoSectionError) as exc:
+        print("ERROR:", str(exc), file=sys.stderr)
+        print("HINT: Please define the username, password, hostname and port in your .nipaprc under the section 'global' or provide them through the environment variables NIPAP_HOST, NIPAP_PORT, NIPAP_USERNAME and NIPAP_PASSWORD.", file=sys.stderr)
         sys.exit(1)
 
     # if we haven't got a password (from env var or config) we interactively
@@ -93,7 +97,7 @@ def get_pool(arg = None, opts = None, abort = False):
         pool = Pool.list({ 'name': arg })[0]
     except IndexError:
         if abort:
-            print >> sys.stderr, "Pool '%s' not found." % str(arg)
+            print("Pool '%s' not found." % str(arg), file=sys.stderr)
             sys.exit(1)
         else:
             pool = None
@@ -122,7 +126,7 @@ def get_vrf(arg = None, default_var = 'default_vrf_rt', abort = False):
         # fetch default vrf
         try:
             vrf_rt = cfg.get('global', default_var)
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             # default to all VRFs
             vrf_rt = 'all'
     else:
@@ -142,7 +146,7 @@ def get_vrf(arg = None, default_var = 'default_vrf_rt', abort = False):
                 })['result'][0]
         except (KeyError, IndexError):
             if abort:
-                print >> sys.stderr, "VRF with [RT: %s] not found." % str(vrf_rt)
+                print("VRF with [RT: %s] not found." % str(vrf_rt), file=sys.stderr)
                 sys.exit(1)
             else:
                 vrf = False
@@ -221,11 +225,11 @@ def _parse_interp_pool(query, indent=-5, pandop=False):
             a = '     '
             if indent > 1:
                 a = ' `-- '
-            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+            print("{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text))
         else:
-            print "%s       `-- %s" % (' '*indent, text)
+            print("%s       `-- %s" % (' '*indent, text))
     if text2:
-        print "%s   %s" % (' '*indent, text2)
+        print("%s   %s" % (' '*indent, text2))
     if type(query['val1']) is dict:
         _parse_interp_pool(query['val1'], indent+6, andop)
     if type(query['val2']) is dict:
@@ -257,21 +261,21 @@ def list_pool(arg, opts, shell_opts):
         res = Pool.smart_search(search_string, { 'offset': offset, 'max_result': limit }, vrf_q)
         if offset == 0: # first time in loop?
             if shell_opts.show_interpretation:
-                print "Query interpretation:"
+                print("Query interpretation:")
                 _parse_interp_pool(res['interpretation'])
 
             if res['error']:
-                print "Query failed: %s" % res['error_message']
+                print("Query failed: %s" % res['error_message'])
                 return
 
             if len(res['result']) == 0:
-                print "No matching pools found"
+                print("No matching pools found")
                 return
 
-            print "%-19s %-2s %-39s %-13s  %-8s %s" % (
+            print("%-19s %-2s %-39s %-13s  %-8s %s" % (
                 "Name", "#", "Description", "Default type", "4 / 6", "Implied VRF"
-                )
-            print "------------------------------------------------------------------------------------------------"
+                ))
+            print("------------------------------------------------------------------------------------------------")
 
         for p in res['result']:
             if len(str(p.description)) > 38:
@@ -289,12 +293,12 @@ def list_pool(arg, opts, shell_opts):
             if len(p.tags) > 0:
                 tags = "#%d" % (len(p.tags))
 
-            print "%-19s %-2s %-39s %-13s %-2s / %-3s  [RT: %s] %s" % (
+            print("%-19s %-2s %-39s %-13s %-2s / %-3s  [RT: %s] %s" % (
                 p.name, tags, desc, p.default_type,
                 str(p.ipv4_default_prefix_length or '-'),
                 str(p.ipv6_default_prefix_length or '-'),
                 vrf_rt, vrf_name
-            )
+            ))
         if len(res['result']) < limit:
             break
         offset += limit
@@ -348,11 +352,11 @@ def _parse_interp_vrf(query, indent=-5, pandop=False):
             a = '     '
             if indent > 1:
                 a = ' `-- '
-            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+            print("{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text))
         else:
-            print "%s       `-- %s" % (' '*indent, text)
+            print("%s       `-- %s" % (' '*indent, text))
     if text2:
-        print "%s   %s" % (' '*indent, text2)
+        print("%s   %s" % (' '*indent, text2))
     if type(query['val1']) is dict:
         _parse_interp_vrf(query['val1'], indent+6, andop)
     if type(query['val2']) is dict:
@@ -372,29 +376,29 @@ def list_vrf(arg, opts, shell_opts):
         res = VRF.smart_search(search_string, { 'offset': offset, 'max_result': limit })
         if offset == 0:
             if shell_opts.show_interpretation:
-                print "Query interpretation:"
+                print("Query interpretation:")
                 _parse_interp_vrf(res['interpretation'])
 
             if res['error']:
-                print "Query failed: %s" % res['error_message']
+                print("Query failed: %s" % res['error_message'])
                 return
 
             if len(res['result']) == 0:
-                print "No VRFs matching '%s' found." % search_string
+                print("No VRFs matching '%s' found." % search_string)
                 return
 
-            print "%-16s %-22s %-2s %-40s" % ("VRF RT", "Name", "#", "Description")
-            print "--------------------------------------------------------------------------------"
+            print("%-16s %-22s %-2s %-40s" % ("VRF RT", "Name", "#", "Description"))
+            print("--------------------------------------------------------------------------------")
 
         for v in res['result']:
             tags = '-'
             if len(v.tags) > 0:
                 tags = '#%d' % len(v.tags)
-            if len(unicode(v.description)) > 100:
+            if len(str(v.description)) > 100:
                 desc = v.description[0:97] + "..."
             else:
                 desc = v.description
-            print "%-16s %-22s %-2s %-40s" % (v.rt or '-', v.name, tags, desc)
+            print("%-16s %-22s %-2s %-40s" % (v.rt or '-', v.name, tags, desc))
 
         if len(res['result']) < limit:
             break
@@ -481,11 +485,11 @@ def _parse_interp_prefix(query, indent=-5, pandop=False):
             a = '     '
             if indent > 1:
                 a = ' `-- '
-            print "{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text)
+            print("{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text))
         else:
-            print "%s       `-- %s" % (' '*indent, text)
+            print("%s       `-- %s" % (' '*indent, text))
     if text2:
-        print "%s   %s" % (' '*indent, text2)
+        print("%s   %s" % (' '*indent, text2))
     if type(query['val1']) is dict:
         _parse_interp_prefix(query['val1'], indent+6, andop)
     if type(query['val2']) is dict:
@@ -512,7 +516,7 @@ def list_prefix(arg, opts, shell_opts):
             'val1': 'vrf_rt',
             'val2': v.rt
         }
-    print "Searching for prefixes in %s..." % vrf_text
+    print("Searching for prefixes in %s..." % vrf_text)
 
     col_def = {
             'added': { 'title': 'Added' },
@@ -561,7 +565,7 @@ def list_prefix(arg, opts, shell_opts):
         for col in list(csv.reader([custom_columns.lstrip('+') or ''], escapechar='\\'))[0]:
             col = col.strip()
             if col not in col_def:
-                print >> sys.stderr, "Invalid column:", col
+                print("Invalid column:", col, file=sys.stderr)
                 sys.exit(1)
             columns.append(col)
 
@@ -576,15 +580,15 @@ def list_prefix(arg, opts, shell_opts):
 
         if offset == 0: # first time in loop?
             if shell_opts.show_interpretation:
-                print "Query interpretation:"
+                print("Query interpretation:")
                 _parse_interp_prefix(res['interpretation'])
 
             if res['error']:
-                print "Query failed: %s" % res['error_message']
+                print("Query failed: %s" % res['error_message'])
                 return
 
             if len(res['result']) == 0:
-                print "No addresses matching '%s' found." % search_string
+                print("No addresses matching '%s' found." % search_string)
                 return
 
             # guess column width by looking at the initial result set
@@ -615,8 +619,8 @@ def list_prefix(arg, opts, shell_opts):
                 col_header_data[colname] = col['title']
 
             column_header = prefix_str.format(**col_header_data)
-            print column_header
-            print "".join("=" for i in xrange(len(column_header)))
+            print(column_header)
+            print("".join("=" for i in range(len(column_header))))
 
         for p in res['result']:
             if p.display == False:
@@ -637,14 +641,14 @@ def list_prefix(arg, opts, shell_opts):
                 except:
                     pass
 
-                col_data['prefix'] = "".join("  " for i in xrange(p.indent)) + p.display_prefix
+                col_data['prefix'] = "".join("  " for i in range(p.indent)) + p.display_prefix
                 col_data['type'] = p.type[0].upper()
                 col_data['vrf_rt'] = p.vrf.rt or '-'
 
-                print prefix_str.format(**col_data)
+                print(prefix_str.format(**col_data))
 
-            except UnicodeEncodeError, e:
-                print >> sys.stderr, "\nCrazy encoding for prefix %s\n" % p.prefix
+            except UnicodeEncodeError as e:
+                print("\nCrazy encoding for prefix %s\n" % p.prefix, file=sys.stderr)
 
         if len(res['result']) < limit:
             break
@@ -690,11 +694,11 @@ def add_prefix(arg, opts, shell_opts):
 
     # sanity checks
     if 'from-pool' not in opts and 'from-prefix' not in opts and 'prefix' not in opts:
-        print >> sys.stderr, "ERROR: 'prefix', 'from-pool' or 'from-prefix' must be specified."
+        print("ERROR: 'prefix', 'from-pool' or 'from-prefix' must be specified.", file=sys.stderr)
         sys.exit(1)
 
     if len([opt for opt in opts if opt in ['from-pool', 'from-prefix', 'prefix']]) > 1:
-        print >> sys.stderr, "ERROR: Use either assignment 'from-pool', 'from-prefix' or manual mode (using 'prefix')"
+        print("ERROR: Use either assignment 'from-pool', 'from-prefix' or manual mode (using 'prefix')", file=sys.stderr)
         sys.exit(1)
 
     if 'from-pool' in opts:
@@ -708,7 +712,7 @@ def add_prefix(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
             return
         p.avps[key] = value
 
@@ -724,7 +728,7 @@ def add_prefix(arg, opts, shell_opts):
         elif opts['family'] == 'ipv6':
             family = 6
         elif opts['family'] == 'dual-stack':
-            print >> sys.stderr, "ERROR: dual-stack mode only valid for from-pool assignments"
+            print("ERROR: dual-stack mode only valid for from-pool assignments", file=sys.stderr)
             sys.exit(1)
 
         args['family'] = family
@@ -780,7 +784,7 @@ def add_prefix(arg, opts, shell_opts):
     # no results, ie the requested prefix is a top level prefix
     if len(res['result']) == 0:
         if p.type is None:
-            print >> sys.stderr, "ERROR: Type of prefix must be specified ('assignment' or 'reservation')."
+            print("ERROR: Type of prefix must be specified ('assignment' or 'reservation').", file=sys.stderr)
             sys.exit(1)
     else:
         # last prefix in list will be the parent of the new prefix
@@ -791,11 +795,11 @@ def add_prefix(arg, opts, shell_opts):
         if parent.type == 'assignment':
             # automatically set type
             if p.type is None:
-                print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically setting type 'host' for new prefix."
+                print("WARNING: Parent prefix is of type 'assignment'. Automatically setting type 'host' for new prefix.", file=sys.stderr)
             elif p.type == 'host':
                 pass
             else:
-                print >> sys.stderr, "WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix." % p.type
+                print("WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix." % p.type, file=sys.stderr)
             p.type = 'host'
 
             # if it's a manually specified prefix
@@ -816,19 +820,19 @@ def add_prefix(arg, opts, shell_opts):
     try:
         p.save(args)
     except NipapError as exc:
-        print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
+        print("Could not add prefix to NIPAP: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
     if p.type == 'host':
-        print "Host %s added to %s: %s" % (p.display_prefix,
-                vrf_format(p.vrf), p.node or p.description)
+        print("Host %s added to %s: %s" % (p.display_prefix,
+                vrf_format(p.vrf), p.node or p.description))
     else:
-        print "Network %s added to %s: %s" % (p.display_prefix,
-                vrf_format(p.vrf), p.description)
+        print("Network %s added to %s: %s" % (p.display_prefix,
+                vrf_format(p.vrf), p.description))
 
     if opts.get('add-hosts') is not None:
         if p.type != 'assignment':
-            print >> sys.stderr, "ERROR: Not possible to add hosts to non-assignment"
+            print("ERROR: Not possible to add hosts to non-assignment", file=sys.stderr)
             sys.exit(1)
 
         for host in opts.get('add-hosts').split(','):
@@ -852,13 +856,13 @@ def add_prefix_from_pool(arg, opts):
     if 'from-pool' in opts:
         res = Pool.list({ 'name': opts['from-pool'] })
         if len(res) == 0:
-            print >> sys.stderr, "No pool named '%s' found." % opts['from-pool']
+            print("No pool named '%s' found." % opts['from-pool'], file=sys.stderr)
             sys.exit(1)
 
         args['from-pool'] = res[0]
 
     if 'family' not in opts:
-        print >> sys.stderr, "ERROR: You have to specify the address family."
+        print("ERROR: You have to specify the address family.", file=sys.stderr)
         sys.exit(1)
 
     if opts['family'] == 'ipv4':
@@ -868,10 +872,10 @@ def add_prefix_from_pool(arg, opts):
     elif opts['family'] == 'dual-stack':
         afis = [4, 6]
         if 'prefix_length' in opts:
-            print >> sys.stderr, "ERROR: 'prefix_length' can not be specified for 'dual-stack' assignment"
+            print("ERROR: 'prefix_length' can not be specified for 'dual-stack' assignment", file=sys.stderr)
             sys.exit(1)
     else:
-        print >> sys.stderr, "ERROR: 'family' must be one of: %s" % " ".join(valid_families)
+        print("ERROR: 'family' must be one of: %s" % " ".join(valid_families), file=sys.stderr)
         sys.exit(1)
 
     if 'prefix_length' in opts:
@@ -890,14 +894,14 @@ def add_prefix_from_pool(arg, opts):
         # set type to default type of pool unless already set
         if p.type is None:
             if args['from-pool'].default_type is None:
-                print >> sys.stderr, "ERROR: Type not specified and no default-type specified for pool: %s" % opts['from-pool']
+                print("ERROR: Type not specified and no default-type specified for pool: %s" % opts['from-pool'], file=sys.stderr)
             p.type = args['from-pool'].default_type
 
         for avp in opts.get('extra-attribute', []):
             try:
                 key, value = avp.split('=', 1)
             except ValueError:
-                print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+                print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
                 return
             p.avps[key] = value
 
@@ -907,19 +911,19 @@ def add_prefix_from_pool(arg, opts):
         try:
             p.save(args)
         except NipapError as exc:
-            print >> sys.stderr, "Could not add prefix to NIPAP: %s" % str(exc)
+            print("Could not add prefix to NIPAP: %s" % str(exc), file=sys.stderr)
             sys.exit(1)
 
         if p.type == 'host':
-            print "Host %s added to %s: %s" % (p.display_prefix,
-                    vrf_format(p.vrf), p.node or p.description)
+            print("Host %s added to %s: %s" % (p.display_prefix,
+                    vrf_format(p.vrf), p.node or p.description))
         else:
-            print "Network %s added to %s: %s" % (p.display_prefix,
-                    vrf_format(p.vrf), p.description)
+            print("Network %s added to %s: %s" % (p.display_prefix,
+                    vrf_format(p.vrf), p.description))
 
         if opts.get('add-hosts') is not None:
             if p.type != 'assignment':
-                print >> sys.stderr, "ERROR: Not possible to add hosts to non-assignment"
+                print("ERROR: Not possible to add hosts to non-assignment", file=sys.stderr)
                 sys.exit(1)
 
             for host in opts.get('add-hosts').split(','):
@@ -947,17 +951,17 @@ def add_vrf(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
             return
         v.avps[key] = value
 
     try:
         v.save()
     except pynipap.NipapError as exc:
-        print >> sys.stderr, "Could not add VRF to NIPAP: %s" % str(exc)
+        print("Could not add VRF to NIPAP: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
-    print "Added %s" % (vrf_format(v))
+    print("Added %s" % (vrf_format(v)))
 
 
 
@@ -984,17 +988,17 @@ def add_pool(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
             return
         p.avps[key] = value
 
     try:
         p.save()
     except pynipap.NipapError as exc:
-        print >> sys.stderr, "Could not add pool to NIPAP: %s" % str(exc)
+        print("Could not add pool to NIPAP: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
-    print "Pool '%s' created." % (p.name)
+    print("Pool '%s' created." % (p.name))
 
 
 
@@ -1006,7 +1010,7 @@ def view_vrf(arg, opts, shell_opts):
     """
 
     if arg is None:
-        print >> sys.stderr, "ERROR: Please specify the RT of the VRF to view."
+        print("ERROR: Please specify the RT of the VRF to view.", file=sys.stderr)
         sys.exit(1)
 
     # interpret as default VRF (ie, RT = None)
@@ -1020,23 +1024,23 @@ def view_vrf(arg, opts, shell_opts):
             'val2': arg }
             )['result'][0]
     except (KeyError, IndexError):
-        print >> sys.stderr, "VRF with [RT: %s] not found." % str(arg)
+        print("VRF with [RT: %s] not found." % str(arg), file=sys.stderr)
         sys.exit(1)
 
-    print "-- VRF"
-    print "  %-26s : %d" % ("ID", v.id)
-    print "  %-26s : %s" % ("RT", v.rt)
-    print "  %-26s : %s" % ("Name", v.name)
-    print "  %-26s : %s" % ("Description", v.description)
+    print("-- VRF")
+    print("  %-26s : %d" % ("ID", v.id))
+    print("  %-26s : %s" % ("RT", v.rt))
+    print("  %-26s : %s" % ("Name", v.name))
+    print("  %-26s : %s" % ("Description", v.description))
 
-    print "-- Extra Attributes"
+    print("-- Extra Attributes")
     if v.avps is not None:
         for key in sorted(v.avps, key=lambda s: s.lower()):
-            print "  %-26s : %s" % (key, v.avps[key])
+            print("  %-26s : %s" % (key, v.avps[key]))
 
-    print "-- Tags"
+    print("-- Tags")
     for tag_name in sorted(v.tags, key=lambda s: s.lower()):
-        print "  %s" % tag_name
+        print("  %s" % tag_name)
     # statistics
     if v.total_addresses_v4 == 0:
         used_percent_v4 = 0
@@ -1046,15 +1050,15 @@ def view_vrf(arg, opts, shell_opts):
         used_percent_v6 = 0
     else:
         used_percent_v6 = (float(v.used_addresses_v6)/v.total_addresses_v6)*100
-    print "-- Statistics"
-    print "  %-26s : %s" % ("IPv4 prefixes", v.num_prefixes_v4)
-    print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
+    print("-- Statistics")
+    print("  %-26s : %s" % ("IPv4 prefixes", v.num_prefixes_v4))
+    print("  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
             v.used_addresses_v4, v.free_addresses_v4, used_percent_v4,
-            v.total_addresses_v4)
-    print "  %-26s : %s" % ("IPv6 prefixes", v.num_prefixes_v6)
-    print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
+            v.total_addresses_v4))
+    print("  %-26s : %s" % ("IPv6 prefixes", v.num_prefixes_v6))
+    print("  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
             v.used_addresses_v6, v.free_addresses_v6, used_percent_v6,
-            v.total_addresses_v6)
+            v.total_addresses_v6))
 
 
 
@@ -1065,7 +1069,7 @@ def view_pool(arg, opts, shell_opts):
     res = Pool.list({ 'name': arg })
 
     if len(res) == 0:
-        print "No pool with name '%s' found." % arg
+        print("No pool with name '%s' found." % arg)
         return
 
     p = res[0]
@@ -1076,91 +1080,91 @@ def view_pool(arg, opts, shell_opts):
         vrf_rt = p.vrf.rt
         vrf_name = p.vrf.name
 
-    print  "-- Pool "
-    print "  %-26s : %d" % ("ID", p.id)
-    print "  %-26s : %s" % ("Name", p.name)
-    print "  %-26s : %s" % ("Description", p.description)
-    print "  %-26s : %s" % ("Default type", p.default_type)
-    print "  %-26s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name)
-    print "  %-26s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length))
+    print("-- Pool ")
+    print("  %-26s : %d" % ("ID", p.id))
+    print("  %-26s : %s" % ("Name", p.name))
+    print("  %-26s : %s" % ("Description", p.description))
+    print("  %-26s : %s" % ("Default type", p.default_type))
+    print("  %-26s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name))
+    print("  %-26s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length)))
 
-    print "-- Extra Attributes"
+    print("-- Extra Attributes")
     if p.avps is not None:
         for key in sorted(p.avps, key=lambda s: s.lower()):
-            print "  %-26s : %s" % (key, p.avps[key])
+            print("  %-26s : %s" % (key, p.avps[key]))
 
-    print "-- Tags"
+    print("-- Tags")
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
-        print "  %s" % tag_name
+        print("  %s" % tag_name)
 
     # statistics
-    print "-- Statistics"
+    print("-- Statistics")
 
     # IPv4 total / used / free prefixes
     if p.member_prefixes_v4 == 0:
-        print "  IPv4 prefixes Used / Free  : N/A (No IPv4 member prefixes)"
+        print("  IPv4 prefixes Used / Free  : N/A (No IPv4 member prefixes)")
     elif p.ipv4_default_prefix_length is None:
-        print "  IPv4 prefixes Used / Free  : N/A (IPv4 default prefix length is not set)"
+        print("  IPv4 prefixes Used / Free  : N/A (IPv4 default prefix length is not set)")
     else:
         if p.total_prefixes_v4 == 0:
             used_percent_v4 = 0
         else:
             used_percent_v4 = (float(p.used_prefixes_v4)/p.total_prefixes_v4)*100
 
-        print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 prefixes Used / Free",
+        print("  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 prefixes Used / Free",
                 p.used_prefixes_v4, p.free_prefixes_v4, used_percent_v4,
-                p.total_prefixes_v4)
+                p.total_prefixes_v4))
 
     # IPv6 total / used / free prefixes
     if p.member_prefixes_v6 == 0:
-        print "  IPv6 prefixes Used / Free  : N/A (No IPv6 member prefixes)"
+        print("  IPv6 prefixes Used / Free  : N/A (No IPv6 member prefixes)")
     elif p.ipv6_default_prefix_length is None:
-        print "  IPv6 prefixes Used / Free  : N/A (IPv6 default prefix length is not set)"
+        print("  IPv6 prefixes Used / Free  : N/A (IPv6 default prefix length is not set)")
     else:
         if p.total_prefixes_v6 == 0:
             used_percent_v6 = 0
         else:
             used_percent_v6 = (float(p.used_prefixes_v6)/p.total_prefixes_v6)*100
-        print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 prefixes Used / Free",
+        print("  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 prefixes Used / Free",
                 p.used_prefixes_v6, p.free_prefixes_v6, used_percent_v6,
-                p.total_prefixes_v6)
+                p.total_prefixes_v6))
 
 
     # IPv4 total / used / free addresses
     if p.member_prefixes_v4 == 0:
-        print "  IPv4 addresses Used / Free  : N/A (No IPv4 member prefixes)"
+        print("  IPv4 addresses Used / Free  : N/A (No IPv4 member prefixes)")
     elif p.ipv4_default_prefix_length is None:
-        print "  IPv4 addresses Used / Free  : N/A (IPv4 default prefix length is not set)"
+        print("  IPv4 addresses Used / Free  : N/A (IPv4 default prefix length is not set)")
     else:
         if p.total_addresses_v4 == 0:
             used_percent_v4 = 0
         else:
             used_percent_v4 = (float(p.used_addresses_v4)/p.total_addresses_v4)*100
 
-        print "  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
+        print("  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
                 p.used_addresses_v4, p.free_addresses_v4, used_percent_v4,
-                p.total_addresses_v4)
+                p.total_addresses_v4))
 
     # IPv6 total / used / free addresses
     if p.member_prefixes_v6 == 0:
-        print "  IPv6 addresses Used / Free  : N/A (No IPv6 member prefixes)"
+        print("  IPv6 addresses Used / Free  : N/A (No IPv6 member prefixes)")
     elif p.ipv6_default_prefix_length is None:
-        print "  IPv6 addresses Used / Free  : N/A (IPv6 default prefix length is not set)"
+        print("  IPv6 addresses Used / Free  : N/A (IPv6 default prefix length is not set)")
     else:
         if p.total_addresses_v6 == 0:
             used_percent_v6 = 0
         else:
             used_percent_v6 = (float(p.used_addresses_v6)/p.total_addresses_v6)*100
-        print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
+        print("  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
                 p.used_addresses_v6, p.free_addresses_v6, used_percent_v6,
-                p.total_addresses_v6)
+                p.total_addresses_v6))
 
-    print "\n-- Prefixes in pool - v4: %d  v6: %d" % (p.member_prefixes_v4,
-            p.member_prefixes_v6)
+    print("\n-- Prefixes in pool - v4: %d  v6: %d" % (p.member_prefixes_v4,
+            p.member_prefixes_v6))
 
     res = Prefix.list({ 'pool_id': p.id})
     for pref in res:
-        print "  %s" % pref.display_prefix
+        print("  %s" % pref.display_prefix)
 
 
 
@@ -1195,50 +1199,50 @@ def view_prefix(arg, opts, shell_opts):
         vrf_text = 'any VRF'
         if v.rt != 'all':
             vrf_text = vrf_format(v)
-        print >> sys.stderr, "Address %s not found in %s." % (arg, vrf_text)
+        print("Address %s not found in %s." % (arg, vrf_text), file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
     vrf = p.vrf.rt
 
-    print  "-- Address "
-    print "  %-26s : %s" % ("Prefix", p.prefix)
-    print "  %-26s : %s" % ("Display prefix", p.display_prefix)
-    print "  %-26s : %s" % ("Type", p.type)
-    print "  %-26s : %s" % ("Status", p.status)
-    print "  %-26s : IPv%s" % ("Family", p.family)
-    print "  %-26s : %s" % ("VRF", vrf)
-    print "  %-26s : %s" % ("Description", p.description)
-    print "  %-26s : %s" % ("Node", p.node)
-    print "  %-26s : %s" % ("Country", p.country)
-    print "  %-26s : %s" % ("Order", p.order_id)
-    print "  %-26s : %s" % ("Customer", p.customer_id)
-    print "  %-26s : %s" % ("VLAN", p.vlan)
-    print "  %-26s : %s" % ("Alarm priority", p.alarm_priority)
-    print "  %-26s : %s" % ("Monitor", p.monitor)
-    print "  %-26s : %s" % ("Added", p.added)
-    print "  %-26s : %s" % ("Last modified", p.last_modified)
-    print "  %-26s : %s" % ("Expires", p.expires or '-')
+    print("-- Address ")
+    print("  %-26s : %s" % ("Prefix", p.prefix))
+    print("  %-26s : %s" % ("Display prefix", p.display_prefix))
+    print("  %-26s : %s" % ("Type", p.type))
+    print("  %-26s : %s" % ("Status", p.status))
+    print("  %-26s : IPv%s" % ("Family", p.family))
+    print("  %-26s : %s" % ("VRF", vrf))
+    print("  %-26s : %s" % ("Description", p.description))
+    print("  %-26s : %s" % ("Node", p.node))
+    print("  %-26s : %s" % ("Country", p.country))
+    print("  %-26s : %s" % ("Order", p.order_id))
+    print("  %-26s : %s" % ("Customer", p.customer_id))
+    print("  %-26s : %s" % ("VLAN", p.vlan))
+    print("  %-26s : %s" % ("Alarm priority", p.alarm_priority))
+    print("  %-26s : %s" % ("Monitor", p.monitor))
+    print("  %-26s : %s" % ("Added", p.added))
+    print("  %-26s : %s" % ("Last modified", p.last_modified))
+    print("  %-26s : %s" % ("Expires", p.expires or '-'))
     if p.family == 4:
-        print "  %-26s : %s / %s (%.2f%% of %s)" % ("Addresses Used / Free", p.used_addresses,
+        print("  %-26s : %s / %s (%.2f%% of %s)" % ("Addresses Used / Free", p.used_addresses,
                 p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
-                p.total_addresses)
+                p.total_addresses))
     else:
-        print "  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("Addresses Used / Free", p.used_addresses,
+        print("  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("Addresses Used / Free", p.used_addresses,
                 p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
-                p.total_addresses)
-    print "-- Extra Attributes"
+                p.total_addresses))
+    print("-- Extra Attributes")
     if p.avps is not None:
         for key in sorted(p.avps, key=lambda s: s.lower()):
-            print "  %-26s : %s" % (key, p.avps[key])
-    print "-- Tags"
+            print("  %-26s : %s" % (key, p.avps[key]))
+    print("-- Tags")
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
-        print "  %s" % tag_name
-    print "-- Inherited Tags"
+        print("  %s" % tag_name)
+    print("-- Inherited Tags")
     for tag_name in sorted(p.inherited_tags, key=lambda s: s.lower()):
-        print "  %s" % tag_name
-    print "-- Comment"
-    print p.comment or ''
+        print("  %s" % tag_name)
+    print("-- Comment")
+    print(p.comment or '')
 
 
 
@@ -1254,24 +1258,24 @@ def remove_vrf(arg, opts, shell_opts):
 
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
-        print >> sys.stderr, "VRF with [RT: %s] not found." % arg
+        print("VRF with [RT: %s] not found." % arg, file=sys.stderr)
         sys.exit(1)
 
     v = res[0]
 
     if not remove_confirmed:
-        print "RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description)
-        print "\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL ITS ADDRESSES"
-        res = raw_input("Do you really want to remove %s? [y/N]: " % vrf_format(v))
+        print("RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description))
+        print("\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL ITS ADDRESSES")
+        res = input("Do you really want to remove %s? [y/N]: " % vrf_format(v))
 
         if res == 'y':
             remove_confirmed = True
         else:
-            print "Operation canceled."
+            print("Operation canceled.")
 
     if remove_confirmed:
         v.remove()
-        print "%s removed." % vrf_format(v)
+        print("%s removed." % vrf_format(v))
 
 
 
@@ -1283,22 +1287,22 @@ def remove_pool(arg, opts, shell_opts):
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
-        print >> sys.stderr, "No pool with name '%s' found." % arg
+        print("No pool with name '%s' found." % arg, file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
 
     if not remove_confirmed:
-        res = raw_input("Do you really want to remove the pool '%s'? [y/N]: " % p.name)
+        res = input("Do you really want to remove the pool '%s'? [y/N]: " % p.name)
 
         if res == 'y':
             remove_confirmed = True
         else:
-            print "Operation canceled."
+            print("Operation canceled.")
 
     if remove_confirmed:
         p.remove()
-        print "Pool '%s' removed." % p.name
+        print("Pool '%s' removed." % p.name)
 
 
 def remove_prefix(arg, opts, shell_opts):
@@ -1324,7 +1328,7 @@ def remove_prefix(arg, opts, shell_opts):
         vrf_text = 'any VRF'
         if v.rt != 'all':
             vrf_text = vrf_format(v)
-        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_text)
+        print("Prefix %s not found in %s." % (arg, vrf_text), file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
@@ -1362,36 +1366,36 @@ def remove_prefix(arg, opts, shell_opts):
         # delete instead
         if p.type == 'assignment':
             if len(pres['result']) > 1:
-                print "WARNING: %s in %s contains %s hosts." % (p.prefix, vrf_format(p.vrf), len(pres['result']))
-                res = raw_input("Would you like to recursively delete %s and all hosts? [y/N]: " % (p.prefix))
+                print("WARNING: %s in %s contains %s hosts." % (p.prefix, vrf_format(p.vrf), len(pres['result'])))
+                res = input("Would you like to recursively delete %s and all hosts? [y/N]: " % (p.prefix))
                 if res.lower() in [ 'y', 'yes' ]:
                     recursive = True
                 else:
-                    print >> sys.stderr, "ERROR: Removal of assignment containing hosts is prohibited. Aborting removal of %s in %s." % (p.prefix, vrf_format(p.vrf))
+                    print("ERROR: Removal of assignment containing hosts is prohibited. Aborting removal of %s in %s." % (p.prefix, vrf_format(p.vrf)), file=sys.stderr)
                     sys.exit(1)
 
         if recursive is True:
             if len(pres['result']) <= 1:
-                res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
+                res = input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
 
                 if res.lower() in [ 'y', 'yes' ]:
                     remove_confirmed = True
 
             else:
-                print "Recursively deleting %s in %s will delete the following prefixes:" % (p.prefix, vrf_format(p.vrf))
+                print("Recursively deleting %s in %s will delete the following prefixes:" % (p.prefix, vrf_format(p.vrf)))
 
                 # Iterate prefixes to print a few of them and check the prefixes'
                 # authoritative source
                 i = 0
                 for rp in pres['result']:
                     if i <= 10:
-                        print "%-29s %-2s %-19s %-14s %-14s %-40s" % ("".join("  " for i in
+                        print("%-29s %-2s %-19s %-14s %-14s %-40s" % ("".join("  " for i in
                             range(rp.indent)) + rp.display_prefix,
                             rp.type[0].upper(), rp.node, rp.order_id,
-                            rp.customer_id, rp.description)
+                            rp.customer_id, rp.description))
 
                     if i == 10:
-                        print ".. and %s other prefixes" % (len(pres['result']) - 10)
+                        print(".. and %s other prefixes" % (len(pres['result']) - 10))
 
                     if rp.authoritative_source != 'nipap':
                         auth_src.add(rp.authoritative_source)
@@ -1400,7 +1404,7 @@ def remove_prefix(arg, opts, shell_opts):
 
                 if len(auth_src) == 0:
                     # Simple case; all prefixes were added from NIPAP
-                    res = raw_input("Do you really want to recursively remove %s prefixes in %s? [y/N]: " % (len(pres['result']),
+                    res = input("Do you really want to recursively remove %s prefixes in %s? [y/N]: " % (len(pres['result']),
                                 vrf_format(vrf)))
 
                     if res.lower() in [ 'y', 'yes' ]:
@@ -1421,49 +1425,49 @@ def remove_prefix(arg, opts, shell_opts):
                         plural = "s"
                         prompt = "Enter the name of the last managing system to continue or anything else to abort: "
 
-                    print ("Prefix %s in %s contains prefixes managed by the system%s %s. " +
+                    print(("Prefix %s in %s contains prefixes managed by the system%s %s. " +
                         "Are you sure you want to remove them? ") % (p.prefix,
-                                vrf_format(p.vrf), plural, systems)
-                    res = raw_input(prompt)
+                                vrf_format(p.vrf), plural, systems))
+                    res = input(prompt)
 
                     # Did the user provide the correct answer?
                     if res.lower() == auth_src[0].lower():
                         remove_confirmed = True
                     else:
-                        print >> sys.stderr, "System names did not match."
+                        print("System names did not match.", file=sys.stderr)
                         sys.exit(1)
 
         else:
             # non recursive delete
             if len(auth_src) > 0:
                 auth_src = list(auth_src)
-                print ("Prefix %s in %s is managed by the system '%s'. " +
+                print(("Prefix %s in %s is managed by the system '%s'. " +
                     "Are you sure you want to remove it? ") % (p.prefix,
-                            vrf_format(p.vrf), auth_src[0])
-                res = raw_input("Enter the name of the managing system to continue or anything else to abort: ")
+                            vrf_format(p.vrf), auth_src[0]))
+                res = input("Enter the name of the managing system to continue or anything else to abort: ")
 
                 if res.lower() == auth_src[0].lower():
                     remove_confirmed = True
 
                 else:
-                    print >> sys.stderr, "System names did not match."
+                    print("System names did not match.", file=sys.stderr)
                     sys.exit(1)
 
             else:
-                res = raw_input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
+                res = input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
                 if res.lower() in [ 'y', 'yes' ]:
                     remove_confirmed = True
 
     if remove_confirmed is True:
         p.remove(recursive = recursive)
         if recursive is True:
-            print "Prefix %s and %s other prefixes in %s removed." % (p.prefix,
-                    (len(pres['result']) - 1), vrf_format(p.vrf))
+            print("Prefix %s and %s other prefixes in %s removed." % (p.prefix,
+                    (len(pres['result']) - 1), vrf_format(p.vrf)))
         else:
-            print "Prefix %s in %s removed." % (p.prefix, vrf_format(p.vrf))
+            print("Prefix %s in %s removed." % (p.prefix, vrf_format(p.vrf)))
 
     else:
-        print "Operation canceled."
+        print("Operation canceled.")
 
 
 """
@@ -1476,7 +1480,7 @@ def modify_vrf(arg, opts, shell_opts):
 
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
-        print >> sys.stderr, "VRF with [RT: %s] not found." % arg
+        print("VRF with [RT: %s] not found." % arg, file=sys.stderr)
         sys.exit(1)
 
     v = res[0]
@@ -1499,13 +1503,13 @@ def modify_vrf(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
             return
         v.avps[key] = value
 
     v.save()
 
-    print "%s saved." % vrf_format(v)
+    print("%s saved." % vrf_format(v))
 
 
 
@@ -1515,7 +1519,7 @@ def modify_pool(arg, opts, shell_opts):
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
-        print >> sys.stderr, "No pool with name '%s' found." % arg
+        print("No pool with name '%s' found." % arg, file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
@@ -1542,14 +1546,14 @@ def modify_pool(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
             return
         p.avps[key] = value
 
 
     p.save()
 
-    print "Pool '%s' saved." % p.name
+    print("Pool '%s' saved." % p.name)
 
 
 
@@ -1557,11 +1561,11 @@ def grow_pool(arg, opts, shell_opts):
     """ Expand a pool with the ranges set in opts
     """
     if not pool:
-        print >> sys.stderr, "No pool with name '%s' found." % arg
+        print("No pool with name '%s' found." % arg, file=sys.stderr)
         sys.exit(1)
 
     if not 'add' in opts:
-        print >> sys.stderr, "Please supply a prefix to add to pool '%s'" % pool.name
+        print("Please supply a prefix to add to pool '%s'" % pool.name, file=sys.stderr)
         sys.exit(1)
 
     # Figure out VRF.
@@ -1581,18 +1585,18 @@ def grow_pool(arg, opts, shell_opts):
     res = Prefix.list(q)
 
     if len(res) == 0:
-        print >> sys.stderr, "No prefix found matching %s in %s." % (opts['add'], vrf_format(v))
+        print("No prefix found matching %s in %s." % (opts['add'], vrf_format(v)), file=sys.stderr)
         sys.exit(1)
     elif res[0].pool:
         if res[0].pool == pool:
-            print >> sys.stderr, "Prefix %s in %s is already assigned to that pool." % (opts['add'], vrf_format(v))
+            print("Prefix %s in %s is already assigned to that pool." % (opts['add'], vrf_format(v)), file=sys.stderr)
         else:
-            print >> sys.stderr, "Prefix %s in %s is already assigned to a different pool ('%s')." % (opts['add'], vrf_format(v), res[0].pool.name)
+            print("Prefix %s in %s is already assigned to a different pool ('%s')." % (opts['add'], vrf_format(v), res[0].pool.name), file=sys.stderr)
         sys.exit(1)
 
     res[0].pool = pool
     res[0].save()
-    print "Prefix %s in %s added to pool '%s'." % (res[0].prefix, vrf_format(v), pool.name)
+    print("Prefix %s in %s added to pool '%s'." % (res[0].prefix, vrf_format(v), pool.name))
 
 
 
@@ -1600,25 +1604,25 @@ def shrink_pool(arg, opts, shell_opts):
     """ Shrink a pool by removing the ranges in opts from it
     """
     if not pool:
-        print >> sys.stderr, "No pool with name '%s' found." % arg
+        print("No pool with name '%s' found." % arg, file=sys.stderr)
         sys.exit(1)
 
     if 'remove' in opts:
         res = Prefix.list({'prefix': opts['remove'], 'pool_id': pool.id})
 
         if len(res) == 0:
-            print >> sys.stderr, "Pool '%s' does not contain %s." % (pool.name,
-                opts['remove'])
+            print("Pool '%s' does not contain %s." % (pool.name,
+                opts['remove']), file=sys.stderr)
             sys.exit(1)
 
         res[0].pool = None
         res[0].save()
-        print "Prefix %s removed from pool '%s'." % (res[0].prefix, pool.name)
+        print("Prefix %s removed from pool '%s'." % (res[0].prefix, pool.name))
     else:
-        print >> sys.stderr, "Please supply a prefix to add or remove to '%s':" % (
-            pool.name)
+        print("Please supply a prefix to add or remove to '%s':" % (
+            pool.name), file=sys.stderr)
         for pref in Prefix.list({'pool_id': pool.id}):
-            print "  %s" % pref.prefix
+            print("  %s" % pref.prefix)
 
 
 
@@ -1634,7 +1638,7 @@ def modify_prefix(arg, opts, shell_opts):
 
     res = Prefix.list(spec)
     if len(res) == 0:
-        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_format(v))
+        print("Prefix %s not found in %s." % (arg, vrf_format(v)), file=sys.stderr)
         return
 
     p = res[0]
@@ -1677,7 +1681,7 @@ def modify_prefix(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
             return
         p.avps[key] = value
 
@@ -1685,21 +1689,21 @@ def modify_prefix(arg, opts, shell_opts):
     # Promt user if prefix has authoritative source != nipap
     if not modify_confirmed and p.authoritative_source.lower() != 'nipap':
 
-        res = raw_input("Prefix %s in %s is managed by system '%s'. Are you sure you want to modify it? [y/n]: " %
+        res = input("Prefix %s in %s is managed by system '%s'. Are you sure you want to modify it? [y/n]: " %
             (p.prefix, vrf_format(p.vrf), p.authoritative_source))
 
         # If the user declines, short-circuit...
         if res.lower() not in [ 'y', 'yes' ]:
-            print "Operation aborted."
+            print("Operation aborted.")
             return
 
     try:
         p.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save prefix changes: %s" % str(exc)
+        print("Could not save prefix changes: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
-    print "Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf))
+    print("Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf)))
 
 
 
@@ -1713,7 +1717,7 @@ def prefix_attr_add(arg, opts, shell_opts):
 
     res = Prefix.list(spec)
     if len(res) == 0:
-        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_format(v))
+        print("Prefix %s not found in %s." % (arg, vrf_format(v)), file=sys.stderr)
         return
 
     p = res[0]
@@ -1722,11 +1726,11 @@ def prefix_attr_add(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
             sys.exit(1)
 
         if key in p.avps:
-            print >> sys.stderr, "Unable to add extra-attribute: '%s' already exists." % key
+            print("Unable to add extra-attribute: '%s' already exists." % key, file=sys.stderr)
             sys.exit(1)
 
         p.avps[key] = value
@@ -1734,10 +1738,10 @@ def prefix_attr_add(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save prefix changes: %s" % str(exc)
+        print("Could not save prefix changes: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
-    print "Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf))
+    print("Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf)))
 
 
 
@@ -1751,14 +1755,14 @@ def prefix_attr_remove(arg, opts, shell_opts):
 
     res = Prefix.list(spec)
     if len(res) == 0:
-        print >> sys.stderr, "Prefix %s not found in %s." % (arg, vrf_format(v))
+        print("Prefix %s not found in %s." % (arg, vrf_format(v)), file=sys.stderr)
         return
 
     p = res[0]
 
     for key in opts.get('extra-attribute', []):
         if key not in p.avps:
-            print >> sys.stderr, "Unable to remove extra-attribute: '%s' does not exist." % key
+            print("Unable to remove extra-attribute: '%s' does not exist." % key, file=sys.stderr)
             sys.exit(1)
 
         del p.avps[key]
@@ -1766,10 +1770,10 @@ def prefix_attr_remove(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save prefix changes: %s" % str(exc)
+        print("Could not save prefix changes: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
-    print "Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf))
+    print("Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf)))
 
 
 
@@ -1778,7 +1782,7 @@ def vrf_attr_add(arg, opts, shell_opts):
     """
 
     if arg is None:
-        print >> sys.stderr, "ERROR: Please specify the RT of the VRF to view."
+        print("ERROR: Please specify the RT of the VRF to view.", file=sys.stderr)
         sys.exit(1)
 
     # interpret as default VRF (ie, RT = None)
@@ -1792,18 +1796,18 @@ def vrf_attr_add(arg, opts, shell_opts):
             'val2': arg }
             )['result'][0]
     except (KeyError, IndexError):
-        print >> sys.stderr, "VRF with [RT: %s] not found." % str(arg)
+        print("VRF with [RT: %s] not found." % str(arg), file=sys.stderr)
         sys.exit(1)
 
     for avp in opts.get('extra-attribute', []):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
             sys.exit(1)
 
         if key in v.avps:
-            print >> sys.stderr, "Unable to add extra-attribute: '%s' already exists." % key
+            print("Unable to add extra-attribute: '%s' already exists." % key, file=sys.stderr)
             sys.exit(1)
 
         v.avps[key] = value
@@ -1811,10 +1815,10 @@ def vrf_attr_add(arg, opts, shell_opts):
     try:
         v.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save VRF changes: %s" % str(exc)
+        print("Could not save VRF changes: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
-    print "%s saved." % vrf_format(v)
+    print("%s saved." % vrf_format(v))
 
 
 
@@ -1823,7 +1827,7 @@ def vrf_attr_remove(arg, opts, shell_opts):
     """
 
     if arg is None:
-        print >> sys.stderr, "ERROR: Please specify the RT of the VRF to view."
+        print("ERROR: Please specify the RT of the VRF to view.", file=sys.stderr)
         sys.exit(1)
 
     # interpret as default VRF (ie, RT = None)
@@ -1837,12 +1841,12 @@ def vrf_attr_remove(arg, opts, shell_opts):
             'val2': arg }
             )['result'][0]
     except (KeyError, IndexError):
-        print >> sys.stderr, "VRF with [RT: %s] not found." % str(arg)
+        print("VRF with [RT: %s] not found." % str(arg), file=sys.stderr)
         sys.exit(1)
 
     for key in opts.get('extra-attribute', []):
         if key not in v.avps:
-            print >> sys.stderr, "Unable to remove extra-attribute: '%s' does not exist." % key
+            print("Unable to remove extra-attribute: '%s' does not exist." % key, file=sys.stderr)
             sys.exit(1)
 
         del v.avps[key]
@@ -1850,10 +1854,10 @@ def vrf_attr_remove(arg, opts, shell_opts):
     try:
         v.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save VRF changes: %s" % str(exc)
+        print("Could not save VRF changes: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
-    print "%s saved." % vrf_format(v)
+    print("%s saved." % vrf_format(v))
 
 
 
@@ -1863,7 +1867,7 @@ def pool_attr_add(arg, opts, shell_opts):
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
-        print >> sys.stderr, "No pool with name '%s' found." % arg
+        print("No pool with name '%s' found." % arg, file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
@@ -1872,11 +1876,11 @@ def pool_attr_add(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print >> sys.stderr, "ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp
+            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
             sys.exit(1)
 
         if key in p.avps:
-            print >> sys.stderr, "Unable to add extra-attribute: '%s' already exists." % key
+            print("Unable to add extra-attribute: '%s' already exists." % key, file=sys.stderr)
             sys.exit(1)
 
         p.avps[key] = value
@@ -1884,10 +1888,10 @@ def pool_attr_add(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save pool changes: %s" % str(exc)
+        print("Could not save pool changes: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
-    print "Pool '%s' saved." % p.name
+    print("Pool '%s' saved." % p.name)
 
 
 
@@ -1897,14 +1901,14 @@ def pool_attr_remove(arg, opts, shell_opts):
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
-        print >> sys.stderr, "No pool with name '%s' found." % arg
+        print("No pool with name '%s' found." % arg, file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
 
     for key in opts.get('extra-attribute', []):
         if key not in p.avps:
-            print >> sys.stderr, "Unable to remove extra-attribute: '%s' does not exist." % key
+            print("Unable to remove extra-attribute: '%s' does not exist." % key, file=sys.stderr)
             sys.exit(1)
 
         del p.avps[key]
@@ -1912,10 +1916,10 @@ def pool_attr_remove(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print >> sys.stderr, "Could not save pool changes: %s" % str(exc)
+        print("Could not save pool changes: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
-    print "Pool '%s' saved." % p.name
+    print("Pool '%s' saved." % p.name)
 
 
 
@@ -2031,7 +2035,7 @@ def complete_node(arg):
     # get complete command from config
     try:
         cmd = cfg.get('global', 'complete_node_cmd')
-    except ConfigParser.NoOptionError:
+    except configparser.NoOptionError:
         return [ '', ]
 
     cmd = re.sub('%search_string%', pipes.quote(arg), cmd)
@@ -2126,21 +2130,21 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             }
                         },
                         'comment': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             }
                         },
                         'country': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_country,
                             }
                         },
@@ -2148,14 +2152,14 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             }
                         },
                         'family': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_family,
                             }
                         },
@@ -2164,7 +2168,7 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'description': 'Prefix status: %s' % ' | '.join(valid_prefix_status),
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_prefix_status,
                             }
                         },
@@ -2173,7 +2177,7 @@ cmds = {
                             'argument': {
                                 'type': 'value',
                                 'description': 'Prefix type: reservation | assignment | host',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_prefix_type,
                             }
                         },
@@ -2181,7 +2185,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_pool_name,
                             }
                         },
@@ -2189,15 +2193,15 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             }
                         },
                         'node': {
                             'type': 'option',
-                            'content_type': unicode,
+                            'content_type': str,
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_node,
                             }
                         },
@@ -2205,48 +2209,48 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             }
                         },
                         'customer_id': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             }
                         },
                         'tags': {
                             'type': 'option',
-                            'content_type': unicode,
+                            'content_type': str,
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_tags,
                             }
                         },
                         'extra-attribute': {
                             'type': 'option',
                             'multiple': True,
-                            'content_type': unicode,
+                            'content_type': str,
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             },
                         },
                         'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_vrf,
                             }
                         },
                         'prefix': {
                             'type': 'option',
-                            'content_type': unicode,
+                            'content_type': str,
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             }
                         },
                         'prefix_length': {
@@ -2260,7 +2264,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_bool,
                             }
                         },
@@ -2275,7 +2279,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_priority,
                             }
                         },
@@ -2283,7 +2287,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             }
                         }
                     },
@@ -2295,14 +2299,14 @@ cmds = {
                     'exec': list_prefix,
                     'rest_argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                     },
                     'children': {
                         'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'VRF',
                                 'complete': complete_vrf_virtual,
                             },
@@ -2315,7 +2319,7 @@ cmds = {
                     'type': 'command',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'Prefix to edit',
                     },
                     'children': {
@@ -2323,7 +2327,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'VRF',
                                 'complete': complete_vrf,
                             },
@@ -2336,10 +2340,10 @@ cmds = {
                                 'extra-attribute': {
                                     'type': 'option',
                                     'multiple': True,
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     },
                                 },
                             }
@@ -2351,10 +2355,10 @@ cmds = {
                                 'extra-attribute': {
                                     'type': 'option',
                                     'multiple': True,
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     },
                                 },
                             }
@@ -2367,14 +2371,14 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     }
                                 },
                                 'country': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_country,
                                     }
                                 },
@@ -2382,14 +2386,14 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     }
                                 },
                                 'family': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_family,
                                     }
                                 },
@@ -2398,7 +2402,7 @@ cmds = {
                                     'argument': {
                                         'type': 'value',
                                         'description': 'Prefix status: %s' % ' | '.join(valid_prefix_status),
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_prefix_status,
                                     }
                                 },
@@ -2407,25 +2411,25 @@ cmds = {
                                     'argument': {
                                         'type': 'value',
                                         'description': 'Prefix type: reservation | assignment | host',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_prefix_type,
                                     }
                                 },
                                 'extra-attribute': {
                                     'type': 'option',
                                     'multiple': True,
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     },
                                 },
                                 'node': {
                                     'type': 'option',
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_node,
                                     }
                                 },
@@ -2433,30 +2437,30 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     }
                                 },
                                 'customer_id': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     }
                                 },
                                 'prefix': {
                                     'type': 'option',
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     }
                                 },
                                 'tags': {
                                     'type': 'option',
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_tags,
                                     }
                                 },
@@ -2464,7 +2468,7 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_vrf,
                                     }
                                 },
@@ -2472,7 +2476,7 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_bool,
                                     }
                                 },
@@ -2487,7 +2491,7 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_priority,
                                     }
                                 },
@@ -2495,7 +2499,7 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     }
                                 }
                             }
@@ -2509,7 +2513,7 @@ cmds = {
                     'exec': remove_prefix,
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'Remove address'
                     },
                     'children': {
@@ -2517,7 +2521,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_vrf,
                             }
                         },
@@ -2533,7 +2537,7 @@ cmds = {
                     'exec': view_prefix,
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'Address to view'
                     },
                     'children': {
@@ -2541,7 +2545,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_vrf,
                             }
                         },
@@ -2564,7 +2568,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'VRF RT'
                             }
                         },
@@ -2572,7 +2576,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'VRF name',
                             }
 
@@ -2581,16 +2585,16 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'description': 'Description of the VRF'
                             }
                         },
                         'tags': {
                             'type': 'option',
-                            'content_type': unicode,
+                            'content_type': str,
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_tags,
                             }
                         }
@@ -2603,7 +2607,7 @@ cmds = {
                     'exec': list_vrf,
                     'rest_argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                     },
                     'children': {
                     }
@@ -2615,7 +2619,7 @@ cmds = {
                     'type': 'command',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'VRF',
                         'complete': complete_vrf,
                     }
@@ -2627,7 +2631,7 @@ cmds = {
                     'type': 'command',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'VRF',
                         'complete': complete_vrf,
                     }
@@ -2638,7 +2642,7 @@ cmds = {
                     'type': 'command',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'VRF',
                         'complete': complete_vrf,
                     },
@@ -2650,10 +2654,10 @@ cmds = {
                                 'extra-attribute': {
                                     'type': 'option',
                                     'multiple': True,
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     },
                                 },
                             }
@@ -2665,10 +2669,10 @@ cmds = {
                                 'extra-attribute': {
                                     'type': 'option',
                                     'multiple': True,
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     },
                                 },
                             }
@@ -2681,7 +2685,7 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'description': 'VRF RT'
                                     }
                                 },
@@ -2689,7 +2693,7 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'description': 'VRF name',
                                     }
 
@@ -2698,26 +2702,26 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'description': 'Description of the VRF'
                                     }
                                 },
                                 'tags': {
                                     'type': 'option',
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_tags,
                                     }
                                 },
                                 'extra-attribute': {
                                     'type': 'option',
                                     'multiple': True,
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     },
                                 },
                             }
@@ -2741,7 +2745,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'descripton': 'Default prefix type: reservation | assignment | host',
                                 'complete': complete_prefix_type,
                             }
@@ -2750,7 +2754,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'descripton': 'Name of the pool'
                             }
                         },
@@ -2758,7 +2762,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'descripton': 'A short description of the pool'
                             }
                         },
@@ -2780,20 +2784,20 @@ cmds = {
                         },
                         'tags': {
                             'type': 'option',
-                            'content_type': unicode,
+                            'content_type': str,
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_tags,
                             }
                         },
                         'extra-attribute': {
                             'type': 'option',
                             'multiple': True,
-                            'content_type': unicode,
+                            'content_type': str,
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             },
                         },
                     }
@@ -2805,14 +2809,14 @@ cmds = {
                     'exec': list_pool,
                     'rest_argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                     },
                     'children': {
                         'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'descripton': 'The implied VRF of the pool',
                                 'complete': complete_vrf_virtual
                             }
@@ -2826,7 +2830,7 @@ cmds = {
                     'exec': remove_pool,
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
                     }
@@ -2838,7 +2842,7 @@ cmds = {
                     'exec_immediately': get_pool,
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
                     },
@@ -2848,14 +2852,14 @@ cmds = {
                             'exec': grow_pool,
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                             },
                             'children': {
                                 'vrf_rt': {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_vrf,
                                     }
                                 },
@@ -2866,7 +2870,7 @@ cmds = {
                             'exec': shrink_pool,
                             'argument': {
                                 'type': 'value',
-                                'content_type': unicode,
+                                'content_type': str,
                                 'complete': complete_pool_members,
                             }
                         }
@@ -2878,7 +2882,7 @@ cmds = {
                     'type': 'command',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
                     },
@@ -2890,10 +2894,10 @@ cmds = {
                                 'extra-attribute': {
                                     'type': 'option',
                                     'multiple': True,
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     },
                                 },
                             }
@@ -2905,10 +2909,10 @@ cmds = {
                                 'extra-attribute': {
                                     'type': 'option',
                                     'multiple': True,
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     },
                                 },
                             }
@@ -2921,7 +2925,7 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'descripton': 'Default prefix type: reservation | assignment | host',
                                         'complete': complete_prefix_type,
                                     }
@@ -2930,7 +2934,7 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'descripton': 'Name of the pool'
                                     }
                                 },
@@ -2938,7 +2942,7 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'descripton': 'A short description of the pool'
                                     }
                                 },
@@ -2960,20 +2964,20 @@ cmds = {
                                 },
                                 'tags': {
                                     'type': 'option',
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                         'complete': complete_tags,
                                     }
                                 },
                                 'extra-attribute': {
                                     'type': 'option',
                                     'multiple': True,
-                                    'content_type': unicode,
+                                    'content_type': str,
                                     'argument': {
                                         'type': 'value',
-                                        'content_type': unicode,
+                                        'content_type': str,
                                     },
                                 },
                             }
@@ -2987,7 +2991,7 @@ cmds = {
                     'type': 'command',
                     'argument': {
                         'type': 'value',
-                        'content_type': unicode,
+                        'content_type': str,
                         'description': 'Pool name',
                         'complete': complete_pool_name,
                     }
@@ -3003,18 +3007,18 @@ if __name__ == '__main__':
     try:
         cmd = Command(cmds, sys.argv[1::])
     except ValueError as exc:
-        print >> sys.stderr, "Error: %s" % str(exc)
+        print("Error: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
     # execute command
     if cmd.exe is None:
-        print "Incomplete command specified"
-        print "valid completions: %s" % " ".join(cmd.next_values())
+        print("Incomplete command specified")
+        print("valid completions: %s" % " ".join(cmd.next_values()))
         sys.exit(1)
 
     try:
         cmd.exe(cmd.arg, cmd.exe_options)
     except NipapError as exc:
-        print >> sys.stderr, "Command failed:\n  %s" % str(exc)
+        print("Command failed:\n  %s" % str(exc), file=sys.stderr)
         sys.exit(1)
 
