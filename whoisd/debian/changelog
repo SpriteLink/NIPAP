@@ -1,3 +1,46 @@
+nipap-whoisd (0.29.1-1) stable; urgency=medium
+
+  * CLI is now fully Python3 compliant, in fact it is being run by py3
+    per default. This should fix all forms of unicode issues that we've
+    previously had with the CLI (#974, #976)
+  * Add nso-nipap, a Tail-F NCS / Cisco NSO package for requesting
+    prefixes from NIPAP. It's still in its early life and should be
+    considered beta.
+  * CLI will read environment variables for its configuration in
+    addition to reading from the .nipaprc configuration file (#838)
+  * CLI can now interactively prompt for password if none is found in
+    env vars or in .nipaprc (#838)
+  * database schema upgrade is now integrated into nipapd, this makes it
+    possible to use automatic db schema installations or upgrades on
+    platforms other than debian, such as in Docker (#947)
+  * backend now interprets two numbers separated by colon as VRF RT
+    (#952)
+  * backend smart parser now handles single quotes (#980, #981)
+  * backend smart parser returns a proper interpretation dict on errors
+    (#983)
+  * backend smart parser have better error return messages (#)
+  * backend smart parser now verifies enum values, like prefix type
+    (#972)
+  * prefix_length is now included among the attributes that can be
+    specified in a search (#973)
+  * nipapd is now available from Docker Hub as nipap/nipapd. It is
+    automatically built from git.
+  * nipap/postgres-ip4r is now available from Docker Hub to provide a
+    postgres DB with ip4r support
+  * Use argparse instead of optparse for future python3 compliance
+    (#747)
+  * Default nipap.conf is now in Jinja2 syntax for easy variable
+    substition (#949)
+  * whoisd can now run in foreground (#920, #951)
+  * Fix VRF selector not displaying currently selected VRFs (#928)
+  * Fix nipap-www deb install to not automatically prepend @local in URI
+    on subsequent installs / reconfigures (#942)
+  * Support unlimited max_result for search_prefix (#466, #944)
+  * fix backend smart parsing of IPv6 addresses / prefixes being
+    incorrectly parsed as VRF RT (#954)
+
+ -- Kristian Larsson <kristian@spritelink.net>  Thu, 01 Sep 2016 15:15:15 +0200
+
 nipap-whoisd (0.29.0-1) stable; urgency=medium
 
   * Add search on prefix-length (#847)
