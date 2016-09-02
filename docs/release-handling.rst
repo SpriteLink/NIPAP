@@ -83,6 +83,12 @@ Debian style package managers are able to fetch the Debian changelog file from
 repositories and can thus display the changes between versions before
 installing a package.
 
+Build prerequisites
+-------------------
+Install the following debian packages::
+
+    apt-get install debhelper python-docutils python-setuptools python3-all \
+            python3-docutils python3-setuptools
 
 Rolling a new version
 ---------------------
