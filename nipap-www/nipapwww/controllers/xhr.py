@@ -109,6 +109,12 @@ class XhrController(BaseController):
             result = VRF.smart_search(request.params['query_string'],
                 search_options, extra_query
                 )
+            # Remove error key in result from backend as it interferes with the
+            # error handling of the web interface.
+            # TODO: Reevaluate how to deal with different types of errors; soft
+            # errors like query string parser errors and hard errors like lost
+            # database.
+            del result['error']
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
@@ -233,6 +239,12 @@ class XhrController(BaseController):
             result = Pool.smart_search(request.params['query_string'],
                 search_options
                 )
+            # Remove error key in result from backend as it interferes with the
+            # error handling of the web interface.
+            # TODO: Reevaluate how to deal with different types of errors; soft
+            # errors like query string parser errors and hard errors like lost
+            # database.
+            del result['error']
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
@@ -496,6 +508,12 @@ class XhrController(BaseController):
         try:
             result = Prefix.smart_search(request.params['query_string'],
                 search_options, extra_query)
+            # Remove error key in result from backend as it interferes with the
+            # error handling of the web interface.
+            # TODO: Reevaluate how to deal with different types of errors; soft
+            # errors like query string parser errors and hard errors like lost
+            # database.
+            del result['error']
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
