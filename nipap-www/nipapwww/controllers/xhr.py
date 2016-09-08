@@ -573,8 +573,8 @@ class XhrController(BaseController):
         if 'type' in request.json:
             p.type = validate_string(request.json, 'type')
 
-        if isinstance(request.json.get('pool'), basestring):
-            if request.json['pool'].strip() != '':
+        if 'pool' in request.json:
+            if request.json['pool'] is not None:
                 try:
                     p.pool = Pool.get(int(request.json['pool']))
                 except NipapError, e:
@@ -652,8 +652,8 @@ class XhrController(BaseController):
             if 'status' in request.json:
                 p.status = validate_string(request.json, 'status')
 
-            if isinstance(request.json.get('pool'), basestring):
-                if request.json['pool'].strip() == '':
+            if 'pool' in request.json:
+                if request.json['pool'] is None:
                     p.pool = None
                 else:
                     try:

@@ -638,7 +638,7 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 			// empty string signifies infinity
 			prefix_data.expires = '';
 		} else {
-			// mangle prefix into ISO8601 format
+			// mangle date into ISO8601 format
 			prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss');
 		}
 
@@ -1124,7 +1124,7 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 			function () {
 
 				$http.post('/xhr/edit_prefix/' + prefix.id,
-						JSON.stringify({ 'pool': '' }),
+						JSON.stringify({ 'pool': null }),
 						{ 'headers': { 'Content-Type': 'application/json' } })
 					.success(function (data) {
 						if (data.hasOwnProperty('error')) {
