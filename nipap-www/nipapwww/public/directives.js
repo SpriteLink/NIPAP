@@ -14,7 +14,9 @@ nipapAppDirectives.directive('nipapPoolSelector', function ($http) {
 		},
 		link: function (scope, elem, attrs) {
 			// Fetch Pools from backend
-			$http.get('/xhr/list_pool')
+			$http.post('/xhr/list_pool',
+				JSON.stringify({}),
+				{ 'headers': { 'Content-Type': 'application/json' } })
 				.success(function (data) {
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
@@ -56,7 +58,9 @@ nipapAppDirectives.directive('nipapPoolSelectorPopup', function ($http, $timeout
 			/*
 			 * Fetch pools
 			 */
-			$http.get('/xhr/list_pool')
+			$http.post('/xhr/list_pool',
+				JSON.stringify({}),
+				{ 'headers': { 'Content-Type': 'application/json' } })
 				.success(function (data) {
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
@@ -148,7 +152,9 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 					search_q['vrf_id'] = 0;
 				}
 
-				$http.get('/xhr/smart_search_vrf', { 'params': search_q })
+				$http.post('/xhr/smart_search_vrf',
+					JSON.stringify(search_q),
+					{ 'headers': { 'Content-Type': 'application/json' } })
 					.success(scope.receiveVRFSearchResult)
 					.error(function (data, stat) {
 						var msg = data || "Unknown failure";

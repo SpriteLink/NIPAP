@@ -267,11 +267,9 @@ class XhrController(BaseController):
             p.default_type = validate_string(request.json, 'default_type')
         # TODO: handle integers
         if 'ipv4_default_prefix_length' in request.json:
-            if request.json['ipv4_default_prefix_length'].strip() != '':
-                p.ipv4_default_prefix_length = request.json['ipv4_default_prefix_length']
+            p.ipv4_default_prefix_length = request.json['ipv4_default_prefix_length']
         if 'ipv6_default_prefix_length' in request.json:
-            if request.json['ipv6_default_prefix_length'].strip() != '':
-                p.ipv6_default_prefix_length = request.json['ipv6_default_prefix_length']
+            p.ipv6_default_prefix_length = request.json['ipv6_default_prefix_length']
         if 'tags' in request.json:
             p.tags = request.json['tags']
         if 'avps' in request.json:
@@ -300,15 +298,9 @@ class XhrController(BaseController):
             p.default_type = validate_string(request.json, 'default_type')
         # TODO: handle integers
         if 'ipv4_default_prefix_length' in request.json:
-            if request.json['ipv4_default_prefix_length'].strip() != '':
-                p.ipv4_default_prefix_length = request.json['ipv4_default_prefix_length']
-            else:
-                p.ipv4_default_prefix_length = None
+            p.ipv4_default_prefix_length = request.json['ipv4_default_prefix_length']
         if 'ipv6_default_prefix_length' in request.json:
-            if request.json['ipv6_default_prefix_length'].strip() != '':
-                p.ipv6_default_prefix_length = request.json['ipv6_default_prefix_length']
-            else:
-                p.ipv6_default_prefix_length = None
+            p.ipv6_default_prefix_length = request.json['ipv6_default_prefix_length']
         if 'tags' in request.json:
             p.tags = request.json['tags']
         if 'avps' in request.json:
@@ -464,7 +456,7 @@ class XhrController(BaseController):
             search_options['offset'] = request.json['offset']
         if 'parent_prefix' in request.json:
             search_options['parent_prefix'] = request.json['parent_prefix']
-        if 'vrf_filter[]' in request.json:
+        if 'vrf_filter' in request.json:
             vrf_filter_parts = []
 
             # Fetch VRF IDs from search query and build extra query dict for
@@ -604,10 +596,8 @@ class XhrController(BaseController):
 
         if 'vlan' in request.json:
             p.vlan = request.json['vlan']
-
         if 'tags' in request.json:
             p.tags = request.json['tags']
-
         if 'avps' in request.json:
             p.avps = request.json['avps']
 
@@ -700,10 +690,8 @@ class XhrController(BaseController):
 
             if 'vlan' in request.json:
                 p.vlan = request.json['vlan']
-
             if 'tags' in request.json:
                 p.tags = request.json['tags']
-
             if 'avps' in request.json:
                 p.avps = request.json['avps']
 
