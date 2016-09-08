@@ -791,7 +791,7 @@ function showPrefixMenu(prefix_id) {
                 prefix_list[prefix_id].display_prefix + '?';
 
             confirmation_action = function() {
-				$.getJSON('/xhr/remove_prefix', { 'id': prefix_id }, prefixRemoved);
+				$.getJSON('/xhr/remove_prefix/' + prefix_id, prefixRemoved);
 
 				hidePopupMenu();
 				$(this).dialog('close');
@@ -812,7 +812,7 @@ function showPrefixMenu(prefix_id) {
                 if ($('#confirm_prefix_remove').val().toLowerCase() == auth_src.toLowerCase()) {
 
                     // User entered correct auth scr, remove prefix
-				    $.getJSON('/xhr/remove_prefix', { 'id': prefix_id }, prefixRemoved);
+				    $.getJSON('/xhr/remove_prefix/' + prefix_id, prefixRemoved);
 
 				    hidePopupMenu();
 				    $(this).dialog('close');

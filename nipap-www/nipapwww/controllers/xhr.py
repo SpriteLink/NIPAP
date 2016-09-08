@@ -187,12 +187,12 @@ class XhrController(BaseController):
 
 
 
-    def remove_vrf(self):
+    def remove_vrf(self, id):
         """ Remove a VRF.
         """
 
         try:
-            vrf = VRF.get(int(request.params['id']))
+            vrf = VRF.get(int(id))
             vrf.remove()
 
         except NipapError, e:
@@ -315,12 +315,12 @@ class XhrController(BaseController):
 
 
 
-    def remove_pool(self):
+    def remove_pool(self, id):
         """ Remove a pool.
         """
 
         try:
-            pool = Pool.get(int(request.params['id']))
+            pool = Pool.get(int(id))
             pool.remove()
 
         except NipapError, e:
@@ -704,12 +704,12 @@ class XhrController(BaseController):
 
 
 
-    def remove_prefix(self):
+    def remove_prefix(self, id):
         """ Remove a prefix.
         """
 
         try:
-            p = Prefix.get(int(request.params['id']))
+            p = Prefix.get(int(id))
             p.remove()
 
         except NipapError, e:
