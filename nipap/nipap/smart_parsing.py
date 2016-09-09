@@ -338,7 +338,7 @@ class PoolSmartParser(SmartParser):
         self._logger.debug("parsing string: " + str(part[0]) + " of type: " + part.getName())
 
         if part.getName() == 'tag':
-            self._logger.debug("Query part '" + part[0][0] + "' interpreted as tag")
+            self._logger.debug("Query part '" + part[0] + "' interpreted as tag")
             dictsql = {
                     'interpretation': {
                         'string': part[0],
@@ -456,10 +456,10 @@ class PrefixSmartParser(SmartParser):
         self._logger.debug("parsing string: " + str(part[0]) + " of type: " + part.getName())
 
         if part.getName() == 'tag':
-            self._logger.debug("Query part '" + part[0][0] + "' interpreted as tag")
+            self._logger.debug("Query part '" + part[0] + "' interpreted as tag")
             dictsql = {
                     'interpretation': {
-                        'string': part[0][0],
+                        'string': part[0],
                         'interpretation': 'tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
@@ -467,7 +467,7 @@ class PrefixSmartParser(SmartParser):
                         },
                     'operator': 'equals_any',
                     'val1': 'tags',
-                    'val2': part[0]['word']
+                    'val2': part[0][1:]
                     }
 
         elif part.getName() == 'vrf_rt':
@@ -650,7 +650,7 @@ class VrfSmartParser(SmartParser):
         self._logger.debug("parsing string: " + str(part[0]) + " of type: " + part.getName())
 
         if part.getName() == 'tag':
-            self._logger.debug("Query part '" + part[0][0] + "' interpreted as tag")
+            self._logger.debug("Query part '" + part[0] + "' interpreted as tag")
             dictsql = {
                     'interpretation': {
                         'string': part[0],
