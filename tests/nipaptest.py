@@ -121,7 +121,7 @@ class TestPrefixExpires(unittest.TestCase):
 
         # test the relative time parsing of the backend by setting "tomorrow",
         # which parsedatetime interprets as 09:00 the next day
-        # 
+        #
         tomorrow = datetime.datetime.now().replace(hour = 9, minute = 0,
                 second = 0, microsecond = 0) + datetime.timedelta(days = 1)
         p1.expires = "tomorrow"
@@ -2469,6 +2469,30 @@ class TestSmartParser(unittest.TestCase):
 
 
 
+    def test_prefix18(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        success, query = n._parse_prefix_query('#foo')
+
+        expected = {
+            'interpretation': {
+                'attribute': 'tag',
+                'error': False,
+                'interpretation': 'tag',
+                'operator': 'equals_any',
+                'string': '#foo'
+            },
+            'operator': 'equals_any',
+            'val1': 'tags',
+            'val2': 'foo'
+        }
+
+        self.assertEqual(success, True)
+        self.assertEqual(query, expected)
+
+
+
     def test_vrf1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
@@ -2709,6 +2733,30 @@ class TestSmartParser(unittest.TestCase):
 
 
 
+    def test_vrf7(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        success, query = n._parse_vrf_query('#foo')
+
+        expected = {
+            'interpretation': {
+                'attribute': 'tag',
+                'error': False,
+                'interpretation': 'tag',
+                'operator': 'equals_any',
+                'string': '#foo'
+            },
+            'operator': 'equals_any',
+            'val1': 'tags',
+            'val2': 'foo'
+        }
+
+        self.assertEqual(success, True)
+        self.assertEqual(query, expected)
+
+
+
     def test_pool1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
@@ -2906,6 +2954,31 @@ class TestSmartParser(unittest.TestCase):
 
         self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
+
+
+
+    def test_pool7(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        success, query = n._parse_pool_query('#foo')
+
+        expected = {
+            'interpretation': {
+                'attribute': 'tag',
+                'error': False,
+                'interpretation': 'tag',
+                'operator': 'equals_any',
+                'string': '#foo'
+            },
+            'operator': 'equals_any',
+            'val1': 'tags',
+            'val2': 'foo'
+        }
+
+        self.assertEqual(success, True)
+        self.assertEqual(query, expected)
+
 
 
 class TestAvpEmptyName(unittest.TestCase):
