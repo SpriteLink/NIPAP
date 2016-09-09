@@ -1,3 +1,8 @@
+Version 0.29.2 - Zeus
+---------------------
+ * Fix packaging of nipap-cli so that it works on many releases (#1003, #1005)
+ * Fix error handling in nipap-www (#1004, #1006)
+
 Version 0.29.1 - Zeus
 ---------------------
  * CLI is now fully Python3 compliant, in fact it is being run by py3 per
