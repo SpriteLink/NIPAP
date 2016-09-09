@@ -403,7 +403,9 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		// Mangle avps
 		query_data.avps = {};
 		$scope.prefix.avps.forEach(function(avp) {
-			query_data.avps[avp.attribute] = avp.value;
+			if (avp.attribute != '' && avp.value != '') {
+				query_data.avps[avp.attribute] = avp.value;
+			}
 		});
 		query_data.avps = JSON.stringify(query_data.avps);
 
@@ -609,7 +611,9 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 		// Mangle avps
 		prefix_data.avps = {};
 		$scope.prefix.avps.forEach(function(avp) {
-			prefix_data.avps[avp.attribute] = avp.value;
+			if (avp.attribute != '' && avp.value != '') {
+				prefix_data.avps[avp.attribute] = avp.value;
+			}
 		});
 		prefix_data.avps = JSON.stringify(prefix_data.avps);
 
@@ -687,7 +691,9 @@ nipapAppControllers.controller('VRFAddController', function ($scope, $http) {
 		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
 		query_data.avps = {};
 		$scope.vrf.avps.forEach(function(avp) {
-			query_data.avps[avp.attribute] = avp.value;
+			if (avp.attribute != '' && avp.value != '') {
+				query_data.avps[avp.attribute] = avp.value;
+			}
 		});
 		query_data.avps = JSON.stringify(query_data.avps);
 
@@ -812,7 +818,9 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
 		query_data.avps = {};
 		$scope.vrf.avps.forEach(function(avp) {
-			query_data.avps[avp.attribute] = avp.value;
+			if (avp.attribute != '' && avp.value != '') {
+				query_data.avps[avp.attribute] = avp.value;
+			}
 		});
 		query_data.avps = JSON.stringify(query_data.avps);
 
@@ -879,7 +887,9 @@ nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
 		// Mangle avps
 		query_data.avps = {};
 		$scope.pool.avps.forEach(function(avp) {
-			query_data.avps[avp.attribute] = avp.value;
+			if (avp.attribute != '' && avp.value != '') {
+				query_data.avps[avp.attribute] = avp.value;
+			}
 		});
 		query_data.avps = JSON.stringify(query_data.avps);
 
@@ -1065,7 +1075,9 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 		// Mangle avps
 		query_data.avps = {};
 		$scope.pool.avps.forEach(function(avp) {
-			query_data.avps[avp.attribute] = avp.value;
+			if (avp.attribute != '' && avp.value != '') {
+				query_data.avps[avp.attribute] = avp.value;
+			}
 		});
 		query_data.avps = JSON.stringify(query_data.avps);
 
