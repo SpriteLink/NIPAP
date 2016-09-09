@@ -1,3 +1,11 @@
+nipap-whoisd (0.29.2-1) stable; urgency=medium
+
+  * Fix packaging of nipap-cli so that it works on many releases (#1003,
+    #1005)
+  * Fix error handling in nipap-www (#1004, #1006)
+
+ -- Kristian Larsson <kll@lingloi>  Fri, 09 Sep 2016 17:45:15 +0200
+
 nipap-whoisd (0.29.1-1) stable; urgency=medium
 
   * CLI is now fully Python3 compliant, in fact it is being run by py3
