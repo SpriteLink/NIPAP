@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 """ NIPAP shell command
 
     A shell command to interact with NIPAP.
@@ -2517,7 +2517,7 @@ cmds = {
                         'description': 'Remove address'
                     },
                     'children': {
-	                    'vrf_rt': {
+                        'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
@@ -2541,7 +2541,7 @@ cmds = {
                         'description': 'Address to view'
                     },
                     'children': {
-	                    'vrf_rt': {
+                        'vrf_rt': {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
