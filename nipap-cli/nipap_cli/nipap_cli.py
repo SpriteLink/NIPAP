@@ -200,8 +200,8 @@ def _parse_interp_pool(query, indent=-5, pandop=False):
         andop = True
 
     elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
-        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
-        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'][1:])
+        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string'][1:]
 
     else:
         text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
@@ -327,8 +327,8 @@ def _parse_interp_vrf(query, indent=-5, pandop=False):
         andop = True
 
     elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
-        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
-        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'][1:])
+        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string'][1:]
 
     else:
         text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
@@ -428,8 +428,8 @@ def _parse_interp_prefix(query, indent=-5, pandop=False):
         andop = True
 
     elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
-        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'])
-        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string']
+        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'][1:])
+        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string'][1:]
 
     elif interp['attribute'] == 'prefix' and interp['operator'] == 'contained_within_equals':
         if 'strict_prefix' in interp and 'expanded' in interp:

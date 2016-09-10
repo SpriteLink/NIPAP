@@ -1170,8 +1170,8 @@ function parseInterp(query, container) {
 		} else if (interp.interpretation == 'and') {
 			text = "<b>AND</b>";
 		} else if (interp.attribute == 'tag' && interp.operator == 'equals_any') {
-			text += ' must contain <b>' + interp.string + '</b>';
-			tooltip = "The tag(s) or inherited tag(s) must contain " + interp.string;
+			text += ' must contain <b>' + interp.string.slice(1) + '</b>';
+			tooltip = "The tag(s) or inherited tag(s) must contain " + interp.string.slice(1);
 		} else if (interp.attribute == 'prefix' && interp.operator == 'contained_within_equals') {
 			text += ' within ';
 			if ('strict_prefix' in interp && 'expanded' in interp) {
