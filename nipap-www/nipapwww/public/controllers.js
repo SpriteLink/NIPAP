@@ -112,7 +112,7 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 /*
  * PrefixListController - Display prefix list
  */
-nipapAppControllers.controller('PrefixListController', function ($scope, $modal) {
+nipapAppControllers.controller('PrefixListController', function ($scope, $uibModal) {
 
 	/*
 	 * Display a popup notice informing the user of how prefixes are added from
@@ -120,7 +120,7 @@ nipapAppControllers.controller('PrefixListController', function ($scope, $modal)
 	 */
 	$scope.showAddPrefixFromPoolNotice = function () {
 
-		var modalInstance = $modal.open({
+		var modalInstance = $uibModal.open({
 			templateUrl: 'add_prefix_from_pool_notice.html',
 			windowClass: 'nipap_modal'
 		});
@@ -133,7 +133,7 @@ nipapAppControllers.controller('PrefixListController', function ($scope, $modal)
 	 */
 	$scope.showAddPrefixFromPrefixNotice = function () {
 
-		var modalInstance = $modal.open({
+		var modalInstance = $uibModal.open({
 			templateUrl: 'add_prefix_from_prefix_notice.html',
 			windowClass: 'nipap_modal'
 		});
@@ -904,7 +904,7 @@ nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
 /*
  * PoolEditController - used to edit pools
  */
-nipapAppControllers.controller('PoolEditController', function ($scope, $routeParams, $http, $modal) {
+nipapAppControllers.controller('PoolEditController', function ($scope, $routeParams, $http, $uibModal) {
 
 	$scope.method = 'edit';
 	$scope.edited_pools = [];
@@ -1121,7 +1121,7 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 	 */
 	$scope.showExpandPoolNotice = function () {
 
-		var modalInstance = $modal.open({
+		var modalInstance = $uibModal.open({
 			templateUrl: 'expand_pool_notice.html',
 			windowClass: 'nipap_modal'
 		});

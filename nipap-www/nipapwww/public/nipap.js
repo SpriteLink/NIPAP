@@ -614,7 +614,7 @@ function showPrefix(prefix, reference, offset) {
 	prefix_type_icon.addClass('prefix_type_' + prefix.type);
 
 	// Add tooltip to prefix type icon
-	prefix_type_icon.attr('tooltip', prefix.type[0].toUpperCase() + prefix.type.slice(1));
+	prefix_type_icon.attr('uib-tooltip', prefix.type[0].toUpperCase() + prefix.type.slice(1));
 	prefix_type_icon.html(prefix.type[0].toUpperCase());
 	// Run element through AngularJS compiler to "activate" directives (the
 	// AngularUI/Bootstrap tooltip)
@@ -636,14 +636,14 @@ function showPrefix(prefix, reference, offset) {
 			tag_list += '<br/>'
 		}
 
-		tags_html = '<div style="text-align: left;">Tags:<br/>' +
+		tags_html = '"<div style=\\"text-align: left;\\">Tags:<br/>' +
 			tag_list +
 			'<br>Inherited tags:<br/>' +
 			Object.keys(prefix.inherited_tags).sort(sort_func).join('<br/>') +
-			'</div>';
+			'</div>"';
 
 		prefix_tags.html('<img src="/images/tag-16.png">');
-		prefix_tags.children().attr('tooltip-html-unsafe', tags_html);
+		prefix_tags.children().attr('uib-tooltip-html', tags_html);
 		// Run element through AngularJS compiler to "activate" directives (the
 		// AngularUI/Bootstrap tooltip)
 		prefix_tags.replaceWith(ng_compile(prefix_tags)(ng_scope));
@@ -692,9 +692,10 @@ function showPrefix(prefix, reference, offset) {
 	if (prefix.comment == null || prefix.comment == '') {
 		prefix_comment.html("&nbsp;");
 	} else {
-		prefix_comment.prop('tooltip', prefix.comment)
-		prefix_comment.prop('tooltip-placement', 'bottom')
 		prefix_comment.html('<img src="/images/comments-16.png">');
+		prefix_comment.children().attr('uib-tooltip', prefix.comment);
+		prefix_comment.replaceWith(ng_compile(prefix_comment)(ng_scope));
+		ng_scope.$apply();
 	}
 
 	// Add prefix description
@@ -1217,9 +1218,9 @@ function parseInterp(query, container) {
 		if (interp.interpretation == 'or' || interp.interpretation == 'and') {
 			var andor_text = $('<div class="search_interpretation" style="display: inline-block; vertical-align: top;"></div>').appendTo(container);
 			container = $('<div class="search_interpretation" style="display: inline-block;"></div>').appendTo(container);
-			$('<div class="search_interpretation" id="' + container.attr('id') + '_intp" tooltip="' + tooltip + '" style="padding-top: 0.5em; display: inline-block;"><div style="display: inline-block;">' + text + '</div><div style="display: inline-block; border-left:2px solid #666; border-top:2px solid #666; border-bottom:2px solid #666; margin-top: 3px; margin-left: 4px; margin-right: 4px;">&nbsp;</div></div>').appendTo(andor_text);
+			$('<div class="search_interpretation" id="' + container.attr('id') + '_intp" uib-tooltip="' + tooltip + '" style="padding-top: 0.5em; display: inline-block;"><div style="display: inline-block;">' + text + '</div><div style="display: inline-block; border-left:2px solid #666; border-top:2px solid #666; border-bottom:2px solid #666; margin-top: 3px; margin-left: 4px; margin-right: 4px;">&nbsp;</div></div>').appendTo(andor_text);
 		} else {
-			$('<div class="search_interpretation" style="display: block;" id="' + container.attr('id') + '_intp" tooltip="' + tooltip + '">' + text + '</div>').appendTo(container);
+			$('<div class="search_interpretation" style="display: block;" id="' + container.attr('id') + '_intp" uib-tooltip="' + tooltip + '">' + text + '</div>').appendTo(container);
 		}
 	}
 
@@ -1243,7 +1244,7 @@ function receivePrefixList(search_result) {
 	if (!verifyPrefixListResponse(search_result)) return;
 	newest_prefix_query = parseInt(search_result.search_options.query_id);
 
-	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" tooltip="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
+	$('#search_interpretation').html('<table border=0> <tr> <td class="opt_left" id="search_interpretation_text" style="border-bottom: 1px dotted #EEEEEE;" uib-tooltip="This shows how your search query was interpreted by the search engine. All terms are ANDed together."> Search interpretation </td> <td class="opt_right" id="search_interpret_container" style="border-bottom: 1px dotted #999999;"> </td> </tr> </table>');
 	// Run element through AngularJS compiler to "activate" directives (the
 	// AngularUI/Bootstrap tooltip)
 	$(".search_interpretation_text").replaceWith(ng_compile($(".search_interpretation_text"))(ng_scope));
@@ -2395,7 +2396,7 @@ function selectPrefix(prefix_id) {
 			maxpreflen = 128;
 		}
 
-		$('#length_info_text').html('<span tooltip="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' + maxpreflen+ '>');
+		$('#length_info_text').html('<span uib-tooltip="The parent prefix is of type assignment, prefix-length of the new prefix will thus be /' + maxpreflen + '.">/' + maxpreflen + '</span><input type="hidden" name="prefix_length_prefix" value=' + maxpreflen+ '>');
 		// Run element through AngularJS compiler to "activate" directives (the
 		// AngularUI/Bootstrap tooltip)
 		$('#length_info_text').replaceWith(ng_compile($('#length_info_text'))(ng_scope));

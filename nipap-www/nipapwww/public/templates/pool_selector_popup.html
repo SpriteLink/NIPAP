@@ -1,6 +1,6 @@
-<div dropdown on-toggle="toggled(open)" is-open="popup_open" ng-click="$event.stopPropagation()">
-	<input type="button" class="btn btn-danger dropdown-toggle" value="Change pool" style="margin-left: 15px;">
-	<div class="dropdown-menu popup_menu selector">
+<div uib-dropdown on-toggle="toggled(open)" is-open="popup_open" ng-click="$event.stopPropagation()">
+	<input uib-dropdown-toggle type="button" class="btn btn-danger" value="Change pool" style="margin-left: 15px;">
+	<div uib-dropdown-menu class="popup_menu selector">
 		<h3>Select pool</h3>
 		<div class="selector_filterbar">
 			<input type="text" class="selector_search_string" name="pool_search_string" ng-model="query_string">

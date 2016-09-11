@@ -14,7 +14,7 @@ var nipapApp = angular.module('nipapApp', [
 /*
  * App configuration
  */
-nipapApp.config(function($routeProvider, $tooltipProvider) {
+nipapApp.config(function($routeProvider, $uibTooltipProvider, $sceProvider) {
 
 		/*
 		 * Define application routes
@@ -56,9 +56,19 @@ nipapApp.config(function($routeProvider, $tooltipProvider) {
 		/*
 		 * Default options for tooltips
 		 */
-		$tooltipProvider
+		$uibTooltipProvider
 			.options({
 				'placement': 'bottom',
 				'popupDelay': 100
 			});
+
+		/*
+		 * Disable Strict Contextual Escaping on the application. At
+		 * this stage where the application is partly implemented
+		 * outside AngularJS but still using AngularJS directives, it's
+		 * really difficult to get things to work with the SCE feature
+		 * enabled. Re-enable again when more of the application is
+		 * implemented in AngularJS.
+		 */
+		$sceProvider.enabled(false);
 });
