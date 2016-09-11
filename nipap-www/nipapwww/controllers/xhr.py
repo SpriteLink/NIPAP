@@ -1,4 +1,5 @@
 import logging
+import urllib
 try:
     import json
 except ImportError:
@@ -12,6 +13,16 @@ from pynipap import Tag, VRF, Prefix, Pool, NipapError
 
 log = logging.getLogger(__name__)
 
+
+
+def validate_string(req, key):
+
+    if isinstance(req[key], basestring) and req[key].strip() != '':
+        return req[key].strip()
+    else:
+        return None
+
+
 class XhrController(BaseController):
     """ Interface to a few of the NIPAP API functions.
     """
@@ -23,20 +34,20 @@ class XhrController(BaseController):
 
         # TODO: add more?
         attr = {}
-        if 'id' in request.params:
-            attr['id'] = int(request.params['id'])
-        if 'prefix' in request.params:
-            attr['prefix'] = request.params['prefix']
-        if 'pool' in request.params:
-            attr['pool_id'] = int(request.params['pool'])
-        if 'node' in request.params:
-            attr['node'] = request.params['node']
-        if 'type' in request.params:
-            attr['type'] = request.params['type']
-        if 'country' in request.params:
-            attr['country'] = request.params['country']
-        if 'indent' in request.params:
-            attr['indent'] = request.params['indent']
+        if 'id' in req:
+            attr['id'] = int(req['id'])
+        if 'prefix' in req:
+            attr['prefix'] = req['prefix']
+        if 'pool' in req:
+            attr['pool_id'] = int(req['pool'])
+        if 'node' in req:
+            attr['node'] = req['node']
+        if 'type' in req:
+            attr['type'] = req['type']
+        if 'country' in req:
+            attr['country'] = req['country']
+        if 'indent' in req:
+            attr['indent'] = req['indent']
 
         return attr
 
@@ -48,18 +59,18 @@ class XhrController(BaseController):
         """
 
         attr = {}
-        if 'id' in request.params:
-            attr['id'] = int(request.params['id'])
-        if 'name' in request.params:
-            attr['name'] = request.params['name']
-        if 'description' in request.params:
-            attr['description'] = request.params['description']
-        if 'default_type' in request.params:
-            attr['default_type'] = request.params['default_type']
-        if 'ipv4_default_prefix_length' in request.params:
-            attr['ipv4_default_prefix_length'] = int(request.params['ipv4_default_prefix_length'])
-        if 'ipv6_default_prefix_length' in request.params:
-            attr['ipv6_default_prefix_length'] = int(request.params['ipv6_default_prefix_length'])
+        if 'id' in req:
+            attr['id'] = int(req['id'])
+        if 'name' in req:
+            attr['name'] = req['name']
+        if 'description' in req:
+            attr['description'] = req['description']
+        if 'default_type' in req:
+            attr['default_type'] = req['default_type']
+        if 'ipv4_default_prefix_length' in req:
+            attr['ipv4_default_prefix_length'] = int(req['ipv4_default_prefix_length'])
+        if 'ipv6_default_prefix_length' in req:
+            attr['ipv6_default_prefix_length'] = int(req['ipv6_default_prefix_length'])
 
         return attr
 
@@ -89,24 +100,24 @@ class XhrController(BaseController):
         search_options = {}
         extra_query = None
 
-        if 'query_id' in request.params:
-            search_options['query_id'] = request.params['query_id']
+        if 'query_id' in request.json:
+            search_options['query_id'] = request.json['query_id']
 
-        if 'max_result' in request.params:
-            search_options['max_result'] = request.params['max_result']
+        if 'max_result' in request.json:
+            search_options['max_result'] = request.json['max_result']
 
-        if 'offset' in request.params:
-            search_options['offset'] = request.params['offset']
+        if 'offset' in request.json:
+            search_options['offset'] = request.json['offset']
 
-        if 'vrf_id' in request.params:
+        if 'vrf_id' in request.json:
             extra_query = {
                     'val1': 'id',
                     'operator': 'equals',
-                    'val2': request.params['vrf_id']
+                    'val2': request.json['vrf_id']
                 }
 
         try:
-            result = VRF.smart_search(request.params['query_string'],
+            result = VRF.smart_search(request.json['query_string'],
                 search_options, extra_query
                 )
             # Remove error key in result from backend as it interferes with the
@@ -127,19 +138,16 @@ class XhrController(BaseController):
         """
 
         v = VRF()
-        if 'rt' in request.params:
-            if request.params['rt'].strip() != '':
-                v.rt = request.params['rt'].strip()
-        if 'name' in request.params:
-            if request.params['name'].strip() != '':
-                v.name = request.params['name'].strip()
-        if 'description' in request.params:
-            v.description = request.params['description']
-        if 'tags' in request.params:
-            v.tags = json.loads(request.params['tags'])
-
-        if 'avps' in request.params:
-            v.avps = json.loads(request.params['avps'])
+        if 'rt' in request.json:
+            v.rt = validate_string(request.json, 'rt')
+        if 'name' in request.json:
+            v.name = validate_string(request.json, 'name')
+        if 'description' in request.json:
+            v.description = validate_string(request.json, 'description')
+        if 'tags' in request.json:
+            v.tags = request.json['tags']
+        if 'avps' in request.json:
+            v.avps = request.json['avps']
 
         try:
             v.save()
@@ -159,23 +167,16 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        if 'rt' in request.params:
-            if request.params['rt'].strip() != '':
-                v.rt = request.params['rt'].strip()
-            else:
-                v.rt = None
-        if 'name' in request.params:
-            if request.params['name'].strip() != '':
-                v.name = request.params['name'].strip()
-            else:
-                v.name = None
-        if 'description' in request.params:
-            v.description = request.params['description']
-        if 'tags' in request.params:
-            v.tags = json.loads(request.params['tags'])
-
-        if 'avps' in request.params:
-            v.avps = json.loads(request.params['avps'])
+        if 'rt' in request.json:
+            v.rt = validate_string(request.json, 'rt')
+        if 'name' in request.json:
+            v.name = validate_string(request.json, 'name')
+        if 'description' in request.json:
+            v.description = validate_string(request.json, 'description')
+        if 'tags' in request.json:
+            v.tags = request.json['tags']
+        if 'avps' in request.json:
+            v.avps = request.json['avps']
 
         try:
             v.save()
@@ -186,12 +187,12 @@ class XhrController(BaseController):
 
 
 
-    def remove_vrf(self):
+    def remove_vrf(self, id):
         """ Remove a VRF.
         """
 
         try:
-            vrf = VRF.get(int(request.params['id']))
+            vrf = VRF.get(int(id))
             vrf.remove()
 
         except NipapError, e:
@@ -205,8 +206,8 @@ class XhrController(BaseController):
         """ List pools and return JSON encoded result.
         """
 
-        # fetch attributes from request.params
-        attr = XhrController.extract_pool_attr(request.params)
+        # fetch attributes from request.json
+        attr = XhrController.extract_pool_attr(request.json)
 
         try:
             pools = Pool.list(attr)
@@ -227,16 +228,16 @@ class XhrController(BaseController):
 
         search_options = {}
 
-        if 'query_id' in request.params:
-            search_options['query_id'] = request.params['query_id']
+        if 'query_id' in request.json:
+            search_options['query_id'] = request.json['query_id']
 
-        if 'max_result' in request.params:
-            search_options['max_result'] = request.params['max_result']
-        if 'offset' in request.params:
-            search_options['offset'] = request.params['offset']
+        if 'max_result' in request.json:
+            search_options['max_result'] = request.json['max_result']
+        if 'offset' in request.json:
+            search_options['offset'] = request.json['offset']
 
         try:
-            result = Pool.smart_search(request.params['query_string'],
+            result = Pool.smart_search(request.json['query_string'],
                 search_options
                 )
             # Remove error key in result from backend as it interferes with the
@@ -258,19 +259,21 @@ class XhrController(BaseController):
 
         # extract attributes
         p = Pool()
-        p.name = request.params.get('name')
-        p.description = request.params.get('description')
-        p.default_type = request.params.get('default_type')
-        if 'ipv4_default_prefix_length' in request.params:
-            if request.params['ipv4_default_prefix_length'].strip() != '':
-                p.ipv4_default_prefix_length = request.params['ipv4_default_prefix_length']
-        if 'ipv6_default_prefix_length' in request.params:
-            if request.params['ipv6_default_prefix_length'].strip() != '':
-                p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
-        if 'tags' in request.params:
-            p.tags = json.loads(request.params['tags'])
-        if 'avps' in request.params:
-            p.avps = json.loads(request.params['avps'])
+        if 'name' in request.json:
+            p.name = validate_string(request.json, 'name')
+        if 'description' in request.json:
+            p.description = validate_string(request.json, 'description')
+        if 'default_type' in request.json:
+            p.default_type = validate_string(request.json, 'default_type')
+        # TODO: handle integers
+        if 'ipv4_default_prefix_length' in request.json:
+            p.ipv4_default_prefix_length = request.json['ipv4_default_prefix_length']
+        if 'ipv6_default_prefix_length' in request.json:
+            p.ipv6_default_prefix_length = request.json['ipv6_default_prefix_length']
+        if 'tags' in request.json:
+            p.tags = request.json['tags']
+        if 'avps' in request.json:
+            p.avps = request.json['avps']
 
         try:
            p.save()
@@ -287,26 +290,21 @@ class XhrController(BaseController):
 
         # extract attributes
         p = Pool.get(int(id))
-        if 'name' in request.params:
-            p.name = request.params.get('name')
-        if 'description' in request.params:
-            p.description = request.params.get('description')
-        if 'default_type' in request.params:
-            p.default_type = request.params.get('default_type')
-        if 'ipv4_default_prefix_length' in request.params:
-            if request.params['ipv4_default_prefix_length'].strip() != '':
-                p.ipv4_default_prefix_length = request.params['ipv4_default_prefix_length']
-            else:
-                p.ipv4_default_prefix_length = None
-        if 'ipv6_default_prefix_length' in request.params:
-            if request.params['ipv6_default_prefix_length'].strip() != '':
-                p.ipv6_default_prefix_length = request.params['ipv6_default_prefix_length']
-            else:
-                p.ipv6_default_prefix_length = None
-        if 'tags' in request.params:
-            p.tags = json.loads(request.params['tags'])
-        if 'avps' in request.params:
-            p.avps = json.loads(request.params['avps'])
+        if 'name' in request.json:
+            p.name = validate_string(request.json, 'name')
+        if 'description' in request.json:
+            p.description = validate_string(request.json, 'description')
+        if 'default_type' in request.json:
+            p.default_type = validate_string(request.json, 'default_type')
+        # TODO: handle integers
+        if 'ipv4_default_prefix_length' in request.json:
+            p.ipv4_default_prefix_length = request.json['ipv4_default_prefix_length']
+        if 'ipv6_default_prefix_length' in request.json:
+            p.ipv6_default_prefix_length = request.json['ipv6_default_prefix_length']
+        if 'tags' in request.json:
+            p.tags = request.json['tags']
+        if 'avps' in request.json:
+            p.avps = request.json['avps']
 
         try:
            p.save()
@@ -317,12 +315,12 @@ class XhrController(BaseController):
 
 
 
-    def remove_pool(self):
+    def remove_pool(self, id):
         """ Remove a pool.
         """
 
         try:
-            pool = Pool.get(int(request.params['id']))
+            pool = Pool.get(int(id))
             pool.remove()
 
         except NipapError, e:
@@ -336,8 +334,8 @@ class XhrController(BaseController):
         """ List prefixes and return JSON encoded result.
         """
 
-        # fetch attributes from request.params
-        attr = XhrController.extract_prefix_attr(request.params)
+        # fetch attributes from request.json
+        attr = XhrController.extract_prefix_attr(request.json)
 
         try:
             prefixes = Prefix.list(attr)
@@ -361,13 +359,13 @@ class XhrController(BaseController):
         """
 
         # extract operator
-        if 'operator' in request.params:
-            operator = request.params['operator']
+        if 'operator' in request.json:
+            operator = request.json['operator']
         else:
             operator = 'equals'
 
-        # fetch attributes from request.params
-        attr = XhrController.extract_prefix_attr(request.params)
+        # fetch attributes from request.json
+        attr = XhrController.extract_prefix_attr(request.json)
 
         # build query dict
         n = 0
@@ -393,16 +391,16 @@ class XhrController(BaseController):
 
         # extract search options
         search_opts = {}
-        if 'children_depth' in request.params:
-            search_opts['children_depth'] = request.params['children_depth']
-        if 'parents_depth' in request.params:
-            search_opts['parents_depth'] = request.params['parents_depth']
-        if 'include_neighbors' in request.params:
-            search_opts['include_neighbors'] = request.params['include_neighbors']
-        if 'max_result' in request.params:
-            search_opts['max_result'] = request.params['max_result']
-        if 'offset' in request.params:
-            search_opts['offset'] = request.params['offset']
+        if 'children_depth' in request.json:
+            search_opts['children_depth'] = request.json['children_depth']
+        if 'parents_depth' in request.json:
+            search_opts['parents_depth'] = request.json['parents_depth']
+        if 'include_neighbors' in request.json:
+            search_opts['include_neighbors'] = request.json['include_neighbors']
+        if 'max_result' in request.json:
+            search_opts['max_result'] = request.json['max_result']
+        if 'offset' in request.json:
+            search_opts['offset'] = request.json['offset']
 
         try:
             result = Prefix.search(q, search_opts)
@@ -425,45 +423,45 @@ class XhrController(BaseController):
         extra_query = None
         vrf_filter = None
 
-        if 'query_id' in request.params:
-            search_options['query_id'] = request.params['query_id']
+        if 'query_id' in request.json:
+            search_options['query_id'] = request.json['query_id']
 
-        if 'include_all_parents' in request.params:
-            if request.params['include_all_parents'] == 'true':
+        if 'include_all_parents' in request.json:
+            if request.json['include_all_parents'] == 'true':
                 search_options['include_all_parents'] = True
             else:
                 search_options['include_all_parents'] = False
 
-        if 'include_all_children' in request.params:
-            if request.params['include_all_children'] == 'true':
+        if 'include_all_children' in request.json:
+            if request.json['include_all_children'] == 'true':
                 search_options['include_all_children'] = True
             else:
                 search_options['include_all_children'] = False
 
-        if 'parents_depth' in request.params:
-            search_options['parents_depth'] = request.params['parents_depth']
-        if 'children_depth' in request.params:
-            search_options['children_depth'] = request.params['children_depth']
-        if 'include_neighbors' in request.params:
-            if request.params['include_neighbors'] == 'true':
+        if 'parents_depth' in request.json:
+            search_options['parents_depth'] = request.json['parents_depth']
+        if 'children_depth' in request.json:
+            search_options['children_depth'] = request.json['children_depth']
+        if 'include_neighbors' in request.json:
+            if request.json['include_neighbors'] == 'true':
                 search_options['include_neighbors'] = True
             else:
                 search_options['include_neighbors'] = False
-        if 'max_result' in request.params:
-            if request.params['max_result'] == 'false':
+        if 'max_result' in request.json:
+            if request.json['max_result'] == 'false':
                 search_options['max_result'] = False
             else:
-                search_options['max_result'] = request.params['max_result']
-        if 'offset' in request.params:
-            search_options['offset'] = request.params['offset']
-        if 'parent_prefix' in request.params:
-            search_options['parent_prefix'] = request.params['parent_prefix']
-        if 'vrf_filter[]' in request.params:
+                search_options['max_result'] = request.json['max_result']
+        if 'offset' in request.json:
+            search_options['offset'] = request.json['offset']
+        if 'parent_prefix' in request.json:
+            search_options['parent_prefix'] = request.json['parent_prefix']
+        if 'vrf_filter' in request.json:
             vrf_filter_parts = []
 
             # Fetch VRF IDs from search query and build extra query dict for
             # smart_search_prefix.
-            vrfs = request.params.getall('vrf_filter[]')
+            vrfs = request.json['vrf_filter']
 
             if len(vrfs) > 0:
                 vrf = vrfs[0]
@@ -487,7 +485,7 @@ class XhrController(BaseController):
         if vrf_filter:
             extra_query = vrf_filter
 
-        if 'indent' in request.params:
+        if 'indent' in request.json:
             if extra_query:
                 extra_query = {
                         'operator': 'and',
@@ -495,18 +493,18 @@ class XhrController(BaseController):
                         'val2': {
                             'operator': 'equals',
                             'val1': 'indent',
-                            'val2': request.params['indent']
+                            'val2': request.json['indent']
                         }
                     }
             else:
                 extra_query = {
                     'operator': 'equals',
                     'val1': 'indent',
-                    'val2': request.params['indent']
+                    'val2': request.json['indent']
                     }
 
         try:
-            result = Prefix.smart_search(request.params['query_string'],
+            result = Prefix.smart_search(request.json['query_string'],
                 search_options, extra_query)
             # Remove error key in result from backend as it interferes with the
             # error handling of the web interface.
@@ -551,95 +549,76 @@ class XhrController(BaseController):
         p = Prefix()
 
         # Sanitize input parameters
-        if 'vrf' in request.params:
+        if 'vrf' in request.json:
             try:
-                if request.params['vrf'] is None or len(request.params['vrf']) == 0:
+                if request.json['vrf'] is None or len(unicode(request.json['vrf'])) == 0:
                     p.vrf = None
                 else:
-                    p.vrf = VRF.get(int(request.params['vrf']))
+                    p.vrf = VRF.get(int(request.json['vrf']))
             except ValueError:
-                return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.params['vrf']})
+                return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.json['vrf']})
             except NipapError, e:
                 return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        if 'description' in request.params:
-            if request.params['description'].strip() != '':
-                p.description = request.params['description'].strip()
+        if 'description' in request.json:
+            p.description = validate_string(request.json, 'description')
+        if 'expires' in request.json:
+            p.expires = validate_string(request.json, 'expires')
+        if 'comment' in request.json:
+            p.comment = validate_string(request.json, 'comment')
+        if 'node' in request.json:
+            p.node = validate_string(request.json, 'node')
+        if 'status' in request.json:
+            p.status = validate_string(request.json, 'status')
+        if 'type' in request.json:
+            p.type = validate_string(request.json, 'type')
 
-        if 'expires' in request.params:
-            if request.params['expires'].strip() != '':
-                p.expires = request.params['expires'].strip(' "')
-
-        if 'comment' in request.params:
-            if request.params['comment'].strip() != '':
-                p.comment = request.params['comment'].strip()
-
-        if 'node' in request.params:
-            if request.params['node'].strip() != '':
-                p.node = request.params['node'].strip()
-
-        if 'status' in request.params:
-            p.status = request.params['status'].strip()
-
-        if 'type' in request.params:
-            p.type = request.params['type'].strip()
-
-        if 'pool' in request.params:
-            if request.params['pool'].strip() != '':
+        if 'pool' in request.json:
+            if request.json['pool'] is not None:
                 try:
-                    p.pool = Pool.get(int(request.params['pool']))
+                    p.pool = Pool.get(int(request.json['pool']))
                 except NipapError, e:
                     return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        if 'country' in request.params:
-            if request.params['country'].strip() != '':
-                p.country = request.params['country'].strip()
-
-        if 'order_id' in request.params:
-            if request.params['order_id'].strip() != '':
-                p.order_id = request.params['order_id'].strip()
-
-        if 'customer_id' in request.params:
-            if request.params['customer_id'].strip() != '':
-                p.customer_id = request.params['customer_id'].strip()
-
-        if 'alarm_priority' in request.params:
-            p.alarm_priority = request.params['alarm_priority'].strip()
-
-        if 'monitor' in request.params:
-            if request.params['monitor'] == 'true':
+        if 'country' in request.json:
+            p.country = validate_string(request.json, 'country')
+        if 'order_id' in request.json:
+            p.order_id = validate_string(request.json, 'order_id')
+        if 'customer_id' in request.json:
+            p.customer_id = validate_string(request.json, 'customer_id')
+        if 'alarm_priority' in request.json:
+            p.alarm_priority = validate_string(request.json, 'alarm_priority')
+        if 'monitor' in request.json:
+            if request.json['monitor'] == 'true':
                 p.monitor = True
             else:
                 p.monitor = False
 
-        if 'vlan' in request.params:
-            if request.params['vlan'].strip() != '':
-                p.vlan = request.params['vlan']
-
-        if 'tags' in request.params:
-            p.tags = json.loads(request.params['tags'])
-
-        if 'avps' in request.params:
-            p.avps = json.loads(request.params['avps'])
+        if 'vlan' in request.json:
+            p.vlan = request.json['vlan']
+        if 'tags' in request.json:
+            p.tags = request.json['tags']
+        if 'avps' in request.json:
+            p.avps = request.json['avps']
 
         # arguments
         args = {}
-        if 'from_prefix[]' in request.params:
-            args['from-prefix'] = request.params.getall('from_prefix[]')
-        if 'from_pool' in request.params:
+        if 'from_prefix' in request.json:
+            args['from-prefix'] = request.json['from_prefix']
+        if 'from_pool' in request.json:
             try:
-                args['from-pool'] = Pool.get(int(request.params['from_pool']))
+                args['from-pool'] = Pool.get(int(request.json['from_pool']))
             except NipapError, e:
                 return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
-        if 'family' in request.params:
-            args['family'] = request.params['family']
-        if 'prefix_length' in request.params:
-            args['prefix_length'] = request.params['prefix_length']
+        if 'family' in request.json:
+            args['family'] = request.json['family']
+        if 'prefix_length' in request.json:
+            args['prefix_length'] = request.json['prefix_length']
 
         # manual allocation?
         if args == {}:
-            if 'prefix' in request.params:
-                p.prefix = request.params['prefix']
+            if 'prefix' in request.json:
+                p.prefix = request.json['prefix']
 
         try:
             p.save(args)
@@ -658,96 +637,63 @@ class XhrController(BaseController):
             p = Prefix.get(int(id))
 
             # extract attributes
-            if 'prefix' in request.params:
-                p.prefix = request.params['prefix']
+            if 'prefix' in request.json:
+                p.prefix = validate_string(request.json, 'prefix')
+            if 'type' in request.json:
+                p.type = validate_string(request.json, 'type')
+            if 'description' in request.json:
+                p.description = validate_string(request.json, 'description')
+            if 'expires' in request.json:
+                p.expires = validate_string(request.json, 'expires')
+            if 'comment' in request.json:
+                p.comment = validate_string(request.json, 'comment')
+            if 'node' in request.json:
+                p.node = validate_string(request.json, 'node')
+            if 'status' in request.json:
+                p.status = validate_string(request.json, 'status')
 
-            if 'type' in request.params:
-                p.type = request.params['type'].strip()
-
-            if 'description' in request.params:
-                if request.params['description'].strip() == '':
-                    p.description = None
-                else:
-                    p.description = request.params['description'].strip()
-
-            if 'expires' in request.params:
-                if request.params['expires'].strip() == '':
-                    p.expires = None
-                else:
-                    p.expires = request.params['expires'].strip(' "')
-
-            if 'comment' in request.params:
-                if request.params['comment'].strip() == '':
-                    p.comment = None
-                else:
-                    p.comment = request.params['comment'].strip()
-
-            if 'node' in request.params:
-                if request.params['node'].strip() == '':
-                    p.node = None
-                else:
-                    p.node = request.params['node'].strip()
-
-            if 'status' in request.params:
-                p.status = request.params['status'].strip()
-
-            if 'pool' in request.params:
-                if request.params['pool'].strip() == '':
+            if 'pool' in request.json:
+                if request.json['pool'] is None:
                     p.pool = None
                 else:
                     try:
-                        p.pool = Pool.get(int(request.params['pool']))
+                        p.pool = Pool.get(int(request.json['pool']))
                     except NipapError, e:
                         return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-            if 'alarm_priority' in request.params:
-                p.alarm_priority = request.params['alarm_priority'].strip()
-
-            if 'monitor' in request.params:
-                if request.params['monitor'] == 'true':
+            if 'alarm_priority' in request.json:
+                p.alarm_priority = validate_string(request.json, 'alarm_priority')
+            if 'monitor' in request.json:
+                if request.json['monitor'] == 'true':
                     p.monitor = True
                 else:
                     p.monitor = False
 
-            if 'country' in request.params:
-                if request.params['country'].strip() == '':
-                    p.country = None
-                else:
-                    p.country = request.params['country'].strip()
+            if 'country' in request.json:
+                p.country = validate_string(request.json, 'country')
+            if 'order_id' in request.json:
+                p.order_id = validate_string(request.json, 'order_id')
+            if 'customer_id' in request.json:
+                p.customer_id = validate_string(request.json, 'customer_id')
 
-            if 'order_id' in request.params:
-                if request.params['order_id'].strip() == '':
-                    p.order_id = None
-                else:
-                    p.order_id = request.params['order_id'].strip()
-
-            if 'customer_id' in request.params:
-                if request.params['customer_id'].strip() == '':
-                    p.customer_id = None
-                else:
-                    p.customer_id = request.params['customer_id'].strip()
-
-            if 'vrf' in request.params:
+            if 'vrf' in request.json:
 
                 try:
-                    if request.params['vrf'] is None or len(request.params['vrf']) == 0:
+                    if request.json['vrf'] is None or len(unicode(request.json['vrf'])) == 0:
                         p.vrf = None
                     else:
-                        p.vrf = VRF.get(int(request.params['vrf']))
+                        p.vrf = VRF.get(int(request.json['vrf']))
                 except ValueError:
-                    return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.params['vrf']})
+                    return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.json['vrf']})
                 except NipapError, e:
                     return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-            if 'vlan' in request.params:
-                if request.params['vlan'].strip() != '':
-                    p.vlan = request.params['vlan']
-
-            if 'tags' in request.params:
-                p.tags = json.loads(request.params['tags'])
-
-            if 'avps' in request.params:
-                p.avps = json.loads(request.params['avps'])
+            if 'vlan' in request.json:
+                p.vlan = request.json['vlan']
+            if 'tags' in request.json:
+                p.tags = request.json['tags']
+            if 'avps' in request.json:
+                p.avps = request.json['avps']
 
             p.save()
 
@@ -758,12 +704,12 @@ class XhrController(BaseController):
 
 
 
-    def remove_prefix(self):
+    def remove_prefix(self, id):
         """ Remove a prefix.
         """
 
         try:
-            p = Prefix.get(int(request.params['id']))
+            p = Prefix.get(int(id))
             p.remove()
 
         except NipapError, e:
@@ -777,7 +723,7 @@ class XhrController(BaseController):
         """ Add VRF to filter list session variable
         """
 
-        vrf_id = request.params.get('vrf_id')
+        vrf_id = request.json['vrf_id']
 
         if vrf_id is not None:
 
@@ -798,7 +744,7 @@ class XhrController(BaseController):
         """ Remove VRF to filter list session variable
         """
 
-        vrf_id = int(request.params.get('vrf_id'))
+        vrf_id = int(request.json['vrf_id'])
         if vrf_id in session['current_vrfs']:
             del session['current_vrfs'][vrf_id]
 

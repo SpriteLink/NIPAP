@@ -10,7 +10,9 @@ var nipapAppControllers = angular.module('nipapApp.controllers', []);
 nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 
 	// Fetch VRFs from backend
-	$http.get('/xhr/list_vrf')
+	$http.post('/xhr/list_vrf',
+		JSON.stringify({}),
+		{ 'headers': { 'Content-Type': 'application/json' } })
 		.success(function (data) {
 			if (data.hasOwnProperty('error')) {
 				showDialogNotice('Error', data.message);
@@ -30,10 +32,7 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 		evt.preventDefault();
 		var dialog = showDialogYesNo('Really remove VRF?', 'Are you sure you want to remove the VRF "' + vrf.rt + '"?',
 		function () {
-			var data = {
-				'id': vrf.id
-			};
-			$http.get('/xhr/remove_vrf', { 'params': data })
+			$http.get('/xhr/remove_vrf/' + vrf.id)
 				.success(function (data) {
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
@@ -65,7 +64,9 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 
 	// Fetch Pools from backend
-	$http.get('/xhr/list_pool')
+	$http.post('/xhr/list_pool',
+		JSON.stringify({}),
+		{ 'headers': { 'Content-Type': 'application/json' } })
 		.success(function (data) {
 			if (data.hasOwnProperty('error')) {
 				showDialogNotice('Error', data.message);
@@ -85,10 +86,7 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 		evt.preventDefault();
 		var dialog = showDialogYesNo('Really remove pool?', 'Are you sure you want to remove the pool "' + pool.name + '"?',
 		function () {
-			var data = {
-				'id': pool.id
-			};
-			$http.get('/xhr/remove_pool', { 'params': data })
+			$http.get('/xhr/remove_pool/' + pool.id)
 				.success(function (data) {
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
@@ -229,7 +227,9 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 			// Allocation method parameter is pool ID - fetch pool
 			$scope.from_pool_provided = true;
-			$http.get('/xhr/list_pool', { 'params': { 'id': allocation_parameter } })
+			$http.post('/xhr/list_pool',
+				JSON.stringify({ 'id': allocation_parameter }),
+				{ 'headers': { 'Content-Type': 'application/json' } })
 				.success(function (data) {
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
@@ -246,7 +246,9 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 			// Allocation method parameter is prefix ID - fetch prefix
 			$scope.from_prefix_provided = true;
-			$http.get('/xhr/list_prefix', { 'params': { 'id': allocation_parameter } })
+			$http.post('/xhr/list_prefix',
+				JSON.stringify({ 'id': allocation_parameter }),
+				{ 'headers': { 'Content-Type': 'application/json' } })
 				.success(function (data) {
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
@@ -300,11 +302,14 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 
 			if ($scope.from_pool.vrf_id !== null) {
 				// fetch VRF data for pool's implied VRF
-				$http.get('/xhr/smart_search_vrf',
-					{ 'params': {
+				$http.post('/xhr/smart_search_vrf',
+					JSON.stringify({
 						'vrf_id': $scope.from_pool.vrf_id,
 						'query_string': ''
-				}})
+						}
+					), {
+						'headers': { 'Content-Type': 'application/json'}
+					})
 					.success(function (data) {
 						if (data.hasOwnProperty('error')) {
 							showDialogNotice('Error', data.message);
@@ -334,11 +339,13 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 			$scope.from_pool = null;
 
 			// Fetch prefix's VRF
-			$http.get('/xhr/smart_search_vrf',
-				{ 'params': {
+			$http.post('/xhr/smart_search_vrf',
+				JSON.stringify({
 					'vrf_id': $scope.from_prefix.vrf_id,
 					'query_string': ''
-			}})
+				}), {
+					'headers': { 'Content-Type': 'application/json' }
+				})
 				.success(function (data) {
 					if (data.hasOwnProperty('error')) {
 						showDialogNotice('Error', data.message);
@@ -391,7 +398,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		query_data.pool = null;
 
 		// Tags, VRF and pool are needed no matter allocation method
-		query_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
+		query_data.tags = $scope.prefix.tags.map(function (elem) { return elem.text; });
 		if ($scope.prefix.vrf != null) {
 			query_data.vrf = $scope.prefix.vrf.id;
 		}
@@ -405,7 +412,6 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		$scope.prefix.avps.forEach(function(avp) {
 			query_data.avps[avp.attribute] = avp.value;
 		});
-		query_data.avps = JSON.stringify(query_data.avps);
 
 
 		if ($scope.prefix_alloc_method == 'from-pool') {
@@ -427,12 +433,14 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 			// allocate from. Prefix not needed.
 			delete query_data.prefix;
 			query_data.prefix_length = $scope.prefix_length;
-			query_data['from_prefix[]'] = $scope.from_prefix.prefix;
+			query_data['from_prefix'] = [ $scope.from_prefix.prefix ];
 
 		}
 
 		// Send query!
-		$http.get('/xhr/add_prefix', { 'params': query_data })
+		$http.post('/xhr/add_prefix',
+				JSON.stringify(query_data),
+				{ 'headers': { 'Content-Type': 'application/json'} })
 			.success(function (data){
 				if (data.hasOwnProperty('error')) {
 					showDialogNotice('Error', data.message);
@@ -486,7 +494,11 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 	}
 
 	// Fetch prefix to edit from backend
-	$http.get('/xhr/list_prefix', { 'params': { 'id': $routeParams.prefix_id } })
+	$http.post('/xhr/list_prefix',
+		JSON.stringify({ 'id': $routeParams.prefix_id }),
+		{
+			'headers': { 'Content-Type': 'application/json' }
+		})
 		.success(function (data) {
 			if (data.hasOwnProperty('error')) {
 				showDialogNotice('Error', data.message);
@@ -507,11 +519,12 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 				$scope.prefix = pref;
 
 				// Fetch prefix's VRF
-				$http.get('/xhr/smart_search_vrf',
-					{ 'params': {
+				$http.post('/xhr/smart_search_vrf',
+					JSON.stringify({
 						'vrf_id': $scope.prefix.vrf_id,
 						'query_string': ''
-				}})
+					}),
+					{ 'headers': { 'Content-Type': 'application/json' } })
 					.success(function (data) {
 						if (data.hasOwnProperty('error')) {
 							showDialogNotice('Error', data.message);
@@ -526,7 +539,9 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 
 				// Fetch prefix's pool, if any
 				if ($scope.prefix.pool_id !== null) {
-					$http.get('/xhr/list_pool', { 'params': { 'id': $scope.prefix.pool_id, } })
+					$http.post('/xhr/list_pool',
+						JSON.stringify({ 'id': $scope.prefix.pool_id }),
+						{ 'headers': { 'Content-Type': 'application/json' } })
 						.success(function (data) {
 							if (data.hasOwnProperty('error')) {
 								showDialogNotice('Error', data.message);
@@ -605,20 +620,19 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 		delete prefix_data.vrf;
 
 		// Mangle tags
-		prefix_data.tags = JSON.stringify($scope.prefix.tags.map(function (elem) { return elem.text; }));
+		prefix_data.tags = $scope.prefix.tags.map(function (elem) { return elem.text; });
 		// Mangle avps
 		prefix_data.avps = {};
 		$scope.prefix.avps.forEach(function(avp) {
 			prefix_data.avps[avp.attribute] = avp.value;
 		});
-		prefix_data.avps = JSON.stringify(prefix_data.avps);
 
 		// handle null or 'infinity' as.. infinity
 		if ($scope.prefix.expires == null) {
 			// empty string signifies infinity
 			prefix_data.expires = '';
 		} else {
-			// mangle prefix into ISO8601 format
+			// mangle date into ISO8601 format
 			prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss');
 		}
 
@@ -628,7 +642,9 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 		}
 
 		// Send query!
-		$http.get('/xhr/edit_prefix/' + $scope.prefix.id, { 'params': prefix_data })
+		$http.post('/xhr/edit_prefix/' + $scope.prefix.id,
+				JSON.stringify(prefix_data),
+				{ 'headers': { 'Content-Type': 'application/json' } })
 			.success(function (data){
 				if (data.hasOwnProperty('error')) {
 					showDialogNotice('Error', data.message);
@@ -684,15 +700,16 @@ nipapAppControllers.controller('VRFAddController', function ($scope, $http) {
 		var query_data = angular.copy($scope.vrf);
 
 		// Rewrite tags list to match what's expected by the XHR functions
-		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
+		query_data.tags = $scope.vrf.tags.map(function (elem) { return elem.text; });
 		query_data.avps = {};
 		$scope.vrf.avps.forEach(function(avp) {
 			query_data.avps[avp.attribute] = avp.value;
 		});
-		query_data.avps = JSON.stringify(query_data.avps);
 
 		// Send query!
-		$http.get('/xhr/add_vrf', { 'params': query_data })
+		$http.post('/xhr/add_vrf',
+				JSON.stringify(query_data),
+				{ 'headers': { 'Content-Type': 'application/json' } })
 			.success(function (data){
 				if (data.hasOwnProperty('error')) {
 					showDialogNotice('Error', data.message);
@@ -735,12 +752,12 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 
 
 	// Fetch VRF to edit from backend
-	$http.get('/xhr/smart_search_vrf',
-		{ 'params': {
+	$http.post('/xhr/smart_search_vrf',
+		JSON.stringify({
 			'vrf_id': $routeParams.vrf_id,
 			'query_string': ''
-			}
-		})
+			}),
+			{ 'headers': { 'Content-Type': 'application/json' } })
 		.success(function (data) {
 			if (data.hasOwnProperty('error')) {
 				showDialogNotice('Error', data.message);
@@ -809,15 +826,17 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 		var query_data = angular.copy($scope.vrf);
 
 		// Rewrite tags list to match what's expected by the XHR functions
-		query_data.tags = JSON.stringify($scope.vrf.tags.map(function (elem) { return elem.text; }));
+		query_data.tags = $scope.vrf.tags.map(function (elem) { return elem.text; });
 		query_data.avps = {};
 		$scope.vrf.avps.forEach(function(avp) {
 			query_data.avps[avp.attribute] = avp.value;
 		});
-		query_data.avps = JSON.stringify(query_data.avps);
+		query_data.avps = query_data.avps;
 
 		// Send query!
-		$http.get('/xhr/edit_vrf/' + $scope.vrf.id, { 'params': query_data })
+		$http.post('/xhr/edit_vrf/' + $scope.vrf.id,
+				JSON.stringify(query_data),
+				{ 'headers': { 'Content-Type': 'application/json' } })
 			.success(function (data){
 				if (data.hasOwnProperty('error')) {
 					showDialogNotice('Error', data.message);
@@ -874,17 +893,18 @@ nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
 		var query_data = angular.copy($scope.pool);
 
 		// Rewrite tags list to match what's expected by the XHR functions
-		query_data.tags = JSON.stringify($scope.pool.tags.map(function (elem) { return elem.text; }));
+		query_data.tags = $scope.pool.tags.map(function (elem) { return elem.text; });
 
 		// Mangle avps
 		query_data.avps = {};
 		$scope.pool.avps.forEach(function(avp) {
 			query_data.avps[avp.attribute] = avp.value;
 		});
-		query_data.avps = JSON.stringify(query_data.avps);
 
 		// Send query!
-		$http.get('/xhr/add_pool', { 'params': query_data })
+		$http.post('/xhr/add_pool',
+				JSON.stringify(query_data),
+				{ 'headers': { 'Content-Type': 'application/json' } })
 			.success(function (data){
 				if (data.hasOwnProperty('error')) {
 					showDialogNotice('Error', data.message);
@@ -925,8 +945,10 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 		$scope.pool.avps.splice( index, 1 );
 	}
 
-	// Fetch VRF to edit from backend
-	$http.get('/xhr/list_pool', { 'params': { 'id': $routeParams.pool_id, } })
+	// Fetch pool to edit from backend
+	$http.post('/xhr/list_pool',
+		JSON.stringify({ 'id': $routeParams.pool_id }),
+		{ 'headers': { 'Content-Type': 'application/json' } })
 		.success(function (data) {
 			if (data.hasOwnProperty('error')) {
 				showDialogNotice('Error', data.message);
@@ -943,11 +965,12 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 
 				// Fetch pool's VRF
 				if (pool.vrf_id !== null) {
-					$http.get('/xhr/smart_search_vrf',
-						{ 'params': {
+					$http.post('/xhr/smart_search_vrf',
+						JSON.stringify({
 							'vrf_id': $scope.pool.vrf_id,
 							'query_string': ''
-					}})
+						}),
+						{ 'headers': { 'Content-Type': 'application/json' } })
 						.success(function (data) {
 							if (data.hasOwnProperty('error')) {
 								showDialogNotice('Error', data.message);
@@ -966,10 +989,9 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 				$scope.pool = pool;
 
 				// Fetch pool's prefixes
-				$http.get('/xhr/list_prefix',
-					{ 'params': {
-						'pool': pool.id
-				}})
+				$http.post('/xhr/list_prefix',
+					JSON.stringify({ 'pool': pool.id }),
+					{ 'headers': { 'Content-Type': 'application/json' } })
 					.success(function (data) {
 						if (data.hasOwnProperty('error')) {
 							showDialogNotice('Error', data.message);
@@ -1060,17 +1082,18 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 		var query_data = angular.copy($scope.pool);
 
 		// Rewrite tags list to match what's expected by the XHR functions
-		query_data.tags = JSON.stringify($scope.pool.tags.map(function (elem) { return elem.text; }));
+		query_data.tags = $scope.pool.tags.map(function (elem) { return elem.text; });
 
 		// Mangle avps
 		query_data.avps = {};
 		$scope.pool.avps.forEach(function(avp) {
 			query_data.avps[avp.attribute] = avp.value;
 		});
-		query_data.avps = JSON.stringify(query_data.avps);
 
 		// Send query!
-		$http.get('/xhr/edit_pool/' + $scope.pool.id, { 'params': query_data })
+		$http.post('/xhr/edit_pool/' + $scope.pool.id,
+				JSON.stringify(query_data),
+				{ 'headers': { 'Content-Type': 'application/json' } })
 			.success(function (data){
 				if (data.hasOwnProperty('error')) {
 					showDialogNotice('Error', data.message);
@@ -1094,7 +1117,9 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 			'Are you sure you want to remove ' + prefix.display_prefix + ' from pool? You cannot undo this action.',
 			function () {
 
-				$http.get('/xhr/edit_prefix/' + prefix.id, { 'params': { 'pool': '' } })
+				$http.post('/xhr/edit_prefix/' + prefix.id,
+						JSON.stringify({ 'pool': null }),
+						{ 'headers': { 'Content-Type': 'application/json' } })
 					.success(function (data) {
 						if (data.hasOwnProperty('error')) {
 							showDialogNotice('Error', data.message);

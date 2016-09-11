@@ -406,7 +406,10 @@ function performPrefixSearch(force_explicit, update_uri) {
 	// Keep track of search timing
 	stats.query_sent = new Date().getTime();
 
-	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixList);
+	$.post("/xhr/smart_search_prefix",
+		JSON.stringify(current_query),
+		receivePrefixList,
+		"json");
 
     // add search options to URL unless the search operation was performed due
     // to a popstate-event
@@ -475,7 +478,10 @@ function performPrefixNextPage() {
 	// Keep track of search timing
 	stats.query_sent = new Date().getTime();
 
-	$.getJSON("/xhr/smart_search_prefix", current_query, receivePrefixListNextPage);
+	$.post("/xhr/smart_search_prefix",
+		JSON.stringify(current_query),
+		receivePrefixListNextPage,
+		"json");
 
 }
 
@@ -786,7 +792,7 @@ function showPrefixMenu(prefix_id) {
                 prefix_list[prefix_id].display_prefix + '?';
 
             confirmation_action = function() {
-				$.getJSON('/xhr/remove_prefix', { 'id': prefix_id }, prefixRemoved);
+				$.getJSON('/xhr/remove_prefix/' + prefix_id, prefixRemoved);
 
 				hidePopupMenu();
 				$(this).dialog('close');
@@ -807,7 +813,7 @@ function showPrefixMenu(prefix_id) {
                 if ($('#confirm_prefix_remove').val().toLowerCase() == auth_src.toLowerCase()) {
 
                     // User entered correct auth scr, remove prefix
-				    $.getJSON('/xhr/remove_prefix', { 'id': prefix_id }, prefixRemoved);
+				    $.getJSON('/xhr/remove_prefix/' + prefix_id, prefixRemoved);
 
 				    hidePopupMenu();
 				    $(this).dialog('close');
@@ -906,7 +912,10 @@ function performVRFSelectorSearch() {
 
 	$('.selector_result').empty();
 	showLoadingIndicator($('.selector_result'));
-	$.getJSON("/xhr/smart_search_vrf", search_q, receiveVRFSelector);
+	$.post("/xhr/smart_search_vrf",
+		JSON.stringify(search_q),
+		receiveVRFSelector,
+		"json");
 
 }
 
@@ -1041,7 +1050,8 @@ function clickFilterVRFSelector(evt) {
 	if (!selected_vrfs.hasOwnProperty(String(vrf.id))) {
 
 		// Clicked a VRF which was not previously selected - add to filter list
-		$.getJSON('/xhr/add_current_vrf', { 'vrf_id': String(vrf.id) }, function() {});
+		$.post('/xhr/add_current_vrf',
+			JSON.stringify({ 'vrf_id': String(vrf.id) }));
 		selected_vrfs[String(vrf.id)] = vrf;
 
 		// show tick mark
@@ -1052,7 +1062,8 @@ function clickFilterVRFSelector(evt) {
 
 		// Clicked a VRF which was selected - remove from filter list
 		delete selected_vrfs[String(vrf.id)];
-		$.getJSON('/xhr/del_current_vrf', { 'vrf_id': String(vrf.id) });
+		$.post('/xhr/del_current_vrf',
+			JSON.stringify({ 'vrf_id': String(vrf.id) }));
 
 		// remove tick mark
 		$('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&nbsp;');
@@ -1718,7 +1729,10 @@ function insertPrefix(prefix, prev_prefix) {
  */
 function getVRFContainer(vrf_id) {
 	if ($('#preflist_prefix_panel_' + vrf_id).length == 0) {
-		$.getJSON("/xhr/smart_search_vrf", { 'vrf_id': vrf_id, 'query_string': '' }, receiveVRFContainerData);
+		$.post("/xhr/smart_search_vrf",
+			JSON.stringify({ 'vrf_id': vrf_id, 'query_string': '' }),
+			receiveVRFContainerData,
+			"json");
 		$("#prefix_list").append('<div class="preflist_vrf_container" id="preflist_vrf_container_' + vrf_id + '">' +
 			'<div class="preflist_vrf_panel"></div>' +
 			'<div class="preflist_prefix_panel" id="preflist_prefix_panel_' + vrf_id + '"></div>' +
@@ -1815,7 +1829,10 @@ function collapseClick(id) {
 		// Keep track of search timing
 		stats.query_sent = new Date().getTime();
 
-		$.getJSON("/xhr/smart_search_prefix", search_q, receivePrefixListUpdate);
+		$.post("/xhr/smart_search_prefix",
+			JSON.stringify(search_q),
+			receivePrefixListUpdate,
+			"json");
 
 	} else {
 		collapseGroup(id);
