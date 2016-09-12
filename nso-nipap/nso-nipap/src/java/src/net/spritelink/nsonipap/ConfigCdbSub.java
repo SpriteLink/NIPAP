@@ -30,7 +30,6 @@ public class ConfigCdbSub implements ApplicationComponent {
 
     private CdbSubscription sub = null;
     private CdbSession wsess;
-    private CdbSession rsess;
 
     public ConfigCdbSub() {
     }
@@ -48,8 +47,6 @@ public class ConfigCdbSub implements ApplicationComponent {
     private Maapi maapi;
 
   private int th = -1;
-  private NavuContainer ncsRoot;
-  private NavuContainer operRoot;
 
   private Connection nipapCon;
 
@@ -63,11 +60,6 @@ public class ConfigCdbSub implements ApplicationComponent {
                     MaapiUserSessionFlag.PROTO_TCP);
 
           th = maapi.startTrans(Conf.DB_RUNNING, Conf.MODE_READ);
-          NavuContainer root = new NavuContainer(new NavuContext(maapi, th));
-          ncsRoot = root.container(Ncs.hash);
-
-          NavuContainer cdbRoot = new NavuContainer(new NavuContext(cdb));
-          NavuContainer operRoot = cdbRoot.container(Ncs.hash);
 
           sub = cdb.newSubscription();
 
@@ -160,8 +152,6 @@ public class ConfigCdbSub implements ApplicationComponent {
         ConfBuf orderIdValue = new ConfBuf(p.order_id);
         wsess.setElem(orderIdValue, responsePath + "/" + nipap._order_id_);
       }
-
-
     }
 
     protected void removeResponse(String responsePath) throws ConfException, Exception {
@@ -177,9 +167,6 @@ public class ConfigCdbSub implements ApplicationComponent {
         wsess.delete(responsePath + "/" + nipap._order_id_);
       } catch (CdbException e ){
       }
-
-
-
     }
 
     protected void removeChildPrefix(String prefixPath) throws ConfException, Exception {
