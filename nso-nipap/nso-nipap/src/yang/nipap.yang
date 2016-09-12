@@ -14,6 +14,29 @@ module nipap {
   import tailf-ncs {
     prefix ncs;
   }
+ 
+  grouping prefix-attributes {
+
+    leaf customer_id {
+      description "Customer identifier";
+      type string;
+      }
+
+    leaf description {
+      description "Description of prefix";
+      type string;
+    }
+
+    leaf node {
+      description "Node, e.g. FQDN";
+      type string;
+    }
+
+    leaf order_id {
+      description "Order identifier";
+      type string;
+    }
+  }
 
   augment /ncs:services {
     description "NIPAP settings";
@@ -58,8 +81,8 @@ module nipap {
           // TODO: make sure only one backend is marked as default
         }
       }
-
-      list pool {
+      
+      list from-pool {
         key name;
         leaf name {
           tailf:info "Name of pool to request prefix from";
@@ -70,86 +93,123 @@ module nipap {
         list request {
           key name;
           leaf name {
-            tailf:info "Name of pool to request prefix from";
+            tailf:info "Request name";
             tailf:cli-allow-range;
             type string;
           }
 
-          leaf description {
-            description "Description of prefix";
-            type string;
+          container attributes {
+            description "Prefix attributes";
+            uses prefix-attributes;
           }
 
-          leaf node {
-            description "Node, e.g. FQDN";
-            type string;
-          }
+          container arguments {
+            description "Prefix arguments to the request";
 
-          leaf family {
-            description "Address-family to request";
-            default 4;
-            type enumeration {
-              enum 4 {
-                value 4;
-              }
-              enum 6 {
-                value 6;
+            leaf family {
+              description "Address family";
+              type enumeration {
+                enum 4 {
+                  value 4;
+                }
+                enum 6 {
+                  value 6;
+                }
               }
             }
-          }
-       
-          leaf prefix_id {
-            type uint64;
-            config false;
-            tailf:cdb-oper {
-              tailf:persistent true;
+
+            leaf prefix-length {
+              description "Prefix length";
+              type uint8;
             }
           }
 
-          leaf prefix {
-            type inet:ip-prefix;
-            config false;
-            tailf:cdb-oper {
-              tailf:persistent true;
+          list from-prefix-request {
+            description "Request prefix from the requested prefix";
+            key name;
+            leaf name {
+              description "Uniqe identifier for the prefix";
+              type string;
+              }
+            ordered-by user;
+            uses prefix-attributes;
             }
-          }
+  
+          container response {
+            description "CDB Subscriber will write the response here";
+              config false;
+              tailf:cdb-oper {
+                tailf:persistent true;
+                }
 
+            choice response-choice {
+              case error {
+                leaf error {
+                  type string;
+                }
+              }
+              case ok {
+              }
+            }
+
+            container from-pool {
+              config false;
+              tailf:cdb-oper {
+                tailf:persistent true;
+                }
+              uses prefix-attributes;
+
+              leaf prefix {
+                type inet:ip-prefix;
+                config false;
+                tailf:cdb-oper {
+                  tailf:persistent true;
+                }
+            }
+
+              leaf prefix_id {
+                type uint64;
+                config false;
+                tailf:cdb-oper {
+                  tailf:persistent true;
+                }
+              }
+            }
+            list from-prefix {
+              config false;
+              tailf:cdb-oper {
+                tailf:persistent true;
+                }
+              key name;
+              leaf name {
+                type string;
+                }
+
+              leaf prefix {
+                type inet:ip-prefix;
+                config false;
+                tailf:cdb-oper {
+                  tailf:persistent true;
+                }
+            }
+
+              leaf prefix_id {
+                type uint64;
+                config false;
+                tailf:cdb-oper {
+                  tailf:persistent true;
+                }
+              }
+            uses prefix-attributes;
+            }
+
+
+          }
           leaf redeploy-service {
             description "Redeploy service after succesful allocation";
             type string;
           }
-
         }
-
-
-      }
-
-      list prefix {
-        key name;
-        leaf name {
-          tailf:info "Name of request";
-          tailf:cli-allow-range;
-          type string;
-        }
-
-        leaf backend {
-          type leafref {
-            path "../../backend/name";
-          }
-        }
-
-        leaf from-pool {
-          type string;
-        }
-
-        leaf prefix {
-          type inet:ip-prefix;
-          config false;
-          tailf:cdb-oper {
-            tailf:persistent true;
-          }
-        }
-
       }
     }
   }
