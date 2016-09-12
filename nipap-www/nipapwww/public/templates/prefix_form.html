@@ -300,7 +300,7 @@ PREFIX DATA
 							<tbody>
 							<tr ng-repeat="avp in prefix.avps">
 								<td class="col-md-4" style="padding: 0;">
-									<input type="text" style="width: 90%;" ng-model="avp.attribute"> <b>=</b>
+									<input type="text" style="width: 90%;" ng-model="avp.attribute" ng-required="avp.value"> <b>=</b>
 								</td>
 								<td class="col-md-7" style="padding: 0;">
 									<input type="text" style="width: 100%;" ng-model="avp.value">
