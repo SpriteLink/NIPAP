@@ -67,6 +67,17 @@ Install the nipapd daemon and CLI client::
     cd ../nipap-cli
     python setup.py install
 
+Initialize SQLite auth database
+-------------------------------
+
+    # ls -l /etc/nipap/local_auth.db
+    -rw-r--r-- 1 root root 0 Jun 14 14:26 /etc/nipap/local_auth.db
+    
+    # nipap-passwd --create-database
+    
+    ls -l /etc/nipap/local_auth.db
+    -rw-r--r-- 1 root root 3.1k Jun 14 16:52 /etc/nipap/local_auth.db
+
 
 Running nipapd
 --------------
