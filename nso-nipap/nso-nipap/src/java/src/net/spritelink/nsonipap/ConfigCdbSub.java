@@ -47,11 +47,11 @@ public class ConfigCdbSub implements ApplicationComponent {
             qualifier="reactive-fm-m")
     private Maapi maapi;
 
-	private int th = -1;
-	private NavuContainer ncsRoot;
-	private NavuContainer operRoot;
+  private int th = -1;
+  private NavuContainer ncsRoot;
+  private NavuContainer operRoot;
 
-	private Connection nipapCon;
+  private Connection nipapCon;
 
     public void init() {
         LOGGER.info("Starting the CDB Connection...");
@@ -62,14 +62,21 @@ public class ConfigCdbSub implements ApplicationComponent {
                     new String[] {"admin"},
                     MaapiUserSessionFlag.PROTO_TCP);
 
-			th = maapi.startTrans(Conf.DB_RUNNING, Conf.MODE_READ);
-			NavuContainer root = new NavuContainer(new NavuContext(maapi, th));
-			ncsRoot = root.container(Ncs.hash);
-			NavuContainer cdbRoot = new NavuContainer(new NavuContext(cdb));
-			NavuContainer operRoot = cdbRoot.container(Ncs.hash);
+          th = maapi.startTrans(Conf.DB_RUNNING, Conf.MODE_READ);
+          NavuContainer root = new NavuContainer(new NavuContext(maapi, th));
+          ncsRoot = root.container(Ncs.hash);
 
-            sub = cdb.newSubscription();
-            sub.subscribe(1, new nipap(), "/services/nipap/pool/request");
+          NavuContainer cdbRoot = new NavuContainer(new NavuContext(cdb));
+          NavuContainer operRoot = cdbRoot.container(Ncs.hash);
+
+          sub = cdb.newSubscription();
+
+          sub.subscribe(1, new nipap(), 
+              "/services/" +
+              nipap.prefix + "/" +
+              nipap._from_pool_ + "/" +
+              nipap._request_);
+
             // Tell CDB we are ready for notifications
             sub.subscribeDone();
 
@@ -77,6 +84,120 @@ public class ConfigCdbSub implements ApplicationComponent {
         catch (Exception e) {
             LOGGER.error("", e);
         }
+    }
+
+    protected Prefix getPrefixAttributes(int th, Maapi maapi_, String attributePath) throws Exception
+    {
+      Prefix p = new Prefix();
+
+      if (maapi_.exists(th, attributePath + "/" + nipap._customer_id_)) {
+        ConfValue rCustomer_id = maapi.getElem(th, attributePath + "/" + nipap._customer_id_);
+        p.customer_id = String.valueOf(rCustomer_id);
+      }
+      if (maapi_.exists(th, attributePath + "/" + nipap._description_)) {
+        ConfValue rDescription = maapi.getElem(th, attributePath + "/" + nipap._description_);
+        p.description = String.valueOf(rDescription);
+      }
+      if (maapi.exists(th, attributePath + "/" + nipap._node_)) {
+        ConfValue rNode = maapi.getElem(th, attributePath + "/" + nipap._node_);
+        p.node = String.valueOf(rNode);
+      }
+      if (maapi_.exists(th, attributePath + "/" + nipap._order_id_)) {
+        ConfValue rOrder_id = maapi.getElem(th, attributePath + "/" + nipap._customer_id_);
+        p.order_id = String.valueOf(rOrder_id);
+      }
+      
+      return p;
+    }
+
+    protected AddPrefixOptions getPrefixOptions (int th,  Maapi maapi_, String argumentPath) throws Exception { 
+      AddPrefixOptions opts = new AddPrefixOptions();
+
+      ConfEnumeration family = (ConfEnumeration)maapi_.getElem(
+          th, argumentPath + "/" + nipap._family_);
+      opts.put("family", family.getOrdinalValue());
+
+      if (maapi_.exists(th, argumentPath + "/" + nipap._prefix_length_)) {
+        ConfValue pfx_length = maapi_.getElem(th, argumentPath + "/" + nipap._prefix_length_);
+        opts.put("prefix_length", String.valueOf(pfx_length));
+      }
+
+      return opts;
+    }
+
+    protected void writeResponse(Prefix p, String responsePath) throws ConfException, Exception {
+
+      if (p.family == 4) {
+        ConfIPv4Prefix prefixValue = new ConfIPv4Prefix(p.prefix);
+        LOGGER.info("SET: " + responsePath + "/prefix -> " + prefixValue);
+        wsess.setElem(prefixValue, responsePath + "/" + nipap._prefix_);
+      } else if (p.family == 6) {
+
+        ConfIPv6Prefix prefixValue = new ConfIPv6Prefix(p.prefix);
+        LOGGER.info("SET: " + responsePath + "/prefix -> " + prefixValue);
+        wsess.setElem(prefixValue, responsePath + "/" + nipap._prefix_);
+      }
+
+      ConfUInt64 prefixIdValue = new ConfUInt64(p.id);
+      wsess.setElem(prefixIdValue, responsePath + "/" + nipap._prefix_id_);
+
+      ConfBuf customerIdValue = new ConfBuf(p.customer_id);
+      if(customerIdValue != null){
+        wsess.setElem(customerIdValue, responsePath + "/" + nipap._customer_id_);
+      }
+
+      if(p.description != null){
+        ConfBuf descriptionValue = new ConfBuf(p.description);
+        wsess.setElem(descriptionValue, responsePath + "/" + nipap._description_);
+      }
+
+      if(p.node != null){
+        ConfBuf nodeValue = new ConfBuf(p.node);
+        wsess.setElem(nodeValue, responsePath + "/" + nipap._node_);
+      }
+      
+      if(p.order_id != null){
+        ConfBuf orderIdValue = new ConfBuf(p.order_id);
+        wsess.setElem(orderIdValue, responsePath + "/" + nipap._order_id_);
+      }
+
+
+    }
+
+    protected void removeResponse(String responsePath) throws ConfException, Exception {
+      //unset case
+
+      LOGGER.info("remove response " + responsePath);
+      try {
+        wsess.delete(responsePath + "/" + nipap._prefix_);
+        wsess.delete(responsePath + "/" + nipap._prefix_id_);
+        wsess.delete(responsePath + "/" + nipap._customer_id_);
+        wsess.delete(responsePath + "/" + nipap._description_);
+        wsess.delete(responsePath + "/" + nipap._node_);
+        wsess.delete(responsePath + "/" + nipap._order_id_);
+      } catch (CdbException e ){
+      }
+
+
+
+    }
+
+    protected void removeChildPrefix(String prefixPath) throws ConfException, Exception {
+
+      removePrefix(prefixPath);
+      LOGGER.info("delete path + " + prefixPath);
+      wsess.delete(prefixPath);
+    }
+
+    protected void removePrefix(String prefixPath) throws ConfException, Exception {
+      try {
+          ConfUInt64 p_id = (ConfUInt64)wsess.getElem(prefixPath + "/" + nipap._prefix_id_);
+          LOGGER.info("Removing prefix ID: " + p_id);
+          Prefix p = Prefix.get(nipapCon, Integer.parseInt(String.valueOf(p_id)));
+          p.remove(nipapCon);
+      } catch (Exception e) {
+          LOGGER.error("Unable to remove prefix from NIPAP: " + e.getMessage(),e);
+      }
     }
 
     public void run() {
@@ -115,104 +236,121 @@ public class ConfigCdbSub implements ApplicationComponent {
                 for (Request req : reqs) {
                     LOGGER.debug("Requested NIPAP action, op=" + req.op + " , type=" + req.t);
 
-					try {
-						// TODO: make backend configurable (now it is 'default')
-						ConfValue bHost = maapi.getElem(th, "/services/nipap/backend{default}/hostname");
-						ConfValue bPort = maapi.getElem(th, "/services/nipap/backend{default}/port");
-						ConfValue bUser = maapi.getElem(th, "/services/nipap/backend{default}/username");
-						ConfValue bPass = maapi.getElem(th, "/services/nipap/backend{default}/password");
+          try {
+            // TODO: make backend configurable (now it is 'default')
+            ConfValue bHost = maapi.getElem(th, "/services/nipap/backend{default}/hostname");
+            ConfValue bPort = maapi.getElem(th, "/services/nipap/backend{default}/port");
+            ConfValue bUser = maapi.getElem(th, "/services/nipap/backend{default}/username");
+            ConfValue bPass = maapi.getElem(th, "/services/nipap/backend{default}/password");
 
-						URL url = new URL("http://" + String.valueOf(bHost) + ":" + String.valueOf(bPort) + "/RPC2");
-						nipapCon = new Connection(url, String.valueOf(bUser), String.valueOf(bPass));
-						nipapCon.authoritative_source = "ncs";
+            URL url = new URL("http://" + String.valueOf(bHost) + ":" + String.valueOf(bPort) + "/RPC2");
+            nipapCon = new Connection(url, String.valueOf(bUser), String.valueOf(bPass));
+            nipapCon.authoritative_source = "ncs";
 
-					} catch (Exception e) {
-						LOGGER.error("Unable to initiate connection to NIPAP: " + e.getMessage());
-						continue;
-					}
+          } catch (Exception e) {
+            LOGGER.error("Unable to initiate connection to NIPAP: " + e.getMessage());
+            continue;
+          }
 
 
-					// allocate prefix
-                    if ((req.op == Operation.ALLOCATE) &&
-                            (req.t == Type.Prefix)) {
+          // allocate prefix
+          if (req.op == Operation.ALLOCATE) {
 
-						LOGGER.info("Trying to allocate a prefix for: " + req.request_key + " from pool: " + req.pool_key);
-						String poolName = String.valueOf(req.pool_key).replaceAll("[{}]", "");
+            LOGGER.info("Trying to allocate a prefix for: " + req.request_key + " from pool: " + req.pool_key);
 
-						Prefix p = new Prefix();
-						// Gather prefix data and perform NIPAP request
-						try {
-							// Pool
-							HashMap poolSpec = new HashMap();
-							poolSpec.put("name", poolName);
-							List poolRes = Pool.list(nipapCon, poolSpec);
+            String poolName = String.valueOf(req.pool_key).replaceAll("[{}]", "");
 
-							// options, like address-family
-							AddPrefixOptions opts = new AddPrefixOptions();
-							ConfEnumeration family = (ConfEnumeration)maapi.getElem(th, req.path + "/family");
-							opts.put("family", family.getOrdinalValue());
+            Prefix p = new Prefix();
+            // Gather prefix data and perform NIPAP request
+            try {
+              // Pool
+              HashMap poolSpec = new HashMap();
+              poolSpec.put("name", poolName);
+              List poolRes = Pool.list(nipapCon, poolSpec);
 
-							ConfValue rDescription = maapi.getElem(th, req.path + "/description");
-							if (rDescription != null)
-								p.description = String.valueOf(rDescription);
+              // options, like address-family
+              AddPrefixOptions opts = getPrefixOptions(th, maapi, req.path + "/" + nipap._arguments_);
 
-							ConfValue rNode = maapi.getElem(th, req.path + "/node");
-							if (rNode != null)
-								p.node = String.valueOf(rNode);
+              //set prefix attributes
+              String attrPath = req.path + "/" + nipap._attributes_;
+              p = getPrefixAttributes(th, maapi, attrPath);
 
-							p.save(nipapCon, (Pool)poolRes.get(0), opts);
+              p.save(nipapCon, (Pool)poolRes.get(0), opts);
 
-						} catch (Exception e) {
-							LOGGER.error("Unable to get prefix from NIPAP: " + e.getMessage(), e);
-							continue;
-						}
-
-                        // Write the result
-						if (p.family == 4) {
-							ConfIPv4Prefix prefixValue = new ConfIPv4Prefix(p.prefix);
-							LOGGER.info("SET: " + req.path + "/prefix -> " + prefixValue);
-							wsess.setElem(prefixValue, req.path + "/prefix");
-						} else if (p.family == 6) {
-							ConfIPv6Prefix prefixValue = new ConfIPv6Prefix(p.prefix);
-							LOGGER.info("SET: " + req.path + "/prefix -> " + prefixValue);
-							wsess.setElem(prefixValue, req.path + "/prefix");
-						}
-						ConfUInt64 prefixIdValue = new ConfUInt64(p.id);
-						wsess.setElem(prefixIdValue, req.path + "/prefix_id");
-
-						// Redeploy
-						try {
-							ConfValue redeployPath = maapi.getElem(th, req.path + "/redeploy-service");
-							LOGGER.info("redeploy-service: " + redeployPath);
-							redeploy(redeployPath.toString());
-						} catch (Exception e) {
-							LOGGER.error("Redeploy failed: " + e.getMessage());
-						}
-                    }
-
-                    else if (req.op == Operation.DEALLOCATE &&
-                            (req.t == Type.Prefix)) {
-                        //Deallocate prefix
-
-                        try {
-                            ConfUInt64 p_id = (ConfUInt64)wsess.getElem(req.path + "/prefix_id");
-							LOGGER.info("Removing prefix ID: " + p_id);
-							Prefix p = Prefix.get(nipapCon, Integer.parseInt(String.valueOf(p_id)));
-							p.remove(nipapCon);
-							wsess.delete(req.path + "/prefix_id");
-							wsess.delete(req.path + "/prefix");
-                        } catch (Exception e) {
-                            LOGGER.error("Unable to remove prefix from NIPAP: " + e.getMessage(),e);
-                            continue;
-                        }
-
-                    }
-
-                }
-
-                // Tell the subscription we are done 
-                sub.sync(CdbSubscriptionSyncType.DONE_PRIORITY);
+            } catch (Exception e) {
+              LOGGER.error("Unable to get prefix from NIPAP: " + e.getMessage(), e);
+              wsess.setElem(new ConfBuf(e.getMessage()), req.path + "/" + nipap._response_ + "/" + nipap._error_);
+              wsess.setCase(nipap._response_choice_, nipap._error_, req.path + "/" + nipap._response_);
+              continue;
             }
+
+            // Write the result
+            String resPath = req.path + "/" + nipap._response_ + "/" + nipap._from_pool_;
+            writeResponse(p, resPath);
+            //set case
+            wsess.setCase(nipap._response_choice_, nipap._ok_, req.path + "/" + nipap._response_ );
+
+
+            // Request prefix from prefix
+            if(maapi.exists(th, req.path + "/" + nipap._from_prefix_request_)){
+              MaapiCursor pfx_cur = maapi.newCursor(th, req.path + "/" + nipap._from_prefix_request_);
+              ConfKey pfx = null;
+              while((pfx = maapi.getNext(pfx_cur)) != null) {
+                Prefix child_prefix = new Prefix();
+                try {
+
+                AddPrefixOptions child_opts = new AddPrefixOptions();
+                child_opts.put("prefix_length", "32");
+
+                child_prefix = getPrefixAttributes(th, maapi, req.path + "/" + nipap._from_prefix_request_ + pfx );
+                child_prefix.type = "host";
+                child_prefix.save(nipapCon, (Prefix)p, child_opts);
+
+                }catch (Exception e ) {
+                  LOGGER.error("Unable to get prefix from prefix" + e.getMessage(), e);
+                  continue;
+                }
+                //write response
+                wsess.create(req.path + "/" + nipap._response_ + "/" + nipap._from_prefix_ + pfx);
+                writeResponse(child_prefix, req.path + "/" + nipap._response_ + "/" + nipap._from_prefix_ + pfx);
+              }
+              
+            }
+
+            // Redeploy
+            try {
+              ConfValue redeployPath = maapi.getElem(th, req.path + "/redeploy-service");
+              LOGGER.info("redeploy-service: " + redeployPath);
+              redeploy(redeployPath.toString());
+            } catch (Exception e) {
+              LOGGER.error("Redeploy failed: " + e.getMessage());
+            }
+                    }
+
+              else if (req.op == Operation.DEALLOCATE &&
+                      (req.t == Type.Request)) {
+                  //Deallocate prefix
+                  LOGGER.info(req.path + "/" + nipap._response_ + "/" + nipap._from_prefix_);
+                  String path = req.path + "/" + nipap._response_ + "/" + nipap._from_prefix_;
+                  int n = wsess.getNumberOfInstances(path);
+                  try {
+                    List<ConfObject[]> objArrList = wsess.getObjects(4, 0, n, path);
+                    for ( int i = 0; i < objArrList.size(); i++){
+                      ConfObject[] objArr = objArrList.get(i);
+                      LOGGER.info(objArr[0]);
+                      ConfKey t = new ConfKey(objArr[0]);
+                      removeChildPrefix(req.path+ "/" + nipap._response_ + "/" + nipap._from_prefix_ + t);
+                    }
+                  }catch (Exception e){
+                  }
+
+                  removePrefix(req.path + "/" + nipap._response_ + "/" + nipap._from_pool_);
+                  removeResponse(req.path + "/" + nipap._response_ + "/" + nipap._from_pool_);
+              }
+            }
+            // Tell the subscription we are done 
+            sub.sync(CdbSubscriptionSyncType.DONE_PRIORITY);
+          }
         }
         catch (SocketException e) {
             // silence here, normal close (redeploy/reload package)
@@ -240,13 +378,13 @@ public class ConfigCdbSub implements ApplicationComponent {
 
 
     private enum Operation { ALLOCATE, DEALLOCATE }
-    private enum Type { Prefix }
+    private enum Type { Request, FromPrefixRequest, Prefix }
 
     private class Request {
         Operation op;
         Type t;
         ConfPath path;
-		ConfKey pool_key;
+    ConfKey pool_key;
         ConfKey request_key;
     }
 
@@ -269,25 +407,42 @@ public class ConfigCdbSub implements ApplicationComponent {
             try {
                 ConfPath p = new ConfPath(kp);
                 LOGGER.info("ITER " + op + " " + p);
+                LOGGER.info("kp= " + kp);
+                LOGGER.info("length " + kp.length);
                 // The kp array contains the keypath to the ConfObject in reverse order, for example:
-                // /ncs:services/nipap:nipap/prefix{bar} -> ["{bar}", "nipap:prefix", "nipap:nipap", "ncs:services" ]
-                // Since we are subscribing to the changes on /ncs:services/ura:ura, the 3rd node from the end of the list always contains the service name (list key)
                 Request r = new Request();
                 r.path = p;
-				if (kp[1].toString().equals("nipap:request")) {
-					r.request_key = (ConfKey)kp[0];
-					if (kp[3].toString().equals("nipap:pool")) {
-						r.t = Type.Prefix;
-						r.pool_key = (ConfKey)kp[2];
-					}
-					if (op == DiffIterateOperFlag.MOP_CREATED) {
-						r.op = Operation.ALLOCATE;
-						reqs.add(r);
-					} else if (op == DiffIterateOperFlag.MOP_DELETED) {
-						r.op = Operation.DEALLOCATE;
-						reqs.add(r);
-					}
-				}
+
+                r.pool_key = (ConfKey)kp[2];
+                r.request_key = (ConfKey)kp[0];
+
+                switch(op) {
+
+                  case MOP_CREATED: {
+                    // new request
+                    if(kp[1].toString().equals("nipap:request") && 
+                        kp.length == 6){
+                      r.t = Type.Request;
+                      r.op = Operation.ALLOCATE;
+                      reqs.add(r);
+                      //the request is new, we dont need to look at children
+                      return DiffIterateResultFlag.ITER_CONTINUE;
+                    }
+                    
+                    break;
+                  }
+                  case MOP_DELETED: {
+                    if(kp[1].toString().equals("nipap:request") && 
+                        kp.length == 6){
+                      r.t = Type.Request;
+                      r.op = Operation.DEALLOCATE;
+                      reqs.add(r);
+                      //we dont need to look at children
+                      return DiffIterateResultFlag.ITER_CONTINUE;
+                    }
+                    break;
+                  }
+              }
             }
             catch (Exception e) {
                 LOGGER.error("", e);
