@@ -88,7 +88,15 @@ db_pass = {{DB_PASSWORD}}       ; database password
 db_sslmode = {{DB_SSLMODE}}     ; database SSL mode
 # please see the PostgreSQL database documentation for further details
 
+# write audit logs into the database.  This feature is immature and
+# subject to change.  See https://github.com/SpriteLink/NIPAP/issues/368
+# Default: true
+audit_db = true
 
+# write audit logs to syslog using a standarized format.
+# this feature is immature and subject to change.
+# Default: false
+audit_syslog = false
 
 #
 # Options regarding the authentication backend

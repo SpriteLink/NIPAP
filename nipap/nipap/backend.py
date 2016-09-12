@@ -647,6 +647,12 @@ class Nipap:
 
         from nipapconfig import NipapConfig
         self._cfg = NipapConfig()
+        self._audit_syslog = False
+        if self._cfg.has_option('nipapd', 'audit_syslog'):
+            self._audit_syslog = self._cfg.getboolean('nipapd', 'audit_syslog')
+        self._audit_db = True
+        if self._cfg.has_option('nipapd', 'audit_db'):
+            self._audit_db = self._cfg.getboolean('nipapd', 'audit_db')
 
         self._auto_install_db = auto_install_db
         self._auto_upgrade_db = auto_upgrade_db
@@ -1273,22 +1279,11 @@ class Nipap:
         vrf = self.list_vrf(auth, { 'id': vrf_id })[0]
 
         # write to audit table
-        audit_params = {
-            'vrf_id': vrf['id'],
-            'vrf_rt': vrf['rt'],
-            'vrf_name': vrf['name'],
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'description': 'Added VRF %s with attr: %s' % (vrf['rt'], str(vrf))
-        }
-
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+        self.audit_log(auth, 'add', vrf=vrf,
+                       message='Added VRF {rt} with attr: {attr}'
+                       .format(rt=vrf['rt'], attr=str(vrf)))
 
         return vrf
-
 
     @requires_rw
     def remove_vrf(self, auth, spec):
@@ -1328,23 +1323,8 @@ class Nipap:
         where, params = self._expand_vrf_spec(spec)
         sql = "DELETE FROM ip_net_vrf WHERE %s" % where
         self._execute(sql, params)
-
-        # write to audit table
-        for v in vrfs:
-            audit_params = {
-                'vrf_id': v['id'],
-                'vrf_rt': v['rt'],
-                'vrf_name': v['name'],
-                'username': auth.username,
-                'authenticated_as': auth.authenticated_as,
-                'full_name': auth.full_name,
-                'authoritative_source': auth.authoritative_source,
-                'description': 'Removed vrf %s' % v['rt']
-            }
-            sql, params = self._sql_expand_insert(audit_params)
-            self._execute('INSERT INTO ip_net_log %s' % sql, params)
-
-
+        self.audit_log(auth, 'remove', vrf=vrf,
+                       message='Removed vrf {0}'.format(vrf['rt']))
 
     def list_vrf(self, auth, spec=None):
         """ Return a list of VRFs matching `spec`.
@@ -1464,22 +1444,11 @@ class Nipap:
 
         # write to audit table
         for v in vrfs:
-            audit_params = {
-                'vrf_id': v['id'],
-                'vrf_rt': v['rt'],
-                'vrf_name': v['name'],
-                'username': auth.username,
-                'authenticated_as': auth.authenticated_as,
-                'full_name': auth.full_name,
-                'authoritative_source': auth.authoritative_source,
-                'description': 'Edited VRF %s attr: %s' % (v['rt'], str(attr))
-            }
-            sql, params = self._sql_expand_insert(audit_params)
-            self._execute('INSERT INTO ip_net_log %s' % sql, params)
+            self.audit_log(auth, 'edit', vrf=v,
+                           message='Edited VRF {vrf} attr: {attr}'
+                           .format(vrf=v['rt'], attr=str(attr)))
 
         return updated_vrfs
-
-
 
     def search_vrf(self, auth, query, search_options=None):
         """ Search VRF list for VRFs matching `query`.
@@ -1828,22 +1797,11 @@ class Nipap:
         pool_id = self._lastrowid()
         pool = self.list_pool(auth, { 'id': pool_id })[0]
 
-        # write to audit table
-        audit_params = {
-            'pool_id': pool['id'],
-            'pool_name': pool['name'],
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'description': 'Added pool %s with attr: %s' % (pool['name'], str(attr))
-        }
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+        self.audit_log(auth, 'add', pool=pool,
+                       message='Added pool {pool} with attr: {attr}'
+                       .format(pool=pool['name'], attr=str(attr)))
 
         return pool
-
-
 
     @requires_rw
     def remove_pool(self, auth, spec):
@@ -1870,21 +1828,9 @@ class Nipap:
         self._execute(sql, params)
 
         # write to audit table
-        audit_params = {
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-        }
         for p in pools:
-            audit_params['pool_id'] = p['id'],
-            audit_params['pool_name'] = p['name'],
-            audit_params['description'] = 'Removed pool %s' % p['name']
-
-            sql, params = self._sql_expand_insert(audit_params)
-            self._execute('INSERT INTO ip_net_log %s' % sql, params)
-
-
+            self.audit_log(auth, 'delete', pool=p,
+                           message='Removed pool {0}'.format(p['name']))
 
     def list_pool(self, auth, spec=None):
         """ Return a list of pools.
@@ -2054,23 +2000,11 @@ class Nipap:
         updated_pools = self._get_updated_rows(auth, self.search_pool)
 
         # write to audit table
-        audit_params = {
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source
-        }
         for p in pools:
-            audit_params['pool_id'] = p['id']
-            audit_params['pool_name'] = p['name']
-            audit_params['description'] = 'Edited pool %s attr: %s' % (p['name'], str(attr))
-
-            sql, params = self._sql_expand_insert(audit_params)
-            self._execute('INSERT INTO ip_net_log %s' % sql, params)
-
+            self.audit_log(auth, 'edit', pool=p,
+                           message='Edited pool {pool} attr: {attr}'
+                           .format(pool=p['name'], attr=str(attr)))
         return updated_pools
-
-
 
     def search_pool(self, auth, query, search_options=None):
         """ Search pool list for pools matching `query`.
@@ -2657,32 +2591,19 @@ class Nipap:
         prefix = self.list_prefix(auth, { 'id': prefix_id })[0]
 
         # write to audit table
-        audit_params = {
-            'vrf_id': prefix['vrf_id'],
-            'vrf_rt': prefix['vrf_rt'],
-            'vrf_name': prefix['vrf_name'],
-            'prefix_id': prefix['id'],
-            'prefix_prefix': prefix['prefix'],
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'description': 'Added prefix %s with attr: %s' % (prefix['prefix'], str(attr))
-        }
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+        self.audit_log(auth, 'add', vrf=prefix, prefix=prefix,
+                       message='Added prefix {0} with attr: {1}'
+                               .format(prefix['prefix'], str(attr)))
 
         if pool['id'] is not None:
-            audit_params['pool_id'] = pool['id']
-            audit_params['pool_name'] = pool['name']
-            audit_params['description'] = 'Pool %s expanded with prefix %s in VRF %s' % (pool['name'], prefix['prefix'], str(prefix['vrf_rt']))
-
-            sql, params = self._sql_expand_insert(audit_params)
-            self._execute('INSERT INTO ip_net_log %s' % sql, params)
+            self.audit_log(auth, 'edit', pool=pool, vrf=prefix, prefix=prefix,
+                           message='Pool {pool} expanded with prefix '
+                                   '{prefix} in VRF {vrf}'
+                                   .format(pool=pool['name'],
+                                           prefix=prefix['prefix'],
+                                           vrf=str(prefix['vrf_rt'])))
 
         return prefix
-
-
 
     @requires_rw
     def edit_prefix(self, auth, spec, attr):
@@ -2766,66 +2687,27 @@ class Nipap:
         updated_prefixes = self._get_updated_rows(auth, self.search_prefix)
 
         # write to audit table
-        audit_params = {
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'vrf_id': vrf['id'],
-            'vrf_rt': vrf['rt'],
-            'vrf_name': vrf['name']
-        }
-
         for p in prefixes:
-            audit_params['vrf_id'] = p['vrf_id']
-            audit_params['vrf_rt'] = p['vrf_rt']
-            audit_params['vrf_name'] = p['vrf_name']
-            audit_params['prefix_id'] = p['id']
-            audit_params['prefix_prefix'] = p['prefix']
-            audit_params['description'] = 'Edited prefix %s attr: %s' % (p['prefix'], str(attr))
-            sql, params = self._sql_expand_insert(audit_params)
-            self._execute('INSERT INTO ip_net_log %s' % sql, params)
+            self.audit_log(auth, 'edit', vrf=p, prefix=p,
+                           message='Edited prefix {0} attr: {1}'
+                           .format(p['prefix'], str(attr)))
 
             # Only add to log if something was changed
             if p['pool_id'] != pool['id']:
-
-                audit_params2 = {
-                    'prefix_id': p['id'],
-                    'prefix_prefix': p['prefix'],
-                    'vrf_id': p['vrf_id'],
-                    'vrf_rt': p['vrf_rt'],
-                    'vrf_name': p['vrf_name'],
-                    'username': auth.username,
-                    'authenticated_as': auth.authenticated_as,
-                    'full_name': auth.full_name,
-                    'authoritative_source': auth.authoritative_source,
-                }
-
                 # If pool ID set, pool was expanded
                 if pool['id'] is not None:
-
-                    audit_params2['pool_id'] = pool['id']
-                    audit_params2['pool_name'] = pool['name']
-                    audit_params2['description'] = 'Expanded pool %s with prefix %s' % (pool['name'], p['prefix'])
-
-                    sql, params = self._sql_expand_insert(audit_params2)
-                    self._execute('INSERT INTO ip_net_log %s' % sql, params)
+                    self.audit_log(auth, 'edit', pool=pool, vrf=p, prefix=p,
+                                   message='Expanded pool {0} with prefix {1}'
+                                   .format(pool['name'], p['prefix']))
 
                 # if prefix had pool set previously, prefix was removed from that pool
                 if p['pool_id'] is not None:
-
                     pool2 = self._get_pool(auth, { 'id': p['pool_id'] })
-
-                    audit_params2['pool_id'] = pool2['id']
-                    audit_params2['pool_name'] = pool2['name']
-                    audit_params2['description'] = 'Removed prefix %s from pool %s' % (p['prefix'], pool2['name'])
-
-                    sql, params = self._sql_expand_insert(audit_params2)
-                    self._execute('INSERT INTO ip_net_log %s' % sql, params)
+                    self.audit_log(auth, 'remove', vrf=p, prefix=p, pool=pool2,
+                                   message='Removed prefix {0} from pool {1}'
+                                   .format(p['prefix'], pool2['name']))
 
         return updated_prefixes
-
-
 
     def find_free_prefix(self, auth, vrf, args):
         """ Finds free prefixes in the sources given in `args`.
@@ -3131,39 +3013,15 @@ class Nipap:
             self._db_remove_prefix(spec)
 
         # write to audit table
-        audit_params = {
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source
-        }
         for p in prefixes:
-            audit_params['prefix_id'] = p['id']
-            audit_params['prefix_prefix'] = p['prefix']
-            audit_params['description'] = 'Removed prefix %s' % p['prefix']
-            audit_params['vrf_id'] = p['vrf_id']
-            audit_params['vrf_rt'] = p['vrf_rt']
-            audit_params['vrf_name'] = p['vrf_name']
-            sql, params = self._sql_expand_insert(audit_params)
-            self._execute('INSERT INTO ip_net_log %s' % sql, params)
+            self.audit_log(auth, 'remove', vrf=p, prefix=p,
+                           message='Prefix {0} removed'.format(p['prefix']))
 
             if p['pool_id'] is not None:
                 pool = self._get_pool(auth, { 'id': p['pool_id'] })
-                audit_params2 = {
-                    'pool_id': pool['id'],
-                    'pool_name': pool['name'],
-                    'prefix_id': p['id'],
-                    'prefix_prefix': p['prefix'],
-                    'description': 'Prefix %s removed from pool %s' % (p['prefix'], pool['name']),
-                    'username': auth.username,
-                    'authenticated_as': auth.authenticated_as,
-                    'full_name': auth.full_name,
-                    'authoritative_source': auth.authoritative_source
-                }
-                sql, params = self._sql_expand_insert(audit_params2)
-                self._execute('INSERT INTO ip_net_log %s' % sql, params)
-
-
+                self.audit_log(auth, 'remove', vrf=p, pool=pool, prefix=p,
+                               message='Prefix {0} removed from pool {1}'
+                               .format(p['prefix'], pool['name']))
 
     def search_prefix(self, auth, query, search_options=None):
         """ Search prefix list for prefixes matching `query`.
@@ -3827,16 +3685,9 @@ class Nipap:
         asn = self.list_asn(auth, { 'asn': attr['asn'] })[0]
 
         # write to audit table
-        audit_params = {
-            'username': auth.username,
-            'authenticated_as': auth.authenticated_as,
-            'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
-            'description': 'Added ASN %s with attr: %s' % (attr['asn'], str(attr))
-        }
-
-        sql, params = self._sql_expand_insert(audit_params)
-        self._execute('INSERT INTO ip_net_log %s' % sql, params)
+        self.audit_log(auth, 'add',
+                       message='Added ASN {0} with attr: {1}'
+                       .format(attr['asn'], str(attr)))
 
         return asn
 
@@ -3883,20 +3734,11 @@ class Nipap:
 
         # write to audit table
         for a in asns:
-            audit_params = {
-                'username': auth.username,
-                'authenticated_as': auth.authenticated_as,
-                'full_name': auth.full_name,
-                'authoritative_source': auth.authoritative_source
-            }
-            audit_params['description'] = 'Edited ASN %s attr: %s' % (str(a['asn']), str(attr))
-
-            sql, params = self._sql_expand_insert(audit_params)
-            self._execute('INSERT INTO ip_net_log %s' % sql, params)
+            self.audit_log(auth, 'edit',
+                           'Edited ASN {0} attr: {1}'
+                           .format(str(a['asn']), str(attr)))
 
         return updated_asns
-
-
 
     @requires_rw
     def remove_asn(self, auth, asn):
@@ -3927,17 +3769,8 @@ class Nipap:
 
         # write to audit table
         for a in asns:
-            audit_params = {
-                'username': auth.username,
-                'authenticated_as': auth.authenticated_as,
-                'full_name': auth.full_name,
-                'authoritative_source': auth.authoritative_source,
-                'description': 'Removed ASN %s' % str(a['asn'])
-            }
-            sql, params = self._sql_expand_insert(audit_params)
-            self._execute('INSERT INTO ip_net_log %s' % sql, params)
-
-
+            self.audit_log(auth, 'remove',
+                           'Removed ASN {0}'.format(str(a['asn'])))
 
     def search_asn(self, auth, query, search_options=None):
         """ Search ASNs for entries matching 'query'
@@ -4342,7 +4175,46 @@ class Nipap:
 
         return { 'search_options': search_options, 'result': result }
 
+    def audit_log(self, auth, action, message=None,
+                  vrf=None, pool=None, prefix=None):
+        # write to audit table
+        audit_params = {
+            'username': auth.username,
+            'authenticated_as': auth.authenticated_as,
+            'full_name': auth.full_name,
+            'authoritative_source': auth.authoritative_source,
+            'description': message or 'no message provided',
+        }
 
+        if self._audit_syslog:
+            self._logger.info(
+                'USER:{username}({full_name})@{authenticated_as} '
+                'SOURCE:{authoritative_source} ACTION:{op} '
+                'DESC:{description}'.format(op=action, **audit_params))
+
+        if self._audit_db:
+            # add in addition details for the DB portion
+            if vrf:
+                audit_params.update({
+                    'vrf_id': vrf.get('vrf_id') or vrf.get('id'),
+                    'vrf_rt': vrf.get('vrf_rt') or vrf.get('rt'),
+                    'vrf_name': vrf.get('vrf_name') or vrf.get('name'),
+                })
+
+            if pool:
+                audit_params.update({
+                    'pool_id': pool['id'],
+                    'pool_name': pool['name'],
+                })
+
+            if prefix:
+                audit_params.update({
+                    'prefix_id': prefix['id'],
+                    'prefix_prefix': prefix['prefix'],
+                })
+
+            sql, params = self._sql_expand_insert(audit_params)
+            self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
 
 
