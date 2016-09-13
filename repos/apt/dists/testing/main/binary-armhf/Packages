@@ -1,52 +1,52 @@
 Package: nipap-cli
-Version: 0.29.2-1
+Version: 0.29.3-1
 Architecture: all
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Installed-Size: 227
 Depends: python3 (>= 3.1), python3-ipy, python3-pynipap
 Priority: optional
 Section: python
-Filename: pool/main/n/nipap-cli/nipap-cli_0.29.2-1_all.deb
-Size: 47942
-SHA256: 27691af4517c19de1187c586cf1502fa6343e6f48945eb3e3225f3490a3609f4
-SHA1: f5bb1d6fcdfde9cc9c1edbe3a6b72296076dfe70
-MD5sum: e35d155b01c02bd2d68c58f375e2bd12
+Filename: pool/main/n/nipap-cli/nipap-cli_0.29.3-1_all.deb
+Size: 47680
+SHA256: a2667aabcc3a2dd5ce7faa252779150501c33aa2c565cd2c9cb848eb7ebfaba9
+SHA1: 6d1656a53d0fee73013756ea1a62b45692bf1b58
+MD5sum: f827d4a957cc45f9b286db529adf653a
 Description: Neat IP Address Planner
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the shell command.
 
 Package: nipap-common
 Source: nipap
-Version: 0.29.2-1
+Version: 0.29.3-1
 Architecture: all
 Maintainer: Lukas Garberg <lukas@spritelink.net>
-Installed-Size: 355
+Installed-Size: 356
 Depends: python (>= 2.7), python-pysqlite2, python-ipy
 Suggests: python-ldap
 Priority: optional
 Section: python
-Filename: pool/main/n/nipap/nipap-common_0.29.2-1_all.deb
-Size: 61310
-SHA256: b8e8841ece49673099f6be046366c5b353b2ef700263c3d2d62b4ea80f6027e2
-SHA1: 67a71f015a268aa310a90b865def00164f36ba7d
-MD5sum: 97309bbb24c13caa35452fb51037a860
+Filename: pool/main/n/nipap/nipap-common_0.29.3-1_all.deb
+Size: 61442
+SHA256: 5a139c4d107435aaaf46b979fffa4c8e4d39f7f369d7e6d1a40483e223fb3387
+SHA1: 12e5e43789cac532b00f80175b62ab1c38c8defb
+MD5sum: ffbc7e299ae81243d6566b8d54c556f7
 Description: Neat IP Address Planner
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the common libraries.
 
 Package: nipap-whoisd
-Version: 0.29.2-1
+Version: 0.29.3-1
 Architecture: all
 Maintainer: Kristian Larsson <kristian@spritelink.net>
 Installed-Size: 54
 Depends: debconf (>= 0.5) | debconf-2.0, python (>= 2.7), python-pynipap
 Priority: optional
 Section: python
-Filename: pool/main/n/nipap-whoisd/nipap-whoisd_0.29.2-1_all.deb
-Size: 15148
-SHA256: c87631f8612b326f92145711781faa3f99f1e3857f555321e9875a5cba9c12a0
-SHA1: b18775a2662016484453070a6e61675e1c8747ca
-MD5sum: a5b09e9c414f9cd7b769b0e6a762876d
+Filename: pool/main/n/nipap-whoisd/nipap-whoisd_0.29.3-1_all.deb
+Size: 15288
+SHA256: 22f472aece732370389d89747d369d30646d226dd7dd098393544a227a15e1f2
+SHA1: 9d3a4dd8ec043d1e651e378c0f862fccff1fff4d
+MD5sum: 36d454ac8b00ad96fa2741d786a28266
 Description: Neat IP Address Planner
  The NIPAP whois daemon provides a whois-style interface for querying data in
  the NIPAP backend. It receives whois queries, translates these into search
@@ -72,18 +72,18 @@ Python-Version: 2.7
 
 Package: nipapd
 Source: nipap
-Version: 0.29.2-1
+Version: 0.29.3-1
 Architecture: all
 Maintainer: Lukas Garberg <lukas@spritelink.net>
-Installed-Size: 160
+Installed-Size: 161
 Depends: debconf, nipap-common, python (>= 2.7), debconf (>= 0.5) | debconf-2.0, python-psycopg2, python-flask, python-flask-xml-rpc, python-flask-compress, python-tornado, python-parsedatetime, python-tz, python-dateutil, python-psutil, python-pyparsing
 Priority: optional
 Section: python
-Filename: pool/main/n/nipap/nipapd_0.29.2-1_all.deb
-Size: 39462
-SHA256: b9b05354f9a8db5131c615cc3b98964b0a09406702ad1b9fa6624c53e38bf2f7
-SHA1: 7405cae158ad2dad41f2f786a9aa78706eb50b30
-MD5sum: 20a8130b8b3f1fd04eff6b3768c6a80f
+Filename: pool/main/n/nipap/nipapd_0.29.3-1_all.deb
+Size: 39600
+SHA256: 0b2a6a3208e94c9d32cb44c511bad692fe19a0d1bcc62c129890f4cf88d99b82
+SHA1: 302e709fb36e5caf22e736c61af14256dd84af19
+MD5sum: df9ec74bb2455d5e341c6149bb1a424b
 Description: Neat IP Address Planner XML-RPC daemon
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the XML-RPC daemon.
@@ -118,18 +118,18 @@ Description: Adds support for creating XML-RPC APIs to Flask
 
 Package: python-pynipap
 Source: pynipap
-Version: 0.29.2-1
+Version: 0.29.3-1
 Architecture: all
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Installed-Size: 67
 Depends: python (>= 2.7)
 Priority: optional
 Section: python
-Filename: pool/main/p/pynipap/python-pynipap_0.29.2-1_all.deb
-Size: 19186
-SHA256: 7854de22eaaaa909588136775acead87091153c4be4f953ace8d45692be0b336
-SHA1: bd2e787241747b25c77309e31204bd775be49d8b
-MD5sum: 6657901df88f67ed5cd7dc82709f5d5f
+Filename: pool/main/p/pynipap/python-pynipap_0.29.3-1_all.deb
+Size: 19336
+SHA256: 35c6914759d1daa4b3127f868296712bcd43c41ed9386c87629f9e9d7f31b3be
+SHA1: 7c80513cc1765f01eedb3d4c36d2f14a68ab9964
+MD5sum: 4b0ef0e559007bf66d675770462a5be5
 Description: Python module for accessing NIPAP
  This package contains a client library for NIPAP. It's function is similar to
  a simple ORM, which hides much of the complexity of working directly against
@@ -137,18 +137,18 @@ Description: Python module for accessing NIPAP
 
 Package: python3-pynipap
 Source: pynipap
-Version: 0.29.2-1
+Version: 0.29.3-1
 Architecture: all
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Installed-Size: 67
 Depends: python3 (>= 3.1)
 Priority: optional
 Section: python
-Filename: pool/main/p/pynipap/python3-pynipap_0.29.2-1_all.deb
-Size: 19276
-SHA256: 8f5b3d3d909b836014f55a6c671cd6e2ffe909be5eb9cb545e931c2462740bd5
-SHA1: 428dbaeda6be064cf6ff763bd716152e00d95aab
-MD5sum: 5df6b69e3d322d74b7da5157801c3ea9
+Filename: pool/main/p/pynipap/python3-pynipap_0.29.3-1_all.deb
+Size: 19424
+SHA256: f20448d60b6f6c383ce7788f78baa7d4a81c6998dd041c5ad08be2cfe42d1568
+SHA1: 83c403b0a900f54b43f020385991e6fecec70b51
+MD5sum: 6aa03eb5cd5c7269e9cd068d1ad5c9be
 Description: Python 3 module for accessing NIPAP
  This package contains a client library for NIPAP. It's function is similar to
  a simple ORM, which hides much of the complexity of working directly against
