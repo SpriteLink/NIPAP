@@ -38,6 +38,47 @@ module nipap {
     }
   }
 
+  grouping response-grouping {
+    container response {
+      description "CDB Subscriber will write the response here";
+      config false;
+      tailf:cdb-oper {
+        tailf:persistent true;
+        }
+
+      choice response-choice {
+        case error {
+          leaf error {
+            config false;
+            tailf:cdb-oper {
+              tailf:persistent true;
+              }
+            type string;
+          }
+        }
+        case ok {
+        }
+      }
+
+      leaf prefix {
+        type inet:ip-prefix;
+        config false;
+        tailf:cdb-oper {
+          tailf:persistent true;
+        }
+      }
+
+      leaf prefix_id {
+        type uint32;
+        config false;
+        tailf:cdb-oper {
+          tailf:persistent true;
+        }
+      }
+      uses prefix-attributes;
+    }
+  }
+
   augment /ncs:services {
     description "NIPAP settings";
 
@@ -108,6 +149,7 @@ module nipap {
 
             leaf family {
               description "Address family";
+              mandatory true;
               type enumeration {
                 enum 4 {
                   value 4;
@@ -127,92 +169,26 @@ module nipap {
           list from-prefix-request {
             description "Request prefix from the requested prefix";
             key name;
+            ordered-by user;
             leaf name {
               description "Uniqe identifier for the prefix";
               type string;
               }
-            ordered-by user;
-            uses prefix-attributes;
-            }
-  
-          container response {
-            description "CDB Subscriber will write the response here";
-              config false;
-              tailf:cdb-oper {
-                tailf:persistent true;
-                }
 
-            choice response-choice {
-              case error {
-                leaf error {
-                  config false;
-                  tailf:cdb-oper {
-                    tailf:persistent true;
-                    }
-                  type string;
-                }
-              }
-              case ok {
-              }
-            }
-
-            container from-pool {
-              config false;
-              tailf:cdb-oper {
-                tailf:persistent true;
-                }
+            container attributes {
+              description "Prefix attributes";
               uses prefix-attributes;
-
-              leaf prefix {
-                type inet:ip-prefix;
-                config false;
-                tailf:cdb-oper {
-                  tailf:persistent true;
-                }
             }
 
-              leaf prefix_id {
-                type uint64;
-                config false;
-                tailf:cdb-oper {
-                  tailf:persistent true;
-                }
-              }
-            }
-            list from-prefix {
-              config false;
-              tailf:cdb-oper {
-                tailf:persistent true;
-                }
-              key name;
-              leaf name {
-                type string;
-                }
-
-              leaf prefix {
-                type inet:ip-prefix;
-                config false;
-                tailf:cdb-oper {
-                  tailf:persistent true;
-                }
+            uses response-grouping;
             }
 
-              leaf prefix_id {
-                type uint64;
-                config false;
-                tailf:cdb-oper {
-                  tailf:persistent true;
-                }
-              }
-            uses prefix-attributes;
+            uses response-grouping;
+
+            leaf redeploy-service {
+              description "Redeploy service after succesful allocation";
+              type string;
             }
-
-
-          }
-          leaf redeploy-service {
-            description "Redeploy service after succesful allocation";
-            type string;
-          }
         }
       }
     }
