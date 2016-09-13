@@ -145,6 +145,10 @@ module nipap {
             choice response-choice {
               case error {
                 leaf error {
+                  config false;
+                  tailf:cdb-oper {
+                    tailf:persistent true;
+                    }
                   type string;
                 }
               }
