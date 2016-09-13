@@ -109,7 +109,7 @@ public class ConfigCdbSub implements ApplicationComponent {
       if (maapi_.exists(th, attributePath + "/" + nipap._customer_id_)) {
         ConfValue rCustomer_id = maapi.getElem(th, attributePath + "/" + nipap._customer_id_);
         p.customer_id = String.valueOf(rCustomer_id);
-      }
+       }
       if (maapi_.exists(th, attributePath + "/" + nipap._description_)) {
         ConfValue rDescription = maapi.getElem(th, attributePath + "/" + nipap._description_);
         p.description = String.valueOf(rDescription);
@@ -121,6 +121,37 @@ public class ConfigCdbSub implements ApplicationComponent {
       if (maapi_.exists(th, attributePath + "/" + nipap._order_id_)) {
         ConfValue rOrder_id = maapi.getElem(th, attributePath + "/" + nipap._customer_id_);
         p.order_id = String.valueOf(rOrder_id);
+      }
+      
+      return p;
+    }
+    protected Prefix getPrefixAttributes(Prefix oldPrefix, String attributePath) throws Exception
+    {
+      Prefix p = oldPrefix;
+
+      if (maapi.exists(th, attributePath + "/" + nipap._customer_id_)) {
+        ConfValue rCustomer_id = maapi.getElem(th, attributePath + "/" + nipap._customer_id_);
+        p.customer_id = String.valueOf(rCustomer_id);
+       }else {
+        p.customer_id = null;
+       }
+      if (maapi.exists(th, attributePath + "/" + nipap._description_)) {
+        ConfValue rDescription = maapi.getElem(th, attributePath + "/" + nipap._description_);
+        p.description = String.valueOf(rDescription);
+       }else {
+         p.description = null;
+      }
+      if (maapi.exists(th, attributePath + "/" + nipap._node_)) {
+        ConfValue rNode = maapi.getElem(th, attributePath + "/" + nipap._node_);
+        p.node = String.valueOf(rNode);
+       }else {
+         p.node = null;
+      }
+      if (maapi.exists(th, attributePath + "/" + nipap._order_id_)) {
+        ConfValue rOrder_id = maapi.getElem(th, attributePath + "/" + nipap._customer_id_);
+        p.order_id = String.valueOf(rOrder_id);
+       }else {
+         p.order_id = null;
       }
       
       return p;
@@ -207,6 +238,19 @@ public class ConfigCdbSub implements ApplicationComponent {
       LOGGER.info("delete path + " + prefixPath);
       wsess.delete(prefixPath);
     }
+    
+    protected void updatePrefix(String prefixPath, String responsePath) throws Exception {
+
+      LOGGER.info("Update prefix: " + prefixPath);
+
+      int p_id = (int) ((ConfUInt32)wsess.getElem(responsePath  + "/" + nipap._prefix_id_)).longValue();
+
+      Prefix p = Prefix.get(nipapCon, p_id);
+
+      Prefix newPrefix = getPrefixAttributes(p, prefixPath + "/" + nipap._attributes_);
+
+      newPrefix.save(nipapCon);
+    }
 
     protected void removePrefix(String prefixPath) throws ConfException, Exception {
       try {
@@ -255,6 +299,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                 for (Request req : reqs) {
                     LOGGER.debug("Requested NIPAP action, op=" + req.op + " , type=" + req.t);
 
+            sub.sync(CdbSubscriptionSyncType.DONE_PRIORITY);
           try {
             // TODO: make backend configurable (now it is 'default')
             ConfValue bHost = maapi.getElem(th, "/services/nipap/backend{default}/hostname");
@@ -272,7 +317,10 @@ public class ConfigCdbSub implements ApplicationComponent {
           }
 
 
-          // allocate prefix
+          /*
+           * Allocate new Prefix
+           *
+           */
           if (req.op == Operation.ALLOCATE && req.t == Type.Request ) {
 
             LOGGER.info("Trying to allocate a prefix for: " + req.request_key + " from pool: " + req.pool_key);
@@ -286,6 +334,7 @@ public class ConfigCdbSub implements ApplicationComponent {
               HashMap<String, String> poolSpec = new HashMap<>();
               poolSpec.put("name", poolName);
               List poolRes = Pool.list(nipapCon, poolSpec);
+
               if(poolRes.size() < 1){
                 writeError(req.path.toString(), "Nipap pool not found");
                 continue;
@@ -309,19 +358,17 @@ public class ConfigCdbSub implements ApplicationComponent {
             // Write the result
             String resPath = req.path + "/" + nipap._response_ + "/" + nipap._from_pool_;
             writeResponse(p, resPath);
-            //set case
-            wsess.setCase(nipap._response_choice_, nipap._ok_, req.path + "/" + nipap._response_ );
 
+            wsess.setCase(nipap._response_choice_, nipap._ok_, req.path + "/" + nipap._response_ );
 
             // Request prefix from prefix
             if(maapi.exists(th, req.path + "/" + nipap._from_prefix_request_)){
               MaapiCursor pfx_cur = maapi.newCursor(th, req.path + "/" + nipap._from_prefix_request_);
               ConfKey pfx = null;
-              while((pfx = maapi.getNext(pfx_cur)) != null) {
 
+              while((pfx = maapi.getNext(pfx_cur)) != null) {
                 addPrefixFromPrefix(req.path.toString(), p, pfx);
               }
-              
             }
 
             // Redeploy
@@ -341,26 +388,30 @@ public class ConfigCdbSub implements ApplicationComponent {
             LOGGER.info("Create, From prefix request");
 
             String path = "/ncs:services/" + nipap.prefix + ":" + nipap.prefix + "/" +
-              nipap._from_pool_ + req.pool_key + "/request" + req.request_key;
+              nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key;
 
-            ConfUInt64 p_id = (ConfUInt64)wsess.getElem(
-                path +"/" +nipap._response_ + "/" + nipap._from_pool_ + "/" + nipap._prefix_id_);
+            int p_id = (int) ((ConfUInt32)wsess.getElem(
+                path +"/" +nipap._response_ + "/" + nipap._from_pool_ + "/" + 
+                nipap._prefix_id_)).longValue();
 
-            Prefix parentPrefix= Prefix.get(nipapCon, Integer.parseInt(String.valueOf(p_id)));
+            Prefix parentPrefix = Prefix.get(nipapCon, p_id);
 
             addPrefixFromPrefix(path, parentPrefix, req.prefix_key);
           }
+          /*
+           * Deallocate Prefix
+           *
+           */
           else if (req.op == Operation.DEALLOCATE &&
                   (req.t == Type.Request)) {
-              //Deallocate prefix
 
               String path = req.path + "/" + nipap._response_ + "/" + nipap._from_prefix_;
               int n = wsess.getNumberOfInstances(path);
+
               try {
                 List<ConfObject[]> objArrList = wsess.getObjects(4, 0, n, path);
                 for ( int i = 0; i < objArrList.size(); i++){
                   ConfObject[] objArr = objArrList.get(i);
-                  LOGGER.info(objArr[0]);
                   ConfKey t = new ConfKey(objArr[0]);
                   removeChildPrefix(req.path+ "/" + nipap._response_ + "/" + nipap._from_prefix_ + t);
                 }
@@ -370,10 +421,30 @@ public class ConfigCdbSub implements ApplicationComponent {
               removePrefix(req.path + "/" + nipap._response_ + "/" + nipap._from_pool_);
               removeResponse(req.path + "/" + nipap._response_ + "/" + nipap._from_pool_);
             }
+          /*
+           * Modify prefix attributes
+           *
+           */
+          else if (req.op == Operation.SET && req.t == Type.Request){
+
+            String reqPath = "/services/" + nipap.prefix + ":" + nipap.prefix + "/" +
+              nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key;
+
+            updatePrefix(reqPath, reqPath + "/" +  nipap._response_ + "/" + nipap._from_pool_); 
+
           }
-            // Tell the subscription we are done 
-            sub.sync(CdbSubscriptionSyncType.DONE_PRIORITY);
+          /*
+           * Modify from-prefix attributes
+           *
+           */
+          else if (req.op == Operation.SET && req.t == Type.FromPrefixRequest){
+
+
+
+
           }
+          }
+            }
         }
         catch (SocketException e) {
             // silence here, normal close (redeploy/reload package)
@@ -400,7 +471,7 @@ public class ConfigCdbSub implements ApplicationComponent {
     }
 
 
-    private enum Operation { ALLOCATE, DEALLOCATE }
+    private enum Operation { ALLOCATE, DEALLOCATE, SET }
     private enum Type { Request, FromPrefixRequest, Prefix }
 
     private class Request {
@@ -474,6 +545,59 @@ public class ConfigCdbSub implements ApplicationComponent {
                       reqs.add(r);
                       //we dont need to look at children
                       return DiffIterateResultFlag.ITER_CONTINUE;
+                    }
+                    break;
+                  }
+                  case MOP_VALUE_SET: {
+                    LOGGER.info( "HEJ-->" + kp[2]);
+                    if(kp[1].toString().equals("nipap:attributes") &&
+                        kp.length == 8) {
+                      r.pool_key = (ConfKey)kp[4];
+                      r.request_key = (ConfKey)kp[2];
+                      r.t = Type.Request;
+                      r.op = Operation.SET;
+
+                      boolean found = false;
+
+                      for( Request req : reqs){
+
+                        if(req.t.equals(Type.Request) &&
+                            req.request_key.equals(r.request_key)) {
+                          found = true;
+                        }
+                      }
+                      if(found == false){ 
+                        LOGGER.info("add " + r.request_key.toString());
+                        reqs.add(r);
+                      }
+
+                    } else if(kp[2].toString().equals("nipap:from-prefix-request") &&
+                          kp.length == 9){
+
+                        r.pool_key = (ConfKey)kp[5];
+                        r.request_key = (ConfKey)kp[3];
+                        r.prefix_key = (ConfKey)kp[1];
+                        r.t = Type.FromPrefixRequest;
+                        r.op = Operation.SET;
+
+                        boolean found = false;
+
+                        for( Request req : reqs){
+                          LOGGER.info(req.t);
+                          LOGGER.info(req.request_key + " " + r.request_key);
+                          LOGGER.info(req.prefix_key + " " + r.prefix_key);
+                          if(req.t.equals(Type.FromPrefixRequest) && 
+                              req.request_key.equals(r.request_key) && 
+                              req.prefix_key.equals(r.prefix_key)) {
+                            found = true;
+                          }
+                        }
+                        if(found == false){ 
+                          LOGGER.info("add " + r.prefix_key);
+                          reqs.add(r);
+                        }
+
+
                     }
                     break;
                   }
