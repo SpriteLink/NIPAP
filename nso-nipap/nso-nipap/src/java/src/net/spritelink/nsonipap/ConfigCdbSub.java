@@ -77,9 +77,10 @@ public class ConfigCdbSub implements ApplicationComponent {
             LOGGER.error("", e);
         }
     }
+
     protected void addPrefixFromPrefix(String path, Prefix parentPrefix, ConfKey prefixKey) throws Exception {
 
-      LOGGER.info("Create, From prefix request");
+      LOGGER.info("Create, From prefix request, path = " + path);
       Prefix child_prefix = new Prefix();
       try {
 
@@ -92,14 +93,15 @@ public class ConfigCdbSub implements ApplicationComponent {
 
       }catch (Exception e ) {
         LOGGER.error("Unable to get prefix from prefix" + e.getMessage(), e);
+        writeError(path, e.getMessage());
         return;
       }
       //write response
       wsess.create(path + "/" + nipap._response_ + "/" + nipap._from_prefix_ + prefixKey);
       writeResponse(child_prefix, path + "/" + nipap._response_ + "/" + nipap._from_prefix_ + prefixKey);
-
-
     }
+
+
     protected Prefix getPrefixAttributes(int th, Maapi maapi_, String attributePath) throws Exception
     {
       Prefix p = new Prefix();
@@ -174,6 +176,14 @@ public class ConfigCdbSub implements ApplicationComponent {
         ConfBuf orderIdValue = new ConfBuf(p.order_id);
         wsess.setElem(orderIdValue, responsePath + "/" + nipap._order_id_);
       }
+    }
+
+
+    protected void writeError(String path, String errorMessage) throws Exception {
+
+      wsess.setElem(new ConfBuf(errorMessage), path + "/" + nipap._response_ + "/" + nipap._error_);
+      wsess.setCase(nipap._response_choice_, nipap._error_, path + "/" + nipap._response_);
+
     }
 
     protected void removeResponse(String responsePath) throws ConfException, Exception {
@@ -276,6 +286,10 @@ public class ConfigCdbSub implements ApplicationComponent {
               HashMap<String, String> poolSpec = new HashMap<>();
               poolSpec.put("name", poolName);
               List poolRes = Pool.list(nipapCon, poolSpec);
+              if(poolRes.size() < 1){
+                writeError(req.path.toString(), "Nipap pool not found");
+                continue;
+              }
 
               // options, like address-family
               AddPrefixOptions opts = getPrefixOptions(th, maapi, req.path + "/" + nipap._arguments_);
@@ -288,8 +302,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 
             } catch (Exception e) {
               LOGGER.error("Unable to get prefix from NIPAP: " + e.getMessage(), e);
-              wsess.setElem(new ConfBuf(e.getMessage()), req.path + "/" + nipap._response_ + "/" + nipap._error_);
-              wsess.setCase(nipap._response_choice_, nipap._error_, req.path + "/" + nipap._response_);
+              writeError(req.path.toString(), e.getMessage());
               continue;
             }
 
@@ -320,12 +333,19 @@ public class ConfigCdbSub implements ApplicationComponent {
               LOGGER.error("Redeploy failed: " + e.getMessage());
               }
           }
+          /*
+           * Allocate from-prefix
+           *
+           */
           else if (req.op == Operation.ALLOCATE && req.t == Type.FromPrefixRequest){
             LOGGER.info("Create, From prefix request");
 
-            String path = "/ncs:services/nipap:nipap/from-pool" + req.pool_key + "/request" + req.request_key;
+            String path = "/ncs:services/" + nipap.prefix + ":" + nipap.prefix + "/" +
+              nipap._from_pool_ + req.pool_key + "/request" + req.request_key;
 
-            ConfUInt64 p_id = (ConfUInt64)wsess.getElem(path +"/" +nipap._response_ + "/" + nipap._from_pool_ + "/" + nipap._prefix_id_);
+            ConfUInt64 p_id = (ConfUInt64)wsess.getElem(
+                path +"/" +nipap._response_ + "/" + nipap._from_pool_ + "/" + nipap._prefix_id_);
+
             Prefix parentPrefix= Prefix.get(nipapCon, Integer.parseInt(String.valueOf(p_id)));
 
             addPrefixFromPrefix(path, parentPrefix, req.prefix_key);
@@ -333,7 +353,7 @@ public class ConfigCdbSub implements ApplicationComponent {
           else if (req.op == Operation.DEALLOCATE &&
                   (req.t == Type.Request)) {
               //Deallocate prefix
-              LOGGER.info(req.path + "/" + nipap._response_ + "/" + nipap._from_prefix_);
+
               String path = req.path + "/" + nipap._response_ + "/" + nipap._from_prefix_;
               int n = wsess.getNumberOfInstances(path);
               try {
@@ -411,9 +431,7 @@ public class ConfigCdbSub implements ApplicationComponent {
             try {
                 ConfPath p = new ConfPath(kp);
                 LOGGER.info("ITER " + op + " " + p);
-                LOGGER.info("kp= " + kp);
                 LOGGER.info("length " + kp.length);
-                // The kp array contains the keypath to the ConfObject in reverse order, for example:
                 Request r = new Request();
                 r.path = p;
 
