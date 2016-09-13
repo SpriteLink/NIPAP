@@ -564,9 +564,10 @@ class PrefixSmartParser(SmartParser):
             # search
             elif self._get_afi(part[0]) == 4 and len(part[0].split('.')) == 4:
                 self._logger.debug("Query part '" + part[0] + "' interpreted as prefix")
+                address = str(IPy.IP(part[0]))
                 dictsql = {
                     'interpretation': {
-                        'string': part[0],
+                        'string': address,
                         'interpretation': 'IPv4 address',
                         'attribute': 'prefix',
                         'operator': 'contains_equals',
@@ -574,7 +575,7 @@ class PrefixSmartParser(SmartParser):
                     },
                     'operator': 'contains_equals',
                     'val1': 'prefix',
-                    'val2': part[0]
+                    'val2': address
                 }
 
             else:
