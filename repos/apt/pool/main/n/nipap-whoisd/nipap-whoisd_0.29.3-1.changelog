@@ -1,3 +1,16 @@
+nipap-whoisd (0.29.3-1) stable; urgency=medium
+
+  * Tooltips in the web UI now works again (#887, #938)
+  * backend smart parser now handles tags in search strings (#1008,
+    #1012)
+  * Dockerfile for the web UI added (#1009)
+  * The web UI now submits data with HTTP POST, which for example makes
+    it possible to use semicolons in fields in the web UI (#934, #1011)
+  * AVPs with empty attribute and/or value handled better in the web UI
+    (882, #1018)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 13 Sep 2016 12:08:43 +0200
+
 nipap-whoisd (0.29.2-1) stable; urgency=medium
 
   * Fix packaging of nipap-cli so that it works on many releases (#1003,
