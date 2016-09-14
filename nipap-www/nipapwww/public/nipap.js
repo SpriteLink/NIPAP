@@ -440,7 +440,7 @@ function setSearchPrefixURI() {
 		url_str += '?' + url.attr('query');
 	}
 
-	url_str += '#query_string=' +
+	url_str += '#/query_string=' +
 		encodeURIComponent($('#query_string').val()) +
 		'&search_opt_parent=' +
 		encodeURIComponent($('input[name="search_opt_parent"]:checked').val()) +
