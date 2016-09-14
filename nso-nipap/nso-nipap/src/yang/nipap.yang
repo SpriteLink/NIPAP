@@ -149,7 +149,7 @@ module nipap {
 
             leaf family {
               description "Address family";
-              mandatory true;
+              default '4';
               type enumeration {
                 enum 4 {
                   value 4;
