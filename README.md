@@ -3,7 +3,7 @@ NIPAP
 
 [![Build Status](https://travis-ci.org/SpriteLink/NIPAP.svg?branch=master)](https://travis-ci.org/SpriteLink/NIPAP)
 [![Requirements Status](https://requires.io/github/SpriteLink/NIPAP/requirements.svg?branch=master)](https://requires.io/github/SpriteLink/NIPAP/requirements/?branch=master)
-[![Code Health](https://landscape.io/github/SpriteLink/NIPAP/master/landscape.svg?style=flat)](https://landscape.io/github/SpriteLink/NIPAP/master)
+[![Code Issues](https://www.quantifiedcode.com/api/v1/project/91a738c9570a4c5190a4b54d8e28188b/badge.svg)](https://www.quantifiedcode.com/app/project/91a738c9570a4c5190a4b54d8e28188b)
 [![Code Climate](https://codeclimate.com/github/SpriteLink/NIPAP/badges/gpa.svg)](https://codeclimate.com/github/SpriteLink/NIPAP)
 
 [![IRC Network](https://img.shields.io/badge/irc-%23NIPAP-blue.svg "IRC Freenode")](https://webchat.freenode.net/?channels=nipap)
