@@ -194,7 +194,6 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
-import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if on_rtd:
     import sys
