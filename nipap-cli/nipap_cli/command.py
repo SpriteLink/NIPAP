@@ -178,7 +178,7 @@ class Command:
         option_parsing = False
         self._scoop_rest_arguments = False
 
-        if inp_cmd != None:
+        if inp_cmd is not None:
             self.inp_cmd = inp_cmd
 
         # iterate the list of inputted commands

@@ -1953,7 +1953,7 @@ class Nipap:
             p = dict(row)
 
             # Make sure that prefixes is a list, even if there are no prefixes
-            if p['prefixes'] == None:
+            if p['prefixes'] is None:
                 p['prefixes'] = []
             res.append(p)
 
@@ -2428,7 +2428,7 @@ class Nipap:
             if query['operator'] not in _operation_map:
                 raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
 
-            if query['val1'] == 'vrf_id' and query['val2'] == None:
+            if query['val1'] == 'vrf_id' and query['val2'] is None:
                 query['val2'] = 0
 
             # workaround for handling equal matches of NULL-values

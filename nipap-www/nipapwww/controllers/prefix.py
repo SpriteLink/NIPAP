@@ -91,7 +91,7 @@ class PrefixController(BaseController):
                 # TODO: handle non-existent VRF...
                 c.prefix.vrf = VRF.list({ 'rt': request.params['prefix_vrf'] })[0]
 
-            if request.params.get('prefix_monitor') != None:
+            if request.params.get('prefix_monitor') is not None:
                 c.prefix.monitor = True
             else:
                 c.prefix.monitor = False
