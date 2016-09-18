@@ -2492,6 +2492,63 @@ class TestSmartParser(unittest.TestCase):
         self.assertEqual(query, expected)
 
 
+    def test_prefix19(self):
+        """ Test searching using unicode characters
+        """
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        success, query = n._parse_prefix_query(u'åäö')
+
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'description or comment or node or order_id or customer_id',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': u'åäö',
+                    'error': False
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'or',
+                            'val1': {
+                                'operator': 'regex_match',
+                                'val1': 'comment',
+                                'val2': u'åäö'
+                                },
+                            'val2': {
+                                'operator': 'regex_match',
+                                'val1': 'description',
+                                'val2': u'åäö'
+                                }
+                            },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'node',
+                            'val2': u'åäö'
+                            }
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'order_id',
+                        'val2': u'åäö'
+                        }
+                    },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'customer_id',
+                    'val2': u'åäö'
+                    }
+                }
+
+        self.assertEqual(success, True)
+        self.assertEqual(query, exp_query)
+
+
 
     def test_vrf1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
