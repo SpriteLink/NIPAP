@@ -93,8 +93,13 @@ class SmartParser:
         """
 
         # simple words
-        comp_word = Word(alphanums + "-./_")
-        word = Word(alphanums + "-./_").setResultsName('word')
+        # we need to use a regex to match on words because the regular
+        # Word(alphanums) will only match on American ASCII alphanums and since
+        # we try to be Unicode / internationally friendly we need to match much
+        # much more. Trying to expand a word class to catch it all seems futile
+        # so we match on everything *except* a few things, like our operators
+        comp_word = Regex("[^*\s=><~!]+")
+        word = Regex("[^*\s=><~!]+").setResultsName('word')
         # numbers
         comp_number = Word(nums)
         number = Word(nums).setResultsName('number')
