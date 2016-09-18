@@ -14,7 +14,8 @@ from errors import *
 
 class SmartParser:
     attributes = {}
-    match_operators = ['=', '<', '>', '<=', '>=', '~']
+    match_operators = ['=', '!=', '<', '>', '<=', '>=', '<<', '>>', '<<=',
+                       '>>=', '~', '~*', '!~', '!~*']
     boolean_operators = ['and', 'or']
 
     def __init__(self):
