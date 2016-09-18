@@ -3383,7 +3383,8 @@ class Nipap:
                     ''' 'offset'. Only integer values allowed.''')
 
         # parent_prefix
-        if 'parent_prefix' not in search_options:
+        if ('parent_prefix' not in search_options or
+                search_options['parent_prefix'] is None):
             search_options['parent_prefix'] = None
         else:
             try:
