@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 from itertools import izip_longest
 import logging
@@ -205,10 +206,10 @@ class SmartParser:
                                                                     part.getName()))
 
             if dss['val1'] is None:
-                self._logger.debug('val1 not set, using dse: %s' % str(dse))
+                self._logger.debug('val1 not set, using dse: %s' % unicode(dse))
                 dss['val1'] = dse
             else:
-                self._logger.debug("val1 is set, operator is '%s', val2 = dst: %s" % (dss['operator'], str(dse)))
+                self._logger.debug("val1 is set, operator is '%s', val2 = dst: %s" % (dss['operator'], unicode(dse)))
                 dss['val2'] = dse
 
             if lookahead is not None:
@@ -243,14 +244,14 @@ class SmartParser:
                 vlan > 1
                 node = FOO-BAR
         """
-        self._logger.debug("parsing expression: " + str(part))
+        self._logger.debug("parsing expression: " + unicode(part))
         key, op, val = part
 
         success = True
         dictsql = {
                 'operator': op,
                 'val1': key,
-                'val2': str(val),
+                'val2': unicode(val),
                 'interpretation': {
                     'string': key + op + val,
                     'interpretation': 'expression',
@@ -335,7 +336,7 @@ class PoolSmartParser(SmartParser):
     def _string_to_dictsql(self, part):
         """ Do magic matching of single words or quoted string
         """
-        self._logger.debug("parsing string: " + str(part[0]) + " of type: " + part.getName())
+        self._logger.debug("parsing string: " + unicode(part[0]) + " of type: " + part.getName())
 
         if part.getName() == 'tag':
             self._logger.debug("Query part '" + part[0] + "' interpreted as tag")
@@ -453,7 +454,7 @@ class PrefixSmartParser(SmartParser):
     def _string_to_dictsql(self, part):
         """ Do magic matching of single words or quoted string
         """
-        self._logger.debug("parsing string: " + str(part[0]) + " of type: " + part.getName())
+        self._logger.debug("parsing string: " + unicode(part[0]) + " of type: " + part.getName())
 
         if part.getName() == 'tag':
             self._logger.debug("Query part '" + part[0] + "' interpreted as tag")
@@ -503,7 +504,7 @@ class PrefixSmartParser(SmartParser):
         elif part.getName() == 'ipv6_prefix':
             self._logger.debug("Query part '" + part.ipv6_prefix[0] + "' interpreted as IPv6 prefix")
 
-            strict_prefix = str(IPy.IP(part.ipv6_prefix[0], make_net = True))
+            strict_prefix = unicode(IPy.IP(part.ipv6_prefix[0], make_net = True))
             interp = {
                     'string': part.ipv6_prefix[0],
                     'interpretation': 'IPv6 prefix',
@@ -536,7 +537,7 @@ class PrefixSmartParser(SmartParser):
                     address += '.0'
 
                 prefix = address + '/' + prefix_length
-                strict_prefix = str(IPy.IP(part[0], make_net = True))
+                strict_prefix = unicode(IPy.IP(part[0], make_net = True))
 
                 interp = {
                         'string': part[0],
@@ -564,7 +565,7 @@ class PrefixSmartParser(SmartParser):
             # search
             elif self._get_afi(part[0]) == 4 and len(part[0].split('.')) == 4:
                 self._logger.debug("Query part '" + part[0] + "' interpreted as prefix")
-                address = str(IPy.IP(part[0]))
+                address = unicode(IPy.IP(part[0]))
                 dictsql = {
                     'interpretation': {
                         'string': address,
@@ -648,7 +649,7 @@ class VrfSmartParser(SmartParser):
     def _string_to_dictsql(self, part):
         """ Do magic matching of single words or quoted string
         """
-        self._logger.debug("parsing string: " + str(part[0]) + " of type: " + part.getName())
+        self._logger.debug("parsing string: " + unicode(part[0]) + " of type: " + part.getName())
 
         if part.getName() == 'tag':
             self._logger.debug("Query part '" + part[0] + "' interpreted as tag")
