@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #
 # Most of the tests here are performed via Pynipap which makes it a lot easier
