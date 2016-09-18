@@ -2550,6 +2550,29 @@ class TestSmartParser(unittest.TestCase):
 
 
 
+    def test_prefix20(self):
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        success, query = n._parse_prefix_query('prefix<<=1.3.0.0/16')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'prefix',
+                    'interpretation': 'expression',
+                    'operator': '<<=',
+                    'string': 'prefix<<=1.3.0.0/16',
+                    'error': False
+                },
+                'operator': '<<=',
+                'val1': 'prefix',
+                'val2': u'1.3.0.0/16'
+                }
+
+        self.assertEqual(success, True)
+        self.assertEqual(query, exp_query)
+
+
+
     def test_vrf1(self):
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
