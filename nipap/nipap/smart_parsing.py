@@ -16,7 +16,7 @@ class SmartParser:
     attributes = {}
     match_operators = ['=', '!=', '<', '>', '<=', '>=', '<<', '>>', '<<=',
                        '>>=', '~', '~*', '!~', '!~*']
-    boolean_operators = ['and', 'or']
+    boolean_operators = ['and', 'AND', 'or', 'OR']
 
     def __init__(self):
         self._logger = logging.getLogger(self.__class__.__name__)
