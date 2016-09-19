@@ -510,7 +510,7 @@ class PrefixSmartParser(SmartParser):
         elif part.getName() == 'ipv6_prefix':
             self._logger.debug("Query part '" + part.ipv6_prefix[0] + "' interpreted as IPv6 prefix")
 
-            strict_prefix = unicode(IPy.IP(part.ipv6_prefix[0], make_net = True))
+            strict_prefix = unicode(IPy.IP(part.ipv6_prefix[0], make_net=True))
             interp = {
                     'string': part.ipv6_prefix[0],
                     'interpretation': 'IPv6 prefix',
@@ -543,7 +543,7 @@ class PrefixSmartParser(SmartParser):
                     address += '.0'
 
                 prefix = address + '/' + prefix_length
-                strict_prefix = unicode(IPy.IP(part[0], make_net = True))
+                strict_prefix = unicode(IPy.IP(part[0], make_net=True))
 
                 interp = {
                         'string': part[0],
