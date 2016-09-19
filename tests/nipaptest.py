@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #
 # Most of the tests here are performed via Pynipap which makes it a lot easier
@@ -2490,6 +2491,88 @@ class TestSmartParser(unittest.TestCase):
 
         self.assertEqual(success, True)
         self.assertEqual(query, expected)
+
+
+    def test_prefix19(self):
+        """ Test smart parser using unicode characters
+        """
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        success, query = n._parse_prefix_query(u'åäö')
+
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'description or comment or node or order_id or customer_id',
+                    'interpretation': 'text',
+                    'operator': 'regex',
+                    'string': u'åäö',
+                    'error': False
+                },
+                'operator': 'or',
+                'val1': {
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'or',
+                        'val1': {
+                            'operator': 'or',
+                            'val1': {
+                                'operator': 'regex_match',
+                                'val1': 'comment',
+                                'val2': u'åäö'
+                                },
+                            'val2': {
+                                'operator': 'regex_match',
+                                'val1': 'description',
+                                'val2': u'åäö'
+                                }
+                            },
+                        'val2': {
+                            'operator': 'regex_match',
+                            'val1': 'node',
+                            'val2': u'åäö'
+                            }
+                        },
+                    'val2': {
+                        'operator': 'regex_match',
+                        'val1': 'order_id',
+                        'val2': u'åäö'
+                        }
+                    },
+                'val2': {
+                    'operator': 'regex_match',
+                    'val1': 'customer_id',
+                    'val2': u'åäö'
+                }
+            }
+
+        self.assertEqual(success, True)
+        self.assertEqual(query, exp_query)
+
+
+    def test_prefix20(self):
+        """ Test smart parsing with a "contained by" operator (<<=) on the
+            prefix attribute
+        """
+        cfg = NipapConfig('/etc/nipap/nipap.conf')
+        n = Nipap()
+
+        success, query = n._parse_prefix_query('prefix<<=1.3.0.0/16')
+        exp_query = {
+                'interpretation': {
+                    'attribute': 'prefix',
+                    'interpretation': 'expression',
+                    'operator': '<<=',
+                    'string': 'prefix<<=1.3.0.0/16',
+                    'error': False
+                },
+                'operator': '<<=',
+                'val1': 'prefix',
+                'val2': u'1.3.0.0/16'
+            }
+
+        self.assertEqual(success, True)
+        self.assertEqual(query, exp_query)
 
 
 
