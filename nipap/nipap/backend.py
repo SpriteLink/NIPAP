@@ -897,6 +897,7 @@ class Nipap:
                     str(column_desc) +
                     "', the value you have inputted is already in use.")
 
+            self._logger.exception("Unhandled database IntegrityError:")
             raise NipapError(str(exc))
 
         except psycopg2.DataError as exc:
@@ -913,6 +914,7 @@ class Nipap:
                 estr = "Invalid syntax for prefix (%s)" % m.group(2)
                 raise NipapValueError(estr)
 
+            self._logger.exception("Unhandled database DataError:")
             raise NipapValueError(str(exc))
 
         except psycopg2.Error as exc:
