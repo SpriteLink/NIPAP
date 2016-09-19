@@ -193,37 +193,37 @@ public class ConfigCdbSub implements ApplicationComponent {
      */
     protected void writeResponse(Prefix prefix, String responsePath) throws ConfException, Exception {
 
-      if (p.family == 4) {
-        ConfIPv4Prefix prefixValue = new ConfIPv4Prefix(p.prefix);
+      if (prefix.family == 4) {
+        ConfIPv4Prefix prefixValue = new ConfIPv4Prefix(prefix.prefix);
         LOGGER.info("SET: " + responsePath + "/prefix -> " + prefixValue);
         wsess.setElem(prefixValue, responsePath + "/" + nipap._prefix_);
-      } else if (p.family == 6) {
+      } else if (prefix.family == 6) {
 
-        ConfIPv6Prefix prefixValue = new ConfIPv6Prefix(p.prefix);
+        ConfIPv6Prefix prefixValue = new ConfIPv6Prefix(prefix.prefix);
         LOGGER.info("SET: " + responsePath + "/prefix -> " + prefixValue);
         wsess.setElem(prefixValue, responsePath + "/" + nipap._prefix_);
       }
 
-      ConfUInt32 prefixIdValue = new ConfUInt32(p.id);
+      ConfUInt32 prefixIdValue = new ConfUInt32(prefix.id);
       wsess.setElem(prefixIdValue, responsePath + "/" + nipap._prefix_id_);
 
-      if(p.customer_id != null){
-        ConfBuf customerIdValue = new ConfBuf(p.customer_id);
+      if(prefix.customer_id != null){
+        ConfBuf customerIdValue = new ConfBuf(prefix.customer_id);
         wsess.setElem(customerIdValue, responsePath + "/" + nipap._customer_id_);
       }
 
-      if(p.description != null){
-        ConfBuf descriptionValue = new ConfBuf(p.description);
+      if(prefix.description != null){
+        ConfBuf descriptionValue = new ConfBuf(prefix.description);
         wsess.setElem(descriptionValue, responsePath + "/" + nipap._description_);
       }
 
-      if(p.node != null){
-        ConfBuf nodeValue = new ConfBuf(p.node);
+      if(prefix.node != null){
+        ConfBuf nodeValue = new ConfBuf(prefix.node);
         wsess.setElem(nodeValue, responsePath + "/" + nipap._node_);
       }
       
-      if(p.order_id != null){
-        ConfBuf orderIdValue = new ConfBuf(p.order_id);
+      if(prefix.order_id != null){
+        ConfBuf orderIdValue = new ConfBuf(prefix.order_id);
         wsess.setElem(orderIdValue, responsePath + "/" + nipap._order_id_);
       }
     }
@@ -441,7 +441,7 @@ public class ConfigCdbSub implements ApplicationComponent {
           else if (req.op == Operation.ALLOCATE && req.t == Type.FromPrefixRequest){
             LOGGER.info("Create, From prefix request");
 
-            String path = "/" + ncs._services_ + "/" + nipap.prefix + ":" + nipap.prefix + "/" +
+            String path = "/" + Ncs._services_ + "/" + nipap.prefix + ":" + nipap.prefix + "/" +
               nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key;
 
             int p_id = getPrefixId(path + "/" + nipap._response_ );
@@ -466,7 +466,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 
               for(NavuContainer prefix_key : request.list(nipap._from_prefix_request).elements()){
                   removePrefix(path +  prefix_key.leaf(nipap._name_).toKey() + "/" + nipap._response_);
-                  removeResponse(path  prefix_key.leaf(nipap._name_).toKey() + "/" + nipap._response_);
+                  removeResponse(path + prefix_key.leaf(nipap._name_).toKey() + "/" + nipap._response_);
               }
               try {
                 removePrefix(req.path + "/" + nipap._response_);
@@ -481,7 +481,7 @@ public class ConfigCdbSub implements ApplicationComponent {
            *
            */
           else if (req.op == Operation.DEALLOCATE &&
-                  (req.t == Type.FromPrefixRequest) {
+                  (req.t == Type.FromPrefixRequest)) {
 
 
           }
@@ -598,8 +598,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                       reqs.add(r);
                       //the request is new, we dont need to look at children
                       return DiffIterateResultFlag.ITER_CONTINUE;
-                    }
-                    
+                    } 
                     break;
                   }
                   case MOP_DELETED: {
@@ -736,4 +735,7 @@ public class ConfigCdbSub implements ApplicationComponent {
             }
         }
     }
+
+
+
 }
