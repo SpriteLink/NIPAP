@@ -2494,7 +2494,7 @@ class TestSmartParser(unittest.TestCase):
 
 
     def test_prefix19(self):
-        """ Test searching using unicode characters
+        """ Test smart parser using unicode characters
         """
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
@@ -2543,15 +2543,17 @@ class TestSmartParser(unittest.TestCase):
                     'operator': 'regex_match',
                     'val1': 'customer_id',
                     'val2': u'åäö'
-                    }
                 }
+            }
 
         self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
 
 
-
     def test_prefix20(self):
+        """ Test smart parsing with a "contained by" operator (<<=) on the
+            prefix attribute
+        """
         cfg = NipapConfig('/etc/nipap/nipap.conf')
         n = Nipap()
 
@@ -2567,7 +2569,7 @@ class TestSmartParser(unittest.TestCase):
                 'operator': '<<=',
                 'val1': 'prefix',
                 'val2': u'1.3.0.0/16'
-                }
+            }
 
         self.assertEqual(success, True)
         self.assertEqual(query, exp_query)
