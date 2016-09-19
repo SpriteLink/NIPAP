@@ -77,6 +77,13 @@ public class ConfigCdbSub implements ApplicationComponent {
         }
     }
 
+    /**
+     * Add a host prefix from a prefix.
+     *
+     * @param path  Path to the prefix request
+     * @param parentPrefix From prefix
+     * @throws Exception
+     */
     protected void addPrefixFromPrefix(String path, Prefix parentPrefix) throws Exception {
 
       LOGGER.info("Create, From prefix request, path = " + path);
@@ -99,13 +106,28 @@ public class ConfigCdbSub implements ApplicationComponent {
       writeResponse(child_prefix, path + "/" + nipap._response_);
     }
     
+    /**
+     * Fetch attributes and returns the populated prefix object
+     *
+     * @param attributePath Path to the prefix attribute container
+     * @return <code>Prefix</code>
+     * @throws Exception
+     */
     protected Prefix getPrefixAttributes(String attributePath) throws Exception {
     
       Prefix p = new Prefix();
 
       return getPrefixAttributes(p, attributePath);
-
     }
+
+    /**
+     * Fetch attributes and returns the populated prefix object
+     *
+     * @param oldPrefix Used if you already have a prefix object 
+     * @param attributePath Path to the prefix attribute container
+     * @return <code>Prefix</code>
+     * @throws Exception
+     */
     protected Prefix getPrefixAttributes(Prefix oldPrefix, String attributePath) throws Exception
     {
       Prefix p = oldPrefix;
@@ -138,6 +160,14 @@ public class ConfigCdbSub implements ApplicationComponent {
       return p;
     }
 
+    /**
+     * Populate PrefixOptions
+     *
+     * @param argumentPath Path to prefix argument container
+     * @return AddPrefixOptions
+     * @throws Exception
+     */
+
     protected AddPrefixOptions getPrefixOptions (String argumentPath) throws Exception { 
       AddPrefixOptions opts = new AddPrefixOptions();
 
@@ -153,7 +183,15 @@ public class ConfigCdbSub implements ApplicationComponent {
       return opts;
     }
 
-    protected void writeResponse(Prefix p, String responsePath) throws ConfException, Exception {
+    /**
+     * Write response data to cdb oper
+     *
+     * @param prefix Prefix
+     * @param responsePath Path were the response should be written.
+     * @throws ConfException
+     * @throws Exception
+     */
+    protected void writeResponse(Prefix prefix, String responsePath) throws ConfException, Exception {
 
       if (p.family == 4) {
         ConfIPv4Prefix prefixValue = new ConfIPv4Prefix(p.prefix);
@@ -190,14 +228,27 @@ public class ConfigCdbSub implements ApplicationComponent {
       }
     }
 
-
+    /**
+     * Write error message
+     *
+     * @param path Path to request
+     * @param errorMessage Error message
+     * @throws Exception
+     */
     protected void writeError(String path, String errorMessage) throws Exception {
 
       wsess.setElem(new ConfBuf(errorMessage), path + "/" + nipap._response_ + "/" + nipap._error_);
       wsess.setCase(nipap._response_choice_, nipap._error_, path + "/" + nipap._response_);
-
     }
 
+    /**
+     * Remove response from cdb oper.
+     * TODO: Do we need to do this?
+     *
+     * @param responsePath path to response
+     * @throws ConfException
+     * @throws Exception
+     */
     protected void removeResponse(String responsePath) throws ConfException, Exception {
       //unset case
 
@@ -212,6 +263,13 @@ public class ConfigCdbSub implements ApplicationComponent {
       } catch (CdbException e ){
       }
     }
+
+    /**
+     * Update NIPAP with the new prefix information
+     *
+     * @param prefixPath Path to prefix request
+     * @throws Exception
+     */
 
     protected void updatePrefix(String prefixPath) throws Exception {
 
@@ -228,6 +286,14 @@ public class ConfigCdbSub implements ApplicationComponent {
       writeResponse(newPrefix, responsePath);
     }
 
+    /**
+     * Remove Prefix from NIPAP
+     *
+     * @param prefixPath path to Prefix
+     * @throws ConfException
+     * @throws Exception
+     */
+
     protected void removePrefix(String prefixPath) throws ConfException, Exception {
       try {
           int p_id = getPrefixId(prefixPath);
@@ -238,7 +304,14 @@ public class ConfigCdbSub implements ApplicationComponent {
           LOGGER.error("Unable to remove prefix from NIPAP: " + e.getMessage(),e);
       }
     }
-
+ 
+    /**
+     * Get prefix id
+     * 
+     * @param path Path to prefix response
+     * @return Prefix id
+     * @throws Exception
+     */
     protected int getPrefixId(String path) throws Exception {
       return (int) ((ConfUInt32)wsess.getElem(path  + "/" +
             nipap._prefix_id_)).longValue();
@@ -391,9 +464,9 @@ public class ConfigCdbSub implements ApplicationComponent {
 
               NavuNode request = KeyPath2NavuNode.getNode(req.path, context);
 
-              for(NavuContainer prefix_key : request.list("from-prefix-request").elements()){
-                  removePrefix(path +  prefix_key.leaf("name").toKey() + "/" + nipap._response_);
-                  removeResponse(path  prefix_key.leaf("name").toKey() + "/" + nipap._response_);
+              for(NavuContainer prefix_key : request.list(nipap._from_prefix_request).elements()){
+                  removePrefix(path +  prefix_key.leaf(nipap._name_).toKey() + "/" + nipap._response_);
+                  removeResponse(path  prefix_key.leaf(nipap._name_).toKey() + "/" + nipap._response_);
               }
               try {
                 removePrefix(req.path + "/" + nipap._response_);
@@ -403,6 +476,15 @@ public class ConfigCdbSub implements ApplicationComponent {
               removeResponse(req.path + "/" + nipap._response_);
               context.finishClearTrans();
             }
+          /*
+           * Deallocate from-prefix prefix
+           *
+           */
+          else if (req.op == Operation.DEALLOCATE &&
+                  (req.t == Type.FromPrefixRequest) {
+
+
+          }
           /*
            * Modify prefix attributes
            *
