@@ -6,6 +6,7 @@
 """
 
 import datetime
+import logging
 import time
 import pytz
 from functools import wraps
@@ -30,6 +31,7 @@ def setup():
     handler.register_instance(NipapXMLRPC())
 
     return app
+
 
 
 def _mangle_prefix(res):
@@ -77,10 +79,11 @@ def requires_auth(f):
         if len(args) == 1:
             nipap_args = args[0]
         else:
-            #logger.info("Malformed request: got %d parameters" % len(args))
+            self.logger.debug("Malformed request: got %d parameters" % len(args))
             raise Fault(1000, ("NIPAP API functions take exactly 1 argument (%d given)") % len(args))
 
         if type(nipap_args) != dict:
+            self.logger.debug("Function argument is not struct")
             raise Fault(1000, ("Function argument must be XML-RPC struct/Python dict (Python %s given)." %
                 type(nipap_args).__name__ ))
 
@@ -90,12 +93,14 @@ def requires_auth(f):
             if type(auth_options) is not dict:
                 raise ValueError()
         except (KeyError, ValueError):
+            self.logger.debug("Missing/invalid authentication options in request.")
             raise Fault(1000, ("Missing/invalid authentication options in request."))
 
         # fetch authoritative source
         try:
             auth_source = auth_options['authoritative_source']
         except KeyError:
+            self.logger.debug("Missing authoritative source in auth options.")
             raise Fault(1000, ("Missing authoritative source in auth options."))
 
         if not request.authorization:
@@ -108,6 +113,7 @@ def requires_auth(f):
 
         # authenticated?
         if not auth.authenticate():
+            self.logger.debug("Incorrect username or password.")
             raise Fault(1510, ("Incorrect username or password."))
 
         # Replace auth options in API call arguments with auth object
@@ -125,6 +131,7 @@ class NipapXMLRPC:
     """
     def __init__(self):
         self.nip = Nipap()
+        self.logger = logging.getLogger()
 
 
 
@@ -201,6 +208,7 @@ class NipapXMLRPC:
 
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -219,6 +227,7 @@ class NipapXMLRPC:
         try:
             self.nip.remove_vrf(args.get('auth'), args.get('vrf'))
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -249,6 +258,7 @@ class NipapXMLRPC:
 
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -279,6 +289,7 @@ class NipapXMLRPC:
 
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -313,6 +324,7 @@ class NipapXMLRPC:
 
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -349,6 +361,7 @@ class NipapXMLRPC:
 
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -385,6 +398,7 @@ class NipapXMLRPC:
 
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -403,6 +417,7 @@ class NipapXMLRPC:
         try:
             self.nip.remove_pool(args.get('auth'), args.get('pool'))
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -437,6 +452,7 @@ class NipapXMLRPC:
 
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -471,6 +487,7 @@ class NipapXMLRPC:
 
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -509,6 +526,7 @@ class NipapXMLRPC:
 
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -549,6 +567,7 @@ class NipapXMLRPC:
 
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -578,6 +597,7 @@ class NipapXMLRPC:
             res = _mangle_prefix(res)
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -605,6 +625,7 @@ class NipapXMLRPC:
                 prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -629,6 +650,7 @@ class NipapXMLRPC:
                 prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -647,6 +669,7 @@ class NipapXMLRPC:
         try:
             return self.nip.remove_prefix(args.get('auth'), args.get('prefix'), args.get('recursive'))
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -678,6 +701,7 @@ class NipapXMLRPC:
                 prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -715,6 +739,7 @@ class NipapXMLRPC:
                 prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -735,6 +760,7 @@ class NipapXMLRPC:
         try:
             return self.nip.find_free_prefix(args.get('auth'), args.get('vrf'), args.get('args'))
         except NipapError as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -759,6 +785,7 @@ class NipapXMLRPC:
         try:
             return self.nip.add_asn(args.get('auth'), args.get('attr'))
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -778,6 +805,7 @@ class NipapXMLRPC:
         try:
             self.nip.remove_asn(args.get('auth'), args.get('asn'))
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -799,6 +827,7 @@ class NipapXMLRPC:
         try:
             return self.nip.list_asn(args.get('auth'), args.get('asn') or {})
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -820,6 +849,7 @@ class NipapXMLRPC:
         try:
             return self.nip.edit_asn(args.get('auth'), args.get('asn'), args.get('attr'))
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -845,6 +875,7 @@ class NipapXMLRPC:
         try:
             return self.nip.search_asn(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
@@ -872,6 +903,7 @@ class NipapXMLRPC:
                 args.get('query_string'), args.get('search_options') or {},
                 args.get('extra_query'))
         except (AuthError, NipapError) as exc:
+            self.logger.debug(str(exc))
             raise Fault(exc.error_code, str(exc))
 
 
