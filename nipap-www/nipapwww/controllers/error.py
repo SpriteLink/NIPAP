@@ -42,13 +42,13 @@ class ErrorController(BaseController):
         </div>
         <div class="content_outer">
             <div class="content_inner">
-                <p>%s</p>
+                <p>{0!s}</p>
                 <p>Relevant information has been forwarded to the system administrator.</p>
             </div>
 			<div style="height: 500px;"> &nbsp; </div>
         </div>
     </body>
-</html>""" % content
+</html>""".format(content)
 
         # If the error was raised from the XhrController, return HTML-less response
         if type(request.environ['pylons.original_request'].environ.get('pylons.controller')) == XhrController:
@@ -69,5 +69,5 @@ class ErrorController(BaseController):
         at the specified path
         """
         request = self._py_object.request
-        request.environ['PATH_INFO'] = '/%s' % path
+        request.environ['PATH_INFO'] = '/{0!s}'.format(path)
         return PkgResourcesParser('pylons', 'pylons')(request.environ, self.start_response)

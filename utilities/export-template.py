@@ -81,14 +81,14 @@ if __name__ == '__main__':
     parser.add_argument('--query', default='', help="query for filtering prefixes")
     args = parser.parse_args()
 
-    auth_uri = "%s:%s@" % (args.username or cfg.get('global', 'username'),
+    auth_uri = "{0!s}:{1!s}@".format(args.username or cfg.get('global', 'username'),
             args.password or cfg.get('global', 'password'))
 
-    xmlrpc_uri = "http://%(auth_uri)s%(host)s:%(port)s" % {
+    xmlrpc_uri = "http://{auth_uri!s}{host!s}:{port!s}".format(**{
             'auth_uri'  : auth_uri,
             'host'      : args.host or cfg.get('global', 'hostname'),
             'port'      : args.port or cfg.get('global', 'port')
-            }
+            })
     pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
     pynipap.xmlrpc_uri = xmlrpc_uri
 

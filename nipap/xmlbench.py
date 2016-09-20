@@ -46,7 +46,7 @@ class Request():
         self.__returned()
         self.finished = True
         self.error = error
-        self.error_file.write("Error: %s" % error)
+        self.error_file.write("Error: {0!s}".format(error))
         self.callback(self,error)
 
 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     cred = ''
     if args.user and args.password:
         cred = args.user + ':' + args.password + '@'
-    server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': args.port, 'cred': cred }
+    server_url = 'http://{cred!s}127.0.0.1:{port:d}/XMLRPC'.format(**{ 'port': args.port, 'cred': cred })
 
     ad = { 'authoritative_source': 'nipap' }
     args = [{ 'auth': ad, 'message': 'test', 'sleep': 0.1 }]

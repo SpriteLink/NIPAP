@@ -323,7 +323,7 @@ class NipapTest(unittest.TestCase):
         pool_id = self.nipap.add_pool(self.auth, schema, attrs)
         pool = self.nipap.list_pool(self.auth, schema, { 'id': pool_id })
         for a in attrs:
-            self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: %s  %s!=%s' % (a, attrs[a], pool[0][a]))
+            self.assertEqual(pool[0][a], attrs[a], 'Added object differ from listed on attribute: {0!s}  {1!s}!={2!s}'.format(a, attrs[a], pool[0][a]))
 
 
 
@@ -514,13 +514,13 @@ class NipapTest(unittest.TestCase):
         query_str = ""
         for key, val in query_keys.items():
             if val == "description":
-                query_str += "\"%s\" " % key
+                query_str += "\"{0!s}\" ".format(key)
             else:
-                query_str += "%s " % key
+                query_str += "{0!s} ".format(key)
 
         res = self.nipap.smart_search_prefix(self.auth, schema, query_str)
         for interp in res['interpretation']:
-            self.assertEqual(interp['string'] in query_keys, True, "Function returned unknown interpreted string %s" % interp['string'])
+            self.assertEqual(interp['string'] in query_keys, True, "Function returned unknown interpreted string {0!s}".format(interp['string']))
 
         prefix_attrs = {
                 'authoritative_source': 'nipap-test',

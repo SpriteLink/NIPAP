@@ -179,7 +179,7 @@ class SmartParser:
         success = True
         dse = None
         for part, lookahead in izip_longest(ast, ast[1:]):
-            self._logger.debug("part: %s %s" % (part, part.getName()))
+            self._logger.debug("part: {0!s} {1!s}".format(part, part.getName()))
 
             # handle operators joining together expressions
             if part.getName() == 'boolean':
@@ -206,16 +206,16 @@ class SmartParser:
             elif part.getName() in ('ipv6_prefix', 'ipv6_address', 'word', 'tag', 'vrf_rt', 'quoted_string'):
                 # dict sql expression
                 dse = self._string_to_dictsql(part)
-                self._logger.debug('string part: %s  => %s' % (part, dse))
+                self._logger.debug('string part: {0!s}  => {1!s}'.format(part, dse))
             else:
-                raise ParserError("Unhandled part in AST: %s %s" % (part,
+                raise ParserError("Unhandled part in AST: {0!s} {1!s}".format(part,
                                                                     part.getName()))
 
             if dss['val1'] is None:
-                self._logger.debug('val1 not set, using dse: %s' % unicode(dse))
+                self._logger.debug('val1 not set, using dse: {0!s}'.format(unicode(dse)))
                 dss['val1'] = dse
             else:
-                self._logger.debug("val1 is set, operator is '%s', val2 = dst: %s" % (dss['operator'], unicode(dse)))
+                self._logger.debug("val1 is set, operator is '{0!s}', val2 = dst: {1!s}".format(dss['operator'], unicode(dse)))
                 dss['val2'] = dse
 
             if lookahead is not None:

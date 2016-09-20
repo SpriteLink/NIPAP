@@ -109,7 +109,7 @@ if __name__ == '__main__':
         curs_pg_old = con_pg_old.cursor(cursor_factory=psycopg2.extras.DictCursor)
         curs_pg_old2 = con_pg_old.cursor(cursor_factory=psycopg2.extras.DictCursor)
     except Exception, e:
-        print 'pgsql: %s' % e
+        print 'pgsql: {0!s}'.format(e)
         sys.exit(1)
 
     _register_inet(conn_or_curs = con_pg_old)
@@ -125,7 +125,7 @@ if __name__ == '__main__':
         curs_pg_new = con_pg_new.cursor(cursor_factory=psycopg2.extras.DictCursor)
         curs_pg_new2 = con_pg_new.cursor(cursor_factory=psycopg2.extras.DictCursor)
     except Exception, e:
-        print 'pgsql: %s' % e
+        print 'pgsql: {0!s}'.format(e)
         sys.exit(1)
 
     _register_inet(conn_or_curs = con_pg_new)
@@ -152,7 +152,7 @@ if __name__ == '__main__':
         try:
             p.save()
         except NipapError, e:
-            print "ERR: %s" % str(e)
+            print "ERR: {0!s}".format(str(e))
         pools[r['id']] = p
 
         # remove new audit log entries
@@ -184,7 +184,7 @@ if __name__ == '__main__':
             try:
                 v.save()
             except NipapError, e:
-                print "ERR: %s" % str(e)
+                print "ERR: {0!s}".format(str(e))
             vrfs[v.rt] = v
             s_vrfs[r['id']] = v
     print "done"
@@ -197,7 +197,7 @@ if __name__ == '__main__':
     for r in curs_pg_old:
         if re.match('^\d+:\d+$', r['vrf'].strip()):
 
-            print "Found VRF %s" % r['vrf']
+            print "Found VRF {0!s}".format(r['vrf'])
             
             # skip if VRF already added
             if r['vrf'].strip() in vrfs:
@@ -209,12 +209,12 @@ if __name__ == '__main__':
             try:
                 v.save()
             except NipapError, e:
-                print "ERR: %s" % str(e)
+                print "ERR: {0!s}".format(str(e))
             vrfs[v.rt] = v
 
         elif re.match('^\d+$', r['vrf'].strip()):
 
-            print "Found VRF %s" % r['vrf']
+            print "Found VRF {0!s}".format(r['vrf'])
 
             # skip if VRF already added
             if '1257:' + r['vrf'].strip() in vrfs:
@@ -228,12 +228,12 @@ if __name__ == '__main__':
             try:
                 v.save()
             except NipapError, e:
-                print "ERR: %s" % str(e)
+                print "ERR: {0!s}".format(str(e))
             vrfs[v.rt] = v
             vrfs[r['vrf'].strip()] = v
 
         else:
-            print "Found invalid VRF %s" % str(r['vrf'])
+            print "Found invalid VRF {0!s}".format(str(r['vrf']))
 
     print "done"
 
@@ -271,12 +271,12 @@ if __name__ == '__main__':
         try:
             p.save()
         except NipapError, e:
-            print "ERR: %s" % str(e),
-            print "Prefix: pref: %s old_id: %d" % (p.prefix, r['id'])
+            print "ERR: {0!s}".format(str(e)),
+            print "Prefix: pref: {0!s} old_id: {1:d}".format(p.prefix, r['id'])
 
         i += 1
         if i % 500 == 0:
-            print "%.1f pps" % (500/(time.time() - t))
+            print "{0:.1f} pps".format((500/(time.time() - t)))
             t = time.time()
 
         # update audit log
@@ -299,7 +299,7 @@ if __name__ == '__main__':
                     pool_name = pools[r['pool']].name
                     pool_id = pools[r['pool']].id
                 else:
-                    print "Pool %s not found" % str(ar['pool'])
+                    print "Pool {0!s} not found".format(str(ar['pool']))
  
             # figure out VRF stuff
             vrf_id = 0

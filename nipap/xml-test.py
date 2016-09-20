@@ -18,7 +18,7 @@ cred = ''
 if args.user and args.password:
 	cred = args.user + ':' + args.password + '@'
 
-server_url = 'http://%(cred)s127.0.0.1:%(port)d/XMLRPC' % { 'port': args.port, 'cred': cred }
+server_url = 'http://{cred!s}127.0.0.1:{port:d}/XMLRPC'.format(**{ 'port': args.port, 'cred': cred })
 server = xmlrpclib.Server(server_url, allow_none=1);
 
 ad = { 'authoritative_source': 'nipap' }

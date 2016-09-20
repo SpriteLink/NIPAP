@@ -498,9 +498,9 @@ class VRF(Pynipap):
         # cached?
         if CACHE:
             if id in _cache['VRF']:
-                log.debug('cache hit for VRF %d' % id)
+                log.debug('cache hit for VRF {0:d}'.format(id))
                 return _cache['VRF'][id]
-            log.debug('cache miss for VRF %d' % id)
+            log.debug('cache miss for VRF {0:d}'.format(id))
 
         try:
             vrf = VRF.list({ 'id': id })[0]
@@ -630,7 +630,7 @@ class VRF(Pynipap):
                 raise _fault_to_exception(xml_fault)
 
             if len(vrfs) != 1:
-                raise NipapError('VRF edit returned %d entries, should be 1.' % len(vrfs))
+                raise NipapError('VRF edit returned {0:d} entries, should be 1.'.format(len(vrfs)))
             vrf = vrfs[0]
 
         # Refresh object data with attributes from add/edit operation
@@ -744,7 +744,7 @@ class Pool(Pynipap):
                 raise _fault_to_exception(xml_fault)
 
             if len(pools) != 1:
-                raise NipapError('Pool edit returned %d entries, should be 1.' % len(pools))
+                raise NipapError('Pool edit returned {0:d} entries, should be 1.'.format(len(pools)))
             pool = pools[0]
 
         # Refresh object data with attributes from add/edit operation
@@ -784,9 +784,9 @@ class Pool(Pynipap):
         # cached?
         if CACHE:
             if id in _cache['Pool']:
-                log.debug('cache hit for pool %d' % id)
+                log.debug('cache hit for pool {0:d}'.format(id))
                 return _cache['Pool'][id]
-            log.debug('cache miss for pool %d' % id)
+            log.debug('cache miss for pool {0:d}'.format(id))
 
         try:
             pool = Pool.list({'id': id})[0]
@@ -990,9 +990,9 @@ class Prefix(Pynipap):
         # cached?
         if CACHE:
             if id in _cache['Prefix']:
-                log.debug('cache hit for prefix %d' % id)
+                log.debug('cache hit for prefix {0:d}'.format(id))
                 return _cache['Prefix'][id]
-            log.debug('cache miss for prefix %d' % id)
+            log.debug('cache miss for prefix {0:d}'.format(id))
 
         try:
             prefix = Prefix.list({'id': id})[0]
@@ -1243,7 +1243,7 @@ class Prefix(Pynipap):
                 raise _fault_to_exception(xml_fault)
 
             if len(prefixes) != 1:
-                raise NipapError('Prefix edit returned %d entries, should be 1.' % len(prefixes))
+                raise NipapError('Prefix edit returned {0:d} entries, should be 1.'.format(len(prefixes)))
             prefix = prefixes[0]
 
         # Refresh object data with attributes from add/edit operation
