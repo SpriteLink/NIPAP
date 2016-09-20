@@ -135,25 +135,25 @@ public class ConfigCdbSub implements ApplicationComponent {
         if (maapi.exists(th, attributePath + "/" + nipap._customer_id_)) {
             ConfValue rCustomer_id = maapi.getElem(th, attributePath + "/" + nipap._customer_id_);
             p.customer_id = String.valueOf(rCustomer_id);
-        }else {
+        } else {
             p.customer_id = null;
         }
         if (maapi.exists(th, attributePath + "/" + nipap._description_)) {
             ConfValue rDescription = maapi.getElem(th, attributePath + "/" + nipap._description_);
             p.description = String.valueOf(rDescription);
-        }else {
+        } else {
             p.description = null;
         }
         if (maapi.exists(th, attributePath + "/" + nipap._node_)) {
             ConfValue rNode = maapi.getElem(th, attributePath + "/" + nipap._node_);
             p.node = String.valueOf(rNode);
-        }else {
+        } else {
             p.node = null;
         }
         if (maapi.exists(th, attributePath + "/" + nipap._order_id_)) {
             ConfValue rOrder_id = maapi.getElem(th, attributePath + "/" + nipap._customer_id_);
             p.order_id = String.valueOf(rOrder_id);
-        }else {
+        } else {
             p.order_id = null;
         }
 
@@ -207,22 +207,22 @@ public class ConfigCdbSub implements ApplicationComponent {
         ConfUInt32 prefixIdValue = new ConfUInt32(prefix.id);
         wsess.setElem(prefixIdValue, responsePath + "/" + nipap._prefix_id_);
 
-        if(prefix.customer_id != null){
+        if (prefix.customer_id != null){
             ConfBuf customerIdValue = new ConfBuf(prefix.customer_id);
             wsess.setElem(customerIdValue, responsePath + "/" + nipap._customer_id_);
         }
 
-        if(prefix.description != null){
+        if (prefix.description != null){
             ConfBuf descriptionValue = new ConfBuf(prefix.description);
             wsess.setElem(descriptionValue, responsePath + "/" + nipap._description_);
         }
 
-        if(prefix.node != null){
+        if (prefix.node != null){
             ConfBuf nodeValue = new ConfBuf(prefix.node);
             wsess.setElem(nodeValue, responsePath + "/" + nipap._node_);
         }
 
-        if(prefix.order_id != null){
+        if (prefix.order_id != null){
             ConfBuf orderIdValue = new ConfBuf(prefix.order_id);
             wsess.setElem(orderIdValue, responsePath + "/" + nipap._order_id_);
         }
@@ -388,7 +388,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                             poolSpec.put("name", poolName);
                             List poolRes = Pool.list(nipapCon, poolSpec);
 
-                            if(poolRes.size() < 1){
+                            if (poolRes.size() != 1){
                                 writeError(req.path.toString(), "Nipap pool not found");
                                 continue;
                             }
@@ -416,7 +416,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 
                         // Request prefix from prefix
                         String fromPrefixPath = req.path + "/" + nipap._from_prefix_request_;
-                        if(maapi.exists(th, fromPrefixPath)){
+                        if (maapi.exists(th, fromPrefixPath)){
                             MaapiCursor pfx_cur = maapi.newCursor(th, fromPrefixPath);
                             ConfKey pfx = null;
 
@@ -464,7 +464,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 
                         NavuNode request = KeyPath2NavuNode.getNode(req.path, context);
 
-                        for(NavuContainer prefix_key : request.list(nipap._from_prefix_request).elements()){
+                        for (NavuContainer prefix_key : request.list(nipap._from_prefix_request).elements()){
                             removePrefix(path +  prefix_key.leaf(nipap._name_).toKey() + "/" + nipap._response_);
                             removeResponse(path + prefix_key.leaf(nipap._name_).toKey() + "/" + nipap._response_);
                         }
@@ -576,17 +576,17 @@ public class ConfigCdbSub implements ApplicationComponent {
 
                     case MOP_CREATED: {
                         // new request
-                        if(kp[1].toString().equals("nipap:request") && 
-                            kp.length == 6){
-                        r.pool_key = (ConfKey)kp[2];
-                        r.request_key = (ConfKey)kp[0];
-                        r.t = Type.Request;
-                        r.op = Operation.ALLOCATE;
-                        reqs.add(r);
-                        //the request is new, we dont need to look at children
-                        return DiffIterateResultFlag.ITER_CONTINUE;
+                        if (kp[1].toString().equals("nipap:request") && 
+                                kp.length == 6){
+                            r.pool_key = (ConfKey)kp[2];
+                            r.request_key = (ConfKey)kp[0];
+                            r.t = Type.Request;
+                            r.op = Operation.ALLOCATE;
+                            reqs.add(r);
+                            //the request is new, we dont need to look at children
+                            return DiffIterateResultFlag.ITER_CONTINUE;
                         }
-                        else if(kp[1].toString().equals("nipap:from-prefix-request") && 
+                        else if (kp[1].toString().equals("nipap:from-prefix-request") && 
                                 kp.length == 8){
                             r.prefix_key = (ConfKey)kp[0];
                             r.request_key = (ConfKey)kp[2];
@@ -600,7 +600,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                           break;
                         }
                     case MOP_DELETED: {
-                        if(kp[1].toString().equals("nipap:request") && 
+                        if (kp[1].toString().equals("nipap:request") && 
                                 kp.length == 6){
                             r.pool_key = (ConfKey)kp[2];
                             r.request_key = (ConfKey)kp[0];
@@ -613,7 +613,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                         break;
                     }
                     case MOP_VALUE_SET: {
-                        if(kp[1].toString().equals("nipap:attributes") &&
+                        if (kp[1].toString().equals("nipap:attributes") &&
                                 kp.length == 8) {
                             r.pool_key = (ConfKey)kp[4];
                             r.request_key = (ConfKey)kp[2];
@@ -622,18 +622,18 @@ public class ConfigCdbSub implements ApplicationComponent {
 
                             boolean found = false;
 
-                            for( Request req : reqs){
+                            for (Request req : reqs){
 
-                                if(req.t.equals(Type.Request) &&
+                                if (req.t.equals(Type.Request) &&
                                         req.request_key.equals(r.request_key)) {
                                     found = true;
                                         }
                             }
-                            if(found == false){ 
+                            if (found == false){ 
                                 reqs.add(r);
                             }
 
-                        } else if(kp[3].toString().equals("nipap:from-prefix-request") &&
+                        } else if (kp[3].toString().equals("nipap:from-prefix-request") &&
                                 kp.length == 10){
 
                             r.pool_key = (ConfKey)kp[6];
@@ -644,14 +644,14 @@ public class ConfigCdbSub implements ApplicationComponent {
 
                             boolean found = false;
 
-                            for( Request req : reqs){
-                                if(req.t.equals(Type.FromPrefixRequest) && 
+                            for (Request req : reqs){
+                                if (req.t.equals(Type.FromPrefixRequest) && 
                                         req.request_key.equals(r.request_key) && 
                                         req.prefix_key.equals(r.prefix_key)) {
                                     found = true;
                                         }
                             }
-                            if(found == false){ 
+                            if (found == false){ 
                                 LOGGER.info("add " + r.prefix_key);
                                 reqs.add(r);
                             }
