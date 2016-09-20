@@ -81,8 +81,8 @@ def requires_auth(f):
             raise Fault(1000, ("NIPAP API functions take exactly 1 argument (%d given)") % len(args))
 
         if type(nipap_args) != dict:
-            raise Fault(1000, ("Function argument must be XML-RPC struct/Python dict (Python %s given)." %
-                type(nipap_args).__name__ ))
+            raise Fault(1000, ("Function argument must be XML-RPC struct/Python dict (Python {0!s} given).".format(
+                type(nipap_args).__name__) ))
 
         # fetch auth options
         try:

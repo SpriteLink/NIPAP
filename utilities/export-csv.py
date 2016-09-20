@@ -62,13 +62,13 @@ if __name__ == '__main__':
 
     auth_uri = ''
     if args.username:
-        auth_uri = "%s:%s@" % (args.username, args.password)
+        auth_uri = "{0!s}:{1!s}@".format(args.username, args.password)
 
-    xmlrpc_uri = "http://%(auth_uri)s%(host)s:%(port)s" % {
+    xmlrpc_uri = "http://{auth_uri!s}{host!s}:{port!s}".format(**{
             'auth_uri'  : auth_uri,
             'host'      : args.host,
             'port'      : args.port
-            }
+            })
 
     wr = Export(xmlrpc_uri)
     wr.write(args.file, args.query)

@@ -59,7 +59,7 @@ class bonk:
                         for o3 in xrange(os3, 255):
                             t2 = time.time()
                             for o4 in xrange(os4, 255):
-                                prefix = "%s.%s.%s.%s" % (o1, o2, o3, o4)
+                                prefix = "{0!s}.{1!s}.{2!s}.{3!s}".format(o1, o2, o3, o4)
                                 self.n.list_prefix({ 'name': 'test-schema'}, { 'prefix': prefix })
                                 i += 1
                                 if i >= count:
@@ -98,7 +98,7 @@ class bonk:
                         for o3 in xrange(os3, 255):
                             t2 = time.time()
                             for o4 in xrange(os4, 255):
-                                prefix = "%s.%s.%s.%s" % (o1, o2, o3, o4)
+                                prefix = "{0!s}.{1!s}.{2!s}.{3!s}".format(o1, o2, o3, o4)
                                 self.n.add_prefix({'name': 'test-schema' }, { 'prefix': prefix, 'description': 'test' })
                                 i += 1
                                 if i >= count:

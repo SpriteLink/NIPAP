@@ -71,7 +71,7 @@ def setup_connection():
         con_params['password'] = getpass.getpass()
 
     # build XML-RPC URI
-    pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % con_params
+    pynipap.xmlrpc_uri = "http://{username!s}:{password!s}@{hostname!s}:{port!s}".format(**con_params)
 
     ao = pynipap.AuthOptions({
         'authoritative_source': 'nipap',
@@ -82,7 +82,7 @@ def setup_connection():
 
 
 def vrf_format(vrf):
-    return "VRF '%s' [RT: %s]" % (vrf.name, vrf.rt or '-')
+    return "VRF '{0!s}' [RT: {1!s}]".format(vrf.name, vrf.rt or '-')
 
 
 def get_pool(arg = None, opts = None, abort = False):
@@ -97,7 +97,7 @@ def get_pool(arg = None, opts = None, abort = False):
         pool = Pool.list({ 'name': arg })[0]
     except IndexError:
         if abort:
-            print("Pool '%s' not found." % str(arg), file=sys.stderr)
+            print("Pool '{0!s}' not found.".format(str(arg)), file=sys.stderr)
             sys.exit(1)
         else:
             pool = None
@@ -146,7 +146,7 @@ def get_vrf(arg = None, default_var = 'default_vrf_rt', abort = False):
                 })['result'][0]
         except (KeyError, IndexError):
             if abort:
-                print("VRF with [RT: %s] not found." % str(vrf_rt), file=sys.stderr)
+                print("VRF with [RT: {0!s}] not found.".format(str(vrf_rt)), file=sys.stderr)
                 sys.exit(1)
             else:
                 vrf = False
@@ -189,35 +189,35 @@ def _parse_interp_pool(query, indent=-5, pandop=False):
     if interp.get('error') is True and interp['operator'] is None:
 
         if interp['error_message'] == 'unclosed quote':
-            text = "%s: %s, please close quote!" % (interp['string'], interp['error_message'])
+            text = "{0!s}: {1!s}, please close quote!".format(interp['string'], interp['error_message'])
             text2 = "This is not a proper search term as it contains an uneven amount of quotes."
 
         elif interp['error_message'] == 'unclosed parentheses':
-            text = "%s: %s, please close parentheses!" % (interp['string'], interp['error_message'])
+            text = "{0!s}: {1!s}, please close parentheses!".format(interp['string'], interp['error_message'])
             text2 = "This is not a proper search term as it contains an uneven amount of parentheses."
 
     elif interp['operator'] in ['and', 'or']:
         andop = True
 
     elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
-        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'][1:])
-        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string'][1:]
+        text = "{0!s}: {1!s} must contain {2!s}".format(interp['string'], interp['interpretation'], interp['string'][1:])
+        text2 = "The tag(s) or inherited tag(s) must contain {0!s}".format(interp['string'][1:])
 
     else:
-        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+        text = "{0!s}: {1!s} matching {2!s}".format(interp['string'], interp['interpretation'], interp['string'])
 
     # "Minor" error messages, string could be parsed but contain errors
     if interp.get('error') is True and interp['operator'] is not None: # .get() for backwards compatibiliy
         if interp['error_message'] == 'invalid value':
             text += ": invalid value!"
-            text2 = "The value provided is not valid for the attribute '%s'." % interp['attribute']
+            text2 = "The value provided is not valid for the attribute '{0!s}'.".format(interp['attribute'])
 
         elif interp['error_message'] == 'unknown attribute':
-            text += ": unknown attribute '%s'!" % interp['attribute']
-            text2 = "There is no pool attribute '%s'." % interp['attribute']
+            text += ": unknown attribute '{0!s}'!".format(interp['attribute'])
+            text2 = "There is no pool attribute '{0!s}'.".format(interp['attribute'])
 
         else:
-            text += ": %s, invalid query" % interp['error_message']
+            text += ": {0!s}, invalid query".format(interp['error_message'])
             text2 = "This is not a proper search query."
 
     if text:
@@ -227,9 +227,9 @@ def _parse_interp_pool(query, indent=-5, pandop=False):
                 a = ' `-- '
             print("{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text))
         else:
-            print("%s       `-- %s" % (' '*indent, text))
+            print("{0!s}       `-- {1!s}".format(' '*indent, text))
     if text2:
-        print("%s   %s" % (' '*indent, text2))
+        print("{0!s}   {1!s}".format(' '*indent, text2))
     if type(query['val1']) is dict:
         _parse_interp_pool(query['val1'], indent+6, andop)
     if type(query['val2']) is dict:
@@ -265,14 +265,14 @@ def list_pool(arg, opts, shell_opts):
                 _parse_interp_pool(res['interpretation'])
 
             if res['error']:
-                print("Query failed: %s" % res['error_message'])
+                print("Query failed: {0!s}".format(res['error_message']))
                 return
 
             if len(res['result']) == 0:
                 print("No matching pools found")
                 return
 
-            print("%-19s %-2s %-39s %-13s  %-8s %s" % (
+            print("{0:<19!s} {1:<2!s} {2:<39!s} {3:<13!s}  {4:<8!s} {5!s}".format(
                 "Name", "#", "Description", "Default type", "4 / 6", "Implied VRF"
                 ))
             print("------------------------------------------------------------------------------------------------")
@@ -291,9 +291,9 @@ def list_pool(arg, opts, shell_opts):
 
             tags = '-'
             if len(p.tags) > 0:
-                tags = "#%d" % (len(p.tags))
+                tags = "#{0:d}".format((len(p.tags)))
 
-            print("%-19s %-2s %-39s %-13s %-2s / %-3s  [RT: %s] %s" % (
+            print("{0:<19!s} {1:<2!s} {2:<39!s} {3:<13!s} {4:<2!s} / {5:<3!s}  [RT: {6!s}] {7!s}".format(
                 p.name, tags, desc, p.default_type,
                 str(p.ipv4_default_prefix_length or '-'),
                 str(p.ipv6_default_prefix_length or '-'),
@@ -316,35 +316,35 @@ def _parse_interp_vrf(query, indent=-5, pandop=False):
     if interp.get('error') is True and interp['operator'] is None:
 
         if interp['error_message'] == 'unclosed quote':
-            text = "%s: %s, please close quote!" % (interp['string'], interp['error_message'])
+            text = "{0!s}: {1!s}, please close quote!".format(interp['string'], interp['error_message'])
             text2 = "This is not a proper search term as it contains an uneven amount of quotes."
 
         elif interp['error_message'] == 'unclosed parentheses':
-            text = "%s: %s, please close parentheses!" % (interp['string'], interp['error_message'])
+            text = "{0!s}: {1!s}, please close parentheses!".format(interp['string'], interp['error_message'])
             text2 = "This is not a proper search term as it contains an uneven amount of parentheses."
 
     elif interp['operator'] in ['and', 'or']:
         andop = True
 
     elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
-        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'][1:])
-        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string'][1:]
+        text = "{0!s}: {1!s} must contain {2!s}".format(interp['string'], interp['interpretation'], interp['string'][1:])
+        text2 = "The tag(s) or inherited tag(s) must contain {0!s}".format(interp['string'][1:])
 
     else:
-        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+        text = "{0!s}: {1!s} matching {2!s}".format(interp['string'], interp['interpretation'], interp['string'])
 
     # "Minor" error messages, string could be parsed but contain errors
     if interp.get('error') is True and interp['operator'] is not None: # .get() for backwards compatibiliy
         if interp['error_message'] == 'invalid value':
             text += ": invalid value!"
-            text2 = "The value provided is not valid for the attribute '%s'." % interp['attribute']
+            text2 = "The value provided is not valid for the attribute '{0!s}'.".format(interp['attribute'])
 
         elif interp['error_message'] == 'unknown attribute':
-            text += ": unknown attribute '%s'!" % interp['attribute']
-            text2 = "There is no pool attribute '%s'." % interp['attribute']
+            text += ": unknown attribute '{0!s}'!".format(interp['attribute'])
+            text2 = "There is no pool attribute '{0!s}'.".format(interp['attribute'])
 
         else:
-            text += ": %s, invalid query" % interp['error_message']
+            text += ": {0!s}, invalid query".format(interp['error_message'])
             text2 = "This is not a proper search query."
 
     if text:
@@ -354,9 +354,9 @@ def _parse_interp_vrf(query, indent=-5, pandop=False):
                 a = ' `-- '
             print("{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text))
         else:
-            print("%s       `-- %s" % (' '*indent, text))
+            print("{0!s}       `-- {1!s}".format(' '*indent, text))
     if text2:
-        print("%s   %s" % (' '*indent, text2))
+        print("{0!s}   {1!s}".format(' '*indent, text2))
     if type(query['val1']) is dict:
         _parse_interp_vrf(query['val1'], indent+6, andop)
     if type(query['val2']) is dict:
@@ -380,25 +380,25 @@ def list_vrf(arg, opts, shell_opts):
                 _parse_interp_vrf(res['interpretation'])
 
             if res['error']:
-                print("Query failed: %s" % res['error_message'])
+                print("Query failed: {0!s}".format(res['error_message']))
                 return
 
             if len(res['result']) == 0:
-                print("No VRFs matching '%s' found." % search_string)
+                print("No VRFs matching '{0!s}' found.".format(search_string))
                 return
 
-            print("%-16s %-22s %-2s %-40s" % ("VRF RT", "Name", "#", "Description"))
+            print("{0:<16!s} {1:<22!s} {2:<2!s} {3:<40!s}".format("VRF RT", "Name", "#", "Description"))
             print("--------------------------------------------------------------------------------")
 
         for v in res['result']:
             tags = '-'
             if len(v.tags) > 0:
-                tags = '#%d' % len(v.tags)
+                tags = '#{0:d}'.format(len(v.tags))
             if len(str(v.description)) > 100:
                 desc = v.description[0:97] + "..."
             else:
                 desc = v.description
-            print("%-16s %-22s %-2s %-40s" % (v.rt or '-', v.name, tags, desc))
+            print("{0:<16!s} {1:<22!s} {2:<2!s} {3:<40!s}".format(v.rt or '-', v.name, tags, desc))
 
         if len(res['result']) < limit:
             break
@@ -417,67 +417,67 @@ def _parse_interp_prefix(query, indent=-5, pandop=False):
     if interp.get('error') is True and interp['operator'] is None:
 
         if interp['error_message'] == 'unclosed quote':
-            text = "%s: %s, please close quote!" % (interp['string'], interp['error_message'])
+            text = "{0!s}: {1!s}, please close quote!".format(interp['string'], interp['error_message'])
             text2 = "This is not a proper search term as it contains an uneven amount of quotes."
 
         elif interp['error_message'] == 'unclosed parentheses':
-            text = "%s: %s, please close parentheses!" % (interp['string'], interp['error_message'])
+            text = "{0!s}: {1!s}, please close parentheses!".format(interp['string'], interp['error_message'])
             text2 = "This is not a proper search term as it contains an uneven amount of parentheses."
 
     elif interp['operator'] in ['and', 'or']:
         andop = True
 
     elif interp['attribute'] == 'tag' and interp['operator'] == 'equals_any':
-        text = "%s: %s must contain %s" % (interp['string'], interp['interpretation'], interp['string'][1:])
-        text2 = "The tag(s) or inherited tag(s) must contain %s" % interp['string'][1:]
+        text = "{0!s}: {1!s} must contain {2!s}".format(interp['string'], interp['interpretation'], interp['string'][1:])
+        text2 = "The tag(s) or inherited tag(s) must contain {0!s}".format(interp['string'][1:])
 
     elif interp['attribute'] == 'prefix' and interp['operator'] == 'contained_within_equals':
         if 'strict_prefix' in interp and 'expanded' in interp:
-            text = "%s: %s within %s" % (interp['string'],
+            text = "{0!s}: {1!s} within {2!s}".format(interp['string'],
                     interp['interpretation'],
                     interp['strict_prefix'])
-            text2 = "Prefix must be contained within %s, which is the base prefix of %s (automatically expanded from %s)." % (interp['strict_prefix'], interp['expanded'], interp['string'])
+            text2 = "Prefix must be contained within {0!s}, which is the base prefix of {1!s} (automatically expanded from {2!s}).".format(interp['strict_prefix'], interp['expanded'], interp['string'])
 
         elif 'strict_prefix' in interp:
-            text = "%s: %s within %s" % (interp['string'],
+            text = "{0!s}: {1!s} within {2!s}".format(interp['string'],
                     interp['interpretation'],
                     interp['strict_prefix'])
-            text2 = "Prefix must be contained within %s, which is the base prefix of %s." % (interp['strict_prefix'], interp['string'])
+            text2 = "Prefix must be contained within {0!s}, which is the base prefix of {1!s}.".format(interp['strict_prefix'], interp['string'])
 
         elif 'expanded' in interp:
-            text = "%s: %s within %s" % (interp['string'],
+            text = "{0!s}: {1!s} within {2!s}".format(interp['string'],
                     interp['interpretation'],
                     interp['expanded'])
-            text2 = "Prefix must be contained within %s (automatically expanded from %s)." % (interp['expanded'], interp['string'])
+            text2 = "Prefix must be contained within {0!s} (automatically expanded from {1!s}).".format(interp['expanded'], interp['string'])
         else:
-            text = "%s: %s within %s" % (interp['string'],
+            text = "{0!s}: {1!s} within {2!s}".format(interp['string'],
                     interp['interpretation'],
                     interp['string'])
-            text2 = "Prefix must be contained within %s." % (interp['string'])
+            text2 = "Prefix must be contained within {0!s}.".format((interp['string']))
 
     elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
-        text = "%s: Prefix that contains %s" % (interp['string'],
+        text = "{0!s}: Prefix that contains {1!s}".format(interp['string'],
                 interp['string'])
 
     elif interp['attribute'] == 'prefix' and interp['operator'] == 'contains_equals':
-        text = "%s: %s equal to %s" % (interp['string'],
+        text = "{0!s}: {1!s} equal to {2!s}".format(interp['string'],
                 interp['interpretation'], interp['string'])
 
     else:
-        text = "%s: %s matching %s" % (interp['string'], interp['interpretation'], interp['string'])
+        text = "{0!s}: {1!s} matching {2!s}".format(interp['string'], interp['interpretation'], interp['string'])
 
     # "Minor" error messages, string could be parsed but contain errors
     if interp.get('error') is True and interp['operator'] is not None: # .get() for backwards compatibiliy
         if interp['error_message'] == 'invalid value':
             text += ": invalid value!"
-            text2 = "The value provided is not valid for the attribute '%s'." % interp['attribute']
+            text2 = "The value provided is not valid for the attribute '{0!s}'.".format(interp['attribute'])
 
         elif interp['error_message'] == 'unknown attribute':
-            text += ": unknown attribute '%s'!" % interp['attribute']
-            text2 = "There is no prefix attribute '%s'." % interp['attribute']
+            text += ": unknown attribute '{0!s}'!".format(interp['attribute'])
+            text2 = "There is no prefix attribute '{0!s}'.".format(interp['attribute'])
 
         else:
-            text += ": %s, invalid query" % interp['error_message']
+            text += ": {0!s}, invalid query".format(interp['error_message'])
             text2 = "This is not a proper search query."
 
     if text:
@@ -487,9 +487,9 @@ def _parse_interp_prefix(query, indent=-5, pandop=False):
                 a = ' `-- '
             print("{ind}{a}AND-- {t}".format(ind=' '*indent, a=a, t=text))
         else:
-            print("%s       `-- %s" % (' '*indent, text))
+            print("{0!s}       `-- {1!s}".format(' '*indent, text))
     if text2:
-        print("%s   %s" % (' '*indent, text2))
+        print("{0!s}   {1!s}".format(' '*indent, text2))
     if type(query['val1']) is dict:
         _parse_interp_prefix(query['val1'], indent+6, andop)
     if type(query['val2']) is dict:
@@ -516,7 +516,7 @@ def list_prefix(arg, opts, shell_opts):
             'val1': 'vrf_rt',
             'val2': v.rt
         }
-    print("Searching for prefixes in %s..." % vrf_text)
+    print("Searching for prefixes in {0!s}...".format(vrf_text))
 
     col_def = {
             'added': { 'title': 'Added' },
@@ -584,11 +584,11 @@ def list_prefix(arg, opts, shell_opts):
                 _parse_interp_prefix(res['interpretation'])
 
             if res['error']:
-                print("Query failed: %s" % res['error_message'])
+                print("Query failed: {0!s}".format(res['error_message']))
                 return
 
             if len(res['result']) == 0:
-                print("No addresses matching '%s' found." % search_string)
+                print("No addresses matching '{0!s}' found.".format(search_string))
                 return
 
             # guess column width by looking at the initial result set
@@ -615,7 +615,7 @@ def list_prefix(arg, opts, shell_opts):
             col_header_data = {}
             # build prefix formatting string
             for colname, col in [(k, col_def[k]) for k in columns]:
-                prefix_str += "{%s:<%d}  " % (colname, col['width'])
+                prefix_str += "{{{0!s}:<{1:d}}}  ".format(colname, col['width'])
                 col_header_data[colname] = col['title']
 
             column_header = prefix_str.format(**col_header_data)
@@ -634,7 +634,7 @@ def list_prefix(arg, opts, shell_opts):
                 # overwrite some columns due to special handling
                 col_data['tags'] = '-'
                 if len(p.tags) > 0:
-                    col_data['tags'] = '#%d' % len(p.tags)
+                    col_data['tags'] = '#{0:d}'.format(len(p.tags))
 
                 try: 
                     col_data['pool_name'] = p.pool.name
@@ -648,7 +648,7 @@ def list_prefix(arg, opts, shell_opts):
                 print(prefix_str.format(**col_data))
 
             except UnicodeEncodeError as e:
-                print("\nCrazy encoding for prefix %s\n" % p.prefix, file=sys.stderr)
+                print("\nCrazy encoding for prefix {0!s}\n".format(p.prefix), file=sys.stderr)
 
         if len(res['result']) < limit:
             break
@@ -712,7 +712,7 @@ def add_prefix(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
+            print("ERROR: Incorrect extra-attribute: {0!s}. Accepted form: 'key=value'\n".format(avp), file=sys.stderr)
             return
         p.avps[key] = value
 
@@ -799,7 +799,7 @@ def add_prefix(arg, opts, shell_opts):
             elif p.type == 'host':
                 pass
             else:
-                print("WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '%s' with type 'host' for new prefix." % p.type, file=sys.stderr)
+                print("WARNING: Parent prefix is of type 'assignment'. Automatically overriding specified type '{0!s}' with type 'host' for new prefix.".format(p.type), file=sys.stderr)
             p.type = 'host'
 
             # if it's a manually specified prefix
@@ -820,14 +820,14 @@ def add_prefix(arg, opts, shell_opts):
     try:
         p.save(args)
     except NipapError as exc:
-        print("Could not add prefix to NIPAP: %s" % str(exc), file=sys.stderr)
+        print("Could not add prefix to NIPAP: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
     if p.type == 'host':
-        print("Host %s added to %s: %s" % (p.display_prefix,
+        print("Host {0!s} added to {1!s}: {2!s}".format(p.display_prefix,
                 vrf_format(p.vrf), p.node or p.description))
     else:
-        print("Network %s added to %s: %s" % (p.display_prefix,
+        print("Network {0!s} added to {1!s}: {2!s}".format(p.display_prefix,
                 vrf_format(p.vrf), p.description))
 
     if opts.get('add-hosts') is not None:
@@ -856,7 +856,7 @@ def add_prefix_from_pool(arg, opts):
     if 'from-pool' in opts:
         res = Pool.list({ 'name': opts['from-pool'] })
         if len(res) == 0:
-            print("No pool named '%s' found." % opts['from-pool'], file=sys.stderr)
+            print("No pool named '{0!s}' found.".format(opts['from-pool']), file=sys.stderr)
             sys.exit(1)
 
         args['from-pool'] = res[0]
@@ -875,7 +875,7 @@ def add_prefix_from_pool(arg, opts):
             print("ERROR: 'prefix_length' can not be specified for 'dual-stack' assignment", file=sys.stderr)
             sys.exit(1)
     else:
-        print("ERROR: 'family' must be one of: %s" % " ".join(valid_families), file=sys.stderr)
+        print("ERROR: 'family' must be one of: {0!s}".format(" ".join(valid_families)), file=sys.stderr)
         sys.exit(1)
 
     if 'prefix_length' in opts:
@@ -894,14 +894,14 @@ def add_prefix_from_pool(arg, opts):
         # set type to default type of pool unless already set
         if p.type is None:
             if args['from-pool'].default_type is None:
-                print("ERROR: Type not specified and no default-type specified for pool: %s" % opts['from-pool'], file=sys.stderr)
+                print("ERROR: Type not specified and no default-type specified for pool: {0!s}".format(opts['from-pool']), file=sys.stderr)
             p.type = args['from-pool'].default_type
 
         for avp in opts.get('extra-attribute', []):
             try:
                 key, value = avp.split('=', 1)
             except ValueError:
-                print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
+                print("ERROR: Incorrect extra-attribute: {0!s}. Accepted form: 'key=value'\n".format(avp), file=sys.stderr)
                 return
             p.avps[key] = value
 
@@ -911,14 +911,14 @@ def add_prefix_from_pool(arg, opts):
         try:
             p.save(args)
         except NipapError as exc:
-            print("Could not add prefix to NIPAP: %s" % str(exc), file=sys.stderr)
+            print("Could not add prefix to NIPAP: {0!s}".format(str(exc)), file=sys.stderr)
             sys.exit(1)
 
         if p.type == 'host':
-            print("Host %s added to %s: %s" % (p.display_prefix,
+            print("Host {0!s} added to {1!s}: {2!s}".format(p.display_prefix,
                     vrf_format(p.vrf), p.node or p.description))
         else:
-            print("Network %s added to %s: %s" % (p.display_prefix,
+            print("Network {0!s} added to {1!s}: {2!s}".format(p.display_prefix,
                     vrf_format(p.vrf), p.description))
 
         if opts.get('add-hosts') is not None:
@@ -951,17 +951,17 @@ def add_vrf(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
+            print("ERROR: Incorrect extra-attribute: {0!s}. Accepted form: 'key=value'\n".format(avp), file=sys.stderr)
             return
         v.avps[key] = value
 
     try:
         v.save()
     except pynipap.NipapError as exc:
-        print("Could not add VRF to NIPAP: %s" % str(exc), file=sys.stderr)
+        print("Could not add VRF to NIPAP: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
-    print("Added %s" % (vrf_format(v)))
+    print("Added {0!s}".format((vrf_format(v))))
 
 
 
@@ -988,17 +988,17 @@ def add_pool(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
+            print("ERROR: Incorrect extra-attribute: {0!s}. Accepted form: 'key=value'\n".format(avp), file=sys.stderr)
             return
         p.avps[key] = value
 
     try:
         p.save()
     except pynipap.NipapError as exc:
-        print("Could not add pool to NIPAP: %s" % str(exc), file=sys.stderr)
+        print("Could not add pool to NIPAP: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
-    print("Pool '%s' created." % (p.name))
+    print("Pool '{0!s}' created.".format((p.name)))
 
 
 
@@ -1024,23 +1024,23 @@ def view_vrf(arg, opts, shell_opts):
             'val2': arg }
             )['result'][0]
     except (KeyError, IndexError):
-        print("VRF with [RT: %s] not found." % str(arg), file=sys.stderr)
+        print("VRF with [RT: {0!s}] not found.".format(str(arg)), file=sys.stderr)
         sys.exit(1)
 
     print("-- VRF")
-    print("  %-26s : %d" % ("ID", v.id))
-    print("  %-26s : %s" % ("RT", v.rt))
-    print("  %-26s : %s" % ("Name", v.name))
-    print("  %-26s : %s" % ("Description", v.description))
+    print("  {0:<26!s} : {1:d}".format("ID", v.id))
+    print("  {0:<26!s} : {1!s}".format("RT", v.rt))
+    print("  {0:<26!s} : {1!s}".format("Name", v.name))
+    print("  {0:<26!s} : {1!s}".format("Description", v.description))
 
     print("-- Extra Attributes")
     if v.avps is not None:
         for key in sorted(v.avps, key=lambda s: s.lower()):
-            print("  %-26s : %s" % (key, v.avps[key]))
+            print("  {0:<26!s} : {1!s}".format(key, v.avps[key]))
 
     print("-- Tags")
     for tag_name in sorted(v.tags, key=lambda s: s.lower()):
-        print("  %s" % tag_name)
+        print("  {0!s}".format(tag_name))
     # statistics
     if v.total_addresses_v4 == 0:
         used_percent_v4 = 0
@@ -1051,12 +1051,12 @@ def view_vrf(arg, opts, shell_opts):
     else:
         used_percent_v6 = (float(v.used_addresses_v6)/v.total_addresses_v6)*100
     print("-- Statistics")
-    print("  %-26s : %s" % ("IPv4 prefixes", v.num_prefixes_v4))
-    print("  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
+    print("  {0:<26!s} : {1!s}".format("IPv4 prefixes", v.num_prefixes_v4))
+    print("  {0:<26!s} : {1:.0f} / {2:.0f} ({3:.2f}% of {4:.0f})".format("IPv4 addresses Used / Free",
             v.used_addresses_v4, v.free_addresses_v4, used_percent_v4,
             v.total_addresses_v4))
-    print("  %-26s : %s" % ("IPv6 prefixes", v.num_prefixes_v6))
-    print("  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
+    print("  {0:<26!s} : {1!s}".format("IPv6 prefixes", v.num_prefixes_v6))
+    print("  {0:<26!s} : {1:.4e} / {2:.4e} ({3:.2f}% of {4:.4e})".format("IPv6 addresses Used / Free",
             v.used_addresses_v6, v.free_addresses_v6, used_percent_v6,
             v.total_addresses_v6))
 
@@ -1069,7 +1069,7 @@ def view_pool(arg, opts, shell_opts):
     res = Pool.list({ 'name': arg })
 
     if len(res) == 0:
-        print("No pool with name '%s' found." % arg)
+        print("No pool with name '{0!s}' found.".format(arg))
         return
 
     p = res[0]
@@ -1081,21 +1081,21 @@ def view_pool(arg, opts, shell_opts):
         vrf_name = p.vrf.name
 
     print("-- Pool ")
-    print("  %-26s : %d" % ("ID", p.id))
-    print("  %-26s : %s" % ("Name", p.name))
-    print("  %-26s : %s" % ("Description", p.description))
-    print("  %-26s : %s" % ("Default type", p.default_type))
-    print("  %-26s : %s / %s" % ("Implied VRF RT / name", vrf_rt, vrf_name))
-    print("  %-26s : %s / %s" % ("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length)))
+    print("  {0:<26!s} : {1:d}".format("ID", p.id))
+    print("  {0:<26!s} : {1!s}".format("Name", p.name))
+    print("  {0:<26!s} : {1!s}".format("Description", p.description))
+    print("  {0:<26!s} : {1!s}".format("Default type", p.default_type))
+    print("  {0:<26!s} : {1!s} / {2!s}".format("Implied VRF RT / name", vrf_rt, vrf_name))
+    print("  {0:<26!s} : {1!s} / {2!s}".format("Preflen (v4/v6)", str(p.ipv4_default_prefix_length), str(p.ipv6_default_prefix_length)))
 
     print("-- Extra Attributes")
     if p.avps is not None:
         for key in sorted(p.avps, key=lambda s: s.lower()):
-            print("  %-26s : %s" % (key, p.avps[key]))
+            print("  {0:<26!s} : {1!s}".format(key, p.avps[key]))
 
     print("-- Tags")
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
-        print("  %s" % tag_name)
+        print("  {0!s}".format(tag_name))
 
     # statistics
     print("-- Statistics")
@@ -1111,7 +1111,7 @@ def view_pool(arg, opts, shell_opts):
         else:
             used_percent_v4 = (float(p.used_prefixes_v4)/p.total_prefixes_v4)*100
 
-        print("  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 prefixes Used / Free",
+        print("  {0:<26!s} : {1:.0f} / {2:.0f} ({3:.2f}% of {4:.0f})".format("IPv4 prefixes Used / Free",
                 p.used_prefixes_v4, p.free_prefixes_v4, used_percent_v4,
                 p.total_prefixes_v4))
 
@@ -1125,7 +1125,7 @@ def view_pool(arg, opts, shell_opts):
             used_percent_v6 = 0
         else:
             used_percent_v6 = (float(p.used_prefixes_v6)/p.total_prefixes_v6)*100
-        print("  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 prefixes Used / Free",
+        print("  {0:<26!s} : {1:.4e} / {2:.4e} ({3:.2f}% of {4:.4e})".format("IPv6 prefixes Used / Free",
                 p.used_prefixes_v6, p.free_prefixes_v6, used_percent_v6,
                 p.total_prefixes_v6))
 
@@ -1141,7 +1141,7 @@ def view_pool(arg, opts, shell_opts):
         else:
             used_percent_v4 = (float(p.used_addresses_v4)/p.total_addresses_v4)*100
 
-        print("  %-26s : %.0f / %.0f (%.2f%% of %.0f)" % ("IPv4 addresses Used / Free",
+        print("  {0:<26!s} : {1:.0f} / {2:.0f} ({3:.2f}% of {4:.0f})".format("IPv4 addresses Used / Free",
                 p.used_addresses_v4, p.free_addresses_v4, used_percent_v4,
                 p.total_addresses_v4))
 
@@ -1155,16 +1155,16 @@ def view_pool(arg, opts, shell_opts):
             used_percent_v6 = 0
         else:
             used_percent_v6 = (float(p.used_addresses_v6)/p.total_addresses_v6)*100
-        print("  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("IPv6 addresses Used / Free",
+        print("  {0:<26!s} : {1:.4e} / {2:.4e} ({3:.2f}% of {4:.4e})".format("IPv6 addresses Used / Free",
                 p.used_addresses_v6, p.free_addresses_v6, used_percent_v6,
                 p.total_addresses_v6))
 
-    print("\n-- Prefixes in pool - v4: %d  v6: %d" % (p.member_prefixes_v4,
+    print("\n-- Prefixes in pool - v4: {0:d}  v6: {1:d}".format(p.member_prefixes_v4,
             p.member_prefixes_v6))
 
     res = Prefix.list({ 'pool_id': p.id})
     for pref in res:
-        print("  %s" % pref.display_prefix)
+        print("  {0!s}".format(pref.display_prefix))
 
 
 
@@ -1199,48 +1199,48 @@ def view_prefix(arg, opts, shell_opts):
         vrf_text = 'any VRF'
         if v.rt != 'all':
             vrf_text = vrf_format(v)
-        print("Address %s not found in %s." % (arg, vrf_text), file=sys.stderr)
+        print("Address {0!s} not found in {1!s}.".format(arg, vrf_text), file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
     vrf = p.vrf.rt
 
     print("-- Address ")
-    print("  %-26s : %s" % ("Prefix", p.prefix))
-    print("  %-26s : %s" % ("Display prefix", p.display_prefix))
-    print("  %-26s : %s" % ("Type", p.type))
-    print("  %-26s : %s" % ("Status", p.status))
-    print("  %-26s : IPv%s" % ("Family", p.family))
-    print("  %-26s : %s" % ("VRF", vrf))
-    print("  %-26s : %s" % ("Description", p.description))
-    print("  %-26s : %s" % ("Node", p.node))
-    print("  %-26s : %s" % ("Country", p.country))
-    print("  %-26s : %s" % ("Order", p.order_id))
-    print("  %-26s : %s" % ("Customer", p.customer_id))
-    print("  %-26s : %s" % ("VLAN", p.vlan))
-    print("  %-26s : %s" % ("Alarm priority", p.alarm_priority))
-    print("  %-26s : %s" % ("Monitor", p.monitor))
-    print("  %-26s : %s" % ("Added", p.added))
-    print("  %-26s : %s" % ("Last modified", p.last_modified))
-    print("  %-26s : %s" % ("Expires", p.expires or '-'))
+    print("  {0:<26!s} : {1!s}".format("Prefix", p.prefix))
+    print("  {0:<26!s} : {1!s}".format("Display prefix", p.display_prefix))
+    print("  {0:<26!s} : {1!s}".format("Type", p.type))
+    print("  {0:<26!s} : {1!s}".format("Status", p.status))
+    print("  {0:<26!s} : IPv{1!s}".format("Family", p.family))
+    print("  {0:<26!s} : {1!s}".format("VRF", vrf))
+    print("  {0:<26!s} : {1!s}".format("Description", p.description))
+    print("  {0:<26!s} : {1!s}".format("Node", p.node))
+    print("  {0:<26!s} : {1!s}".format("Country", p.country))
+    print("  {0:<26!s} : {1!s}".format("Order", p.order_id))
+    print("  {0:<26!s} : {1!s}".format("Customer", p.customer_id))
+    print("  {0:<26!s} : {1!s}".format("VLAN", p.vlan))
+    print("  {0:<26!s} : {1!s}".format("Alarm priority", p.alarm_priority))
+    print("  {0:<26!s} : {1!s}".format("Monitor", p.monitor))
+    print("  {0:<26!s} : {1!s}".format("Added", p.added))
+    print("  {0:<26!s} : {1!s}".format("Last modified", p.last_modified))
+    print("  {0:<26!s} : {1!s}".format("Expires", p.expires or '-'))
     if p.family == 4:
-        print("  %-26s : %s / %s (%.2f%% of %s)" % ("Addresses Used / Free", p.used_addresses,
+        print("  {0:<26!s} : {1!s} / {2!s} ({3:.2f}% of {4!s})".format("Addresses Used / Free", p.used_addresses,
                 p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
                 p.total_addresses))
     else:
-        print("  %-26s : %.4e / %.4e (%.2f%% of %.4e)" % ("Addresses Used / Free", p.used_addresses,
+        print("  {0:<26!s} : {1:.4e} / {2:.4e} ({3:.2f}% of {4:.4e})".format("Addresses Used / Free", p.used_addresses,
                 p.free_addresses, (float(p.used_addresses)/p.total_addresses)*100,
                 p.total_addresses))
     print("-- Extra Attributes")
     if p.avps is not None:
         for key in sorted(p.avps, key=lambda s: s.lower()):
-            print("  %-26s : %s" % (key, p.avps[key]))
+            print("  {0:<26!s} : {1!s}".format(key, p.avps[key]))
     print("-- Tags")
     for tag_name in sorted(p.tags, key=lambda s: s.lower()):
-        print("  %s" % tag_name)
+        print("  {0!s}".format(tag_name))
     print("-- Inherited Tags")
     for tag_name in sorted(p.inherited_tags, key=lambda s: s.lower()):
-        print("  %s" % tag_name)
+        print("  {0!s}".format(tag_name))
     print("-- Comment")
     print(p.comment or '')
 
@@ -1258,15 +1258,15 @@ def remove_vrf(arg, opts, shell_opts):
 
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
-        print("VRF with [RT: %s] not found." % arg, file=sys.stderr)
+        print("VRF with [RT: {0!s}] not found.".format(arg), file=sys.stderr)
         sys.exit(1)
 
     v = res[0]
 
     if not remove_confirmed:
-        print("RT: %s\nName: %s\nDescription: %s" % (v.rt, v.name, v.description))
+        print("RT: {0!s}\nName: {1!s}\nDescription: {2!s}".format(v.rt, v.name, v.description))
         print("\nWARNING: THIS WILL REMOVE THE VRF INCLUDING ALL ITS ADDRESSES")
-        res = input("Do you really want to remove %s? [y/N]: " % vrf_format(v))
+        res = input("Do you really want to remove {0!s}? [y/N]: ".format(vrf_format(v)))
 
         if res == 'y':
             remove_confirmed = True
@@ -1275,7 +1275,7 @@ def remove_vrf(arg, opts, shell_opts):
 
     if remove_confirmed:
         v.remove()
-        print("%s removed." % vrf_format(v))
+        print("{0!s} removed.".format(vrf_format(v)))
 
 
 
@@ -1287,13 +1287,13 @@ def remove_pool(arg, opts, shell_opts):
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
-        print("No pool with name '%s' found." % arg, file=sys.stderr)
+        print("No pool with name '{0!s}' found.".format(arg), file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
 
     if not remove_confirmed:
-        res = input("Do you really want to remove the pool '%s'? [y/N]: " % p.name)
+        res = input("Do you really want to remove the pool '{0!s}'? [y/N]: ".format(p.name))
 
         if res == 'y':
             remove_confirmed = True
@@ -1302,7 +1302,7 @@ def remove_pool(arg, opts, shell_opts):
 
     if remove_confirmed:
         p.remove()
-        print("Pool '%s' removed." % p.name)
+        print("Pool '{0!s}' removed.".format(p.name))
 
 
 def remove_prefix(arg, opts, shell_opts):
@@ -1328,7 +1328,7 @@ def remove_prefix(arg, opts, shell_opts):
         vrf_text = 'any VRF'
         if v.rt != 'all':
             vrf_text = vrf_format(v)
-        print("Prefix %s not found in %s." % (arg, vrf_text), file=sys.stderr)
+        print("Prefix {0!s} not found in {1!s}.".format(arg, vrf_text), file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
@@ -1366,36 +1366,36 @@ def remove_prefix(arg, opts, shell_opts):
         # delete instead
         if p.type == 'assignment':
             if len(pres['result']) > 1:
-                print("WARNING: %s in %s contains %s hosts." % (p.prefix, vrf_format(p.vrf), len(pres['result'])))
-                res = input("Would you like to recursively delete %s and all hosts? [y/N]: " % (p.prefix))
+                print("WARNING: {0!s} in {1!s} contains {2!s} hosts.".format(p.prefix, vrf_format(p.vrf), len(pres['result'])))
+                res = input("Would you like to recursively delete {0!s} and all hosts? [y/N]: ".format((p.prefix)))
                 if res.lower() in [ 'y', 'yes' ]:
                     recursive = True
                 else:
-                    print("ERROR: Removal of assignment containing hosts is prohibited. Aborting removal of %s in %s." % (p.prefix, vrf_format(p.vrf)), file=sys.stderr)
+                    print("ERROR: Removal of assignment containing hosts is prohibited. Aborting removal of {0!s} in {1!s}.".format(p.prefix, vrf_format(p.vrf)), file=sys.stderr)
                     sys.exit(1)
 
         if recursive is True:
             if len(pres['result']) <= 1:
-                res = input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
+                res = input("Do you really want to remove the prefix {0!s} in {1!s}? [y/N]: ".format(p.prefix, vrf_format(p.vrf)))
 
                 if res.lower() in [ 'y', 'yes' ]:
                     remove_confirmed = True
 
             else:
-                print("Recursively deleting %s in %s will delete the following prefixes:" % (p.prefix, vrf_format(p.vrf)))
+                print("Recursively deleting {0!s} in {1!s} will delete the following prefixes:".format(p.prefix, vrf_format(p.vrf)))
 
                 # Iterate prefixes to print a few of them and check the prefixes'
                 # authoritative source
                 i = 0
                 for rp in pres['result']:
                     if i <= 10:
-                        print("%-29s %-2s %-19s %-14s %-14s %-40s" % ("".join("  " for i in
+                        print("{0:<29!s} {1:<2!s} {2:<19!s} {3:<14!s} {4:<14!s} {5:<40!s}".format("".join("  " for i in
                             range(rp.indent)) + rp.display_prefix,
                             rp.type[0].upper(), rp.node, rp.order_id,
                             rp.customer_id, rp.description))
 
                     if i == 10:
-                        print(".. and %s other prefixes" % (len(pres['result']) - 10))
+                        print(".. and {0!s} other prefixes".format((len(pres['result']) - 10)))
 
                     if rp.authoritative_source != 'nipap':
                         auth_src.add(rp.authoritative_source)
@@ -1404,7 +1404,7 @@ def remove_prefix(arg, opts, shell_opts):
 
                 if len(auth_src) == 0:
                     # Simple case; all prefixes were added from NIPAP
-                    res = input("Do you really want to recursively remove %s prefixes in %s? [y/N]: " % (len(pres['result']),
+                    res = input("Do you really want to recursively remove {0!s} prefixes in {1!s}? [y/N]: ".format(len(pres['result']),
                                 vrf_format(vrf)))
 
                     if res.lower() in [ 'y', 'yes' ]:
@@ -1417,11 +1417,11 @@ def remove_prefix(arg, opts, shell_opts):
 
                     # format prompt depending on how many different sources we have
                     if len(auth_src) == 1:
-                        systems = "'%s'" % auth_src[0]
+                        systems = "'{0!s}'".format(auth_src[0])
                         prompt = "Enter the name of the managing system to continue or anything else to abort: "
 
                     else:
-                        systems = ", ".join("'%s'" % x for x in auth_src[1:]) + " and '%s'" % auth_src[0]
+                        systems = ", ".join("'{0!s}'".format(x) for x in auth_src[1:]) + " and '{0!s}'".format(auth_src[0])
                         plural = "s"
                         prompt = "Enter the name of the last managing system to continue or anything else to abort: "
 
@@ -1454,17 +1454,17 @@ def remove_prefix(arg, opts, shell_opts):
                     sys.exit(1)
 
             else:
-                res = input("Do you really want to remove the prefix %s in %s? [y/N]: " % (p.prefix, vrf_format(p.vrf)))
+                res = input("Do you really want to remove the prefix {0!s} in {1!s}? [y/N]: ".format(p.prefix, vrf_format(p.vrf)))
                 if res.lower() in [ 'y', 'yes' ]:
                     remove_confirmed = True
 
     if remove_confirmed is True:
         p.remove(recursive = recursive)
         if recursive is True:
-            print("Prefix %s and %s other prefixes in %s removed." % (p.prefix,
+            print("Prefix {0!s} and {1!s} other prefixes in {2!s} removed.".format(p.prefix,
                     (len(pres['result']) - 1), vrf_format(p.vrf)))
         else:
-            print("Prefix %s in %s removed." % (p.prefix, vrf_format(p.vrf)))
+            print("Prefix {0!s} in {1!s} removed.".format(p.prefix, vrf_format(p.vrf)))
 
     else:
         print("Operation canceled.")
@@ -1480,7 +1480,7 @@ def modify_vrf(arg, opts, shell_opts):
 
     res = VRF.list({ 'rt': arg })
     if len(res) < 1:
-        print("VRF with [RT: %s] not found." % arg, file=sys.stderr)
+        print("VRF with [RT: {0!s}] not found.".format(arg), file=sys.stderr)
         sys.exit(1)
 
     v = res[0]
@@ -1503,13 +1503,13 @@ def modify_vrf(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
+            print("ERROR: Incorrect extra-attribute: {0!s}. Accepted form: 'key=value'\n".format(avp), file=sys.stderr)
             return
         v.avps[key] = value
 
     v.save()
 
-    print("%s saved." % vrf_format(v))
+    print("{0!s} saved.".format(vrf_format(v)))
 
 
 
@@ -1519,7 +1519,7 @@ def modify_pool(arg, opts, shell_opts):
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
-        print("No pool with name '%s' found." % arg, file=sys.stderr)
+        print("No pool with name '{0!s}' found.".format(arg), file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
@@ -1546,14 +1546,14 @@ def modify_pool(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
+            print("ERROR: Incorrect extra-attribute: {0!s}. Accepted form: 'key=value'\n".format(avp), file=sys.stderr)
             return
         p.avps[key] = value
 
 
     p.save()
 
-    print("Pool '%s' saved." % p.name)
+    print("Pool '{0!s}' saved.".format(p.name))
 
 
 
@@ -1561,11 +1561,11 @@ def grow_pool(arg, opts, shell_opts):
     """ Expand a pool with the ranges set in opts
     """
     if not pool:
-        print("No pool with name '%s' found." % arg, file=sys.stderr)
+        print("No pool with name '{0!s}' found.".format(arg), file=sys.stderr)
         sys.exit(1)
 
     if not 'add' in opts:
-        print("Please supply a prefix to add to pool '%s'" % pool.name, file=sys.stderr)
+        print("Please supply a prefix to add to pool '{0!s}'".format(pool.name), file=sys.stderr)
         sys.exit(1)
 
     # Figure out VRF.
@@ -1585,18 +1585,18 @@ def grow_pool(arg, opts, shell_opts):
     res = Prefix.list(q)
 
     if len(res) == 0:
-        print("No prefix found matching %s in %s." % (opts['add'], vrf_format(v)), file=sys.stderr)
+        print("No prefix found matching {0!s} in {1!s}.".format(opts['add'], vrf_format(v)), file=sys.stderr)
         sys.exit(1)
     elif res[0].pool:
         if res[0].pool == pool:
-            print("Prefix %s in %s is already assigned to that pool." % (opts['add'], vrf_format(v)), file=sys.stderr)
+            print("Prefix {0!s} in {1!s} is already assigned to that pool.".format(opts['add'], vrf_format(v)), file=sys.stderr)
         else:
-            print("Prefix %s in %s is already assigned to a different pool ('%s')." % (opts['add'], vrf_format(v), res[0].pool.name), file=sys.stderr)
+            print("Prefix {0!s} in {1!s} is already assigned to a different pool ('{2!s}').".format(opts['add'], vrf_format(v), res[0].pool.name), file=sys.stderr)
         sys.exit(1)
 
     res[0].pool = pool
     res[0].save()
-    print("Prefix %s in %s added to pool '%s'." % (res[0].prefix, vrf_format(v), pool.name))
+    print("Prefix {0!s} in {1!s} added to pool '{2!s}'.".format(res[0].prefix, vrf_format(v), pool.name))
 
 
 
@@ -1604,25 +1604,25 @@ def shrink_pool(arg, opts, shell_opts):
     """ Shrink a pool by removing the ranges in opts from it
     """
     if not pool:
-        print("No pool with name '%s' found." % arg, file=sys.stderr)
+        print("No pool with name '{0!s}' found.".format(arg), file=sys.stderr)
         sys.exit(1)
 
     if 'remove' in opts:
         res = Prefix.list({'prefix': opts['remove'], 'pool_id': pool.id})
 
         if len(res) == 0:
-            print("Pool '%s' does not contain %s." % (pool.name,
+            print("Pool '{0!s}' does not contain {1!s}.".format(pool.name,
                 opts['remove']), file=sys.stderr)
             sys.exit(1)
 
         res[0].pool = None
         res[0].save()
-        print("Prefix %s removed from pool '%s'." % (res[0].prefix, pool.name))
+        print("Prefix {0!s} removed from pool '{1!s}'.".format(res[0].prefix, pool.name))
     else:
-        print("Please supply a prefix to add or remove to '%s':" % (
-            pool.name), file=sys.stderr)
+        print("Please supply a prefix to add or remove to '{0!s}':".format((
+            pool.name)), file=sys.stderr)
         for pref in Prefix.list({'pool_id': pool.id}):
-            print("  %s" % pref.prefix)
+            print("  {0!s}".format(pref.prefix))
 
 
 
@@ -1638,7 +1638,7 @@ def modify_prefix(arg, opts, shell_opts):
 
     res = Prefix.list(spec)
     if len(res) == 0:
-        print("Prefix %s not found in %s." % (arg, vrf_format(v)), file=sys.stderr)
+        print("Prefix {0!s} not found in {1!s}.".format(arg, vrf_format(v)), file=sys.stderr)
         return
 
     p = res[0]
@@ -1681,7 +1681,7 @@ def modify_prefix(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
+            print("ERROR: Incorrect extra-attribute: {0!s}. Accepted form: 'key=value'\n".format(avp), file=sys.stderr)
             return
         p.avps[key] = value
 
@@ -1689,8 +1689,7 @@ def modify_prefix(arg, opts, shell_opts):
     # Promt user if prefix has authoritative source != nipap
     if not modify_confirmed and p.authoritative_source.lower() != 'nipap':
 
-        res = input("Prefix %s in %s is managed by system '%s'. Are you sure you want to modify it? [y/n]: " %
-            (p.prefix, vrf_format(p.vrf), p.authoritative_source))
+        res = input("Prefix {0!s} in {1!s} is managed by system '{2!s}'. Are you sure you want to modify it? [y/n]: ".format(p.prefix, vrf_format(p.vrf), p.authoritative_source))
 
         # If the user declines, short-circuit...
         if res.lower() not in [ 'y', 'yes' ]:
@@ -1700,10 +1699,10 @@ def modify_prefix(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print("Could not save prefix changes: %s" % str(exc), file=sys.stderr)
+        print("Could not save prefix changes: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
-    print("Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf)))
+    print("Prefix {0!s} in {1!s} saved.".format(p.display_prefix, vrf_format(p.vrf)))
 
 
 
@@ -1717,7 +1716,7 @@ def prefix_attr_add(arg, opts, shell_opts):
 
     res = Prefix.list(spec)
     if len(res) == 0:
-        print("Prefix %s not found in %s." % (arg, vrf_format(v)), file=sys.stderr)
+        print("Prefix {0!s} not found in {1!s}.".format(arg, vrf_format(v)), file=sys.stderr)
         return
 
     p = res[0]
@@ -1726,11 +1725,11 @@ def prefix_attr_add(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
+            print("ERROR: Incorrect extra-attribute: {0!s}. Accepted form: 'key=value'\n".format(avp), file=sys.stderr)
             sys.exit(1)
 
         if key in p.avps:
-            print("Unable to add extra-attribute: '%s' already exists." % key, file=sys.stderr)
+            print("Unable to add extra-attribute: '{0!s}' already exists.".format(key), file=sys.stderr)
             sys.exit(1)
 
         p.avps[key] = value
@@ -1738,10 +1737,10 @@ def prefix_attr_add(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print("Could not save prefix changes: %s" % str(exc), file=sys.stderr)
+        print("Could not save prefix changes: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
-    print("Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf)))
+    print("Prefix {0!s} in {1!s} saved.".format(p.display_prefix, vrf_format(p.vrf)))
 
 
 
@@ -1755,14 +1754,14 @@ def prefix_attr_remove(arg, opts, shell_opts):
 
     res = Prefix.list(spec)
     if len(res) == 0:
-        print("Prefix %s not found in %s." % (arg, vrf_format(v)), file=sys.stderr)
+        print("Prefix {0!s} not found in {1!s}.".format(arg, vrf_format(v)), file=sys.stderr)
         return
 
     p = res[0]
 
     for key in opts.get('extra-attribute', []):
         if key not in p.avps:
-            print("Unable to remove extra-attribute: '%s' does not exist." % key, file=sys.stderr)
+            print("Unable to remove extra-attribute: '{0!s}' does not exist.".format(key), file=sys.stderr)
             sys.exit(1)
 
         del p.avps[key]
@@ -1770,10 +1769,10 @@ def prefix_attr_remove(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print("Could not save prefix changes: %s" % str(exc), file=sys.stderr)
+        print("Could not save prefix changes: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
-    print("Prefix %s in %s saved." % (p.display_prefix, vrf_format(p.vrf)))
+    print("Prefix {0!s} in {1!s} saved.".format(p.display_prefix, vrf_format(p.vrf)))
 
 
 
@@ -1796,18 +1795,18 @@ def vrf_attr_add(arg, opts, shell_opts):
             'val2': arg }
             )['result'][0]
     except (KeyError, IndexError):
-        print("VRF with [RT: %s] not found." % str(arg), file=sys.stderr)
+        print("VRF with [RT: {0!s}] not found.".format(str(arg)), file=sys.stderr)
         sys.exit(1)
 
     for avp in opts.get('extra-attribute', []):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
+            print("ERROR: Incorrect extra-attribute: {0!s}. Accepted form: 'key=value'\n".format(avp), file=sys.stderr)
             sys.exit(1)
 
         if key in v.avps:
-            print("Unable to add extra-attribute: '%s' already exists." % key, file=sys.stderr)
+            print("Unable to add extra-attribute: '{0!s}' already exists.".format(key), file=sys.stderr)
             sys.exit(1)
 
         v.avps[key] = value
@@ -1815,10 +1814,10 @@ def vrf_attr_add(arg, opts, shell_opts):
     try:
         v.save()
     except NipapError as exc:
-        print("Could not save VRF changes: %s" % str(exc), file=sys.stderr)
+        print("Could not save VRF changes: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
-    print("%s saved." % vrf_format(v))
+    print("{0!s} saved.".format(vrf_format(v)))
 
 
 
@@ -1841,12 +1840,12 @@ def vrf_attr_remove(arg, opts, shell_opts):
             'val2': arg }
             )['result'][0]
     except (KeyError, IndexError):
-        print("VRF with [RT: %s] not found." % str(arg), file=sys.stderr)
+        print("VRF with [RT: {0!s}] not found.".format(str(arg)), file=sys.stderr)
         sys.exit(1)
 
     for key in opts.get('extra-attribute', []):
         if key not in v.avps:
-            print("Unable to remove extra-attribute: '%s' does not exist." % key, file=sys.stderr)
+            print("Unable to remove extra-attribute: '{0!s}' does not exist.".format(key), file=sys.stderr)
             sys.exit(1)
 
         del v.avps[key]
@@ -1854,10 +1853,10 @@ def vrf_attr_remove(arg, opts, shell_opts):
     try:
         v.save()
     except NipapError as exc:
-        print("Could not save VRF changes: %s" % str(exc), file=sys.stderr)
+        print("Could not save VRF changes: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
-    print("%s saved." % vrf_format(v))
+    print("{0!s} saved.".format(vrf_format(v)))
 
 
 
@@ -1867,7 +1866,7 @@ def pool_attr_add(arg, opts, shell_opts):
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
-        print("No pool with name '%s' found." % arg, file=sys.stderr)
+        print("No pool with name '{0!s}' found.".format(arg), file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
@@ -1876,11 +1875,11 @@ def pool_attr_add(arg, opts, shell_opts):
         try:
             key, value = avp.split('=', 1)
         except ValueError:
-            print("ERROR: Incorrect extra-attribute: %s. Accepted form: 'key=value'\n" % avp, file=sys.stderr)
+            print("ERROR: Incorrect extra-attribute: {0!s}. Accepted form: 'key=value'\n".format(avp), file=sys.stderr)
             sys.exit(1)
 
         if key in p.avps:
-            print("Unable to add extra-attribute: '%s' already exists." % key, file=sys.stderr)
+            print("Unable to add extra-attribute: '{0!s}' already exists.".format(key), file=sys.stderr)
             sys.exit(1)
 
         p.avps[key] = value
@@ -1888,10 +1887,10 @@ def pool_attr_add(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print("Could not save pool changes: %s" % str(exc), file=sys.stderr)
+        print("Could not save pool changes: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
-    print("Pool '%s' saved." % p.name)
+    print("Pool '{0!s}' saved.".format(p.name))
 
 
 
@@ -1901,14 +1900,14 @@ def pool_attr_remove(arg, opts, shell_opts):
 
     res = Pool.list({ 'name': arg })
     if len(res) < 1:
-        print("No pool with name '%s' found." % arg, file=sys.stderr)
+        print("No pool with name '{0!s}' found.".format(arg), file=sys.stderr)
         sys.exit(1)
 
     p = res[0]
 
     for key in opts.get('extra-attribute', []):
         if key not in p.avps:
-            print("Unable to remove extra-attribute: '%s' does not exist." % key, file=sys.stderr)
+            print("Unable to remove extra-attribute: '{0!s}' does not exist.".format(key), file=sys.stderr)
             sys.exit(1)
 
         del p.avps[key]
@@ -1916,10 +1915,10 @@ def pool_attr_remove(arg, opts, shell_opts):
     try:
         p.save()
     except NipapError as exc:
-        print("Could not save pool changes: %s" % str(exc), file=sys.stderr)
+        print("Could not save pool changes: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
-    print("Pool '%s' saved." % p.name)
+    print("Pool '{0!s}' saved.".format(p.name))
 
 
 
@@ -2076,7 +2075,7 @@ def complete_vrf(arg):
 
     search_string = ''
     if arg is not None:
-        search_string = '^%s' % arg
+        search_string = '^{0!s}'.format(arg)
 
     res = VRF.search({
         'operator': 'regex_match',
@@ -2105,7 +2104,7 @@ def complete_vrf_virtual(arg):
 
     search_string = ''
     if arg is not None:
-        search_string = '^%s' % arg
+        search_string = '^{0!s}'.format(arg)
 
     if re.match(search_string, 'all'):
         ret.append('all')
@@ -2167,7 +2166,7 @@ cmds = {
                             'type': 'option',
                             'argument': {
                                 'type': 'value',
-                                'description': 'Prefix status: %s' % ' | '.join(valid_prefix_status),
+                                'description': 'Prefix status: {0!s}'.format(' | '.join(valid_prefix_status)),
                                 'content_type': str,
                                 'complete': complete_prefix_status,
                             }
@@ -2401,7 +2400,7 @@ cmds = {
                                     'type': 'option',
                                     'argument': {
                                         'type': 'value',
-                                        'description': 'Prefix status: %s' % ' | '.join(valid_prefix_status),
+                                        'description': 'Prefix status: {0!s}'.format(' | '.join(valid_prefix_status)),
                                         'content_type': str,
                                         'complete': complete_prefix_status,
                                     }
@@ -3007,18 +3006,18 @@ if __name__ == '__main__':
     try:
         cmd = Command(cmds, sys.argv[1::])
     except ValueError as exc:
-        print("Error: %s" % str(exc), file=sys.stderr)
+        print("Error: {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
     # execute command
     if cmd.exe is None:
         print("Incomplete command specified")
-        print("valid completions: %s" % " ".join(cmd.next_values()))
+        print("valid completions: {0!s}".format(" ".join(cmd.next_values())))
         sys.exit(1)
 
     try:
         cmd.exe(cmd.arg, cmd.exe_options)
     except NipapError as exc:
-        print("Command failed:\n  %s" % str(exc), file=sys.stderr)
+        print("Command failed:\n  {0!s}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 

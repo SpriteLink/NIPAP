@@ -556,7 +556,7 @@ class XhrController(BaseController):
                 else:
                     p.vrf = VRF.get(int(request.json['vrf']))
             except ValueError:
-                return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.json['vrf']})
+                return json.dumps({'error': 1, 'message': "Invalid VRF ID '{0!s}'".format(request.json['vrf'])})
             except NipapError, e:
                 return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
@@ -684,7 +684,7 @@ class XhrController(BaseController):
                     else:
                         p.vrf = VRF.get(int(request.json['vrf']))
                 except ValueError:
-                    return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.json['vrf']})
+                    return json.dumps({'error': 1, 'message': "Invalid VRF ID '{0!s}'".format(request.json['vrf'])})
                 except NipapError, e:
                     return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 

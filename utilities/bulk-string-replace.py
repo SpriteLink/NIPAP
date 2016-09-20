@@ -78,7 +78,7 @@ def replace(pattern, replacement):
         n += 1
 
     t1 = time.time()
-    print " done in %.1f seconds" % (t1 - t0)
+    print " done in {0:.1f} seconds".format((t1 - t0))
 
     # Display list
     print_pattern = "%-2s%-14s%-2s%-30s%-20s%s"
@@ -88,7 +88,7 @@ def replace(pattern, replacement):
     for i, prefix in enumerate(prefix_list):
         if prefix.match:
             print COLOR_RESET,
-            print " -- %d --" % i
+            print " -- {0:d} --".format(i)
             color = COLOR_RED
         else:
             color = COLOR_RESET
@@ -141,7 +141,7 @@ def replace(pattern, replacement):
         try:
             selection = map(lambda x: int(x.strip()), selection)
         except ValueError as e:
-            print >> sys.stderr, "Could not parse selection: %s" % str(e)
+            print >> sys.stderr, "Could not parse selection: {0!s}".format(str(e))
             sys.exit(1)
 
     for i, prefix in enumerate(prefix_list):
@@ -152,7 +152,7 @@ def replace(pattern, replacement):
             if prefix.description is not None:
                 prefix.description = re.sub(pattern, replacement, prefix.description, flags=re.IGNORECASE)
 
-            print "Saving prefix %s..." % prefix.display_prefix
+            print "Saving prefix {0!s}...".format(prefix.display_prefix)
             prefix.save()
 
 if __name__ == '__main__':
@@ -173,14 +173,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Set up NIPAP
-    auth_uri = "%s:%s@" % (args.username or cfg.get('global', 'username'),
+    auth_uri = "{0!s}:{1!s}@".format(args.username or cfg.get('global', 'username'),
             args.password or cfg.get('global', 'password'))
 
-    xmlrpc_uri = "http://%(auth_uri)s[%(host)s]:%(port)s" % {
+    xmlrpc_uri = "http://{auth_uri!s}[{host!s}]:{port!s}".format(**{
             'auth_uri'  : auth_uri,
             'host'      : args.host or cfg.get('global', 'hostname'),
             'port'      : args.port or cfg.get('global', 'port')
-            }
+            })
     pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
     pynipap.xmlrpc_uri = xmlrpc_uri
 

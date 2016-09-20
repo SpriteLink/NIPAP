@@ -54,7 +54,7 @@ def createDaemon():
       # to insure that the next call to os.setsid is successful.
       pid = os.fork()
    except OSError as exc:
-      raise Exception, "%s [%d]" % (exc.strerror, exc.errno)
+      raise Exception, "{0!s} [{1:d}]".format(exc.strerror, exc.errno)
 
    if (pid == 0):   # The first child.
       # To become the session leader of this new session and the process group
@@ -102,7 +102,7 @@ def createDaemon():
          # a controlling terminal.
          pid = os.fork()    # Fork a second child.
       except OSError as exc:
-         raise Exception, "%s [%d]" % (exc.strerror, exc.errno)
+         raise Exception, "{0!s} [{1:d}]".format(exc.strerror, exc.errno)
 
       if (pid == 0):    # The second child.
          # Since the current working directory may be a mounted filesystem, we
@@ -191,16 +191,16 @@ if __name__ == "__main__":
    # process ID, process group ID, and its parent's process ID.
 
    procParams = """
-   return code = %s
-   process ID = %s
-   parent process ID = %s
-   process group ID = %s
-   session ID = %s
-   user ID = %s
-   effective user ID = %s
-   real group ID = %s
-   effective group ID = %s
-   """ % (retCode, os.getpid(), os.getppid(), os.getpgrp(), os.getsid(0),
+   return code = {0!s}
+   process ID = {1!s}
+   parent process ID = {2!s}
+   process group ID = {3!s}
+   session ID = {4!s}
+   user ID = {5!s}
+   effective user ID = {6!s}
+   real group ID = {7!s}
+   effective group ID = {8!s}
+   """.format(retCode, os.getpid(), os.getppid(), os.getpgrp(), os.getsid(0),
    os.getuid(), os.geteuid(), os.getgid(), os.getegid())
 
    open("createDaemon.log", "w").write(procParams + "\n")
