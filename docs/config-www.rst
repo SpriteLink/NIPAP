@@ -50,11 +50,11 @@ Begin by installing Apache httpd with mod_wsgi::
 
 Then, add a new virtual host or configure the default one with the line::
 
-    WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
+    WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
 
 If you are using Apache 2.4 you will also need to add the lines::
 
-    <Directory /etc/nipap/>
+    <Directory /etc/nipap/www/>
         Require all granted
     </Directory>
 
