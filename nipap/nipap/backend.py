@@ -910,7 +910,12 @@ class Nipap:
 
             m = re.search('invalid input syntax for type (cidr|inet): "([^"]+)"', exc.pgerror)
             if m is not None:
-                estr = "Invalid syntax for prefix (%s)" % m.group(2)
+                estr = "Invalid syntax for prefix value: %s" % m.group(2)
+                raise NipapValueError(estr)
+
+            m = re.search('invalid input syntax for integer: "([^"]+)"', exc.pgerror)
+            if m is not None:
+                estr = "Invalid syntax for integer value: %s" % m.group(1)
                 raise NipapValueError(estr)
 
             raise NipapValueError(str(exc))
