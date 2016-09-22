@@ -18,10 +18,10 @@ chmod -R u=rwX /var/cache/nipap-www
 # Configure apache
 cat << EOF > /etc/apache2/sites-available/000-default.conf
 <VirtualHost *:80>
-    WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
+    WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
     ErrorLog \${APACHE_LOG_DIR}/error.log
     CustomLog \${APACHE_LOG_DIR}/access.log combined
-    <Directory /etc/nipap>
+    <Directory /etc/nipap/www>
         Require all granted
     </Directory>
 </VirtualHost>

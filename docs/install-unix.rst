@@ -202,7 +202,13 @@ Apache httpd with mod_wsgi
 Begin by installing Apache httpd with mod_wsgi, then add a new virtual host or
 configure the default one with the line::
 
-	WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
+	WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
+
+If you are using Apache 2.4 you will also need to add the lines::
+
+    <Directory /etc/nipap/www/>
+        Require all granted
+    </Directory>
 
 The web server needs to be able to write to its cache, alter the permissions of
 /var/cache/nipap-www so that the web server can write to it and preferrably
