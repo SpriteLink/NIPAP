@@ -6,6 +6,7 @@
 """
 
 import datetime
+import logging
 import time
 import pytz
 from functools import wraps
@@ -32,13 +33,14 @@ def setup():
     return app
 
 
+
 def _mangle_prefix(res):
     """ Mangle prefix result
     """
     # fugly cast from large numbers to string to deal with XML-RPC
-    res['total_addresses'] = str(res['total_addresses'])
-    res['used_addresses'] = str(res['used_addresses'])
-    res['free_addresses'] = str(res['free_addresses'])
+    res['total_addresses'] = unicode(res['total_addresses'])
+    res['used_addresses'] = unicode(res['used_addresses'])
+    res['free_addresses'] = unicode(res['free_addresses'])
 
     # postgres has notion of infinite while datetime hasn't, if expires
     # is equal to the max datetime we assume it is infinity and instead
@@ -77,10 +79,11 @@ def requires_auth(f):
         if len(args) == 1:
             nipap_args = args[0]
         else:
-            #logger.info("Malformed request: got %d parameters" % len(args))
+            self.logger.debug("Malformed request: got %d parameters" % len(args))
             raise Fault(1000, ("NIPAP API functions take exactly 1 argument (%d given)") % len(args))
 
         if type(nipap_args) != dict:
+            self.logger.debug("Function argument is not struct")
             raise Fault(1000, ("Function argument must be XML-RPC struct/Python dict (Python %s given)." %
                 type(nipap_args).__name__ ))
 
@@ -90,12 +93,14 @@ def requires_auth(f):
             if type(auth_options) is not dict:
                 raise ValueError()
         except (KeyError, ValueError):
+            self.logger.debug("Missing/invalid authentication options in request.")
             raise Fault(1000, ("Missing/invalid authentication options in request."))
 
         # fetch authoritative source
         try:
             auth_source = auth_options['authoritative_source']
         except KeyError:
+            self.logger.debug("Missing authoritative source in auth options.")
             raise Fault(1000, ("Missing authoritative source in auth options."))
 
         if not request.authorization:
@@ -108,6 +113,7 @@ def requires_auth(f):
 
         # authenticated?
         if not auth.authenticate():
+            self.logger.debug("Incorrect username or password.")
             raise Fault(1510, ("Incorrect username or password."))
 
         # Replace auth options in API call arguments with auth object
@@ -125,6 +131,7 @@ class NipapXMLRPC:
     """
     def __init__(self):
         self.nip = Nipap()
+        self.logger = logging.getLogger()
 
 
 
@@ -197,11 +204,12 @@ class NipapXMLRPC:
                 'total_addresses_v4', 'total_addresses_v6',
                 'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
                 'free_addresses_v6'):
-                res[val] = str(res[val])
+                res[val] = unicode(res[val])
 
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -219,7 +227,8 @@ class NipapXMLRPC:
         try:
             self.nip.remove_vrf(args.get('auth'), args.get('vrf'))
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -245,11 +254,12 @@ class NipapXMLRPC:
                     'total_addresses_v4', 'total_addresses_v6',
                     'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
                     'free_addresses_v6'):
-                    vrf[val] = str(vrf[val])
+                    vrf[val] = unicode(vrf[val])
 
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -275,11 +285,12 @@ class NipapXMLRPC:
                     'total_addresses_v4', 'total_addresses_v6',
                     'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
                     'free_addresses_v6'):
-                    vrf[val] = str(vrf[val])
+                    vrf[val] = unicode(vrf[val])
 
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -309,11 +320,12 @@ class NipapXMLRPC:
                     'total_addresses_v4', 'total_addresses_v6',
                     'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
                     'free_addresses_v6'):
-                    vrf[val] = str(vrf[val])
+                    vrf[val] = unicode(vrf[val])
 
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -345,11 +357,12 @@ class NipapXMLRPC:
                     'total_addresses_v4', 'total_addresses_v6',
                     'used_addresses_v4', 'used_addresses_v6', 'free_addresses_v4',
                     'free_addresses_v6'):
-                    vrf[val] = str(vrf[val])
+                    vrf[val] = unicode(vrf[val])
 
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -381,11 +394,12 @@ class NipapXMLRPC:
                     'used_addresses_v6', 'free_addresses_v4',
                     'free_addresses_v6'):
                 if res[val] is not None:
-                    res[val] = str(res[val])
+                    res[val] = unicode(res[val])
 
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -403,7 +417,8 @@ class NipapXMLRPC:
         try:
             self.nip.remove_pool(args.get('auth'), args.get('pool'))
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -433,11 +448,12 @@ class NipapXMLRPC:
                         'used_addresses_v4', 'used_addresses_v6',
                         'free_addresses_v4', 'free_addresses_v6'):
                     if pool[val] is not None:
-                        pool[val] = str(pool[val])
+                        pool[val] = unicode(pool[val])
 
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -467,11 +483,12 @@ class NipapXMLRPC:
                         'used_addresses_v6', 'free_addresses_v4',
                         'free_addresses_v6'):
                     if pool[val] is not None:
-                        pool[val] = str(pool[val])
+                        pool[val] = unicode(pool[val])
 
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -505,11 +522,12 @@ class NipapXMLRPC:
                         'used_addresses_v4', 'used_addresses_v6',
                         'free_addresses_v4', 'free_addresses_v6'):
                     if pool[val] is not None:
-                        pool[val] = str(pool[val])
+                        pool[val] = unicode(pool[val])
 
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -545,11 +563,12 @@ class NipapXMLRPC:
                         'used_addresses_v4', 'used_addresses_v6',
                         'free_addresses_v4', 'free_addresses_v6'):
                     if pool[val] is not None:
-                        pool[val] = str(pool[val])
+                        pool[val] = unicode(pool[val])
 
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -578,7 +597,8 @@ class NipapXMLRPC:
             res = _mangle_prefix(res)
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -605,7 +625,8 @@ class NipapXMLRPC:
                 prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -629,7 +650,8 @@ class NipapXMLRPC:
                 prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -647,7 +669,8 @@ class NipapXMLRPC:
         try:
             return self.nip.remove_prefix(args.get('auth'), args.get('prefix'), args.get('recursive'))
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -678,7 +701,8 @@ class NipapXMLRPC:
                 prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -715,7 +739,8 @@ class NipapXMLRPC:
                 prefix = _mangle_prefix(prefix)
             return res
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -735,7 +760,8 @@ class NipapXMLRPC:
         try:
             return self.nip.find_free_prefix(args.get('auth'), args.get('vrf'), args.get('args'))
         except NipapError as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -759,7 +785,8 @@ class NipapXMLRPC:
         try:
             return self.nip.add_asn(args.get('auth'), args.get('attr'))
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -778,7 +805,8 @@ class NipapXMLRPC:
         try:
             self.nip.remove_asn(args.get('auth'), args.get('asn'))
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -799,7 +827,8 @@ class NipapXMLRPC:
         try:
             return self.nip.list_asn(args.get('auth'), args.get('asn') or {})
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -820,7 +849,8 @@ class NipapXMLRPC:
         try:
             return self.nip.edit_asn(args.get('auth'), args.get('asn'), args.get('attr'))
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -845,7 +875,8 @@ class NipapXMLRPC:
         try:
             return self.nip.search_asn(args.get('auth'), args.get('query'), args.get('search_options') or {})
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 
@@ -872,7 +903,8 @@ class NipapXMLRPC:
                 args.get('query_string'), args.get('search_options') or {},
                 args.get('extra_query'))
         except (AuthError, NipapError) as exc:
-            raise Fault(exc.error_code, str(exc))
+            self.logger.debug(unicode(exc))
+            raise Fault(exc.error_code, unicode(exc))
 
 
 

@@ -613,7 +613,7 @@ def _parse_expires(expires):
         return 'infinity'
 
     try:
-        return dateutil.parser.parse(str(expires))
+        return dateutil.parser.parse(unicode(expires))
     except ValueError as exc:
         pass
 
@@ -776,11 +776,11 @@ class Nipap:
                 self._register_inet()
                 psycopg2.extras.register_hstore(self._con_pg, globally=True, unicode=True)
             except psycopg2.Error as exc:
-                if re.search("database.*does not exist", str(exc)):
+                if re.search("database.*does not exist", unicode(exc)):
                     raise NipapDatabaseNonExistentError("Database '%s' does not exist" % db_args['database'])
                 # no hstore extension, assume empty db (it wouldn't work
                 # otherwise) and do auto upgrade?
-                if re.search("hstore type not found in the database", str(exc)):
+                if re.search("hstore type not found in the database", unicode(exc)):
                     # automatically install if auto-install is enabled
                     if self._auto_install_db:
                         self._db_install()
@@ -804,7 +804,7 @@ class Nipap:
                     continue
                 raise exc
             except NipapError as exc:
-                self._logger.error(str(exc))
+                self._logger.error(unicode(exc))
                 raise exc
 
             if current_db_version != nipap.__db_version__:
@@ -822,7 +822,7 @@ class Nipap:
         """ Execute query, catch and log errors.
         """
 
-        self._logger.debug("SQL: " + sql + "  params: " + str(opt))
+        self._logger.debug("SQL: " + sql + "  params: " + unicode(opt))
         try:
             self._curs_pg.execute(sql, opt)
         except psycopg2.InternalError as exc:
@@ -843,22 +843,22 @@ class Nipap:
             # we throw (and log) a more general exception.
 
             # determine if it's "one of our" exceptions or something else
-            if len(str(exc).split(":")) < 2:
+            if len(unicode(exc).split(":")) < 2:
                 raise NipapError(exc)
-            code = str(exc).split(":", 1)[0]
+            code = unicode(exc).split(":", 1)[0]
             try:
                 int(code)
             except:
                 raise NipapError(exc)
 
-            text = str(exc).splitlines()[0].split(":", 1)[1]
+            text = unicode(exc).splitlines()[0].split(":", 1)[1]
 
             if code == '1200':
                 raise NipapValueError(text)
 
             estr = "Internal database error: %s" % exc
             self._logger.error(estr)
-            raise NipapError(str(exc))
+            raise NipapError(unicode(exc))
 
         except psycopg2.IntegrityError as exc:
             self._con_pg.rollback()
@@ -878,7 +878,7 @@ class Nipap:
                                 { 'relname': m.group(1) })
                 column_desc = '<unknown>'
                 for desc in cursor:
-                    column_desc = str(desc[0])
+                    column_desc = unicode(desc[0])
 
                 # figure out the value for the duplicate value
                 column_value = None
@@ -890,21 +890,22 @@ class Nipap:
                     pass
                 else:
                     raise NipapDuplicateError("Duplicate value for '" +
-                        str(column_desc) + "', the value '" +
-                        str(column_value) + "' is already in use.")
+                        unicode(column_desc) + "', the value '" +
+                        unicode(column_value) + "' is already in use.")
 
                 raise NipapDuplicateError("Duplicate value for '" +
-                    str(column_desc) +
+                    unicode(column_desc) +
                     "', the value you have inputted is already in use.")
 
-            raise NipapError(str(exc))
+            self._logger.exception("Unhandled database IntegrityError:")
+            raise NipapError("Unhandled integrity error.")
 
         except psycopg2.DataError as exc:
             self._con_pg.rollback()
 
             m = re.search('invalid cidr value: "([^"]+)"', exc.pgerror)
             if m is not None:
-                strict_prefix = str(IPy.IP(m.group(1), make_net = True))
+                strict_prefix = unicode(IPy.IP(m.group(1), make_net = True))
                 estr = "Invalid prefix (%s); bits set to right of mask. Network address for current mask: %s" % (m.group(1), strict_prefix)
                 raise NipapValueError(estr)
 
@@ -916,7 +917,8 @@ class Nipap:
                     estr = "Invalid syntax for %s (%s)" % (m.group(1), m.group(2))
                 raise NipapValueError(estr)
 
-            raise NipapValueError(str(exc))
+            self._logger.exception("Unhandled database DataError:")
+            raise NipapError("Unhandled data error.")
 
         except psycopg2.Error as exc:
             try:
@@ -939,7 +941,7 @@ class Nipap:
             return self._execute(sql, opt, callno + 1)
 
         except psycopg2.Warning as warn:
-            self._logger.warning(str(warn))
+            self._logger.warning(unicode(warn))
 
 
 
@@ -1079,8 +1081,8 @@ class Nipap:
             for part in shlex.split(query_str.encode('utf-8')):
                 query_str_parts.append({ 'string': part.decode('utf-8') })
         except ValueError as exc:
-            if str(exc) == 'No closing quotation':
-                raise NipapValueError(str(exc))
+            if unicode(exc) == 'No closing quotation':
+                raise NipapValueError(unicode(exc))
             raise exc
 
         # Handle empty search.
@@ -1189,7 +1191,7 @@ class Nipap:
             name, that can be supplied via the table_name argument.
         """
 
-        where = str()
+        where = unicode()
         opt = list()
 
         # handle table name, can be None
@@ -1205,9 +1207,9 @@ class Nipap:
             sub_where1, opt1 = self._expand_vrf_query(query['val1'], table_name)
             sub_where2, opt2 = self._expand_vrf_query(query['val2'], table_name)
             try:
-                where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
+                where += unicode(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NipapNoSuchOperatorError("No such operator %s" % str(query['operator']))
+                raise NipapNoSuchOperatorError("No such operator %s" % unicode(query['operator']))
 
             opt += opt1
             opt += opt2
@@ -1219,7 +1221,7 @@ class Nipap:
             # val1 is variable, val2 is string.
 
             if query['val1'] not in _vrf_spec:
-                raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+                raise NipapInputError('Search variable \'%s\' unknown' % unicode(query['val1']))
 
             # build where clause
             if query['operator'] not in _operation_map:
@@ -1232,12 +1234,12 @@ class Nipap:
                 query['operator'] = 'is_not'
 
             if query['operator'] in ('equals_any',):
-                where = str(" %%s = ANY (%s%s::citext[]) " %
+                where = unicode(" %%s = ANY (%s%s::citext[]) " %
                         ( col_prefix, _vrf_spec[query['val1']]['column'])
                         )
 
             else:
-                where = str(" %s%s %s %%s " %
+                where = unicode(" %s%s %s %%s " %
                     ( col_prefix, _vrf_spec[query['val1']]['column'],
                     _operation_map[query['operator']] )
                 )
@@ -1266,7 +1268,7 @@ class Nipap:
             :py:func:`nipap.xmlrpc.NipapXMLRPC.add_vrf` for full understanding.
         """
 
-        self._logger.debug("add_vrf called; attr: %s" % str(attr))
+        self._logger.debug("add_vrf called; attr: %s" % unicode(attr))
 
         # sanity check - do we have all attributes?
         req_attr = [ 'rt', 'name' ]
@@ -1288,7 +1290,7 @@ class Nipap:
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added VRF %s with attr: %s' % (vrf['rt'], str(vrf))
+            'description': 'Added VRF %s with attr: %s' % (vrf['rt'], unicode(vrf))
         }
 
         sql, params = self._sql_expand_insert(audit_params)
@@ -1314,7 +1316,7 @@ class Nipap:
             understanding.
         """
 
-        self._logger.debug("remove_vrf called; spec: %s" % str(spec))
+        self._logger.debug("remove_vrf called; spec: %s" % unicode(spec))
 
         # get list of VRFs to remove before removing them
         vrfs = self.list_vrf(auth, spec)
@@ -1372,7 +1374,7 @@ class Nipap:
         if spec is None:
             spec = {}
 
-        self._logger.debug("list_vrf called; spec: %s" % str(spec))
+        self._logger.debug("list_vrf called; spec: %s" % unicode(spec))
 
         sql = "SELECT * FROM ip_net_vrf"
 
@@ -1447,7 +1449,7 @@ class Nipap:
         """
 
         self._logger.debug("edit_vrf called; spec: %s attr: %s" %
-                (str(spec), str(attr)))
+                (unicode(spec), unicode(attr)))
 
         # sanity check - do we have all attributes?
         self._check_attr(attr, [], _vrf_attrs)
@@ -1479,7 +1481,7 @@ class Nipap:
                 'authenticated_as': auth.authenticated_as,
                 'full_name': auth.full_name,
                 'authoritative_source': auth.authoritative_source,
-                'description': 'Edited VRF %s attr: %s' % (v['rt'], str(attr))
+                'description': 'Edited VRF %s attr: %s' % (v['rt'], unicode(attr))
             }
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -1598,7 +1600,7 @@ class Nipap:
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
-        self._logger.debug('search_vrf called; query: %s search_options: %s' % (str(query), str(search_options)))
+        self._logger.debug('search_vrf called; query: %s search_options: %s' % (unicode(query), unicode(search_options)))
 
         opt = None
         sql = """ SELECT * FROM ip_net_vrf"""
@@ -1609,7 +1611,7 @@ class Nipap:
             where, opt = self._expand_vrf_query(query)
             sql += " WHERE " + where
 
-        sql += " ORDER BY vrf_rt_order(rt) NULLS FIRST LIMIT " + str(search_options['max_result']) + " OFFSET " + str(search_options['offset'])
+        sql += " ORDER BY vrf_rt_order(rt) NULLS FIRST LIMIT " + unicode(search_options['max_result']) + " OFFSET " + unicode(search_options['offset'])
         self._execute(sql, opt)
 
         result = list()
@@ -1684,7 +1686,7 @@ class Nipap:
                 'val2': extra_query
             }
 
-        self._logger.debug("smart_search_vrf; query expanded to: %s" % str(query))
+        self._logger.debug("smart_search_vrf; query expanded to: %s" % unicode(query))
 
         search_result = self.search_vrf(auth, query, search_options)
         search_result['interpretation'] = query
@@ -1745,7 +1747,7 @@ class Nipap:
             name, that can be supplied via the table_name argument.
         """
 
-        where = str()
+        where = unicode()
         opt = list()
 
         # handle table name, can be None
@@ -1762,9 +1764,9 @@ class Nipap:
             sub_where1, opt1 = self._expand_pool_query(query['val1'], table_name)
             sub_where2, opt2 = self._expand_pool_query(query['val2'], table_name)
             try:
-                where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
+                where += unicode(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NipapNoSuchOperatorError("No such operator %s" % str(query['operator']))
+                raise NipapNoSuchOperatorError("No such operator %s" % unicode(query['operator']))
 
             opt += opt1
             opt += opt2
@@ -1776,7 +1778,7 @@ class Nipap:
             # val1 is variable, val2 is string.
 
             if query['val1'] not in _pool_spec:
-                raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+                raise NipapInputError('Search variable \'%s\' unknown' % unicode(query['val1']))
 
             # build where clause
             if query['operator'] not in _operation_map:
@@ -1789,12 +1791,12 @@ class Nipap:
                 query['operator'] = 'is_not'
 
             if query['operator'] in ('equals_any',):
-                where = str(" %%s = ANY (%s%s::citext[]) " %
+                where = unicode(" %%s = ANY (%s%s::citext[]) " %
                         ( col_prefix, _pool_spec[query['val1']]['column'])
                         )
 
             else:
-                where = str(" %s%s %s %%s " %
+                where = unicode(" %s%s %s %%s " %
                     ( col_prefix, _pool_spec[query['val1']]['column'],
                     _operation_map[query['operator']] )
                 )
@@ -1822,7 +1824,7 @@ class Nipap:
             understanding.
         """
 
-        self._logger.debug("add_pool called; attrs: %s" % str(attr))
+        self._logger.debug("add_pool called; attrs: %s" % unicode(attr))
 
         # sanity check - do we have all attributes?
         req_attr = ['name', 'description', 'default_type']
@@ -1843,7 +1845,7 @@ class Nipap:
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added pool %s with attr: %s' % (pool['name'], str(attr))
+            'description': 'Added pool %s with attr: %s' % (pool['name'], unicode(attr))
         }
         sql, params = self._sql_expand_insert(audit_params)
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -1867,7 +1869,7 @@ class Nipap:
             understanding.
         """
 
-        self._logger.debug("remove_pool called; spec: %s" % str(spec))
+        self._logger.debug("remove_pool called; spec: %s" % unicode(spec))
 
         # fetch list of pools to remove before they are removed
         pools = self.list_pool(auth, spec)
@@ -1912,7 +1914,7 @@ class Nipap:
         if spec is None:
             spec = {}
 
-        self._logger.debug("list_pool called; spec: %s" % str(spec))
+        self._logger.debug("list_pool called; spec: %s" % unicode(spec))
 
         sql = """SELECT DISTINCT (po.id),
                         po.id,
@@ -2039,7 +2041,7 @@ class Nipap:
         """
 
         self._logger.debug("edit_pool called; spec: %s attr: %s" %
-                (str(spec), str(attr)))
+                (unicode(spec), unicode(attr)))
 
         if ('id' not in spec and 'name' not in spec) or ( 'id' in spec and 'name' in spec ):
             raise NipapMissingInputError('''pool spec must contain either 'id' or 'name' ''')
@@ -2070,7 +2072,7 @@ class Nipap:
         for p in pools:
             audit_params['pool_id'] = p['id']
             audit_params['pool_name'] = p['name']
-            audit_params['description'] = 'Edited pool %s attr: %s' % (p['name'], str(attr))
+            audit_params['description'] = 'Edited pool %s attr: %s' % (p['name'], unicode(attr))
 
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -2189,7 +2191,7 @@ class Nipap:
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
-        self._logger.debug('search_pool search_options: %s' % str(search_options))
+        self._logger.debug('search_pool search_options: %s' % unicode(search_options))
 
         where, opt = self._expand_pool_query(query)
         sql = """SELECT DISTINCT (po.id),
@@ -2223,7 +2225,7 @@ class Nipap:
                 LEFT OUTER JOIN ip_net_plan AS inp ON (inp.pool_id = po.id)
                 LEFT OUTER JOIN ip_net_vrf AS vrf ON (vrf.id = inp.vrf_id)
                 WHERE """ + where + """ ORDER BY po.name
-                LIMIT """ + str(search_options['max_result']) + """ OFFSET """ + str(search_options['offset'])
+                LIMIT """ + unicode(search_options['max_result']) + """ OFFSET """ + unicode(search_options['offset'])
 
         self._execute(sql, opt)
 
@@ -2298,7 +2300,7 @@ class Nipap:
                 'val2': extra_query
             }
 
-        self._logger.debug("smart_search_pool; query expanded to: %s" % str(query))
+        self._logger.debug("smart_search_pool; query expanded to: %s" % unicode(query))
 
         search_result = self.search_pool(auth, query, search_options)
         search_result['interpretation'] = query
@@ -2382,7 +2384,7 @@ class Nipap:
             else:
                 where += " AND family(" + prefix + "prefix) = %(family)s"
 
-        self._logger.debug("_expand_prefix_spec; where: %s params: %s" % (where, str(params)))
+        self._logger.debug("_expand_prefix_spec; where: %s params: %s" % (where, unicode(params)))
         return where, params
 
 
@@ -2394,7 +2396,7 @@ class Nipap:
             name, that can be supplied via the table_name argument.
         """
 
-        where = str()
+        where = unicode()
         opt = list()
 
         # handle table name, can be None
@@ -2415,9 +2417,9 @@ class Nipap:
             sub_where1, opt1 = self._expand_prefix_query(query['val1'], table_name)
             sub_where2, opt2 = self._expand_prefix_query(query['val2'], table_name)
             try:
-                where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
+                where += unicode(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NipapNoSuchOperatorError("No such operator %s" % str(query['operator']))
+                raise NipapNoSuchOperatorError("No such operator %s" % unicode(query['operator']))
 
             opt += opt1
             opt += opt2
@@ -2429,7 +2431,7 @@ class Nipap:
             # val1 is key, val2 is value.
 
             if query['val1'] not in _prefix_spec:
-                raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+                raise NipapInputError('Search variable \'%s\' unknown' % unicode(query['val1']))
 
             # build where clause
             if query['operator'] not in _operation_map:
@@ -2456,7 +2458,7 @@ class Nipap:
                         }
 
             elif query['operator'] in ('equals_any',):
-                where = str(" %%s = ANY (%s%s::citext[]) " %
+                where = unicode(" %%s = ANY (%s%s::citext[]) " %
                         ( col_prefix, _prefix_spec[query['val1']]['column'])
                         )
 
@@ -2467,13 +2469,13 @@ class Nipap:
                 # we COALESCE column with '' to allow for example a regexp
                 # search on '.*' to match columns which are NULL in the
                 # database
-                where = str(" COALESCE(%s%s, '') %s %%s " %
+                where = unicode(" COALESCE(%s%s, '') %s %%s " %
                         ( col_prefix, _prefix_spec[query['val1']]['column'],
                         _operation_map[query['operator']] )
                         )
 
             else:
-                where = str(" %s%s %s %%s " %
+                where = unicode(" %s%s %s %%s " %
                         ( col_prefix, _prefix_spec[query['val1']]['column'],
                         _operation_map[query['operator']] )
                         )
@@ -2528,7 +2530,7 @@ class Nipap:
         if args is None:
             args = {}
 
-        self._logger.debug("add_prefix called; attr: %s; args: %s" % (str(attr), str(args)))
+        self._logger.debug("add_prefix called; attr: %s; args: %s" % (unicode(attr), unicode(args)))
 
         # args defined?
         if args is None:
@@ -2674,7 +2676,7 @@ class Nipap:
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added prefix %s with attr: %s' % (prefix['prefix'], str(attr))
+            'description': 'Added prefix %s with attr: %s' % (prefix['prefix'], unicode(attr))
         }
         sql, params = self._sql_expand_insert(audit_params)
         self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -2682,7 +2684,7 @@ class Nipap:
         if pool['id'] is not None:
             audit_params['pool_id'] = pool['id']
             audit_params['pool_name'] = pool['name']
-            audit_params['description'] = 'Pool %s expanded with prefix %s in VRF %s' % (pool['name'], prefix['prefix'], str(prefix['vrf_rt']))
+            audit_params['description'] = 'Pool %s expanded with prefix %s in VRF %s' % (pool['name'], prefix['prefix'], unicode(prefix['vrf_rt']))
 
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -2713,7 +2715,7 @@ class Nipap:
         """
 
         self._logger.debug("edit_prefix called; spec: %s attr: %s" %
-                (str(spec), str(attr)))
+                (unicode(spec), unicode(attr)))
 
         # Handle Pool - find correct one and remove bad pool keys
         pool = None
@@ -2789,7 +2791,7 @@ class Nipap:
             audit_params['vrf_name'] = p['vrf_name']
             audit_params['prefix_id'] = p['id']
             audit_params['prefix_prefix'] = p['prefix']
-            audit_params['description'] = 'Edited prefix %s attr: %s' % (p['prefix'], str(attr))
+            audit_params['description'] = 'Edited prefix %s attr: %s' % (p['prefix'], unicode(attr))
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
 
@@ -2937,7 +2939,7 @@ class Nipap:
                 if self._get_afi(p) == int(args['family']):
                     prefixes.append(p)
             if len(prefixes) == 0:
-                raise NipapInputError('No prefixes of family %s in pool' % str(args['family']))
+                raise NipapInputError('No prefixes of family %s in pool' % unicode(args['family']))
             if 'prefix_length' not in args:
                 if int(args['family']) == 4:
                     wpl = pool_result[0]['ipv4_default_prefix_length']
@@ -2974,9 +2976,9 @@ class Nipap:
         #       we should really write a patch to psycopg2 or something to
         #       properly adapt an python list of texts with values looking
         #       like prefixes to a postgresql array of inets
-        sql_prefix = ' UNION '.join('SELECT %(prefix' + str(prefixes.index(p)) + ')s AS prefix' for p in prefixes)
+        sql_prefix = ' UNION '.join('SELECT %(prefix' + unicode(prefixes.index(p)) + ')s AS prefix' for p in prefixes)
         for p in prefixes:
-            params['prefix' + str(prefixes.index(p))] = str(p)
+            params['prefix' + unicode(prefixes.index(p))] = unicode(p)
 
         damp = 'SELECT array_agg((prefix::text)::inet) FROM (' + sql_prefix + ') AS a'
 
@@ -2993,7 +2995,7 @@ class Nipap:
 
         res = list()
         for row in self._curs_pg:
-            res.append(str(row['prefix']))
+            res.append(unicode(row['prefix']))
 
         return res
 
@@ -3019,7 +3021,7 @@ class Nipap:
             understanding.
         """
 
-        self._logger.debug("list_prefix called; spec: %s" % str(spec))
+        self._logger.debug("list_prefix called; spec: %s" % unicode(spec))
 
 
         if type(spec) is dict:
@@ -3073,7 +3075,7 @@ class Nipap:
         res = list()
         for row in self._curs_pg:
             pref = dict(row)
-            pref['display_prefix'] = str(pref['display_prefix'])
+            pref['display_prefix'] = unicode(pref['display_prefix'])
             res.append(pref)
 
         return res
@@ -3113,7 +3115,7 @@ class Nipap:
             understanding.
         """
 
-        self._logger.debug("remove_prefix called; spec: %s" % str(spec))
+        self._logger.debug("remove_prefix called; spec: %s" % unicode(spec))
 
         # sanity check - do we have all attributes?
         if 'id' in spec:
@@ -3328,7 +3330,7 @@ class Nipap:
         else:
             if search_options['include_all_parents'] not in (True, False):
                 raise NipapValueError('Invalid value for option ' +
-                    "'include_all_parents'. Only true and false valid. Supplied value :'%s'" % str(search_options['include_all_parents']))
+                    "'include_all_parents'. Only true and false valid. Supplied value :'%s'" % unicode(search_options['include_all_parents']))
 
         # include_children
         if 'include_all_children' not in search_options:
@@ -3336,7 +3338,7 @@ class Nipap:
         else:
             if search_options['include_all_children'] not in (True, False):
                 raise NipapValueError('Invalid value for option ' +
-                    "'include_all_children'. Only true and false valid. Supplied value: '%s'" % str(search_options['include_all_children']))
+                    "'include_all_children'. Only true and false valid. Supplied value: '%s'" % unicode(search_options['include_all_children']))
 
         # parents_depth
         if 'parents_depth' not in search_options:
@@ -3364,7 +3366,7 @@ class Nipap:
         else:
             if search_options['include_neighbors'] not in (True, False):
                 raise NipapValueError('Invalid value for option ' +
-                    "'include_neighbors'. Only true and false valid. Supplied value: '%s'" % str(search_options['include_neighbors']))
+                    "'include_neighbors'. Only true and false valid. Supplied value: '%s'" % unicode(search_options['include_neighbors']))
 
         # max_result
         if 'max_result' not in search_options:
@@ -3405,7 +3407,7 @@ class Nipap:
             except IndexError:
                 raise NipapNonExistentError("Parent prefix %s can not be found" % search_options['parent_prefix'])
 
-        self._logger.debug('search_prefix search_options: %s' % str(search_options))
+        self._logger.debug('search_prefix search_options: %s' % unicode(search_options))
 
         # translate search options to SQL
 
@@ -3551,7 +3553,7 @@ class Nipap:
             LEFT JOIN ip_net_pool AS pool ON (p1.pool_id = pool.id)
             -- possible set where conditions, if we are doing a parent_prefix operation
             """ + where_parent_prefix + """
-            ORDER BY vrf_rt_order(vrf.rt) NULLS FIRST, p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + str(search_options['offset']) + ") AS a ORDER BY vrf_rt_order(vrf_rt) NULLS FIRST, prefix"
+            ORDER BY vrf_rt_order(vrf.rt) NULLS FIRST, p1.prefix, CASE WHEN p1.prefix = p2.prefix THEN 0 ELSE 1 END OFFSET """  + unicode(search_options['offset']) + ") AS a ORDER BY vrf_rt_order(vrf_rt) NULLS FIRST, prefix"
 
 
         self._execute(sql, opt)
@@ -3639,7 +3641,7 @@ class Nipap:
                 'val2': extra_query
             }
 
-        self._logger.debug("smart_search_prefix: query expanded to: %s" % str(query))
+        self._logger.debug("smart_search_prefix: query expanded to: %s" % unicode(query))
 
         search_result = self.search_prefix(auth, query, search_options)
         search_result['interpretation'] = query
@@ -3672,7 +3674,7 @@ class Nipap:
             name, that can be supplied via the table_name argument.
         """
 
-        where = str()
+        where = unicode()
         opt = list()
 
         # handle table name, can be None
@@ -3688,9 +3690,9 @@ class Nipap:
             sub_where1, opt1 = self._expand_asn_query(query['val1'], table_name)
             sub_where2, opt2 = self._expand_asn_query(query['val2'], table_name)
             try:
-                where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
+                where += unicode(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NipapNoSuchOperatorError("No such operator %s" % str(query['operator']))
+                raise NipapNoSuchOperatorError("No such operator %s" % unicode(query['operator']))
 
             opt += opt1
             opt += opt2
@@ -3705,7 +3707,7 @@ class Nipap:
             asn_attr['name'] = 'name'
 
             if query['val1'] not in asn_attr:
-                raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+                raise NipapInputError('Search variable \'%s\' unknown' % unicode(query['val1']))
 
             # workaround for handling equal matches of NULL-values
             if query['operator'] == 'equals' and query['val2'] is None:
@@ -3717,7 +3719,7 @@ class Nipap:
             if query['operator'] not in _operation_map:
                 raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
 
-            where = str(" %s%s %s %%s " %
+            where = unicode(" %s%s %s %%s " %
                 ( col_prefix, asn_attr[query['val1']],
                 _operation_map[query['operator']] )
             )
@@ -3783,7 +3785,7 @@ class Nipap:
         if asn is None:
             asn = {}
 
-        self._logger.debug("list_asn called; asn: %s" % str(asn))
+        self._logger.debug("list_asn called; asn: %s" % unicode(asn))
 
         sql = "SELECT * FROM ip_net_asn"
         params = list()
@@ -3821,7 +3823,7 @@ class Nipap:
             understanding.
         """
 
-        self._logger.debug("add_asn called; attr: %s" % str(attr))
+        self._logger.debug("add_asn called; attr: %s" % unicode(attr))
 
         # sanity check - do we have all attributes?
         req_attr = [ 'asn', ]
@@ -3840,7 +3842,7 @@ class Nipap:
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'description': 'Added ASN %s with attr: %s' % (attr['asn'], str(attr))
+            'description': 'Added ASN %s with attr: %s' % (attr['asn'], unicode(attr))
         }
 
         sql, params = self._sql_expand_insert(audit_params)
@@ -3868,7 +3870,7 @@ class Nipap:
         """
 
         self._logger.debug("edit_asn called; asn: %s attr: %s" %
-                (str(asn), str(attr)))
+                (unicode(asn), unicode(attr)))
 
         # sanity check - do we have all attributes?
         req_attr = [ ]
@@ -3897,7 +3899,7 @@ class Nipap:
                 'full_name': auth.full_name,
                 'authoritative_source': auth.authoritative_source
             }
-            audit_params['description'] = 'Edited ASN %s attr: %s' % (str(a['asn']), str(attr))
+            audit_params['description'] = 'Edited ASN %s attr: %s' % (unicode(a['asn']), unicode(attr))
 
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -3923,7 +3925,7 @@ class Nipap:
             understanding.
         """
 
-        self._logger.debug("remove_asn called; asn: %s" % str(asn))
+        self._logger.debug("remove_asn called; asn: %s" % unicode(asn))
 
         # get list of ASNs to remove before removing them
         asns = self.list_asn(auth, asn)
@@ -3940,7 +3942,7 @@ class Nipap:
                 'authenticated_as': auth.authenticated_as,
                 'full_name': auth.full_name,
                 'authoritative_source': auth.authoritative_source,
-                'description': 'Removed ASN %s' % str(a['asn'])
+                'description': 'Removed ASN %s' % unicode(a['asn'])
             }
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log %s' % sql, params)
@@ -4025,7 +4027,7 @@ class Nipap:
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
-        self._logger.debug('search_asn search_options: %s' % str(search_options))
+        self._logger.debug('search_asn search_options: %s' % unicode(search_options))
 
         opt = None
         sql = """ SELECT * FROM ip_net_asn """
@@ -4036,7 +4038,7 @@ class Nipap:
             where, opt = self._expand_asn_query(query)
             sql += " WHERE " + where
 
-        sql += " ORDER BY asn LIMIT " + str(search_options['max_result'])
+        sql += " ORDER BY asn LIMIT " + unicode(search_options['max_result'])
         self._execute(sql, opt)
 
         result = list()
@@ -4107,7 +4109,7 @@ class Nipap:
                 'val2': extra_query
             }
 
-        self._logger.debug("smart_search_asn; query expanded to: %s" % str(query))
+        self._logger.debug("smart_search_asn; query expanded to: %s" % unicode(query))
 
         search_result = self.search_asn(auth, query, search_options)
         search_result['interpretation'] = query
@@ -4196,7 +4198,7 @@ class Nipap:
             name, that can be supplied via the table_name argument.
         """
 
-        where = str()
+        where = unicode()
         opt = list()
 
         # handle table name, can be None
@@ -4212,9 +4214,9 @@ class Nipap:
             sub_where1, opt1 = self._expand_tag_query(query['val1'], table_name)
             sub_where2, opt2 = self._expand_tag_query(query['val2'], table_name)
             try:
-                where += str(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
+                where += unicode(" (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2) )
             except KeyError:
-                raise NipapNoSuchOperatorError("No such operator %s" % str(query['operator']))
+                raise NipapNoSuchOperatorError("No such operator %s" % unicode(query['operator']))
 
             opt += opt1
             opt += opt2
@@ -4228,7 +4230,7 @@ class Nipap:
             tag_attr['name'] = 'name'
 
             if query['val1'] not in tag_attr:
-                raise NipapInputError('Search variable \'%s\' unknown' % str(query['val1']))
+                raise NipapInputError('Search variable \'%s\' unknown' % unicode(query['val1']))
 
             # workaround for handling equal matches of NULL-values
             if query['operator'] == 'equals' and query['val2'] is None:
@@ -4240,7 +4242,7 @@ class Nipap:
             if query['operator'] not in _operation_map:
                 raise NipapNoSuchOperatorError("No such operator %s" % query['operator'])
 
-            where = str(" %s%s %s %%s " %
+            where = unicode(" %s%s %s %%s " %
                 ( col_prefix, tag_attr[query['val1']],
                 _operation_map[query['operator']] )
             )
@@ -4329,7 +4331,7 @@ class Nipap:
                 raise NipapValueError('Invalid value for option' +
                     ''' 'offset'. Only integer values allowed.''')
 
-        self._logger.debug('search_tag search_options: %s' % str(search_options))
+        self._logger.debug('search_tag search_options: %s' % unicode(search_options))
 
         opt = None
         sql = """ SELECT * FROM (SELECT DISTINCT unnest(tags) AS name FROM
@@ -4341,7 +4343,7 @@ class Nipap:
             where, opt = self._expand_tag_query(query)
             sql += " WHERE " + where
 
-        sql += " ORDER BY name LIMIT " + str(search_options['max_result'])
+        sql += " ORDER BY name LIMIT " + unicode(search_options['max_result'])
         self._execute(sql, opt)
 
         result = list()
