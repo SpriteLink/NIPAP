@@ -898,7 +898,7 @@ class Nipap:
                     "', the value you have inputted is already in use.")
 
             self._logger.exception("Unhandled database IntegrityError:")
-            raise NipapError(unicode(exc))
+            raise NipapError("Unhandled integrity error.")
 
         except psycopg2.DataError as exc:
             self._con_pg.rollback()
@@ -915,7 +915,7 @@ class Nipap:
                 raise NipapValueError(estr)
 
             self._logger.exception("Unhandled database DataError:")
-            raise NipapValueError(unicode(exc))
+            raise NipapError("Unhandled data error.")
 
         except psycopg2.Error as exc:
             try:
