@@ -6,7 +6,7 @@ Jinja2==2.8
 MarkupSafe==0.23
 Werkzeug==0.11.11
 backports.ssl-match-hostname==3.5.0.1
-certifi==2016.8.31
+certifi==2016.9.26
 itsdangerous==0.24
 parsedatetime==2.1
 psutil==1.2.1							# rq.filter: >= 1.0,<2.0
