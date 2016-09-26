@@ -1,3 +1,15 @@
+nipap-whoisd (0.29.4-1) stable; urgency=medium
+
+  * IPv4 addresses are mangled before used for search (#1020)
+  * VRF selector in web UI works again (#1029, #1031)
+  * Searh option parent_prefix can now be None (#998, #1037)
+  * More operators supported by the smart parser (#1026, #1027, #1042)
+  * Unicode search string support in smart parser (#1035, #1042)
+  * Improved logging in backend (#1043, #1047)
+  * WSGI file moved to /etc/nipap/www (#880, #1052)
+
+ -- Lukas Garberg <lukagarb@arb>  Mon, 26 Sep 2016 06:57:24 +0200
+
 nipap-whoisd (0.29.3-1) stable; urgency=medium
 
   * Tooltips in the web UI now works again (#887, #938)
