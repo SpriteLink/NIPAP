@@ -193,7 +193,6 @@ class TestParentPrefix(unittest.TestCase):
         return p
 
 
-
 class TestPrefixDisplayPrefix(unittest.TestCase):
     """ Test calculation of display_prefix on child prefixes
     """
@@ -3133,6 +3132,42 @@ class TestAvpEmptyName(unittest.TestCase):
             v.save()
 
 
+class TestDatabaseConstraints(unittest.TestCase):
+    """ Test if the database constraints are correctly implemented
+    """
+
+    def setUp(self):
+        """ Test setup, which essentially means to empty the database
+        """
+        TestHelper.clear_database()
+
+
+    def test_constraints(self):
+        """Testing of database constraints
+        """
+
+        th = TestHelper()
+        d = "test description"
+        th.add_prefix('1.3.0.0/16', 'reservation', d)
+        with self.assertRaisesRegexp(NipapDuplicateError, "Duplicate"):
+            # exact duplicate
+            th.add_prefix('1.3.0.0/16', 'reservation', d)
+        p2 = th.add_prefix('1.3.3.0/24', 'reservation', d)
+        p3 = th.add_prefix('1.3.3.0/27', 'assignment', d)
+        th.add_prefix('1.3.3.0/32', 'host', d)
+        th.add_prefix('1.3.3.1/32', 'host', d)
+        with self.assertRaisesRegexp(NipapValueError, "Prefix of type host must have all bits set in netmask"):
+             # do not allow /31 as type 'host'
+             th.add_prefix('1.3.3.2/31', 'host', d)
+        with self.assertRaisesRegexp(NipapValueError, "Parent prefix .* is of type assignment"):
+             # unable to create assignment within assignment
+             th.add_prefix('1.3.3.3/32', 'assignment', d)
+        with self.assertRaisesRegexp(NipapValueError, "contains hosts"):
+             # unable to remove assignment containing hosts
+             p3.remove()
+        with self.assertRaisesRegexp(NipapValueError, "'assignment' must not have any subnets other than of type 'host'"):
+             p2.type = 'assignment'
+             p2.save()
 
 
 if __name__ == '__main__':
