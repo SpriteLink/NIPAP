@@ -467,15 +467,23 @@ class PrefixSmartParser(SmartParser):
             dictsql = {
                     'interpretation': {
                         'string': part[0],
-                        'interpretation': 'tag',
+                        'interpretation': '(inherited) tag',
                         'attribute': 'tag',
                         'operator': 'equals_any',
                         'error': False
-                        },
-                    'operator': 'equals_any',
-                    'val1': 'tags',
-                    'val2': part[0][1:]
+                    },
+                    'operator': 'or',
+                    'val1': {
+                        'operator': 'equals_any',
+                        'val1': 'tags',
+                        'val2': part[0][1:]
+                    },
+                    'val2': {
+                        'operator': 'equals_any',
+                        'val1': 'inherited_tags',
+                        'val2': part[0][1:]
                     }
+            }
 
         elif part.getName() == 'vrf_rt':
             self._logger.debug("Query part '" + part.vrf_rt + "' interpreted as VRF RT")
