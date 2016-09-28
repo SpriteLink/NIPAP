@@ -38,6 +38,7 @@ db:
 	-psql -q -c "ALTER USER $(DB_USER) ENCRYPTED PASSWORD '$(DB_PASS)'"
 	-psql -d $(DB_NAME) -c "CREATE EXTENSION ip4r;"
 	-psql -d $(DB_NAME) -c "CREATE EXTENSION hstore;"
+	-psql -d $(DB_NAME) -c "CREATE EXTENSION citext;"
 
 
 tables:
