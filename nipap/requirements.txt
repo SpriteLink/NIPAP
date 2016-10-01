@@ -17,5 +17,5 @@ python-dateutil==2.5.3
 #python-ldap==2.4.19
 pytz==2016.6.1
 pysqlite==2.8.3
-tornado==4.4.1
+tornado==4.4.2
 wsgiref==0.1.2
