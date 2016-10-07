@@ -337,7 +337,6 @@ class TestPrefixTags(unittest.TestCase):
 
 
 
-
 class TestPrefixChildren(unittest.TestCase):
     """ Test calculation of children prefixes
     """
@@ -1540,6 +1539,46 @@ class TestAddressListing(unittest.TestCase):
         self.assertEqual(expected, result)
 
 
+    def testTags(self):
+        """ Verify that search matches tags
+        """
+
+        th = TestHelper()
+
+        # add a few prefixes
+        p1 = th.add_prefix('192.168.0.0/16', 'reservation', 'root', [ 'tag1' ])
+        p2 = th.add_prefix('192.168.0.0/20', 'reservation', 'test', [ 'tag2' ])
+        p3 = th.add_prefix('192.168.0.0/24', 'reservation', 'foo', ['tag3'])
+
+        expected = []
+
+        # match a tag
+        expected.append(p3.prefix)
+        res = Prefix.smart_search('#tag3')
+        result = []
+        for prefix in res['result']:
+            result.append(prefix.prefix)
+        self.assertEqual(expected, result)
+
+        # match an inherited tag
+        expected = [ p2.prefix ] + expected
+        res = Prefix.smart_search('#tag2')
+        result = []
+        for prefix in res['result']:
+            if prefix.match is True:
+                result.append(prefix.prefix)
+        self.assertEqual(expected, result)
+
+        # match two levels of inherited tags
+        expected = [ p1.prefix ] + expected
+        res = Prefix.smart_search('#tag1')
+        result = []
+        for prefix in res['result']:
+            if prefix.match is True:
+                result.append(prefix.prefix)
+        self.assertEqual(expected, result)
+
+
 
 class TestPrefixLastModified(unittest.TestCase):
     """ Test updates of the last modified value
@@ -2480,13 +2519,21 @@ class TestSmartParser(unittest.TestCase):
             'interpretation': {
                 'attribute': 'tag',
                 'error': False,
-                'interpretation': 'tag',
+                'interpretation': '(inherited) tag',
                 'operator': 'equals_any',
                 'string': '#foo'
             },
-            'operator': 'equals_any',
-            'val1': 'tags',
-            'val2': 'foo'
+            'operator': 'or',
+            'val1': {
+                'operator': 'equals_any',
+                'val1': 'tags',
+                'val2': 'foo'
+            },
+            'val2': {
+                'operator': 'equals_any',
+                'val1': 'inherited_tags',
+                'val2': 'foo'
+            }
         }
 
         self.assertEqual(success, True)
