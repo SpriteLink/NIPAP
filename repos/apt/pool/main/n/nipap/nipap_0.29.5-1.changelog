@@ -1,3 +1,11 @@
+nipap (0.29.5-1) stable; urgency=medium
+
+  * Added explicit dependency on WebOb >= 1.2 (#1066, #1068)
+  * Tag searches now matched against inherited tags again (#1055, 1064)
+  * Web UI now sends POST data with correct Content-Type (#1060, #1061)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Fri, 07 Oct 2016 16:20:04 +0200
+
 nipap (0.29.4-1) stable; urgency=medium
 
   * IPv4 addresses are mangled before used for search (#1020)
