@@ -56,6 +56,12 @@ apt-get install libapache2-mod-wsgi
 <pre class="literal-block">
 WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
 </pre>
+<p>If you are using Apache 2.4 you will also need to add the lines:</p>
+<pre class="literal-block">
+&lt;Directory /etc/nipap/&gt;
+    Require all granted
+&lt;/Directory&gt;
+</pre>
 <p>The web server needs to be able to write to its cache, alter the permissions of
 /var/cache/nipap-www so that the web server can write to it and preferrably
 also make sure no one else has access to it. For a typical Debian install of
