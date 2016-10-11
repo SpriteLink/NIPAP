@@ -1,7 +1,7 @@
 package jnipap;
 
 /**
- * The requested addition/change viloates unique constraints
+ * The requested addition/change violates unique constraints
  *
  * For example, when creating a VRF which already exists.
  */
