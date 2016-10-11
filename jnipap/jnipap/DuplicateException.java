@@ -5,7 +5,7 @@ package jnipap;
  *
  * For example, when creating a VRF which already exists.
  */
-class DuplicateException extends JnipapException {
+public class DuplicateException extends JnipapException {
 
 	// version ID for serialization
 	private static final long serialVersionUID = 0L;

@@ -5,7 +5,7 @@ package jnipap;
  *
  * Timeouts, ...
  */
-class ConnectionException extends JnipapException {
+public class ConnectionException extends JnipapException {
 
 	// version ID for serialization
 	private static final long serialVersionUID = 0L;
