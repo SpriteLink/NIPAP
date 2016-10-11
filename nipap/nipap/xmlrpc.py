@@ -665,6 +665,8 @@ class NipapXMLRPC:
                 Authentication options passed to the :class:`AuthFactory`.
             * `prefix` [struct]
                 Attributes used to select what prefix to remove.
+            * `recursive` [boolean]
+                When set to 1, also remove child prefixes.
         """
         try:
             return self.nip.remove_prefix(args.get('auth'), args.get('prefix'), args.get('recursive'))

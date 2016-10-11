@@ -3108,6 +3108,8 @@ class Nipap:
                 AAA options.
             * `spec` [prefix_spec]
                 Specifies prefixe to remove.
+            * `recursive` [bool]
+                When set to True, also remove child prefixes.
 
             This is the documentation of the internal backend function. It's
             exposed over XML-RPC, please also see the XML-RPC documentation for
