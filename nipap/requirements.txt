@@ -1,21 +1,21 @@
 Flask==0.11.1
-Flask-Compress==1.3.1
+Flask-Compress==1.3.2
 Flask-XML-RPC==0.1.2
 IPy==0.83
 Jinja2==2.8
 MarkupSafe==0.23
 Werkzeug==0.11.11
 backports.ssl-match-hostname==3.5.0.1
-certifi==2016.8.31
+certifi==2016.9.26
 itsdangerous==0.24
 parsedatetime==2.1
 psutil==1.2.1							# rq.filter: >= 1.0,<2.0
 psycopg2==2.6.2
-pyparsing==2.1.9
+pyparsing==2.1.10
 python-dateutil==2.5.3
 # optional dependency on ldap
 #python-ldap==2.4.19
-pytz==2016.6.1
+pytz==2016.7
 pysqlite==2.8.3
-tornado==4.4.1
+tornado==4.4.2
 wsgiref==0.1.2
