@@ -23,7 +23,7 @@ install:
     # -- common operations to apt install and virtualenv -----------------------
     # install dependencies for building packages and build NIPAP debian packages
     - sudo apt-get update
-    - sudo apt-get install -qq -y --force-yes devscripts python-dev python3-dev python-docutils debhelper dh-python junit4 python3-pip python-nose default-jdk
+    - sudo apt-get install -qq -y --force-yes devscripts python-dev python3-dev python-docutils debhelper dh-python junit4 python3-pip python-nose default-jdk gradle 
     # configure .nipaprc
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
     - chmod 0600 ~/.nipaprc
