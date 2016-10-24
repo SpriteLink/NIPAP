@@ -4,6 +4,7 @@ NIPAP is officially supported on Debian and Debian derivatives. This includes
 pre-built packages, an automated installation (using Debians post-installation
 script) and above all, that it is tested.
 
+
 Installation
 ------------
 If you are running a Debian system or a Debian derivative, see
@@ -12,6 +13,18 @@ If you are running a Debian system or a Debian derivative, see
 NIPAP should be able to run on any Unix-like operating system but you will need
 to install dependencies and NIPAP manually. See `installing on Unix systems
 <install-unix.rst>`_ for instructions.
+
+
+Upgrading
+---------
+For upgrading on Debian / Ubuntu make sure you use::
+
+    apt-get dist-upgrade
+
+The 'upgrade' command will not install any new dependencies and since it's
+fairly common that we introduce new dependencies in NIPAP it's prudent to
+always use dist-upgrade.
+
 
 Configuration
 -------------
