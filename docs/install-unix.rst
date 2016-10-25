@@ -16,7 +16,7 @@ Please do note that the git master branch is a development branch and is not
 recommended for production environments. Check out the tag for the latest
 stable version instead::
 
-    git checkout v0.27.4
+    git checkout v0.29.5
 
 PostgreSQL
 ----------

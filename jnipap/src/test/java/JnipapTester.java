@@ -11,6 +11,7 @@ import jnipap.Prefix;
 import jnipap.Connection;
 import jnipap.AddPrefixOptions;
 import jnipap.JnipapException;
+import jnipap.DuplicateException;
 
 import org.junit.Before;
 import org.junit.After;
@@ -248,6 +249,62 @@ public class JnipapTester {
 			fail("Smart seach operation resulted in " + e.getClass().getName() + " with message \"" + e.getMessage() + "\"");
 		}
 
+	}
+
+	/**
+	 * Test adding prefixes and performing a recursive remove
+	 */
+	@Test
+	public void addRecursiveRemovePrefix() {
+
+		// Add a parent and child prefix
+		Prefix prefix1, prefix2, prefix3;
+		prefix1 = new Prefix();
+		prefix1.prefix = "11.0.0.0/8";
+		prefix1.type = "reservation";
+		prefix1.description = "RFC1918 class A block";
+
+		prefix2 = new Prefix();
+		prefix2.prefix = "11.0.0.0/24";
+		prefix2.type = "assignment";
+		prefix2.description = "subnet";
+
+		prefix3 = new Prefix();
+		prefix3.prefix = "11.0.0.1/32";
+		prefix3.type = "host";
+		prefix3.description = "TEST TEST";
+
+		try {
+			prefix1.save(this.connection);
+			prefix2.save(this.connection);
+			prefix3.save(this.connection);
+		} catch (JnipapException e) {
+			fail("Save operation resulted in " + e.getClass().getName() + " with message \"" + e.getMessage() + "\"");
+		}
+
+		// Perform a recursive remove of the added prefixes
+		try {
+			prefix1.remove(this.connection, Boolean.TRUE);
+		} catch (JnipapException e) {
+			fail("Save operation resulted in " + e.getClass().getName() + " with message \"" + e.getMessage() + "\"");
+		}
+
+		// Search!
+		try {
+			// Add option to include all children
+			Map opts = new HashMap<String, Object>();
+			opts.put("children_depth", -1);
+
+			Map result = Prefix.search(this.connection, "11.0.0.0/8", opts);
+
+			int len = ((List)result.get("result")).size();
+			if (len > 0) {
+				fail("Smart search operation returned too many elements (" + len + "), should be 0");
+			}
+
+		} catch (JnipapException e) {
+			fail("Smart seach operation resulted in " + e.getClass().getName() + " with message \"" + e.getMessage() + "\"");
+		}
 
 	}
 

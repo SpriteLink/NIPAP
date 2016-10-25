@@ -5,7 +5,7 @@ package jnipap;
  * Thrown for example when an integer is specified when an IP address is
  * expected.
  */
-class ValueException extends JnipapException {
+public class ValueException extends JnipapException {
 
 	// version ID for serialization
 	private static final long serialVersionUID = 0L;

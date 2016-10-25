@@ -195,6 +195,19 @@ public class Prefix extends Jnipap {
 	 */
 	public void remove(Connection conn) throws JnipapException {
 
+		// Perform non-recursive remove
+		this.remove(conn, Boolean.FALSE);
+
+	}
+
+	/**
+	 * Remove object from NIPAP
+	 *
+	 * @param conn Connection with auth options
+	 * @param recursive When set to true, also remove child prefixes
+	 */
+	public void remove(Connection conn, Boolean recursive) throws JnipapException {
+
 		// Build prefix spec
 		HashMap prefix_spec = new HashMap();
 		prefix_spec.put("id", this.id);
@@ -203,6 +216,7 @@ public class Prefix extends Jnipap {
 		HashMap args = new HashMap();
 		args.put("auth", conn.authMap());
 		args.put("prefix", prefix_spec);
+		args.put("recursive", recursive);
 
 		List params = new ArrayList();
 		params.add(args);
@@ -500,7 +514,7 @@ public class Prefix extends Jnipap {
 				(country != null && country.equals(pref.country))) &&
 			(order_id == pref.order_id ||
 				(order_id != null && order_id.equals(pref.order_id))) &&
-            (customer_id == pref.customer_id ||
+			(customer_id == pref.customer_id ||
 				(customer_id != null && customer_id.equals(pref.customer_id))) &&
 			(external_key == pref.external_key ||
 				(external_key != null &&

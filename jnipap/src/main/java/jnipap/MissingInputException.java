@@ -5,7 +5,7 @@ package jnipap;
  *
  * This can probably be a RuntimeError instead
  */
-class MissingInputException extends InputException {
+public class MissingInputException extends InputException {
 
 	// version ID for serialization
 	private static final long serialVersionUID = 0L;
