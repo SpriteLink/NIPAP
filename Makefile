@@ -70,6 +70,7 @@ debrepo-testing-run:
 clean:
 	rm -f *.deb
 	rm -f *.tar.gz
+	rm -f *.tar.xz
 	rm -f *.build
 	rm -f *.changes
 	rm -f *.dsc
