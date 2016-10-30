@@ -15,6 +15,16 @@ script) and above all, that it is tested.</p>
 <p>NIPAP should be able to run on any Unix-like operating system but you will need
 to install dependencies and NIPAP manually. See <a class="reference external" href="install-unix.html">installing on Unix systems</a> for instructions.</p>
 </div>
+<div class="section" id="upgrading">
+<h1>Upgrading</h1>
+<p>For upgrading on Debian / Ubuntu make sure you use:</p>
+<pre class="literal-block">
+apt-get dist-upgrade
+</pre>
+<p>The 'upgrade' command will not install any new dependencies and since it's
+fairly common that we introduce new dependencies in NIPAP it's prudent to
+always use dist-upgrade.</p>
+</div>
 <div class="section" id="configuration">
 <h1>Configuration</h1>
 <p>Once you have NIPAP installed on your machine, read <a class="reference external" href="config-nipapd.html">nipap configuration</a> for a configuration guide of the NIPAP backend (nipapd).</p>
