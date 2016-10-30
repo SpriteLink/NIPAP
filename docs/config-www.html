@@ -41,10 +41,10 @@ httpd with mod_wsgi. For quick tests and development the lightweight server
 it's not really suitable for production deployment. To serve the NIPAP web UI
 from paster, run the following:</p>
 <pre class="literal-block">
-paster serve /etc/nipap/nipap-www.ini
+paster serve /etc/nipap/www/nipap-www.ini
 </pre>
 <p>Using the default configuration, the web UI should now be reachable on port
-5000. To change the port, edit /etc/nipap/nipap-www.ini.</p>
+5000. To change the port, edit /etc/nipap/www/nipap-www.ini.</p>
 </div>
 <div class="section" id="apache-httpd-with-mod-wsgi">
 <h2>Apache httpd with mod_wsgi</h2>
@@ -54,11 +54,11 @@ apt-get install libapache2-mod-wsgi
 </pre>
 <p>Then, add a new virtual host or configure the default one with the line:</p>
 <pre class="literal-block">
-WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
+WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
 </pre>
 <p>If you are using Apache 2.4 you will also need to add the lines:</p>
 <pre class="literal-block">
-&lt;Directory /etc/nipap/&gt;
+&lt;Directory /etc/nipap/www/&gt;
     Require all granted
 &lt;/Directory&gt;
 </pre>

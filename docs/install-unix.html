@@ -22,7 +22,7 @@ git clone https://github.com/SpriteLink/NIPAP.git
 recommended for production environments. Check out the tag for the latest
 stable version instead:</p>
 <pre class="literal-block">
-git checkout v0.27.4
+git checkout v0.29.5
 </pre>
 </div>
 <div class="section" id="postgresql">
@@ -72,6 +72,16 @@ cd ../nipap-cli
 python setup.py install
 </pre>
 </div>
+<div class="section" id="initialize-sqlite-auth-database">
+<h2>Initialize SQLite auth database</h2>
+<blockquote>
+<p># ls -l /etc/nipap/local_auth.db
+-rw-r--r-- 1 root root 0 Jun 14 14:26 /etc/nipap/local_auth.db</p>
+<p># nipap-passwd --create-database</p>
+<p>ls -l /etc/nipap/local_auth.db
+-rw-r--r-- 1 root root 3.1k Jun 14 16:52 /etc/nipap/local_auth.db</p>
+</blockquote>
+</div>
 <div class="section" id="running-nipapd">
 <h2>Running nipapd</h2>
 <p>Edit /etc/nipap/nipap.conf and fill in the database password that you set
@@ -80,6 +90,26 @@ start nipapd by executing:</p>
 <pre class="literal-block">
 /etc/init.d/nipapd start
 </pre>
+<p>Example of systemd (CentOS 7+):</p>
+<blockquote>
+[<a class="reference external" href="mailto:root&#64;nipap">root&#64;nipap</a> ~]# cat /usr/lib/systemd/system/nipapd.service
+[Unit]
+Description=nipapd daemon
+Documentation=man:nipapd(5)
+After=network.target
+[Service]
+Type=forking
+ExecStart=/usr/sbin/nipapd
+PIDFile=/var/run/nipap/nipapd.pid
+ExecStopPost=/usr/bin/echo $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=42s
+[Install]
+WantedBy=multi-user.target</blockquote>
+<p>Start:</p>
+<blockquote>
+systemctl start nipapd</blockquote>
 </div>
 <div class="section" id="cli-configuration">
 <h2>CLI configuration</h2>
@@ -171,7 +201,13 @@ paster serve /etc/nipap/nipap-www.ini
 <p>Begin by installing Apache httpd with mod_wsgi, then add a new virtual host or
 configure the default one with the line:</p>
 <pre class="literal-block">
-WSGIScriptAlias / /etc/nipap/nipap-www.wsgi
+WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
+</pre>
+<p>If you are using Apache 2.4 you will also need to add the lines:</p>
+<pre class="literal-block">
+&lt;Directory /etc/nipap/www/&gt;
+    Require all granted
+&lt;/Directory&gt;
 </pre>
 <p>The web server needs to be able to write to its cache, alter the permissions of
 /var/cache/nipap-www so that the web server can write to it and preferrably
