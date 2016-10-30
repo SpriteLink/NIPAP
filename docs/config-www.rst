@@ -37,10 +37,10 @@ Using paster is the easiest way to get the NIPAP web UI up and running, but
 it's not really suitable for production deployment. To serve the NIPAP web UI
 from paster, run the following::
 
-    paster serve /etc/nipap/nipap-www.ini
+    paster serve /etc/nipap/www/nipap-www.ini
 
 Using the default configuration, the web UI should now be reachable on port
-5000. To change the port, edit /etc/nipap/nipap-www.ini.
+5000. To change the port, edit /etc/nipap/www/nipap-www.ini.
 
 Apache httpd with mod_wsgi
 ==========================
