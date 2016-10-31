@@ -34,7 +34,6 @@ o = AuthOptions({
 # disable caching of objects in Pynipap
 pynipap.CACHE = False
 
-
 class TestHelper:
 
     @classmethod
@@ -3157,17 +3156,17 @@ class TestDatabaseConstraints(unittest.TestCase):
         th.add_prefix('1.3.3.0/32', 'host', d)
         th.add_prefix('1.3.3.1/32', 'host', d)
         with self.assertRaisesRegexp(NipapValueError, "Prefix of type host must have all bits set in netmask"):
-             # do not allow /31 as type 'host'
-             th.add_prefix('1.3.3.2/31', 'host', d)
+            # do not allow /31 as type 'host'
+            th.add_prefix('1.3.3.2/31', 'host', d)
         with self.assertRaisesRegexp(NipapValueError, "Parent prefix .* is of type assignment"):
-             # unable to create assignment within assignment
-             th.add_prefix('1.3.3.3/32', 'assignment', d)
+            # unable to create assignment within assignment
+            th.add_prefix('1.3.3.3/32', 'assignment', d)
         with self.assertRaisesRegexp(NipapValueError, "contains hosts"):
-             # unable to remove assignment containing hosts
-             p3.remove()
+            # unable to remove assignment containing hosts
+            p3.remove()
         with self.assertRaisesRegexp(NipapValueError, "'assignment' must not have any subnets other than of type 'host'"):
-             p2.type = 'assignment'
-             p2.save()
+            p2.type = 'assignment'
+            p2.save()
 
 
 if __name__ == '__main__':
