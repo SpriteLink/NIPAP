@@ -143,7 +143,7 @@ nipapAppControllers.controller('PrefixListController', function ($scope, $uibMod
 /*
  * PrefixAddController - Used to add prefixes to NIPAP
  */
-nipapAppControllers.controller('PrefixAddController', function ($scope, $routeParams, $http, prefixHelpers) {
+nipapAppControllers.controller('PrefixAddController', function ($scope, $routeParams, $http, prefixHelpers, inputValidationHelpers) {
 
 	// prefix method is add - used to customize prefix form template
 	$scope.method = 'add';
@@ -415,6 +415,8 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 			}
 		});
 
+		// Rewrite empty VLAN to null
+		query_data.vlan = inputValidationHelpers.emptyToNull($scope.prefix.vlan);
 
 		if ($scope.prefix_alloc_method == 'from-pool') {
 
@@ -462,7 +464,7 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 /*
  * PrefixEditController - used to edit prefixes
  */
-nipapAppControllers.controller('PrefixEditController', function ($scope, $routeParams, $http, $filter, prefixHelpers) {
+nipapAppControllers.controller('PrefixEditController', function ($scope, $routeParams, $http, $filter, prefixHelpers, inputValidationHelpers) {
 
 	// Prefix method is edit - used to customize prefix form template
 	$scope.method = 'edit';
@@ -639,6 +641,9 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 			// mangle date into ISO8601 format
 			prefix_data.expires = $filter('date')($scope.prefix.expires, 'yyyy-MM-dd HH:mm:ss');
 		}
+
+		// Rewrite empty VLAN to null
+		prefix_data.vlan = inputValidationHelpers.emptyToNull($scope.prefix.vlan);
 
 		// Set pool, if any
 		if ($scope.prefix.pool !== null) {
@@ -864,7 +869,7 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 /*
  * PoolAddController - used to add pools
  */
-nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
+nipapAppControllers.controller('PoolAddController', function ($scope, $http, inputValidationHelpers) {
 
 	$scope.method = 'add';
 	$scope.added_pools = [];
@@ -911,6 +916,10 @@ nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
 			}
 		});
 
+		// Rewrite empty integers to null
+		query_data.ipv4_default_prefix_length = inputValidationHelpers.emptyToNull($scope.pool.ipv4_default_prefix_length);
+		query_data.ipv6_default_prefix_length = inputValidationHelpers.emptyToNull($scope.pool.ipv6_default_prefix_length);
+
 		// Send query!
 		$http.post('/xhr/add_pool',
 				JSON.stringify(query_data),
@@ -934,7 +943,7 @@ nipapAppControllers.controller('PoolAddController', function ($scope, $http) {
 /*
  * PoolEditController - used to edit pools
  */
-nipapAppControllers.controller('PoolEditController', function ($scope, $routeParams, $http, $uibModal) {
+nipapAppControllers.controller('PoolEditController', function ($scope, $routeParams, $http, $uibModal, inputValidationHelpers) {
 
 	$scope.method = 'edit';
 	$scope.edited_pools = [];
@@ -1101,6 +1110,10 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 				query_data.avps[avp.attribute] = avp.value;
 			}
 		});
+
+		// Rewrite empty integer to null
+		query_data.ipv4_default_prefix_length = inputValidationHelpers.emptyToNull($scope.pool.ipv4_default_prefix_length);
+		query_data.ipv6_default_prefix_length = inputValidationHelpers.emptyToNull($scope.pool.ipv6_default_prefix_length);
 
 		// Send query!
 		$http.post('/xhr/edit_pool/' + $scope.pool.id,
