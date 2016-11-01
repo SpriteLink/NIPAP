@@ -12,7 +12,7 @@ Build instructions
 ------------------
 OJNIPAP depends on JNIPAP and the Oracle Database JDBC drivers. JNIPAP will
 automatically be built when needed, but the JDBC drivers must be downloaded
-from Oracle. Place the file ``ojdbc5.jar`` in the lib/directory and then build
-OJNIPAP with:
+from Oracle. Place the file ``ojdbc5.jar`` in the ojnipap/lib directory and
+then build OJNIPAP with:
 
 ``make jar```
