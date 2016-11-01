@@ -1,0 +1,168 @@
+import configparser
+import os
+# use local pynipap, useful if we are developing
+import sys
+sys.path.append('../pynipap')
+from pynipap import Prefix, Pool, VRF
+import pynipap
+import csv
+import ipaddress
+
+
+def add_ip_to_net(networks, host):
+    """
+    Add hosts from IPPlan to networks object.
+    """
+    for network in networks:
+        if host['ipaddr'] in network['network']:
+            network['hosts'].append(host)
+            return
+
+
+def get_networks(base_file, ipaddr_file):
+    """
+    Gather network and host information from IPPlan export files.
+    """
+    networks = []
+
+    base = open(base_file, 'r')
+
+    csv_reader = csv.reader(base.readlines(), delimiter='\t')
+    for row in csv_reader:
+        """
+            Rows with less than 3 entries is most likely a newline.
+        """
+        if len(row) < 3:
+            continue
+
+        network = {
+            'network': ipaddress.ip_network('{}/{}'.format(row[0], row[2])),
+            'comment': row[1],
+            'hosts': []
+        }
+
+        networks.append(network)
+
+    base.close()
+
+    ipaddr = open(ipaddr_file, 'r')
+
+    csv_reader = csv.reader(ipaddr.readlines(), delimiter='\t')
+    for row in csv_reader:
+
+        host = {
+            'ipaddr': ipaddress.ip_address(row[0]),
+            'user': row[1],
+            'location': row[2],
+            'description': row[3],
+            'fqdn': row[4],
+            'phone': row[5],
+            'mac': row[6]
+        }
+
+        if len(row) > 7:
+            host['additional'] = ' '.join(row[7:])
+
+        add_ip_to_net(networks, host)
+
+    ipaddr.close()
+
+    return networks
+
+def new_prefix():
+    p = pynipap.Prefix()
+    p.authorative_source = 'import'
+    return p
+
+
+def add_prefix(network):
+    p = new_prefix()
+    p.prefix = str(network['network'])
+    p.type = 'assignment'
+    p.description = network['comment']
+    p.tags = ['ipplan-import']
+    return p
+
+def add_host(host):
+    p = new_prefix()
+    p.prefix = str(host['ipaddr'])
+    p.type = 'host'
+    p.description = host['description']
+    p.node = host['fqdn']
+    p.comment = ''
+
+    if 'additional' in host:
+        p.comment += '{}\n'.format(host['additional'])
+
+    if len(host['location']) > 0:
+        p.comment += 'Location: {}\n'.format(host['location'])
+
+    if len(host['mac']) > 0:
+        p.comment += 'MAC: {}'.format(host['mac'])
+
+    if len(host['phone']) > 0:
+        p.comment += 'Phone: {}'.format(host['phone'])
+
+    if len(host['user']) > 0:
+        p.comment += 'User: {}'.format(host['user'])
+
+    return p
+
+
+if __name__ == '__main__':
+    # read configuration
+    cfg = configparser.ConfigParser()
+    cfg.read(os.path.expanduser('~/.nipaprc'))
+
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--username', help="NIPAP backend username")
+    parser.add_argument('--password', help="NIPAP backend password")
+    parser.add_argument('--host', help="NIPAP backend host")
+    parser.add_argument('--port', help="NIPAP backend port")
+    ipplan = parser.add_argument_group()
+    ipplan.add_argument('--base-file', help="Path to ipplan base csv file", required=True)
+    ipplan.add_argument('--ipaddr-file', help="Path to ipplan ipaddr csv file", required=True)
+    args = parser.parse_args()
+
+    auth_uri = "%s:%s@" % (args.username or cfg.get('global', 'username'),
+            args.password or cfg.get('global', 'password'))
+
+    xmlrpc_uri = "http://%(auth_uri)s%(host)s:%(port)s" % {
+            'auth_uri'  : auth_uri,
+            'host'      : args.host or cfg.get('global', 'hostname'),
+            'port'      : args.port or cfg.get('global', 'port')
+            }
+    pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
+    pynipap.xmlrpc_uri = xmlrpc_uri
+
+    networks = get_networks(args.base_file, args.ipaddr_file)
+
+
+    # Collect all prefixes and hosts that couldn't be saved to NIPAP.
+    logfile = '/tmp/ipplan-import-errors.log'
+    log = open(logfile, 'a')
+
+    for network in networks:
+        p = add_prefix(network)
+        try:
+            p.save()
+        except Exception as exc:
+            log.write('ERROR: {}\n'.format(exc))
+            log.write('INFO: prefix: {}, type: {}, comment: {}\n'.format(p.prefix, p.type, p.description))
+
+
+        for host in network['hosts']:
+            p = add_host(host)
+            try:
+                p.save()
+            except Exception as exc:
+                log.write('ERROR: {}\n'.format(exc))
+                log.write('INFO: host: {}, type: {}, node: {}, desc: {}, comment: {}\n'.format(p.prefix, p.type, p.node, p.description, p.comment))
+
+    if os.path.getsize(logfile) > 0:
+        print('Done with errors, have a look in /tmp/ipplan-import-errors.log...')
+    else:
+        print('All done!')
+
+    log.close()
