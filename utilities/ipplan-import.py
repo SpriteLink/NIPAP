@@ -72,6 +72,7 @@ def get_networks(base_file, ipaddr_file):
 
     return networks
 
+
 def new_prefix():
     """
     Create new prefix object with general settings.
@@ -91,6 +92,7 @@ def add_prefix(network):
     p.description = network['comment']
     p.tags = ['ipplan-import']
     return p
+
 
 def add_host(host):
     """
@@ -134,22 +136,24 @@ if __name__ == '__main__':
     parser.add_argument('--host', help="NIPAP backend host")
     parser.add_argument('--port', help="NIPAP backend port")
     ipplan = parser.add_argument_group()
-    ipplan.add_argument('--base-file', help="Path to ipplan base csv file", required=True)
-    ipplan.add_argument('--ipaddr-file', help="Path to ipplan ipaddr csv file", required=True)
-    ipplan.add_argument('--logfile', help="Path to import error log", default='/tmp/ipplan-import-errors.log')
+    ipplan.add_argument('--base-file', help="Path to ipplan base csv file",
+                        required=True)
+    ipplan.add_argument('--ipaddr-file', help="Path to ipplan ipaddr csv file",
+                        required=True)
+    ipplan.add_argument('--logfile', help="Path to import error log",
+                        default='/tmp/ipplan-import-errors.log')
     args = parser.parse_args()
 
     auth_uri = "%s:%s@" % (args.username or cfg.get('global', 'username'),
-            args.password or cfg.get('global', 'password'))
+                           args.password or cfg.get('global', 'password'))
 
     xmlrpc_uri = "http://%(auth_uri)s%(host)s:%(port)s" % {
-            'auth_uri'  : auth_uri,
-            'host'      : args.host or cfg.get('global', 'hostname'),
-            'port'      : args.port or cfg.get('global', 'port')
+            'auth_uri': auth_uri,
+            'host': args.host or cfg.get('global', 'hostname'),
+            'port': args.port or cfg.get('global', 'port')
             }
-    pynipap.AuthOptions({ 'authoritative_source': 'nipap' })
+    pynipap.AuthOptions({'authoritative_source': 'nipap'})
     pynipap.xmlrpc_uri = xmlrpc_uri
-
 
     networks = get_networks(args.base_file, args.ipaddr_file)
 
@@ -162,8 +166,8 @@ if __name__ == '__main__':
             p.save()
         except Exception as exc:
             log.write("ERROR: {}\n".format(exc))
-            log.write("INFO: prefix: {}, type: {}, comment: {}\n".format(p.prefix, p.type, p.description))
-
+            log.write("INFO: prefix: {}, type: {}, comment: {}\n".format(
+                p.prefix, p.type, p.description))
 
         for host in network['hosts']:
             p = add_host(host)
@@ -171,7 +175,9 @@ if __name__ == '__main__':
                 p.save()
             except Exception as exc:
                 log.write("ERROR: {}\n".format(exc))
-                log.write("INFO: host: {}, type: {}, node: {}, desc: {}, comment: {}\n".format(p.prefix, p.type, p.node, p.description, p.comment))
+                log.write("INFO: host: {}, type: {}, node: {}, desc: {} \
+                          , comment: {}\n".format(
+                          p.prefix, p.type, p.node, p.description, p.comment))
 
     if os.path.getsize(args.logfile) > 0:
         print("Done with errors, have a look in {}...".format(args.logfile))
