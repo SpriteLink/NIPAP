@@ -148,10 +148,10 @@ if __name__ == '__main__':
                            args.password or cfg.get('global', 'password'))
 
     xmlrpc_uri = "http://%(auth_uri)s%(host)s:%(port)s" % {
-            'auth_uri': auth_uri,
-            'host': args.host or cfg.get('global', 'hostname'),
-            'port': args.port or cfg.get('global', 'port')
-            }
+        'auth_uri': auth_uri,
+        'host': args.host or cfg.get('global', 'hostname'),
+        'port': args.port or cfg.get('global', 'port')
+        }
     pynipap.AuthOptions({'authoritative_source': 'nipap'})
     pynipap.xmlrpc_uri = xmlrpc_uri
 
