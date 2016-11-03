@@ -1,7 +1,7 @@
-"""
-NIPAP import script for IPplan data.
+#!/usr/bin/env python3
+""" NIPAP import script for ipplan data.
 
-This script uses the standard export files base.txt and ipaddr.txt from Ipplan.
+This script uses the standard export files base.txt and ipaddr.txt from ipplan.
 """
 import configparser
 import os
@@ -14,9 +14,7 @@ import ipaddress
 
 
 def add_ip_to_net(networks, host):
-    """
-    Add hosts from IPPlan to networks object.
-    """
+    """ Add hosts from ipplan to networks object. """
     for network in networks:
         if host['ipaddr'] in network['network']:
             network['hosts'].append(host)
@@ -24,33 +22,41 @@ def add_ip_to_net(networks, host):
 
 
 def get_networks(base_file, ipaddr_file):
-    """
-    Gather network and host information from IPPlan export files.
-    """
+    """ Gather network and host information from ipplan export files. """
     networks = []
 
     base = open(base_file, 'r')
 
-    csv_reader = csv.reader(base.readlines(), delimiter='\t')
+    csv_reader = csv.reader(base, delimiter='\t')
+
+    buffer = ""
     for row in csv_reader:
 
-        # Rows with less than 3 entries is most likely a newline.
+        # Fixes quotation bug in ipplan exporter for networks
+        if len(networks) > 0 and len(buffer) > 0:
+            networks[-1]['comment'] += " ".join(buffer)
+            buffer = ""
         if len(row) < 3:
-            continue
+            buffer = row
+        else:
 
-        network = {
-            'network': ipaddress.ip_network("{}/{}".format(row[0], row[2])),
-            'comment': row[1],
-            'hosts': []
-        }
+            network = {
+                'network': ipaddress.ip_network("{}/{}".format(row[0], row[2])),
+                'description': row[1],
+                'hosts': [],
+                'comment': ""
+            }
 
-        networks.append(network)
+            if len(row) > 3:
+                network['additional'] = " ".join(row[3:])
+
+            networks.append(network)
 
     base.close()
 
     ipaddr = open(ipaddr_file, 'r')
 
-    csv_reader = csv.reader(ipaddr.readlines(), delimiter='\t')
+    csv_reader = csv.reader(ipaddr, delimiter='\t')
     for row in csv_reader:
 
         host = {
@@ -74,52 +80,53 @@ def get_networks(base_file, ipaddr_file):
 
 
 def new_prefix():
-    """
-    Create new prefix object with general settings.
-    """
+    """ Create new prefix object with general settings. """
     p = pynipap.Prefix()
     p.authorative_source = "nipap"
     return p
 
 
 def add_prefix(network):
-    """
-    Put your network information in the prefix object.
-    """
+    """ Put your network information in the prefix object. """
     p = new_prefix()
     p.prefix = str(network['network'])
     p.type = "assignment"
-    p.description = network['comment']
+    p.description = network['description']
     p.tags = ['ipplan-import']
+    p.comment = ""
+
+    if 'additional' in network:
+        p.comment += network['additional']
+    if len(network['comment']) > 0:
+        p.comment += network['comment']
     return p
 
 
 def add_host(host):
-    """
-    Put your host information in the prefix object.
-    """
+    """ Put your host information in the prefix object. """
     p = new_prefix()
     p.prefix = str(host['ipaddr'])
     p.type = "host"
     p.description = host['description']
     p.node = host['fqdn']
-    p.comment = ""
+    p.avps = {}
 
     # Use remaining data from ipplan to populate comment field.
     if 'additional' in host:
-        p.comment += "{}\n".format(host['additional'])
+        p.comment = host['additional']
 
+    # Use specific info to create extra attributes.
     if len(host['location']) > 0:
-        p.comment += "Location: {}\n".format(host['location'])
+        p.avps['location'] = host['location']
 
     if len(host['mac']) > 0:
-        p.comment += "MAC: {}".format(host['mac'])
+        p.avps['mac'] = host['mac']
 
     if len(host['phone']) > 0:
-        p.comment += "Phone: {}".format(host['phone'])
+        p.avps['phone'] = host['phone']
 
     if len(host['user']) > 0:
-        p.comment += "User: {}".format(host['user'])
+        p.avps['user'] = host['user']
 
     return p
 
@@ -141,7 +148,7 @@ if __name__ == '__main__':
     ipplan.add_argument('--ipaddr-file', help="Path to ipplan ipaddr csv file",
                         required=True)
     ipplan.add_argument('--logfile', help="Path to import error log",
-                        default='/tmp/ipplan-import-errors.log')
+                        default="/tmp/ipplan-import-errors.log")
     args = parser.parse_args()
 
     auth_uri = "%s:%s@" % (args.username or cfg.get('global', 'username'),
@@ -166,8 +173,7 @@ if __name__ == '__main__':
             p.save()
         except Exception as exc:
             log.write("ERROR: {}\n".format(exc))
-            log.write("INFO: prefix: {}, type: {}, comment: {}\n".format(
-                p.prefix, p.type, p.description))
+            log.write("INFO: prefix: {}, type: {}, comment: {}\n".format(p.prefix, p.type, p.description))
 
         for host in network['hosts']:
             p = add_host(host)
@@ -175,9 +181,7 @@ if __name__ == '__main__':
                 p.save()
             except Exception as exc:
                 log.write("ERROR: {}\n".format(exc))
-                log.write("INFO: host: {}, type: {}, node: {}, desc: {} \
-                          , comment: {}\n".format(
-                          p.prefix, p.type, p.node, p.description, p.comment))
+                log.write("INFO: host: {}, type: {}, node: {}, desc: {}, comment: {}\n".format(p.prefix, p.type, p.node, p.description, p.comment))
 
     if os.path.getsize(args.logfile) > 0:
         print("Done with errors, have a look in {}...".format(args.logfile))
