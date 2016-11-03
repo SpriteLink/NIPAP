@@ -2,6 +2,12 @@
 """ NIPAP import script for ipplan data.
 
 This script uses the standard export files base.txt and ipaddr.txt from ipplan.
+
+base.txt format:
+ip\t description\t netmask\t comment
+
+ipaddr.txt format:
+ip\t user\t location\t description\t hostname\t phone\t comment
 """
 import configparser
 import os
