@@ -8,6 +8,8 @@ ip\t description\t netmask\t comment
 
 ipaddr.txt format:
 ip\t user\t location\t description\t hostname\t phone\t comment
+
+The comment fields can hold multiple lines.
 """
 import configparser
 import os
@@ -38,7 +40,7 @@ def get_networks(base_file, ipaddr_file):
     buffer = ""
     for row in csv_reader:
 
-        # Fixes quotation bug in ipplan exporter for networks
+        # Fixes quotation bug in ipplan exporter for base.txt
         if len(networks) > 0 and len(buffer) > 0:
             networks[-1]['comment'] += " ".join(buffer)
             buffer = ""
