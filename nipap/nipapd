@@ -85,8 +85,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='NIPAP backend server')
     parser.add_argument('--auto-install-db', action='store_true', help='automatically install db schema')
     parser.add_argument('--auto-upgrade-db', action='store_true', help='automatically upgrade db schema')
-    parser.add_argument('-d', '--debug', action='store_true', dest='debug', help='enable debugging')
-    parser.add_argument('-f', '--foreground', action='store_true', dest='foreground', help='run in foreground and log to stdout')
+    parser.add_argument('-d', '--debug', action='store_true', default=None, dest='debug', help='enable debugging')
+    parser.add_argument('-f', '--foreground', action='store_true', default=None, dest='foreground', help='run in foreground and log to stdout')
     parser.add_argument('-l', '--listen', type=str, metavar='ADDRESS', help='listen to IPv4/6 ADDRESS')
     parser.add_argument('-p', '--port', dest='port', type=int, help='listen on TCP port PORT')
     parser.add_argument('-c', '--config', dest='config_file', type=str, default='/etc/nipap/nipap.conf', help='read configuration from file CONFIG_FILE')
@@ -139,20 +139,14 @@ if __name__ == '__main__':
 
     # Go through list of argparse args and set the config object to
     # their values.
+    args_dict = vars(args)
     for arg_dest in cfg_args:
-        # This is not very pretty... but how can I otherwise access elements
-        # in the args object from variables?
-        try:
-            if eval('args.' + arg_dest) is None:
-                continue
-        except AttributeError:
-            continue
-
-        try:
-            cfg.set('nipapd', arg_dest, str(eval("args." + arg_dest)))
-        except ConfigParser.NoSectionError as exc:
-            print >> sys.stderr, "The configuration file contains errors:", exc
-            sys.exit(1)
+        if arg_dest in args_dict and args_dict[arg_dest] is not None:
+            try:
+                cfg.set('nipapd', arg_dest, unicode(args_dict[arg_dest]))
+            except ConfigParser.NoSectionError as exc:
+                print >> sys.stderr, "The configuration file contains errors:", exc
+                sys.exit(1)
 
     # drop privileges
     if cfg.get('nipapd', 'user') is not None:
