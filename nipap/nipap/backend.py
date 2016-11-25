@@ -2378,11 +2378,11 @@ class Nipap:
         # prefix family needs to be handled separately as it's not stored
         # explicitly in the database
         if family:
-            params['family'] = family
             if len(params) == 0:
                 where = "family(" + prefix + "prefix) = %(family)s"
             else:
                 where += " AND family(" + prefix + "prefix) = %(family)s"
+            params['family'] = family
 
         self._logger.debug("_expand_prefix_spec; where: %s params: %s" % (where, unicode(params)))
         return where, params
