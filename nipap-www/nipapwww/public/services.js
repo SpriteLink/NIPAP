@@ -96,3 +96,28 @@ nipapAppServices.factory('prefixHelpers', function () {
 
 });
 
+
+/*
+ * Service with handy input validation and mangling functions
+ */
+nipapAppServices.factory('inputValidationHelpers', function () {
+
+	var serviceInstance = {};
+
+	/*
+	 * Convert empty strings to null and strip whitespace
+	 */
+	serviceInstance.emptyToNull = function(value) {
+
+		// Rewrite empty string to null
+		if ($.trim(value) === '') {
+			return null;
+		} else {
+			return $.trim(value);
+		}
+
+	};
+
+	return serviceInstance;
+
+});
