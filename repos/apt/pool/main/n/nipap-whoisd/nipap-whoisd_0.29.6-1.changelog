@@ -1,3 +1,18 @@
+nipap-whoisd (0.29.6-1) stable; urgency=medium
+
+  * Test scripts merged (#1059)
+  * Added support for recursive prefix remove to jnipap (#1076)
+  * Introduced gradle as build system for jnipap (#1081)
+  * VLANs can now be unset from the web UI (#1085, #1092)
+  * Various small fixes to the build system and docs (#1086, #1087,
+    #1090)
+  * Added import script for IPplan (#1093)
+  * Debug logging to syslog now works again (#1044, #1105)
+  * list_prefix with only address family as argument now works (#1091,
+    #1106)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Fri, 25 Nov 2016 21:03:05 +0100
+
 nipap-whoisd (0.29.5-1) stable; urgency=medium
 
   * Added explicit dependency on WebOb >= 1.2 (#1066, #1068)
