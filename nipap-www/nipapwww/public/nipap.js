@@ -841,7 +841,10 @@ function showPrefixMenu(prefix_id) {
 			var dialog = showDialogYesNo('Really remove prefix?', confirmation_text, confirmation_action);
         });
 
-		menu.append('<a href="/ng/prefix#/prefix/add/from-prefix/' + prefix_id + '">Add prefix from prefix</a>');
+		// Add button to add prefix from prefix, unless it's of max prefix length
+		if (!hasMaxPreflen(prefix_list[prefix_id])) {
+			menu.append('<a href="/ng/prefix#/prefix/add/from-prefix/' + prefix_id + '">Add prefix from prefix</a>');
+		}
 
 	}
 
