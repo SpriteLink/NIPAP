@@ -3,6 +3,7 @@ package net.spritelink.nsonipap;
 import net.spritelink.nsonipap.namespaces.*;
 
 import java.util.*;
+import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
@@ -79,30 +80,33 @@ public class ConfigCdbSub implements ApplicationComponent {
     /**
      * Add a host prefix from a prefix.
      *
-     * @param path  Path to the prefix request
-     * @param parentPrefix From prefix
-     * @throws Exception
+     * @param path Path to the prefix request
+     * @param parentPrefix Prefix to get host prefix from
+     * @throws ConfException
+     * @throws IOException
      */
-    protected void addHostPrefixFromPrefix(String path, Prefix parentPrefix) throws Exception {
+    protected void addHostPrefixFromPrefix(String path, Prefix parentPrefix) throws ConfException, IOException {
 
         LOGGER.info("Create, From prefix request, path = " + path);
+
+        AddPrefixOptions child_opts = new AddPrefixOptions();
+        child_opts.put("prefix_length", "32");
+
         Prefix child_prefix = new Prefix();
+        child_prefix = getPrefixAttributesFromCDB(path + "/" + nipap._attributes_ );
+        child_prefix.type = "host";
+
         try {
-
-            AddPrefixOptions child_opts = new AddPrefixOptions();
-            child_opts.put("prefix_length", "32");
-
-            child_prefix = getPrefixAttributesFromCDB(path + "/" + nipap._attributes_ );
-            child_prefix.type = "host";
             child_prefix.save(nipapCon, parentPrefix, child_opts);
-
-        } catch (Exception e ) {
+        } catch (JnipapException e) {
             LOGGER.error("Unable to get prefix from prefix" + e.getMessage(), e);
             writeError(path, e.getMessage());
             return;
         }
-        //write response
+
+        // write response
         writeResponseToCDB(child_prefix, path + "/" + nipap._response_);
+
     }
 
     /**
@@ -110,9 +114,10 @@ public class ConfigCdbSub implements ApplicationComponent {
      *
      * @param attributePath Path to the prefix attribute container
      * @return <code>Prefix</code>
-     * @throws Exception
+     * @throws ConfException
+     * @throws IOException
      */
-    protected Prefix getPrefixAttributesFromCDB(String attributePath) throws Exception {
+    protected Prefix getPrefixAttributesFromCDB(String attributePath) throws ConfException, IOException {
 
         Prefix p = new Prefix();
 
@@ -125,10 +130,11 @@ public class ConfigCdbSub implements ApplicationComponent {
      * @param basePrefix Used if you already have a prefix object
      * @param attributePath Path to the prefix attribute container
      * @return <code>Prefix</code>
-     * @throws Exception
+     * @throws ConfException
+     * @throws IOException
      */
-    protected Prefix getPrefixAttributesFromCDB(Prefix basePrefix, String attributePath) throws Exception
-    {
+    protected Prefix getPrefixAttributesFromCDB(Prefix basePrefix, String attributePath) throws ConfException, IOException {
+
         Prefix p = basePrefix;
 
         if (maapi.exists(th, attributePath + "/" + nipap._customer_id_)) {
@@ -160,14 +166,14 @@ public class ConfigCdbSub implements ApplicationComponent {
     }
 
     /**
-     * Fetch PrefixOptions from CDB
+     * Fetch prefix options from CDB
      *
      * @param argumentPath Path to prefix argument container
      * @return AddPrefixOptions
-     * @throws Exception
+     * @throws ConfException
+     * @throws IOException
      */
-
-    protected AddPrefixOptions getPrefixOptionsFromCDB (String argumentPath) throws Exception {
+    protected AddPrefixOptions getPrefixOptionsFromCDB (String argumentPath) throws ConfException, IOException {
         AddPrefixOptions opts = new AddPrefixOptions();
 
         ConfEnumeration family = (ConfEnumeration)maapi.getElem(
@@ -185,12 +191,12 @@ public class ConfigCdbSub implements ApplicationComponent {
     /**
      * Write response data to CDB oper
      *
-     * @param prefix Prefix to write
-     * @param responsePath Path were the response should be written.
+     * @param prefix Prefix object to write
+     * @param responsePath Path were the response should be written
      * @throws ConfException
-     * @throws Exception
+     * @throws IOException
      */
-    protected void writeResponseToCDB(Prefix prefix, String responsePath) throws ConfException, Exception {
+    protected void writeResponseToCDB(Prefix prefix, String responsePath) throws ConfException, IOException {
 
         if (prefix.family == 4) {
             ConfIPv4Prefix prefixValue = new ConfIPv4Prefix(prefix.prefix);
@@ -232,12 +238,14 @@ public class ConfigCdbSub implements ApplicationComponent {
      *
      * @param path Path to request
      * @param errorMessage Error message
-     * @throws Exception
+     * @throws ConfException
+     * @throws IOException
      */
-    protected void writeError(String path, String errorMessage) throws Exception {
+    protected void writeError(String path, String errorMessage) throws ConfException, IOException {
 
         wsess.setElem(new ConfBuf(errorMessage), path + "/" + nipap._response_ + "/" + nipap._error_);
         wsess.setCase(nipap._response_choice_, nipap._error_, path + "/" + nipap._response_);
+
     }
 
     /**
@@ -246,9 +254,9 @@ public class ConfigCdbSub implements ApplicationComponent {
      *
      * @param responsePath path to response
      * @throws ConfException
-     * @throws Exception
+     * @throws IOException
      */
-    protected void removeResponseFromCDB(String responsePath) throws ConfException, Exception {
+    protected void removeResponseFromCDB(String responsePath) throws ConfException, IOException {
         //unset case
 
         LOGGER.info("remove response " + responsePath);
@@ -267,10 +275,11 @@ public class ConfigCdbSub implements ApplicationComponent {
      * Update NIPAP with the new prefix information
      *
      * @param prefixPath Path to prefix request
-     * @throws Exception
+     * @throws ConfException
+     * @throws IOException
+     * @throws JnipapException for NIPAP related issues
      */
-
-    protected void updatePrefixInNIPAP(String prefixPath) throws Exception {
+    protected void updatePrefixInNIPAP(String prefixPath) throws ConfException, IOException, JnipapException {
 
         LOGGER.info("Update prefix: " + prefixPath);
         String responsePath = prefixPath + "/" + nipap._response_;
@@ -288,30 +297,34 @@ public class ConfigCdbSub implements ApplicationComponent {
     /**
      * Remove Prefix from NIPAP
      *
-     * @param prefixPath path to Prefix
+     * @param prefixPath Path to Prefix
      * @throws ConfException
-     * @throws Exception
+     * @throws IOException
+     * @throws JnipapException for NIPAP related issues
      */
+    protected void removePrefixFromNIPAP(String prefixPath) throws ConfException, IOException, JnipapException {
 
-    protected void removePrefixFromNIPAP(String prefixPath) throws ConfException, Exception {
+        int p_id = getPrefixId(prefixPath);
+        LOGGER.info("Removing prefix ID: " + p_id);
+
         try {
-            int p_id = getPrefixId(prefixPath);
-            LOGGER.info("Removing prefix ID: " + p_id);
             Prefix p = Prefix.get(nipapCon, p_id);
             p.remove(nipapCon);
-        } catch (Exception e) {
+        } catch (JnipapException e) {
             LOGGER.error("Unable to remove prefix from NIPAP: " + e.getMessage(),e);
+            throw e;
         }
     }
 
     /**
-     * Get prefix id
+     * Get prefix ID
      *
      * @param path Path to prefix response
-     * @return Prefix id
-     * @throws Exception
+     * @return Prefix ID
+     * @throws ConfException
+     * @throws IOException
      */
-    protected int getPrefixId(String path) throws Exception {
+    protected int getPrefixId(String path) throws ConfException, IOException {
         return (int) ((ConfUInt32)wsess.getElem(path  + "/" +
                     nipap._prefix_id_)).longValue();
     }
@@ -386,21 +399,21 @@ public class ConfigCdbSub implements ApplicationComponent {
                             poolSpec.put("name", poolName);
                             List poolRes = Pool.list(nipapCon, poolSpec);
 
-                            if (poolRes.size() != 1){
-                                writeError(req.path.toString(), "Nipap pool not found");
+                            if (poolRes.size() != 1) {
+                                writeError(req.path.toString(), "Pool " + poolName + " not found in NIPAP");
                                 continue;
                             }
 
                             // options, like address-family
                             AddPrefixOptions opts = getPrefixOptionsFromCDB(req.path + "/" + nipap._arguments_);
 
-                            //set prefix attributes
+                            // set prefix attributes
                             String attrPath = req.path + "/" + nipap._attributes_;
                             p = getPrefixAttributesFromCDB(attrPath);
 
                             p.save(nipapCon, (Pool)poolRes.get(0), opts);
 
-                        } catch (Exception e) {
+                        } catch (JnipapException e) {
                             LOGGER.error("Unable to get prefix from NIPAP: " + e.getMessage(), e);
                             writeError(req.path.toString(), e.getMessage());
                             continue;
