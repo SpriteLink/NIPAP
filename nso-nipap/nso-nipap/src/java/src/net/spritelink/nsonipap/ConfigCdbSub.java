@@ -122,14 +122,14 @@ public class ConfigCdbSub implements ApplicationComponent {
     /**
      * Fetch attributes and returns the populated prefix object
      *
-     * @param oldPrefix Used if you already have a prefix object
+     * @param basePrefix Used if you already have a prefix object
      * @param attributePath Path to the prefix attribute container
      * @return <code>Prefix</code>
      * @throws Exception
      */
-    protected Prefix getPrefixAttributesFromCDB(Prefix oldPrefix, String attributePath) throws Exception
+    protected Prefix getPrefixAttributesFromCDB(Prefix basePrefix, String attributePath) throws Exception
     {
-        Prefix p = oldPrefix;
+        Prefix p = basePrefix;
 
         if (maapi.exists(th, attributePath + "/" + nipap._customer_id_)) {
             ConfValue rCustomer_id = maapi.getElem(th, attributePath + "/" + nipap._customer_id_);
