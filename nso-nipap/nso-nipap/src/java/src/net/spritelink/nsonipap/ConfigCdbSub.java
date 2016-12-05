@@ -34,16 +34,16 @@ public class ConfigCdbSub implements ApplicationComponent {
     }
 
     @Resource(type=ResourceType.CDB, scope=Scope.CONTEXT,
-            qualifier="reactive-fm-loop-subscriber")
-        private Cdb cdb;
+        qualifier="reactive-fm-loop-subscriber")
+    private Cdb cdb;
 
     @Resource(type=ResourceType.CDB, scope=Scope.CONTEXT,
-            qualifier="w-reactive-fm-loop")
-        private Cdb wcdb;
+        qualifier="w-reactive-fm-loop")
+    private Cdb wcdb;
 
     @Resource(type=ResourceType.MAAPI, scope=Scope.INSTANCE,
-            qualifier="reactive-fm-m")
-        private Maapi maapi;
+        qualifier="reactive-fm-m")
+    private Maapi maapi;
 
     private int th = -1;
 
@@ -62,7 +62,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 
             sub = cdb.newSubscription();
 
-            sub.subscribe(1, new nipap(), 
+            sub.subscribe(1, new nipap(),
                     "/services/" +
                     nipap.prefix + "/" +
                     nipap._from_pool_ + "/" +
@@ -71,8 +71,7 @@ public class ConfigCdbSub implements ApplicationComponent {
             // Tell CDB we are ready for notifications
             sub.subscribeDone();
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOGGER.error("", e);
         }
     }
@@ -97,7 +96,7 @@ public class ConfigCdbSub implements ApplicationComponent {
             child_prefix.type = "host";
             child_prefix.save(nipapCon, parentPrefix, child_opts);
 
-        }catch (Exception e ) {
+        } catch (Exception e ) {
             LOGGER.error("Unable to get prefix from prefix" + e.getMessage(), e);
             writeError(path, e.getMessage());
             return;
@@ -123,7 +122,7 @@ public class ConfigCdbSub implements ApplicationComponent {
     /**
      * Fetch attributes and returns the populated prefix object
      *
-     * @param oldPrefix Used if you already have a prefix object 
+     * @param oldPrefix Used if you already have a prefix object
      * @param attributePath Path to the prefix attribute container
      * @return <code>Prefix</code>
      * @throws Exception
@@ -168,7 +167,7 @@ public class ConfigCdbSub implements ApplicationComponent {
      * @throws Exception
      */
 
-    protected AddPrefixOptions getPrefixOptions (String argumentPath) throws Exception { 
+    protected AddPrefixOptions getPrefixOptions (String argumentPath) throws Exception {
         AddPrefixOptions opts = new AddPrefixOptions();
 
         ConfEnumeration family = (ConfEnumeration)maapi.getElem(
@@ -260,7 +259,7 @@ public class ConfigCdbSub implements ApplicationComponent {
             wsess.delete(responsePath + "/" + nipap._description_);
             wsess.delete(responsePath + "/" + nipap._node_);
             wsess.delete(responsePath + "/" + nipap._order_id_);
-        } catch (CdbException e ){
+        } catch (CdbException e ) {
         }
     }
 
@@ -307,7 +306,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 
     /**
      * Get prefix id
-     * 
+     *
      * @param path Path to prefix response
      * @return Prefix id
      * @throws Exception
@@ -318,7 +317,7 @@ public class ConfigCdbSub implements ApplicationComponent {
     }
 
     public void run() {
-        LOGGER.info("Starting the CDB subscriber...");        
+        LOGGER.info("Starting the CDB subscriber...");
         try {
 
             while(true) {
@@ -344,8 +343,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                     sub.diffIterate(points[0],
                             new Iter(sub),
                             enumSet, reqs);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     reqs = null;
                 }
 
@@ -475,7 +473,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                         }
                         removeResponse(req.path + "/" + nipap._response_);
                         context.finishClearTrans();
-                            }
+                    }
                     /*
                      * Deallocate from-prefix prefix
                      *
@@ -493,7 +491,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                         String reqPath = "/" + Ncs._services_ + "/" + nipap.prefix + ":" + nipap.prefix + "/" +
                             nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key;
 
-                        updatePrefix(reqPath); 
+                        updatePrefix(reqPath);
 
                     }
                     /*
@@ -506,7 +504,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                             nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key + "/" +
                             nipap._from_prefix_request_ + req.prefix_key;
 
-                        updatePrefix(reqPath); 
+                        updatePrefix(reqPath);
                     }
                 }
                 sub.sync(CdbSubscriptionSyncType.DONE_PRIORITY);
@@ -533,7 +531,8 @@ public class ConfigCdbSub implements ApplicationComponent {
 
     private void safeclose(Cdb s) {
         try {s.close();}
-        catch (Exception ignore) {}
+        catch (Exception ignore) {
+        }
     }
 
 
@@ -560,7 +559,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                 ConfObject[] kp,
                 DiffIterateOperFlag op,
                 ConfObject oldValue,
-                ConfObject newValue, Object initstate) {     
+                ConfObject newValue, Object initstate) {
 
             @SuppressWarnings("unchecked")
             ArrayList<Request> reqs = (ArrayList<Request>) initstate;
@@ -576,7 +575,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 
                     case MOP_CREATED: {
                         // new request
-                        if (kp[1].toString().equals("nipap:request") && 
+                        if (kp[1].toString().equals("nipap:request") &&
                                 kp.length == 6){
                             r.pool_key = (ConfKey)kp[2];
                             r.request_key = (ConfKey)kp[0];
@@ -586,7 +585,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                             //the request is new, we dont need to look at children
                             return DiffIterateResultFlag.ITER_CONTINUE;
                         }
-                        else if (kp[1].toString().equals("nipap:from-prefix-request") && 
+                        else if (kp[1].toString().equals("nipap:from-prefix-request") &&
                                 kp.length == 8){
                             r.prefix_key = (ConfKey)kp[0];
                             r.request_key = (ConfKey)kp[2];
@@ -596,11 +595,11 @@ public class ConfigCdbSub implements ApplicationComponent {
                             reqs.add(r);
                             //the request is new, we dont need to look at children
                             return DiffIterateResultFlag.ITER_CONTINUE;
-                        } 
-                          break;
                         }
+                        break;
+                    }
                     case MOP_DELETED: {
-                        if (kp[1].toString().equals("nipap:request") && 
+                        if (kp[1].toString().equals("nipap:request") &&
                                 kp.length == 6){
                             r.pool_key = (ConfKey)kp[2];
                             r.request_key = (ConfKey)kp[0];
@@ -622,19 +621,19 @@ public class ConfigCdbSub implements ApplicationComponent {
 
                             boolean found = false;
 
-                            for (Request req : reqs){
+                            for (Request req : reqs) {
 
                                 if (req.t.equals(Type.Request) &&
                                         req.request_key.equals(r.request_key)) {
                                     found = true;
-                                        }
+                                }
                             }
-                            if (found == false){ 
+                            if (found == false) {
                                 reqs.add(r);
                             }
 
                         } else if (kp[3].toString().equals("nipap:from-prefix-request") &&
-                                kp.length == 10){
+                                kp.length == 10) {
 
                             r.pool_key = (ConfKey)kp[6];
                             r.request_key = (ConfKey)kp[4];
@@ -644,18 +643,18 @@ public class ConfigCdbSub implements ApplicationComponent {
 
                             boolean found = false;
 
-                            for (Request req : reqs){
-                                if (req.t.equals(Type.FromPrefixRequest) && 
-                                        req.request_key.equals(r.request_key) && 
+                            for (Request req : reqs) {
+                                if (req.t.equals(Type.FromPrefixRequest) &&
+                                        req.request_key.equals(r.request_key) &&
                                         req.prefix_key.equals(r.prefix_key)) {
                                     found = true;
-                                        }
+                                }
                             }
-                            if (found == false){ 
+                            if (found == false) {
                                 LOGGER.info("add " + r.prefix_key);
                                 reqs.add(r);
                             }
-                                }
+                        }
                         break;
                     }
                 }
@@ -664,7 +663,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                 LOGGER.error("", e);
             }
             return DiffIterateResultFlag.ITER_RECURSE;
-                } 
+        }
     }
 
     // redeploy MUST be done in another thread, if not system
