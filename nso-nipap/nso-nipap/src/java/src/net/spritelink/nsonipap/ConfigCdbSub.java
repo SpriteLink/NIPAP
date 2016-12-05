@@ -90,7 +90,11 @@ public class ConfigCdbSub implements ApplicationComponent {
         LOGGER.info("Create, From prefix request, path = " + path);
 
         AddPrefixOptions child_opts = new AddPrefixOptions();
-        child_opts.put("prefix_length", "32");
+        if (parentPrefix.family.intValue() == 4) {
+            child_opts.put("prefix_length", "32");
+        } else {
+            child_opts.put("prefix_length", "128");
+        }
 
         Prefix child_prefix = new Prefix();
         child_prefix = getPrefixAttributesFromCDB(path + "/" + nipap._attributes_ );
