@@ -15,6 +15,7 @@ import ConfigParser
 import datetime
 import sys
 
+
 class AuditLog:
 
     _con_pg = None
@@ -24,7 +25,6 @@ class AuditLog:
         self._cfg = ConfigParser.ConfigParser()
         self._cfg.read("/etc/nipap/nipap.conf")
         self._connect_db()
-
 
     def _is_ipv4(self, ip):
         """ Return true if given arg is a valid IPv4 address
@@ -38,8 +38,6 @@ class AuditLog:
             return True
         return False
 
-
-
     def _is_ipv6(self, ip):
         """ Return true if given arg is a valid IPv6 address
         """
@@ -51,8 +49,6 @@ class AuditLog:
         if p.version() == 6:
             return True
         return False
-
-
 
     def _get_afi(self, ip):
         """ Return address-family (4 or 6) for IP or None if invalid address
@@ -93,8 +89,6 @@ class AuditLog:
             # more than two parts.. this is neither an address or a prefix
             return None
 
-
-
     def _connect_db(self):
         # Open the database
 
@@ -114,9 +108,13 @@ class AuditLog:
         while True:
             try:
                 self._con_pg = psycopg2.connect(**db_args)
-                self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                self._curs_pg = self._con_pg.cursor(
+                    cursor_factory=psycopg2.extras.DictCursor
+                )
                 self._register_inet()
-                psycopg2.extras.register_hstore(self._con_pg, globally=True, unicode=True)
+                psycopg2.extras.register_hstore(
+                    self._con_pg, globally=True, unicode=True
+                )
             except psycopg2.Error as exc:
                 raise "Error"
             except psycopg2.Warning as warn:
@@ -124,17 +122,16 @@ class AuditLog:
 
             break
 
-
     def _register_inet(self, oid=None, conn_or_curs=None):
         """ Create the INET type and an Inet adapter."""
         from psycopg2 import extensions as _ext
         if not oid:
             oid = 869
         _ext.INET = _ext.new_type((oid, ), "INET",
-                lambda data, cursor: data and Inet(data) or None)
+                                  lambda data, cursor:
+                                  data and Inet(data) or None)
         _ext.register_type(_ext.INET, self._con_pg)
         return _ext.INET
-
 
     def _format_log_prefix(self, data):
         if type(data) is not dict:
@@ -142,7 +139,8 @@ class AuditLog:
             raise
         output = "{:<15} {}\n".format("Log id", data['id'])
         output += "{:<15} {}\n".format("Author:", data['username'])
-        output += "{:<15} {}\n".format("Date:", data['timestamp'].strftime('%c'))
+        output += "{:<15} {}\n".format("Date:",
+                                       data['timestamp'].strftime('%c'))
         if re.search(".*attr:.*", data['description']):
             res = re.match(r'(.*\d\b).*attr: (\{.*\})', data['description'])
             description = res.group(1)
@@ -150,12 +148,11 @@ class AuditLog:
             output += "{:<15} {}\n".format("Description:", description)
             parsed = eval(dataset)
             output += "New data:\n"
-            for k,v in parsed.items():
-                output += "{:<16}{:<20}: {:<32}\n".format("",k, v)
+            for k, v in parsed.items():
+                output += "{:<16}{:<20}: {:<32}\n".format("", k, v)
         else:
             output += "{:<15} {}\n".format("Description:", data['description'])
         return output
-
 
     def search_log_prefix(self, prefix):
         if self._get_afi(prefix) is None:
@@ -177,8 +174,6 @@ class AuditLog:
             output += "\n"
 
         return output
-
-
 
 a = AuditLog()
 
