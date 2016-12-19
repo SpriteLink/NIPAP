@@ -175,6 +175,7 @@ class AuditLog:
 
         return output
 
+
 a = AuditLog()
 
 if len(sys.argv) == 1:
