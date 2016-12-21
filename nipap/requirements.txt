@@ -1,4 +1,4 @@
-Flask==0.11.1
+Flask==0.12
 Flask-Compress==1.3.2
 Flask-XML-RPC==0.1.2
 IPy==0.83
