@@ -313,7 +313,7 @@ public class ConfigCdbSub implements ApplicationComponent {
 
         try {
             Prefix p = Prefix.get(nipapCon, p_id);
-            p.remove(nipapCon);
+            p.remove(nipapCon, true);
         } catch (JnipapException e) {
             LOGGER.error("Unable to remove prefix from NIPAP: " + e.getMessage(),e);
             throw e;
@@ -469,27 +469,15 @@ public class ConfigCdbSub implements ApplicationComponent {
                      * Deallocate Prefix
                      *
                      */
-                    else if (req.op == Operation.DEALLOCATE &&
-                            (req.t == Type.Request)) {
+                    else if (req.op == Operation.DEALLOCATE && (req.t == Type.Request)) {
 
-                        String path = req.path + "/" + nipap._from_prefix_request_ ;
+                        String path = req.path + "/" + nipap._response_;
 
-                        NavuContext context = new NavuContext(maapi);
-                        int to = context.startPreCommitRunningTrans();
+                        LOGGER.info("Deallocate Prefix (" + path + ")");
 
-                        NavuNode request = KeyPath2NavuNode.getNode(req.path, context);
+                        removePrefixFromNIPAP(path);
 
-                        for (NavuContainer prefix_key : request.list(nipap._from_prefix_request).elements()){
-                            removePrefixFromNIPAP(path +  prefix_key.leaf(nipap._name_).toKey() + "/" + nipap._response_);
-                            removeResponseFromCDB(path + prefix_key.leaf(nipap._name_).toKey() + "/" + nipap._response_);
-                        }
-                        try {
-                            removePrefixFromNIPAP(req.path + "/" + nipap._response_);
-                        } catch (Exception e ){
-                            continue;
-                        }
-                        removeResponseFromCDB(req.path + "/" + nipap._response_);
-                        context.finishClearTrans();
+                        removeResponseFromCDB(path);
                     }
                     /*
                      * Deallocate from-prefix prefix
