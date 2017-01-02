@@ -475,7 +475,9 @@ public class ConfigCdbSub implements ApplicationComponent {
 
                         LOGGER.info("Deallocate Prefix (" + path + ")");
 
-                        removePrefixFromNIPAP(path);
+                        if(maapi.exists(th, path + "/" + nipap._prefix_)){
+                            removePrefixFromNIPAP(path);
+                        }
 
                         removeResponseFromCDB(path);
                     }
@@ -485,6 +487,15 @@ public class ConfigCdbSub implements ApplicationComponent {
                      */
                     else if (req.op == Operation.DEALLOCATE && (req.t == Type.FromPrefixRequest)) {
 
+                        String path = req.path + "/" + nipap._response_;
+
+                        LOGGER.info("Deallocate Prefix (" + path + ")");
+
+                        if(maapi.exists(th, path + "/" + nipap._prefix_)){
+                            removePrefixFromNIPAP(path);
+                        }
+
+                        removeResponseFromCDB(path);
 
                     }
                     /*
@@ -611,10 +622,18 @@ public class ConfigCdbSub implements ApplicationComponent {
                             r.t = Type.Request;
                             r.op = Operation.DEALLOCATE;
                             reqs.add(r);
-                            //we dont need to look at children
-                            return DiffIterateResultFlag.ITER_CONTINUE;
                         }
-                        break;
+                        else if (kp[1].toString().equals("nipap:from-prefix-request") &&
+                                kp.length == 8){
+                            r.prefix_key = (ConfKey)kp[0];
+                            r.request_key = (ConfKey)kp[2];
+                            r.pool_key = (ConfKey)kp[4];
+                            r.t = Type.FromPrefixRequest;
+                            r.op = Operation.DEALLOCATE;
+                            reqs.add(r);
+                        }
+                        //we dont need to look at children
+                        return DiffIterateResultFlag.ITER_CONTINUE;
                     }
                     case MOP_VALUE_SET: {
                         if (kp[1].toString().equals("nipap:attributes") &&
