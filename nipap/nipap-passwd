@@ -76,13 +76,10 @@ if __name__ == '__main__':
         if not args.password:
             print "Please specify password with --password"
             sys.exit(1)
-        if not a.get_user(args.user):
-            print "The user %s does not exist" % args.user
-            sys.exit(2)
         af = nipap.authlib.AuthFactory()
         auth = af.get_auth(args.user, args.password, "nipap", {})
         if not auth.authenticate():
-            print "The password seems to be wrong"
+            print "The username or password seems to be wrong"
             sys.exit(2)
 
         print "Username and password seem to be correct"
