@@ -14,7 +14,7 @@ module nipap {
   import tailf-ncs {
     prefix ncs;
   }
- 
+
   grouping prefix-attributes {
 
     leaf customer_id {
@@ -46,18 +46,23 @@ module nipap {
         tailf:persistent true;
         }
 
-      choice response-choice {
-        case error {
-          leaf error {
-            config false;
-            tailf:cdb-oper {
-              tailf:persistent true;
-              }
-            type string;
+      leaf status {
+        config false;
+        tailf:cdb-oper {
+          tailf:persistent true;
           }
+        type enumeration {
+          enum ok;
+          enum error;
         }
-        case ok {
-        }
+      }
+
+      leaf status-message {
+        config false;
+        tailf:cdb-oper {
+          tailf:persistent true;
+          }
+        type string;
       }
 
       leaf prefix {
@@ -122,7 +127,7 @@ module nipap {
           // TODO: make sure only one backend is marked as default
         }
       }
-      
+
       list from-pool {
         key name;
         leaf name {

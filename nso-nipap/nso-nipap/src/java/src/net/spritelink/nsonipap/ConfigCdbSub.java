@@ -246,9 +246,10 @@ public class ConfigCdbSub implements ApplicationComponent {
      * @throws IOException
      */
     protected void writeError(String path, String errorMessage) throws ConfException, IOException {
+        ConfEnumeration error = ConfEnumeration.getEnumByLabel(path + "/" + nipap._response_  + "/" + nipap._status_, "error");
 
-        wsess.setElem(new ConfBuf(errorMessage), path + "/" + nipap._response_ + "/" + nipap._error_);
-        wsess.setCase(nipap._response_choice_, nipap._error_, path + "/" + nipap._response_);
+        wsess.setElem(new ConfBuf(errorMessage), path + "/" + nipap._response_ + "/" + nipap._status_message_);
+        wsess.setElem(error , path + "/" + nipap._response_ + "/" + nipap._status_);
 
     }
 
@@ -427,7 +428,9 @@ public class ConfigCdbSub implements ApplicationComponent {
                         String resPath = req.path + "/" + nipap._response_;
                         writeResponseToCDB(p, resPath);
 
-                        wsess.setCase(nipap._response_choice_, nipap._ok_, resPath);
+                        wsess.setElem(ConfEnumeration.getEnumByLabel( resPath + "/" + nipap._status_, "ok"),
+                            resPath + "/" + nipap._status_);
+
 
                         // Request prefix from prefix
                         String fromPrefixPath = req.path + "/" + nipap._from_prefix_request_;
