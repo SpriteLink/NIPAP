@@ -2870,14 +2870,14 @@ class Nipap:
             From a prefix
                 Instead of specifying a pool, a prefix which will be searched
                 for new prefixes can be specified. In `args`, the key
-                :attr:`from-prefix` is set to the prefix you want to allocate
-                from and the key :attr:`prefix_length` is set to the wanted prefix
-                length.
+                :attr:`from-prefix` is set to list of prefixes you want to
+                allocate from and the key :attr:`prefix_length` is set to 
+                the wanted prefix length.
 
             Example::
 
                 args = {
-                    'from-prefix': '192.0.2.0/24'
+                    'from-prefix': ['192.0.2.0/24'],
                     'prefix_length': 27
                 }
 
