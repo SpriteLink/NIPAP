@@ -589,10 +589,7 @@ class XhrController(BaseController):
         if 'alarm_priority' in request.json:
             p.alarm_priority = validate_string(request.json, 'alarm_priority')
         if 'monitor' in request.json:
-            if request.json['monitor'] == 'true':
-                p.monitor = True
-            else:
-                p.monitor = False
+            p.monitor = request.json['monitor']
 
         if 'vlan' in request.json:
             p.vlan = request.json['vlan']
@@ -664,11 +661,7 @@ class XhrController(BaseController):
             if 'alarm_priority' in request.json:
                 p.alarm_priority = validate_string(request.json, 'alarm_priority')
             if 'monitor' in request.json:
-                if request.json['monitor'] == 'true':
-                    p.monitor = True
-                else:
-                    p.monitor = False
-
+                p.monitor = request.json['monitor']
             if 'country' in request.json:
                 p.country = validate_string(request.json, 'country')
             if 'order_id' in request.json:
