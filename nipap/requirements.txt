@@ -11,7 +11,7 @@ itsdangerous==0.24
 parsedatetime==2.2
 psutil==1.2.1							# rq.filter: >= 1.0,<2.0
 psycopg2==2.7
-pyparsing==2.1.10
+pyparsing==2.2.0
 python-dateutil==2.6.0
 # optional dependency on ldap
 #python-ldap==2.4.19
