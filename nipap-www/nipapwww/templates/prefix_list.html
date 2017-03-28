@@ -14,12 +14,12 @@
 	function handleUrlQuery() {
 
 		// Is there a query string in the URL?
-		if ($.url().fparam('query_string') == null) {
+		if ($.url().fparam('/query_string') == null) {
 			return true;
 		}
 
 		// query_string
-		$("#query_string").val(decodeURIComponent($.url().fparam('query_string')));
+		$("#query_string").val(decodeURIComponent($.url().fparam('/query_string')));
 
 		// search_opt_parent
 		if ($.url().fparam('search_opt_parent') != null) {
