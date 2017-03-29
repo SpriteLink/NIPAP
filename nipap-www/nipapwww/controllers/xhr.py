@@ -1,5 +1,5 @@
 import logging
-import urllib
+import cgi
 try:
     import json
 except ImportError:
@@ -13,6 +13,33 @@ from pynipap import Tag, VRF, Prefix, Pool, NipapError
 
 log = logging.getLogger(__name__)
 
+
+def html_sanitize(value):
+    if isinstance(value, dict):
+        value = {html_sanitize(k): html_sanitize(v) for
+                 k, v in value.iteritems()}
+    elif isinstance(value, list):
+        value = [html_sanitize(v) for v in value]
+    elif isinstance(value, tuple):
+        value = tuple(html_sanitize(v) for v in value)
+    elif isinstance(value, basestring):
+        value = cgi.escape(value, quote=True)
+    return value
+
+
+def html_sanitize_json(value):
+    '''
+        Read object, escape all dangerous values and return as json
+    '''
+    # First generate json, using nipap encoding library
+    # We can't sanitize passed value since html_sanitize works
+    # on primitive values
+    # while NipapJSONEncoder knows how to decode complex object
+    value_as_json = json.dumps(value, cls=NipapJSONEncoder)
+    # Read back to dictionary, and html sanitize
+    sanitized_value = html_sanitize(json.loads(value_as_json))
+
+    return json.dumps(sanitized_value)
 
 
 def validate_string(req, key):
@@ -85,7 +112,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(vrfs, cls=NipapJSONEncoder)
+        return html_sanitize_json(vrfs)
 
 
 
@@ -129,7 +156,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(result, cls=NipapJSONEncoder)
+        return html_sanitize_json(result)
 
 
 
@@ -154,7 +181,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(v, cls=NipapJSONEncoder)
+        return html_sanitize_json(v)
 
 
 
@@ -183,7 +210,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(v, cls=NipapJSONEncoder)
+        return html_sanitize_json(v)
 
 
 
@@ -198,7 +225,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(vrf, cls=NipapJSONEncoder)
+        return html_sanitize_json(vrf)
 
 
 
@@ -214,7 +241,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(pools, cls=NipapJSONEncoder)
+        return html_sanitize_json(pools)
 
 
 
@@ -249,7 +276,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(result, cls=NipapJSONEncoder)
+        return html_sanitize_json(result)
 
 
 
@@ -280,7 +307,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(p, cls=NipapJSONEncoder)
+        return html_sanitize_json(p)
 
 
 
@@ -311,7 +338,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(p, cls=NipapJSONEncoder)
+        return html_sanitize_json(p)
 
 
 
@@ -326,7 +353,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(pool, cls=NipapJSONEncoder)
+        return html_sanitize_json(pool)
 
 
 
@@ -342,7 +369,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(prefixes, cls=NipapJSONEncoder)
+        return html_sanitize_json(prefixes)
 
 
 
@@ -407,7 +434,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(result, cls=NipapJSONEncoder)
+        return html_sanitize_json(result)
 
 
 
@@ -515,7 +542,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(result, cls=NipapJSONEncoder)
+        return html_sanitize_json(result)
 
 
 
@@ -622,8 +649,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(p, cls=NipapJSONEncoder)
-
+        return html_sanitize_json(p)
 
 
     def edit_prefix(self, id):
@@ -693,7 +719,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(p, cls=NipapJSONEncoder)
+        return html_sanitize_json(p)
 
 
 
@@ -708,7 +734,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(p, cls=NipapJSONEncoder)
+        return html_sanitize_json(p)
 
 
 
@@ -730,7 +756,7 @@ class XhrController(BaseController):
                     'name': vrf.name, 'description': vrf.description }
             session.save()
 
-        return json.dumps(session.get('current_vrfs', {}))
+        return html_sanitize_json(session.get('current_vrfs', {}))
 
 
     def del_current_vrf(self):
@@ -743,7 +769,7 @@ class XhrController(BaseController):
 
             session.save()
 
-        return json.dumps(session.get('current_vrfs', {}))
+        return html_sanitize_json(session.get('current_vrfs', {}))
 
 
     def get_current_vrfs(self):
@@ -783,7 +809,7 @@ class XhrController(BaseController):
 
             session.save()
 
-        return json.dumps(session.get('current_vrfs', {}))
+        return html_sanitize_json(session.get('current_vrfs', {}))
 
 
     def list_tags(self):
@@ -795,7 +821,7 @@ class XhrController(BaseController):
         except NipapError, e:
             return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
 
-        return json.dumps(tags, cls=NipapJSONEncoder)
+        return html_sanitize_json(tags)
 
 
 
