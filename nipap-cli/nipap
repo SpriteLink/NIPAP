@@ -68,6 +68,13 @@ if __name__ == '__main__':
         print("HINT: chmod 0600 ~/.nipaprc", file=sys.stderr)
         sys.exit(1)
 
+    try:
+        with(open(userrcfile)):
+            pass
+    except IOError as e:
+        print("Failed to read file %s, make sure file is readable by current user" % userrcfile, file=sys.stderr)
+        sys.exit(1)
+
     # config defaults
     cfg_defaults = {
         'hostname': 'localhost',
@@ -134,4 +141,3 @@ if __name__ == '__main__':
     except NipapError as exc:
         print("Command failed: %s" % str(exc), file=sys.stderr)
         sys.exit(1)
-
