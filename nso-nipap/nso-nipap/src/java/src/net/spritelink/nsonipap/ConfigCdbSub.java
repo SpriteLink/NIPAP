@@ -370,160 +370,200 @@ public class ConfigCdbSub implements ApplicationComponent {
                     LOGGER.debug("Requested NIPAP action, op=" + req.op + " , type=" + req.t);
 
                     try {
-                        // TODO: make backend configurable (now it is 'default')
-                        ConfValue bHost = maapi.getElem(th, "/services/nipap/backend{default}/hostname");
-                        ConfValue bPort = maapi.getElem(th, "/services/nipap/backend{default}/port");
-                        ConfValue bUser = maapi.getElem(th, "/services/nipap/backend{default}/username");
-                        ConfValue bPass = maapi.getElem(th, "/services/nipap/backend{default}/password");
 
-                        URL url = new URL("http://" + String.valueOf(bHost) + ":" + String.valueOf(bPort) + "/RPC2");
-                        nipapCon = new Connection(url, String.valueOf(bUser), String.valueOf(bPass));
-                        nipapCon.authoritative_source = "ncs";
-
-                    } catch (Exception e) {
-                        LOGGER.error("Unable to initiate connection to NIPAP: " + e.getMessage());
-                        continue;
-                    }
-
-
-                    /*
-                     * Allocate new Prefix
-                     *
-                     */
-                    if (req.op == Operation.ALLOCATE && req.t == Type.Request ) {
-
-                        LOGGER.info("Trying to allocate a prefix for: " + req.request_key + " from pool: " + req.pool_key);
-
-                        String poolName = String.valueOf(req.pool_key).replaceAll("[{}]", "");
-
-                        Prefix p = new Prefix();
-                        // Gather prefix data and perform NIPAP request
                         try {
-                            // Pool
-                            HashMap<String, String> poolSpec = new HashMap<>();
-                            poolSpec.put("name", poolName);
-                            List poolRes = Pool.list(nipapCon, poolSpec);
+                            // TODO: make backend configurable (now it is 'default')
+                            ConfValue bHost = maapi.getElem(th, "/services/nipap/backend{default}/hostname");
+                            ConfValue bPort = maapi.getElem(th, "/services/nipap/backend{default}/port");
+                            ConfValue bUser = maapi.getElem(th, "/services/nipap/backend{default}/username");
+                            ConfValue bPass = maapi.getElem(th, "/services/nipap/backend{default}/password");
 
-                            if (poolRes.size() != 1) {
-                                writeError(req.path.toString(), "Pool " + poolName + " not found in NIPAP");
+                            URL url = new URL("http://" + String.valueOf(bHost) + ":" + String.valueOf(bPort) + "/RPC2");
+                            nipapCon = new Connection(url, String.valueOf(bUser), String.valueOf(bPass));
+                            nipapCon.authoritative_source = "ncs";
+
+                        } catch (Exception e) {
+                            String estr = "Unable to initiate connection to NIPAP: " + e.getMessage();
+                            LOGGER.error(estr);
+                            writeError(req.path.toString(), estr);
+                        }
+
+                        /*
+                         * Allocate new Prefix
+                         *
+                         */
+                        if (req.op == Operation.ALLOCATE && req.t == Type.Request ) {
+
+                            LOGGER.info("Trying to allocate a prefix for: " + req.request_key + " from pool: " + req.pool_key);
+
+                            String poolName = String.valueOf(req.pool_key).replaceAll("[{}]", "");
+
+                            Prefix p = new Prefix();
+                            // Gather prefix data and perform NIPAP request
+                            try {
+                                // Pool
+                                HashMap<String, String> poolSpec = new HashMap<>();
+                                poolSpec.put("name", poolName);
+                                List poolRes = Pool.list(nipapCon, poolSpec);
+
+                                if (poolRes.size() != 1) {
+                                    writeError(req.path.toString(), "Pool " + poolName + " not found in NIPAP");
+                                    continue;
+                                }
+
+                                // options, like address-family
+                                AddPrefixOptions opts = getPrefixOptionsFromCDB(req.path + "/" + nipap._arguments_);
+
+                                // set prefix attributes
+                                String attrPath = req.path + "/" + nipap._attributes_;
+                                p = getPrefixAttributesFromCDB(attrPath);
+
+                                p.save(nipapCon, (Pool)poolRes.get(0), opts);
+
+                            } catch (JnipapException e) {
+                                LOGGER.error("Unable to get prefix from NIPAP: " + e.getMessage(), e);
+                                writeError(req.path.toString(), e.getMessage());
                                 continue;
                             }
 
-                            // options, like address-family
-                            AddPrefixOptions opts = getPrefixOptionsFromCDB(req.path + "/" + nipap._arguments_);
+                            // Write the result
+                            String resPath = req.path + "/" + nipap._response_;
+                            writeResponseToCDB(p, resPath);
 
-                            // set prefix attributes
-                            String attrPath = req.path + "/" + nipap._attributes_;
-                            p = getPrefixAttributesFromCDB(attrPath);
-
-                            p.save(nipapCon, (Pool)poolRes.get(0), opts);
-
-                        } catch (JnipapException e) {
-                            LOGGER.error("Unable to get prefix from NIPAP: " + e.getMessage(), e);
-                            writeError(req.path.toString(), e.getMessage());
-                            continue;
-                        }
-
-                        // Write the result
-                        String resPath = req.path + "/" + nipap._response_;
-                        writeResponseToCDB(p, resPath);
-
-                        wsess.setElem(ConfEnumeration.getEnumByLabel( resPath + "/" + nipap._status_, "ok"),
-                            resPath + "/" + nipap._status_);
+                            wsess.setElem(ConfEnumeration.getEnumByLabel( resPath + "/" + nipap._status_, "ok"),
+                                resPath + "/" + nipap._status_);
 
 
-                        // Request prefix from prefix
-                        String fromPrefixPath = req.path + "/" + nipap._from_prefix_request_;
-                        if (maapi.exists(th, fromPrefixPath)){
-                            MaapiCursor pfx_cur = maapi.newCursor(th, fromPrefixPath);
-                            ConfKey pfx = null;
+                            // Request prefix from prefix
+                            String fromPrefixPath = req.path + "/" + nipap._from_prefix_request_;
+                            if (maapi.exists(th, fromPrefixPath)){
+                                MaapiCursor pfx_cur = maapi.newCursor(th, fromPrefixPath);
+                                ConfKey pfx = null;
 
-                            while((pfx = maapi.getNext(pfx_cur)) != null) {
-                                addHostPrefixFromPrefix(fromPrefixPath + pfx, p);
+                                while((pfx = maapi.getNext(pfx_cur)) != null) {
+                                    addHostPrefixFromPrefix(fromPrefixPath + pfx, p);
+                                }
+                            }
+
+                            // Redeploy
+                            try {
+                                ConfValue redeployPath = maapi.getElem(th, req.path + "/redeploy-service");
+                                LOGGER.info("redeploy-service: " + redeployPath);
+                                redeploy(redeployPath.toString());
+                            } catch (Exception e) {
+                                LOGGER.error("Redeploy failed: " + e.getMessage());
                             }
                         }
+                        /*
+                         * Allocate from-prefix
+                         *
+                         */
+                        else if (req.op == Operation.ALLOCATE && req.t == Type.FromPrefixRequest){
+                            LOGGER.info("Create, From prefix request");
 
-                        // Redeploy
-                        try {
-                            ConfValue redeployPath = maapi.getElem(th, req.path + "/redeploy-service");
-                            LOGGER.info("redeploy-service: " + redeployPath);
-                            redeploy(redeployPath.toString());
-                        } catch (Exception e) {
-                            LOGGER.error("Redeploy failed: " + e.getMessage());
+                            String path = "/" + Ncs._services_ + "/" + nipap.prefix + ":" + nipap.prefix + "/" +
+                                nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key;
+
+                            try {
+                                int p_id = getPrefixId(path + "/" + nipap._response_ );
+
+                                Prefix parentPrefix = Prefix.get(nipapCon, p_id);
+
+                                addHostPrefixFromPrefix(path + "/" + nipap._from_prefix_request_ + req.prefix_key, parentPrefix);
+                            } catch (JnipapException e) {
+                                String estr = "Allocating from-prefix failed: " + e.getMessage();
+                                LOGGER.error(estr);
+                                writeError(req.path.toString(), estr);
+                                continue;
+                            }
                         }
-                    }
-                    /*
-                     * Allocate from-prefix
-                     *
-                     */
-                    else if (req.op == Operation.ALLOCATE && req.t == Type.FromPrefixRequest){
-                        LOGGER.info("Create, From prefix request");
+                        /*
+                         * Deallocate Prefix
+                         *
+                         */
+                        else if (req.op == Operation.DEALLOCATE && (req.t == Type.Request)) {
 
-                        String path = "/" + Ncs._services_ + "/" + nipap.prefix + ":" + nipap.prefix + "/" +
-                            nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key;
+                            String path = req.path + "/" + nipap._response_;
 
-                        int p_id = getPrefixId(path + "/" + nipap._response_ );
+                            LOGGER.info("Deallocate Prefix (" + path + ")");
 
-                        Prefix parentPrefix = Prefix.get(nipapCon, p_id);
+                            try {
+                                if(maapi.exists(th, path + "/" + nipap._prefix_)){
+                                    removePrefixFromNIPAP(path);
+                                }
 
-                        addHostPrefixFromPrefix(path + "/" + nipap._from_prefix_request_ + req.prefix_key, parentPrefix);
-                    }
-                    /*
-                     * Deallocate Prefix
-                     *
-                     */
-                    else if (req.op == Operation.DEALLOCATE && (req.t == Type.Request)) {
-
-                        String path = req.path + "/" + nipap._response_;
-
-                        LOGGER.info("Deallocate Prefix (" + path + ")");
-
-                        if(maapi.exists(th, path + "/" + nipap._prefix_)){
-                            removePrefixFromNIPAP(path);
+                                removeResponseFromCDB(path);
+                            } catch (JnipapException e) {
+                                String estr = "Deallocation of prefix failed: " + e.getMessage();
+                                LOGGER.error(estr);
+                                writeError(req.path.toString(), estr);
+                                continue;
+                            }
                         }
+                        /*
+                         * Deallocate from-prefix prefix
+                         *
+                         */
+                        else if (req.op == Operation.DEALLOCATE && (req.t == Type.FromPrefixRequest)) {
 
-                        removeResponseFromCDB(path);
-                    }
-                    /*
-                     * Deallocate from-prefix prefix
-                     *
-                     */
-                    else if (req.op == Operation.DEALLOCATE && (req.t == Type.FromPrefixRequest)) {
+                            String path = req.path + "/" + nipap._response_;
 
-                        String path = req.path + "/" + nipap._response_;
+                            LOGGER.info("Deallocate Prefix (" + path + ")");
 
-                        LOGGER.info("Deallocate Prefix (" + path + ")");
+                            try {
+                                if(maapi.exists(th, path + "/" + nipap._prefix_)){
+                                    removePrefixFromNIPAP(path);
+                                }
 
-                        if(maapi.exists(th, path + "/" + nipap._prefix_)){
-                            removePrefixFromNIPAP(path);
+                                removeResponseFromCDB(path);
+                            } catch (JnipapException e) {
+                                String estr = "Deallocation of from-prefix failed: " + e.getMessage();
+                                LOGGER.error(estr);
+                                writeError(req.path.toString(), estr);
+                                continue;
+                            }
+
                         }
+                        /*
+                         * Modify prefix attributes
+                         *
+                         */
+                        else if (req.op == Operation.SET && req.t == Type.Request){
 
-                        removeResponseFromCDB(path);
+                            String reqPath = "/" + Ncs._services_ + "/" + nipap.prefix + ":" + nipap.prefix + "/" +
+                                nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key;
 
-                    }
-                    /*
-                     * Modify prefix attributes
-                     *
-                     */
-                    else if (req.op == Operation.SET && req.t == Type.Request){
+                            try {
+                                updatePrefixInNIPAP(reqPath);
+                            } catch (JnipapException e) {
+                                String estr = "Update of prefix failed: " + e.getMessage();
+                                LOGGER.error(estr);
+                                writeError(req.path.toString(), estr);
+                                continue;
+                            }
 
-                        String reqPath = "/" + Ncs._services_ + "/" + nipap.prefix + ":" + nipap.prefix + "/" +
-                            nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key;
+                        }
+                        /*
+                         * Modify from-prefix attributes
+                         *
+                         */
+                        else if (req.op == Operation.SET && req.t == Type.FromPrefixRequest){
 
-                        updatePrefixInNIPAP(reqPath);
+                            String reqPath = "/" + Ncs._services_ + "/" + nipap.prefix + ":" + nipap.prefix + "/" +
+                                nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key + "/" +
+                                nipap._from_prefix_request_ + req.prefix_key;
 
-                    }
-                    /*
-                     * Modify from-prefix attributes
-                     *
-                     */
-                    else if (req.op == Operation.SET && req.t == Type.FromPrefixRequest){
-
-                        String reqPath = "/" + Ncs._services_ + "/" + nipap.prefix + ":" + nipap.prefix + "/" +
-                            nipap._from_pool_ + req.pool_key + "/" + nipap._request_ + req.request_key + "/" +
-                            nipap._from_prefix_request_ + req.prefix_key;
-
-                        updatePrefixInNIPAP(reqPath);
+                            try {
+                                updatePrefixInNIPAP(reqPath);
+                            } catch (Exception e) {
+                                String estr = "Update of from-prefix failed: " + e.getMessage();
+                                LOGGER.error(estr);
+                                writeError(req.path.toString(), estr);
+                                continue;
+                            }
+                        }
+                    } catch (ConfException|IOException e) {
+                        LOGGER.error("Request failed: " + e.getMessage());
                     }
                 }
                 sub.sync(CdbSubscriptionSyncType.DONE_PRIORITY);
