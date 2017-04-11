@@ -235,6 +235,8 @@ public class ConfigCdbSub implements ApplicationComponent {
             ConfBuf orderIdValue = new ConfBuf(prefix.order_id);
             wsess.setElem(orderIdValue, responsePath + "/" + nipap._order_id_);
         }
+        wsess.setElem(ConfEnumeration.getEnumByLabel( responsePath + "/" + nipap._status_, "ok"),
+            responsePath + "/" + nipap._status_);
     }
 
     /**
@@ -429,9 +431,6 @@ public class ConfigCdbSub implements ApplicationComponent {
                             // Write the result
                             String resPath = req.path + "/" + nipap._response_;
                             writeResponseToCDB(p, resPath);
-
-                            wsess.setElem(ConfEnumeration.getEnumByLabel( resPath + "/" + nipap._status_, "ok"),
-                                resPath + "/" + nipap._status_);
 
 
                             // Request prefix from prefix
