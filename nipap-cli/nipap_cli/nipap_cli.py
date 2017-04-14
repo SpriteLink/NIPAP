@@ -554,11 +554,8 @@ def list_prefix(arg, opts, shell_opts):
 
     # parse custom columns
     if custom_columns:
-        # should we append columns or replace default?
-        if custom_columns[0] == '+':
-            col_append = True
-        else:
-            col_append = False
+        # Clear out default columns, unless user whishes to append
+        if custom_columns[0] != '+':
             columns = []
 
         # read in custom columns
