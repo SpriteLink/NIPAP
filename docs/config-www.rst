@@ -5,7 +5,7 @@ Make sure the web UI is installed before proceeding with configuration of it.
 The web interface needs its own user account to authenticate towards the
 backend and it should be a *trusted* account. Create it with the following::
 
-    nipap-passwd add --username nipap-www --password s3cr3t --name "User account for the web UI" --trusted
+    nipap-passwd add --user nipap-www --password s3cr3t --name "User account for the web UI" --trusted
 
 Obviously, replace "s3cr3t" with a better password and feel free to use
 whichever username you want, as long as you configure it accordingly. The user
@@ -22,7 +22,7 @@ or port, then update the "127.0.0.1:1337" part accordingly.
 Finally, you can add a user for yourself and once you've configured your web
 server to serve the NIPAP web UI you should be able to login with this user::
 
-    nipap-passwd add --username myuser --password mypassword --name "my user"
+    nipap-passwd add --user myuser --password mypassword --name "my user"
 
 
 Serving the web UI
