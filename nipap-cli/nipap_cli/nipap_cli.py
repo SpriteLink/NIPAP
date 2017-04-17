@@ -82,7 +82,7 @@ def setup_connection():
 
 
 def vrf_format(vrf):
-    return "VRF '%s' [RT: %s]" % (vrf.name, vrf.rt or '-')
+    return "VRF '%s' [RT: %s]" % (vrf.name.encode("utf-8"), vrf.rt or '-')
 
 
 def get_pool(arg = None, opts = None, abort = False):
