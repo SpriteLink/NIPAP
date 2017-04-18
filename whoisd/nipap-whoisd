@@ -99,6 +99,13 @@ class WhoisServer(SocketServer.StreamRequestHandler):
                 for p in res['result']:
                     response += format_prefix(p)
                     response += '\n'
+            # 1234:123:: - IPv6
+            res = Prefix.smart_search(query, { })
+            if len(res['result']) > 0:
+                total_hits += len(res['result'])
+                for p in res['result']:
+                    response += format_prefix(p)
+                    response += '\n'
         else:
             # respond with VRFs
             res = VRF.smart_search(query, { })
