@@ -12,7 +12,7 @@ whichever username you want, as long as you configure it accordingly. The user
 account for the web UI should not be used by any other user. Configure
 the web UI to use this account by configuring the xmlrpc_uri variable::
 
-    xmlrpc_uri = http://nipap-www@local:s3cret@127.0.0.1:1337
+    xmlrpc_uri = http://nipap-www@local:s3cr3t@127.0.0.1:1337
 
 This configuring assumes that you did indeed name the account "nipap-www",
 replace "s3cr3t" with your password. "@local" instructs the backend to use the
