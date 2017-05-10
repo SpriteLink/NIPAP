@@ -154,7 +154,7 @@ Configuration of the web UI
 Begin by adding a user for the web interface to the local authentication
 database on the server where nipapd is running::
 
-	nipap-passwd -a *username* -p *password* -n 'NIPAP web UI' -t
+	nipap-passwd add -u *username* -p *password* -n 'NIPAP web UI' -t
 
 The '-t' option tells nipap-passwd to make the new user a 'trusted' user, that
 is a user which can authenticate against nipapd using one username but log all
