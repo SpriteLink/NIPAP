@@ -446,9 +446,10 @@ public class ConfigCdbSub implements ApplicationComponent {
 
                             // Redeploy
                             try {
-                                ConfValue redeployPath = maapi.getElem(th, req.path + "/redeploy-service");
+                                ConfObjectRef v = (ConfObjectRef)maapi.getElem(th, req.path + "/redeploy-service");
+                                ConfPath redeployPath = new ConfPath(v.getElems());
                                 LOGGER.info("redeploy-service: " + redeployPath);
-                                redeploy(redeployPath.toString());
+                                redeploy(redeployPath);
                             } catch (Exception e) {
                                 LOGGER.error("Redeploy failed: " + e.getMessage());
                             }
@@ -734,19 +735,19 @@ public class ConfigCdbSub implements ApplicationComponent {
 
     // redeploy MUST be done in another thread, if not system
     // hangs, since the CDB subscriber cannot do its work
-    private void redeploy(String path) {
+    private void redeploy(ConfPath path) {
         Redeployer r = new Redeployer(path);
         Thread t = new Thread(r);
         t.start();
     }
 
     private class Redeployer implements Runnable {
-        private String path;
+        private ConfPath path;
         private ConfKey k;
         private Maapi m;
         private Socket s;
 
-        public Redeployer(String path) {
+        public Redeployer(ConfPath path) {
             this.path = path; this.k = k;
 
             try {
@@ -784,7 +785,7 @@ public class ConfigCdbSub implements ApplicationComponent {
                 }
 
                 m.requestAction(new ConfXMLParam[] {},
-                        path+"/reactive-re-deploy");
+                        path.toString()+"/reactive-re-deploy");
                 try {
                     m.finishTrans(tid);
                 }
