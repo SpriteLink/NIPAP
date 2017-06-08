@@ -783,7 +783,7 @@ class Nipap:
                 if re.search("hstore type not found in the database", unicode(exc)):
                     # automatically install if auto-install is enabled
                     if self._auto_install_db:
-                        self._db_install()
+                        self._db_install(db_args['database'])
                         continue
                     raise NipapDatabaseMissingExtensionError("hstore extension not found in the database")
 
@@ -800,7 +800,7 @@ class Nipap:
                 # empty...
                 if self._auto_install_db:
                     # automatically install schema?
-                    self._db_install()
+                    self._db_install(db_args['database'])
                     continue
                 raise exc
             except NipapError as exc:
@@ -809,7 +809,7 @@ class Nipap:
 
             if current_db_version != nipap.__db_version__:
                 if self._auto_upgrade_db:
-                    self._db_upgrade()
+                    self._db_upgrade(db_args['database'])
                     continue
                 raise NipapDatabaseWrongVersionError("NIPAP PostgreSQL database is outdated. Schema version %s is required to run but you are using %s" % (nipap.__db_version__, current_db_version))
 
@@ -1117,17 +1117,17 @@ class Nipap:
 
 
 
-    def _db_install(self):
+    def _db_install(self, db_name):
         """ Install nipap database schema
         """
         self._logger.info("Installing NIPAP database schemas into db")
-        self._execute(db_schema.ip_net)
+        self._execute(db_schema.ip_net % (db_name))
         self._execute(db_schema.functions)
         self._execute(db_schema.triggers)
 
 
 
-    def _db_upgrade(self):
+    def _db_upgrade(self, db_name):
         """ Upgrade nipap database schema
         """
         current_db_version = self._get_db_version()
@@ -1135,7 +1135,7 @@ class Nipap:
         for i in range(current_db_version, nipap.__db_version__):
             self._logger.info("Upgrading DB schema:", i, "to", i+1)
             upgrade_sql = db_schema.upgrade[i-1] # 0 count on array
-            self._execute(upgrade_sql)
+            self._execute(upgrade_sql % (db_name))
         self._execute(db_schema.triggers)
 
 
