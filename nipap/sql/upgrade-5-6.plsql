@@ -13,4 +13,4 @@ ALTER TABLE ip_net_pool DROP CONSTRAINT ip_net_pool_name_key;
 CREATE UNIQUE INDEX ip_net_pool__name__index ON ip_net_pool (lower(name));
 
 -- update database schema version
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 6';
+COMMENT ON DATABASE %s IS 'NIPAP database - schema version: 6';
