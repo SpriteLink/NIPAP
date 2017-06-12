@@ -42,7 +42,7 @@ db:
 
 
 tables:
-	PGPASSWORD=$(DB_PASS) cat ip_net.plsql | sed -i -e 's/%s/$(DB_NAME)' | psql -q -h localhost -U $(DB_USER) -d $(DB_NAME)
+	PGPASSWORD=$(DB_PASS) cat ip_net.plsql | sed -e 's/%s/$(DB_NAME)/' | psql -q -h localhost -U $(DB_USER) -d $(DB_NAME)
 	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) < functions.plsql
 	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) < triggers.plsql
 
