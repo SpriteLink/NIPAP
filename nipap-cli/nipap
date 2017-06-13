@@ -77,6 +77,7 @@ if __name__ == '__main__':
 
     # config defaults
     cfg_defaults = {
+        'protocol': 'http',
         'hostname': 'localhost',
         'post': 1337,
         'password': None,
@@ -97,11 +98,12 @@ if __name__ == '__main__':
 
         nipapd_version = 'unknown'
         try:
-            pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
+            pynipap.xmlrpc_uri = "%(protocol)s://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
                     'username': nipap_cli.nipap_cli.cfg.get('global', 'username'),
                     'password': nipap_cli.nipap_cli.cfg.get('global', 'password'),
                     'hostname': nipap_cli.nipap_cli.cfg.get('global', 'hostname'),
-                    'port'    : nipap_cli.nipap_cli.cfg.get('global', 'port')
+                    'port'    : nipap_cli.nipap_cli.cfg.get('global', 'port'),
+                    'protocol': nipap_cli.nipap_cli.cfg.get('global', 'protocol'),
                 }
             ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
             nipapd_version = pynipap.nipapd_version()
