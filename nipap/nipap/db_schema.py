@@ -538,7 +538,7 @@ ip_net = """
 --
 --------------------------------------------
 
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 6';
+COMMENT ON DATABASE %s IS 'NIPAP database - schema version: 6';
 
 CREATE EXTENSION IF NOT EXISTS ip4r;
 CREATE EXTENSION IF NOT EXISTS hstore;
@@ -1807,7 +1807,7 @@ COMMENT ON COLUMN ip_net_plan.last_modified IS 'The date and time when the prefi
 UPDATE ip_net_plan inp SET added = (SELECT timestamp FROM ip_net_log inl WHERE inl.prefix_id = inp.id ORDER BY inl.timestamp DESC LIMIT 1);
 
 -- update database schema version
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 2';
+COMMENT ON DATABASE %s IS 'NIPAP database - schema version: 2';
 """,
 """
 --
@@ -1819,7 +1819,7 @@ ALTER TABLE ip_net_plan ADD COLUMN customer_id text;
 COMMENT ON COLUMN ip_net_plan.customer_id IS 'Customer Identifier';
 
 -- update database schema version
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 3';
+COMMENT ON DATABASE %s IS 'NIPAP database - schema version: 3';
 
 CREATE OR REPLACE FUNCTION update_children() RETURNS boolean AS $_$
 DECLARE
@@ -1943,7 +1943,7 @@ UPDATE ip_net_pool SET free_addresses_v6 = COALESCE((SELECT SUM(free_addresses) 
 CREATE INDEX ip_net_plan__pool_id__index ON ip_net_plan (pool_id);
 
 -- update database schema version
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 4';
+COMMENT ON DATABASE %s IS 'NIPAP database - schema version: 4';
 """,
 """
 --
@@ -2014,7 +2014,7 @@ ALTER TABLE ip_net_pool ADD COLUMN avps hstore NOT NULL DEFAULT '';
 ALTER TABLE ip_net_plan ADD COLUMN expires timestamp with time zone DEFAULT 'infinity';
 
 -- update database schema version
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';
+COMMENT ON DATABASE %s IS 'NIPAP database - schema version: 5';
 """,
 """
 --
@@ -2032,6 +2032,6 @@ ALTER TABLE ip_net_pool DROP CONSTRAINT ip_net_pool_name_key;
 CREATE UNIQUE INDEX ip_net_pool__name__index ON ip_net_pool (lower(name));
 
 -- update database schema version
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 6';
+COMMENT ON DATABASE %s IS 'NIPAP database - schema version: 6';
 """,
 ]
