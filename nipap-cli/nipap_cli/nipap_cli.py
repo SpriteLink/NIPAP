@@ -57,7 +57,8 @@ def setup_connection():
             'username': os.getenv('NIPAP_USERNAME') or cfg.get('global', 'username'),
             'password': os.getenv('NIPAP_PASSWORD') or cfg.get('global', 'password'),
             'hostname': os.getenv('NIPAP_HOST') or cfg.get('global', 'hostname'),
-            'port'    : os.getenv('NIPAP_PORT') or cfg.get('global', 'port')
+            'port'    : os.getenv('NIPAP_PORT') or cfg.get('global', 'port'),
+            'protocol': os.getenv('NIPAP_PROTOCOL') or cfg.get('global', 'protocol')
         }
     except (configparser.NoOptionError, configparser.NoSectionError) as exc:
         print("ERROR:", str(exc), file=sys.stderr)
@@ -71,7 +72,7 @@ def setup_connection():
         con_params['password'] = getpass.getpass()
 
     # build XML-RPC URI
-    pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % con_params
+    pynipap.xmlrpc_uri = "%(protocol)s://%(username)s:%(password)s@%(hostname)s:%(port)s" % con_params
 
     ao = pynipap.AuthOptions({
         'authoritative_source': 'nipap',
