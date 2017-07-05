@@ -630,11 +630,11 @@ def list_prefix(arg, opts, shell_opts):
 
                 # overwrite some columns due to special handling
                 col_data['tags'] = '-'
-                if len(p.tags) > 0: 
+                if len(p.tags) > 0:
                     col_data['tags'] = ','.join(p.tags)
 
                 col_data['avps'] = '-'
-                if len(p.avps) > 0: 
+                if len(p.avps) > 0:
                     col_data['avps'] = ','.join('{}:{}'.format(key, value) for key, value in sorted(p.avps.items()))
 
                 try: 
