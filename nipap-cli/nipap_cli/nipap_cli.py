@@ -522,7 +522,7 @@ def list_prefix(arg, opts, shell_opts):
             'added': { 'title': 'Added' },
             'alarm_priority': { 'title': 'Alarm Prio' },
             'authoritative_source': { 'title': 'Auth source' },
-            'avps':{ 'title': 'Extra-Attributes' },
+            'avps': { 'title': 'Extra-Attributes' },
             'children': { 'title': 'Children' },
             'comment': { 'title': 'Comment' },
             'customer_id': { 'title': 'Customer ID' },
