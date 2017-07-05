@@ -522,6 +522,7 @@ def list_prefix(arg, opts, shell_opts):
             'added': { 'title': 'Added' },
             'alarm_priority': { 'title': 'Alarm Prio' },
             'authoritative_source': { 'title': 'Auth source' },
+            'avps':{ 'title': 'extra-attributes'},
             'children': { 'title': 'Children' },
             'comment': { 'title': 'Comment' },
             'customer_id': { 'title': 'Customer ID' },
@@ -607,7 +608,6 @@ def list_prefix(arg, opts, shell_opts):
                     pass
             # override certain column widths
             col_def['type']['width'] = 1
-            col_def['tags']['width'] = 2
 
             col_header_data = {}
             # build prefix formatting string
@@ -631,8 +631,12 @@ def list_prefix(arg, opts, shell_opts):
                 # overwrite some columns due to special handling
                 col_data['tags'] = '-'
                 if len(p.tags) > 0:
-                    col_data['tags'] = '#%d' % len(p.tags)
-
+                    col_data['tags'] = ','.join(p.tags)
+                    
+                col_data['avps'] = '-'
+                if len(p.avps) > 0:
+                    col_data['avps'] = ', '.join('{}:{}'.format(key,value) for key,value in sorted(p.avps.items()))
+                                        
                 try: 
                     col_data['pool_name'] = p.pool.name
                 except:
