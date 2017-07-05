@@ -522,7 +522,7 @@ def list_prefix(arg, opts, shell_opts):
             'added': { 'title': 'Added' },
             'alarm_priority': { 'title': 'Alarm Prio' },
             'authoritative_source': { 'title': 'Auth source' },
-            'avps':{ 'title': 'extra-attributes'},
+            'avps':{ 'title': 'Extra-Attributes' },
             'children': { 'title': 'Children' },
             'comment': { 'title': 'Comment' },
             'customer_id': { 'title': 'Customer ID' },
@@ -630,13 +630,13 @@ def list_prefix(arg, opts, shell_opts):
 
                 # overwrite some columns due to special handling
                 col_data['tags'] = '-'
-                if len(p.tags) > 0:
+                if len(p.tags) > 0: 
                     col_data['tags'] = ','.join(p.tags)
-                    
+
                 col_data['avps'] = '-'
-                if len(p.avps) > 0:
-                    col_data['avps'] = ', '.join('{}:{}'.format(key,value) for key,value in sorted(p.avps.items()))
-                                        
+                if len(p.avps) > 0: 
+                    col_data['avps'] = ','.join('{}:{}'.format(key, value) for key, value in sorted(p.avps.items()))
+
                 try: 
                     col_data['pool_name'] = p.pool.name
                 except:
