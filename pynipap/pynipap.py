@@ -84,7 +84,7 @@
     each consecutive instances will be copies of the first one. In this way the
     authentication options can be accessed from all of the pynipap classes. ::
 
-        a = AuthOptions({
+        a = pynipap.AuthOptions({
                 'authoritative_source': 'my_fancy_nipap_client'
             })
 
