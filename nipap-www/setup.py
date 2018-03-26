@@ -20,9 +20,17 @@ setup(
     include_package_data=True,
     test_suite='nose.collector',
     package_data={'nipapwww': ['i18n/*/LC_MESSAGES/*.mo']},
+
+    if sys.platform.startswith('freebsd'):
+        localbase = '/usr/local'
+        etcdir = localbase + '/etc'
+    else:
+        localbase = '/usr'
+        etcdir = '/etc'
+
     data_files = [
-        ( '/etc/nipap/', [ 'nipap-www.ini', ] ),
-        ( '/etc/nipap/www', [ 'nipap-www.wsgi', ] ),
+        ( etcdir + '/nipap/', [ 'nipap-www.ini', ] ),
+        ( etcdir + '/nipap/www', [ 'nipap-www.wsgi', ] ),
         ( '/var/cache/nipap-www/', [] )
     ],
     #message_extractors={'nipapwww': [

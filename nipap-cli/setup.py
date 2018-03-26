@@ -22,11 +22,18 @@ def get_data_files():
         print("rst2man failed to run:", str(exc), file=sys.stderr)
         sys.exit(1)
 
+    if sys.platform.startswith('freebsd'):
+        localbase = '/usr/local'
+        etcdir = localbase + '/etc'
+    else:
+        localbase = '/usr'
+        etcdir = '/etc'
+
     files = [
-            ('/etc/skel/', ['.nipaprc']),
-            ('/usr/bin/', ['helper-nipap', 'nipap']),
-            ('/usr/share/doc/nipap-cli/', ['bash_complete', 'nipaprc']),
-            ('/usr/share/man/man1/', ['nipap.1'])
+            (etcdir + '/skel/', ['.nipaprc']),
+            (localbase + '/bin/', ['helper-nipap', 'nipap']),
+            (localbase + '/share/doc/nipap-cli/', ['bash_complete', 'nipaprc']),
+            (localbase + '/share/man/man1/', ['nipap.1'])
         ]
 
     return files
