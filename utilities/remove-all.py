@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """ This script helps you remove all pools, prefixes or VRFs stored in NIPAP
 
     It can be useful when working on import script and you want to run many

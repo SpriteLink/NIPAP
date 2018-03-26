@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """ This is a boilerplate for interacting with NIPAP using Pynipap
 
     It provides things such as basic command line parsing of connection options
