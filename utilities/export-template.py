@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """ This is a generic file exporter for NIPAP
 
     It fetches prefixes based on a provided query string and feeds that into a
