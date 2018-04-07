@@ -1,6 +1,13 @@
 from setuptools import setup, find_packages
 import nipapwww
 
+if sys.platform.startswith('freebsd'):
+    localbase = '/usr/local'
+    etcdir = localbase + '/etc'
+else:
+    localbase = '/usr'
+    etcdir = '/etc'
+
 setup(
     name='nipap-www',
     version=nipapwww.__version__,
@@ -20,14 +27,6 @@ setup(
     include_package_data=True,
     test_suite='nose.collector',
     package_data={'nipapwww': ['i18n/*/LC_MESSAGES/*.mo']},
-
-    if sys.platform.startswith('freebsd'):
-        localbase = '/usr/local'
-        etcdir = localbase + '/etc'
-    else:
-        localbase = '/usr'
-        etcdir = '/etc'
-
     data_files = [
         ( etcdir + '/nipap/', [ 'nipap-www.ini', ] ),
         ( etcdir + '/nipap/www', [ 'nipap-www.wsgi', ] ),
@@ -46,3 +45,4 @@ setup(
     main = pylons.util:PylonsInstaller
     """,
 )
+
