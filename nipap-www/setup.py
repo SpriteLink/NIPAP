@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-import nipapwww
+import nipapwww, sys
 
 if sys.platform.startswith('freebsd'):
     localbase = '/usr/local'
