@@ -771,7 +771,7 @@ class Nipap:
         while True:
             try:
                 self._con_pg = psycopg2.connect(**db_args)
-                self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+                self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE)
                 self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
                 self._register_inet()
                 psycopg2.extras.register_hstore(self._con_pg, globally=True, unicode=True)
