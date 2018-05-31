@@ -1,3 +1,13 @@
+nipap-cli (0.29.7-1) stable; urgency=medium
+
+  * Add-prefix-from-prefix-option only shown when possible (#1111)
+  * Cache busting for static files in the web UI (#1120)
+  * Fix monitor attribute in web UI (#1131)
+  * Fix parsing of query string in URL (#1132)
+  * Various documentation fixes (#1124, #1153, #1155)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 31 May 2018 14:42:50 +0200
+
 nipap-cli (0.29.6-1) stable; urgency=medium
 
   * Test scripts merged (#1059)
