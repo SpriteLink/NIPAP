@@ -1,4 +1,4 @@
-Pylons>=1.0
 Jinja2
-pynipap
+Pylons>=1.0
 nipap
+pynipap
