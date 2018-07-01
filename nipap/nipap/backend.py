@@ -771,7 +771,7 @@ class Nipap:
         while True:
             try:
                 self._con_pg = psycopg2.connect(**db_args)
-                self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE)
+                self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
                 self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
                 self._register_inet()
                 psycopg2.extras.register_hstore(self._con_pg, globally=True, unicode=True)
@@ -1335,7 +1335,10 @@ class Nipap:
             self.remove_prefix(auth, spec = v6spec, recursive = True)
 
         where, params = self._expand_vrf_spec(spec)
-        sql = "DELETE FROM ip_net_vrf WHERE %s" % where
+        sql = """LOCK TABLE ip_net_plan IN EXCLUSIVE MODE;
+LOCK TABLE ip_net_vrf IN EXCLUSIVE MODE;
+LOCK TABLE ip_net_pool IN EXCLUSIVE MODE;
+DELETE FROM ip_net_vrf WHERE %s""" % where
         self._execute(sql, params)
 
         # write to audit table
@@ -1875,7 +1878,10 @@ class Nipap:
         pools = self.list_pool(auth, spec)
 
         where, params = self._expand_pool_spec(spec)
-        sql = "DELETE FROM ip_net_pool AS po WHERE %s" % where
+        sql = """LOCK TABLE ip_net_plan IN EXCLUSIVE MODE;
+LOCK TABLE ip_net_vrf IN EXCLUSIVE MODE;
+LOCK TABLE ip_net_pool IN EXCLUSIVE MODE;
+DELETE FROM ip_net_pool AS po WHERE %s""" % where
         self._execute(sql, params)
 
         # write to audit table
@@ -3095,7 +3101,10 @@ class Nipap:
         else:
             where, params = self._expand_prefix_spec(spec)
 
-        sql = "DELETE FROM ip_net_plan AS p WHERE %s" % where
+        sql = """LOCK TABLE ip_net_plan IN EXCLUSIVE MODE;
+LOCK TABLE ip_net_vrf IN EXCLUSIVE MODE;
+LOCK TABLE ip_net_pool IN EXCLUSIVE MODE;
+DELETE FROM ip_net_plan AS p WHERE %s""" % where
         self._execute(sql, params)
 
 
@@ -3934,7 +3943,10 @@ class Nipap:
 
         # remove
         where, params = self._expand_asn_spec(asn)
-        sql = "DELETE FROM ip_net_asn WHERE " + where
+        sql = """LOCK TABLE ip_net_plan IN EXCLUSIVE MODE;
+LOCK TABLE ip_net_vrf IN EXCLUSIVE MODE;
+LOCK TABLE ip_net_pool IN EXCLUSIVE MODE;
+DELETE FROM ip_net_asn WHERE """ + where
         self._execute(sql, params)
 
         # write to audit table
