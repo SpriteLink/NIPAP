@@ -66,4 +66,4 @@ ALTER TABLE ip_net_pool ADD COLUMN avps hstore NOT NULL DEFAULT '';
 ALTER TABLE ip_net_plan ADD COLUMN expires timestamp with time zone DEFAULT 'infinity';
 
 -- update database schema version
-COMMENT ON DATABASE nipap IS 'NIPAP database - schema version: 5';
+COMMENT ON DATABASE %s IS 'NIPAP database - schema version: 5';
