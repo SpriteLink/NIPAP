@@ -14,7 +14,7 @@ var nipapApp = angular.module('nipapApp', [
 /*
  * App configuration
  */
-nipapApp.config(function($routeProvider, $uibTooltipProvider, $sceProvider) {
+nipapApp.config(function($routeProvider, $uibTooltipProvider, $sceProvider, $locationProvider) {
 
 		/*
 		 * Define application routes
@@ -71,4 +71,10 @@ nipapApp.config(function($routeProvider, $uibTooltipProvider, $sceProvider) {
 		 * implemented in AngularJS.
 		 */
 		$sceProvider.enabled(false);
+
+		/*
+		 * Remove default hash prefix ("!") introduced in AngularJS 1.6
+		 */
+		$locationProvider.hashPrefix("");
+
 });
