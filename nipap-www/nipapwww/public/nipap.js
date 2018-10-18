@@ -123,6 +123,9 @@ function showDialogNotice(title, msg) {
 				$('.ui-widget-overlay').hide().fadeIn('fast');
 				$(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar").addClass("ui-dialog-question");
 				$(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar-close").remove();
+				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-button");
+				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-widget");
+				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-corner-all");
 				$(this).parents(".ui-dialog:first").find(":button:eq(0)").addClass("button button_green");
 			},
 			modal: true,
@@ -159,8 +162,9 @@ function showDialogYesNo(title, msg, target_yes) {
 				// XXX: this is a bloody hack to override the jquery ui CSS
 				//		classes, or rather remove them and have our standard
 				//		button look instead
-				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-state-default");
-				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-state-focus");
+				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-button");
+				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-widget");
+				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-corner-all");
 				$(this).parents(".ui-dialog:first").find(":button:eq(0)").addClass("button button_red");
 				$(this).parents(".ui-dialog:first").find(":button:eq(1)").addClass("button button_green");
 			},
