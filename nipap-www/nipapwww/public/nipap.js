@@ -126,7 +126,7 @@ function showDialogNotice(title, msg) {
 				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-button");
 				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-widget");
 				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-corner-all");
-				$(this).parents(".ui-dialog:first").find(":button:eq(0)").addClass("button button_green");
+				$(this).parents(".ui-dialog:first").find(":button:eq(0)").addClass("btn btn-success");
 			},
 			modal: true,
 			title: title,
@@ -165,8 +165,8 @@ function showDialogYesNo(title, msg, target_yes) {
 				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-button");
 				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-widget");
 				$(this).parents(".ui-dialog:first").find(":button").removeClass("ui-corner-all");
-				$(this).parents(".ui-dialog:first").find(":button:eq(0)").addClass("button button_red");
-				$(this).parents(".ui-dialog:first").find(":button:eq(1)").addClass("button button_green");
+				$(this).parents(".ui-dialog:first").find(":button:eq(0)").addClass("btn btn-danger");
+				$(this).parents(".ui-dialog:first").find(":button:eq(1)").addClass("btn btn-success");
 			},
 			modal: true,
 			title: title,
