@@ -17,16 +17,16 @@ nipapAppDirectives.directive('nipapPoolSelector', function ($http) {
 			$http.post('/xhr/list_pool',
 				JSON.stringify({}),
 				{ 'headers': { 'Content-Type': 'application/json' } })
-				.success(function (data) {
-					if (data.hasOwnProperty('error')) {
-						showDialogNotice('Error', data.message);
+				.then(function (response) {
+					if (response.data.hasOwnProperty('error')) {
+						showDialogNotice('Error', response.data.message);
 					} else {
-						scope.pools = data;
+						scope.pools = response.data;
 					}
 				})
-				.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+				.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 				});
 
 			/*
@@ -61,16 +61,16 @@ nipapAppDirectives.directive('nipapPoolSelectorPopup', function ($http, $timeout
 			$http.post('/xhr/list_pool',
 				JSON.stringify({}),
 				{ 'headers': { 'Content-Type': 'application/json' } })
-				.success(function (data) {
-					if (data.hasOwnProperty('error')) {
-						showDialogNotice('Error', data.message);
+				.then(function (response) {
+					if (response.data.hasOwnProperty('error')) {
+						showDialogNotice('Error', response.data.message);
 					} else {
-						scope.pools = data;
+						scope.pools = response.data;
 					}
 				})
-				.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+				.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 				});
 
 			/*
@@ -155,10 +155,12 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 				$http.post('/xhr/smart_search_vrf',
 					JSON.stringify(search_q),
 					{ 'headers': { 'Content-Type': 'application/json' } })
-					.success(scope.receiveVRFSearchResult)
-					.error(function (data, stat) {
-						var msg = data || "Unknown failure";
-						showDialogNotice('Error', stat + ': ' + msg);
+					.then(function (response) {
+						scope.receiveVRFSearchResult(response.data);
+					})
+					.catch(function (response) {
+						var msg = response.data || "Unknown failure";
+						showDialogNotice('Error', response.status + ': ' + msg);
 					});
 
 				scope.query_id += 1;

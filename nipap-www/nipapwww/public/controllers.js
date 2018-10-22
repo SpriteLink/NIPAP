@@ -13,16 +13,16 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 	$http.post('/xhr/list_vrf',
 		JSON.stringify({}),
 		{ 'headers': { 'Content-Type': 'application/json' } })
-		.success(function (data) {
-			if (data.hasOwnProperty('error')) {
-				showDialogNotice('Error', data.message);
+		.then(function (response) {
+			if (response.data.hasOwnProperty('error')) {
+				showDialogNotice('Error', response.data.message);
 			} else {
-				$scope.vrfs = data;
+				$scope.vrfs = response.data;
 			}
 		})
-		.error(function (data, stat) {
-			var msg = data || "Unknown failure";
-			showDialogNotice('Error', stat + ': ' + msg);
+		.catch(function (response) {
+			var msg = response.data || "Unknown failure";
+			showDialogNotice('Error', response.status + ': ' + msg);
 		});
 
 	/*
@@ -33,9 +33,9 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 		var dialog = showDialogYesNo('Really remove VRF?', 'Are you sure you want to remove the VRF "' + vrf.rt + '"?',
 		function () {
 			$http.get('/xhr/remove_vrf/' + vrf.id)
-				.success(function (data) {
-					if (data.hasOwnProperty('error')) {
-						showDialogNotice('Error', data.message);
+				.then(function (response) {
+					if (response.data.hasOwnProperty('error')) {
+						showDialogNotice('Error', response.data.message);
 					} else {
 						var index = $scope.vrfs.indexOf(vrf);
 						$scope.vrfs.splice(index, 1);
@@ -43,12 +43,12 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 						// Update VRF filter - the removed VRF might be in the
 						// VRF filter list
 						$http.get('/xhr/get_current_vrfs')
-							.success(receiveCurrentVRFs);
+							.then(function(response) { receiveCurrentVRFs(response.data); });
 					}
 				})
-				.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+				.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 				});
 
 			dialog.dialog('close');
@@ -67,16 +67,16 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 	$http.post('/xhr/list_pool',
 		JSON.stringify({}),
 		{ 'headers': { 'Content-Type': 'application/json' } })
-		.success(function (data) {
-			if (data.hasOwnProperty('error')) {
-				showDialogNotice('Error', data.message);
+		.then(function (response) {
+			if (response.data.hasOwnProperty('error')) {
+				showDialogNotice('Error', response.data.message);
 			} else {
-				$scope.pools = data;
+				$scope.pools = response.data;
 			}
 		})
-		.error(function (data, stat) {
-			var msg = data || "Unknown failure";
-			showDialogNotice('Error', stat + ': ' + msg);
+		.catch(function (response) {
+			var msg = response.data || "Unknown failure";
+			showDialogNotice('Error', response.status + ': ' + msg);
 		});
 
 	/*
@@ -87,17 +87,17 @@ nipapAppControllers.controller('PoolListController', function ($scope, $http) {
 		var dialog = showDialogYesNo('Really remove pool?', 'Are you sure you want to remove the pool "' + pool.name + '"?',
 		function () {
 			$http.get('/xhr/remove_pool/' + pool.id)
-				.success(function (data) {
-					if (data.hasOwnProperty('error')) {
-						showDialogNotice('Error', data.message);
+				.then(function (response) {
+					if (response.data.hasOwnProperty('error')) {
+						showDialogNotice('Error', response.data.message);
 					} else {
 						var index = $scope.pools.indexOf(pool);
 						$scope.pools.splice(index, 1);
 					}
 				})
-				.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+				.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 				});
 
 			dialog.dialog('close');
@@ -230,16 +230,16 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 			$http.post('/xhr/list_pool',
 				JSON.stringify({ 'id': allocation_parameter }),
 				{ 'headers': { 'Content-Type': 'application/json' } })
-				.success(function (data) {
-					if (data.hasOwnProperty('error')) {
-						showDialogNotice('Error', data.message);
+				.then(function (response) {
+					if (response.data.hasOwnProperty('error')) {
+						showDialogNotice('Error', response.data.message);
 					} else {
-						$scope.from_pool = data[0];
+						$scope.from_pool = response.data[0];
 					}
 				})
-				.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+				.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 				});
 
 		} else if ($scope.prefix_alloc_method == 'from-prefix') {
@@ -249,17 +249,17 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 			$http.post('/xhr/list_prefix',
 				JSON.stringify({ 'id': allocation_parameter }),
 				{ 'headers': { 'Content-Type': 'application/json' } })
-				.success(function (data) {
-					if (data.hasOwnProperty('error')) {
-						showDialogNotice('Error', data.message);
+				.then(function (response) {
+					if (response.data.hasOwnProperty('error')) {
+						showDialogNotice('Error', response.data.message);
 					} else {
-						$scope.from_prefix = data[0];
-						$scope.prefix_family = data[0].family;
+						$scope.from_prefix = response.data[0];
+						$scope.prefix_family = response.data[0].family;
 					}
 				})
-				.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+				.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 				});
 		}
 	}
@@ -310,16 +310,16 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 					), {
 						'headers': { 'Content-Type': 'application/json'}
 					})
-					.success(function (data) {
-						if (data.hasOwnProperty('error')) {
-							showDialogNotice('Error', data.message);
+					.then(function (response) {
+						if (response.data.hasOwnProperty('error')) {
+							showDialogNotice('Error', response.data.message);
 						} else {
-							$scope.prefix.vrf = data.result[0];
+							$scope.prefix.vrf = response.data.result[0];
 						}
 					})
-					.error(function (data, stat) {
-						var msg = data || "Unknown failure";
-						showDialogNotice('Error', stat + ': ' + msg);
+					.catch(function (response) {
+						var msg = response.data || "Unknown failure";
+						showDialogNotice('Error', response.status + ': ' + msg);
 					});
 			} else {
 				// Pool is missing implied VRF - means the pool is empty!
@@ -346,16 +346,16 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 				}), {
 					'headers': { 'Content-Type': 'application/json' }
 				})
-				.success(function (data) {
-					if (data.hasOwnProperty('error')) {
-						showDialogNotice('Error', data.message);
+				.then(function (response) {
+					if (response.data.hasOwnProperty('error')) {
+						showDialogNotice('Error', response.data.message);
 					} else {
-						$scope.prefix.vrf = data.result[0];
+						$scope.prefix.vrf = response.data.result[0];
 					}
 				})
-				.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+				.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 				});
 
 			// If we're allocating from an assignment, set prefix type to host
@@ -445,16 +445,16 @@ nipapAppControllers.controller('PrefixAddController', function ($scope, $routePa
 		$http.post('/xhr/add_prefix',
 				JSON.stringify(query_data),
 				{ 'headers': { 'Content-Type': 'application/json'} })
-			.success(function (data){
-				if (data.hasOwnProperty('error')) {
-					showDialogNotice('Error', data.message);
+			.then(function (response){
+				if (response.data.hasOwnProperty('error')) {
+					showDialogNotice('Error', response.data.message);
 				} else {
-					$scope.added_prefixes.push(data);
+					$scope.added_prefixes.push(response.data);
 				}
 			})
-			.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+			.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 			});
 
 	}
@@ -503,11 +503,11 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 		{
 			'headers': { 'Content-Type': 'application/json' }
 		})
-		.success(function (data) {
-			if (data.hasOwnProperty('error')) {
-				showDialogNotice('Error', data.message);
+		.then(function (response) {
+			if (response.data.hasOwnProperty('error')) {
+				showDialogNotice('Error', response.data.message);
 			} else {
-				pref = data[0];
+				pref = response.data[0];
 				pref.vrf = null;
 				pref.pool = null;
 
@@ -529,16 +529,16 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 						'query_string': ''
 					}),
 					{ 'headers': { 'Content-Type': 'application/json' } })
-					.success(function (data) {
-						if (data.hasOwnProperty('error')) {
-							showDialogNotice('Error', data.message);
+					.then(function (response) {
+						if (response.data.hasOwnProperty('error')) {
+							showDialogNotice('Error', response.data.message);
 						} else {
-							$scope.prefix.vrf = data.result[0];
+							$scope.prefix.vrf = response.data.result[0];
 						}
 					})
-					.error(function (data, stat) {
-						var msg = data || "Unknown failure";
-						showDialogNotice('Error', stat + ': ' + msg);
+					.catch(function (response) {
+						var msg = response.data || "Unknown failure";
+						showDialogNotice('Error', response.status + ': ' + msg);
 					});
 
 				// Fetch prefix's pool, if any
@@ -546,16 +546,16 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 					$http.post('/xhr/list_pool',
 						JSON.stringify({ 'id': $scope.prefix.pool_id }),
 						{ 'headers': { 'Content-Type': 'application/json' } })
-						.success(function (data) {
-							if (data.hasOwnProperty('error')) {
-								showDialogNotice('Error', data.message);
+						.then(function (response) {
+							if (response.data.hasOwnProperty('error')) {
+								showDialogNotice('Error', response.data.message);
 							} else {
-								$scope.prefix.pool = data[0];
+								$scope.prefix.pool = response.data[0];
 							}
 						})
-						.error(function (data, stat) {
-							var msg = data || "Unknown failure";
-							showDialogNotice('Error', stat + ': ' + msg);
+						.catch(function (response) {
+							var msg = response.data || "Unknown failure";
+							showDialogNotice('Error', response.status + ': ' + msg);
 						});
 				}
 
@@ -584,9 +584,9 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 			}
 
 		})
-		.error(function (data, stat) {
-			var msg = data || "Unknown failure";
-			showDialogNotice('Error', stat + ': ' + msg);
+		.catch(function (response) {
+			var msg = response.data || "Unknown failure";
+			showDialogNotice('Error', response.status + ': ' + msg);
 		});
 
 	/*
@@ -654,16 +654,16 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 		$http.post('/xhr/edit_prefix/' + $scope.prefix.id,
 				JSON.stringify(prefix_data),
 				{ 'headers': { 'Content-Type': 'application/json' } })
-			.success(function (data){
-				if (data.hasOwnProperty('error')) {
-					showDialogNotice('Error', data.message);
+			.then(function (response){
+				if (response.data.hasOwnProperty('error')) {
+					showDialogNotice('Error', response.data.message);
 				} else {
-					$scope.edited_prefixes.push(data);
+					$scope.edited_prefixes.push(response.data);
 				}
 			})
-			.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+			.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 			});
 
 	}
@@ -721,16 +721,16 @@ nipapAppControllers.controller('VRFAddController', function ($scope, $http) {
 		$http.post('/xhr/add_vrf',
 				JSON.stringify(query_data),
 				{ 'headers': { 'Content-Type': 'application/json' } })
-			.success(function (data){
-				if (data.hasOwnProperty('error')) {
-					showDialogNotice('Error', data.message);
+			.then(function (response){
+				if (response.data.hasOwnProperty('error')) {
+					showDialogNotice('Error', response.data.message);
 				} else {
-					$scope.added_vrfs.push(data);
+					$scope.added_vrfs.push(response.data);
 				}
 			})
-			.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+			.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 			});
 
 	}
@@ -769,11 +769,11 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 			'query_string': ''
 			}),
 			{ 'headers': { 'Content-Type': 'application/json' } })
-		.success(function (data) {
-			if (data.hasOwnProperty('error')) {
-				showDialogNotice('Error', data.message);
+		.then(function (response) {
+			if (response.data.hasOwnProperty('error')) {
+				showDialogNotice('Error', response.data.message);
 			} else {
-				vrf = data.result[0];
+				vrf = response.data.result[0];
 
 				// Tags needs to be mangled for use with tags-input
 				// TODO: When all interaction with prefix add & edit functions
@@ -820,9 +820,9 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 			}
 
 		})
-		.error(function (data, stat) {
-			var msg = data || "Unknown failure";
-			showDialogNotice('Error', stat + ': ' + msg);
+		.catch(function (response) {
+			var msg = response.data || "Unknown failure";
+			showDialogNotice('Error', response.status + ': ' + msg);
 		});
 
 	/*
@@ -850,16 +850,16 @@ nipapAppControllers.controller('VRFEditController', function ($scope, $routePara
 		$http.post('/xhr/edit_vrf/' + $scope.vrf.id,
 				JSON.stringify(query_data),
 				{ 'headers': { 'Content-Type': 'application/json' } })
-			.success(function (data){
-				if (data.hasOwnProperty('error')) {
-					showDialogNotice('Error', data.message);
+			.then(function (response){
+				if (response.data.hasOwnProperty('error')) {
+					showDialogNotice('Error', response.data.message);
 				} else {
-					$scope.edited_vrfs.push(data);
+					$scope.edited_vrfs.push(response.data);
 				}
 			})
-			.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+			.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 			});
 
 	}
@@ -924,16 +924,16 @@ nipapAppControllers.controller('PoolAddController', function ($scope, $http, inp
 		$http.post('/xhr/add_pool',
 				JSON.stringify(query_data),
 				{ 'headers': { 'Content-Type': 'application/json' } })
-			.success(function (data){
-				if (data.hasOwnProperty('error')) {
-					showDialogNotice('Error', data.message);
+			.then(function (response){
+				if (response.data.hasOwnProperty('error')) {
+					showDialogNotice('Error', response.data.message);
 				} else {
-					$scope.added_pools.push(data);
+					$scope.added_pools.push(response.data);
 				}
 			})
-			.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+			.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 			});
 
 	}
@@ -968,11 +968,11 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 	$http.post('/xhr/list_pool',
 		JSON.stringify({ 'id': $routeParams.pool_id }),
 		{ 'headers': { 'Content-Type': 'application/json' } })
-		.success(function (data) {
-			if (data.hasOwnProperty('error')) {
-				showDialogNotice('Error', data.message);
+		.then(function (response) {
+			if (response.data.hasOwnProperty('error')) {
+				showDialogNotice('Error', response.data.message);
 			} else {
-				pool = data[0];
+				pool = response.data[0];
 
 				// Tags needs to be mangled for use with tags-input
 				// TODO: When all interaction with prefix add & edit functions
@@ -990,16 +990,16 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 							'query_string': ''
 						}),
 						{ 'headers': { 'Content-Type': 'application/json' } })
-						.success(function (data) {
-							if (data.hasOwnProperty('error')) {
-								showDialogNotice('Error', data.message);
+						.then(function (response) {
+							if (response.data.hasOwnProperty('error')) {
+								showDialogNotice('Error', response.data.message);
 							} else {
-								$scope.pool.vrf = data.result[0];
+								$scope.pool.vrf = response.data.result[0];
 							}
 						})
-						.error(function (data, stat) {
-							var msg = data || "Unknown failure";
-							showDialogNotice('Error', stat + ': ' + msg);
+						.catch(function (response) {
+							var msg = response.data || "Unknown failure";
+							showDialogNotice('Error', response.status + ': ' + msg);
 						});
 				} else {
 					pool.vrf = null;
@@ -1011,16 +1011,16 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 				$http.post('/xhr/list_prefix',
 					JSON.stringify({ 'pool': pool.id }),
 					{ 'headers': { 'Content-Type': 'application/json' } })
-					.success(function (data) {
-						if (data.hasOwnProperty('error')) {
-							showDialogNotice('Error', data.message);
+					.then(function (response) {
+						if (response.data.hasOwnProperty('error')) {
+							showDialogNotice('Error', response.data.message);
 						} else {
-							$scope.pool_prefixes = data;
+							$scope.pool_prefixes = response.data;
 						}
 					})
-					.error(function (data, stat) {
-						var msg = data || "Unknown failure";
-						showDialogNotice('Error', stat + ': ' + msg);
+					.catch(function (response) {
+						var msg = response.data || "Unknown failure";
+						showDialogNotice('Error', response.status + ': ' + msg);
 					});
 
 				// Display statistics
@@ -1084,9 +1084,9 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 			}
 
 		})
-		.error(function (data, stat) {
-			var msg = data || "Unknown failure";
-			showDialogNotice('Error', stat + ': ' + msg);
+		.catch(function (response) {
+			var msg = response.data || "Unknown failure";
+			showDialogNotice('Error', response.status + ': ' + msg);
 		});
 
 	/*
@@ -1119,16 +1119,16 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 		$http.post('/xhr/edit_pool/' + $scope.pool.id,
 				JSON.stringify(query_data),
 				{ 'headers': { 'Content-Type': 'application/json' } })
-			.success(function (data){
-				if (data.hasOwnProperty('error')) {
-					showDialogNotice('Error', data.message);
+			.then(function (response) {
+				if (response.data.hasOwnProperty('error')) {
+					showDialogNotice('Error', response.data.message);
 				} else {
-					$scope.edited_pools.push(data);
+					$scope.edited_pools.push(response.data);
 				}
 			})
-			.error(function (data, stat) {
-					var msg = data || "Unknown failure";
-					showDialogNotice('Error', stat + ': ' + msg);
+			.catch(function (response) {
+					var msg = response.data || "Unknown failure";
+					showDialogNotice('Error', response.status + ': ' + msg);
 			});
 
 	}
@@ -1145,17 +1145,17 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 				$http.post('/xhr/edit_prefix/' + prefix.id,
 						JSON.stringify({ 'pool': null }),
 						{ 'headers': { 'Content-Type': 'application/json' } })
-					.success(function (data) {
-						if (data.hasOwnProperty('error')) {
-							showDialogNotice('Error', data.message);
+					.then(function (response) {
+						if (response.data.hasOwnProperty('error')) {
+							showDialogNotice('Error', response.data.message);
 						} else {
 							var index = $scope.pool_prefixes.indexOf(prefix);
 							$scope.pool_prefixes.splice(index, 1);
 						}
 					})
-					.error(function (data, stat) {
-						var msg = data || "Unknown failure";
-						showDialogNotice('Error', stat + ': ' + msg);
+					.catch(function (response) {
+						var msg = response.data || "Unknown failure";
+						showDialogNotice('Error', response.status + ': ' + msg);
 					});
 
 				dialog.dialog('close');
