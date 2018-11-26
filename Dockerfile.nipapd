@@ -37,6 +37,8 @@ MAINTAINER Kristian Larsson <kristian@spritelink.net>
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+ARG myrootcert
+
 # apt update, upgrade & install packages
 RUN apt-get update -qy && apt-get upgrade -qy \
  && apt-get install -qy devscripts \
@@ -49,9 +51,16 @@ RUN apt-get update -qy && apt-get upgrade -qy \
     python-docutils \
     python-pip \
     python-dev \
+    libldap2-dev \
+    libsasl2-dev \
+    libssl-dev \
+    ca-certificates \
  && pip --no-input install envtpl \
  && rm -rf /var/lib/apt/lists/*
 
+# install cert
+COPY $myrootcert /usr/local/share/ca-certificates
+RUN update-ca-certificates
 
 COPY nipap /nipap
 WORKDIR /nipap

@@ -161,17 +161,22 @@ class AuthFactory:
         for key in rem:
             del(self._auth_cache[key])
 
+        self._logger.debug("Received username %s" % str(username))
+
         user_authbackend = username.rsplit('@', 1)
-    
         # Find out what auth backend to use.
-        # If no auth backend was specified in username, use default
+        # Do not use default backend unless you login as localadmin.
         backend = ""
-        if len(user_authbackend) == 1:
+        if str(username) == "localadmin":
             backend = self._config.get('auth', 'default_backend')
-            self._logger.debug("Using default auth backend %s" % backend)
         else:
-            backend = user_authbackend[1]
-    
+            if len(user_authbackend) == 1:
+                backend = self._config.get('auth', 'secondary_backend')
+            else:
+                backend = user_authbackend[1]
+
+        self._logger.debug("Using auth backend %s" % backend)
+
         # do we have a cached instance?
         auth_str = ( str(username) + str(password) + str(authoritative_source)
             + str(auth_options) )
@@ -368,13 +373,16 @@ class LdapAuth(BaseAuth):
             return self._authenticated
 
         try:
+            self._logger.debug('username %s formatted _ldap_binddn_fmt username %s' % (self.username, self._ldap_binddn_fmt.format(ldap.dn.escape_dn_chars(self.username))))
             self._ldap_conn.simple_bind_s(self._ldap_binddn_fmt.format(ldap.dn.escape_dn_chars(self.username)), self.password)
         except ldap.SERVER_DOWN as exc:
-            raise AuthError('Could not connect to LDAP server')
+            self._logger.debug('Could not connect to LDAP server: %s' % exc)
+            raise AuthError('Could not connect to LDAP server: '+str(exc))
         except (ldap.INVALID_CREDENTIALS, ldap.INVALID_DN_SYNTAX,
                 ldap.UNWILLING_TO_PERFORM) as exc:
             # Auth failed
             self._logger.debug('erroneous password for user %s' % self.username)
+            self._logger.debug(exc)
             self._authenticated = False
             return self._authenticated
 
@@ -387,10 +395,12 @@ class LdapAuth(BaseAuth):
         try:
             # Create separate connection for search?
             if self._ldap_search_conn is not None:
-                self._ldap_search_conn.simple_bind(self._ldap_search_binddn, self._ldap_search_password)
+                self._ldap_search_conn.simple_bind_s(self._ldap_search_binddn, self._ldap_search_password)
                 search_conn = self._ldap_search_conn
             else:
                 search_conn = self._ldap_conn
+
+            self._logger.debug('username %s formatted _ldap_search username %s' % (self.username, self._ldap_search.format(ldap.dn.escape_dn_chars(self.username))))
 
             res = search_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)), ['cn','memberOf'])
             if res[0][1]['cn'][0] is not None:
@@ -417,10 +427,11 @@ class LdapAuth(BaseAuth):
             raise AuthError(exc)
         except KeyError:
             raise AuthError('LDAP attribute missing')
-        except IndexError:
+        except IndexError as exc:
             self.full_name = ''
             # authentication fails if either ro_group or rw_group are configured
             # and the user is not found.
+            self._logger.debug(exc)
             if self._ldap_rw_group or self._ldap_ro_group:
                 self._authenticated = False
                 return self._authenticated
