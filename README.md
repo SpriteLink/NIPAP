@@ -3,12 +3,10 @@ NIPAP
 
 [![Build Status](https://travis-ci.org/SpriteLink/NIPAP.svg?branch=master)](https://travis-ci.org/SpriteLink/NIPAP)
 [![Requirements Status](https://requires.io/github/SpriteLink/NIPAP/requirements.svg?branch=master)](https://requires.io/github/SpriteLink/NIPAP/requirements/?branch=master)
-[![Code Issues](https://www.quantifiedcode.com/api/v1/project/91a738c9570a4c5190a4b54d8e28188b/badge.svg)](https://www.quantifiedcode.com/app/project/91a738c9570a4c5190a4b54d8e28188b)
 [![Code Climate](https://codeclimate.com/github/SpriteLink/NIPAP/badges/gpa.svg)](https://codeclimate.com/github/SpriteLink/NIPAP)
-
 [![IRC Network](https://img.shields.io/badge/irc-%23NIPAP-blue.svg "IRC Freenode")](https://webchat.freenode.net/?channels=nipap)
-
-pynipap: [![PyPI](https://img.shields.io/pypi/v/pynipap.svg)](https://pypi.python.org/pypi/pynipap/)
+[![PyPI](https://img.shields.io/pypi/v/pynipap.svg)](https://pypi.python.org/pypi/pynipap/)
+[![Reviewed by Hound](https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg)](https://houndci.com)
 
 NIPAP is a sleek, intuitive and powerful IP address management system built to
 efficiently handle large amounts of IP addresses.
