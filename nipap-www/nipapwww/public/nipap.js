@@ -335,11 +335,11 @@ function clearPrefixSearch() {
 /*
  * Wrapper for pacing our searches somewhat
  *
- * 200ms works out to be a pretty good delay for a fast typer
+ * 500 ms works out to be a pretty good compromise
  */
 function prefixSearchKey() {
 	clearTimeout(search_key_timeout);
-	search_key_timeout = setTimeout(function() { performPrefixSearch(false) }, 200);
+	search_key_timeout = setTimeout(function() { performPrefixSearch(false) }, 500);
 }
 
 /*
@@ -892,13 +892,13 @@ function showVRFSelectorMenu(callback, pl_ref) {
 /*
  * Wrapper for pacing our searches somewhat
  *
- * 200ms works out to be a pretty good delay for a fast typer
+ * 500 ms works out to be a pretty good compromise
  *
  * TODO: merge with prefixSearchKey
  */
 function vrfSearchKey() {
 	clearTimeout(search_key_timeout);
-	search_key_timeout = setTimeout("performVRFSelectorSearch()", 200);
+	search_key_timeout = setTimeout("performVRFSelectorSearch()", 500);
 }
 
 /*
