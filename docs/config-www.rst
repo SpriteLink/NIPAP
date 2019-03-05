@@ -10,7 +10,8 @@ backend and it should be a *trusted* account. Create it with the following::
 Obviously, replace "s3cr3t" with a better password and feel free to use
 whichever username you want, as long as you configure it accordingly. The user
 account for the web UI should not be used by any other user. Configure
-the web UI to use this account by configuring the xmlrpc_uri variable::
+the web UI to use this account by configuring the xmlrpc_uri variable in the
+www section of nipap.conf::
 
     xmlrpc_uri = http://nipap-www@local:s3cr3t@127.0.0.1:1337
 
