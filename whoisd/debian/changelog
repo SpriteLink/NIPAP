@@ -1,3 +1,11 @@
+nipap-whoisd (0.29.8-1) stable; urgency=medium
+
+  * Fix removal of extra attributes in web UI (#1205)
+  * Increased delay for automatic search in the web UI to 500 ms (#1208)
+  * Upgraded AngularJS and jQuery in the web UI (#1196)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 13 Mar 2019 01:03:38 +0100
+
 nipap-whoisd (0.29.7-1) stable; urgency=medium
 
   * Add-prefix-from-prefix-option only shown when possible (#1111)
