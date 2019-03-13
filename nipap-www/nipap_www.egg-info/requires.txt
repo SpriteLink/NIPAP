@@ -1,4 +1,4 @@
-Jinja2
 Pylons>=1.0
-nipap
+Jinja2
 pynipap
+nipap
