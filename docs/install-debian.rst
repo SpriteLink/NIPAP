@@ -29,9 +29,9 @@ same version of postgresql::
 Add the NIPAP repo to your package sources, add our public key for proper
 authentication of our packages and update your lists::
 
-    echo "deb http://spritelink.github.io/NIPAP/repos/apt stable main extra" > /etc/apt/sources.list.d/nipap.list
-    wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | apt-key add -
-    apt-get update
+    echo "deb http://spritelink.github.io/NIPAP/repos/apt stable main extra" | sudo tee /etc/apt/sources.list.d/nipap.list
+    wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -
+    sudo apt-get update
 
 There are now five new packages::
 
@@ -57,7 +57,7 @@ backend on one machine and the CLI and/or web on another.
 
 Let's install the backend::
 
-    apt-get install nipapd
+    sudo apt-get install nipapd
 
 During installation, the nipapd package will ask if you want to automatically
 load the needed database structure and start nipapd on startup - answer Yes to
@@ -71,12 +71,12 @@ The nipap-www package comes with an automagic configuration guide that will
 help you setup the needed user and configure it if, and only if, you are
 running nipapd on the same machine. Install nipap-www with::
 
-    apt-get install nipap-www
+    sudo apt-get install nipap-www
 
 When you are asked whether you want to add a user automatically and configure
 it, answer yes. If you tried to install nipap-www at the same time as nipapd,
 you might not be prompted with the quetion to automatically add a user. Try
-doing 'dpkg-reconfigure nipap-www' in the case.
+doing 'sudo dpkg-reconfigure nipap-www' in the case.
 
 The user added to the local authentication database by the installation script
 is merely used by the web interface to talk to the backend.
