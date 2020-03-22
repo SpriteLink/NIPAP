@@ -786,6 +786,12 @@ class Nipap:
                         self._db_install(db_args['database'])
                         continue
                     raise NipapDatabaseMissingExtensionError("hstore extension not found in the database")
+                # retry if database is not ready (docker friendly)
+                if re.search("could not connect to server: Connection refused", unicode(exc)):
+                    self._logger.error("pgsql: %s" % exc)
+                    self._logger.error("Retrying")
+                    time.sleep(1)
+                    continue
 
                 self._logger.error("pgsql: %s" % exc)
                 raise NipapError("Backend unable to connect to database")
