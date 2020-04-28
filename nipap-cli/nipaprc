@@ -15,6 +15,7 @@ hostname = 127.0.0.1
 port = 1337
 username = guest
 password = guest
+#use_ssl = false
 
 # Specify a command which can be used to complete node hostnames. This will be
 # called when trying to complete a node hostname.

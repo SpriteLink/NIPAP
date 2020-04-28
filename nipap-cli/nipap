@@ -80,7 +80,8 @@ if __name__ == '__main__':
         'hostname': 'localhost',
         'post': 1337,
         'password': None,
-        'prefix_list_columns': None
+        'prefix_list_columns': None,
+        'use_ssl': 'false'
     }
     # read configuration
     cfg = configparser.ConfigParser(cfg_defaults, allow_no_value=True)
@@ -97,7 +98,8 @@ if __name__ == '__main__':
 
         nipapd_version = 'unknown'
         try:
-            pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
+            pynipap.xmlrpc_uri = "%(protocol)s://%(username)s:%(password)s@%(hostname)s:%(port)s" % {
+                    'protocol': nipap_cli.nipap_cli.determine_protocol(),
                     'username': nipap_cli.nipap_cli.cfg.get('global', 'username'),
                     'password': nipap_cli.nipap_cli.cfg.get('global', 'password'),
                     'hostname': nipap_cli.nipap_cli.cfg.get('global', 'hostname'),
