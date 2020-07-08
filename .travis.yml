@@ -5,8 +5,9 @@ language: generic
 addons:
     apt:
         update: true
-        packages:
         # dependencies for building packages and build NIPAP debian packages
+        # postgresql + ip4r + contrib
+        packages:
         - devscripts
         - python-dev
         - python3-dev
@@ -18,7 +19,6 @@ addons:
         - python-nose
         - default-jdk
         - gradle
-        # postgresql + ip4r + contrib
         - postgresql-9.2
         - postgresql-9.2-ip4r
         - postgresql-contrib-9.2
