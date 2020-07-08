@@ -2,6 +2,27 @@ sudo: required
 dist: trusty
 language: generic
 
+addons:
+    apt:
+        update: true
+        packages:
+        # dependencies for building packages and build NIPAP debian packages
+        - devscripts
+        - python-dev
+        - python3-dev
+        - python-docutils
+        - debhelper
+        - dh-python
+        - junit4
+        - python3-pip
+        - python-nose
+        - default-jdk
+        - gradle
+        # postgresql + ip4r + contrib
+        - postgresql-9.2
+        - postgresql-9.2-ip4r
+        - postgresql-contrib-9.2
+
 env:
     matrix:
         # Basic build only running nosetests, one using apt and one running in
@@ -21,14 +42,9 @@ matrix:
 
 install:
     # -- common operations to apt install and virtualenv -----------------------
-    # install dependencies for building packages and build NIPAP debian packages
-    - sudo apt-get update
-    - sudo apt-get install -qq -y --force-yes devscripts python-dev python3-dev python-docutils debhelper dh-python junit4 python3-pip python-nose default-jdk gradle
     # configure .nipaprc
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
     - chmod 0600 ~/.nipaprc
-    # install postgresql + ip4r + contrib
-    - sudo apt-get install -qq -y postgresql-9.2 postgresql-9.2-ip4r postgresql-contrib-9.2
 
     # -- virtualenv build ------------------------------------------------------
     # install nipap dependencies
