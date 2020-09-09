@@ -32,7 +32,7 @@
 # via a volume.
 #
 
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 MAINTAINER Kristian Larsson <kristian@spritelink.net>
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -44,19 +44,30 @@ RUN apt-get update -qy && apt-get upgrade -qy \
     libpq-dev \
     libsqlite3-dev \
     postgresql-client \
-    python \
-    python-all \
-    python-docutils \
-    python-pip \
-    python-dev \
- && pip --no-input install envtpl \
+    software-properties-common \
+    python3 \
+    python3-all \
+    python3-pip \
+    python3-dev \
+    libsasl2-dev \
+    libldap2-dev \
+    libssl-dev \
  && rm -rf /var/lib/apt/lists/*
+
+# Install any additional CA certs from ca_certs folder required by corp proxies etc
+RUN mkdir -p /usr/share/ca-certificates/extra
+COPY ca_certs/*.crt /usr/share/ca-certificates/extra/
+RUN ls /usr/share/ca-certificates/extra/*.crt | sed 's/\/usr\/share\/ca-certificates\///g' >> /etc/ca-certificates.conf
+RUN update-ca-certificates
+RUN pip3 install --upgrade pip
+RUN pip3 config set global.cert /etc/ssl/certs/ca-certificates.crt
 
 
 COPY nipap /nipap
 WORKDIR /nipap
-RUN pip --no-input install -r requirements.txt \
- && python setup.py install
+RUN pip3 install --no-input envtpl
+RUN pip3 --no-input install -r requirements.txt \
+ && python3 setup.py install
 
 EXPOSE 1337
 ENV LISTEN_ADDRESS=0.0.0.0 LISTEN_PORT=1337 SYSLOG=false DB_PORT=5432 DB_SSLMODE=disable
