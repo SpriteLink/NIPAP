@@ -1,12 +1,12 @@
-import ConfigParser
+import configparser
 
 
-class NipapConfig(ConfigParser.SafeConfigParser):
+class NipapConfig(configparser.ConfigParser):
     """ Makes configuration data available.
 
         Implemented as a class with a shared state; once an instance has been
         created, new instances with the same state can be obtained by calling
-        the custructor again.
+        the constructor again.
     """
 
     __shared_state = {}
@@ -26,11 +26,9 @@ class NipapConfig(ConfigParser.SafeConfigParser):
             # First time - create new instance!
             self._cfg_path = cfg_path
 
-            ConfigParser.SafeConfigParser.__init__(self, default)
+            configparser.ConfigParser.__init__(self, default, inline_comment_prefixes=";#")
 
             self.read_file()
-
-
 
     def read_file(self):
         """ Read the configuration file
@@ -41,11 +39,9 @@ class NipapConfig(ConfigParser.SafeConfigParser):
             return
 
         try:
-            cfg_fp = open(self._cfg_path, 'r')
-            self.readfp(cfg_fp)
+            self.read([self._cfg_path])
         except IOError as exc:
             raise NipapConfigError(str(exc))
-
 
 
 class NipapConfigError(Exception):

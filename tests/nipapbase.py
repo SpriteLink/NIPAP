@@ -10,6 +10,7 @@ from nipap.backend import Nipap, NipapError, NipapInputError, NipapMissingInputE
 from nipap.authlib import SqliteAuth
 from nipap.nipapconfig import NipapConfig
 
+
 class NipapTest(unittest.TestCase):
     """ Tests the NIPAP class
     """

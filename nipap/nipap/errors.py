@@ -1,4 +1,3 @@
-
 class NipapError(Exception):
     """ NIPAP base error class.
     """

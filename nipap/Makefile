@@ -1,7 +1,7 @@
 # $Id: Makefile,v 1.6 2011/04/18 17:14:00 lukagarb Exp $
 #
 
-PYTHON=`which python2`
+PYTHON=`which python3`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/python-nipap-build
 PROJECT=nipap
@@ -38,7 +38,7 @@ test:
 check:
 
 upload:
-	python setup.py sdist upload
+	python3 setup.py sdist upload
 
 clean:
 	$(PYTHON) setup.py clean

@@ -68,7 +68,7 @@ import logging
 from datetime import datetime, timedelta
 import hashlib
 
-from nipapconfig import NipapConfig
+from .nipapconfig import NipapConfig
 
 # Used by auth modules
 import sqlite3
@@ -90,7 +90,6 @@ class AuthFactory:
     _auth_cache = {}
     _backends = {}
 
-
     def __init__(self):
         """ Constructor.
         """
@@ -99,8 +98,6 @@ class AuthFactory:
         self._config = NipapConfig()
         self._logger = logging.getLogger(self.__class__.__name__)
         self._init_backends()
-
-
 
     def _init_backends(self):
         """ Initialize auth backends.
@@ -116,7 +113,7 @@ class AuthFactory:
                 auth_backend = section_components[1]
                 self._backends[auth_backend] = eval(self._config.get(section, 'type'))
 
-        self._logger.debug("Registered auth backends %s" % str(self._backends))
+        self._logger.debug("Registered auth backends %s", str(self._backends))
 
 
 
@@ -127,11 +124,9 @@ class AuthFactory:
         self._auth_cache = {}
         self._init_backends()
 
-
-
     def get_auth(self, username, password, authoritative_source, auth_options=None):
         """ Returns an authentication object.
-    
+
             Examines the auth backend given after the '@' in the username and
             returns a suitable instance of a subclass of the BaseAuth class.
 
@@ -150,7 +145,7 @@ class AuthFactory:
             auth_options = {}
 
         # validate arguments
-        if (authoritative_source is None):
+        if authoritative_source is None:
             raise AuthError("Missing authoritative_source.")
 
         # remove invalid cache entries
@@ -159,46 +154,43 @@ class AuthFactory:
             if self._auth_cache[key]['valid_until'] < datetime.utcnow():
                 rem.append(key)
         for key in rem:
-            del(self._auth_cache[key])
+            del self._auth_cache[key]
 
         user_authbackend = username.rsplit('@', 1)
-    
+
         # Find out what auth backend to use.
         # If no auth backend was specified in username, use default
         backend = ""
         if len(user_authbackend) == 1:
             backend = self._config.get('auth', 'default_backend')
-            self._logger.debug("Using default auth backend %s" % backend)
+            self._logger.debug("Using default auth backend %s", backend)
         else:
             backend = user_authbackend[1]
-    
+
         # do we have a cached instance?
-        auth_str = ( str(username) + str(password) + str(authoritative_source)
-            + str(auth_options) )
+        auth_str = (username + password + authoritative_source + str(auth_options))
         if auth_str in self._auth_cache:
-            self._logger.debug('found cached auth object for user %s' % username)
+            self._logger.debug('found cached auth object for user %s', username)
             return self._auth_cache[auth_str]['auth_object']
 
         # Create auth object
         try:
             auth = self._backends[backend](backend, user_authbackend[0], password, authoritative_source, auth_options)
         except KeyError:
-            raise AuthError("Invalid auth backend '%s' specified" %
-                str(backend))
+            raise AuthError("Invalid auth backend '{}' specified".format(backend))
 
         # save auth object to cache
         self._auth_cache[auth_str] = {
             'valid_until': datetime.utcnow() + timedelta(seconds=self._config.getint('auth', 'auth_cache_timeout')),
-            'auth_object': auth
+            'auth_object': auth,
         }
 
         return auth
 
 
-
 class BaseAuth:
     """ A base authentication class.
-        
+
         All authentication modules should extend this class.
     """
 
@@ -214,7 +206,6 @@ class BaseAuth:
     _logger = None
     _auth_options = None
     _cfg = None
-
 
     def __init__(self, username, password, authoritative_source, auth_backend, auth_options=None):
         """ Constructor.
@@ -250,18 +241,14 @@ class BaseAuth:
 
         self._auth_options = auth_options
 
-
-
     def authenticate(self):
         """ Verify authentication.
 
             Returns True/False dependant on whether the authentication
             succeeded or not.
         """
-    
+
         return False
-
-
 
     def authorize(self):
         """ Verify authorization.
@@ -269,7 +256,6 @@ class BaseAuth:
             Check if a user is authorized to perform a specific operation.
         """
         return False
-
 
 
 class LdapAuth(BaseAuth):
@@ -355,7 +341,6 @@ class LdapAuth(BaseAuth):
                 self._logger.exception(exc)
                 raise AuthError('Unable to establish secure connection to ldap server')
 
-
     def authenticate(self):
         """ Verify authentication.
 
@@ -368,16 +353,19 @@ class LdapAuth(BaseAuth):
             return self._authenticated
 
         try:
-            self._ldap_conn.simple_bind_s(self._ldap_binddn_fmt.format(ldap.dn.escape_dn_chars(self.username)), self.password)
+            self._ldap_conn.simple_bind_s(self._ldap_binddn_fmt.format(ldap.dn.escape_dn_chars(self.username)),
+                                          self.password)
         except ldap.SERVER_DOWN as exc:
             raise AuthError('Could not connect to LDAP server')
-        except (ldap.INVALID_CREDENTIALS, ldap.INVALID_DN_SYNTAX,
-                ldap.UNWILLING_TO_PERFORM) as exc:
+        except (
+            ldap.INVALID_CREDENTIALS,
+            ldap.INVALID_DN_SYNTAX,
+            ldap.UNWILLING_TO_PERFORM,
+        ) as exc:
             # Auth failed
-            self._logger.debug('erroneous password for user %s' % self.username)
+            self._logger.debug('erroneous password for user %s', self.username)
             self._authenticated = False
             return self._authenticated
-
 
         # auth succeeded
         self.authenticated_as = self.username
@@ -392,7 +380,12 @@ class LdapAuth(BaseAuth):
             else:
                 search_conn = self._ldap_conn
 
-            res = search_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)), ['cn','memberOf'])
+            res = search_conn.search_s(
+                self._ldap_basedn,
+                ldap.SCOPE_SUBTREE,
+                self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)),
+                ['cn', 'memberOf'],
+            )
             if res[0][1]['cn'][0] is not None:
                 self.full_name = res[0][1]['cn'][0].decode('utf-8')
             # check for ro_group membership if ro_group is configured
@@ -427,9 +420,9 @@ class LdapAuth(BaseAuth):
 
         self._authenticated = True
 
-        self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s' % (self.authenticated_as, self.username, self.full_name, str(self.readonly)))
+        self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s',
+                           self.authenticated_as, self.username, self.full_name, str(self.readonly))
         return self._authenticated
-
 
 
 class SqliteAuth(BaseAuth):
@@ -472,15 +465,16 @@ class SqliteAuth(BaseAuth):
 
         # connect to database
         try:
-            self._db_conn = sqlite3.connect(self._cfg.get('auth.backends.' + self.auth_backend, 'db_path'), check_same_thread = False)
+            self._db_conn = sqlite3.connect(
+                self._cfg.get('auth.backends.' + self.auth_backend, 'db_path'),
+                check_same_thread=False,
+            )
             self._db_conn.row_factory = sqlite3.Row
             self._db_curs = self._db_conn.cursor()
 
         except sqlite3.Error as exc:
-            self._logger.error('Could not open user database: %s' % str(exc))
+            self._logger.error('Could not open user database: %s', str(exc))
             raise AuthError(str(exc))
-
-
 
     def _latest_db_version(self):
         """ Check if database is of the latest version
@@ -494,17 +488,14 @@ class SqliteAuth(BaseAuth):
         if len(self._db_curs.fetchall()) < 1:
             raise AuthSqliteError("No 'user' table.")
 
-        for column in ('username', 'pwd_salt', 'pwd_hash', 'full_name',
-                'trusted', 'readonly'):
-            sql = "SELECT %s FROM user" % column
+        for column in ('username', 'pwd_salt', 'pwd_hash', 'full_name', 'trusted', 'readonly'):
+            sql = "SELECT " + column + " FROM user"
             try:
                 self._db_curs.execute(sql)
             except:
                 return False
 
         return True
-
-
 
     def _create_database(self):
         """ Set up database
@@ -524,8 +515,6 @@ class SqliteAuth(BaseAuth):
         self._db_curs.execute(sql)
         self._db_conn.commit()
 
-
-
     def _upgrade_database(self):
         """ Upgrade database to latest version
 
@@ -541,8 +530,6 @@ class SqliteAuth(BaseAuth):
             pass
         self._db_conn.commit()
 
-
-
     def authenticate(self):
         """ Verify authentication.
 
@@ -554,19 +541,19 @@ class SqliteAuth(BaseAuth):
         if self._authenticated is not None:
             return self._authenticated
 
-        self._logger.debug('Trying to authenticate as user \'%s\'' % self.username)
+        self._logger.debug('Trying to authenticate as user \'%s\'', self.username)
 
         user = self.get_user(self.username)
         # Was user found?
         if user is None:
-            self._logger.debug('unknown user %s' % self.username)
+            self._logger.debug('unknown user %s', self.username)
             self._authenticated = False
             return self._authenticated
 
         # verify password
         if self._gen_hash(self.password, user['pwd_salt']) != user['pwd_hash']:
             # Auth failed
-            self._logger.debug('erroneous password for user %s' % self.username)
+            self._logger.debug('erroneous password for user %s', self.username)
             self._authenticated = False
             return self._authenticated
 
@@ -595,10 +582,9 @@ class SqliteAuth(BaseAuth):
         else:
             self.full_name = user['full_name']
 
-        self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s' % (self.authenticated_as, self.username, self.full_name, str(self.readonly)))
+        self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s',
+                           self.authenticated_as, self.username, self.full_name, str(self.readonly))
         return self._authenticated
-
-
 
     def get_user(self, username):
         """ Fetch the user from the database
@@ -607,11 +593,9 @@ class SqliteAuth(BaseAuth):
         """
 
         sql = '''SELECT * FROM user WHERE username = ?'''
-        self._db_curs.execute(sql, (username, ))
+        self._db_curs.execute(sql, (username,))
         user = self._db_curs.fetchone()
         return user
-
-
 
     def add_user(self, username, password, full_name=None, trusted=False, readonly=False):
         """ Add user to SQLite database.
@@ -632,20 +616,17 @@ class SqliteAuth(BaseAuth):
         char_set = string.ascii_letters + string.digits
         salt = ''.join(random.choice(char_set) for x in range(8))
 
-
         sql = '''INSERT INTO user
             (username, pwd_salt, pwd_hash, full_name, trusted, readonly)
             VALUES
             (?, ?, ?, ?, ?, ?)'''
         try:
             self._db_curs.execute(sql, (username, salt,
-                self._gen_hash(password, salt), full_name, trusted or False,
+                                        self._gen_hash(password, salt), full_name, trusted or False,
                                         readonly or False))
             self._db_conn.commit()
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
-
-
 
     def remove_user(self, username):
         """ Remove user from the SQLite database.
@@ -656,13 +637,11 @@ class SqliteAuth(BaseAuth):
 
         sql = '''DELETE FROM user WHERE username = ?'''
         try:
-            self._db_curs.execute(sql, (username, ))
+            self._db_curs.execute(sql, (username,))
             self._db_conn.commit()
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
         return self._db_curs.rowcount
-
-
 
     def modify_user(self, username, data):
         """ Modify user in SQLite database.
@@ -675,10 +654,10 @@ class SqliteAuth(BaseAuth):
             char_set = string.ascii_letters + string.digits
             data['pwd_salt'] = ''.join(random.choice(char_set) for x in range(8))
             data['pwd_hash'] = self._gen_hash(data['password'], data['pwd_salt'])
-            del(data['password'])
+            del data['password']
 
         sql = "UPDATE user SET "
-        sql += ', '.join("%s = ?" % k for k in sorted(data))
+        sql += ', '.join(k + " = ?" for k in sorted(data))
         sql += " WHERE username = ?"
 
         vals = []
@@ -692,8 +671,6 @@ class SqliteAuth(BaseAuth):
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
 
-
-
     def list_users(self):
         """ List all users.
         """
@@ -704,18 +681,15 @@ class SqliteAuth(BaseAuth):
             users.append(dict(row))
         return users
 
-
-
     def _gen_hash(self, password, salt):
         """ Generate password hash.
         """
 
         # generate hash
         h = hashlib.sha1()
-        h.update(salt)
-        h.update(password)
+        h.update(str.encode(salt))  # encode to bytes
+        h.update(str.encode(password))  # encode to bytes
         return h.hexdigest()
-
 
 
 class AuthError(Exception):
