@@ -23,7 +23,7 @@
 # database so that you can later login to the web interface.
 #
 
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 
 MAINTAINER Lukas Garberg <lukas@spritelink.net>
 
@@ -38,22 +38,29 @@ RUN apt-get update -qy && apt-get upgrade -qy \
     libpq-dev \
     libsqlite3-dev \
     postgresql-client \
-    python \
-    python-all \
-    python-docutils \
-    python-pip \
-    python-dev \
- && pip --no-input install envtpl \
+    python3-all \
+    python3-pip \
+    python3-dev \
+    libsasl2-dev \
+    libldap2-dev \
+    libssl-dev \
  && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /usr/share/ca-certificates/extra
+COPY ca_certs/* /usr/share/ca-certificates/extra/
+RUN /usr/share/ca-certificates/extra/install-certs.sh
+RUN pip3 --no-input install envtpl
 
 # Install pynipap, nipap and nipap-www
 COPY pynipap /pynipap
 COPY nipap /nipap
 COPY nipap-www /nipap-www
-RUN cd /pynipap && python setup.py install && \
-    cd /nipap && pip --no-input install -r requirements.txt && python setup.py install && \
-    cd /nipap-www && pip --no-input install -r requirements.txt && python setup.py install && \
-    cd ..
+RUN cd /pynipap && python3 setup.py install
+RUN cd /nipap && pip3 --no-input install -r requirements.txt && \
+    python3 setup.py install
+RUN cd /nipap-www && pip3 --no-input install -r requirements.txt && \
+    python3 setup.py install
+RUN cd ..
 
 EXPOSE 80
 VOLUME [ "/var/log/apache2" ]

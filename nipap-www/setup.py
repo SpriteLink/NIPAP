@@ -1,5 +1,11 @@
 from setuptools import setup, find_packages
+import re
 import nipapwww
+
+with open('requirements.txt', 'r') as f:
+    requires = [re.sub(r'\s*([\w_\-\.\d]+([<>=]+\S+|)).*', r'\1', x.strip())
+                for x in f if
+                x.strip() and re.match(r'^\s*\w+', x.strip())]
 
 setup(
     name='nipap-www',
@@ -8,12 +14,7 @@ setup(
     author=nipapwww.__author__,
     author_email=nipapwww.__author_email__,
     url=nipapwww.__url__,
-    install_requires=[
-        "Pylons>=1.0",
-        "Jinja2",
-        "pynipap",
-        "nipap"
-    ],
+    install_requires=requires,
     license=nipapwww.__license__,
 #    setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),

@@ -1,23 +1,17 @@
 import logging
-import urllib
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
 
-from nipapwww.lib.base import BaseController, render
+from nipapwww.lib.base import BaseController
 from pynipap import Tag, VRF, Prefix, Pool, NipapError
 
 log = logging.getLogger(__name__)
 
 
-
 def validate_string(req, key):
-
-    if isinstance(req[key], basestring) and req[key].strip() != '':
+    if isinstance(req[key], str) and req[key].strip() != '':
         return req[key].strip()
     else:
         return None
@@ -51,8 +45,6 @@ class XhrController(BaseController):
 
         return attr
 
-
-
     @classmethod
     def extract_pool_attr(cls, req):
         """ Extract pool attributes from arbitary dict.
@@ -68,13 +60,13 @@ class XhrController(BaseController):
         if 'default_type' in req:
             attr['default_type'] = req['default_type']
         if 'ipv4_default_prefix_length' in req:
-            attr['ipv4_default_prefix_length'] = int(req['ipv4_default_prefix_length'])
+            attr['ipv4_default_prefix_length'] = int(
+                req['ipv4_default_prefix_length'])
         if 'ipv6_default_prefix_length' in req:
-            attr['ipv6_default_prefix_length'] = int(req['ipv6_default_prefix_length'])
+            attr['ipv6_default_prefix_length'] = int(
+                req['ipv6_default_prefix_length'])
 
         return attr
-
-
 
     def list_vrf(self):
         """ List VRFs and return JSON encoded result.
@@ -82,12 +74,11 @@ class XhrController(BaseController):
 
         try:
             vrfs = VRF.list()
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(vrfs, cls=NipapJSONEncoder)
-
-
 
     def smart_search_vrf(self):
         """ Perform a smart VRF search.
@@ -111,27 +102,25 @@ class XhrController(BaseController):
 
         if 'vrf_id' in request.json:
             extra_query = {
-                    'val1': 'id',
-                    'operator': 'equals',
-                    'val2': request.json['vrf_id']
-                }
+                'val1': 'id',
+                'operator': 'equals',
+                'val2': request.json['vrf_id']
+            }
 
         try:
             result = VRF.smart_search(request.json['query_string'],
-                search_options, extra_query
-                )
+                                      search_options, extra_query)
             # Remove error key in result from backend as it interferes with the
             # error handling of the web interface.
             # TODO: Reevaluate how to deal with different types of errors; soft
             # errors like query string parser errors and hard errors like lost
             # database.
             del result['error']
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(result, cls=NipapJSONEncoder)
-
-
 
     def add_vrf(self):
         """ Add a new VRF to NIPAP and return its data.
@@ -151,12 +140,12 @@ class XhrController(BaseController):
 
         try:
             v.save()
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+            log.info('add_vrf (%s) %s' % (session['user'], request.json))
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(v, cls=NipapJSONEncoder)
-
-
 
     def edit_vrf(self, id):
         """ Edit a VRF.
@@ -164,8 +153,9 @@ class XhrController(BaseController):
 
         try:
             v = VRF.get(int(id))
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         if 'rt' in request.json:
             v.rt = validate_string(request.json, 'rt')
@@ -180,12 +170,12 @@ class XhrController(BaseController):
 
         try:
             v.save()
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+            log.info('edit_vrf (%s) %s', session['user'], request.json)
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(v, cls=NipapJSONEncoder)
-
-
 
     def remove_vrf(self, id):
         """ Remove a VRF.
@@ -193,14 +183,15 @@ class XhrController(BaseController):
 
         try:
             vrf = VRF.get(int(id))
+            name = vrf.name
             vrf.remove()
+            log.info('remove_vrf (%s) %s', session['user'], name)
 
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(vrf, cls=NipapJSONEncoder)
-
-
 
     def list_pool(self):
         """ List pools and return JSON encoded result.
@@ -211,12 +202,11 @@ class XhrController(BaseController):
 
         try:
             pools = Pool.list(attr)
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(pools, cls=NipapJSONEncoder)
-
-
 
     def smart_search_pool(self):
         """ Perform a smart pool search.
@@ -238,20 +228,18 @@ class XhrController(BaseController):
 
         try:
             result = Pool.smart_search(request.json['query_string'],
-                search_options
-                )
+                                       search_options)
             # Remove error key in result from backend as it interferes with the
             # error handling of the web interface.
             # TODO: Reevaluate how to deal with different types of errors; soft
             # errors like query string parser errors and hard errors like lost
             # database.
             del result['error']
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(result, cls=NipapJSONEncoder)
-
-
 
     def add_pool(self):
         """ Add a pool.
@@ -267,22 +255,24 @@ class XhrController(BaseController):
             p.default_type = validate_string(request.json, 'default_type')
         # TODO: handle integers
         if 'ipv4_default_prefix_length' in request.json:
-            p.ipv4_default_prefix_length = request.json['ipv4_default_prefix_length']
+            p.ipv4_default_prefix_length = request.json[
+                'ipv4_default_prefix_length']
         if 'ipv6_default_prefix_length' in request.json:
-            p.ipv6_default_prefix_length = request.json['ipv6_default_prefix_length']
+            p.ipv6_default_prefix_length = request.json[
+                'ipv6_default_prefix_length']
         if 'tags' in request.json:
             p.tags = request.json['tags']
         if 'avps' in request.json:
             p.avps = request.json['avps']
 
         try:
-           p.save()
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+            p.save()
+            log.info('add_pool (%s) %s' % (session['user'], request.json))
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(p, cls=NipapJSONEncoder)
-
-
 
     def edit_pool(self, id):
         """ Edit a pool.
@@ -298,22 +288,24 @@ class XhrController(BaseController):
             p.default_type = validate_string(request.json, 'default_type')
         # TODO: handle integers
         if 'ipv4_default_prefix_length' in request.json:
-            p.ipv4_default_prefix_length = request.json['ipv4_default_prefix_length']
+            p.ipv4_default_prefix_length = request.json[
+                'ipv4_default_prefix_length']
         if 'ipv6_default_prefix_length' in request.json:
-            p.ipv6_default_prefix_length = request.json['ipv6_default_prefix_length']
+            p.ipv6_default_prefix_length = request.json[
+                'ipv6_default_prefix_length']
         if 'tags' in request.json:
             p.tags = request.json['tags']
         if 'avps' in request.json:
             p.avps = request.json['avps']
 
         try:
-           p.save()
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+            p.save()
+            log.info('edit_pool (%s) %s' % (session['user'], request.json))
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(p, cls=NipapJSONEncoder)
-
-
 
     def remove_pool(self, id):
         """ Remove a pool.
@@ -321,14 +313,15 @@ class XhrController(BaseController):
 
         try:
             pool = Pool.get(int(id))
+            name = pool.name
             pool.remove()
+            log.info('remove_pool (%s) %s', session['user'], name)
 
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(pool, cls=NipapJSONEncoder)
-
-
 
     def list_prefix(self):
         """ List prefixes and return JSON encoded result.
@@ -339,12 +332,11 @@ class XhrController(BaseController):
 
         try:
             prefixes = Prefix.list(attr)
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(prefixes, cls=NipapJSONEncoder)
-
-
 
     def search_prefix(self):
         """ Search prefixes. Does not yet incorporate all the functions of the
@@ -352,9 +344,9 @@ class XhrController(BaseController):
             a complete 'dict-to-sql' encoded data structure.
 
             Instead, a list of prefix attributes can be given which will be
-            matched with the 'equals' operator if notheing else is specified. If
-            multiple attributes are given, they will be combined with the 'and'
-            operator. Currently, it is not possible to specify different
+            matched with the 'equals' operator if notheing else is specified.
+            If multiple attributes are given, they will be combined with the
+            'and' operator. Currently, it is not possible to specify different
             operators for different attributes.
         """
 
@@ -396,7 +388,8 @@ class XhrController(BaseController):
         if 'parents_depth' in request.json:
             search_opts['parents_depth'] = request.json['parents_depth']
         if 'include_neighbors' in request.json:
-            search_opts['include_neighbors'] = request.json['include_neighbors']
+            search_opts['include_neighbors'] = request.json[
+                'include_neighbors']
         if 'max_result' in request.json:
             search_opts['max_result'] = request.json['max_result']
         if 'offset' in request.json:
@@ -404,12 +397,11 @@ class XhrController(BaseController):
 
         try:
             result = Prefix.search(q, search_opts)
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(result, cls=NipapJSONEncoder)
-
-
 
     def smart_search_prefix(self):
         """ Perform a smart search.
@@ -488,36 +480,35 @@ class XhrController(BaseController):
         if 'indent' in request.json:
             if extra_query:
                 extra_query = {
-                        'operator': 'and',
-                        'val1': extra_query,
-                        'val2': {
-                            'operator': 'equals',
-                            'val1': 'indent',
-                            'val2': request.json['indent']
-                        }
+                    'operator': 'and',
+                    'val1': extra_query,
+                    'val2': {
+                        'operator': 'equals',
+                        'val1': 'indent',
+                        'val2': request.json['indent']
                     }
+                }
             else:
                 extra_query = {
                     'operator': 'equals',
                     'val1': 'indent',
                     'val2': request.json['indent']
-                    }
+                }
 
         try:
             result = Prefix.smart_search(request.json['query_string'],
-                search_options, extra_query)
+                                         search_options, extra_query)
             # Remove error key in result from backend as it interferes with the
             # error handling of the web interface.
             # TODO: Reevaluate how to deal with different types of errors; soft
             # errors like query string parser errors and hard errors like lost
             # database.
             del result['error']
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(result, cls=NipapJSONEncoder)
-
-
 
     def add_prefix(self):
         """ Add prefix according to the specification.
@@ -551,14 +542,17 @@ class XhrController(BaseController):
         # Sanitize input parameters
         if 'vrf' in request.json:
             try:
-                if request.json['vrf'] is None or len(unicode(request.json['vrf'])) == 0:
+                if not request.json['vrf']:
                     p.vrf = None
                 else:
                     p.vrf = VRF.get(int(request.json['vrf']))
             except ValueError:
-                return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.json['vrf']})
-            except NipapError, e:
-                return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+                return json.dumps({'error': 1,
+                                   'message': "Invalid VRF ID '%s'" %
+                                              request.json['vrf']})
+            except NipapError as e:
+                return json.dumps(
+                    {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         if 'description' in request.json:
             p.description = validate_string(request.json, 'description')
@@ -577,8 +571,9 @@ class XhrController(BaseController):
             if request.json['pool'] is not None:
                 try:
                     p.pool = Pool.get(int(request.json['pool']))
-                except NipapError, e:
-                    return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+                except NipapError as e:
+                    return json.dumps({'error': 1, 'message': e.args,
+                                       'type': type(e).__name__})
 
         if 'country' in request.json:
             p.country = validate_string(request.json, 'country')
@@ -605,8 +600,9 @@ class XhrController(BaseController):
         if 'from_pool' in request.json:
             try:
                 args['from-pool'] = Pool.get(int(request.json['from_pool']))
-            except NipapError, e:
-                return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+            except NipapError as e:
+                return json.dumps(
+                    {'error': 1, 'message': e.args, 'type': type(e).__name__})
         if 'family' in request.json:
             args['family'] = request.json['family']
         if 'prefix_length' in request.json:
@@ -619,12 +615,12 @@ class XhrController(BaseController):
 
         try:
             p.save(args)
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+            log.info('add_prefix (%s) %s' % (session['user'], request.json))
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(p, cls=NipapJSONEncoder)
-
-
 
     def edit_prefix(self, id):
         """ Edit a prefix.
@@ -655,11 +651,13 @@ class XhrController(BaseController):
                 else:
                     try:
                         p.pool = Pool.get(int(request.json['pool']))
-                    except NipapError, e:
-                        return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+                    except NipapError as e:
+                        return json.dumps({'error': 1, 'message': e.args,
+                                           'type': type(e).__name__})
 
             if 'alarm_priority' in request.json:
-                p.alarm_priority = validate_string(request.json, 'alarm_priority')
+                p.alarm_priority = validate_string(request.json,
+                                                   'alarm_priority')
             if 'monitor' in request.json:
                 p.monitor = request.json['monitor']
             if 'country' in request.json:
@@ -672,14 +670,17 @@ class XhrController(BaseController):
             if 'vrf' in request.json:
 
                 try:
-                    if request.json['vrf'] is None or len(unicode(request.json['vrf'])) == 0:
+                    if not request.json['vrf']:
                         p.vrf = None
                     else:
                         p.vrf = VRF.get(int(request.json['vrf']))
                 except ValueError:
-                    return json.dumps({'error': 1, 'message': "Invalid VRF ID '%s'" % request.json['vrf']})
-                except NipapError, e:
-                    return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+                    return json.dumps({'error': 1,
+                                       'message': "Invalid VRF ID '%s'" %
+                                                  request.json['vrf']})
+                except NipapError as e:
+                    return json.dumps({'error': 1, 'message': e.args,
+                                       'type': type(e).__name__})
 
             if 'vlan' in request.json:
                 p.vlan = request.json['vlan']
@@ -687,15 +688,14 @@ class XhrController(BaseController):
                 p.tags = request.json['tags']
             if 'avps' in request.json:
                 p.avps = request.json['avps']
-
+            log.info('edit_prefix (%s) %s' % (session['user'], request.json))
             p.save()
 
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(p, cls=NipapJSONEncoder)
-
-
 
     def remove_prefix(self, id):
         """ Remove a prefix.
@@ -703,14 +703,15 @@ class XhrController(BaseController):
 
         try:
             p = Prefix.get(int(id))
+            prefix = p.display_prefix
             p.remove()
+            log.info('remove_prefix (%s) %s' % (session['user'], prefix))
 
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
+        except NipapError as e:
+            return json.dumps(
+                {'error': 1, 'message': e.args, 'type': type(e).__name__})
 
         return json.dumps(p, cls=NipapJSONEncoder)
-
-
 
     def add_current_vrf(self):
         """ Add VRF to filter list session variable
@@ -726,12 +727,12 @@ class XhrController(BaseController):
                 vrf_id = int(vrf_id)
                 vrf = VRF.get(vrf_id)
 
-            session['current_vrfs'][vrf_id] = { 'id': vrf.id, 'rt': vrf.rt,
-                    'name': vrf.name, 'description': vrf.description }
+            session['current_vrfs'][vrf_id] = {'id': vrf.id, 'rt': vrf.rt,
+                                               'name': vrf.name,
+                                               'description': vrf.description}
             session.save()
 
         return json.dumps(session.get('current_vrfs', {}))
-
 
     def del_current_vrf(self):
         """ Remove VRF to filter list session variable
@@ -745,7 +746,6 @@ class XhrController(BaseController):
 
         return json.dumps(session.get('current_vrfs', {}))
 
-
     def get_current_vrfs(self):
         """ Return VRF filter list from session variable
 
@@ -754,7 +754,7 @@ class XhrController(BaseController):
         """
 
         # Verify that all currently selected VRFs still exists
-        cur_vrfs = session.get('current_vrfs', {}).items()
+        cur_vrfs = list(session.get('current_vrfs', {}).items())
         if len(cur_vrfs) > 0:
             q = {
                 'operator': 'equals',
@@ -778,25 +778,28 @@ class XhrController(BaseController):
 
             session['current_vrfs'] = {}
             for vrf in res['result']:
-                session['current_vrfs'][vrf.id] = { 'id': vrf.id, 'rt': vrf.rt,
-                    'name': vrf.name, 'description': vrf.description }
+                session['current_vrfs'][vrf.id] = \
+                    {'id': vrf.id, 'rt': vrf.rt,
+                     'name': vrf.name,
+                     'description': vrf.description}
 
             session.save()
 
         return json.dumps(session.get('current_vrfs', {}))
 
-
-    def list_tags(self):
-        """ List Tags and return JSON encoded result.
-        """
-
-        try:
-            tags = Tags.list()
-        except NipapError, e:
-            return json.dumps({'error': 1, 'message': e.args, 'type': type(e).__name__})
-
-        return json.dumps(tags, cls=NipapJSONEncoder)
-
+    # removed, as Tags doesn't exist, nor Tag.list and Tag.search isn't
+    # implemented in the backend either..
+    # def list_tags(self):
+    #     """ List Tags and return JSON encoded result.
+    #     """
+    #
+    #     try:
+    #         tags = Tags.list()
+    #     except NipapError, e:
+    #         return json.dumps({'error': 1, 'message': e.args,
+    #                            'type': type(e).__name__})
+    #
+    #     return json.dumps(tags, cls=NipapJSONEncoder)
 
 
 class NipapJSONEncoder(json.JSONEncoder):
