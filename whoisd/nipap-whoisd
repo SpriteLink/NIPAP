@@ -1,22 +1,18 @@
-#!/usr/bin/env python
-
-from __future__ import unicode_literals
-
+#!/usr/bin/env python3
 import fcntl
 import os
 import re
 import socket
 import sys
 
-import ConfigParser
-import SocketServer
-from SocketServer import ForkingMixIn, TCPServer
+import configparser
+import socketserver
+from socketserver import ForkingMixIn, TCPServer
 
 import nipap_whoisd
 
 import pynipap
 from pynipap import Prefix, VRF, NipapError
-
 
 
 def format_line(key, value):
@@ -26,7 +22,6 @@ def format_line(key, value):
         return ''
 
     return "%-20s %s\n" % (key + ':', value)
-
 
 
 def format_prefix(p):
@@ -48,7 +43,6 @@ def format_prefix(p):
     return res
 
 
-
 def format_vrf(vrf):
     """ Format a pynipap VRF object into a whois looking format
     """
@@ -63,10 +57,10 @@ class ForkingTCPServer(ForkingMixIn, TCPServer):
     def server_bind(self):
         self.socket = socket.socket(socket.AF_INET6, self.socket_type)
         self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
-        SocketServer.TCPServer.server_bind(self)
+        socketserver.TCPServer.server_bind(self)
 
 
-class WhoisServer(SocketServer.StreamRequestHandler):
+class WhoisServer(socketserver.StreamRequestHandler):
     def handle(self):
         """ Called for every connection
         """
@@ -89,11 +83,11 @@ class WhoisServer(SocketServer.StreamRequestHandler):
             # respond with prefixes
             m = re.match('^([0-9]+:[0-9]+):(.*)$', query)
             vrf_query = {
-                    'val1': 'vrf_rt',
-                    'operator': 'equals',
-                    'val2': m.group(1)
-                }
-            res = Prefix.smart_search(m.group(2), { }, vrf_query)
+                'val1': 'vrf_rt',
+                'operator': 'equals',
+                'val2': m.group(1)
+            }
+            res = Prefix.smart_search(m.group(2), {}, vrf_query)
             if len(res['result']) > 0:
                 total_hits += len(res['result'])
                 for p in res['result']:
@@ -101,7 +95,7 @@ class WhoisServer(SocketServer.StreamRequestHandler):
                     response += '\n'
         else:
             # respond with VRFs
-            res = VRF.smart_search(query, { })
+            res = VRF.smart_search(query, {})
             if len(res['result']) > 0:
                 total_hits += len(res['result'])
                 response += '% VRFs matching\n'
@@ -110,7 +104,7 @@ class WhoisServer(SocketServer.StreamRequestHandler):
                     response += '\n'
 
             # respond with prefixes
-            res = Prefix.smart_search(query, { })
+            res = Prefix.smart_search(query, {})
             if len(res['result']) > 0:
                 total_hits += len(res['result'])
                 for p in res['result']:
@@ -122,32 +116,43 @@ class WhoisServer(SocketServer.StreamRequestHandler):
             response += "%\n"
             response += "% No entries found in source NIPAP.\n"
             response += '%\n'
-            response += '% Query the whois service by IP address, prefix, VRF RT or free text\n'
-            response += '% search. It is possible to search for a prefix in a VRF by\n'
-            response += '% concatenating the VRF RT and the prefix: 123:123:1.2.3.4\n'
+            response += '% Query the whois service by IP address, prefix, VRF ' \
+                        'RT or free text\n'
+            response += '% search. It is possible to search for a prefix in a ' \
+                        'VRF by\n'
+            response += '% concatenating the VRF RT and the prefix: ' \
+                        '123:123:1.2.3.4\n'
             response += '%\n'
 
-        response += "\n%% This query was served by the NIPAP whois server version %s\n" % nipap_whoisd.__version__
+        response += "\n%% This query was served by the NIPAP whois server " \
+                    "version %s\n" % nipap_whoisd.__version__
         self.request.send(response.encode("utf-8"))
-
 
 
 if __name__ == '__main__':
 
     import argparse
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", dest="config_file", default="/etc/nipap/nipap.conf", help="read configuration from file CONFIG_FILE")
-    parser.add_argument("--foreground", action="store_true", help="run in foreground")
-    parser.add_argument("--listen", metavar="ADDRESS", help="listen on IPv4/6 ADDRESS")
+    parser.add_argument("--config", dest="config_file",
+                        default="/etc/nipap/nipap.conf",
+                        help="read configuration from file CONFIG_FILE")
+    parser.add_argument("--foreground", action="store_true",
+                        help="run in foreground")
+    parser.add_argument("--listen", metavar="ADDRESS",
+                        help="listen on IPv4/6 ADDRESS")
     parser.add_argument("--port", help="port to listen to")
     parser.add_argument("--pid-file", help="write a PID file to PID_FILE")
-    parser.add_argument("--no-pid-file", action="store_true", default=False, help="turn off writing PID file (overrides config file)")
-    parser.add_argument("--version", action="store_true", help="display version information and exit")
+    parser.add_argument("--no-pid-file", action="store_true", default=False,
+                        help="turn off writing PID file (overrides config "
+                             "file)")
+    parser.add_argument("--version", action="store_true",
+                        help="display version information and exit")
 
     args = parser.parse_args()
 
     if args.version:
-        print "nipap-whoisd version:", nipap_whoisd.__version__
+        print("nipap-whoisd version:", nipap_whoisd.__version__)
         sys.exit(0)
 
     default = {
@@ -160,7 +165,7 @@ if __name__ == '__main__':
         'user': None,
         'group': None
     }
-    cfg = ConfigParser.ConfigParser(default)
+    cfg = configparser.ConfigParser(default)
     cfg.read(args.config_file)
 
     # override config with command line args
@@ -171,12 +176,13 @@ if __name__ == '__main__':
     if args.pid_file:
         cfg.set('whoisd', 'pid_file', args.pid_file)
 
-    SocketServer.TCPServer.allow_reuse_address = True
+    socketserver.TCPServer.allow_reuse_address = True
     try:
         server = ForkingTCPServer((cfg.get('whoisd', 'listen'),
-            int(cfg.get('whoisd', 'port'))), WhoisServer)
-    except socket.error, exc:
-        print >> sys.stderr, "Unable to bind to socket", str(exc)
+                                   int(cfg.get('whoisd', 'port'))),
+                                  WhoisServer)
+    except socket.error as exc:
+        print("Unable to bind to socket {}".format(exc), file=sys.stderr)
         sys.exit(1)
 
     # drop privileges
@@ -188,12 +194,15 @@ if __name__ == '__main__':
             run_group = cfg.get('whoisd', 'user')
         try:
             nipap_whoisd.drop_privileges(run_user, run_group)
-        except Exception, e:
-            print >> sys.stderr, ("nipap-whoisd is configured to drop privileges and run as user '%s' and group '%s', \n"
-                        "but was not started as root and can therefore not drop privileges") % (run_user, run_group)
+        except Exception as e:
+            print("nipap-whoisd is configured to drop privileges and run as "
+                  "user '%s' and group '%s', \nbut was not started as root and"
+                  " can therefore not drop privileges" % (run_user, run_group),
+                  file=sys.stderr)
             sys.exit(1)
         except KeyError:
-            print >> sys.stderr, "Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group)
+            print("Could not drop privileges to user '%s' and group '%s'" % (
+                run_user, run_group), file=sys.stderr)
             sys.exit(1)
 
     # daemonize
@@ -205,26 +214,28 @@ if __name__ == '__main__':
         # need a+ to be able to read PID from file
         try:
             lf = open(cfg.get('whoisd', 'pid_file'), 'a+', 0)
-        except IOError, exc:
-            print >> sys.stderr, "Unable to open PID file '%s': %s" % (
-                    str(exc.filename), str(exc.strerror))
+        except IOError as exc:
+            print("Unable to open PID file '%s': %s" % (
+                str(exc.filename), str(exc.strerror)), file=sys.stderr)
             sys.exit(1)
         try:
             fcntl.flock(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
-            print >> sys.stderr, 'nipap-whoisd already running (pid: %s)' % lf.read().strip()
+            print('nipap-whoisd already running (pid: %s)' % lf.read().strip(),
+                  file=sys.stderr)
             sys.exit(1)
-        print >> sys.stderr, 'Writing PID to file: %s' % cfg.get('whoisd', 'pid_file')
+        print('Writing PID to file: %s' % cfg.get('whoisd', 'pid_file'),
+              file=sys.stderr)
         lf.truncate()
         lf.write('%d\n' % os.getpid())
         lf.flush()
 
-    pynipap.xmlrpc_uri = 'http://%(username)s:%(password)s@%(host)s:%(port)s' % {
+    pynipap.xmlrpc_uri = \
+        'http://%(username)s:%(password)s@%(host)s:%(port)s' % {
             'username': cfg.get('whoisd', 'nipapd_username'),
             'password': cfg.get('whoisd', 'nipapd_password'),
             'host': cfg.get('whoisd', 'nipapd_host'),
-            'port': cfg.get('whoisd', 'nipapd_port')
-        }
+            'port': cfg.get('whoisd', 'nipapd_port')}
     ao = pynipap.AuthOptions({'authoritative_source': 'nipap'})
 
     # and serve!
