@@ -4,4 +4,5 @@
 *.class
 *.tar.gz
 *.deb
+.idea*
 docs/sphinx/_build/

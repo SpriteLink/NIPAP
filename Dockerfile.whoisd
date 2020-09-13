@@ -1,0 +1,62 @@
+# This file describes a docker image for running nipap-www in docker
+#
+# Build the docker image:
+#     docker build -t nipap-www -f Dockerfile.www .
+#
+# Run by linking to the container running nipapd. -i -t is for interactive,
+# use -d if you wish to run the container in the background:
+#     docker run -i -t --link nipapd --name nipap-www nipap-www
+#
+# Most configuration variables are provided via environment variables.
+#   NIPAPD_USERNAME     username to authenticate to nipapd
+#   NIPAPD_PASSWORD     password to authenticate to nipapd
+#   NIPAPD_HOST         host where nipapd is running [nipapd]
+#   NIPAPD_PORT         port of nipapd [1337]
+#   WWW_USERNAME        web UI username [guest]
+#   WWW_PASSWORD        web UI password [guest]
+#
+# Some variables have a default, indicated in square brackets, the rest you need
+# to fill in. If you are linking to a container running nipapd, just enter the
+# name of the container as NIPAPD_HOST.
+#
+# WWW_USERNAME & WWW_PASSWORD is used to create a new account in the local auth
+# database so that you can later login to the web interface.
+#
+FROM ubuntu:18.04
+
+MAINTAINER Steffen Schumacher <ssch@wheel.dk>
+ENV NIPAPD_HOST=nipapd NIPAPD_PORT=1337 \
+    NIPAPD_USERNAME=www \
+    NIPAPD_PASSWORD=nipapP4ssw0rd \
+    DEBIAN_FRONTEND=noninteractive
+
+
+# apt update, upgrade & install packages
+RUN apt-get update -qy && apt-get upgrade -qy \
+ && apt-get install -qy devscripts \
+    make \
+    libpq-dev \
+    libsqlite3-dev \
+    postgresql-client \
+    python3-all python3-pip python3-dev \
+    libsasl2-dev libldap2-dev libssl-dev
+
+RUN mkdir -p /usr/share/ca-certificates/extra
+COPY ca_certs/* /usr/share/ca-certificates/extra/
+RUN /usr/share/ca-certificates/extra/install-certs.sh
+RUN pip3 install envtpl
+
+RUN rm -rf /var/lib/apt/lists/*
+
+# Install pynipap, nipap and nipap-www
+COPY pynipap /pynipap
+COPY whoisd /whoisd
+
+RUN cd /pynipap && python3 setup.py install
+RUN cd /whoisd && pip3 --no-input install -r requirements.txt && \
+    python3 setup.py install
+RUN cd ..
+
+EXPOSE 43
+
+ENTRYPOINT [ "/whoisd/entrypoint.sh" ]
