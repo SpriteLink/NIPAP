@@ -123,8 +123,8 @@ BEGIN
 		-- update last modified timestamp
 		NEW.last_modified = NOW();
 
-		-- if vrf, type and prefix is the same, quick return!
-		IF OLD.vrf_id = NEW.vrf_id AND OLD.type = NEW.type AND OLD.prefix = NEW.prefix THEN
+		-- if vrf, type, prefix and pool is the same, quick return!
+		IF OLD.vrf_id = NEW.vrf_id AND OLD.type = NEW.type AND OLD.prefix = NEW.prefix AND OLD.pool_id = NEW.pool_id THEN
 			RETURN NEW;
 		END IF;
 	END IF;
