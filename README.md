@@ -1,7 +1,7 @@
 NIPAP
 =====
 
-[![Build Status](https://travis-ci.org/SpriteLink/NIPAP.svg?branch=master)](https://travis-ci.org/SpriteLink/NIPAP)
+[![Build Status](https://travis-ci.com/SpriteLink/NIPAP.svg?branch=master)](https://travis-ci.com/SpriteLink/NIPAP)
 [![Requirements Status](https://requires.io/github/SpriteLink/NIPAP/requirements.svg?branch=master)](https://requires.io/github/SpriteLink/NIPAP/requirements/?branch=master)
 [![Code Climate](https://codeclimate.com/github/SpriteLink/NIPAP/badges/gpa.svg)](https://codeclimate.com/github/SpriteLink/NIPAP)
 [![IRC Network](https://img.shields.io/badge/irc-%23NIPAP-blue.svg "IRC Freenode")](https://webchat.freenode.net/?channels=nipap)
