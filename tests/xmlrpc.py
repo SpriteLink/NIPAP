@@ -758,7 +758,7 @@ class NipapXmlTest(unittest.TestCase):
         expected_middle['inherited_tags'] = ['top']
         expected_middle['indent'] = 1
 
-        expected_bottom['inherited_tags'] = ['middle', 'top']
+        expected_bottom['inherited_tags'] = ['top', 'middle']
         expected_bottom['indent'] = 2
 
         # check the list is correct!
