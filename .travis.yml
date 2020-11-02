@@ -3,6 +3,30 @@ dist: bionic
 virt: lxd
 language: generic
 
+addon:
+    postgresql: "10"
+    apt:
+        # install dependencies for building packages and build NIPAP debian packages
+        packages:
+            - postgresql-10
+            - postgresql-10-ip4r
+            - postgresql-client-10
+            - devscripts
+            - fakeroot
+            - python-dev
+            - python3-dev
+            - python-docutils
+            - debhelper
+            - dh-python
+            - junit4
+            - python3-pip
+            - python3-setuptools
+            - python3-wheel
+            - python-nose
+            - default-jdk
+            - gradle
+            - rename
+
 env:
     matrix:
         # Basic build only running nosetests, one using apt and one running in
@@ -22,14 +46,9 @@ matrix:
 
 install:
     # -- common operations to apt install and virtualenv -----------------------
-    # install dependencies for building packages and build NIPAP debian packages
-    - sudo apt-get update
-    - sudo apt-get install -qq -y devscripts python-dev python3-dev python-docutils debhelper dh-python junit4 python3-pip python-nose default-jdk gradle rename
     # configure .nipaprc
     - sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
     - chmod 0600 ~/.nipaprc
-    # install postgresql + ip4r
-    - sudo apt-get install -qq -y postgresql-10 postgresql-10-ip4r
 
     # -- virtualenv build ------------------------------------------------------
     # install nipap dependencies

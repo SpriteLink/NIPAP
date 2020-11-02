@@ -10,7 +10,7 @@ certifi==2017.4.17
 itsdangerous==0.24
 parsedatetime==2.4
 psutil==5.6.6							# rq.filter: >= 1.0,<2.0
-psycopg2==2.7.1
+psycopg2==2.7.1 --no-binary psycopg2
 pyparsing==2.2.0
 python-dateutil==2.6.0
 # optional dependency on ldap
