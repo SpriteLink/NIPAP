@@ -124,7 +124,7 @@ BEGIN
 		NEW.last_modified = NOW();
 
 		-- if vrf, type, prefix and pool is the same, quick return!
-		IF OLD.vrf_id = NEW.vrf_id AND OLD.type = NEW.type AND OLD.prefix = NEW.prefix AND OLD.pool_id = NEW.pool_id THEN
+		IF OLD.vrf_id = NEW.vrf_id AND OLD.type = NEW.type AND OLD.prefix = NEW.prefix AND OLD.pool_id IS NOT DISTINCT FROM NEW.pool_id THEN
 			RETURN NEW;
 		END IF;
 	END IF;
@@ -273,7 +273,8 @@ BEGIN
 			END LOOP;
 		ELSIF TG_OP = 'UPDATE' THEN
 			IF OLD.prefix = NEW.prefix THEN
-				-- NOOP
+				-- No change - keep old value
+				num_used := OLD.used_addresses;
 			ELSIF NEW.prefix << OLD.prefix AND OLD.indent = NEW.indent THEN -- NEW is smaller and covered by OLD
 				FOR p IN (SELECT * FROM ip_net_plan WHERE prefix << NEW.prefix AND vrf_id = NEW.vrf_id AND indent = NEW.indent+1 ORDER BY prefix ASC) LOOP
 					num_used := num_used + (SELECT power(2::numeric, i_max_pref_len-masklen(p.prefix)))::numeric(39);
