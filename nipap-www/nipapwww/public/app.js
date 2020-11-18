@@ -8,7 +8,8 @@ var nipapApp = angular.module('nipapApp', [
 	'nipapApp.controllers',
 	'nipapApp.directives',
 	'nipapApp.filters',
-	'nipapApp.services'
+	'nipapApp.services',
+	'infinite-scroll'
 ]);
 
 /*
