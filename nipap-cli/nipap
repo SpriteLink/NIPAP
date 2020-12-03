@@ -83,7 +83,7 @@ if __name__ == '__main__':
         'prefix_list_columns': None
     }
     # read configuration
-    cfg = configparser.ConfigParser(cfg_defaults)
+    cfg = configparser.ConfigParser(cfg_defaults, allow_no_value=True)
     cfg.read(userrcfile)
     nipap_cli.nipap_cli.cfg = cfg
 
