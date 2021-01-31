@@ -2,7 +2,7 @@ Flask==1.1.2
 Flask-Compress==1.8.0
 Flask-XML-RPC==0.1.2
 IPy==1.01
-Jinja2==2.11.2
+Jinja2==2.11.3
 MarkupSafe==1.1.1
 Werkzeug==1.0.1
 backports.ssl-match-hostname==3.7.0.1
