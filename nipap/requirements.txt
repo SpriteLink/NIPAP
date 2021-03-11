@@ -1,21 +1,21 @@
-Flask==1.0
-Flask-Compress==1.4.0
+Flask==1.1.2
+Flask-Compress==1.9.0
 Flask-XML-RPC==0.1.2
-IPy==0.83
-Jinja2==2.10.1
-MarkupSafe==1.0
-Werkzeug==0.16.1
-backports.ssl-match-hostname==3.5.0.1
-certifi==2017.4.17
-itsdangerous==0.24
-parsedatetime==2.4
-psutil==5.6.6							# rq.filter: >= 1.0,<2.0
-psycopg2==2.7.1 --no-binary psycopg2
-pyparsing==2.2.0
-python-dateutil==2.6.0
+IPy==1.01
+Jinja2==2.11.3
+MarkupSafe==1.1.1
+Werkzeug==1.0.1
+backports.ssl-match-hostname==3.7.0.1
+certifi==2020.12.5
+itsdangerous==1.1.0
+parsedatetime==2.6
+psutil==1.2.1							# rq.filter: >= 1.0,<2.0
+psycopg2==2.8.6 --no-binary psycopg2
+pyparsing==2.4.7
+python-dateutil==2.8.1
 # optional dependency on ldap
 #python-ldap==2.4.19
-pytz==2017.2
+pytz==2021.1
 pysqlite==2.8.3
-tornado==4.5.1
+tornado==5.1
 wsgiref==0.1.2

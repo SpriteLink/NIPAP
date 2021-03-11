@@ -13,7 +13,7 @@ from functools import wraps
 from flask import Flask
 from flask import request, Response
 from flaskext.xmlrpc import XMLRPCHandler, Fault
-from flask.ext.compress import Compress
+from flask_compress import Compress
 
 from nipapconfig import NipapConfig
 from backend import Nipap, NipapError

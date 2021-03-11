@@ -1,2 +1,2 @@
-IPy==0.83
+IPy==1.01
 pynipap
