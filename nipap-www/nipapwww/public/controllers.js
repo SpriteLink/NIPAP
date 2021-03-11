@@ -9,119 +9,62 @@ var nipapAppControllers = angular.module('nipapApp.controllers', []);
  */
 nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 
-	var isSmartSearch;
-    var allVrfs;
-    var VRF_BATCH_SIZE = 100;
-    var smartOffset = 0;
+	var VRF_BATCH_SIZE = 50;
+	var smartOffset = 0;
+	$scope.reachedEnd = false;
 
-    if ($scope.query === '' || $scope.query === undefined) {
-        fetchAllVrfs();
-    }
+	/*
+	 * Smart search for VRF list
+	 */
+	$scope.smartSearch = function (offset = 0) {
 
-    /*
-     * Fetch all Vrfs
-     */
-    function fetchAllVrfs(){
-    $scope.isLoading = true;
-    $http.post('/xhr/list_vrf',
-        JSON.stringify({}),
-        { 'headers': { 'Content-Type': 'application/json' } })
-        .then(function (response) {
-            if (response.data.hasOwnProperty('error')) {
-                showDialogNotice('Error', response.data.message);
-            } else {
-                allVrfs = response.data;
-                $scope.vrfs = allVrfs.slice(0, VRF_BATCH_SIZE);
-            }
-        })
-        .catch(function (response) {
-            var msg = response.data || "Unknown failure";
-            showDialogNotice('Error', response.status + ': ' + msg);
-        });
-    $scope.isLoading = false;
-    }
+		if (offset === 0) {
+		  smartOffset = 0;
+		}
 
-    /*
-     * Smart search for VRF list
-     */
-    $scope.smartSearch = function (offset = 0) {
-        if ($scope.query === '') {
-            return;
-        }
+		if ($scope.isLoading) {
+			return;
+		}
 
-        if (offset === 0){
-          smartOffset = 0;
-        }
+		var search_q = {
+			'query_string': $scope.query || '',
+			'max_result': VRF_BATCH_SIZE,
+			'offset': offset,
+		};
+		$scope.isLoading = true;
+		$scope.reachedEnd = false;
+		$http.post('/xhr/smart_search_vrf',
+			JSON.stringify(search_q),
+			{ 'headers': { 'Content-Type': 'application/json' } })
+			.then(function (response) {
+				if (offset === 0) {
+					$scope.vrfs = response.data.result;
+				} else {
+					$scope.vrfs = $scope.vrfs.concat(response.data.result);
+				}
+				$scope.isLoading = false;
+				if (response.data.result.length < VRF_BATCH_SIZE)
+					$scope.reachedEnd = true;
+			})
+			.catch(function (response) {
+				var msg = response.data || "Unknown failure";
+				showDialogNotice('Error', response.status + ': ' + msg);
+			});
+	};
 
-        if ($scope.isLoading)
-            return;
+	/*
+	 * Fetch next page of matching VRFs
+	 */
+	$scope.checkAndRunNextPage = function() {
 
-        var search_q = {
-            'query_string': $scope.query,
-            'max_result': VRF_BATCH_SIZE,
-            'offset': offset,
-        }
-        $scope.isLoading = true;
-        $http.post('/xhr/smart_search_vrf',
-            JSON.stringify(search_q),
-            { 'headers': { 'Content-Type': 'application/json' } })
-            .then(function (response) {
-                if (offset === 0) {
-                    $scope.vrfs = response.data.result;
-                } else {
-                  $scope.vrfs = $scope.vrfs.concat(response.data.result);
-                }
-            })
-            .catch(function (response) {
-                var msg = response.data || "Unknown failure";
-                showDialogNotice('Error', response.status + ': ' + msg);
-            });
-        $scope.isLoading = false;
-    }
+		if (typeof $scope.vrfs === 'undefined') {
+			return;
+		}
 
-    // Check and run functionallity based on
-    // smart search or loading of all Vrfs
-    $scope.checkAndRunNextPage = function() {
-        if ($scope.query === '' || typeof $scope.query === "undefined") {
-            isSmartSearch = false;
-        } else {
-            isSmartSearch = true;
-        }
+		smartOffset += VRF_BATCH_SIZE;
+		$scope.smartSearch(smartOffset);
 
-        if (typeof $scope.vrfs === "undefined")
-            return;
-
-        if(isSmartSearch){
-          smartOffset += VRF_BATCH_SIZE;
-          $scope.smartSearch(smartOffset);
-
-        } else {
-            if(typeof allVrfs === "undefined"){
-                fetchAllVrfs();
-            } else {
-                performVrfNextPage(allVrfs);
-            }
-        }
-    }
-
-    // Dynamically adding values to $scope.vrfs if fetched all Vrfs
-    function performVrfNextPage(allVrfData) {
-        if ($scope.vrfs.length === allVrfData) {
-            return;
-        }
-
-        if($scope.isLoading)
-            return;
-
-        var lastElementId = $scope.vrfs.length - 1;
-
-        if (lastElementId + VRF_BATCH_SIZE <= allVrfs.length - 1) {
-            $scope.vrfs = $scope.vrfs.concat(allVrfs.slice(lastElementId, lastElementId + VRF_BATCH_SIZE));
-        }
-        else {
-            $scope.vrfs = $scope.vrfs.concat(allVrfs.slice(lastElementId, allVrfs.length - 1));
-        }
-    }
+	};
 
 	/*
 	 * Display remove confirmation dialog
@@ -153,6 +96,10 @@ nipapAppControllers.controller('VRFListController', function ($scope, $http) {
 
 		});
 	}
+
+	// Perform initial search on page load
+	$scope.smartSearch();
+
 });
 
 

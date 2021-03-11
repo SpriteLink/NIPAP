@@ -14,7 +14,7 @@
 <div style="text-align: center; padding: 30px;">
 	<label>Search: <input type="text" ng-change="smartSearch()" ng-model="query" autofocus></label>
 </div>
-<table style="border-spacing: 0px; width: 100%;" infinite-scroll="checkAndRunNextPage()">
+<table style="border-spacing: 0px; width: 100%;" infinite-scroll="checkAndRunNextPage()" infinite-scroll-disabled="isLoading || reachedEnd">
 	<thead class="listing">
 		<tr>
 			<th style="padding-left: 30px;">RT</th><th>Name</th><th></th><th>Description</th><th></th>
@@ -41,3 +41,4 @@
 		</tr>
 	</tbody>
 </table>
+<div class="loading" style="display: block" ng-show="isLoading">&nbsp;</div>

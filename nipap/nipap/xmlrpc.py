@@ -346,6 +346,8 @@ class NipapXMLRPC:
             Returns a struct containing search result, interpretation of the
             search string and the search options used.
         """
+        import time
+        time.sleep(1)
         try:
             res = self.nip.smart_search_vrf(args.get('auth'),
                     args.get('query_string'), args.get('search_options', {}),
