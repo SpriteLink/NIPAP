@@ -1,3 +1,13 @@
+nipap-www (0.29.9-1) stable; urgency=medium
+
+  * Fix pool constraints so all prefixes in pool must be in same VRF
+    (#1251)
+  * Added smart-search backend search for VRF list (#1267, #1273)
+  * Bumped versions of dependencies, including required modifications
+    (#1232, #1233, #1261, #1264, #1269, #1267)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 11 Mar 2021 13:48:18 +0100
+
 nipap-www (0.29.8-1) stable; urgency=medium
 
   * Fix removal of extra attributes in web UI (#1205)
