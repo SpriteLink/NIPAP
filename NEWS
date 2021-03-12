@@ -1,3 +1,10 @@
+Version 0.29.9 - Zeus
+---------------------
+ * Fix pool constraints so all prefixes in pool must be in same VRF (#1251)
+ * Added smart-search backend search for VRF list (#1267, #1273)
+ * Bumped versions of dependencies, including required modifications (#1232,
+   #1233, #1261, #1264, #1269, #1267)
+
 Version 0.29.8 - Zeus
 ---------------------
  * Fix removal of extra attributes in web UI (#1205)
