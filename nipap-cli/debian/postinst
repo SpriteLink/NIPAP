@@ -2,6 +2,6 @@
 
 set -e
 
-cp /usr/share/doc/nipap-cli/bash_complete /etc/bash_completion.d/nipap
+install -D /usr/share/doc/nipap-cli/bash_complete /etc/bash_completion.d/nipap
 
 #DEBHELPER#
