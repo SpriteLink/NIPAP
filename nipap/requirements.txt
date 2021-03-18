@@ -1,6 +1,8 @@
 Flask==1.1.2
 Flask-Compress==1.9.0
 Flask-XML-RPC==0.1.2
+Flask-RESTful==0.3.8
+requests==2.25.1
 IPy==1.01
 Jinja2==2.11.3
 MarkupSafe==1.1.1
