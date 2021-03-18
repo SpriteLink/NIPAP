@@ -74,7 +74,7 @@ install:
     - if [ "$INSTALL" == "apt" ]; then wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -; fi
     - if [ "$INSTALL" == "apt" ]; then sudo apt-get update -qq; fi
     # install dependencies for installing & running nipap
-    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y python-pysqlite2 python-psycopg2 python-ipy python3-ipy python-docutils python-tornado python-flask python-flask-xml-rpc python-flask-compress python-parsedatetime python-pylons python-tz python-dateutil python-psutil python-pyparsing; fi
+    - if [ "$INSTALL" == "apt" ]; then sudo apt-get install -qq -y python-pysqlite2 python-psycopg2 python-ipy python3-ipy python-docutils python-tornado python-flask python-flask-xml-rpc python-flask-restful python-requests python-flask-compress python-parsedatetime python-pylons python-tz python-dateutil python-psutil python-pyparsing; fi
     # if we are testing the upgrade, first install NIPAP packages from official repo
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then sudo apt-get install -qq nipapd nipap-www nipap-cli; fi
     # bump version so that we know we are upgrading beyond what is installed
@@ -105,6 +105,7 @@ script:
     # if upgrade, verify data loaded before upgrade looks correct post upgrade
     - if [ "$INSTALL" == "apt" ] && [ "$UPGRADE" == "true" ]; then nosetests upgrade-after.py; fi
     - nosetests xmlrpc.py
+    - nosetests test_rest.py
     - nosetests nipaptest.py
     - nosetests test_cli.py
     - nosetests nipap-ro.py
