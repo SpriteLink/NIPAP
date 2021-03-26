@@ -13,10 +13,6 @@ from functools import wraps
 from flask import Flask
 from flask import request, Response
 from flaskext.xmlrpc import XMLRPCHandler, Fault
-try:
-    from flask_compress import Compress
-except ImportError:
-    from flask.ext.compress import Compress
 
 from nipapconfig import NipapConfig
 from backend import Nipap, NipapError
@@ -24,10 +20,7 @@ import nipap
 from authlib import AuthFactory, AuthError
 
 
-def setup():
-    app = Flask('nipap.xmlrpc')
-    Compress(app)
-
+def setup(app):
     handler = XMLRPCHandler('XMLRPC')
     handler.connect(app, '/RPC2')
     handler.connect(app, '/XMLRPC')

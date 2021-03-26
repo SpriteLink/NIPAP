@@ -49,7 +49,7 @@
 listen = {{LISTEN_ADDRESS}}      ; IP address to listen on.
 # The default is to listen to 127.0.0.1. Use 0.0.0.0 to listen on all addresses
 # (change requires restart).
-port = {{LISTEN_PORT}}          ; XML-RPC listen port (change requires restart)
+port = {{LISTEN_PORT}}          ; API listen port (change requires restart)
 
 foreground = false              ; run in foreground, won't work with init script
 debug = false                   ; enable debug logging
