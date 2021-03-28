@@ -54,8 +54,20 @@ jobs:
         sudo pg_dropcluster 13 main
         sudo pg_dropcluster 10 main
         sudo pg_createcluster --start 10 main
-        sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
+        sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' -e 's/port = 1337/port = 1338/' -e "s/#use_ssl = false/use_ssl = true/" nipap-cli/nipaprc > ~/.nipaprc
         chmod 0600 ~/.nipaprc
+
+        # Set up CA and generate SSL cert
+        mkdir /tmp/ca
+        openssl genrsa -out /tmp/ca/ca.key 2048
+        openssl req -new -x509 -key /tmp/ca/ca.key -out /tmp/ca/ca.crt -subj '/C=SE/O=NIPAP Test CA'
+        sudo cp /tmp/ca/ca.crt /usr/local/share/ca-certificates/
+        sudo update-ca-certificates
+        openssl genrsa -out /tmp/ca/test.key 2048
+        openssl req -new -key /tmp/ca/test.key -out /tmp/ca/test.csr -subj "/CN=127.0.0.1"
+        openssl x509 -req -in /tmp/ca/test.csr -CA /tmp/ca/ca.crt -CAkey /tmp/ca/ca.key -CAcreateserial -out /tmp/ca/test.crt
+        cat /tmp/ca/test.crt /tmp/ca/test.crt > /tmp/ca/test.bundle.crt
+        sudo chmod -R a+r /tmp/ca
 
     - name: "Install using pip"
       if: ${{ matrix.install == 'pip' }}
@@ -67,7 +79,7 @@ jobs:
         # move configuration file into place
         sudo mkdir /etc/nipap
         sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf
-        sudo sed -e "s/{{LISTEN_ADDRESS}}/127.0.0.1/" -e "s/{{LISTEN_PORT}}/1337/" -e "s/{{DB_USERNAME}}/nipap/" -e "s/{{DB_NAME}}/nipap/" -e "s/{{DB_PASSWORD}}/papin/" -e "s/{{DB_SSLMODE}}/require/" -e "s/{{DB_PORT}}/5432/" -e "s/{{DB_HOST}}/localhost/" -e "s/{{SYSLOG}}/true/" -i /etc/nipap/nipap.conf
+        sudo sed -e "s/{{LISTEN_ADDRESS}}/127.0.0.1/" -e "s/{{LISTEN_PORT}}/1337/" -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -e "s/{{DB_USERNAME}}/nipap/" -e "s/{{DB_NAME}}/nipap/" -e "s/{{DB_PASSWORD}}/papin/" -e "s/{{DB_SSLMODE}}/require/" -e "s/{{DB_PORT}}/5432/" -e "s/{{DB_HOST}}/localhost/" -e "s/{{SYSLOG}}/true/" -i /etc/nipap/nipap.conf
         # create local user for unittest
         sudo nipap/nipap-passwd create-database
         sudo nipap/nipap-passwd add -u unittest -p gottatest -n unittest
@@ -95,6 +107,8 @@ jobs:
         echo 'set nipapd/startup true' | sudo debconf-communicate
         echo 'set nipapd/local_db_upgrade true' | sudo debconf-communicate
         sudo dpkg-reconfigure nipapd
+        # Enable SSL
+        sudo sed -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -i /etc/nipap/nipap.conf
         # create local user for unittest and restart
         sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest
         sudo /etc/init.d/nipapd restart
@@ -114,10 +128,18 @@ jobs:
         echo 'set nipapd/startup true' | sudo debconf-communicate
         echo 'set nipapd/local_db_upgrade true' | sudo debconf-communicate
         sudo dpkg-reconfigure nipapd
+        # Enable SSL
+        if [ `grep -c ssl_port /etc/nipap/nipap.conf` -eq 0 ]; then \
+          # No SSL config in file - add from scratch
+          sudo sed '/^port *=.*/a ssl_port = 1338\nssl_cert_file = \/tmp\/ca\/test.bundle.crt\nssl_key_file = \/tmp\/ca\/test.key' -i /etc/nipap/nipap.conf; \
+          else \
+          sudo sed -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -i /etc/nipap/nipap.conf; \
+          fi
         # create local user for unittests
         sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"
         sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"
         sudo sed -e "s/db_host *= *[^ ]\+/db_host = localhost/" -i /etc/nipap/nipap.conf
+        sudo /etc/init.d/nipapd restart
 
     - name: "Verify pre-upgrade data"
       if: ${{ matrix.upgrade == true }}
