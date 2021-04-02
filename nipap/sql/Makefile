@@ -34,7 +34,6 @@ all:
 db:
 	createuser -S -D -R $(DB_USER)
 	createdb -O $(DB_USER) $(DB_NAME)
-	-createlang -d $(DB_NAME) plpgsql
 	-psql -q -c "ALTER USER $(DB_USER) ENCRYPTED PASSWORD '$(DB_PASS)'"
 	-psql -d $(DB_NAME) -c "CREATE EXTENSION ip4r;"
 	-psql -d $(DB_NAME) -c "CREATE EXTENSION hstore;"

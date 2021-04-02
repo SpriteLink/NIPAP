@@ -76,7 +76,6 @@ Description: Automatically install database schema on startup?
      createuser -S -D -R -w nipap
      psql -q -c "ALTER USER nipap ENCRYPTED PASSWORD 'secret'"
      createdb -O nipap nipap
-     createlang -d nipap plpgsql
      psql -q -c "CREATE EXTENSION citext"
      psql -q -c "CREATE EXTENSION hstore"
      psql -q -c "CREATE EXTENSION ip4r"
