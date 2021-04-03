@@ -125,7 +125,6 @@ case "$1" in
 					su -c "psql -q -c \"ALTER USER $DB_USER ENCRYPTED PASSWORD '$DB_PASS'\"" postgres >/dev/null 2>&1
 					# create database and install plpgsql
 					su -c "createdb -O $DB_USER $DB_NAME" postgres >/dev/null 2>&1
-					su -c "createlang -d $DB_NAME plpgsql" postgres >/dev/null 2>&1
 					su -c "psql -q -d $DB_NAME -c \"CREATE EXTENSION citext\"" postgres >/dev/null 2>&1
 					su -c "psql -q -d $DB_NAME -c \"CREATE EXTENSION hstore\"" postgres >/dev/null 2>&1
 					su -c "psql -q -d $DB_NAME -c \"CREATE EXTENSION ip4r\"" postgres >/dev/null 2>&1

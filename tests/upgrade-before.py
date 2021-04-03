@@ -8,10 +8,13 @@
 import logging
 import unittest
 import sys
-sys.path.insert(0, '..')
-sys.path.insert(0, '../pynipap')
-sys.path.insert(0, '../nipap')
-sys.path.insert(0, '../nipap-cli')
+import os
+
+MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, MODULE_DIR + '/..')
+sys.path.insert(0, MODULE_DIR + '/../pynipap')
+sys.path.insert(0, MODULE_DIR + '/../nipap')
+sys.path.insert(0, MODULE_DIR + '/../nipap-cli')
 
 from nipap.backend import Nipap
 from nipap.authlib import SqliteAuth

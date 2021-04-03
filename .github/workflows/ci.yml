@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        install: [ pip, apt ]
+        upgrade: [ true, false ]
+        exclude:
+          - install: pip
+            upgrade: true
+      fail-fast: false
+
+    steps:
+    - name: "Check out NIPAP repository"
+      uses: actions/checkout@v2
+
+    - name: "Install dependencies and prepare NIPAP"
+      run: |
+        # Set up NIPAP repo
+        echo "deb http://spritelink.github.io/NIPAP/repos/apt stable main extra" | sudo tee /etc/apt/sources.list.d/nipap.list
+        wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -
+        sudo apt update -qq
+
+        # Install dependencies for build and test
+        sudo apt install -y \
+          devscripts \
+          fakeroot \
+          debhelper \
+          dh-python \
+          junit4 \
+          python-docutils \
+          python-nose \
+          python-setuptools \
+          python3-setuptools \
+          python-wheel \
+          python3-wheel \
+          python3-all \
+          default-jdk \
+          gradle \
+          rename \
+          postgresql-10 \
+          postgresql-10-ip4r
+
+        # Drop and re-create cluster to be bound to default port
+        sudo pg_dropcluster 13 main
+        sudo pg_dropcluster 10 main
+        sudo pg_createcluster --start 10 main
+        sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
+        chmod 0600 ~/.nipaprc
+
+    - name: "Install using pip"
+      if: ${{ matrix.install == 'pip' }}
+      run: |
+        # install nipap dependencies
+        sudo -H pip install -r nipap/requirements.txt
+        # SQL
+        sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres
+        # move configuration file into place
+        sudo mkdir /etc/nipap
+        sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf
+        sudo sed -e "s/{{LISTEN_ADDRESS}}/127.0.0.1/" -e "s/{{LISTEN_PORT}}/1337/" -e "s/{{DB_USERNAME}}/nipap/" -e "s/{{DB_NAME}}/nipap/" -e "s/{{DB_PASSWORD}}/papin/" -e "s/{{DB_SSLMODE}}/require/" -e "s/{{DB_PORT}}/5432/" -e "s/{{DB_HOST}}/localhost/" -e "s/{{SYSLOG}}/true/" -i /etc/nipap/nipap.conf
+        # create local user for unittest
+        sudo nipap/nipap-passwd create-database
+        sudo nipap/nipap-passwd add -u unittest -p gottatest -n unittest
+        sudo nipap/nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"
+        # install pynipap
+        cd pynipap; sudo python setup.py install; cd ..
+        cd pynipap; sudo python3 setup.py install; cd ..
+        # install nipap-cli dependencies
+        sudo -H pip3 install -r nipap-cli/requirements.txt
+        # start nipap backend
+        nipap/nipapd --no-pid-file -c /etc/nipap/nipap.conf
+
+    - name: "Install latest release from apt"
+      if: ${{ matrix.install == 'apt' && matrix.upgrade == true }}
+      run: |
+        # Install NIPAP packages from official repo
+        sudo apt install -qq nipapd nipap-www nipap-cli
+        # bump version so that we know we are upgrading beyond what is installed
+        (echo -e 'Version 9999.9.9\n------------------\n * Test version for automatic upgrade test'; cat NEWS) > NEWS2
+        mv NEWS2 NEWS
+        make bumpversion
+        # populate answers to nipapd package install questions and reconfigure
+        echo 'set nipapd/database_host localhost' | sudo debconf-communicate
+        echo 'set nipapd/local_db_autoconf true' | sudo debconf-communicate
+        echo 'set nipapd/startup true' | sudo debconf-communicate
+        echo 'set nipapd/local_db_upgrade true' | sudo debconf-communicate
+        sudo dpkg-reconfigure nipapd
+        # create local user for unittest and restart
+        sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest
+        sudo /etc/init.d/nipapd restart
+        # if upgrade, add some data to the database that we can verify later
+        nosetests tests/upgrade-before.py
+
+    - name: "Build and install Debian packages"
+      if: ${{ matrix.install == 'apt' }}
+      run: |
+        # build new NIPAP packages
+        make builddeb
+        # install the newly built nipap packages
+        sudo apt install -o Dpkg::Options::="--force-confnew" ./nipap*.deb ./python*-pynipap*.deb
+        # populate answers to nipapd package install questions and reconfigure
+        echo 'set nipapd/database_host localhost' | sudo debconf-communicate
+        echo 'set nipapd/local_db_autoconf true' | sudo debconf-communicate
+        echo 'set nipapd/startup true' | sudo debconf-communicate
+        echo 'set nipapd/local_db_upgrade true' | sudo debconf-communicate
+        sudo dpkg-reconfigure nipapd
+        # create local user for unittests
+        sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"
+        sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"
+        sudo sed -e "s/db_host *= *[^ ]\+/db_host = localhost/" -i /etc/nipap/nipap.conf
+
+    - name: "Verify pre-upgrade data"
+      if: ${{ matrix.upgrade == true }}
+      run: nosetests tests/upgrade-after.py
+
+    - name: "Run test suite"
+      run: |
+        nosetests tests/xmlrpc.py
+        nosetests tests/nipaptest.py
+        nosetests tests/test_cli.py
+        nosetests tests/nipap-ro.py
+        make -C jnipap test

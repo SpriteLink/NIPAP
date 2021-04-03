@@ -4,7 +4,10 @@
 import logging
 import unittest
 import sys
-sys.path.append('../nipap/')
+import os
+
+MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(MODULE_DIR + '/../nipap/')
 
 from nipap.backend import Nipap
 from nipap.authlib import SqliteAuth
@@ -21,7 +24,7 @@ s = xmlrpclib.Server(server_url, allow_none=1);
 
 ad = { 'authoritative_source': 'nipap' }
 
-nipap_bin = '../nipap-cli/nipap'
+nipap_bin = MODULE_DIR + '/../nipap-cli/nipap'
 
 class NipapCliTest(unittest.TestCase):
     """ Tests the NIPAP CLI

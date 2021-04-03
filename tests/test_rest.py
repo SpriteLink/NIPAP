@@ -9,7 +9,10 @@
 import logging
 import unittest
 import sys
-sys.path.append('../nipap/')
+import os
+
+MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(MODULE_DIR + '/../nipap/')
 
 from nipap.backend import Nipap
 from nipap.authlib import SqliteAuth
