@@ -45,6 +45,19 @@ cfg = None
 pool = None
 
 
+def determine_protocol():
+    """ Determine if HTTP or HTTPS should be used """
+
+    if cfg.get('global', 'use_ssl') == 'true':
+        protocol = 'https'
+    elif cfg.get('global', 'use_ssl') == 'false':
+        protocol = 'http'
+    else:
+        print("ERROR: Valid values for use_ssl are 'true' and 'false'.", file=sys.stderr)
+        sys.exit(1)
+
+    return protocol
+
 
 def setup_connection():
     """ Set up the global pynipap connection object
@@ -54,6 +67,7 @@ def setup_connection():
     # defined, otherwise from .nipaprc
     try:
         con_params = {
+            'protocol': determine_protocol(),
             'username': os.getenv('NIPAP_USERNAME') or cfg.get('global', 'username'),
             'password': os.getenv('NIPAP_PASSWORD') or cfg.get('global', 'password'),
             'hostname': os.getenv('NIPAP_HOST') or cfg.get('global', 'hostname'),
@@ -71,7 +85,7 @@ def setup_connection():
         con_params['password'] = getpass.getpass()
 
     # build XML-RPC URI
-    pynipap.xmlrpc_uri = "http://%(username)s:%(password)s@%(hostname)s:%(port)s" % con_params
+    pynipap.xmlrpc_uri = "%(protocol)s://%(username)s:%(password)s@%(hostname)s:%(port)s" % con_params
 
     ao = pynipap.AuthOptions({
         'authoritative_source': 'nipap',

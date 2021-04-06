@@ -8,6 +8,7 @@ import argparse
 import os
 import sys
 import ConfigParser
+import ssl
 
 from tornado.netutil import bind_sockets
 from tornado.httpserver import HTTPServer
@@ -95,6 +96,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--foreground', action='store_true', default=None, dest='foreground', help='run in foreground and log to stdout')
     parser.add_argument('-l', '--listen', type=str, metavar='ADDRESS', help='listen to IPv4/6 ADDRESS')
     parser.add_argument('-p', '--port', dest='port', type=int, help='listen on TCP port PORT')
+    parser.add_argument('-s', '--ssl-port', dest='ssl_port', type=int, help='listen with SSL on TCP port PORT')
     parser.add_argument('-c', '--config', dest='config_file', type=str, default='/etc/nipap/nipap.conf', help='read configuration from file CONFIG_FILE')
     parser.add_argument('-P', '--pid-file', type=str, help='write a PID file to PID_FILE')
     parser.add_argument('--no-pid-file', action='store_true', default=False, help='turn off writing PID file (overrides config file)')
@@ -124,6 +126,9 @@ if __name__ == '__main__':
         'pid_file': None,
         'listen': '127.0.0.1',
         'port': '1337',
+        'ssl_port': None,
+        'ssl_cert_file': None,
+        'ssl_key_file': None,
         'db_host': 'localhost',
         'db_name': 'nipap',
         'db_port': None,
@@ -153,6 +158,16 @@ if __name__ == '__main__':
             except ConfigParser.NoSectionError as exc:
                 print >> sys.stderr, "The configuration file contains errors:", exc
                 sys.exit(1)
+
+    # Validate configuration before forking, to be able to print error message to user
+    setup_plaintext = cfg.get('nipapd', 'port') != ''
+    setup_ssl = cfg.get('nipapd', 'ssl_port') is not None and cfg.get('nipapd', 'ssl_port') != ''
+    if not setup_plaintext and not setup_ssl:
+        print >> sys.stderr, "ERROR: Configured to listen to neither plaintext nor SSL"
+        sys.exit(1)
+    if setup_ssl and cfg.get('nipapd', 'ssl_cert_file') is None:
+        print >> sys.stderr, "ERROR: ssl_port configured but ssl_cert_file missing"
+        sys.exit(1)
 
     # drop privileges
     if cfg.get('nipapd', 'user') is not None:
@@ -252,19 +267,25 @@ if __name__ == '__main__':
         nipapxml.logger.addHandler(log_syslog)
         rest.logger.addHandler(log_syslog)
 
+    # Set up sockets for handling plaintext and SSL connections
+    sockets = []
+    ssl_sockets = []
     if cfg.get('nipapd', 'listen') is None or cfg.get('nipapd', 'listen') == '':
-        sockets = bind_sockets(cfg.get('nipapd', 'port'))
+        if setup_plaintext:
+            sockets = bind_sockets(cfg.get('nipapd', 'port'))
+        if setup_ssl:
+            ssl_sockets = bind_sockets(cfg.get('nipapd', 'ssl_port'))
     else:
-        sockets = []
         for entry in cfg.get('nipapd', 'listen').split(','):
-            if len(entry.split('+')) > 1:
-                address = entry.split('+')[0]
-                port = int(entry.split('+')[1])
-            else:
-                address = entry
+            address = entry
+            if setup_plaintext:
                 port = int(cfg.get('nipapd', 'port'))
-            socket = bind_sockets(port, address)
-            sockets = sockets + socket
+                socket = bind_sockets(port, address)
+                sockets += socket
+            if setup_ssl:
+                ssl_port = int(cfg.get('nipapd', 'ssl_port'))
+                ssl_socket = bind_sockets(ssl_port, address)
+                ssl_sockets += ssl_socket
 
     num_forks = -1
     try:
@@ -280,8 +301,21 @@ if __name__ == '__main__':
         # default is to fork as many processes as there are cores
         tornado.process.fork_processes(num_forks)
 
-    http_server = HTTPServer(WSGIContainer(app))
-    http_server.add_sockets(sockets)
+    if setup_plaintext:
+        http_server = HTTPServer(WSGIContainer(app))
+        http_server.add_sockets(sockets)
+
+    if setup_ssl:
+        ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        try:
+            ssl_ctx.load_cert_chain(cfg.get("nipapd", "ssl_cert_file"),
+                                    keyfile=cfg.get("nipapd", "ssl_key_file"))
+        except ssl.SSLError as err:
+            logging.error("SSL Initialization failed: %s", err)
+            sys.exit(1)
+
+        https_server = HTTPServer(WSGIContainer(app), ssl_options=ssl_ctx)
+        https_server.add_sockets(ssl_sockets)
 
     # start Tornado
     try:
