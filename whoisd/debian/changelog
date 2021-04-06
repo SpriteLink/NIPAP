@@ -1,3 +1,10 @@
+nipap-whoisd (0.30.0-1) stable; urgency=medium
+
+  * Add limited REST API (#1282)
+  * Add SSL support to nipapd and nipap-cli (#1283)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 06 Apr 2021 21:32:42 +0200
+
 nipap-whoisd (0.29.9-1) stable; urgency=medium
 
   * Fix pool constraints so all prefixes in pool must be in same VRF
