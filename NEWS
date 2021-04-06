@@ -1,3 +1,8 @@
+Version 0.30.0 - Hades
+----------------------
+ * Add limited REST API (#1282)
+ * Add SSL support to nipapd and nipap-cli (#1283)
+
 Version 0.29.9 - Zeus
 ---------------------
  * Fix pool constraints so all prefixes in pool must be in same VRF (#1251)
