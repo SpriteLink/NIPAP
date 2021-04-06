@@ -3,7 +3,7 @@ Maintainer: Kristian Larsson <kristian@spritelink.net>
 Section: python
 Priority: optional
 Build-Depends: python (>= 2.7), debhelper (>= 7)
-Standards-Version: 3.9.1
+Standards-Version: 4.4.0
 
 Package: nipap-whoisd
 Architecture: all
