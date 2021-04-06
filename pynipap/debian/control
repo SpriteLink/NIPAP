@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 8), dh-python,
                python3 (>= 3.1)
 X-Python-Version: >= 2.7
 X-Python3-Version: >= 3.1
-Standards-Version: 3.9.6
+Standards-Version: 4.4.0
 
 Package: python-pynipap
 Architecture: all

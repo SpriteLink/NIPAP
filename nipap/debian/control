@@ -3,7 +3,7 @@ Maintainer: Lukas Garberg <lukas@spritelink.net>
 Section: python
 Priority: optional
 Build-Depends: python (>= 2.7), debhelper (>= 7.4.3)
-Standards-Version: 3.9.1
+Standards-Version: 4.4.0
 
 
 Package: nipap-common

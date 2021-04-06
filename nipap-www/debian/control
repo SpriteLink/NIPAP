@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Build-Depends: debhelper (>= 5.0.38), debhelper (>= 7),
  python (>= 2.7), python-setuptools (>= 0.6b3)
-Standards-Version: 3.9.1
+Standards-Version: 4.4.0
 
 Package: nipap-www
 Architecture: all
