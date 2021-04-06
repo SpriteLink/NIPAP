@@ -1,8 +1,7 @@
 ---
 ---
 {% include header.html %}
-<section>
-<div class="container">
+<div class="document">
 
 
 <div class="section" id="configuration-of-the-web-ui">
@@ -16,9 +15,10 @@ nipap-passwd add --username nipap-www --password s3cr3t --name &quot;User accoun
 <p>Obviously, replace &quot;s3cr3t&quot; with a better password and feel free to use
 whichever username you want, as long as you configure it accordingly. The user
 account for the web UI should not be used by any other user. Configure
-the web UI to use this account by configuring the xmlrpc_uri variable:</p>
+the web UI to use this account by configuring the xmlrpc_uri variable in the
+www section of nipap.conf:</p>
 <pre class="literal-block">
-xmlrpc_uri = http://nipap-www&#64;local:s3cret&#64;127.0.0.1:1337
+xmlrpc_uri = http://nipap-www&#64;local:s3cr3t&#64;127.0.0.1:1337
 </pre>
 <p>This configuring assumes that you did indeed name the account &quot;nipap-www&quot;,
 replace &quot;s3cr3t&quot; with your password. &quot;&#64;local&quot; instructs the backend to use the
@@ -76,6 +76,4 @@ pages.</p>
 </div>
 </div>
 </div>
-
-</section>
 {% include footer.html %}

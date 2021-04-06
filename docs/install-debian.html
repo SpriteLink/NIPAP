@@ -1,8 +1,7 @@
 ---
 ---
 {% include header.html %}
-<section>
-<div class="container">
+<div class="document">
 
 
 <div class="section" id="getting-started-for-sysadmins">
@@ -35,9 +34,9 @@ root&#64;debian:~# apt-get install postgresql-9.1-ip4r postgresql-contrib-9.1
 <p>Add the NIPAP repo to your package sources, add our public key for proper
 authentication of our packages and update your lists:</p>
 <pre class="literal-block">
-echo &quot;deb http://spritelink.github.io/NIPAP/repos/apt stable main extra&quot; &gt; /etc/apt/sources.list.d/nipap.list
-wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | apt-key add -
-apt-get update
+echo &quot;deb http://spritelink.github.io/NIPAP/repos/apt stable main extra&quot; | sudo tee /etc/apt/sources.list.d/nipap.list
+wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -
+sudo apt-get update
 </pre>
 <p>There are now five new packages:</p>
 <pre class="literal-block">
@@ -62,7 +61,7 @@ Python, you will need 'python-pynipap'. If you want, you can install the nipapd
 backend on one machine and the CLI and/or web on another.</p>
 <p>Let's install the backend:</p>
 <pre class="literal-block">
-apt-get install nipapd
+sudo apt-get install nipapd
 </pre>
 <p>During installation, the nipapd package will ask if you want to automatically
 load the needed database structure and start nipapd on startup - answer Yes to
@@ -75,18 +74,16 @@ database server and all the other necessary dependencies installed.</p>
 help you setup the needed user and configure it if, and only if, you are
 running nipapd on the same machine. Install nipap-www with:</p>
 <pre class="literal-block">
-apt-get install nipap-www
+sudo apt-get install nipap-www
 </pre>
 <p>When you are asked whether you want to add a user automatically and configure
 it, answer yes. If you tried to install nipap-www at the same time as nipapd,
 you might not be prompted with the quetion to automatically add a user. Try
-doing 'dpkg-reconfigure nipap-www' in the case.</p>
+doing 'sudo dpkg-reconfigure nipap-www' in the case.</p>
 <p>The user added to the local authentication database by the installation script
 is merely used by the web interface to talk to the backend.</p>
 <p>See <a class="reference external" href="config-www.html">config-www</a> for configuration of the web UI and how to
 serve it using a web server.</p>
 </div>
 </div>
-
-</section>
 {% include footer.html %}

@@ -1,8 +1,7 @@
 ---
 ---
 {% include header.html %}
-<section>
-<div class="container">
+<div class="document">
 
 
 <div class="section" id="getting-started-on-a-unix-like-platform">
@@ -154,7 +153,7 @@ is built on the Pylons web framework and requires Pylons version &gt;= 1.0.</p>
 <p>Begin by adding a user for the web interface to the local authentication
 database on the server where nipapd is running:</p>
 <pre class="literal-block">
-nipap-passwd -a *username* -p *password* -n 'NIPAP web UI' -t
+nipap-passwd add -u *username* -p *password* -n 'NIPAP web UI' -t
 </pre>
 <p>The '-t' option tells nipap-passwd to make the new user a 'trusted' user, that
 is a user which can authenticate against nipapd using one username but log all
@@ -222,6 +221,4 @@ chmod -R u=rwX /var/cache/nipap-www
 pages.</p>
 </div>
 </div>
-
-</section>
 {% include footer.html %}
