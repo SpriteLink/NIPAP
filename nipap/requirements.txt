@@ -1,15 +1,15 @@
-Flask==1.1.2
+Flask==2.0.0
 Flask-Compress==1.9.0
 Flask-XML-RPC==0.1.2
 Flask-RESTful==0.3.8
 requests==2.25.1
 IPy==1.01
-Jinja2==2.11.3
-MarkupSafe==1.1.1
-Werkzeug==1.0.1
+Jinja2==3.0.0
+MarkupSafe==2.0.0
+Werkzeug==2.0.0
 backports.ssl-match-hostname==3.7.0.1
 certifi==2020.12.5
-itsdangerous==1.1.0
+itsdangerous==2.0.0
 parsedatetime==2.6
 psutil==1.2.1							# rq.filter: >= 1.0,<2.0
 psycopg2==2.8.6 --no-binary psycopg2
