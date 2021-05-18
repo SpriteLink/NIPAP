@@ -9,7 +9,7 @@ MarkupSafe==2.0.0
 Werkzeug==2.0.1
 backports.ssl-match-hostname==3.7.0.1
 certifi==2020.12.5
-itsdangerous==2.0.0
+itsdangerous==2.0.1
 parsedatetime==2.6
 psutil==1.2.1							# rq.filter: >= 1.0,<2.0
 psycopg2==2.8.6 --no-binary psycopg2
