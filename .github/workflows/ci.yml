@@ -27,11 +27,21 @@ jobs:
       uses: hadolint/hadolint-action@v1.5.0
       with:
         Dockerfile: Dockerfile.nipapd
+    - name: Build nipapd
+      uses: docker/build-push-action@v2
+      with:
+        - push: false
+          file: Dockerfile.nipapd
     - name: Hadolint www
       uses: hadolint/hadolint-action@v1.5.0
       with:
         Dockerfile: Dockerfile.www
-
+    - name: Build www
+      uses: docker/build-push-action@v2
+      with:
+        - push: false
+          file: Dockerfile.www
+ 
     - name: "Install dependencies and prepare NIPAP"
       run: |
         # Set up NIPAP repo

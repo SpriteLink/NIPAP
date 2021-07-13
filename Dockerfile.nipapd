@@ -32,7 +32,7 @@
 # via a volume.
 #
 
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 # hadolint ignore=DL4000
 MAINTAINER Kristian Larsson <kristian@spritelink.net>
 
@@ -51,6 +51,8 @@ RUN apt-get update -qy \
     python-docutils \
     python-pip \
     python-dev \
+    python-setuptools \
+    build-essential \
  && pip --no-input --no-cache-dir install envtpl==0.6.0 \
  && rm -rf /var/lib/apt/lists/*
 
