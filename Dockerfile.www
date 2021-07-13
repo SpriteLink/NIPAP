@@ -52,10 +52,9 @@ RUN apt-get update -qy \
 COPY pynipap /pynipap
 COPY nipap /nipap
 COPY nipap-www /nipap-www
-RUN cd /pynipap && python setup.py install && \
-    cd /nipap && pip --no-input --no-cache-dir install -r requirements.txt && python setup.py install && \
-    cd /nipap-www && pip --no-input --no-cache-dir install -r requirements.txt && python setup.py install && \
-    cd ..
+RUN python /pynipap/setup.py install && \
+    pip --no-input --no-cache-dir install -r /nipap/requirements.txt && python /nipap/setup.py install && \
+    pip --no-input --no-cache-dir install -r /nipap-www/requirements.txt && python /nipap-www/setup.py install
 
 EXPOSE 80
 VOLUME [ "/var/log/apache2" ]
