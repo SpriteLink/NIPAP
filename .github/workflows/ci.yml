@@ -23,6 +23,15 @@ jobs:
     - name: "Check out NIPAP repository"
       uses: actions/checkout@v2
 
+    - name: Hadolint nipapd
+      uses: hadolint/hadolint-action@v1.5.0
+      with:
+        Dockerfile: Dockerfile.nipapd
+    - name: Hadolint www
+      uses: hadolint/hadolint-action@v1.5.0
+      with:
+        Dockerfile: Dockerfile.www
+
     - name: "Install dependencies and prepare NIPAP"
       run: |
         # Set up NIPAP repo
