@@ -25,13 +25,15 @@
 
 FROM ubuntu:xenial
 
+# hadolint ignore=DL4000
 MAINTAINER Lukas Garberg <lukas@spritelink.net>
 
 ENV NIPAPD_HOST=nipapd NIPAPD_PORT=1337 WWW_USERNAME=guest WWW_PASSWORD=guest
 
 # apt update, upgrade & install packages
-RUN apt-get update -qy && apt-get upgrade -qy \
- && apt-get install -qy apache2 \
+# hadolint ignore=DL3008
+RUN apt-get update -qy \
+ && apt-get install --no-install-recommends -qy apache2 \
     libapache2-mod-wsgi \
     devscripts \
     make \
@@ -43,7 +45,7 @@ RUN apt-get update -qy && apt-get upgrade -qy \
     python-docutils \
     python-pip \
     python-dev \
- && pip --no-input install envtpl \
+ && pip --no-input --no-cache-dir install envtpl==0.6.0 \
  && rm -rf /var/lib/apt/lists/*
 
 # Install pynipap, nipap and nipap-www
@@ -51,8 +53,8 @@ COPY pynipap /pynipap
 COPY nipap /nipap
 COPY nipap-www /nipap-www
 RUN cd /pynipap && python setup.py install && \
-    cd /nipap && pip --no-input install -r requirements.txt && python setup.py install && \
-    cd /nipap-www && pip --no-input install -r requirements.txt && python setup.py install && \
+    cd /nipap && pip --no-input --no-cache-dir install -r requirements.txt && python setup.py install && \
+    cd /nipap-www && pip --no-input --no-cache-dir install -r requirements.txt && python setup.py install && \
     cd ..
 
 EXPOSE 80
