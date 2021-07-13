@@ -33,13 +33,15 @@
 #
 
 FROM ubuntu:xenial
+# hadolint ignore=DL4000
 MAINTAINER Kristian Larsson <kristian@spritelink.net>
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 # apt update, upgrade & install packages
-RUN apt-get update -qy && apt-get upgrade -qy \
- && apt-get install -qy devscripts \
+# hadolint ignore=DL3008
+RUN apt-get update -qy \
+ && apt-get install --no-install-recommends -qy devscripts \
     make \
     libpq-dev \
     libsqlite3-dev \
@@ -49,13 +51,13 @@ RUN apt-get update -qy && apt-get upgrade -qy \
     python-docutils \
     python-pip \
     python-dev \
- && pip --no-input install envtpl \
+ && pip --no-input --no-cache-dir install envtpl==0.6.0 \
  && rm -rf /var/lib/apt/lists/*
 
 
 COPY nipap /nipap
 WORKDIR /nipap
-RUN pip --no-input install -r requirements.txt \
+RUN pip --no-input --no-cache-dir install -r requirements.txt \
  && python setup.py install
 
 EXPOSE 1337
