@@ -14,7 +14,7 @@ parsedatetime==2.6
 psutil==1.2.1							# rq.filter: >= 1.0,<2.0
 psycopg2==2.9.1 --no-binary psycopg2
 pyparsing==2.4.7
-python-dateutil==2.8.1
+python-dateutil==2.8.2
 # optional dependency on ldap
 #python-ldap==2.4.19
 pytz==2021.1
