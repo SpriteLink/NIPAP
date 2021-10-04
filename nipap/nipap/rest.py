@@ -17,7 +17,7 @@ from flask_restful import Resource, Api, abort
 from backend import Nipap, NipapError
 import nipap
 from authlib import AuthFactory, AuthError
-
+from requests.models import HTTPError
 
 def setup(app):
     api = Api(app, prefix="/rest/v1")
@@ -192,6 +192,12 @@ class NipapPrefixRest(Resource):
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
             abort(500, error={"code": 500, "message": str(exc)})
+        except HTTPError as http_err:
+            self.logger.debug(unicode(http_err))
+            abort(500, error={"code": 500, "message": str(http_err)})
+        except Exception as err:
+            self.logger.debug(unicode(err))
+            abort(500, error={"code": 500, "message": str(err)})
 
 
     @requires_auth
@@ -211,6 +217,12 @@ class NipapPrefixRest(Resource):
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
             abort(500, error={"code": 500, "message": str(exc)})
+        except HTTPError as http_err:
+            self.logger.debug(unicode(http_err))
+            abort(500, error={"code": 500, "message": str(http_err)})
+        except Exception as err:
+            self.logger.debug(unicode(err))
+            abort(500, error={"code": 500, "message": str(err)})
 
 
     @requires_auth
@@ -222,3 +234,9 @@ class NipapPrefixRest(Resource):
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
             abort(500, error={"code": 500, "message": str(exc)})
+        except HTTPError as http_err:
+            self.logger.debug(unicode(http_err))
+            abort(500, error={"code": 500, "message": str(http_err)})
+        except Exception as err:
+            self.logger.debug(unicode(err))
+            abort(500, error={"code": 500, "message": str(err)})
