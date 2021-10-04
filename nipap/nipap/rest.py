@@ -191,7 +191,7 @@ class NipapPrefixRest(Resource):
             return result
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
-            abort(500, error={"code": 500, "message": exc})
+            abort(500, error={"code": 500, "message": str(exc)})
 
 
     @requires_auth
@@ -221,4 +221,4 @@ class NipapPrefixRest(Resource):
             return jsonify(args.get('prefix'))
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
-            abort(500, error={"code": 500, "message": exc})
+            abort(500, error={"code": 500, "message": str(exc)})
