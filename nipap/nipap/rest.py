@@ -174,7 +174,7 @@ class NipapPrefixRest(Resource):
 
     def __init__(self):
         self.nip = Nipap()
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger(self.__class__.__name__)
 
 
     @requires_auth
