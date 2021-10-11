@@ -168,6 +168,20 @@ def requires_auth(f):
 
     return decorated
 
+def get_query_for_field(field, search_value):
+
+    operator = "="
+    
+    fields_supporting_case_insesitive_search = ['description','comment','node','country','customer_id','external_key','authoritative_source','order_id']
+    if field in fields_supporting_case_insesitive_search:
+        operator = "~*"
+        search_value = '^' + search_value + '$'
+
+    return { 
+            'operator': operator,
+            'val1': field,
+            'val2': search_value 
+        }
 
 
 class NipapPrefixRest(Resource):
@@ -179,26 +193,55 @@ class NipapPrefixRest(Resource):
 
     @requires_auth
     def get(self, args):
-        try:
-            result = self.nip.list_prefix(
-                args.get('auth'), args.get('prefix') or {})
 
-            # mangle result
-            for prefix in result:
-                prefix = _mangle_prefix(prefix)
+        query = args.get('prefix')
+        if(query != None):
+            try:
+            
+                field = query.items()[0][0]
+                search_value = query.items()[0][1]
+                search_query = get_query_for_field(field, search_value)
 
-            result = jsonify(result)
-            return result
-        except (AuthError, NipapError) as exc:
-            self.logger.debug(unicode(exc))
-            abort(500, error={"code": 500, "message": str(exc)})
-        except HTTPError as http_err:
-            self.logger.debug(unicode(http_err))
-            abort(500, error={"code": 500, "message": str(http_err)})
-        except Exception as err:
-            self.logger.debug(unicode(err))
-            abort(500, error={"code": 500, "message": str(err)})
+                result = self.nip.search_prefix(args.get('auth'), search_query)
 
+                # mangle result
+                for prefix in result['result']:
+                    prefix = _mangle_prefix(prefix)
+
+                result = jsonify(result['result'])
+                return result
+
+            except (AuthError, NipapError, Exception) as exc:
+                self.logger.debug(exc)
+                abort(500, error={"code": 500, "message": str(exc)})
+            except HTTPError as http_err:
+                self.logger.debug(unicode(http_err))
+                abort(500, error={"code": 500, "message": str(http_err)})
+            except Exception as err:
+                self.logger.debug(unicode(err))
+                abort(500, error={"code": 500, "message": str(err)})
+
+        else:
+            try:
+                result = self.nip.list_prefix(
+                    args.get('auth'), {})
+
+                # mangle result
+                for prefix in result:
+                    prefix = _mangle_prefix(prefix)
+
+                result = jsonify(result)
+                return result
+
+            except (AuthError, NipapError, Exception) as exc:
+                self.logger.debug(exc)
+                abort(500, error={"code": 500, "message": str(exc)})
+            except HTTPError as http_err:
+                self.logger.debug(unicode(http_err))
+                abort(500, error={"code": 500, "message": str(http_err)})
+            except Exception as err:
+                self.logger.debug(unicode(err))
+                abort(500, error={"code": 500, "message": str(err)})
 
     @requires_auth
     def post(self, args):
