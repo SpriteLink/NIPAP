@@ -25,6 +25,37 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 log_format = "%(levelname)-8s %(message)s"
 
+prefix_result_template = {
+        'alarm_priority': None,
+        'authoritative_source': 'nipap',
+        'avps': {},
+        'children': 0,
+        'comment': None,
+        'country': None,
+        'description': 'test prefix',
+        'display': True,
+        'display_prefix': '1.3.1.0/24',
+        'external_key': None,
+        'family': 4,
+        'id': 0,
+        'indent': 0,
+        'inherited_tags': [],
+        'match': True,
+        'monitor': None,
+        'node': None,
+        'order_id': 'test',
+        'customer_id': None,
+        'pool_name': None,
+        'pool_id': None,
+        'prefix_length': 24,
+        'tags':[],
+        'status': 'assigned',
+        'vrf_rt': None,
+        'vrf_id': 0,
+        'vrf_name': 'default',
+        'vlan': None
+    }
+
 
 class NipapRestTest(unittest.TestCase):
     """ Tests the NIPAP REST API
@@ -110,7 +141,7 @@ class NipapRestTest(unittest.TestCase):
                 del(p['total_addresses'])
                 del(p['used_addresses'])
                 del(p['free_addresses'])
-                del(res['expires'])
+                del(p['expires'])
 
         if isinstance(res, dict):
             # just one single prefix
@@ -146,6 +177,15 @@ class NipapRestTest(unittest.TestCase):
         return result
 
 
+    def _add_prefix(self, attr):
+        request = requests.post(self.server_url, headers=self.headers, json = attr)
+        text = request.text
+        result = json.loads(text)
+        result = dict([(str(k), str(v)) for k, v in result.items()])
+
+        return result['id']
+
+
     def test_prefix_add(self):
         """ Add a prefix and list
         """
@@ -178,35 +218,11 @@ class NipapRestTest(unittest.TestCase):
         result = dict([(str(k), str(v)) for k, v in result.items()])
         attr['id'] = result['id']
         self.assertGreater(attr['id'], 0)
-
+        
         # what we expect the above prefix to look like
-        expected = {
-                'alarm_priority': None,
-                'authoritative_source': 'nipap',
-                'avps': {},
-                'comment': None,
-                'country': None,
-                'description': 'test prefix',
-                'display_prefix': '1.3.3.0/24',
-                'external_key': None,
-                'family': 4,
-                'id': int(attr['id']),
-                'indent': 0,
-                'inherited_tags': [],
-                'monitor': None,
-                'node': None,
-                'order_id': 'test',
-                'customer_id': None,
-                'pool_name': None,
-                'pool_id': None,
-                'tags':[],
-                'status': 'assigned',
-                'vrf_rt': None,
-                'vrf_id': 0,
-                'vrf_name': 'default',
-                'vlan': None
-            }
-
+        expected = prefix_result_template
+        expected['id'] = int(attr['id'])
+        expected['display_prefix'] = '1.3.3.0/24'
         expected = dict([(str(k), str(v)) for k, v in expected.items()])
         expected.update(attr)
 
@@ -241,9 +257,15 @@ class NipapRestTest(unittest.TestCase):
         expected_host['prefix'] = '1.3.3.1/32'
         expected_host['display_prefix'] = '1.3.3.1/24'
         expected_host['indent'] = 1
+        expected_host['prefix_length'] = '32'
+        expected_host['children'] = '0'
 
         # build list of expected
         expected_list = []
+
+        # updated the children for the first one because we are adding 3 new ones to it
+        expected['children'] = '3'
+
         expected_list.append(expected)
         expected_list.append(expected_host)
         expected_list = self._convert_list_of_unicode_to_str(expected_list)
@@ -259,6 +281,7 @@ class NipapRestTest(unittest.TestCase):
         expected_host2['id'] = result['id']
         expected_host2['prefix'] = '1.3.3.2/32'
         expected_host2['display_prefix'] = '1.3.3.2/24'
+        expected_host2['children'] = '0'
         expected_list.append(expected_host2)
         expected_list = self._convert_list_of_unicode_to_str(expected_list)
 
@@ -273,6 +296,7 @@ class NipapRestTest(unittest.TestCase):
         expected_host3['id'] = result['id']
         expected_host3['prefix'] = '1.3.3.3/32'
         expected_host3['display_prefix'] = '1.3.3.3/24'
+        expected_host3['children'] = '0'
         expected_list.append(expected_host3)
         expected_list = self._convert_list_of_unicode_to_str(expected_list)
 
@@ -289,6 +313,7 @@ class NipapRestTest(unittest.TestCase):
                 mangled_result,
                 expected_list)
 
+
     def test_prefix_remove(self):
         """ Removes a prefix
         """
@@ -299,13 +324,8 @@ class NipapRestTest(unittest.TestCase):
         attr['description'] = 'test delete prefix'
         attr['type'] = 'assignment'
         attr['order_id'] = 'test'
-
-        request = requests.post(self.server_url, headers=self.headers, json = attr)
-        text = request.text
-        result = json.loads(text)
-        result = dict([(str(k), str(v)) for k, v in result.items()])
-
-        prefix_id = result['id']
+        prefix_id = self._add_prefix(attr)
+        self.assertGreater(prefix_id, 0)
 
         # delete prefix
         parameters = {'id': prefix_id}
@@ -321,6 +341,82 @@ class NipapRestTest(unittest.TestCase):
 
         self.assertEqual(result, expected)
 
+
+    def test_prefix_search_case_sensitive(self):
+        """ Add a prefix and search for it case sensitive 
+        """
+
+        attr = {}
+        attr['prefix'] = '1.3.5.0/24'
+        attr['description'] = 'test prefix'
+        attr['type'] = 'assignment'
+        attr['order_id'] = 's-12345'
+        prefix_id = self._add_prefix(attr)
+        attr['id'] = prefix_id
+        self.assertGreater(attr['id'], 0)
+
+        expected = prefix_result_template
+        expected['display_prefix'] = '1.3.5.0/24'
+        expected = dict([(str(k), str(v)) for k, v in expected.items()])
+        expected.update(attr)
+        
+        # list of prefixes through GET request
+        parameters = {'order_id': 's-12345'}
+        get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
+        result = json.loads(get_prefix_request.text)
+        result = self._convert_list_of_unicode_to_str(result)
+        
+        self.assertEqual(
+                self._mangle_prefix_result(result),
+                [expected])
+
+
+    def test_prefix_search_case_insensitive(self):
+        """ Add a prefix and search for it case insensitive 
+        """
+
+        attr = {}
+        attr['prefix'] = '1.3.6.0/24'
+        attr['description'] = 'test prefix'
+        attr['type'] = 'assignment'
+        attr['order_id'] = 's-12345'
+        prefix_id = self._add_prefix(attr)
+        attr['id'] = prefix_id
+        self.assertGreater(attr['id'], 0)
+
+        expected = prefix_result_template
+        expected['display_prefix'] = '1.3.6.0/24'
+        expected = dict([(str(k), str(v)) for k, v in expected.items()])
+        expected.update(attr)
+
+        parameters = {'order_id': 'S-12345'}
+        get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
+        result = json.loads(get_prefix_request.text)
+        result = self._convert_list_of_unicode_to_str(result)
+
+        self.assertEqual(
+                    self._mangle_prefix_result(result),
+                    [expected])
+
+
+    def test_prefix_search_error_code(self):
+        """ Search for a prefix with incorrent fieldname, expect correct error code
+        """
+        parameters = {'prefixeere': '1.3.7.0/24'}
+        get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
+
+        self.assertEqual(
+                    get_prefix_request.status_code,
+                    500)
+
+
+    def test_prefix_search_error_message(self):
+        """ Search for a prefix with incorrent fieldname, expect correct error message
+        """
+        parameters = {'prefixeere': '1.3.8.0/24'}
+        get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
+
+        self.assertTrue(get_prefix_request.text.__contains__('prefixee'))
 
 
 if __name__ == '__main__':
