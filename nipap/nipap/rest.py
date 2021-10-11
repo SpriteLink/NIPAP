@@ -195,7 +195,7 @@ class NipapPrefixRest(Resource):
     def get(self, args):
 
         query = args.get('prefix')
-        if(query != None):
+        if query != None:
             try:
             
                 field = query.items()[0][0]
