@@ -51,8 +51,7 @@ jobs:
           postgresql-10-ip4r
 
         # Drop and re-create cluster to be bound to default port
-        sudo pg_dropcluster 13 main
-        sudo pg_dropcluster 10 main
+        for version in `pg_lsclusters | tail -n-2 | awk '{ print $1 }'`; do sudo pg_dropcluster $version main; done
         sudo pg_createcluster --start 10 main
         sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' -e 's/port = 1337/port = 1338/' -e "s/#use_ssl = false/use_ssl = true/" nipap-cli/nipaprc > ~/.nipaprc
         chmod 0600 ~/.nipaprc
