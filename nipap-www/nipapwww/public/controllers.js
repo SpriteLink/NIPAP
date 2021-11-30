@@ -567,6 +567,10 @@ nipapAppControllers.controller('PrefixEditController', function ($scope, $routeP
 
 				$scope.prefix = pref;
 
+				// The datepicker expects a Javascript Date object to be able to show the date
+				if($scope.prefix.expires != null && $scope.prefix.expires.length > 0)
+					$scope.prefix.expires = new Date($scope.prefix.expires);
+
 				// Fetch prefix's VRF
 				$http.post('/xhr/smart_search_vrf',
 					JSON.stringify({
