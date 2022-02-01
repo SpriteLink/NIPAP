@@ -1,9 +1,10 @@
 import logging
 import urllib
+import simplejson
 try:
     import json
 except ImportError:
-    import simplejson as json
+    json = simplejson
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import abort, redirect
@@ -206,8 +207,11 @@ class XhrController(BaseController):
         """ List pools and return JSON encoded result.
         """
 
-        # fetch attributes from request.json
-        attr = XhrController.extract_pool_attr(request.json)
+        try:
+            # fetch attributes from request.json
+            attr = XhrController.extract_pool_attr(request.json)
+        except simplejson.errors.JSONDecodeError:
+            attr = {}
 
         try:
             pools = Pool.list(attr)
