@@ -193,7 +193,7 @@ class SmartParser:
                 dss['interpretation'] = {
                     'interpretation': op,
                     'operator': op,
-                    'error': False,
+                    'error': False
                 }
                 continue
 
@@ -294,8 +294,8 @@ class SmartParser:
                 'attribute': 'text',
                 'operator': None,
                 'error': True,
-                'error_message': None,
-            },
+                'error_message': None
+            }
         }
 
         if '"' in stripped_line or "'" in stripped_line:
@@ -346,11 +346,11 @@ class PoolSmartParser(SmartParser):
                     'interpretation': 'tag',
                     'attribute': 'tag',
                     'operator': 'equals_any',
-                    'error': False,
+                    'error': False
                 },
                 'operator': 'equals_any',
                 'val1': 'tags',
-                'val2': part[0][1:],
+                'val2': part[0][1:]
             }
 
         elif part.getName() == 'vrf_rt':
@@ -376,19 +376,19 @@ class PoolSmartParser(SmartParser):
                     'interpretation': 'text',
                     'operator': 'regex',
                     'string': part.vrf_rt,
-                    'error': False,
+                    'error': False
                 },
                 'operator': 'or',
                 'val1': {
                     'operator': 'regex_match',
                     'val1': 'name',
-                    'val2': part.vrf_rt,
+                    'val2': part.vrf_rt
                 },
                 'val2': {
                     'operator': 'regex_match',
                     'val1': 'description',
-                    'val2': part.vrf_rt,
-                },
+                    'val2': part.vrf_rt
+                }
             }
 
         else:
@@ -399,15 +399,15 @@ class PoolSmartParser(SmartParser):
                     'interpretation': 'text',
                     'operator': 'regex',
                     'string': part[0],
-                    'error': False,
+                    'error': False
                 },
                 'operator': 'or',
                 'val1': {'operator': 'regex_match', 'val1': 'name', 'val2': part[0]},
                 'val2': {
                     'operator': 'regex_match',
                     'val1': 'description',
-                    'val2': part[0],
-                },
+                    'val2': part[0]
+                }
             }
 
         return dictsql
@@ -443,7 +443,7 @@ class PrefixSmartParser(SmartParser):
         'type': ['assignment', 'host', 'reservation'],
         'used_addreses': True,
         'vlan': True,
-        'vrf': True,
+        'vrf': True
     }
 
     def _string_to_dictsql(self, part):
@@ -459,15 +459,15 @@ class PrefixSmartParser(SmartParser):
                     'interpretation': '(inherited) tag',
                     'attribute': 'tag',
                     'operator': 'equals_any',
-                    'error': False,
+                    'error': False
                 },
                 'operator': 'or',
                 'val1': {'operator': 'equals_any', 'val1': 'tags', 'val2': part[0][1:]},
                 'val2': {
                     'operator': 'equals_any',
                     'val1': 'inherited_tags',
-                    'val2': part[0][1:],
-                },
+                    'val2': part[0][1:]
+                }
             }
 
         elif part.getName() == 'vrf_rt':
@@ -478,11 +478,11 @@ class PrefixSmartParser(SmartParser):
                     'interpretation': 'vrf_rt',
                     'operator': 'equals',
                     'string': part.vrf_rt,
-                    'error': False,
+                    'error': False
                 },
                 'operator': 'equals',
                 'val1': 'vrf_rt',
-                'val2': part.vrf_rt,
+                'val2': part.vrf_rt
             }
 
         elif part.getName() == 'ipv6_address':
@@ -493,11 +493,11 @@ class PrefixSmartParser(SmartParser):
                     'interpretation': 'IPv6 address',
                     'attribute': 'prefix',
                     'operator': 'contains_equals',
-                    'error': False,
+                    'error': False
                 },
                 'operator': 'contains_equals',
                 'val1': 'prefix',
-                'val2': part.ipv6_address,
+                'val2': part.ipv6_address
             }
 
         elif part.getName() == 'ipv6_prefix':
@@ -509,7 +509,7 @@ class PrefixSmartParser(SmartParser):
                 'interpretation': 'IPv6 prefix',
                 'attribute': 'prefix',
                 'operator': 'contained_within_equals',
-                'error': False,
+                'error': False
             }
             if part.ipv6_prefix[0] != strict_prefix:
                 interp['strict_prefix'] = strict_prefix
@@ -518,7 +518,7 @@ class PrefixSmartParser(SmartParser):
                 'interpretation': interp,
                 'operator': 'contained_within_equals',
                 'val1': 'prefix',
-                'val2': strict_prefix,
+                'val2': strict_prefix
             }
 
         else:
@@ -543,7 +543,7 @@ class PrefixSmartParser(SmartParser):
                     'interpretation': 'IPv4 prefix',
                     'attribute': 'prefix',
                     'operator': 'contained_within_equals',
-                    'error': False,
+                    'error': False
                 }
 
                 if prefix != part[0]:
@@ -556,7 +556,7 @@ class PrefixSmartParser(SmartParser):
                     'interpretation': interp,
                     'operator': 'contained_within_equals',
                     'val1': 'prefix',
-                    'val2': strict_prefix,
+                    'val2': strict_prefix
                 }
 
             # IPv4 address
@@ -571,11 +571,11 @@ class PrefixSmartParser(SmartParser):
                         'interpretation': 'IPv4 address',
                         'attribute': 'prefix',
                         'operator': 'contains_equals',
-                        'error': False,
+                        'error': False
                     },
                     'operator': 'contains_equals',
                     'val1': 'prefix',
-                    'val2': address,
+                    'val2': address
                 }
 
             else:
@@ -587,7 +587,7 @@ class PrefixSmartParser(SmartParser):
                         'interpretation': 'text',
                         'attribute': 'description or comment or node or order_id or customer_id',
                         'operator': 'regex',
-                        'error': False,
+                        'error': False
                     },
                     'operator': 'or',
                     'val1': {
@@ -599,31 +599,31 @@ class PrefixSmartParser(SmartParser):
                                 'val1': {
                                     'operator': 'regex_match',
                                     'val1': 'comment',
-                                    'val2': part[0],
+                                    'val2': part[0]
                                 },
                                 'val2': {
                                     'operator': 'regex_match',
                                     'val1': 'description',
-                                    'val2': part[0],
-                                },
+                                    'val2': part[0]
+                                }
                             },
                             'val2': {
                                 'operator': 'regex_match',
                                 'val1': 'node',
-                                'val2': part[0],
-                            },
+                                'val2': part[0]
+                            }
                         },
                         'val2': {
                             'operator': 'regex_match',
                             'val1': 'order_id',
-                            'val2': part[0],
-                        },
+                            'val2': part[0]
+                        }
                     },
                     'val2': {
                         'operator': 'regex_match',
                         'val1': 'customer_id',
-                        'val2': part[0],
-                    },
+                        'val2': part[0]
+                    }
                 }
 
         return dictsql
@@ -641,7 +641,7 @@ class VrfSmartParser(SmartParser):
         'total_addresses_v4': True,
         'total_addresses_v6': True,
         'used_addresses_v4': True,
-        'used_addresses_v6': True,
+        'used_addresses_v6': True
     }
 
     def _string_to_dictsql(self, part):
@@ -657,11 +657,11 @@ class VrfSmartParser(SmartParser):
                     'interpretation': 'tag',
                     'attribute': 'tag',
                     'operator': 'equals_any',
-                    'error': False,
+                    'error': False
                 },
                 'operator': 'equals_any',
                 'val1': 'tags',
-                'val2': part[0][1:],
+                'val2': part[0][1:]
             }
 
         elif part.getName() == 'vrf_rt':
@@ -687,7 +687,7 @@ class VrfSmartParser(SmartParser):
                     'interpretation': 'text',
                     'attribute': 'vrf or name or description',
                     'operator': 'regex',
-                    'error': False,
+                    'error': False
                 },
                 'operator': 'or',
                 'val1': {
@@ -695,15 +695,15 @@ class VrfSmartParser(SmartParser):
                     'val1': {
                         'operator': 'regex_match',
                         'val1': 'name',
-                        'val2': part.vrf_rt,
+                        'val2': part.vrf_rt
                     },
                     'val2': {
                         'operator': 'regex_match',
                         'val1': 'description',
-                        'val2': part.vrf_rt,
+                        'val2': part.vrf_rt
                     },
                 },
-                'val2': {'operator': 'regex_match', 'val1': 'rt', 'val2': part.vrf_rt},
+                'val2': {'operator': 'regex_match', 'val1': 'rt', 'val2': part.vrf_rt}
             }
 
         else:
@@ -714,7 +714,7 @@ class VrfSmartParser(SmartParser):
                     'interpretation': 'text',
                     'attribute': 'vrf or name or description',
                     'operator': 'regex',
-                    'error': False,
+                    'error': False
                 },
                 'operator': 'or',
                 'val1': {
@@ -722,15 +722,15 @@ class VrfSmartParser(SmartParser):
                     'val1': {
                         'operator': 'regex_match',
                         'val1': 'name',
-                        'val2': part[0],
+                        'val2': part[0]
                     },
                     'val2': {
                         'operator': 'regex_match',
                         'val1': 'description',
-                        'val2': part[0],
-                    },
+                        'val2': part[0]
+                    }
                 },
-                'val2': {'operator': 'regex_match', 'val1': 'rt', 'val2': part[0]},
+                'val2': {'operator': 'regex_match', 'val1': 'rt', 'val2': part[0]}
             }
 
         return dictsql
@@ -750,8 +750,8 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
 
     p = VrfSmartParser()
-    # dictsql, interpretation = p.parse('core (country=SE or country = NL OR (damp AND "foo bar")')
-    # dictsql, interpretation = p.parse('core (country=SE or country = NL OR (damp AND "foo bar"))')
+    #dictsql, interpretation = p.parse('core (country=SE or country = NL OR (damp AND "foo bar")')
+    #dictsql, interpretation = p.parse('core (country=SE or country = NL OR (damp AND "foo bar"))')
     import sys
 
     dictsql = p.parse(' '.join(sys.argv[1:]))

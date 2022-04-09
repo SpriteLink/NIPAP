@@ -14,9 +14,9 @@ from functools import wraps
 from flask import Flask, request, Response, got_request_exception, jsonify
 from flask_restful import Resource, Api, abort
 
-from backend import Nipap, NipapError
+from .backend import Nipap, NipapError
 import nipap
-from authlib import AuthFactory, AuthError
+from .authlib import AuthFactory, AuthError
 
 def setup(app):
     api = Api(app, prefix="/rest/v1")

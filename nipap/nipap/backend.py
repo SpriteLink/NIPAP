@@ -547,7 +547,7 @@ _operation_map = {
     '<<': '<<',
     'contained_within': '<<',
     '<<=': '<<=',
-    'contained_within_equals': '<<=',
+    'contained_within_equals': '<<='
 }
 """ Maps operators in a prefix query to SQL operators.
 """
@@ -850,7 +850,7 @@ class Nipap:
 
             m = re.search('invalid cidr value: "([^"]+)"', exc.pgerror)
             if m is not None:
-                strict_prefix = IPy.IP(m.group(1, make_net=True))
+                strict_prefix = IPy.IP(m.group(1), make_net=True)
                 estr = "Invalid prefix ({}); bits set to right of mask. Network address for current mask: {}"
                 raise NipapValueError(estr.format(m.group(1), strict_prefix))
 
@@ -999,8 +999,8 @@ class Nipap:
         # find query parts
         query_str_parts = []
         try:
-            for part in shlex.split(query_str.encode('utf-8')):
-                query_str_parts.append({'string': part.decode('utf-8')})
+            for part in shlex.split(query_str):
+                query_str_parts.append({'string': part})
         except ValueError as exc:
             if str(exc) == 'No closing quotation':
                 raise NipapValueError(str(exc))
@@ -1021,7 +1021,7 @@ class Nipap:
 
         dbname = self._cfg.get('nipapd', 'db_name')
         self._execute("SELECT description FROM pg_shdescription JOIN pg_database ON objoid = pg_database.oid "
-                      "WHERE datname = '" + dbname + "'")
+                "WHERE datname = %(dbname)s", { "dbname": dbname })
         comment = self._curs_pg.fetchone()
         if comment is None:
             raise NipapDatabaseNoVersionError("Could not find comment of psql database {}".format(dbname))
@@ -1103,7 +1103,7 @@ class Nipap:
             name, that can be supplied via the table_name argument.
         """
 
-        where = str()
+        where = ""
         opt = list()
 
         # handle table name, can be None
@@ -1119,7 +1119,7 @@ class Nipap:
             sub_where1, opt1 = self._expand_vrf_query(query['val1'], table_name)
             sub_where2, opt2 = self._expand_vrf_query(query['val2'], table_name)
             try:
-                where += " (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2)
+                where += " ({} {} {}) ".format(sub_where1, _operation_map[query['operator']], sub_where2)
             except KeyError:
                 raise NipapNoSuchOperatorError("No such operator {}".format(query['operator']))
 
@@ -1562,7 +1562,7 @@ class Nipap:
                 'search_options': search_options,
                 'result': [],
                 'error': True,
-                'error_message': 'query interpretation failed',
+                'error_message': 'query interpretation failed'
             }
 
         if extra_query is not None:
@@ -1623,7 +1623,7 @@ class Nipap:
             name, that can be supplied via the table_name argument.
         """
 
-        where = ''
+        where = ""
         opt = list()
 
         # handle table name, can be None
@@ -1639,7 +1639,7 @@ class Nipap:
             sub_where1, opt1 = self._expand_pool_query(query['val1'], table_name)
             sub_where2, opt2 = self._expand_pool_query(query['val2'], table_name)
             try:
-                where += " (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2)
+                where += " ({} {} {}) ".format(sub_where1, _operation_map[query['operator']], sub_where2)
             except KeyError:
                 raise NipapNoSuchOperatorError("No such operator {}".format(query['operator']))
 
@@ -1921,7 +1921,7 @@ class Nipap:
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
+            'authoritative_source': auth.authoritative_source
         }
         for p in pools:
             audit_params['pool_id'] = p['id']
@@ -2138,7 +2138,7 @@ class Nipap:
                 'search_options': search_options,
                 'result': [],
                 'error': True,
-                'error_message': 'query interpretation failed',
+                'error_message': 'query interpretation failed'
             }
 
         if extra_query is not None:
@@ -2235,7 +2235,7 @@ class Nipap:
             name, that can be supplied via the table_name argument.
         """
 
-        where = ''
+        where = ""
         opt = list()
 
         # handle table name, can be None
@@ -2244,9 +2244,9 @@ class Nipap:
         else:
             col_prefix = table_name + "."
 
-        if 'val1' not in query or query['val1'] is None:
+        if 'val1' not in query:
             raise NipapMissingInputError("'val1' must be specified")
-        if 'val2' not in query or query['val2'] is None:
+        if 'val2' not in query:
             raise NipapMissingInputError("Value (val2 in API) for '{}' must be specified".format(query['val1']))
 
         if isinstance(query['val1'], dict) and isinstance(query['val2'], dict):
@@ -2256,7 +2256,7 @@ class Nipap:
             sub_where1, opt1 = self._expand_prefix_query(query['val1'], table_name)
             sub_where2, opt2 = self._expand_prefix_query(query['val2'], table_name)
             try:
-                where += " (%s %s %s) " % (sub_where1, _operation_map[query['operator']], sub_where2)
+                where += " ({} {} {}) ".format(sub_where1, _operation_map[query['operator']], sub_where2)
             except KeyError:
                 raise NipapNoSuchOperatorError("No such operator {}".format(query['operator']))
 
@@ -2291,7 +2291,6 @@ class Nipap:
                     'contained_within',
                     'contained_within_equals',
             ):
-                # NOTE: removed col_prefix since it wasn't used
                 where = " iprange(prefix) " + _operation_map[query['operator']] + " %s "
 
             elif query['operator'] in ('equals_any',):
@@ -2501,7 +2500,7 @@ class Nipap:
             audit_params['pool_id'] = pool['id']
             audit_params['pool_name'] = pool['name']
             audit_params['description'] = 'Pool ' + pool['name'] + ' expanded with prefix ' + prefix[
-                'prefix'] + ' in VRF ' + prefix['vrf_rt']
+                'prefix'] + ' in VRF ' + str(prefix['vrf_rt'])
 
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log ' + sql, params)
@@ -2585,7 +2584,7 @@ class Nipap:
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
+            'authoritative_source': auth.authoritative_source
         }
 
         for p in prefixes:
@@ -2945,12 +2944,12 @@ class Nipap:
             'username': auth.username,
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
-            'authoritative_source': auth.authoritative_source,
+            'authoritative_source': auth.authoritative_source
         }
         for p in prefixes:
             audit_params['prefix_id'] = p['id']
             audit_params['prefix_prefix'] = p['prefix']
-            audit_params['description'] = 'Removed prefix {}'.format(p['prefix'])
+            audit_params['description'] = 'Removed prefix ' + p['prefix']
             audit_params['vrf_id'] = p['vrf_id']
             audit_params['vrf_rt'] = p['vrf_rt']
             audit_params['vrf_name'] = p['vrf_name']
@@ -2968,7 +2967,7 @@ class Nipap:
                     'username': auth.username,
                     'authenticated_as': auth.authenticated_as,
                     'full_name': auth.full_name,
-                    'authoritative_source': auth.authoritative_source,
+                    'authoritative_source': auth.authoritative_source
                 }
                 sql, params = self._sql_expand_insert(audit_params2)
                 self._execute('INSERT INTO ip_net_log ' + sql, params)
@@ -3192,7 +3191,7 @@ class Nipap:
             search_options['parent_prefix'] = None
         else:
             try:
-                _ = int(search_options['parent_prefix'])
+                int(search_options['parent_prefix'])
             except ValueError:
                 raise NipapValueError("Invalid value '{}' for option 'parent_prefix'. "
                                       "Must be the ID of a prefix.".format(search_options['parent_prefix']))
@@ -3425,7 +3424,7 @@ class Nipap:
                 'search_options': search_options,
                 'result': [],
                 'error': True,
-                'error_message': 'query interpretation failed',
+                'error_message': 'query interpretation failed'
             }
 
         if extra_query is not None:
@@ -3711,7 +3710,7 @@ class Nipap:
         for a in asns:
             audit_params = {
                 'username': auth.username,
-                'authenticated_as': auth.authenticated_ass,
+                'authenticated_as': auth.authenticated_as,
                 'full_name': auth.full_name,
                 'authoritative_source': auth.authoritative_source,
                 'description': 'Removed ASN %s' % a['asn']
@@ -3794,7 +3793,7 @@ class Nipap:
             try:
                 search_options['offset'] = int(search_options['offset'])
             except (ValueError, TypeError):
-                raise NipapValueError("Invalid value for option'offset'. Only integer values allowed.")
+                raise NipapValueError("Invalid value for option 'offset'. Only integer values allowed.")
 
         self._logger.debug('search_asn search_options: %s', search_options)
 
@@ -3941,7 +3940,7 @@ class Nipap:
                     },
                     'operator': 'and',
                     'val1': query_part,
-                    'val2': query,
+                    'val2': query
                 }
 
         return True, query

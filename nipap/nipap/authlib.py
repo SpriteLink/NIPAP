@@ -214,7 +214,7 @@ class AuthFactory:
         # save auth object to cache
         self._auth_cache[auth_str] = {
             'valid_until': datetime.utcnow() + timedelta(seconds=self._config.getint('auth', 'auth_cache_timeout')),
-            'auth_object': auth,
+            'auth_object': auth
         }
 
         return auth
@@ -541,7 +541,7 @@ class LdapAuth(BaseAuth):
                 ['cn', 'memberOf'],
             )
             if res[0][1]['cn'][0] is not None:
-                self.full_name = res[0][1]['cn'][0].decode('utf-8')
+                self.full_name = res[0][1]['cn'][0]
             # check for ro_group membership if ro_group is configured
             if self._ldap_ro_group:
                 if self._ldap_ro_group in res[0][1].get('memberOf', []):

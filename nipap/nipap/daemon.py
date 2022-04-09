@@ -55,7 +55,7 @@ def createDaemon():
         # to insure that the next call to os.setsid is successful.
         pid = os.fork()
     except OSError as exc:
-        raise Exception("{} [{0:d}]".format(exc.strerror, exc.errno))
+        raise Exception("{} [{}]".format(exc.strerror, exc.errno))
 
     if pid == 0:  # The first child.
         # To become the session leader of this new session and the process group
@@ -103,7 +103,7 @@ def createDaemon():
             # a controlling terminal.
             pid = os.fork()  # Fork a second child.
         except OSError as exc:
-            raise Exception("{} [{0:d}]".format(exc.strerror, exc.errno))
+            raise Exception("{} [{}]".format(exc.strerror, exc.errno))
 
         if pid == 0:  # The second child.
             # Since the current working directory may be a mounted filesystem, we
