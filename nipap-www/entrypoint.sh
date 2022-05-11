@@ -1,9 +1,13 @@
 #! /bin/bash
 
 # Create NIPAP configuration file
-envtpl --keep-template --allow-missing -o /etc/nipap/nipap.conf /nipap/nipap.conf.dist
+if [ ! -e /etc/nipap/nipap.conf ]; then
+    envtpl --keep-template --allow-missing -o /etc/nipap/nipap.conf /nipap/nipap.conf.dist
+fi
 
 # Set up local auth database
+# sed command to fix line endings for Windows files
+sed -i "s/\\r//g" /usr/sbin/nipap-passwd
 if [ ! -e /etc/nipap/local_auth.db ]; then
     /usr/sbin/nipap-passwd create-database
 fi
