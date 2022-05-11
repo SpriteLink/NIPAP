@@ -45,7 +45,8 @@ def combine_request_args():
 
             if request_nipap_fullname:
                 args['auth'].update({'full_name': request_nipap_fullname})
-        elif request_authorization_header and request_authorization_header.startswith('Bearer'):
+        elif request_authorization_header and \
+                request_authorization_header.startswith('Bearer'):
             authoritative_source = {'auth': {'authoritative_source': 'jwt'}}
             args.update(authoritative_source)
 
@@ -161,12 +162,14 @@ def requires_auth(f):
         af = AuthFactory()
         auth = None
         if bearer_token:
-            auth = af.get_auth_bearer_token(bearer_token, auth_source, auth_options or {})
+            auth = af.get_auth_bearer_token(bearer_token, auth_source,
+                                            auth_options or {})
 
             # authenticated?
             if not auth.authenticate():
                 self.logger.debug("Invalid bearer token.")
-                abort(401, error={"code": 401, "message": "Invalid bearer token."})
+                abort(401, error={"code": 401,
+                                  "message": "Invalid bearer token."})
         else:
             auth = af.get_auth(request.authorization.username,
                     request.authorization.password, auth_source, auth_options or {})
