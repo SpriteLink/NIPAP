@@ -43,6 +43,8 @@ RUN apt-get update -qy && apt-get upgrade -qy \
     python-docutils \
     python-pip \
     python-dev \
+    python-markupsafe \
+    python-jinja2 \
  && pip --no-input install envtpl \
  && rm -rf /var/lib/apt/lists/*
 
