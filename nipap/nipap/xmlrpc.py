@@ -112,7 +112,8 @@ def requires_auth(f):
         af = AuthFactory()
         auth = None
         if bearer_token:
-            auth = af.get_auth_bearer_token(bearer_token, auth_source, auth_options or {})
+            auth = af.get_auth_bearer_token(bearer_token, auth_source,
+                                            auth_options or {})
 
             # authenticated?
             if not auth.authenticate():
@@ -120,7 +121,9 @@ def requires_auth(f):
                 raise Fault(1510, ("Invalid bearer token."))
         else:
             auth = af.get_auth(request.authorization.username,
-                    request.authorization.password, auth_source, auth_options or {})
+                               request.authorization.password,
+                               auth_source,
+                               auth_options or {})
 
             # authenticated?
             if not auth.authenticate():

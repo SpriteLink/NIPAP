@@ -145,7 +145,7 @@ class AuthFactory:
         # Create auth object
         try:
             auth = self._backends[backend](backend, bearer_token, authoritative_source, auth_options)
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
             raise AuthError("Invalid auth backend '%s' specified" % backend)
 
@@ -295,7 +295,8 @@ class JwtAuth(BaseAuth):
     _jwt_ro_group = None
     _authenticated = None
 
-    def __init__(self, name, jwt_token, authoritative_source, auth_options=None):
+    def __init__(self, name, jwt_token, authoritative_source,
+                 auth_options=None):
         """ Constructor.
 
             Note that the instance variables not are set by the constructor but
@@ -317,7 +318,8 @@ class JwtAuth(BaseAuth):
         if auth_options is None:
             auth_options = {}
 
-        BaseAuth.__init__(self, None, None, authoritative_source, name, auth_options)
+        BaseAuth.__init__(self, None, None, authoritative_source,
+                          name, auth_options)
 
         self._jwt_token = jwt_token
 
@@ -339,8 +341,10 @@ class JwtAuth(BaseAuth):
             return self._authenticated
 
         try:
-            self._token = self._cfg.get('auth.backends.' + self.auth_backend, 'jwk_url')
-            # Fetch JWKs (done when initializing JwtAuth-class), keep the keys in the class instance
+            self._token = self._cfg.get('auth.backends.' +
+                                        self.auth_backend, 'jwk_url')
+            # Fetch JWKs (done when initializing JwtAuth-class),
+            # keep the keys in the class instance
             jwk_request_response = requests.get(self._token)
             jwks = jwk_request_response.json()
             jwk_keys = {}
@@ -541,8 +545,11 @@ class LdapAuth(BaseAuth):
 
         self._authenticated = True
 
-        self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s' % (
-            self.authenticated_as, self.username, self.full_name, str(self.readonly)))
+        self._logger.debug('successfully authenticated as ' +
+                           '%s, username %s, full_name %s, readonly %s' % (
+                               self.authenticated_as,
+                               self.username, self.full_name,
+                               str(self.readonly)))
         return self._authenticated
 
 
@@ -586,8 +593,9 @@ class SqliteAuth(BaseAuth):
 
         # connect to database
         try:
-            self._db_conn = sqlite3.connect(self._cfg.get('auth.backends.' + self.auth_backend, 'db_path'),
-                                            check_same_thread=False)
+            self._db_conn = sqlite3.connect(
+                self._cfg.get('auth.backends.' + self.auth_backend, 'db_path'),
+                check_same_thread=False)
             self._db_conn.row_factory = sqlite3.Row
             self._db_curs = self._db_conn.cursor()
 
@@ -702,8 +710,11 @@ class SqliteAuth(BaseAuth):
         else:
             self.full_name = user['full_name']
 
-        self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s' % (
-            self.authenticated_as, self.username, self.full_name, str(self.readonly)))
+        self._logger.debug(
+            'successfully authenticated as' +
+            ' %s, username %s, full_name %s, readonly %s' % (
+                self.authenticated_as, self.username, self.full_name,
+                str(self.readonly)))
         return self._authenticated
 
     def get_user(self, username):
@@ -742,7 +753,8 @@ class SqliteAuth(BaseAuth):
             (?, ?, ?, ?, ?, ?)'''
         try:
             self._db_curs.execute(sql, (username, salt,
-                                        self._gen_hash(password, salt), full_name, trusted or False,
+                                        self._gen_hash(password, salt),
+                                        full_name, trusted or False,
                                         readonly or False))
             self._db_conn.commit()
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
