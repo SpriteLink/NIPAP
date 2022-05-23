@@ -35,11 +35,11 @@ class PrefixController(BaseController):
         """ Add a prefix.
         """
 
+        c.prefix = Prefix()
+
         # pass prefix to template - if we have any
         if 'prefix' in request.params:
-            c.prefix = request.params['prefix']
-        else:
-            c.prefix = ''
+            c.prefix.prefix = request.params['prefix']
 
         c.search_opt_parent = "all"
         c.search_opt_child = "none"
