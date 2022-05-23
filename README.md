@@ -35,7 +35,7 @@ Features in short:
  * Flexible authentication using SQLite and/or LDAP
 
 Check out the webpage for information, screenshots and more:
-http://SpriteLink.github.com/NIPAP
+http://SpriteLink.github.io/NIPAP
 
 Getting started
 ---------------
