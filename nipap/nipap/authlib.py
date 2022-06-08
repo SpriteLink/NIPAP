@@ -398,7 +398,7 @@ class JwtAuth(BaseAuth):
         if self._authenticated:
             self.username = payload.get('sub')
             self.authenticated_as = payload.get('sub')
-            self.full_name = payload.get('sub')
+            self.full_name = payload.get('name', payload.get('sub'))
             self._logger.debug('successfully authenticated as %s, username' % self.authenticated_as)
         self.trusted = False
 
