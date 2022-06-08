@@ -352,19 +352,19 @@ class JwtAuth(BaseAuth):
                 kid = jwk['kid']
                 jwk_keys[kid] = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
 
-            # # Upon auth with a JWT-token
-            # # Retrieve key for token
+            # Upon auth with a JWT-token
+            # Retrieve key for token
             jwt_headers = jwt.get_unverified_header(self._jwt_token)
             jwt_jwk_key = jwk_keys[jwt_headers['kid']]
 
-            # # Decode and verify token
+            # Decode and verify token
             payload = jwt.decode(
                 self._jwt_token,
                 key=jwt_jwk_key,
                 algorithms=[jwt_headers['alg']],
                 options={"verify_aud": False})
 
-            # # Setting read and write rights
+            # Setting read and write rights
             if payload.get('groups'):
                 if self._jwt_ro_group in payload.get('groups'):
                     self.readonly = True
