@@ -372,8 +372,24 @@ class JwtAuth(BaseAuth):
                 elif self._jwt_rw_group in payload.get('groups'):
                     self.readonly = False
                     self._authenticated = True
+        # auth failed
+        except jwt.exceptions.DecodeError:
+            self._logger.debug('could not decode token because of failed validation')
+            self._authenticated = False
+            return self._authenticated
+        except jwt.exceptions.ExpiredSignatureError:
+            self._logger.debug('token\'s signature does not match')
+            self._authenticated = False
+            return self._authenticated
+        except jwt.exceptions.InvalidSignatureError:
+            self._logger.debug('token\'s signature does not match the one provided as part of the token')
+            self._authenticated = False
+            return self._authenticated
+        except jwt.exceptions.InvalidAlgorithmError:
+            self._logger.debug('the specified algorithm is not recognized by PyJWT')
+            self._authenticated = False
+            return self._authenticated
         except:
-            # Auth failed
             self._logger.debug('could not authenticate')
             self._authenticated = False
             return self._authenticated
