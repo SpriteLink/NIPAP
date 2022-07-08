@@ -29,6 +29,8 @@ MAINTAINER Lukas Garberg <lukas@spritelink.net>
 
 ENV NIPAPD_HOST=nipapd NIPAPD_PORT=1337 WWW_USERNAME=guest WWW_PASSWORD=guest
 
+ARG myrootcert
+
 # apt update, upgrade & install packages
 RUN apt-get update -qy && apt-get upgrade -qy \
  && apt-get install -qy apache2 \
@@ -43,8 +45,16 @@ RUN apt-get update -qy && apt-get upgrade -qy \
     python-docutils \
     python-pip \
     python-dev \
+    libldap2-dev \
+    libsasl2-dev \
+    libssl-dev \
+    ca-certificates \
  && pip --no-input install envtpl \
  && rm -rf /var/lib/apt/lists/*
+
+# install cert
+COPY $myrootcert /usr/local/share/ca-certificates
+RUN update-ca-certificates
 
 # Install pynipap, nipap and nipap-www
 COPY pynipap /pynipap

@@ -17,6 +17,10 @@ chmod -R u=rwX /var/cache/nipap-www
 
 # Configure apache
 cat << EOF > /etc/apache2/sites-available/000-default.conf
+
+# increase logging for wsgi apps
+LogLevel info wsgi:trace5
+
 <VirtualHost *:80>
     WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
     ErrorLog \${APACHE_LOG_DIR}/error.log
