@@ -343,14 +343,17 @@ class NipapRestTest(unittest.TestCase):
 
 
     def test_prefix_search_case_sensitive(self):
-        """ Add a prefix and search for it case sensitive 
+        """ Add a prefix and search for it case sensitive
         """
+
+        add_orderId_value = 's-12345'
+        search_orderId_value = 's-12345'
 
         attr = {}
         attr['prefix'] = '1.3.5.0/24'
         attr['description'] = 'test prefix'
         attr['type'] = 'assignment'
-        attr['order_id'] = 's-12345'
+        attr['order_id'] = add_orderId_value
         prefix_id = self._add_prefix(attr)
         attr['id'] = prefix_id
         self.assertGreater(attr['id'], 0)
@@ -359,9 +362,8 @@ class NipapRestTest(unittest.TestCase):
         expected['display_prefix'] = '1.3.5.0/24'
         expected = dict([(str(k), str(v)) for k, v in expected.items()])
         expected.update(attr)
-        
-        # list of prefixes through GET request
-        parameters = {'order_id': 's-12345'}
+
+        parameters = {'order_id': search_orderId_value}
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
         result = json.loads(get_prefix_request.text)
         result = self._convert_list_of_unicode_to_str(result)
@@ -375,11 +377,14 @@ class NipapRestTest(unittest.TestCase):
         """ Add a prefix and search for it case insensitive 
         """
 
+        add_orderId_value = 's-12345'
+        search_orderId_value = 'S-12345'
+
         attr = {}
         attr['prefix'] = '1.3.6.0/24'
         attr['description'] = 'test prefix'
         attr['type'] = 'assignment'
-        attr['order_id'] = 's-12345'
+        attr['order_id'] = add_orderId_value
         prefix_id = self._add_prefix(attr)
         attr['id'] = prefix_id
         self.assertGreater(attr['id'], 0)
@@ -389,7 +394,7 @@ class NipapRestTest(unittest.TestCase):
         expected = dict([(str(k), str(v)) for k, v in expected.items()])
         expected.update(attr)
 
-        parameters = {'order_id': 'S-12345'}
+        parameters = {'order_id': search_orderId_value}
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
         result = json.loads(get_prefix_request.text)
         result = self._convert_list_of_unicode_to_str(result)
@@ -416,7 +421,7 @@ class NipapRestTest(unittest.TestCase):
         parameters = {'prefixeere': '1.3.8.0/24'}
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
 
-        self.assertTrue(get_prefix_request.text.__contains__('prefixee'))
+        self.assertTrue(get_prefix_request.text.__contains__('\'prefixeere\' unknown'))
 
 
 if __name__ == '__main__':
