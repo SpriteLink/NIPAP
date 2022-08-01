@@ -168,19 +168,20 @@ def requires_auth(f):
 
     return decorated
 
+
 def get_query_for_field(field, search_value):
 
     operator = "="
-    
+
     fields_supporting_case_insesitive_search = ['description','comment','node','country','customer_id','external_key','authoritative_source','order_id']
     if field in fields_supporting_case_insesitive_search:
         operator = "~*"
         search_value = '^' + search_value + '$'
 
-    return { 
+    return {
             'operator': operator,
             'val1': field,
-            'val2': search_value 
+            'val2': search_value
         }
 
 
@@ -195,9 +196,8 @@ class NipapPrefixRest(Resource):
     def get(self, args):
 
         query = args.get('prefix')
-        if query != None:
+        if query is not None:
             try:
-            
                 field = query.items()[0][0]
                 search_value = query.items()[0][1]
                 search_query = get_query_for_field(field, search_value)

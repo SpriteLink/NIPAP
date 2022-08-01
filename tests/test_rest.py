@@ -48,7 +48,7 @@ prefix_result_template = {
         'pool_name': None,
         'pool_id': None,
         'prefix_length': 24,
-        'tags':[],
+        'tags': [],
         'status': 'assigned',
         'vrf_rt': None,
         'vrf_id': 0,
@@ -218,7 +218,7 @@ class NipapRestTest(unittest.TestCase):
         result = dict([(str(k), str(v)) for k, v in result.items()])
         attr['id'] = result['id']
         self.assertGreater(attr['id'], 0)
-        
+
         # what we expect the above prefix to look like
         expected = prefix_result_template
         expected['id'] = int(attr['id'])
@@ -232,9 +232,7 @@ class NipapRestTest(unittest.TestCase):
         list_prefix = json.loads(list_prefix_request.text)
         list_prefix = self._convert_list_of_unicode_to_str(list_prefix)
 
-        self.assertEqual(
-                self._mangle_prefix_result(list_prefix),
-                [expected])
+        self.assertEqual(self._mangle_prefix_result(list_prefix), [expected])
 
         attr = {}
         attr['description'] = 'test for from-prefix 1.3.3.0/24'
@@ -263,7 +261,8 @@ class NipapRestTest(unittest.TestCase):
         # build list of expected
         expected_list = []
 
-        # updated the children for the first one because we are adding 3 new ones to it
+        # update the children for the first one because we are adding 
+        # 3 new ones to it
         expected['children'] = '3'
 
         expected_list.append(expected)
@@ -309,9 +308,7 @@ class NipapRestTest(unittest.TestCase):
         mangled_result = self._mangle_prefix_result(list_prefix)
 
         # make sure the result looks like we expect it too! :D
-        self.assertEqual(
-                mangled_result,
-                expected_list)
+        self.assertEqual(mangled_result, expected_list)
 
 
     def test_prefix_remove(self):
@@ -368,9 +365,7 @@ class NipapRestTest(unittest.TestCase):
         result = json.loads(get_prefix_request.text)
         result = self._convert_list_of_unicode_to_str(result)
         
-        self.assertEqual(
-                self._mangle_prefix_result(result),
-                [expected])
+        self.assertEqual(self._mangle_prefix_result(result), [expected])
 
 
     def test_prefix_search_case_insensitive(self):
@@ -399,9 +394,7 @@ class NipapRestTest(unittest.TestCase):
         result = json.loads(get_prefix_request.text)
         result = self._convert_list_of_unicode_to_str(result)
 
-        self.assertEqual(
-                    self._mangle_prefix_result(result),
-                    [expected])
+        self.assertEqual(self._mangle_prefix_result(result), [expected])
 
 
     def test_prefix_search_error_code(self):
@@ -410,9 +403,7 @@ class NipapRestTest(unittest.TestCase):
         parameters = {'prefixeere': '1.3.7.0/24'}
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
 
-        self.assertEqual(
-                    get_prefix_request.status_code,
-                    500)
+        self.assertEqual(get_prefix_request.status_code, 500)
 
 
     def test_prefix_search_error_message(self):
