@@ -47,7 +47,7 @@ The Makefile includes a two targets (debrepo-testing & debrepo-stable) to build
 the necessary files for a debian repo and put this in the correct place. As
 soon as a commit is pushed, github will copy the files and produce a webpage
 accessible via http://<github user>.github.com/<project name> (ie
-http://spritelink.github.com/NIPAP). We use this to build a simple apt
+http://spritelink.github.io/NIPAP). We use this to build a simple apt
 repository hosted on GitHub.
 
 To update the apt repo, build the debian packages, then run 'make
