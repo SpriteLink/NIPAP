@@ -145,6 +145,8 @@ jobs:
       run: nosetests tests/upgrade-after.py
 
     - name: "Run test suite"
+      env:
+        REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
       run: |
         nosetests tests/xmlrpc.py
         nosetests tests/nipaptest.py
