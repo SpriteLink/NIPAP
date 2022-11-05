@@ -17,7 +17,6 @@ from flask_restful import Resource, Api, abort
 from backend import Nipap, NipapError
 import nipap
 from authlib import AuthFactory, AuthError
-from requests.models import HTTPError
 
 def setup(app):
     api = Api(app, prefix="/rest/v1")
@@ -173,7 +172,13 @@ def get_query_for_field(field, search_value):
 
     operator = "="
 
-    fields_supporting_case_insesitive_search = ['description','comment','node','country','customer_id','external_key','authoritative_source','order_id']
+    fields_supporting_case_insesitive_search = ['description',
+                                                'comment',
+                                                'node',
+                                                'country',
+                                                'customer_id',
+                                                'authoritative_source',
+                                                'order_id']
     if field in fields_supporting_case_insesitive_search:
         operator = "~*"
         search_value = '^' + search_value + '$'
@@ -196,52 +201,37 @@ class NipapPrefixRest(Resource):
     def get(self, args):
 
         query = args.get('prefix')
+        search_query = {}
         if query is not None:
-            try:
-                field = query.items()[0][0]
-                search_value = query.items()[0][1]
-                search_query = get_query_for_field(field, search_value)
+            # Create search query dict from request params
+            query_parts = []
+            for field, search_value in query.items():
+                query_parts.append(get_query_for_field(field, search_value))
+            search_query = query_parts[0]
+            for query_part in query_parts[1:]:
+                search_query = {
+                    "val1": search_query,
+                    "operator": "and",
+                    "val2": query_part
+                }
 
-                result = self.nip.search_prefix(args.get('auth'), search_query)
+        try:
+            result = self.nip.search_prefix(args.get('auth'), search_query)
 
-                # mangle result
-                for prefix in result['result']:
-                    prefix = _mangle_prefix(prefix)
+            # mangle result
+            for prefix in result['result']:
+                prefix = _mangle_prefix(prefix)
 
-                result = jsonify(result['result'])
-                return result
+            result = jsonify(result['result'])
+            return result
 
-            except (AuthError, NipapError, Exception) as exc:
-                self.logger.debug(exc)
-                abort(500, error={"code": 500, "message": str(exc)})
-            except HTTPError as http_err:
-                self.logger.debug(unicode(http_err))
-                abort(500, error={"code": 500, "message": str(http_err)})
-            except Exception as err:
-                self.logger.debug(unicode(err))
-                abort(500, error={"code": 500, "message": str(err)})
+        except (AuthError, NipapError) as exc:
+            self.logger.debug(unicode(exc))
+            abort(500, error={"code": exc.error_code, "message": str(exc)})
+        except Exception as err:
+            self.logger.error(unicode(err))
+            abort(500, error={"code": 500, "message": "Internal error"})
 
-        else:
-            try:
-                result = self.nip.list_prefix(
-                    args.get('auth'), {})
-
-                # mangle result
-                for prefix in result:
-                    prefix = _mangle_prefix(prefix)
-
-                result = jsonify(result)
-                return result
-
-            except (AuthError, NipapError, Exception) as exc:
-                self.logger.debug(exc)
-                abort(500, error={"code": 500, "message": str(exc)})
-            except HTTPError as http_err:
-                self.logger.debug(unicode(http_err))
-                abort(500, error={"code": 500, "message": str(http_err)})
-            except Exception as err:
-                self.logger.debug(unicode(err))
-                abort(500, error={"code": 500, "message": str(err)})
 
     @requires_auth
     def post(self, args):
@@ -259,13 +249,10 @@ class NipapPrefixRest(Resource):
             return result
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
-            abort(500, error={"code": 500, "message": str(exc)})
-        except HTTPError as http_err:
-            self.logger.debug(unicode(http_err))
-            abort(500, error={"code": 500, "message": str(http_err)})
+            abort(500, error={"code": exc.error_code, "message": str(exc)})
         except Exception as err:
-            self.logger.debug(unicode(err))
-            abort(500, error={"code": 500, "message": str(err)})
+            self.logger.error(unicode(err))
+            abort(500, error={"code": 500, "message": "Internal error"})
 
 
     @requires_auth
@@ -276,10 +263,7 @@ class NipapPrefixRest(Resource):
             return jsonify(args.get('prefix'))
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
-            abort(500, error={"code": 500, "message": str(exc)})
-        except HTTPError as http_err:
-            self.logger.debug(unicode(http_err))
-            abort(500, error={"code": 500, "message": str(http_err)})
+            abort(500, error={"code": exc.error_code, "message": str(exc)})
         except Exception as err:
-            self.logger.debug(unicode(err))
-            abort(500, error={"code": 500, "message": str(err)})
+            self.logger.error(unicode(err))
+            abort(500, error={"code": 500, "message": "Internal error"})
