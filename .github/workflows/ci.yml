@@ -39,6 +39,8 @@ jobs:
           junit4 \
           python-docutils \
           python-nose \
+          python-requests \
+          python3-requests \
           python-setuptools \
           python3-setuptools \
           python-wheel \
@@ -145,9 +147,12 @@ jobs:
       run: nosetests tests/upgrade-after.py
 
     - name: "Run test suite"
+      env:
+        REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
       run: |
         nosetests tests/xmlrpc.py
         nosetests tests/nipaptest.py
         nosetests tests/test_cli.py
         nosetests tests/nipap-ro.py
+        nosetests tests/test_rest.py
         make -C jnipap test

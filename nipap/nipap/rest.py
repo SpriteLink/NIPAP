@@ -18,7 +18,6 @@ from backend import Nipap, NipapError
 import nipap
 from authlib import AuthFactory, AuthError
 
-
 def setup(app):
     api = Api(app, prefix="/rest/v1")
     api.add_resource(NipapPrefixRest, "/prefixes")
@@ -169,29 +168,69 @@ def requires_auth(f):
     return decorated
 
 
+def get_query_for_field(field, search_value):
+
+    operator = "="
+
+    fields_supporting_case_insesitive_search = ['description',
+                                                'comment',
+                                                'node',
+                                                'country',
+                                                'customer_id',
+                                                'authoritative_source',
+                                                'order_id']
+    if field in fields_supporting_case_insesitive_search:
+        operator = "~*"
+        search_value = '^' + search_value + '$'
+
+    return {
+            'operator': operator,
+            'val1': field,
+            'val2': search_value
+        }
+
 
 class NipapPrefixRest(Resource):
 
     def __init__(self):
         self.nip = Nipap()
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger(self.__class__.__name__)
 
 
     @requires_auth
     def get(self, args):
+
+        query = args.get('prefix')
+        search_query = {}
+        if query is not None:
+            # Create search query dict from request params
+            query_parts = []
+            for field, search_value in query.items():
+                query_parts.append(get_query_for_field(field, search_value))
+            search_query = query_parts[0]
+            for query_part in query_parts[1:]:
+                search_query = {
+                    "val1": search_query,
+                    "operator": "and",
+                    "val2": query_part
+                }
+
         try:
-            result = self.nip.list_prefix(
-                args.get('auth'), args.get('prefix') or {})
+            result = self.nip.search_prefix(args.get('auth'), search_query)
 
             # mangle result
-            for prefix in result:
+            for prefix in result['result']:
                 prefix = _mangle_prefix(prefix)
 
-            result = jsonify(result)
+            result = jsonify(result['result'])
             return result
+
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
-            abort(500, error={"code": 500, "message": exc})
+            abort(500, error={"code": exc.error_code, "message": str(exc)})
+        except Exception as err:
+            self.logger.error(unicode(err))
+            abort(500, error={"code": 500, "message": "Internal error"})
 
 
     @requires_auth
@@ -210,7 +249,10 @@ class NipapPrefixRest(Resource):
             return result
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
-            abort(500, error={"code": 500, "message": str(exc)})
+            abort(500, error={"code": exc.error_code, "message": str(exc)})
+        except Exception as err:
+            self.logger.error(unicode(err))
+            abort(500, error={"code": 500, "message": "Internal error"})
 
 
     @requires_auth
@@ -221,4 +263,7 @@ class NipapPrefixRest(Resource):
             return jsonify(args.get('prefix'))
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
-            abort(500, error={"code": 500, "message": exc})
+            abort(500, error={"code": exc.error_code, "message": str(exc)})
+        except Exception as err:
+            self.logger.error(unicode(err))
+            abort(500, error={"code": 500, "message": "Internal error"})
