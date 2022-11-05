@@ -39,6 +39,8 @@ jobs:
           junit4 \
           python-docutils \
           python-nose \
+          python-requests \
+          python3-requests \
           python-setuptools \
           python3-setuptools \
           python-wheel \
