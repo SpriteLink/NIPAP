@@ -121,30 +121,8 @@ if __name__ == '__main__':
     logging.basicConfig(format=LOG_FORMAT)
     logger = logging.getLogger()
 
-    default = {
-        'syslog': 'false',
-        'debug': 'false',
-        'foreground': 'false',
-        'forks': 0,
-        'pid_file': None,
-        'listen': '127.0.0.1',
-        'port': '1337',
-        'ssl_port': None,
-        'ssl_cert_file': None,
-        'ssl_key_file': None,
-        'db_host': 'localhost',
-        'db_name': 'nipap',
-        'db_port': None,
-        'db_user': 'nipap',
-        'db_pass': 'papin',
-        'db_sslmode': 'require',
-        'auth_cache_timeout': '3600',
-        'user': None,
-        'group': None
-    }
-
     try:
-        cfg = NipapConfig(args.config_file, default)
+        cfg = NipapConfig(args.config_file)
     except NipapConfigError as exc:
         if args.config_file:
             print("The specified configuration file ('" + args.config_file + "') does not exist", file=sys.stderr)
@@ -164,7 +142,7 @@ if __name__ == '__main__':
 
     # Validate configuration before forking, to be able to print error message to user
     setup_plaintext = cfg.get('nipapd', 'port') != ''
-    setup_ssl = cfg.get('nipapd', 'ssl_port') is not None and cfg.get('nipapd', 'ssl_port') != ''
+    setup_ssl = cfg.get('nipapd', 'ssl_port') != ''
     if not setup_plaintext and not setup_ssl:
         print >> sys.stderr, "ERROR: Configured to listen to neither plaintext nor SSL"
         sys.exit(1)
@@ -173,9 +151,9 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # drop privileges
-    if cfg.get('nipapd', 'user') is not None:
+    if cfg.get('nipapd', 'user') != '':
         run_user = cfg.get('nipapd', 'user')
-        if cfg.get('nipapd', 'group') is not None:
+        if cfg.get('nipapd', 'group') != '':
             run_group = cfg.get('nipapd', 'group')
         else:
             run_group = cfg.get('nipapd', 'user')
