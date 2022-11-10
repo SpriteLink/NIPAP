@@ -150,7 +150,7 @@ jobs:
       env:
         REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
       run: |
-        nosetests tests/xmlrpc.py
+        nosetests tests/test_xmlrpc.py
         nosetests tests/nipaptest.py
         nosetests tests/test_cli.py
         nosetests tests/nipap-ro.py

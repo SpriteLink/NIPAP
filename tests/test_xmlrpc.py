@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: et :
 
 #
@@ -25,10 +25,10 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 log_format = "%(levelname)-8s %(message)s"
 
-import xmlrpclib
+import xmlrpc.client
 
 server_url = "http://unittest:gottatest@127.0.0.1:1337/XMLRPC"
-s = xmlrpclib.Server(server_url, allow_none=1);
+s = xmlrpc.client.Server(server_url, allow_none=1);
 
 ad = { 'authoritative_source': 'nipap' }
 
@@ -333,11 +333,11 @@ class NipapXmlTest(unittest.TestCase):
         """ Add a VRF and verify result in database
         """
         attr = {}
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute rt'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, 'missing attribute rt'):
             s.add_vrf({ 'auth': ad, 'attr': attr })
 
         attr['rt'] = '123:456'
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute name'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, 'missing attribute name'):
             s.add_vrf({ 'auth': ad, 'attr': attr })
         attr['name'] = 'test'
         attr['tags'] = []
@@ -354,7 +354,7 @@ class NipapXmlTest(unittest.TestCase):
         self.assertEqual(self._mangle_vrf_result(s.list_vrf({ 'auth': ad, 'vrf': { 'id': vrf['id'] } })), [ ref, ])
 
         attr['rt'] = '123:abc'
-        with self.assertRaisesRegexp(xmlrpclib.Fault, '.'): # TODO: specify exception string
+        with self.assertRaisesRegex(xmlrpc.client.Fault, '.'): # TODO: specify exception string
             s.add_vrf({ 'auth': ad, 'attr': attr })
 
 
@@ -363,7 +363,7 @@ class NipapXmlTest(unittest.TestCase):
         """ Edit the default VRF and verify the change
         """
         # try to set an RT, which should fail on the default VRF
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'Invalid input for column rt, must be NULL for VRF id 0'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, 'Invalid input for column rt, must be NULL for VRF id 0'):
             s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': { 'rt': '123:456a' }})
 
         res_edit = s.edit_vrf({ 'auth': ad, 'vrf': { 'id': 0 }, 'attr': {
@@ -389,26 +389,26 @@ class NipapXmlTest(unittest.TestCase):
         vrf = s.add_vrf({ 'auth': ad, 'attr': attr })
 
         # omitting VRF spec
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'vrf specification must be a dict'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, 'vrf specification must be a dict'):
             s.edit_vrf({ 'auth': ad, 'attr': { 'name': 'test_vrf_edit' } })
 
         # omitting VRF attributes
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'invalid input type, must be dict'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, 'invalid input type, must be dict'):
             s.edit_vrf({ 'auth': ad, 'vrf': spec })
 
         # specifying too many attributes in spec
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'specification contains too many keys'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, 'specification contains too many keys'):
             s.edit_vrf({ 'auth': ad, 'vrf': { 'rt': '65000:123', 'name': '65k:123' }, 'attr': {} })
 
         # test changing ID
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'extraneous attribute'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, 'extraneous attribute'):
             s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': { 'id': 1337 } })
 
         # empty attribute list
-        with self.assertRaisesRegexp(xmlrpclib.Fault, "'attr' must not be empty."):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, "'attr' must not be empty."):
             s.edit_vrf({ 'auth': ad, 'vrf': spec, 'attr': {} })
         res = s.list_vrf({ 'auth': ad, 'vrf': spec })
-        self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
+        self.assertEqual(len(res), 1, 'wrong number of VRFs returned')
         res = res[0]
         del(res['id'])
         self.assertEqual(self._mangle_vrf_result(res), attr)
@@ -422,7 +422,7 @@ class NipapXmlTest(unittest.TestCase):
 
         # verify result of valid change
         res = s.list_vrf({ 'auth': ad, 'vrf': { 'rt': attr['rt'] } })
-        self.assertEquals(len(res), 1, 'wrong number of VRFs returned')
+        self.assertEqual(len(res), 1, 'wrong number of VRFs returned')
         res = res[0]
         # ignore the ID
         del(res['id'])
@@ -452,7 +452,7 @@ class NipapXmlTest(unittest.TestCase):
             'val2': attr['rt']
         }
         res = self._mangle_vrf_result(s.search_vrf({ 'auth': ad, 'query': q }))
-        self.assertEquals(res['result'], [ attr, ], 'Search result from equal match did not match')
+        self.assertEqual(res['result'], [ attr, ], 'Search result from equal match did not match')
 
         # regex match
         q = {
@@ -461,11 +461,11 @@ class NipapXmlTest(unittest.TestCase):
             'val2': 'instance 65000'
         }
         res = self._mangle_vrf_result(s.search_vrf({ 'auth': ad, 'query': q }))
-        self.assertEquals(res['result'], [ attr, ], 'Search result from regex match did not match')
+        self.assertEqual(res['result'], [ attr, ], 'Search result from regex match did not match')
 
         # smart search
         res = self._mangle_vrf_result(s.smart_search_vrf({ 'auth': ad, 'query_string': 'forwarding instance' }))
-        self.assertEquals(res['result'], [ attr, ], 'Smart search result did not match')
+        self.assertEqual(res['result'], [ attr, ], 'Smart search result did not match')
 
 
 
@@ -474,15 +474,15 @@ class NipapXmlTest(unittest.TestCase):
         """
         # check that some error / sanity checking is there
         attr = {}
-        with self.assertRaisesRegexp(xmlrpclib.Fault, "specify 'prefix' or 'from-prefix' or 'from-pool'"):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, "specify 'prefix' or 'from-prefix' or 'from-pool'"):
             s.add_prefix({ 'auth': ad, 'attr': attr })
 
         attr['prefix'] = '1.3.3.0/24'
-        with self.assertRaisesRegexp(xmlrpclib.Fault, "Either description or node must be specified."):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, "Either description or node must be specified."):
             s.add_prefix({ 'auth': ad, 'attr': attr })
 
         attr['description'] = 'test prefix'
-        with self.assertRaisesRegexp(xmlrpclib.Fault, "Unknown prefix type"):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, "Unknown prefix type"):
             s.add_prefix({ 'auth': ad, 'attr': attr })
 
         attr['type'] = 'assignment'
@@ -846,13 +846,13 @@ class NipapXmlTest(unittest.TestCase):
 
         # node value is not allowed at all for prefixes of type reservation
         attr['type'] = 'reservation'
-        with self.assertRaisesRegexp(xmlrpclib.Fault, "Not allowed to set 'node' value for prefixes of type 'reservation'."):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, "Not allowed to set 'node' value for prefixes of type 'reservation'."):
             s.add_prefix({ 'auth': ad, 'attr': attr })
 
         # node value is only allowed for assignments when prefix-length is max
         # (/24 for IPv4 or /128 for IPv6).
         attr['type'] = 'assignment'
-        with self.assertRaisesRegexp(xmlrpclib.Fault, "Not allowed to set 'node' value for prefixes of type 'assignment' which do not have all bits set in netmask."):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, "Not allowed to set 'node' value for prefixes of type 'assignment' which do not have all bits set in netmask."):
             s.add_prefix({ 'auth': ad, 'attr': attr })
 
         # correct prefix length
@@ -936,7 +936,7 @@ class NipapXmlTest(unittest.TestCase):
         s.edit_prefix({ 'auth': ad, 'prefix': { 'id': prefix['id'] }, 'attr': { 'pool_name': 'pool_1' } })
 
         res = s.list_pool({ 'auth': ad, 'pool': { 'id': pool['id'] } })
-        self.assertEquals(res[0]['prefixes'], ['1.3.0.0/16', '1.4.0.0/16',
+        self.assertEqual(res[0]['prefixes'], ['1.3.0.0/16', '1.4.0.0/16',
         '1.5.0.0/16', '1.6.0.0/16'])
 
 
@@ -993,7 +993,7 @@ class NipapXmlTest(unittest.TestCase):
         child = s.add_prefix({ 'auth': ad, 'attr': prefix_attr, 'args': args })
         #expected['id'] = child['id']
         #p = s.list_prefix({ 'auth': ad, 'attr': { 'id': child['id'] } })[1]
-        #self.assertEquals(p, expected)
+        #self.assertEqual(p, expected)
 
 
 
@@ -1065,7 +1065,7 @@ class NipapXmlTest(unittest.TestCase):
         expected['id'] = child['id']
         p = s.list_prefix({ 'auth': ad, 'attr': { 'id': child['id'] } })[1]
         p = self._mangle_prefix_result(p)
-        self.assertEquals(p, expected)
+        self.assertEqual(p, expected)
 
 
 
@@ -1229,10 +1229,10 @@ class NipapXmlTest(unittest.TestCase):
         asn = s.list_asn({ 'auth': ad, 'asn': { 'asn': 1 } })
         self.assertEqual(len(asn), 1, "Wrong number of ASNs returned.")
         asn = asn[0]
-        self.assertEquals(attr, asn, "ASN in database not equal to what was added.")
+        self.assertEqual(attr, asn, "ASN in database not equal to what was added.")
 
         # adding the same ASN again should result in duplicate key error
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'Duplicate value for'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, 'Duplicate value for'):
             s.add_asn({ 'auth': ad, 'attr': attr })
 
 
@@ -1248,7 +1248,7 @@ class NipapXmlTest(unittest.TestCase):
 
         asn = s.add_asn({ 'auth': ad, 'attr': attr })
         s.remove_asn({ 'auth': ad, 'asn': { 'asn': asn['asn'] } })
-        self.assertEquals(0, len(s.list_asn({ 'auth': ad, 'asn': { 'asn': 2 } })), "Removed ASN still in database")
+        self.assertEqual(0, len(s.list_asn({ 'auth': ad, 'asn': { 'asn': 2 } })), "Removed ASN still in database")
 
 
 
@@ -1263,8 +1263,8 @@ class NipapXmlTest(unittest.TestCase):
 
         asn = s.add_asn({ 'auth': ad, 'attr': attr })
         s.edit_asn({ 'auth': ad, 'asn': { 'asn': attr['asn'] }, 'attr': { 'name': 'b0rk' } })
-        self.assertEquals(s.list_asn({ 'auth': ad, 'asn': { 'asn': 3 } })[0]['name'], 'b0rk', "Edited ASN still has it's old name.")
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'extraneous attribute'):
+        self.assertEqual(s.list_asn({ 'auth': ad, 'asn': { 'asn': 3 } })[0]['name'], 'b0rk', "Edited ASN still has it's old name.")
+        with self.assertRaisesRegex(xmlrpc.client.Fault, 'extraneous attribute'):
             s.edit_asn({ 'auth': ad, 'asn': { 'asn': 3 }, 'attr': {'asn': 4, 'name': 'Test ASN #4'} })
 
 
@@ -1287,8 +1287,8 @@ class NipapXmlTest(unittest.TestCase):
             'val2': attr['asn']
         }
         res = s.search_asn({ 'auth': ad, 'query': q })
-        self.assertEquals(len(res['result']), 1, "equal search resulted in wrong number of hits")
-        self.assertEquals(res['result'][0]['name'], attr['name'], "search hit got wrong name")
+        self.assertEqual(len(res['result']), 1, "equal search resulted in wrong number of hits")
+        self.assertEqual(res['result'][0]['name'], attr['name'], "search hit got wrong name")
 
         # regexp match
         q = {
@@ -1297,8 +1297,8 @@ class NipapXmlTest(unittest.TestCase):
             'val2': 'number'
         }
         res = s.search_asn({ 'auth': ad, 'query': q })
-        self.assertEquals(len(res['result']), 1, "regex search resulted in wrong number of hits")
-        self.assertEquals(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
+        self.assertEqual(len(res['result']), 1, "regex search resulted in wrong number of hits")
+        self.assertEqual(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
 
 
 
@@ -1313,14 +1313,14 @@ class NipapXmlTest(unittest.TestCase):
 
         asn = s.add_asn({ 'auth': ad, 'attr': attr })
         res = s.smart_search_asn({ 'auth': ad, 'query_string': "Autonomous" })
-        self.assertEquals(len(res['result']), 1, "search resulted in wrong number of hits")
-        self.assertEquals(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
-        self.assertEquals(res['interpretation']['interpretation']['attribute'], 'name', 'search term interpreted as wrong type')
+        self.assertEqual(len(res['result']), 1, "search resulted in wrong number of hits")
+        self.assertEqual(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
+        self.assertEqual(res['interpretation']['interpretation']['attribute'], 'name', 'search term interpreted as wrong type')
 
         res = s.smart_search_asn({ 'auth': ad, 'query_string': "5" })
-        self.assertEquals(len(res['result']), 1, "search resulted in wrong number of hits")
-        self.assertEquals(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
-        self.assertEquals(res['interpretation']['interpretation']['attribute'], 'asn', "search term interpretated as wrong type")
+        self.assertEqual(len(res['result']), 1, "search resulted in wrong number of hits")
+        self.assertEqual(res['result'][0]['asn'], attr['asn'], "search hit got wrong asn")
+        self.assertEqual(res['interpretation']['interpretation']['attribute'], 'asn', "search term interpretated as wrong type")
 
 
 
@@ -1336,17 +1336,17 @@ class NipapXmlTest(unittest.TestCase):
             'ipv6_default_prefix_length': 112
         }
 
-        with self.assertRaisesRegexp(xmlrpclib.Fault, 'missing attribute name'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, 'missing attribute name'):
             s.add_pool({ 'auth': ad, 'attr': attr })
 
         attr['name'] = 'pool_1'
         attr['ipv4_default_prefix_length'] = 50
-        with self.assertRaisesRegexp(xmlrpclib.Fault, '1200: \'Default IPv4 prefix length must be an integer between 1 and 32.'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, '1200: \'Default IPv4 prefix length must be an integer between 1 and 32.'):
             s.add_pool({ 'auth': ad, 'attr': attr })
 
         attr['ipv4_default_prefix_length'] = 31
         attr['ipv6_default_prefix_length'] = 'over 9000'
-        with self.assertRaisesRegexp(xmlrpclib.Fault, '1200: \'Default IPv6 prefix length must be an integer between 1 and 128.'):
+        with self.assertRaisesRegex(xmlrpc.client.Fault, '1200: \'Default IPv6 prefix length must be an integer between 1 and 128.'):
             s.add_pool({ 'auth': ad, 'attr': attr })
 
         attr['ipv6_default_prefix_length'] = 112
@@ -1363,10 +1363,10 @@ class NipapXmlTest(unittest.TestCase):
 
         # list pool and verify data in NIPAP
         p = s.list_pool({ 'auth': ad, 'pool': { 'id': expected['id'] } })
-        self.assertEquals(1, len(p), 'Wrong number of pools returned')
+        self.assertEqual(1, len(p), 'Wrong number of pools returned')
         p = p[0]
 
-        self.assertEquals(self._mangle_pool_result(p), expected, 'Received pool differs from added pool')
+        self.assertEqual(self._mangle_pool_result(p), expected, 'Received pool differs from added pool')
 
 
     def test_edit_pool(self):
@@ -1402,7 +1402,7 @@ class NipapXmlTest(unittest.TestCase):
         expected['tags'] = []
         expected['avps'] = {}
 
-        self.assertEquals(self._mangle_pool_result(s.list_pool({ 'auth': ad,
+        self.assertEqual(self._mangle_pool_result(s.list_pool({ 'auth': ad,
             'pool': { 'id': res['id'] } })[0]), expected)
 
 
