@@ -88,7 +88,7 @@ Build prerequisites
 Install the following debian packages::
 
     apt-get install debhelper python-docutils python-setuptools python3-all \
-            python3-docutils python3-setuptools reprepro
+            python3-docutils python3-setuptools reprepro rename devscripts
 
 Rolling a new version
 ---------------------
