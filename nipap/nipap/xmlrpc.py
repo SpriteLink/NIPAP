@@ -9,6 +9,7 @@ import datetime
 import logging
 import time
 import pytz
+import xmlrpc.client
 from functools import wraps
 from flask import Flask, current_app
 from flask import request, Response
@@ -601,7 +602,10 @@ class NipapXMLRPC:
                 Attributes to set on the new prefix.
         """
         try:
-            res = self.nip.edit_prefix(args.get('auth'), args.get('prefix'), args.get('attr'))
+            attr = args.get('attr')
+            if attr is not None and 'expires' in attr and isinstance(attr['expires'], xmlrpc.client.DateTime):
+                attr['expires'] = attr['expires'].value
+            res = self.nip.edit_prefix(args.get('auth'), args.get('prefix'), attr)
             # mangle result
             for prefix in res:
                 prefix = _mangle_prefix(prefix)
