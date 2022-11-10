@@ -37,8 +37,8 @@ def createDaemon():
       # and inherits the parent's process group ID.  This step is required
       # to insure that the next call to os.setsid is successful.
       pid = os.fork()
-   except OSError, e:
-      raise Exception, "%s [%d]" % (e.strerror, e.errno)
+   except OSError as e:
+      raise Exception("%s [%d]" % (e.strerror, e.errno))
 
    if (pid == 0):   # The first child.
       # To become the session leader of this new session and the process group
@@ -85,8 +85,8 @@ def createDaemon():
          # longer a session leader, preventing the daemon from ever acquiring
          # a controlling terminal.
          pid = os.fork()    # Fork a second child.
-      except OSError, e:
-         raise Exception, "%s [%d]" % (e.strerror, e.errno)
+      except OSError as e:
+         raise Exception("%s [%d]" % (e.strerror, e.errno))
 
       if (pid == 0):    # The second child.
          # Since the current working directory may be a mounted filesystem, we
@@ -182,4 +182,4 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
     os.setuid(uid)
 
     # Ensure a very conservative umask
-    old_umask = os.umask(077)
+    old_umask = os.umask(0o77)

@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-from __future__ import unicode_literals
+#!/usr/bin/env python3
 
 import fcntl
 import os
@@ -8,9 +6,9 @@ import re
 import socket
 import sys
 
-import ConfigParser
-import SocketServer
-from SocketServer import ForkingMixIn, TCPServer
+import configparser
+import socketserver
+from socketserver import ForkingMixIn, TCPServer
 
 import nipap_whoisd
 
@@ -63,10 +61,10 @@ class ForkingTCPServer(ForkingMixIn, TCPServer):
     def server_bind(self):
         self.socket = socket.socket(socket.AF_INET6, self.socket_type)
         self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
-        SocketServer.TCPServer.server_bind(self)
+        socketserver.TCPServer.server_bind(self)
 
 
-class WhoisServer(SocketServer.StreamRequestHandler):
+class WhoisServer(socketserver.StreamRequestHandler):
     def handle(self):
         """ Called for every connection
         """
@@ -147,20 +145,19 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.version:
-        print "nipap-whoisd version:", nipap_whoisd.__version__
+        print("nipap-whoisd version:", nipap_whoisd.__version__)
         sys.exit(0)
 
     default = {
-        'pid_file': None,
+        'pid_file': '',
         'listen': '0.0.0.0',
         'port': '43',
         'nipapd_host': 'localhost',
         'nipapd_port': '1337',
-        'nipapd_username': None,
-        'user': None,
-        'group': None
+        'user': '',
+        'group': ''
     }
-    cfg = ConfigParser.ConfigParser(default)
+    cfg = configparser.ConfigParser(default)
     cfg.read(args.config_file)
 
     # override config with command line args
@@ -171,29 +168,29 @@ if __name__ == '__main__':
     if args.pid_file:
         cfg.set('whoisd', 'pid_file', args.pid_file)
 
-    SocketServer.TCPServer.allow_reuse_address = True
+    socketserver.TCPServer.allow_reuse_address = True
     try:
         server = ForkingTCPServer((cfg.get('whoisd', 'listen'),
             int(cfg.get('whoisd', 'port'))), WhoisServer)
-    except socket.error, exc:
-        print >> sys.stderr, "Unable to bind to socket", str(exc)
+    except socket.error as exc:
+        print("Unable to bind to socket", str(exc), file=sys.stderr)
         sys.exit(1)
 
     # drop privileges
-    if cfg.get('whoisd', 'user') is not None:
+    if cfg.get('whoisd', 'user') != '':
         run_user = cfg.get('whoisd', 'user')
-        if cfg.get('whoisd', 'group') is not None:
+        if cfg.get('whoisd', 'group') != '':
             run_group = cfg.get('whoisd', 'group')
         else:
             run_group = cfg.get('whoisd', 'user')
         try:
             nipap_whoisd.drop_privileges(run_user, run_group)
-        except Exception, e:
-            print >> sys.stderr, ("nipap-whoisd is configured to drop privileges and run as user '%s' and group '%s', \n"
-                        "but was not started as root and can therefore not drop privileges") % (run_user, run_group)
+        except Exception as e:
+            print(("nipap-whoisd is configured to drop privileges and run as user '%s' and group '%s', \n"
+                        "but was not started as root and can therefore not drop privileges") % (run_user, run_group), file=sys.stderr)
             sys.exit(1)
         except KeyError:
-            print >> sys.stderr, "Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group)
+            print("Could not drop privileges to user '%s' and group '%s'" % (run_user, run_group), file=sys.stderr)
             sys.exit(1)
 
     # daemonize
@@ -201,20 +198,20 @@ if __name__ == '__main__':
         nipap_whoisd.createDaemon()
 
     # pid file handling
-    if cfg.get('whoisd', 'pid_file') and not args.no_pid_file:
+    if cfg.get('whoisd', 'pid_file') != '' and not args.no_pid_file:
         # need a+ to be able to read PID from file
         try:
             lf = open(cfg.get('whoisd', 'pid_file'), 'a+', 0)
-        except IOError, exc:
-            print >> sys.stderr, "Unable to open PID file '%s': %s" % (
-                    str(exc.filename), str(exc.strerror))
+        except IOError as exc:
+            print("Unable to open PID file '%s': %s" % (
+                    str(exc.filename), str(exc.strerror)), file=sys.stderr)
             sys.exit(1)
         try:
             fcntl.flock(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
-            print >> sys.stderr, 'nipap-whoisd already running (pid: %s)' % lf.read().strip()
+            print('nipap-whoisd already running (pid: %s)' % lf.read().strip(), file=sys.stderr)
             sys.exit(1)
-        print >> sys.stderr, 'Writing PID to file: %s' % cfg.get('whoisd', 'pid_file')
+        print('Writing PID to file: %s' % cfg.get('whoisd', 'pid_file'), file=sys.stderr)
         lf.truncate()
         lf.write('%d\n' % os.getpid())
         lf.flush()
