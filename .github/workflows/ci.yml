@@ -73,7 +73,7 @@ jobs:
       if: ${{ matrix.install == 'pip' }}
       run: |
         # install nipap dependencies
-        sudo -H pip install -r nipap/requirements.txt
+        sudo -H pip3 install -r nipap/requirements.txt
         # SQL
         sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres
         # move configuration file into place
