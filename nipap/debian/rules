@@ -4,6 +4,6 @@
 # Tue, 18 Oct 2011 21:55:07 +0200
 
 %:
-	dh $@ --with python2 --buildsystem=python_distutils
+	dh $@ --with python3 --buildsystem=python_distutils
 
 

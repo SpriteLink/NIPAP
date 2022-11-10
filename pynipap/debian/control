@@ -3,7 +3,7 @@ Maintainer: Lukas Garberg <lukas@spritelink.net>
 Section: python
 Priority: optional
 Build-Depends: debhelper (>= 8), dh-python,
-               python (>= 2.7),
+               python (>= 2.7) | python2 (>= 2.7),
                python3 (>= 3.1)
 X-Python-Version: >= 2.7
 X-Python3-Version: >= 3.1
@@ -11,7 +11,7 @@ Standards-Version: 4.4.0
 
 Package: python-pynipap
 Architecture: all
-Depends: ${misc:Depends}, python (>= 2.7)
+Depends: ${misc:Depends}, python (>= 2.7) | python2 (>= 2.7)
 Breaks: ${python:Breaks}
 Description: Python module for accessing NIPAP
  This package contains a client library for NIPAP. It's function is similar to

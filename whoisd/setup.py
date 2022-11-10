@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from distutils.core import setup
 import subprocess
@@ -12,7 +12,7 @@ def get_data_files():
     try:
         subprocess.call(["rst2man", "nipap-whoisd.man.rst", "nipap-whoisd.8"])
     except OSError as exc:
-        print >> sys.stderr, "rst2man failed to run:", str(exc)
+        print("rst2man failed to run: {}".format(str(exc)), file=sys.stderr)
         sys.exit(1)
 
     files = [

@@ -27,7 +27,7 @@ buildrpm: sql2py
 builddeb: sql2py
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
-	$(PYTHON) setup.py sdist --dist-dir=../ --prune
+	$(PYTHON) setup.py sdist --dist-dir=../ #--prune
 	rename -f 's/$(PROJECT)-(\d.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
 	debuild -us -uc
@@ -38,7 +38,7 @@ test:
 check:
 
 upload:
-	python3 setup.py sdist upload
+	$(PYTHON) setup.py sdist upload
 
 clean:
 	$(PYTHON) setup.py clean
