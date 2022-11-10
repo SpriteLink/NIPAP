@@ -153,6 +153,6 @@ jobs:
         nosetests tests/test_xmlrpc.py
         nosetests tests/nipaptest.py
         nosetests tests/test_cli.py
-        nosetests tests/nipap-ro.py
+        nosetests tests/test_nipap_ro.py
         nosetests tests/test_rest.py
         make -C jnipap test
