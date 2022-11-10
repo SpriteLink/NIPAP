@@ -37,9 +37,8 @@ jobs:
           debhelper \
           dh-python \
           junit4 \
-          python-docutils \
-          python-nose \
-          python-requests \
+          python3-docutils \
+          python3-nose \
           python3-requests \
           python-setuptools \
           python3-setuptools \
