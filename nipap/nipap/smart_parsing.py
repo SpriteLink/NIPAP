@@ -501,7 +501,7 @@ class PrefixSmartParser(SmartParser):
             }
 
         elif part.getName() == 'ipv6_prefix':
-            self._logger.debug("Query part '%' interpreted as IPv6 prefix", part.ipv6_prefix[0])
+            self._logger.debug("Query part '%s' interpreted as IPv6 prefix", part.ipv6_prefix[0])
 
             strict_prefix = str(IPy.IP(part.ipv6_prefix[0], make_net=True))
             interp = {

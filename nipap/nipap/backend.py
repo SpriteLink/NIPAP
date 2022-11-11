@@ -2820,7 +2820,7 @@ class Nipap:
             understanding.
         """
 
-        self._logger.debug("list_prefix called; spec: %", spec)
+        self._logger.debug("list_prefix called; spec: %s", spec)
 
         if isinstance(spec, dict):
             where, params = self._expand_prefix_spec(spec.copy(), 'inp.')
