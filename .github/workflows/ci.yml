@@ -9,7 +9,7 @@ on:
 jobs:
   test:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         install: [ pip, apt ]
@@ -26,7 +26,7 @@ jobs:
     - name: "Install dependencies and prepare NIPAP"
       run: |
         # Set up NIPAP repo
-        echo "deb http://spritelink.github.io/NIPAP/repos/apt stable main extra" | sudo tee /etc/apt/sources.list.d/nipap.list
+        echo "deb http://spritelink.github.io/NIPAP/repos/apt testing main extra" | sudo tee /etc/apt/sources.list.d/nipap.list
         wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -
         sudo apt update -qq
 
@@ -38,6 +38,7 @@ jobs:
           dh-python \
           junit4 \
           libldap-dev \
+          libsasl2-dev \
           python3-docutils \
           python3-nose \
           python3-requests \
@@ -114,7 +115,7 @@ jobs:
         sudo nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest
         sudo /etc/init.d/nipapd restart
         # if upgrade, add some data to the database that we can verify later
-        nosetests3 tests/upgrade-before.py
+        nosetests tests/upgrade-before.py
 
     - name: "Build and install Debian packages"
       if: ${{ matrix.install == 'apt' }}
