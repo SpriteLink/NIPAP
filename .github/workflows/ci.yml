@@ -37,6 +37,7 @@ jobs:
           debhelper \
           dh-python \
           junit4 \
+          libldap-dev \
           python3-docutils \
           python3-nose \
           python3-requests \
@@ -113,7 +114,7 @@ jobs:
         sudo nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest
         sudo /etc/init.d/nipapd restart
         # if upgrade, add some data to the database that we can verify later
-        nosetests tests/upgrade-before.py
+        nosetests3 tests/upgrade-before.py
 
     - name: "Build and install Debian packages"
       if: ${{ matrix.install == 'apt' }}
@@ -143,15 +144,15 @@ jobs:
 
     - name: "Verify pre-upgrade data"
       if: ${{ matrix.upgrade == true }}
-      run: nosetests tests/upgrade-after.py
+      run: nosetests3 tests/upgrade-after.py
 
     - name: "Run test suite"
       env:
         REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
       run: |
-        nosetests tests/test_xmlrpc.py
-        nosetests tests/nipaptest.py
-        nosetests tests/test_cli.py
-        nosetests tests/test_nipap_ro.py
-        nosetests tests/test_rest.py
+        nosetests3 tests/test_xmlrpc.py
+        nosetests3 tests/nipaptest.py
+        nosetests3 tests/test_cli.py
+        nosetests3 tests/test_nipap_ro.py
+        nosetests3 tests/test_rest.py
         make -C jnipap test
