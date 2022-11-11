@@ -214,7 +214,7 @@ class NipapRestTest(unittest.TestCase):
         result = json.loads(text)
         result = dict([(str(k), str(v)) for k, v in result.items()])
         attr['id'] = result['id']
-        self.assertGreater(attr['id'], 0)
+        self.assertGreater(int(attr['id']), 0)
 
         # what we expect the above prefix to look like
         expected = prefix_result_template
@@ -319,7 +319,7 @@ class NipapRestTest(unittest.TestCase):
         attr['type'] = 'assignment'
         attr['order_id'] = 'test'
         prefix_id = self._add_prefix(attr)
-        self.assertGreater(prefix_id, 0)
+        self.assertGreater(int(prefix_id), 0)
 
         # Edit prefix
         parameters = {'id': prefix_id}
@@ -349,7 +349,7 @@ class NipapRestTest(unittest.TestCase):
         attr['type'] = 'assignment'
         attr['order_id'] = 'test'
         prefix_id = self._add_prefix(attr)
-        self.assertGreater(prefix_id, 0)
+        self.assertGreater(int(prefix_id), 0)
 
         # Try editing without/with broken prefix specifier
         parameters = {'foo': prefix_id}
@@ -389,7 +389,7 @@ class NipapRestTest(unittest.TestCase):
         attr['type'] = 'assignment'
         attr['order_id'] = 'test'
         prefix_id = self._add_prefix(attr)
-        self.assertGreater(prefix_id, 0)
+        self.assertGreater(int(prefix_id), 0)
 
         # delete prefix
         parameters = {'id': prefix_id}
@@ -420,7 +420,7 @@ class NipapRestTest(unittest.TestCase):
         attr['order_id'] = add_orderId_value
         prefix_id = self._add_prefix(attr)
         attr['id'] = prefix_id
-        self.assertGreater(attr['id'], 0)
+        self.assertGreater(int(attr['id']), 0)
 
         expected = prefix_result_template
         expected['display_prefix'] = '1.3.5.0/24'
@@ -449,7 +449,7 @@ class NipapRestTest(unittest.TestCase):
         attr['order_id'] = add_orderId_value
         prefix_id = self._add_prefix(attr)
         attr['id'] = prefix_id
-        self.assertGreater(attr['id'], 0)
+        self.assertGreater(int(attr['id']), 0)
 
         expected = prefix_result_template
         expected['display_prefix'] = '1.3.6.0/24'
