@@ -2,7 +2,7 @@
 
 {% block content %}
 
-{{ h.form(url(controller='auth', action='login'), method='post') }}
+<form action="/auth/login" method="post">
 <div style="padding-top: 30px;">
 	<div class="options-group">
 		<div class="options-content">
@@ -10,11 +10,11 @@
 				Log in
 			</div>
 			<div class="rule"></div>
-			{% if c.welcome_message is defined %}
+			{% if g.welcome_message is defined %}
 			<div class="option">
 				<dl>
 					<dt></dt>
-					<dd>{{c.welcome_message}}</dd>
+					<dd>{{g.welcome_message}}</dd>
 				</dl>
 			</div>
 			<div class="rule"></div>
@@ -22,35 +22,35 @@
 			<div class="option">
 				<dl>
 					<dt>Username</dt>
-					<dd>{{ h.text('username') }}</dd>
+					<dd><input type="text" name="username"></dd>
 				</dl>
 			</div>
 			<div class="rule"></div>
 			<div class="option">
 				<dl>
 					<dt>Password</dt>
-					<dd>{{ h.password('password') }}</dd>
+					<dd><input type="password" name="password"></dd>
 				</dl>
 			</div>
 			<div class="rule"></div>
 			<div class="option">
 				<dl>
 					<dt></dt>
-					<dd>{{ h.submit('send', 'Log in', class='button button_red') }}</dd>
+					<dd><input type="submit" value="Log in" class="button button_red" /></dd>
 				</dl>
 			</div>
 		</div>
 	</div>
 </div>
-{{ h.end_form() }}
+</form>
 
-{% if c.error %}
+{% if g.error %}
 <div id="login_failure_container">
 	<div class="options-group">
 		<div class="options-content">
 			<h3 class="options-group-heading">Result</h3>
 			<div style="padding: 15px; background-color: #ffcccc;">
-				{{ c.error }}
+				{{ g.error }}
 			</div>
 		</div>
 	</div>

@@ -970,7 +970,7 @@ tbody.listing > tr:hover {
  */
 .loading {
 	display: none;
-	background-image: url('/loading.gif');
+	background-image: url('/images/loading.gif');
 	height: 32px;
 	width: 32px;
 	margin-left: auto;

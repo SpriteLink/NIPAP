@@ -28,20 +28,26 @@ server to serve the NIPAP web UI you should be able to login with this user::
 
 Serving the web UI
 ------------------
-The NIPAP web UI can be served by any WGSI-capable web server such as Apache
-httpd with mod_wsgi. For quick tests and development the lightweight server
-'paster', part of Python Paste, is handy.
+The NIPAP web UI is built on the web framework Flask can be served by any
+WGSI-capable web server such as Apache httpd with mod_wsgi. For quick tests and
+development Flask's own web server is handy.
 
-paster
+Flask
 ======
-Using paster is the easiest way to get the NIPAP web UI up and running, but
+Using Flask is the easiest way to get the NIPAP web UI up and running, but
 it's not really suitable for production deployment. To serve the NIPAP web UI
-from paster, run the following::
+from the built-in web server, run the following::
 
-    paster serve /etc/nipap/www/nipap-www.ini
+    export FLASK_APP=nipapwww
+    export FLASK_ENV=development
+    flask run
 
 Using the default configuration, the web UI should now be reachable on port
-5000. To change the port, edit /etc/nipap/www/nipap-www.ini.
+5000. By default, the NIPAP web UI will look for nipap.conf in /etc/nipap. The
+path can be changed setting the environment variable NIPPA_CONFIG_PATH as
+such::
+
+      export NIPAP_CONFIG_PATH=~/.local/etc/nipap/nipap.conf
 
 Apache httpd with mod_wsgi
 ==========================

@@ -8,7 +8,7 @@ nipapAppDirectives.directive('nipapPoolSelector', function ($http) {
 
 	return {
 		restrict: 'AE',
-		templateUrl: '/templates/pool_selector.html',
+		templateUrl: '/static/templates/pool_selector.html',
 		scope: {
 			selected_pool: '=selectedPool'
 		},
@@ -44,7 +44,7 @@ nipapAppDirectives.directive('nipapPoolSelectorPopup', function ($http, $timeout
 
 	return {
 		restrict: 'AE',
-		templateUrl: '/templates/pool_selector_popup.html',
+		templateUrl: '/static/templates/pool_selector_popup.html',
 		scope: {
 			selected_pool: '=selectedPool'
 		},
@@ -110,7 +110,7 @@ nipapAppDirectives.directive('nipapVrfSelector', function ($http, $timeout) {
 
 	return {
 		restrict: 'AE',
-		templateUrl: '/templates/vrf_selector.html',
+		templateUrl: '/static/templates/vrf_selector.html',
 		scope: {
 			selected_vrf: '=selectedVrf'
 		},
