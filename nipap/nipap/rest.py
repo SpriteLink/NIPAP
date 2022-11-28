@@ -32,7 +32,6 @@ def combine_request_args():
         request_authoritative_source = request.headers.get('NIPAP-Authoritative-Source')
         request_nipap_username = request.headers.get('NIPAP-Username')
         request_nipap_fullname = request.headers.get('NIPAP-Full-Name')
-        request_authorization_header = request.headers.get('Authorization')
 
         request_body = request.json
         request_queries = request.args.to_dict()
@@ -46,10 +45,6 @@ def combine_request_args():
 
             if request_nipap_fullname:
                 args['auth'].update({'full_name': request_nipap_fullname})
-        elif request_authorization_header and \
-                request_authorization_header.startswith('Bearer'):
-            authoritative_source = {'auth': {'authoritative_source': 'jwt'}}
-            args.update(authoritative_source)
 
         if request_queries and request.method == 'POST':
             temp_args = {}
