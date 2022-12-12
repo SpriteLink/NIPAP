@@ -1,4 +1,4 @@
-Flask==1.1.2
+Flask==1.1.*
 Flask-Compress==1.9.0
 Flask-XML-RPC==0.1.2
 Flask-RESTful==0.3.8
