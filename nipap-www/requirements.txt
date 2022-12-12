@@ -1,3 +1,11 @@
+# The following requirements are indirect, but needed in order to survive in
+# a world where Python 3 is the default
+decorator<4.0.0
+beautifulsoup4<=4.9.3
+PasteDeploy<3.0.0
+mako<1.2
+waitress<2.0.0
+# End of indirects
 Pylons>=1.0
 Jinja2
 pynipap
