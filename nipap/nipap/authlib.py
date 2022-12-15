@@ -76,7 +76,11 @@ import sqlite3
 import string
 import random
 import requests
-import jwt
+
+try:
+    import jwt
+except ImportError:
+    jwt = None
 
 try:
     import ldap
@@ -328,6 +332,10 @@ class JwtAuth(BaseAuth):
             self._jwt_ro_group = self._cfg.get(base_auth_backend, 'ro_group')
         if self._cfg.has_option(base_auth_backend, 'rw_group'):
             self._jwt_rw_group = self._cfg.get(base_auth_backend, 'rw_group')
+
+        if not jwt:
+            self._logger.error('Unable to load Python jwt module, please verify it is installed')
+            raise AuthError('Unable to authenticate')
 
     def authenticate(self):
         """ Verify authentication.
