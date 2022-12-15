@@ -3,6 +3,6 @@ beautifulsoup4==4.9.3
 Pylons>=1.0
 Jinja2==2.11.3
 waitress==1.4.4
-mako==1.1.6
+mako==1.2.2
 pynipap
 nipap
