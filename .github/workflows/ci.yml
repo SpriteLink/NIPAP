@@ -111,7 +111,7 @@ jobs:
         # Enable SSL
         sudo sed -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -i /etc/nipap/nipap.conf
         # create local user for unittest and restart
-        sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest
+        sudo nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest
         sudo /etc/init.d/nipapd restart
         # if upgrade, add some data to the database that we can verify later
         nosetests tests/upgrade-before.py
