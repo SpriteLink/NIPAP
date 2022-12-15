@@ -144,20 +144,35 @@ def requires_auth(f):
             self.logger.debug("Missing authoritative source in auth options.")
             abort(401, error={"code": 401, "message": "Missing authoritative source in auth options."})
 
+        bearer_token = None
         if not request.authorization:
-            return authenticate()
+            # Check for bearer auth, Werkzeug only supports BASIC and DIGEST
+            auth_header = request.headers.get("Authorization", None)
+            if auth_header and auth_header.startswith("Bearer"):
+                bearer_token = auth_header.split(" ")[1]
+            if not bearer_token:
+                return authenticate()
 
         # init AuthFacory()
         af = AuthFactory()
-        auth = af.get_auth(
-            request.authorization.username,
-            request.authorization.password,
-            auth_source, auth_options or {})
+        auth = None
+        if bearer_token:
+            auth = af.get_auth_bearer_token(bearer_token, auth_source,
+                                            auth_options or {})
 
-        # authenticated?
-        if not auth.authenticate():
-            self.logger.debug("Incorrect username or password.")
-            abort(401, error={"code": 401, "message": "Incorrect username or password"})
+            # authenticated?
+            if not auth.authenticate():
+                self.logger.debug("Invalid bearer token.")
+                abort(401, error={"code": 401,
+                                  "message": "Invalid bearer token."})
+        else:
+            auth = af.get_auth(request.authorization.username,
+                    request.authorization.password, auth_source, auth_options or {})
+
+            # authenticated?
+            if not auth.authenticate():
+                self.logger.debug("Incorrect username or password.")
+                abort(401, error={"code": 401, "message": "Incorrect username or password"})
 
         # Replace auth options in API call arguments with auth object
         new_args = dict(args[0])

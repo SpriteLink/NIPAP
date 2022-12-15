@@ -1,7 +1,9 @@
 #! /bin/bash
 
 # Create NIPAP configuration file
-envtpl --keep-template --allow-missing -o /etc/nipap/nipap.conf /nipap/nipap.conf.dist
+if [ ! -e /etc/nipap/nipap.conf ]; then
+    envtpl --keep-template --allow-missing -o /etc/nipap/nipap.conf /nipap/nipap.conf.dist
+fi
 
 # Set up local auth database
 if [ ! -e /etc/nipap/local_auth.db ]; then

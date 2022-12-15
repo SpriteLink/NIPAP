@@ -99,18 +99,36 @@ def requires_auth(f):
             self.logger.debug("Missing authoritative source in auth options.")
             raise Fault(1000, ("Missing authoritative source in auth options."))
 
+        bearer_token = None
         if not request.authorization:
-            return authenticate()
+            # Check for bearer auth, Werkzeug only supports BASIC and DIGEST
+            auth_header = request.headers.get("Authorization", None)
+            if auth_header and auth_header.startswith("Bearer"):
+                bearer_token = auth_header.split(" ")[1]
+            if not bearer_token:
+                return authenticate()
 
         # init AuthFacory()
         af = AuthFactory()
-        auth = af.get_auth(request.authorization.username,
-                request.authorization.password, auth_source, auth_options or {})
+        auth = None
+        if bearer_token:
+            auth = af.get_auth_bearer_token(bearer_token, auth_source,
+                                            auth_options or {})
 
-        # authenticated?
-        if not auth.authenticate():
-            self.logger.debug("Incorrect username or password.")
-            raise Fault(1510, ("Incorrect username or password."))
+            # authenticated?
+            if not auth.authenticate():
+                self.logger.debug("Invalid bearer token.")
+                raise Fault(1510, ("Invalid bearer token."))
+        else:
+            auth = af.get_auth(request.authorization.username,
+                               request.authorization.password,
+                               auth_source,
+                               auth_options or {})
+
+            # authenticated?
+            if not auth.authenticate():
+                self.logger.debug("Incorrect username or password.")
+                raise Fault(1510, ("Incorrect username or password."))
 
         # Replace auth options in API call arguments with auth object
         new_args = dict(args[0])

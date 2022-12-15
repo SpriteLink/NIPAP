@@ -63,10 +63,11 @@
     Classes
     -------
 """
-
+import json
 import logging
 from datetime import datetime, timedelta
 import hashlib
+import traceback
 
 from nipapconfig import NipapConfig
 
@@ -74,6 +75,12 @@ from nipapconfig import NipapConfig
 import sqlite3
 import string
 import random
+import requests
+
+try:
+    import jwt
+except ImportError:
+    jwt = None
 
 try:
     import ldap
@@ -90,7 +97,6 @@ class AuthFactory:
     _auth_cache = {}
     _backends = {}
 
-
     def __init__(self):
         """ Constructor.
         """
@@ -99,8 +105,6 @@ class AuthFactory:
         self._config = NipapConfig()
         self._logger = logging.getLogger(self.__class__.__name__)
         self._init_backends()
-
-
 
     def _init_backends(self):
         """ Initialize auth backends.
@@ -118,8 +122,6 @@ class AuthFactory:
 
         self._logger.debug("Registered auth backends %s" % str(self._backends))
 
-
-
     def reload(self):
         """ Reload AuthFactory.
         """
@@ -127,7 +129,31 @@ class AuthFactory:
         self._auth_cache = {}
         self._init_backends()
 
+    def get_auth_bearer_token(self, bearer_token, authoritative_source, auth_options=None):
+        """ Returns an authentication object.
 
+            * `bearer_token` [string]
+                Bearer_token to authenticate as.
+            * `authoritative_source` [string]
+                Authoritative source of the query.
+            * `auth_options` [dict]
+                A dict which, if authenticated as a trusted user, can override
+                `username` and `authoritative_source`.
+        """
+
+        if auth_options is None:
+            auth_options = {}
+
+        backend = "jwt"
+        self._logger.debug("Using auth backend %s" % backend)
+        # Create auth object
+        try:
+            auth = self._backends[backend](backend, bearer_token, authoritative_source, auth_options)
+        except Exception:
+            traceback.print_exc()
+            raise AuthError("Invalid auth backend '%s' specified" % backend)
+
+        return auth
 
     def get_auth(self, username, password, authoritative_source, auth_options=None):
         """ Returns an authentication object.
@@ -159,10 +185,10 @@ class AuthFactory:
             if self._auth_cache[key]['valid_until'] < datetime.utcnow():
                 rem.append(key)
         for key in rem:
-            del(self._auth_cache[key])
+            del (self._auth_cache[key])
 
         user_authbackend = username.rsplit('@', 1)
-    
+
         # Find out what auth backend to use.
         # If no auth backend was specified in username, use default
         backend = ""
@@ -171,10 +197,10 @@ class AuthFactory:
             self._logger.debug("Using default auth backend %s" % backend)
         else:
             backend = user_authbackend[1]
-    
+
         # do we have a cached instance?
-        auth_str = ( str(username) + str(password) + str(authoritative_source)
-            + str(auth_options) )
+        auth_str = (str(username) + str(password) + str(authoritative_source)
+                    + str(auth_options))
         if auth_str in self._auth_cache:
             self._logger.debug('found cached auth object for user %s' % username)
             return self._auth_cache[auth_str]['auth_object']
@@ -184,7 +210,7 @@ class AuthFactory:
             auth = self._backends[backend](backend, user_authbackend[0], password, authoritative_source, auth_options)
         except KeyError:
             raise AuthError("Invalid auth backend '%s' specified" %
-                str(backend))
+                            str(backend))
 
         # save auth object to cache
         self._auth_cache[auth_str] = {
@@ -193,7 +219,6 @@ class AuthFactory:
         }
 
         return auth
-
 
 
 class BaseAuth:
@@ -214,7 +239,6 @@ class BaseAuth:
     _logger = None
     _auth_options = None
     _cfg = None
-
 
     def __init__(self, username, password, authoritative_source, auth_backend, auth_options=None):
         """ Constructor.
@@ -250,18 +274,14 @@ class BaseAuth:
 
         self._auth_options = auth_options
 
-
-
     def authenticate(self):
         """ Verify authentication.
 
             Returns True/False dependant on whether the authentication
             succeeded or not.
         """
-    
+
         return False
-
-
 
     def authorize(self):
         """ Verify authorization.
@@ -270,6 +290,127 @@ class BaseAuth:
         """
         return False
 
+
+class JwtAuth(BaseAuth):
+    """ An authentication and authorization class for JWT auth.
+    """
+
+    _jwt_rw_group = None
+    _jwt_ro_group = None
+    _authenticated = None
+
+    def __init__(self, name, jwt_token, authoritative_source,
+                 auth_options=None):
+        """ Constructor.
+
+            Note that the instance variables not are set by the constructor but
+            by the :func:`authenticate` method. Therefore, run the
+            :func:`authenticate`-method before trying to access those
+            variables!
+
+            * `name` [string]
+                Name of auth backend.
+            * `jwt_token` [string]
+                jwt_token to authenticate as.
+            * `authoritative_source` [string]
+                Authoritative source of the query.
+            * `auth_options` [dict]
+                A dict which, if authenticated as a trusted user, can override
+                `username` and `authoritative_source`.
+        """
+
+        if auth_options is None:
+            auth_options = {}
+
+        BaseAuth.__init__(self, None, None, authoritative_source,
+                          name, auth_options)
+
+        self._jwt_token = jwt_token
+
+        base_auth_backend = 'auth.backends.' + self.auth_backend
+        if self._cfg.has_option(base_auth_backend, 'ro_group'):
+            self._jwt_ro_group = self._cfg.get(base_auth_backend, 'ro_group')
+        if self._cfg.has_option(base_auth_backend, 'rw_group'):
+            self._jwt_rw_group = self._cfg.get(base_auth_backend, 'rw_group')
+
+        if not jwt:
+            self._logger.error('Unable to load Python jwt module, please verify it is installed')
+            raise AuthError('Unable to authenticate')
+
+    def authenticate(self):
+        """ Verify authentication.
+
+            Returns True/False dependant on whether the authentication
+            succeeded or not.
+        """
+
+        # if authentication has been performed, return last result
+        if self._authenticated is not None:
+            return self._authenticated
+
+        try:
+            self._token = self._cfg.get('auth.backends.' +
+                                        self.auth_backend, 'jwk_url')
+            # Fetch JWKs (done when initializing JwtAuth-class),
+            # keep the keys in the class instance
+            jwk_request_response = requests.get(self._token)
+            jwks = jwk_request_response.json()
+            jwk_keys = {}
+            for jwk in jwks['keys']:
+                kid = jwk['kid']
+                jwk_keys[kid] = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
+
+            # Upon auth with a JWT-token
+            # Retrieve key for token
+            jwt_headers = jwt.get_unverified_header(self._jwt_token)
+            jwt_jwk_key = jwk_keys[jwt_headers['kid']]
+
+            # Decode and verify token
+            payload = jwt.decode(
+                self._jwt_token,
+                key=jwt_jwk_key,
+                algorithms=[jwt_headers['alg']],
+                options={"verify_aud": False})
+
+            # Setting read and write rights
+            if payload.get('groups'):
+                if self._jwt_ro_group in payload.get('groups'):
+                    self.readonly = True
+                    self._authenticated = True
+                elif self._jwt_rw_group in payload.get('groups'):
+                    self.readonly = False
+                    self._authenticated = True
+        # auth failed
+        except jwt.exceptions.DecodeError:
+            self._logger.debug('could not decode token because of failed validation')
+            self._authenticated = False
+            return self._authenticated
+        except jwt.exceptions.ExpiredSignatureError:
+            self._logger.debug('token\'s signature does not match')
+            self._authenticated = False
+            return self._authenticated
+        except jwt.exceptions.InvalidSignatureError:
+            self._logger.debug('token\'s signature does not match the one provided as part of the token')
+            self._authenticated = False
+            return self._authenticated
+        except jwt.exceptions.InvalidAlgorithmError:
+            self._logger.debug('the specified algorithm is not recognized by PyJWT')
+            self._authenticated = False
+            return self._authenticated
+        except:
+            self._logger.debug('could not authenticate')
+            self._authenticated = False
+            return self._authenticated
+
+        # auth succeeded
+        if self._authenticated:
+            self.username = payload.get('sub')
+            self.authenticated_as = payload.get('sub')
+            self.full_name = payload.get('name', payload.get('sub'))
+            self._logger.debug('successfully authenticated as %s, username' % self.authenticated_as)
+        self.trusted = False
+
+        return self._authenticated
 
 
 class LdapAuth(BaseAuth):
@@ -355,7 +496,6 @@ class LdapAuth(BaseAuth):
                 self._logger.exception(exc)
                 raise AuthError('Unable to establish secure connection to ldap server')
 
-
     def authenticate(self):
         """ Verify authentication.
 
@@ -368,7 +508,8 @@ class LdapAuth(BaseAuth):
             return self._authenticated
 
         try:
-            self._ldap_conn.simple_bind_s(self._ldap_binddn_fmt.format(ldap.dn.escape_dn_chars(self.username)), self.password)
+            self._ldap_conn.simple_bind_s(self._ldap_binddn_fmt.format(ldap.dn.escape_dn_chars(self.username)),
+                                          self.password)
         except ldap.SERVER_DOWN as exc:
             raise AuthError('Could not connect to LDAP server')
         except (ldap.INVALID_CREDENTIALS, ldap.INVALID_DN_SYNTAX,
@@ -377,7 +518,6 @@ class LdapAuth(BaseAuth):
             self._logger.debug('erroneous password for user %s' % self.username)
             self._authenticated = False
             return self._authenticated
-
 
         # auth succeeded
         self.authenticated_as = self.username
@@ -392,7 +532,9 @@ class LdapAuth(BaseAuth):
             else:
                 search_conn = self._ldap_conn
 
-            res = search_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE, self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)), ['cn','memberOf'])
+            res = search_conn.search_s(self._ldap_basedn, ldap.SCOPE_SUBTREE,
+                                       self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)),
+                                       ['cn', 'memberOf'])
             if res[0][1]['cn'][0] is not None:
                 self.full_name = res[0][1]['cn'][0].decode('utf-8')
             # check for ro_group membership if ro_group is configured
@@ -427,9 +569,12 @@ class LdapAuth(BaseAuth):
 
         self._authenticated = True
 
-        self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s' % (self.authenticated_as, self.username, self.full_name, str(self.readonly)))
+        self._logger.debug('successfully authenticated as ' +
+                           '%s, username %s, full_name %s, readonly %s' % (
+                               self.authenticated_as,
+                               self.username, self.full_name,
+                               str(self.readonly)))
         return self._authenticated
-
 
 
 class SqliteAuth(BaseAuth):
@@ -472,15 +617,15 @@ class SqliteAuth(BaseAuth):
 
         # connect to database
         try:
-            self._db_conn = sqlite3.connect(self._cfg.get('auth.backends.' + self.auth_backend, 'db_path'), check_same_thread = False)
+            self._db_conn = sqlite3.connect(
+                self._cfg.get('auth.backends.' + self.auth_backend, 'db_path'),
+                check_same_thread=False)
             self._db_conn.row_factory = sqlite3.Row
             self._db_curs = self._db_conn.cursor()
 
         except sqlite3.Error as exc:
             self._logger.error('Could not open user database: %s' % str(exc))
             raise AuthError(str(exc))
-
-
 
     def _latest_db_version(self):
         """ Check if database is of the latest version
@@ -495,7 +640,7 @@ class SqliteAuth(BaseAuth):
             raise AuthSqliteError("No 'user' table.")
 
         for column in ('username', 'pwd_salt', 'pwd_hash', 'full_name',
-                'trusted', 'readonly'):
+                       'trusted', 'readonly'):
             sql = "SELECT %s FROM user" % column
             try:
                 self._db_curs.execute(sql)
@@ -503,8 +648,6 @@ class SqliteAuth(BaseAuth):
                 return False
 
         return True
-
-
 
     def _create_database(self):
         """ Set up database
@@ -524,8 +667,6 @@ class SqliteAuth(BaseAuth):
         self._db_curs.execute(sql)
         self._db_conn.commit()
 
-
-
     def _upgrade_database(self):
         """ Upgrade database to latest version
 
@@ -540,8 +681,6 @@ class SqliteAuth(BaseAuth):
         except:
             pass
         self._db_conn.commit()
-
-
 
     def authenticate(self):
         """ Verify authentication.
@@ -595,10 +734,12 @@ class SqliteAuth(BaseAuth):
         else:
             self.full_name = user['full_name']
 
-        self._logger.debug('successfully authenticated as %s, username %s, full_name %s, readonly %s' % (self.authenticated_as, self.username, self.full_name, str(self.readonly)))
+        self._logger.debug(
+            'successfully authenticated as' +
+            ' %s, username %s, full_name %s, readonly %s' % (
+                self.authenticated_as, self.username, self.full_name,
+                str(self.readonly)))
         return self._authenticated
-
-
 
     def get_user(self, username):
         """ Fetch the user from the database
@@ -607,11 +748,9 @@ class SqliteAuth(BaseAuth):
         """
 
         sql = '''SELECT * FROM user WHERE username = ?'''
-        self._db_curs.execute(sql, (username, ))
+        self._db_curs.execute(sql, (username,))
         user = self._db_curs.fetchone()
         return user
-
-
 
     def add_user(self, username, password, full_name=None, trusted=False, readonly=False):
         """ Add user to SQLite database.
@@ -632,20 +771,18 @@ class SqliteAuth(BaseAuth):
         char_set = string.ascii_letters + string.digits
         salt = ''.join(random.choice(char_set) for x in range(8))
 
-
         sql = '''INSERT INTO user
             (username, pwd_salt, pwd_hash, full_name, trusted, readonly)
             VALUES
             (?, ?, ?, ?, ?, ?)'''
         try:
             self._db_curs.execute(sql, (username, salt,
-                self._gen_hash(password, salt), full_name, trusted or False,
+                                        self._gen_hash(password, salt),
+                                        full_name, trusted or False,
                                         readonly or False))
             self._db_conn.commit()
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
-
-
 
     def remove_user(self, username):
         """ Remove user from the SQLite database.
@@ -656,13 +793,11 @@ class SqliteAuth(BaseAuth):
 
         sql = '''DELETE FROM user WHERE username = ?'''
         try:
-            self._db_curs.execute(sql, (username, ))
+            self._db_curs.execute(sql, (username,))
             self._db_conn.commit()
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
         return self._db_curs.rowcount
-
-
 
     def modify_user(self, username, data):
         """ Modify user in SQLite database.
@@ -675,7 +810,7 @@ class SqliteAuth(BaseAuth):
             char_set = string.ascii_letters + string.digits
             data['pwd_salt'] = ''.join(random.choice(char_set) for x in range(8))
             data['pwd_hash'] = self._gen_hash(data['password'], data['pwd_salt'])
-            del(data['password'])
+            del (data['password'])
 
         sql = "UPDATE user SET "
         sql += ', '.join("%s = ?" % k for k in sorted(data))
@@ -692,8 +827,6 @@ class SqliteAuth(BaseAuth):
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as error:
             raise AuthError(error)
 
-
-
     def list_users(self):
         """ List all users.
         """
@@ -704,8 +837,6 @@ class SqliteAuth(BaseAuth):
             users.append(dict(row))
         return users
 
-
-
     def _gen_hash(self, password, salt):
         """ Generate password hash.
         """
@@ -715,7 +846,6 @@ class SqliteAuth(BaseAuth):
         h.update(salt)
         h.update(password)
         return h.hexdigest()
-
 
 
 class AuthError(Exception):

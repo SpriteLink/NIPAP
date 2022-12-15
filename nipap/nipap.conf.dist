@@ -173,7 +173,18 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 # 'untrusted', gets read only access:
 #rw_group =
 #ro_group = cn=untrusted,dc=example,dc=com ; Users in this group get ro access
-
+#
+# example backend with JWT-auth
+#[auth.backends.jwt]
+#type = JwtAuth
+#jwk_url = [https from token provider]
+#
+## Group permissions
+# Group permissions enables granting read-write or read-only privileges based
+# on a users group membership in JWT.
+#
+#rw_group =
+#ro_group =
 #
 # Options for the WWW UI
 # ----------------------
