@@ -6,8 +6,6 @@ if [ ! -e /etc/nipap/nipap.conf ]; then
 fi
 
 # Set up local auth database
-# sed command to fix line endings for Windows files
-sed -i "s/\\r//g" /usr/sbin/nipap-passwd
 if [ ! -e /etc/nipap/local_auth.db ]; then
     /usr/sbin/nipap-passwd create-database
 fi
