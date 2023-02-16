@@ -82,10 +82,10 @@ def _mangle_prefix(res):
     # postgres has notion of infinite while datetime hasn't, if expires
     # is equal to the max datetime we assume it is infinity and instead
     # represent that as None
-    if res['expires'].tzinfo is None:
-        res['expires'] = pytz.utc.localize(res['expires'])
     if res['expires'] == pytz.utc.localize(datetime.datetime.max):
         res['expires'] = None
+    else:
+        res['expires'] = res['expires'].isoformat()
 
     # cast of datetime so that JSON is in correct format
     res['added'] = res['added'].isoformat()
@@ -214,6 +214,8 @@ class NipapPrefixRest(Resource):
 
     @requires_auth
     def get(self, args):
+        """ Search/list prefixes
+        """
 
         query = args.get('prefix')
         search_query = {}
@@ -234,11 +236,9 @@ class NipapPrefixRest(Resource):
             result = self.nip.search_prefix(args.get('auth'), search_query)
 
             # mangle result
-            for prefix in result['result']:
-                prefix = _mangle_prefix(prefix)
+            result['result'] = [ _mangle_prefix(prefix) for prefix in result['result'] ]
 
-            result = jsonify(result['result'])
-            return result
+            return jsonify(result['result'])
 
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
@@ -250,18 +250,35 @@ class NipapPrefixRest(Resource):
 
     @requires_auth
     def post(self, args):
+        """ Add prefix
+        """
         try:
-            result = self.nip.add_prefix(
-                args.get('auth'), args.get('attr'), args.get('args'))
+            result = self.nip.add_prefix(args.get('auth'),
+                                         args.get('attr'),
+                                         args.get('args'))
 
-            result["free_addresses"] = str(result.get("free_addresses"))
-            result["total_addresses"] = str(result.get("total_addresses"))
-            result["added"] = result.get("added").isoformat()
-            result["expires"] = result.get("expires").isoformat()
-            result["last_modified"] = result.get("last_modified").isoformat()
-            result["used_addresses"] = str(result.get("used_addresses"))
-            result = jsonify(result)
-            return result
+            return jsonify(_mangle_prefix(result))
+
+        except (AuthError, NipapError) as exc:
+            self.logger.debug(unicode(exc))
+            abort(500, error={"code": exc.error_code, "message": str(exc)})
+        except Exception as err:
+            self.logger.error(unicode(err))
+            abort(500, error={"code": 500, "message": "Internal error"})
+
+
+    @requires_auth
+    def put(self, args):
+        """ Edit prefix
+        """
+        try:
+            result = self.nip.edit_prefix(args.get('auth'),
+                                          args.get('prefix'),
+                                          args.get('attr'))
+
+            result = [_mangle_prefix(prefix) for prefix in result]
+            return jsonify(result)
+
         except (AuthError, NipapError) as exc:
             self.logger.debug(unicode(exc))
             abort(500, error={"code": exc.error_code, "message": str(exc)})
@@ -272,6 +289,8 @@ class NipapPrefixRest(Resource):
 
     @requires_auth
     def delete(self, args):
+        """ Remove prefix
+        """
         try:
             # as of now remove_prefix doesn't return any values
             self.nip.remove_prefix(args.get('auth'), args.get('prefix'))
