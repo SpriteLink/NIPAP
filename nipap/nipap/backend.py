@@ -3134,9 +3134,14 @@ class Nipap:
         prefixes = self.list_prefix(auth, spec)
 
         if recursive:
+            # Hosts needs to be removed first
+            previous_type = spec.get('type')
             spec['type'] = 'host'
             self._db_remove_prefix(spec, recursive)
-            del spec['type']
+            if previous_type:
+                spec['type'] = previous_type
+            else:
+                del spec['type']
             self._db_remove_prefix(spec, recursive)
         else:
             self._db_remove_prefix(spec)
