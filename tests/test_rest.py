@@ -7,9 +7,11 @@
 #
 
 import logging
-import unittest
-import sys
 import os
+import pytz
+import sys
+import unittest
+import dateutil.parser
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(MODULE_DIR + '/../nipap/')
@@ -35,6 +37,7 @@ prefix_result_template = {
         'description': 'test prefix',
         'display': True,
         'display_prefix': '1.3.1.0/24',
+        'expires': None,
         'external_key': None,
         'family': 4,
         'id': 0,
@@ -119,13 +122,11 @@ class NipapRestTest(unittest.TestCase):
                 self.assertIn('total_addresses', p)
                 self.assertIn('used_addresses', p)
                 self.assertIn('free_addresses', p)
-                self.assertIn('expires', p)
                 del(p['added'])
                 del(p['last_modified'])
                 del(p['total_addresses'])
                 del(p['used_addresses'])
                 del(p['free_addresses'])
-                del(p['expires'])
 
         elif isinstance(res, dict) and 'result' in res:
             # res from smart search
@@ -135,13 +136,11 @@ class NipapRestTest(unittest.TestCase):
                 self.assertIn('total_addresses', p)
                 self.assertIn('used_addresses', p)
                 self.assertIn('free_addresses', p)
-                self.assertIn('expires', p)
                 del(p['added'])
                 del(p['last_modified'])
                 del(p['total_addresses'])
                 del(p['used_addresses'])
                 del(p['free_addresses'])
-                del(p['expires'])
 
         if isinstance(res, dict):
             # just one single prefix
@@ -150,13 +149,11 @@ class NipapRestTest(unittest.TestCase):
             self.assertIn('total_addresses', res)
             self.assertIn('used_addresses', res)
             self.assertIn('free_addresses', res)
-            self.assertIn('expires', res)
             del(res['added'])
             del(res['last_modified'])
             del(res['total_addresses'])
             del(res['used_addresses'])
             del(res['free_addresses'])
-            del(res['expires'])
 
         return res
 
@@ -261,7 +258,7 @@ class NipapRestTest(unittest.TestCase):
         # build list of expected
         expected_list = []
 
-        # update the children for the first one because we are adding 
+        # update the children for the first one because we are adding
         # 3 new ones to it
         expected['children'] = '3'
 
@@ -309,6 +306,76 @@ class NipapRestTest(unittest.TestCase):
 
         # make sure the result looks like we expect it too! :D
         self.assertEqual(mangled_result, expected_list)
+
+
+    def test_prefix_edit(self):
+        """ Removes a prefix
+        """
+
+        # add test prefix 1.3.5.0/24
+        attr = {}
+        attr['prefix'] = '1.3.5.0/24'
+        attr['description'] = 'test edit prefix'
+        attr['type'] = 'assignment'
+        attr['order_id'] = 'test'
+        prefix_id = self._add_prefix(attr)
+        self.assertGreater(prefix_id, 0)
+
+        # Edit prefix
+        parameters = {'id': prefix_id}
+        update_attr = {'expires': '2045-12-31T23:59:00+00:00', 'description': 'test prefix edited'}
+        request = requests.put(self.server_url, json=update_attr, headers=self.headers, params=parameters)
+        result = request.json()[0]
+        result["expires"] = dateutil.parser.parse(result['expires']).astimezone(pytz.utc).isoformat()
+        result = dict([(str(k), str(v)) for k, v in result.items()])
+        expected = prefix_result_template.copy()
+        expected['id'] = prefix_id
+        expected.update(attr)
+        expected.update(update_attr)
+        expected['display_prefix'] = expected['prefix']
+        expected = dict([(str(k), str(v)) for k, v in expected.items()])
+
+        self.assertEqual(self._mangle_prefix_result(result), expected)
+
+
+    def test_edit_prefix_failure(self):
+        """ Try failinig edit prefix operations
+        """
+
+        # add test prefix 1.3.6.0/24
+        attr = {}
+        attr['prefix'] = '1.3.6.0/24'
+        attr['description'] = 'test edit prefix'
+        attr['type'] = 'assignment'
+        attr['order_id'] = 'test'
+        prefix_id = self._add_prefix(attr)
+        self.assertGreater(prefix_id, 0)
+
+        # Try editing without/with broken prefix specifier
+        parameters = {'foo': prefix_id}
+        update_attr = {'description': 'test prefix edited'}
+        request = requests.put(self.server_url,
+                               json=update_attr,
+                               headers=self.headers,
+                               params=parameters)
+
+        self.assertEqual(request.status_code, 500)
+        self.assertEqual(request.json(),
+                         {u'error': {u'code': 1120,
+                                     u'message': u'Key \'foo\' not allowed in prefix spec.'}})
+
+        # Try setting broken attribute
+        parameters = {'id': prefix_id}
+        update_attr = {'foo': 'test prefix edited'}
+        request = requests.put(self.server_url,
+                               json=update_attr,
+                               headers=self.headers,
+                               params=parameters)
+
+        self.assertEqual(request.status_code, 500)
+        self.assertEqual(request.json(),
+                         {u'error': {u'code': 1120,
+                                     u'message': u'extraneous attribute foo'}})
 
 
     def test_prefix_remove(self):
@@ -364,12 +431,12 @@ class NipapRestTest(unittest.TestCase):
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
         result = json.loads(get_prefix_request.text)
         result = self._convert_list_of_unicode_to_str(result)
-        
+
         self.assertEqual(self._mangle_prefix_result(result), [expected])
 
 
     def test_prefix_search_case_insensitive(self):
-        """ Add a prefix and search for it case insensitive 
+        """ Add a prefix and search for it case insensitive
         """
 
         add_orderId_value = 's-12345'
