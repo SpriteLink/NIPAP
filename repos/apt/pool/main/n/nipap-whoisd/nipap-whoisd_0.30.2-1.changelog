@@ -1,3 +1,12 @@
+nipap-whoisd (0.30.2-1) stable; urgency=medium
+
+  * Add JWT authentication to nipapd (#1320)
+  * Added support for editing prefixes over the REST API (#1326)
+  * Fixed bug when using prefix type in the filter to remove_prefix
+    (#1326)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Sun, 19 Feb 2023 15:58:16 +0000
+
 nipap-whoisd (0.30.1-1) stable; urgency=medium
 
   * Fix expire date field in web UI (#1299)
