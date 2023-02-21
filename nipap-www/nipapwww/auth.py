@@ -88,5 +88,6 @@ def logout():
 
     # remove session
     session.clear()
+    g.logged_out = True
 
     return render_template('login.html')

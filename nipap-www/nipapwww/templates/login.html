@@ -57,4 +57,17 @@
 </div>
 {% endif %}
 
+{% if g.logged_out %}
+<div id="logout_successful_container">
+	<div class="options-group">
+		<div class="options-content">
+			<h3 class="options-group-heading">Result</h3>
+			<div style="padding: 15px; background-color: #ccffcc;">
+				Logged out
+			</div>
+		</div>
+	</div>
+</div>
+{% endif %}
+
 {% endblock %}
