@@ -1035,7 +1035,7 @@ nipapAppControllers.controller('PoolEditController', function ($scope, $routePar
 				if (pool.vrf_id !== null) {
 					$http.post('/xhr/smart_search_vrf',
 						JSON.stringify({
-							'vrf_id': $scope.pool.vrf_id,
+							'vrf_id': pool.vrf_id,
 							'query_string': ''
 						}),
 						{ 'headers': { 'Content-Type': 'application/json' } })
