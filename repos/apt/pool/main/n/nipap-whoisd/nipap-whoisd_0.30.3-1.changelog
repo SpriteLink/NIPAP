@@ -1,3 +1,9 @@
+nipap-whoisd (0.30.3-1) stable; urgency=medium
+
+  * Fixed implied VRF when creating prefix from pool in web UI (#1327)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 02 Mar 2023 21:15:27 +0000
+
 nipap-whoisd (0.30.2-1) stable; urgency=medium
 
   * Add JWT authentication to nipapd (#1320)
