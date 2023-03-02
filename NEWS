@@ -1,3 +1,7 @@
+Version 0.30.3 - Hades
+----------------------
+ * Fixed implied VRF when creating prefix from pool in web UI (#1327)
+
 Version 0.30.2 - Hades
 ----------------------
  * Add JWT authentication to nipapd (#1320)
