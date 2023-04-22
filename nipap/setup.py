@@ -17,10 +17,17 @@ def get_data_files():
         print >> sys.stderr, "rst2man failed to run:", str(exc)
         sys.exit(1)
 
+    if sys.platform.startswith('freebsd'):
+        localbase = '/usr/local'
+        etcdir = localbase + '/etc'
+    else:
+        localbase = '/usr'
+        etcdir = '/etc'
+
     files = [
-            ('/etc/nipap/', ['nipap.conf.dist']),
-            ('/usr/sbin/', ['nipapd', 'nipap-passwd']),
-            ('/usr/share/nipap/sql/', [
+            (etcdir + '/nipap/', ['nipap.conf.dist']),
+            (localbase + '/sbin/', ['nipapd', 'nipap-passwd']),
+            (localbase + '/share/nipap/sql/', [
                 'sql/upgrade-1-2.plsql',
                 'sql/upgrade-2-3.plsql',
                 'sql/upgrade-3-4.plsql',
@@ -31,8 +38,8 @@ def get_data_files():
                 'sql/triggers.plsql',
                 'sql/ip_net.plsql'
                 ]),
-            ('/usr/share/man/man8/', ['nipapd.8']),
-            ('/usr/share/man/man1/', ['nipap-passwd.1'])
+            (localbase + '/share/man/man8/', ['nipapd.8']),
+            (localbase + '/share/man/man1/', ['nipap-passwd.1'])
         ]
 
     return files

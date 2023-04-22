@@ -1,5 +1,13 @@
 from setuptools import setup, find_packages
+import sys
 import nipapwww
+
+if sys.platform.startswith('freebsd'):
+    localbase = '/usr/local'
+    etcdir = localbase + '/etc'
+else:
+    localbase = '/usr'
+    etcdir = '/etc'
 
 setup(
     name='nipap-www',
@@ -21,9 +29,9 @@ setup(
     test_suite='nose.collector',
     package_data={'nipapwww': ['i18n/*/LC_MESSAGES/*.mo']},
     data_files = [
-        ( '/etc/nipap/', [ 'nipap-www.ini', ] ),
-        ( '/etc/nipap/www', [ 'nipap-www.wsgi', ] ),
-        ( '/var/cache/nipap-www/', [] )
+        (etcdir + '/nipap/', ['nipap-www.ini']),
+        (etcdir + '/nipap/www', ['nipap-www.wsgi']),
+        ('/var/cache/nipap-www/', [])
     ],
     #message_extractors={'nipapwww': [
     #        ('**.py', 'python', None),
