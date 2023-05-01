@@ -3,8 +3,7 @@
 #
 
 import os, sys
-os.environ['PYTHON_EGG_CACHE'] = '/var/cache/nipap-www/eggs'
 
-from paste.deploy import loadapp
+from nipapwww import create_app
 
-application = loadapp('config:/etc/nipap/nipap-www.ini')
+application = create_app()
