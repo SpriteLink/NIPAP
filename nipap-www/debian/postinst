@@ -6,6 +6,8 @@
 WWW_USER='www-user'
 WWW_PASS=`</dev/urandom tr -dc [:alpha:] | head -c16`
 WWW_NAME='User for the Web UI'
+WWW_SECRET_KEY=`</dev/urandom tr -dc [:alpha:] | head -c16`
+NIPAP_CONF='/etc/nipap/nipap.conf'
 
 # TODO: it's probably very wrong to ask questions in the postinst step of the
 # installation but we know of no better way for the moment.. also see the
@@ -21,10 +23,10 @@ db_get nipap-www/autouser
 if [ "$RET" = "true" ]; then
 	# check if there is already a www user configured in the
 	# configuration file and use that username for $WWW_USER
-	if [ -e /etc/nipap/nipap.conf ]; then
-		USER=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/\([^@]*\)@\?[^:]*:.*@.*/\1/'`
-		PASS=`grep '^xmlrpc_uri' /etc/nipap/nipap.conf | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/.*@\?[^:]*:\(.*\)@.*/\1/'`
-		if [ "$USER" != "" ] && [ "$PASS" != "" ]; then
+	if [ -e $NIPAP_CONF ]; then
+		USER=`grep '^xmlrpc_uri' $NIPAP_CONF | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/\([^@]*\)@\?[^:]*:.*@.*/\1/'`
+		PASS=`grep '^xmlrpc_uri' $NIPAP_CONF | sed 's/^xmlrpc_uri[ \t]*=[ \t]*http:\/\/.*@\?[^:]*:\(.*\)@.*/\1/'`
+		if [ "$USER" != "" ] && [ "$USER" != '{{NIPAPD_USERNAME}}' ] && [ "$PASS" != "" ] && [ "$PASS" != '{{NIPAPD_PASSWORD}}' ]; then
 			WWW_USER=$USER
 			WWW_PASS=$PASS
 		fi
@@ -33,8 +35,26 @@ if [ "$RET" = "true" ]; then
 	# the nipap.conf configuration file, provided that it exists
 	if [ `nipap-passwd list | awk "{ if (\\$1~/^$WWW_USER$/) { print \\$1 } }" | wc -l` = "0" ]; then
 		nipap-passwd add -u $WWW_USER -p $WWW_PASS -n "$WWW_NAME" -t > /dev/null 2>&1
-		if [ -e /etc/nipap/nipap.conf ]; then
-			sed -i -e "s/http:\/\/[^:]*:[^@]*@/http:\/\/$WWW_USER@local:$WWW_PASS@/" /etc/nipap/nipap.conf
+		if [ -e $NIPAP_CONF ]; then
+			sed -i -e "s/http:\/\/[^:]*:[^@]*@/http:\/\/$WWW_USER@local:$WWW_PASS@/" $NIPAP_CONF
+		fi
+	fi
+fi
+
+# Set secret key in nipap.conf
+db_get nipap-www/auto_secret_key
+if [ "$RET" = "true" ]; then
+	# Validate that there is a nipap.conf
+	if [ -e $NIPAP_CONF ]; then
+		if [ `grep -c secret_key $NIPAP_CONF` = "0" ]; then
+			# There is no secret_key in nipap.conf, add it
+			sed -i "/\[www\]/a secret_key = $WWW_SECRET_KEY" $NIPAP_CONF
+		else
+			CURRENT_KEY=`grep '^secret_key' $NIPAP_CONF | sed 's/^secret_key[ \t]*=[ \t]*\(.\+\)/\1/'`
+			if [ "$CURRENT_KEY" = '{{WWW_SECRET_KEY}}' ]; then
+				# secret_key is set to the default {{WWW_SECRET_KEY}}, replace with generated key
+				sed -i -e "s/^secret_key[ \t]*=[ \t]*.\+$/secret_key = $WWW_SECRET_KEY/" $NIPAP_CONF
+			fi
 		fi
 	fi
 fi

@@ -145,7 +145,7 @@ Installation of the web UI
 --------------------------
 The NIPAP web UI performs all operations through the NIPAP XML-RPC API served
 by nipapd, which means they do not need to be installed on the same machine. It
-is built on the Pylons web framework and requires Pylons version >= 1.0.
+is built on the Flask web framework.
 
 You will find the source in nipap-www
 

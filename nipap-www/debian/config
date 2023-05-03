@@ -7,3 +7,6 @@
 # machine here, but as packages are not yet guaranteed to be unpacked in the
 # config stage we cannot determine if nipapd is or is going to be installed by
 # looking if files exists. Can we ask apt?
+
+db_input high nipap-www/auto_secret_key || true
+db_go
