@@ -195,6 +195,9 @@ xmlrpc_uri = http://{{NIPAPD_USERNAME}}:{{NIPAPD_PASSWORD}}@{{NIPAPD_HOST}}:{{NI
 #example using local authentication with username 'user' and password 'pass'
 #xmlrpc_uri = http://user@local:pass@127.0.0.1:1337
 
+# Secret used to sign cookies etc
+secret_key = {{WWW_SECRET_KEY}}
+
 # welcome_message allows the display of a custom message on the login page of
 # the web interface, it might contain hints about what credentials to use or
 # just greet the user.
