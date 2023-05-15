@@ -58,6 +58,8 @@ class AuthController(BaseController):
             # if previous target is unknown just send the user to a welcome page
             redirect(url(controller='prefix', action='list'))
 
+    def unauthorized(self):
+        return render('unauthorized.html')
 
 
     def logout(self):
@@ -67,4 +69,5 @@ class AuthController(BaseController):
         # remove session
         session.delete()
 
-        return render('login.html')
+        #return render('login.html')
+        return redirect(url(controller='prefix', action='list')) # <- wtf is dis

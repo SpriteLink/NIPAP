@@ -93,6 +93,7 @@
 					</li>
 				</ol>
 			</div>
+			{% if not c.SSO %}
 			<div class="menu_entry" style="position: absolute; right: 30px; padding-top: 0px;">
 				<ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
 					<li style="display: inline-block; padding: 0; margin: 0;">
@@ -100,6 +101,7 @@
 					</li>
 				</ol>
 			</div>
+			{% endif %}
 		</div>
 		{% block menu %}
 		{% endblock %}
