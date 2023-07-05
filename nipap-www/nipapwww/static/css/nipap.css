@@ -651,7 +651,7 @@ tbody.listing > tr:hover {
 }
 
 .popup_button_icon {
-	background: url('/images/display_menu.png') no-repeat;
+	background: url('/static/images/display_menu.png') no-repeat;
 	width: 18px;
 	height: 12px;
 	margin: 2px;
@@ -970,7 +970,7 @@ tbody.listing > tr:hover {
  */
 .loading {
 	display: none;
-	background-image: url('/images/loading.gif');
+	background-image: url('/static/images/loading.gif');
 	height: 32px;
 	width: 32px;
 	margin-left: auto;

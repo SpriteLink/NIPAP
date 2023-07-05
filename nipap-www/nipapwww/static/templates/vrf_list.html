@@ -24,7 +24,7 @@
 		<tr ng-repeat="vrf in vrfs track by $index">
 			<td style="padding-left: 30px;">{{ vrf.rt }}</a></td>
 			<td>{{ vrf.name }}</td>
-			<td><img ng-if="vrf.tags|notEmpty" src="/images/tag-16.png" uib-tooltip-html="vrf.tags|popoverFormatTags"></td>
+			<td><img ng-if="vrf.tags|notEmpty" src="/static/images/tag-16.png" uib-tooltip-html="vrf.tags|popoverFormatTags"></td>
 			<td>{{ vrf.description }}</td>
 			<td>
 				<div uib-dropdown>
