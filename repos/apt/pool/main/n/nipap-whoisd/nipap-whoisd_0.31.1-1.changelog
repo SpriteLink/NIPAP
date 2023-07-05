@@ -1,3 +1,11 @@
+nipap-whoisd (0.31.1-1) stable; urgency=medium
+
+  * Removed workaround for serving static content, in turn leading to a
+    bug where some static content wasn't served at all (#1332)
+  * Clean up unused files in WWW UI (#1333)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 05 Jul 2023 13:36:30 +0200
+
 nipap-whoisd (0.31.0-1) stable; urgency=medium
 
   * Replaced web framework Pylons with Flask (#1329)
