@@ -50,7 +50,7 @@ case "$1" in
 		fi
 		# fill in db_host
 		if [ $DB_HOST = "localhost" ]; then
-			sed -e 's/{{DB_HOST}}/""/' -i /etc/nipap/nipap.conf
+			sed -e 's/{{DB_HOST}}//' -i /etc/nipap/nipap.conf
 		else
 			sed -e "s/{{DB_HOST}}/$DB_HOST/" -i /etc/nipap/nipap.conf
 		fi
