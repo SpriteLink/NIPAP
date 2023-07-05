@@ -10,3 +10,10 @@ Description: Automatically create user for web interface?
  Creating a user will get you up and running with the web interface. If you
  answer No, you will need to manually create a user and configure the web
  interface with those credentials.
+
+Template: nipap-www/auto_secret_key
+Type: boolean
+Default: false
+Description: Automatically configure randomized secret_key?
+ The NIPAP web UI requires a secret key to be configured in the www-section
+ of nipap.conf.

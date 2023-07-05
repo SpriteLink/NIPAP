@@ -24,17 +24,18 @@ and set the log level to debug::
     ./nipapd -d -f --no-pid-file --port 1234
 
 
-Using paster to serve the web UI
+Using Flask to serve the web UI
 --------------------------------
 In a production environment the NIPAP web UI is typically served via Apache.
-For a development environment it is a lot quicker and easier to use paster
-which is a fairly small Python application to serve web pages WSGI style.
+For a development environment it is a lot quicker and easier to use Flask's
+built-in web server.
 
-The web UI ships with a development.ini file that paster reads. Starting it is
-no more difficult than running::
+Starting it is no more difficult than running::
 
     cd nipap-www
-    paster serve --reload development.ini
+    export FLASK_APP=nipapwww
+    export FLASK_ENV=development
+    flask run
 
 It does require that you have the required dependencies installed and reachable
 for paster to work properly. The easiest way of accomplishing this, especially
@@ -52,10 +53,12 @@ Install pynipap in your virtualenv::
     cd ../pynipap
     python setup.py install
 
-And go back and run paster::
+And go back and run Flask::
 
     cd ../nipap-www/
-    python `which paster` serve --reload development.ini
+    export FLASK_APP=nipapwww
+    export FLASK_ENV=development
+    flask run
 
 If you just run paster you will not utilize the python installed in the
 virtualenv and will thus not have access to the pynipap installed in the
