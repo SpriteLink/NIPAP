@@ -4,7 +4,7 @@ from flask import Blueprint, request, session
 
 from pynipap import NipapError, Pool, Prefix, Tag, VRF
 
-from auth import login_required
+from .auth import login_required
 
 
 bp = Blueprint('xhr', __name__, url_prefix='/xhr')
