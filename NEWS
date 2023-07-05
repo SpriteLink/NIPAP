@@ -1,3 +1,9 @@
+Version 0.31.1 - Persephone
+---------------------------
+ * Removed workaround for serving static content, in turn leading to a bug
+   where some static content wasn't served at all (#1332)
+ * Clean up unused files in WWW UI (#1333)
+
 Version 0.31.0 - Persephone
 ---------------------------
  * Replaced web framework Pylons with Flask (#1329)
