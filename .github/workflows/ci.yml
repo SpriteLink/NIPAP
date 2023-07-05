@@ -9,7 +9,7 @@ on:
 jobs:
   test:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         install: [ pip, apt ]
@@ -42,20 +42,18 @@ jobs:
           python3-docutils \
           python3-nose \
           python3-requests \
-          python-setuptools \
           python3-setuptools \
-          python-wheel \
           python3-wheel \
           python3-all \
           default-jdk \
           gradle \
           rename \
-          postgresql-10 \
-          postgresql-10-ip4r
+          postgresql-12 \
+          postgresql-12-ip4r
 
         # Drop and re-create cluster to be bound to default port
         for version in `pg_lsclusters | tail -n-2 | awk '{ print $1 }'`; do sudo pg_dropcluster $version main; done
-        sudo pg_createcluster --start 10 main
+        sudo pg_createcluster --start 12 main
         sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' -e 's/port = 1337/port = 1338/' -e "s/#use_ssl = false/use_ssl = true/" nipap-cli/nipaprc > ~/.nipaprc
         chmod 0600 ~/.nipaprc
 
