@@ -723,7 +723,7 @@ class Nipap:
                 self._con_pg = psycopg2.connect(**db_args)
                 self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
                 self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
-                psycopg2.extras.register_hstore(self._con_pg, globally=True, unicode=True)
+                psycopg2.extras.register_hstore(self._con_pg, globally=True)
             except psycopg2.Error as exc:
                 if re.search("database.*does not exist", str(exc)):
                     raise NipapDatabaseNonExistentError("Database '%s' does not exist" % db_args['database'])
