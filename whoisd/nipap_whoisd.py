@@ -1,6 +1,6 @@
 import os
 
-__version__		= "0.30.3"
+__version__		= "0.31.0"
 __author__		= "Kristian Larsson, Lukas Garberg"
 __author_email__ = "kll@tele2.net, lukas@spritelink.net"
 __copyright__	= "Copyright 2011-2014, Kristian Larsson, Lukas Garberg"

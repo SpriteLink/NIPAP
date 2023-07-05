@@ -1,3 +1,9 @@
+nipap-whoisd (0.31.0-1) stable; urgency=medium
+
+  * Replaced web framework Pylons with Flask (#1329)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 05 Jul 2023 11:25:14 +0200
+
 nipap-whoisd (0.30.3-1) stable; urgency=medium
 
   * Fixed implied VRF when creating prefix from pool in web UI (#1327)

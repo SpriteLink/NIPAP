@@ -1,3 +1,7 @@
+Version 0.31.0 - Persephone
+---------------------------
+ * Replaced web framework Pylons with Flask (#1329)
+
 Version 0.30.3 - Hades
 ----------------------
  * Fixed implied VRF when creating prefix from pool in web UI (#1327)
