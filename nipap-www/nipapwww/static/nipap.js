@@ -660,7 +660,7 @@ function showPrefix(prefix, reference, offset) {
 			Object.keys(prefix.inherited_tags).sort(sort_func).join('<br/>') +
 			'</div>"';
 
-		prefix_tags.html('<img src="/images/tag-16.png">');
+		prefix_tags.html('<img src="/static/images/tag-16.png">');
 		prefix_tags.children().attr('uib-tooltip-html', tags_html);
 		// Run element through AngularJS compiler to "activate" directives (the
 		// AngularUI/Bootstrap tooltip)
@@ -710,7 +710,7 @@ function showPrefix(prefix, reference, offset) {
 	if (prefix.comment == null || prefix.comment == '') {
 		prefix_comment.html("&nbsp;");
 	} else {
-		prefix_comment.html('<img src="/images/comments-16.png">');
+		prefix_comment.html('<img src="/static/images/comments-16.png">');
 		prefix_comment.children().attr('uib-tooltip', prefix.comment);
 		prefix_comment.replaceWith(ng_compile(prefix_comment)(ng_scope));
 		ng_scope.$apply();
@@ -954,7 +954,7 @@ function addVRFToSelectList(vrf, elem) {
 	// display tick
 	if (selected_vrfs.hasOwnProperty(String(vrf.id))) {
 		elem.children('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&#10003;');
-		elem.children('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/images/x-mark-3-16.png">');
+		elem.children('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/static/images/x-mark-3-16.png">');
 	}
 
 	$("#vrf_filter_entry_" + String(vrf.id)).click(curVRFCallback);
@@ -1079,7 +1079,7 @@ function clickFilterVRFSelector(evt) {
 
 		// show tick mark
 		$('#vrf_filter_entry_' + String(vrf.id)).children().children('.selector_tick').html('&#10003;');
-		$('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/images/x-mark-3-16.png">');
+		$('#vrf_filter_entry_' + String(vrf.id)).children('.selector_x').html('<img src="/static/images/x-mark-3-16.png">');
 
 	} else {
 
