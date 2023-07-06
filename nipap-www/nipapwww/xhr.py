@@ -117,7 +117,10 @@ def smart_search_vrf():
         # TODO: Reevaluate how to deal with different types of errors; soft
         # errors like query string parser errors and hard errors like lost
         # database.
-        del result['error']
+        try:
+            del result['error']
+        except KeyError:
+            pass
     except NipapError as e:
         return json.dumps({'error': 1,
                            'message': e.args,
@@ -256,7 +259,10 @@ def smart_search_pool():
         # TODO: Reevaluate how to deal with different types of errors; soft
         # errors like query string parser errors and hard errors like lost
         # database.
-        del result['error']
+        try:
+            del result['error']
+        except KeyError:
+            pass
     except NipapError as e:
         return json.dumps({'error': 1,
                            'message': e.args,
@@ -539,7 +545,10 @@ def smart_search_prefix():
         # TODO: Reevaluate how to deal with different types of errors; soft
         # errors like query string parser errors and hard errors like lost
         # database.
-        del result['error']
+        try:
+            del result['error']
+        except KeyError:
+            pass
     except NipapError as e:
         return json.dumps({'error': 1,
                            'message': e.args,
