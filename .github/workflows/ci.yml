@@ -49,12 +49,12 @@ jobs:
           default-jdk \
           gradle \
           rename \
-          postgresql-10 \
-          postgresql-10-ip4r
+          postgresql-12 \
+          postgresql-12-ip4r
 
         # Drop and re-create cluster to be bound to default port
         for version in `pg_lsclusters | tail -n-2 | awk '{ print $1 }'`; do sudo pg_dropcluster $version main; done
-        sudo pg_createcluster --start 10 main
+        sudo pg_createcluster --start 12 main
         sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' -e 's/port = 1337/port = 1338/' -e "s/#use_ssl = false/use_ssl = true/" nipap-cli/nipaprc > ~/.nipaprc
         chmod 0600 ~/.nipaprc
 
@@ -133,9 +133,9 @@ jobs:
         if [ `grep -c ssl_port /etc/nipap/nipap.conf` -eq 0 ]; then \
           # No SSL config in file - add from scratch
           sudo sed '/^port *=.*/a ssl_port = 1338\nssl_cert_file = \/tmp\/ca\/test.bundle.crt\nssl_key_file = \/tmp\/ca\/test.key' -i /etc/nipap/nipap.conf; \
-          else \
+        else \
           sudo sed -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -i /etc/nipap/nipap.conf; \
-          fi
+        fi
         # create local user for unittests
         sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"
         sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"
