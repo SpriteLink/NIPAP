@@ -275,9 +275,11 @@ if __name__ == '__main__':
                 ssl_socket = bind_sockets(ssl_port, address)
                 ssl_sockets += ssl_socket
 
-    num_forks = -1
+    num_forks = None
     try:
-        if cfg.getint('nipapd', 'forks') == 0:
+        if cfg.getint('nipapd', 'forks') == -1:
+            num_forks = False
+        elif cfg.getint('nipapd', 'forks') == 0:
             num_forks = None
         elif cfg.getint('nipapd', 'forks') > 0:
             num_forks = cfg.getint('nipapd', 'forks')
@@ -285,7 +287,7 @@ if __name__ == '__main__':
         pass
 
     # pre-fork if we are not running in foreground
-    if not cfg.getboolean('nipapd', 'foreground') and num_forks >= 0:
+    if not cfg.getboolean('nipapd', 'foreground') and num_forks is not False:
         # default is to fork as many processes as there are cores
         tornado.process.fork_processes(num_forks)
 
