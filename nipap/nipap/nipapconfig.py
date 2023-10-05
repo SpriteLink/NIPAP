@@ -48,9 +48,9 @@ class NipapConfig(configparser.ConfigParser):
 
             configparser.ConfigParser.__init__(self, DEFAULT, inline_comment_prefixes=";#")
 
-            self.read_file()
+            self.read_config_file()
 
-    def read_file(self):
+    def read_config_file(self):
         """ Read the configuration file
         """
 
@@ -59,7 +59,8 @@ class NipapConfig(configparser.ConfigParser):
             return
 
         try:
-            self.read([self._cfg_path])
+            cfg_fp = open(self._cfg_path, 'r')
+            self.read_file(cfg_fp)
         except IOError as exc:
             raise NipapConfigError(str(exc))
 
