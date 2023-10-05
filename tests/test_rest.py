@@ -71,7 +71,7 @@ class NipapRestTest(unittest.TestCase):
     cfg = None
     nipap = None
 
-    server_url = "https://unittest:gottatest@127.0.0.1:1338/rest/v1/prefixes"
+    server_url = "http://unittest:gottatest@127.0.0.1:1337/rest/v1/prefixes"
     headers = {"NIPAP-Authoritative-Source": "nipap", "NIPAP-Username": "unittest", "NIPAP-Full-Name": "unit tester"}
 
     def setUp(self):
