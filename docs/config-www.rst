@@ -53,7 +53,7 @@ Apache httpd with mod_wsgi
 ==========================
 Begin by installing Apache httpd with mod_wsgi::
 
-    apt-get install libapache2-mod-wsgi
+    apt-get install libapache2-mod-wsgi-py3
 
 Then, add a new virtual host or configure the default one with the line::
 
