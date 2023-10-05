@@ -209,7 +209,8 @@ if __name__ == '__main__':
     if cfg.get('nipapd', 'pid_file') and not args.no_pid_file:
         # need a+ to be able to read PID from file
         try:
-            lf = open(cfg.get('nipapd', 'pid_file'), 'r+', 300)
+            lf = open(cfg.get('nipapd', 'pid_file'), 'a+')
+            lf.seek(0)
         except IOError as exc:
             logger.error("Unable to open PID file '" + str(exc.filename) + "': " + str(exc.strerror))
             sys.exit(1)
@@ -219,7 +220,7 @@ if __name__ == '__main__':
             logger.error('NIPAPd already running (pid: ' + lf.read().strip() + ')')
             sys.exit(1)
         logger.debug('Writing PID to file: ' + cfg.get('nipapd', 'pid_file'))
-        lf.truncate()
+        lf.truncate(0)
         lf.write('%d\n' % os.getpid())
         lf.flush()
 
