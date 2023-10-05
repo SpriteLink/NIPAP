@@ -144,8 +144,7 @@ jobs:
         sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"
         sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"
         sudo sed -e "s/^db_host *=.*/db_host = localhost/" -e "s/{{SYSLOG}}/true/" -e "s/^debug.\+/debug = true/" -e "s/^user/#user/" -i /etc/nipap/nipap.conf
-        sudo systemctl stop nipapd.service
-        sudo nipapd --no-pid-file -c /etc/nipap/nipap.conf -df 2>&1 > /tmp/nipap.log &
+        sudo systemctl restart nipapd.service
 
     - name: "Verify pre-upgrade data"
       if: ${{ matrix.upgrade == true }}
