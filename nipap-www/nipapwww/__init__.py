@@ -1,11 +1,3 @@
-import os
-
-from flask import Flask, redirect, url_for
-
-from nipap.nipapconfig import NipapConfig
-
-import pynipap
-
 __version__     = "0.31.2"
 __author__      = "Kristian Larsson, Lukas Garberg"
 __author_email__ = "kll@tele2.net, lukas@spritelink.net"
@@ -15,6 +7,14 @@ __url__         = "http://SpriteLink.github.io/NIPAP"
 
 
 def create_app(test_config=None):
+
+    # Moved imports here to be able to import this module without having the
+    # dependencies installed. Relevant during initial package build.
+    import os
+    from flask import Flask, redirect, url_for
+    from nipap.nipapconfig import NipapConfig
+    import pynipap
+
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
