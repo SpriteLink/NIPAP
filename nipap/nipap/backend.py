@@ -711,7 +711,7 @@ class Nipap:
         db_args['port'] = self._cfg.get('nipapd', 'db_port')
         # delete keys that are None, for example if we want to connect over a
         # UNIX socket, the 'host' argument should not be passed into the DSN
-        if db_args['host'] is not None and db_args['host'] == '':
+        if db_args['host'] is not None and db_args['host'] in ('', '""'):
             db_args['host'] = None
         for key in db_args.copy():
             if db_args[key] is None:
