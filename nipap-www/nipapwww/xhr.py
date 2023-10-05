@@ -12,7 +12,7 @@ bp = Blueprint('xhr', __name__, url_prefix='/xhr')
 
 def validate_string(req, key):
 
-    if isinstance(req[key], basestring) and req[key].strip() != '':
+    if isinstance(req[key], str) and req[key].strip() != '':
         return req[key].strip()
     else:
         return None
@@ -591,7 +591,7 @@ def add_prefix():
     # Sanitize input parameters
     if 'vrf' in request.json:
         try:
-            if request.json['vrf'] is None or len(unicode(request.json['vrf'])) == 0:
+            if request.json['vrf'] is None or len(str(request.json['vrf'])) == 0:
                 p.vrf = None
             else:
                 p.vrf = VRF.get(int(request.json['vrf']))
@@ -724,7 +724,7 @@ def edit_prefix(id):
         if 'vrf' in request.json:
 
             try:
-                if request.json['vrf'] is None or len(unicode(request.json['vrf'])) == 0:
+                if request.json['vrf'] is None or len(str(request.json['vrf'])) == 0:
                     p.vrf = None
                 else:
                     p.vrf = VRF.get(int(request.json['vrf']))
@@ -802,7 +802,7 @@ def del_current_vrf():
     """ Remove VRF to filter list session variable
     """
 
-    vrf_id = unicode(request.json['vrf_id'])
+    vrf_id = str(request.json['vrf_id'])
     if vrf_id in session['current_vrfs']:
         del session['current_vrfs'][vrf_id]
         session.modified = True
@@ -820,7 +820,7 @@ def get_current_vrfs():
     """
 
     # Verify that all currently selected VRFs still exists
-    cur_vrfs = session.get('current_vrfs', {}).items()
+    cur_vrfs = list(session.get('current_vrfs', {}).items())
     if len(cur_vrfs) > 0:
         q = {
             'operator': 'equals',
