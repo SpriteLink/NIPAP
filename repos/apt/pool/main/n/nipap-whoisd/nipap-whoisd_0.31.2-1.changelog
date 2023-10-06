@@ -1,3 +1,11 @@
+nipap-whoisd (0.31.2-1) stable; urgency=medium
+
+  * Removed last bits of Pylons
+  * Fixed bug with edit prefix operations without VRF
+  * Fixed bug related to error handling in the web UI
+
+ -- Ex-jobbar hos TDN/TN <lukagarb@hgd-nipap-dev>  Fri, 06 Oct 2023 06:35:53 +0000
+
 nipap-whoisd (0.31.1-1) stable; urgency=medium
 
   * Removed workaround for serving static content, in turn leading to a
