@@ -2,14 +2,14 @@ Source: nipap
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Section: python
 Priority: optional
-Build-Depends: python (>= 2.7), debhelper (>= 7.4.3)
+Build-Depends: python3 (>= 3.6), debhelper (>= 7.4.3), dh-python
 Standards-Version: 4.4.0
 
 
 Package: nipap-common
 Architecture: all
-Depends: python (>= 2.7), ${misc:Depends}, python-pysqlite2, python-ipy
-Suggests: python-ldap
+Depends: python3 (>= 3.6), ${misc:Depends}, python3-ipy
+Suggests: python3-ldap
 Description: Neat IP Address Planner
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the common libraries.
@@ -17,7 +17,7 @@ Description: Neat IP Address Planner
 
 Package: nipapd
 Architecture: all
-Depends: debconf, nipap-common, python (>= 2.7), ${misc:Depends}, python-psycopg2, python-flask, python-flask-xml-rpc, python-flask-restful, python-flask-compress, python-tornado, python-parsedatetime, python-tz, python-dateutil, python-psutil, python-pyparsing, python-jwt, python-requests
+Depends: debconf, nipap-common, python3 (>= 3.6), ${misc:Depends}, python3-psycopg2, python3-flask, python3-flask-xml-rpc-re, python3-flask-restful, python3-flask-compress, python3-tornado, python3-parsedatetime, python3-tz, python3-dateutil, python3-psutil, python3-pyparsing, python3-jwt, python3-requests
 Description: Neat IP Address Planner XML-RPC daemon
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the XML-RPC daemon.

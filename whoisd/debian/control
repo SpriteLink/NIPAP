@@ -2,12 +2,12 @@ Source: nipap-whoisd
 Maintainer: Kristian Larsson <kristian@spritelink.net>
 Section: python
 Priority: optional
-Build-Depends: python (>= 2.7), debhelper (>= 7)
+Build-Depends: python3 (>= 3.6), debhelper (>= 7), dh-python
 Standards-Version: 4.4.0
 
 Package: nipap-whoisd
 Architecture: all
-Depends: ${misc:Depends}, python (>= 2.7), python-pynipap
+Depends: ${misc:Depends}, python3 (>= 3.6), python3-pynipap
 Description: Neat IP Address Planner
  The NIPAP whois daemon provides a whois-style interface for querying data in
  the NIPAP backend. It receives whois queries, translates these into search

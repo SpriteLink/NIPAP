@@ -1,6 +1,6 @@
 from flask import Blueprint, g, render_template
 
-from auth import login_required
+from .auth import login_required
 
 bp = Blueprint('prefix', __name__, url_prefix='/prefix')
 

@@ -38,7 +38,7 @@ test:
 check:
 
 upload:
-	python setup.py sdist upload
+	$(PYTHON) setup.py sdist upload
 
 clean:
 	$(PYTHON) setup.py clean

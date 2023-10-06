@@ -14,9 +14,9 @@ from functools import wraps
 from flask import Flask, request, Response, got_request_exception, jsonify
 from flask_restful import Resource, Api, abort
 
-from backend import Nipap, NipapError
+from .backend import Nipap, NipapError
 import nipap
-from authlib import AuthFactory, AuthError
+from .authlib import AuthFactory, AuthError
 
 def setup(app):
     api = Api(app, prefix="/rest/v1")
@@ -75,9 +75,9 @@ def _mangle_prefix(res):
     """ Mangle prefix result
     """
     # fugly cast from large numbers to string to deal with XML-RPC
-    res['total_addresses'] = unicode(res['total_addresses'])
-    res['used_addresses'] = unicode(res['used_addresses'])
-    res['free_addresses'] = unicode(res['free_addresses'])
+    res['total_addresses'] = str(res['total_addresses'])
+    res['used_addresses'] = str(res['used_addresses'])
+    res['free_addresses'] = str(res['free_addresses'])
 
     # postgres has notion of infinite while datetime hasn't, if expires
     # is equal to the max datetime we assume it is infinity and instead
@@ -222,7 +222,7 @@ class NipapPrefixRest(Resource):
         if query is not None:
             # Create search query dict from request params
             query_parts = []
-            for field, search_value in query.items():
+            for field, search_value in list(query.items()):
                 query_parts.append(get_query_for_field(field, search_value))
             search_query = query_parts[0]
             for query_part in query_parts[1:]:
@@ -241,10 +241,10 @@ class NipapPrefixRest(Resource):
             return jsonify(result['result'])
 
         except (AuthError, NipapError) as exc:
-            self.logger.debug(unicode(exc))
+            self.logger.debug(str(exc))
             abort(500, error={"code": exc.error_code, "message": str(exc)})
         except Exception as err:
-            self.logger.error(unicode(err))
+            self.logger.error(str(err))
             abort(500, error={"code": 500, "message": "Internal error"})
 
 
@@ -260,10 +260,10 @@ class NipapPrefixRest(Resource):
             return jsonify(_mangle_prefix(result))
 
         except (AuthError, NipapError) as exc:
-            self.logger.debug(unicode(exc))
+            self.logger.debug(str(exc))
             abort(500, error={"code": exc.error_code, "message": str(exc)})
         except Exception as err:
-            self.logger.error(unicode(err))
+            self.logger.error(str(err))
             abort(500, error={"code": 500, "message": "Internal error"})
 
 
@@ -280,10 +280,10 @@ class NipapPrefixRest(Resource):
             return jsonify(result)
 
         except (AuthError, NipapError) as exc:
-            self.logger.debug(unicode(exc))
+            self.logger.debug(str(exc))
             abort(500, error={"code": exc.error_code, "message": str(exc)})
         except Exception as err:
-            self.logger.error(unicode(err))
+            self.logger.error(str(err))
             abort(500, error={"code": 500, "message": "Internal error"})
 
 
@@ -296,8 +296,8 @@ class NipapPrefixRest(Resource):
             self.nip.remove_prefix(args.get('auth'), args.get('prefix'))
             return jsonify(args.get('prefix'))
         except (AuthError, NipapError) as exc:
-            self.logger.debug(unicode(exc))
+            self.logger.debug(str(exc))
             abort(500, error={"code": exc.error_code, "message": str(exc)})
         except Exception as err:
-            self.logger.error(unicode(err))
+            self.logger.error(str(err))
             abort(500, error={"code": 500, "message": "Internal error"})

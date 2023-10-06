@@ -1,3 +1,3 @@
-Jinja2 python-jinja2
-pynipap python-pynipap
+Jinja2 python3-jinja2
+pynipap python3-pynipap
 nipap nipap-common

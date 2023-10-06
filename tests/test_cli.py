@@ -17,10 +17,10 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 log_format = "%(levelname)-8s %(message)s"
 
-import xmlrpclib
+import xmlrpc.client
 
 server_url = "http://unittest:gottatest@127.0.0.1:1337/XMLRPC"
-s = xmlrpclib.Server(server_url, allow_none=1);
+s = xmlrpc.client.Server(server_url, allow_none=1);
 
 ad = { 'authoritative_source': 'nipap' }
 

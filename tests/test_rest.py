@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: et :
 
 #
@@ -71,7 +71,7 @@ class NipapRestTest(unittest.TestCase):
     cfg = None
     nipap = None
 
-    server_url = "https://unittest:gottatest@127.0.0.1:1338/rest/v1/prefixes"
+    server_url = "http://unittest:gottatest@127.0.0.1:1337/rest/v1/prefixes"
     headers = {"NIPAP-Authoritative-Source": "nipap", "NIPAP-Username": "unittest", "NIPAP-Full-Name": "unit tester"}
 
     def setUp(self):
@@ -168,7 +168,7 @@ class NipapRestTest(unittest.TestCase):
         """
         result = []
         for item in list_of_items:
-            item = dict([(str(k), str(v)) for k, v in item.items()])
+            item = dict([(str(k), str(v)) for k, v in list(item.items())])
             result.append(item)
 
         return result
@@ -178,7 +178,7 @@ class NipapRestTest(unittest.TestCase):
         request = requests.post(self.server_url, headers=self.headers, json = attr)
         text = request.text
         result = json.loads(text)
-        result = dict([(str(k), str(v)) for k, v in result.items()])
+        result = dict([(str(k), str(v)) for k, v in list(result.items())])
 
         return result['id']
 
@@ -192,17 +192,17 @@ class NipapRestTest(unittest.TestCase):
 
         request = requests.post(self.server_url, headers=self.headers, json = attr)
         text = request.text
-        self.assertRegexpMatches(text,"'attr' must be a dict")
+        self.assertRegex(text,"'attr' must be a dict")
 
         attr['prefix'] = '1.3.3.0/24'
         request = requests.post(self.server_url, headers=self.headers, json = attr)
         text = request.text
-        self.assertRegexpMatches(text, "Either description or node must be specified.")
+        self.assertRegex(text, "Either description or node must be specified.")
 
         attr['description'] = 'test prefix'
         request = requests.post(self.server_url, headers=self.headers, json = attr)
         text = request.text
-        self.assertRegexpMatches(text, "Unknown prefix type")
+        self.assertRegex(text, "Unknown prefix type")
 
         attr['type'] = 'assignment'
         attr['order_id'] = 'test'
@@ -212,15 +212,15 @@ class NipapRestTest(unittest.TestCase):
         request = requests.post(self.server_url, headers=self.headers, json = attr)
         text = request.text
         result = json.loads(text)
-        result = dict([(str(k), str(v)) for k, v in result.items()])
+        result = dict([(str(k), str(v)) for k, v in list(result.items())])
         attr['id'] = result['id']
-        self.assertGreater(attr['id'], 0)
+        self.assertGreater(int(attr['id']), 0)
 
         # what we expect the above prefix to look like
         expected = prefix_result_template
         expected['id'] = int(attr['id'])
         expected['display_prefix'] = '1.3.3.0/24'
-        expected = dict([(str(k), str(v)) for k, v in expected.items()])
+        expected = dict([(str(k), str(v)) for k, v in list(expected.items())])
         expected.update(attr)
 
         # list of prefixes through GET request
@@ -242,7 +242,7 @@ class NipapRestTest(unittest.TestCase):
         request = requests.post(self.server_url, headers=self.headers, json = attr, params = parameters)
         text = request.text
         result = json.loads(text)
-        result = dict([(str(k), str(v)) for k, v in result.items()])
+        result = dict([(str(k), str(v)) for k, v in list(result.items())])
 
         # copy expected from 1.3.3.0/24 since we expect most things to look the
         # same for the new prefix (1.3.3.1/32) from 1.3.3.0/24
@@ -271,7 +271,7 @@ class NipapRestTest(unittest.TestCase):
         request = requests.post(self.server_url, headers=self.headers, json = attr, params = parameters)
         text = request.text
         result = json.loads(text)
-        result = dict([(str(k), str(v)) for k, v in result.items()])
+        result = dict([(str(k), str(v)) for k, v in list(result.items())])
         # update expected list
         expected_host2 = expected_host.copy()
         expected_host2['id'] = result['id']
@@ -286,7 +286,7 @@ class NipapRestTest(unittest.TestCase):
         request = requests.post(self.server_url, headers=self.headers, json = attr, params = parameters)
         text = request.text
         result = json.loads(text)
-        result = dict([(str(k), str(v)) for k, v in result.items()])
+        result = dict([(str(k), str(v)) for k, v in list(result.items())])
         # update expected list
         expected_host3 = expected_host.copy()
         expected_host3['id'] = result['id']
@@ -319,7 +319,7 @@ class NipapRestTest(unittest.TestCase):
         attr['type'] = 'assignment'
         attr['order_id'] = 'test'
         prefix_id = self._add_prefix(attr)
-        self.assertGreater(prefix_id, 0)
+        self.assertGreater(int(prefix_id), 0)
 
         # Edit prefix
         parameters = {'id': prefix_id}
@@ -349,7 +349,7 @@ class NipapRestTest(unittest.TestCase):
         attr['type'] = 'assignment'
         attr['order_id'] = 'test'
         prefix_id = self._add_prefix(attr)
-        self.assertGreater(prefix_id, 0)
+        self.assertGreater(int(prefix_id), 0)
 
         # Try editing without/with broken prefix specifier
         parameters = {'foo': prefix_id}
@@ -389,14 +389,14 @@ class NipapRestTest(unittest.TestCase):
         attr['type'] = 'assignment'
         attr['order_id'] = 'test'
         prefix_id = self._add_prefix(attr)
-        self.assertGreater(prefix_id, 0)
+        self.assertGreater(int(prefix_id), 0)
 
         # delete prefix
         parameters = {'id': prefix_id}
         request = requests.delete(self.server_url, headers=self.headers, params=parameters)
         text = request.text
         result = json.loads(text)
-        result = dict([(str(k), str(v)) for k, v in result.items()])
+        result = dict([(str(k), str(v)) for k, v in list(result.items())])
 
         expected = {
                 'prefix': '1.3.4.0/24',
@@ -420,11 +420,11 @@ class NipapRestTest(unittest.TestCase):
         attr['order_id'] = add_orderId_value
         prefix_id = self._add_prefix(attr)
         attr['id'] = prefix_id
-        self.assertGreater(attr['id'], 0)
+        self.assertGreater(int(attr['id']), 0)
 
         expected = prefix_result_template
         expected['display_prefix'] = '1.3.5.0/24'
-        expected = dict([(str(k), str(v)) for k, v in expected.items()])
+        expected = dict([(str(k), str(v)) for k, v in list(expected.items())])
         expected.update(attr)
 
         parameters = {'order_id': search_orderId_value}
@@ -449,11 +449,11 @@ class NipapRestTest(unittest.TestCase):
         attr['order_id'] = add_orderId_value
         prefix_id = self._add_prefix(attr)
         attr['id'] = prefix_id
-        self.assertGreater(attr['id'], 0)
+        self.assertGreater(int(attr['id']), 0)
 
         expected = prefix_result_template
         expected['display_prefix'] = '1.3.6.0/24'
-        expected = dict([(str(k), str(v)) for k, v in expected.items()])
+        expected = dict([(str(k), str(v)) for k, v in list(expected.items())])
         expected.update(attr)
 
         parameters = {'order_id': search_orderId_value}

@@ -9,7 +9,7 @@
 
 from flask import Blueprint, redirect, render_template, url_for
 
-from auth import login_required
+from .auth import login_required
 
 bp = Blueprint('ng', __name__, url_prefix='/ng')
 

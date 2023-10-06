@@ -290,7 +290,7 @@ class TestPrefixTags(unittest.TestCase):
 
         # p3 should have inherited_tags = ['a'] from p1
         res = Prefix.smart_search('1.0.0.0/24', {})
-        self.assertEqual(['a'], res['result'][0].inherited_tags.keys())
+        self.assertEqual(['a'], list(res['result'][0].inherited_tags.keys()))
 
         # edit p3 to become subnet of p2
         p3.prefix = '2.0.0.0/24'
@@ -298,7 +298,7 @@ class TestPrefixTags(unittest.TestCase):
 
         # p3 should have inherited_tags = ['b'] from p2
         res = Prefix.smart_search('2.0.0.0/24', {})
-        self.assertEqual(['b'], res['result'][0].inherited_tags.keys())
+        self.assertEqual(['b'], list(res['result'][0].inherited_tags.keys()))
 
 
     def test_tags1(self):
@@ -313,7 +313,7 @@ class TestPrefixTags(unittest.TestCase):
 
         # p3 should have inherited_tags = ['a'] from p1
         res = Prefix.smart_search('1.0.0.0/10', {})
-        self.assertEqual(['a'], res['result'][0].inherited_tags.keys())
+        self.assertEqual(['a'], list(res['result'][0].inherited_tags.keys()))
 
         p4 = th.add_prefix('1.0.0.0/24', 'reservation', 'test')
         p5 = th.add_prefix('1.0.0.0/23', 'reservation', 'test')
@@ -321,7 +321,7 @@ class TestPrefixTags(unittest.TestCase):
 
         # p4 should have inherited_tags = ['a'] from p1
         res = Prefix.smart_search('1.0.0.0/24', {})
-        self.assertEqual(['a'], res['result'][0].inherited_tags.keys())
+        self.assertEqual(['a'], list(res['result'][0].inherited_tags.keys()))
 
         # change tags on top level prefix
         p1.tags = ['b']
@@ -329,12 +329,12 @@ class TestPrefixTags(unittest.TestCase):
 
         # p4 should have inherited_tags = ['a'] from p1
         res = Prefix.smart_search('1.0.0.0/8', {})
-        self.assertEqual([], res['result'][0].inherited_tags.keys())
-        self.assertEqual(['b'], res['result'][1].inherited_tags.keys())
-        self.assertEqual(['b'], res['result'][2].inherited_tags.keys())
-        self.assertEqual(['b'], res['result'][3].inherited_tags.keys())
-        self.assertEqual(['b'], res['result'][4].inherited_tags.keys())
-        self.assertEqual(['b'], res['result'][5].inherited_tags.keys())
+        self.assertEqual([], list(res['result'][0].inherited_tags.keys()))
+        self.assertEqual(['b'], list(res['result'][1].inherited_tags.keys()))
+        self.assertEqual(['b'], list(res['result'][2].inherited_tags.keys()))
+        self.assertEqual(['b'], list(res['result'][3].inherited_tags.keys()))
+        self.assertEqual(['b'], list(res['result'][4].inherited_tags.keys()))
+        self.assertEqual(['b'], list(res['result'][5].inherited_tags.keys()))
 
 
 
@@ -650,22 +650,22 @@ class TestCountryCodeValue(unittest.TestCase):
         p.status = 'assigned'
         # try to input one character - should fail - this will be a INSERT operation
         p.country = 'a'
-        with self.assertRaisesRegexp(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
+        with self.assertRaisesRegex(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
             p.save()
 
         # try to input one character - should fail - this will be an UPDATE operation
         p.country = 'a'
-        with self.assertRaisesRegexp(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
+        with self.assertRaisesRegex(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
             p.save()
 
         # try to input three character - should fail
         p.country = 'aaa'
-        with self.assertRaisesRegexp(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
+        with self.assertRaisesRegex(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
             p.save()
 
         # try to input a number character - should fail
         p.country = 'a1'
-        with self.assertRaisesRegexp(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
+        with self.assertRaisesRegex(NipapValueError, 'Please enter a two letter country code according to ISO 3166-1 alpha-2'):
             p.save()
 
         # try to input two character - should succeed
@@ -1323,7 +1323,7 @@ class TestVrf(unittest.TestCase):
                 ]
 
         for bv in broken_values:
-            with self.assertRaisesRegexp(pynipap.NipapValueError, 'Invalid input for column rt'):
+            with self.assertRaisesRegex(pynipap.NipapValueError, 'Invalid input for column rt'):
                 v.rt = bv
                 v.save()
 
@@ -1624,7 +1624,7 @@ class TestCli(unittest.TestCase):
         from pynipap import NipapError
 
         # 'FOO' should not be there and should raise an exception
-        with self.assertRaisesRegexp(InvalidCommand, 'Invalid argument:'):
+        with self.assertRaisesRegex(InvalidCommand, 'Invalid argument:'):
             cmd = Command(nipap_cli.cmds, ['address', 'modify', '1.3.3.1/32', 'vrf_rt', 'none', 'set', 'FOO' ])
 
 
@@ -1638,8 +1638,8 @@ class TestCliPrefixAutoType(unittest.TestCase):
 
 
     def mock_cfg(self):
-        import ConfigParser
-        cfg = ConfigParser.ConfigParser()
+        import configparser
+        cfg = configparser.ConfigParser()
         cfg.add_section('global')
         cfg.set('global', 'default_vrf_rt', '-')
         cfg.set('global', 'default_list_vrf_rt', 'all')
@@ -1815,7 +1815,7 @@ class TestCliPrefixAutoType(unittest.TestCase):
             'description': 'host'
             }
 
-        with self.assertRaisesRegexp(SystemExit, "^1$"):
+        with self.assertRaisesRegex(SystemExit, "^1$"):
             nipap_cli.add_prefix({}, opts, {})
 
 
@@ -2015,12 +2015,12 @@ class TestSmartParser(unittest.TestCase):
         success, query = n._parse_vrf_query('"')
         expected['interpretation']['string'] = '"'
         self.assertEqual(success, False)
-        self.assertEquals(query, expected)
+        self.assertEqual(query, expected)
 
         success, query = n._parse_prefix_query('\'')
         expected['interpretation']['string'] = '\''
         self.assertEqual(success, False)
-        self.assertEquals(query, expected)
+        self.assertEqual(query, expected)
 
 
 
@@ -2047,12 +2047,12 @@ class TestSmartParser(unittest.TestCase):
         success, query = n._parse_prefix_query('(')
         expected['interpretation']['string'] = '('
         self.assertEqual(success, False)
-        self.assertEquals(query, expected)
+        self.assertEqual(query, expected)
 
         success, query = n._parse_prefix_query(')')
         expected['interpretation']['string'] = ')'
         self.assertEqual(success, False)
-        self.assertEquals(query, expected)
+        self.assertEqual(query, expected)
 
 
 
@@ -2311,7 +2311,7 @@ class TestSmartParser(unittest.TestCase):
         success, query = n._parse_vrf_query('foo=bar')
 
         self.assertEqual(success, False)
-        self.assertEquals(expected, query)
+        self.assertEqual(expected, query)
 
 
 
@@ -2338,7 +2338,7 @@ class TestSmartParser(unittest.TestCase):
         success, query = n._parse_prefix_query('type=foo')
 
         self.assertEqual(success, False)
-        self.assertEquals(expected, query)
+        self.assertEqual(expected, query)
 
 
 
@@ -3126,7 +3126,7 @@ class TestAvpEmptyName(unittest.TestCase):
         p = Pool()
         p.name = 'test AVP with empty name'
         p.avps = { '': '1337' }
-        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+        with self.assertRaisesRegex(NipapValueError, "AVP with empty name is not allowed"):
             p.save()
 
 
@@ -3137,7 +3137,7 @@ class TestAvpEmptyName(unittest.TestCase):
         p = th.add_pool('test', 'assignment', 31, 112)
 
         p.avps = { '': '1337' }
-        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+        with self.assertRaisesRegex(NipapValueError, "AVP with empty name is not allowed"):
             p.save()
 
 
@@ -3148,7 +3148,7 @@ class TestAvpEmptyName(unittest.TestCase):
         p.status = 'assigned'
         p.description = 'test AVP with empty name'
         p.avps = { '': '1337' }
-        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+        with self.assertRaisesRegex(NipapValueError, "AVP with empty name is not allowed"):
             p.save()
 
 
@@ -3157,7 +3157,7 @@ class TestAvpEmptyName(unittest.TestCase):
         p = th.add_prefix('192.0.2.0/24', 'assignment', 'test AVP with empty name')
 
         p.avps = { '': '1337' }
-        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+        with self.assertRaisesRegex(NipapValueError, "AVP with empty name is not allowed"):
             p.save()
 
 
@@ -3166,7 +3166,7 @@ class TestAvpEmptyName(unittest.TestCase):
         v.rt = '123:456'
         v.name = 'test AVP with empty name'
         v.avps = { '': '1337' }
-        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+        with self.assertRaisesRegex(NipapValueError, "AVP with empty name is not allowed"):
             v.save()
 
 
@@ -3177,7 +3177,7 @@ class TestAvpEmptyName(unittest.TestCase):
         v.save()
 
         v.avps = { '': '1337' }
-        with self.assertRaisesRegexp(NipapValueError, "AVP with empty name is not allowed"):
+        with self.assertRaisesRegex(NipapValueError, "AVP with empty name is not allowed"):
             v.save()
 
 
@@ -3198,23 +3198,23 @@ class TestDatabaseConstraints(unittest.TestCase):
         th = TestHelper()
         d = "test description"
         th.add_prefix('1.3.0.0/16', 'reservation', d)
-        with self.assertRaisesRegexp(NipapDuplicateError, "Duplicate"):
+        with self.assertRaisesRegex(NipapDuplicateError, "Duplicate"):
             # exact duplicate
             th.add_prefix('1.3.0.0/16', 'reservation', d)
         p2 = th.add_prefix('1.3.3.0/24', 'reservation', d)
         p3 = th.add_prefix('1.3.3.0/27', 'assignment', d)
         th.add_prefix('1.3.3.0/32', 'host', d)
         th.add_prefix('1.3.3.1/32', 'host', d)
-        with self.assertRaisesRegexp(NipapValueError, "Prefix of type host must have all bits set in netmask"):
+        with self.assertRaisesRegex(NipapValueError, "Prefix of type host must have all bits set in netmask"):
             # do not allow /31 as type 'host'
             th.add_prefix('1.3.3.2/31', 'host', d)
-        with self.assertRaisesRegexp(NipapValueError, "Parent prefix .* is of type assignment"):
+        with self.assertRaisesRegex(NipapValueError, "Parent prefix .* is of type assignment"):
             # unable to create assignment within assignment
             th.add_prefix('1.3.3.3/32', 'assignment', d)
-        with self.assertRaisesRegexp(NipapValueError, "contains hosts"):
+        with self.assertRaisesRegex(NipapValueError, "contains hosts"):
             # unable to remove assignment containing hosts
             p3.remove()
-        with self.assertRaisesRegexp(NipapValueError, "'assignment' must not have any subnets other than of type 'host'"):
+        with self.assertRaisesRegex(NipapValueError, "'assignment' must not have any subnets other than of type 'host'"):
             p2.type = 'assignment'
             p2.save()
 

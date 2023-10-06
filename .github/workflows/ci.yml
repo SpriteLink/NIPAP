@@ -6,14 +6,19 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  ACTIONS_RUNNER_DEBUG: true
+  ACTIONS_STEP_DEBUG: true
+
 jobs:
   test:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         install: [ pip, apt ]
-        upgrade: [ true, false ]
+        # Upgrade tests temporary disabled as Python 2 version cannot be installed on Ubuntu 20.04
+        upgrade: [ false ]
         exclude:
           - install: pip
             upgrade: true
@@ -26,7 +31,7 @@ jobs:
     - name: "Install dependencies and prepare NIPAP"
       run: |
         # Set up NIPAP repo
-        echo "deb http://spritelink.github.io/NIPAP/repos/apt stable main extra" | sudo tee /etc/apt/sources.list.d/nipap.list
+        echo "deb http://spritelink.github.io/NIPAP/repos/apt testing main extra" | sudo tee /etc/apt/sources.list.d/nipap.list
         wget -O - https://spritelink.github.io/NIPAP/nipap.gpg.key | sudo apt-key add -
         sudo apt update -qq
 
@@ -37,25 +42,24 @@ jobs:
           debhelper \
           dh-python \
           junit4 \
-          python-docutils \
-          python-nose \
-          python-requests \
+          libldap-dev \
+          libsasl2-dev \
+          python3-docutils \
+          python3-nose \
           python3-requests \
-          python-setuptools \
           python3-setuptools \
-          python-wheel \
           python3-wheel \
           python3-all \
           default-jdk \
           gradle \
           rename \
-          postgresql-10 \
-          postgresql-10-ip4r
+          postgresql-12 \
+          postgresql-12-ip4r
 
         # Drop and re-create cluster to be bound to default port
         for version in `pg_lsclusters | tail -n-2 | awk '{ print $1 }'`; do sudo pg_dropcluster $version main; done
-        sudo pg_createcluster --start 10 main
-        sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' -e 's/port = 1337/port = 1338/' -e "s/#use_ssl = false/use_ssl = true/" nipap-cli/nipaprc > ~/.nipaprc
+        sudo pg_createcluster --start 12 main
+        sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
         chmod 0600 ~/.nipaprc
 
         # Set up CA and generate SSL cert
@@ -74,7 +78,7 @@ jobs:
       if: ${{ matrix.install == 'pip' }}
       run: |
         # install nipap dependencies
-        sudo -H pip install -r nipap/requirements.txt
+        sudo -H pip3 install -r nipap/requirements.txt
         # SQL
         sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres
         # move configuration file into place
@@ -91,7 +95,7 @@ jobs:
         # install nipap-cli dependencies
         sudo -H pip3 install -r nipap-cli/requirements.txt
         # start nipap backend
-        nipap/nipapd --no-pid-file -c /etc/nipap/nipap.conf
+        nipap/nipapd --no-pid-file -c /etc/nipap/nipap.conf -df 2>&1 > /tmp/nipap.log &
 
     - name: "Install latest release from apt"
       if: ${{ matrix.install == 'apt' && matrix.upgrade == true }}
@@ -133,26 +137,33 @@ jobs:
         if [ `grep -c ssl_port /etc/nipap/nipap.conf` -eq 0 ]; then \
           # No SSL config in file - add from scratch
           sudo sed '/^port *=.*/a ssl_port = 1338\nssl_cert_file = \/tmp\/ca\/test.bundle.crt\nssl_key_file = \/tmp\/ca\/test.key' -i /etc/nipap/nipap.conf; \
-          else \
+        else \
           sudo sed -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -i /etc/nipap/nipap.conf; \
-          fi
+        fi
         # create local user for unittests
         sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"
         sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"
-        sudo sed -e "s/db_host *= *[^ ]\+/db_host = localhost/" -i /etc/nipap/nipap.conf
-        sudo /etc/init.d/nipapd restart
+        sudo sed -e "s/^db_host *=.*/db_host = localhost/" -e "s/{{SYSLOG}}/true/" -e "s/^debug.\+/debug = true/" -e "s/^user/#user/" -i /etc/nipap/nipap.conf
+        sudo systemctl restart nipapd.service
 
     - name: "Verify pre-upgrade data"
       if: ${{ matrix.upgrade == true }}
-      run: nosetests tests/upgrade-after.py
+      run: nosetests3 tests/upgrade-after.py
 
     - name: "Run test suite"
       env:
         REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
       run: |
-        nosetests tests/xmlrpc.py
-        nosetests tests/nipaptest.py
-        nosetests tests/test_cli.py
-        nosetests tests/nipap-ro.py
-        nosetests tests/test_rest.py
+        nosetests3 tests/test_xmlrpc.py
+        nosetests3 tests/nipaptest.py
+        nosetests3 tests/test_cli.py
+        nosetests3 tests/test_nipap_ro.py
+        nosetests3 tests/test_rest.py
         make -C jnipap test
+
+    - name: "Accident analysis"
+      if: failure()
+      run: |
+        sudo cat /etc/nipap/nipap.conf
+        sudo cat /var/log/syslog
+        sudo cat /tmp/nipap.log || true
