@@ -6,7 +6,7 @@ from nipap.nipapconfig import NipapConfig
 
 import pynipap
 
-__version__     = "0.31.1"
+__version__     = "0.31.2"
 __author__      = "Kristian Larsson, Lukas Garberg"
 __author_email__ = "kll@tele2.net, lukas@spritelink.net"
 __license__     = "MIT"
