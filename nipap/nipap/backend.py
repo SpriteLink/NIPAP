@@ -2749,13 +2749,14 @@ class Nipap:
                 'name': None
             }
 
-        # Handle VRF - find the correct one and remove bad VRF keys.
-        vrf = self._get_vrf(auth, attr)
-        if 'vrf_rt' in attr:
-            del(attr['vrf_rt'])
-        if 'vrf_name' in attr:
-            del(attr['vrf_name'])
-        attr['vrf_id'] = vrf['id']
+        # Handle VRF in attributes - find the correct one and remove bad VRF keys.
+        if 'vrf_rt' in attr or 'vrf_name' in attr or 'vrf_id' in attr:
+            vrf = self._get_vrf(auth, attr)
+            if 'vrf_rt' in attr:
+                del(attr['vrf_rt'])
+            if 'vrf_name' in attr:
+                del(attr['vrf_name'])
+            attr['vrf_id'] = vrf['id']
 
         self._check_attr(attr, [], _prefix_attrs)
 
@@ -2780,9 +2781,6 @@ class Nipap:
             'authenticated_as': auth.authenticated_as,
             'full_name': auth.full_name,
             'authoritative_source': auth.authoritative_source,
-            'vrf_id': vrf['id'],
-            'vrf_rt': vrf['rt'],
-            'vrf_name': vrf['name']
         }
 
         for p in prefixes:
