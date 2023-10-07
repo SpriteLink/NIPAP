@@ -109,7 +109,7 @@ class Benchmark:
         # print 'error', error
 
     def setupReqs(self):
-        for i in range(0, self.concurrent_reqs):  # make the initial pool of requests
+        for _i in range(0, self.concurrent_reqs):  # make the initial pool of requests
             self.makeRequest()
 
 
