@@ -28,7 +28,7 @@ if __name__ == '__main__':
     userrcfile = os.path.expanduser('~/.nipaprc')
 
     # read configuration
-    cfg = configparser.ConfigParser({'prefix_list_columns': None })
+    cfg = configparser.ConfigParser({'prefix_list_columns': ''})
     cfg.read(userrcfile)
     nipap_cli.cfg = cfg
 
