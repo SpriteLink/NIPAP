@@ -1,3 +1,8 @@
+Version 0.32.0 - Poseidon
+-------------------------
+ * nipapd, nipap-www and whoisd running on Python 3 (#1316)
+ * Fix for special characters in passwords in NIPAP CLI
+
 Version 0.31.2 - Persephone
 ---------------------------
  * Removed last bits of Pylons
