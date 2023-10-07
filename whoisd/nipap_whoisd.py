@@ -26,9 +26,9 @@ else:
    REDIRECT_TO = "/dev/null"
 
 def createDaemon():
-   """Detach a process from the controlling terminal and run it in the
-   background as a daemon.
-   """
+    """Detach a process from the controlling terminal and run it in the
+    background as a daemon.
+    """
 
     try:
         # Fork a child process so the parent can exit.  This returns control to
