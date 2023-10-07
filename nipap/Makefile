@@ -49,7 +49,8 @@ clean:
 		debian/nipapd.prerm.debhelper debian/nipapd.substvars \
 		debian/nipap-common.debhelper.log \
 		debian/nipap-common.postinst.debhelper \
-		debian/nipap-common.prerm.debhelper debian/nipap-common.substvars
+		debian/nipap-common.prerm.debhelper debian/nipap-common.substvars \
+		debian/.debhelper
 	find . -name '*.pyc' -delete
 
 VER := $(shell head -n1 ../NEWS | awk '{print $$2}')

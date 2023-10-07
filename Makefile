@@ -72,6 +72,7 @@ clean:
 	rm -f *.tar.gz
 	rm -f *.tar.xz
 	rm -f *.build
+	rm -f *.buildinfo
 	rm -f *.changes
 	rm -f *.dsc
 	rm -f *.diff.gz
