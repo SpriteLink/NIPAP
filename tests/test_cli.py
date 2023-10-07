@@ -5,6 +5,7 @@ import logging
 import unittest
 import sys
 import os
+import xmlrpc.client
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(MODULE_DIR + '/../nipap/')
@@ -17,10 +18,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 log_format = "%(levelname)-8s %(message)s"
 
-import xmlrpc.client
-
 server_url = "http://unittest:gottatest@127.0.0.1:1337/XMLRPC"
-s = xmlrpc.client.Server(server_url, allow_none=1);
+s = xmlrpc.client.Server(server_url, allow_none=1)
 
 ad = { 'authoritative_source': 'nipap' }
 

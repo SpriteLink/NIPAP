@@ -192,7 +192,7 @@ class NipapRestTest(unittest.TestCase):
 
         request = requests.post(self.server_url, headers=self.headers, json = attr)
         text = request.text
-        self.assertRegex(text,"'attr' must be a dict")
+        self.assertRegex(text, "'attr' must be a dict")
 
         attr['prefix'] = '1.3.3.0/24'
         request = requests.post(self.server_url, headers=self.headers, json = attr)

@@ -11,12 +11,10 @@ import time
 import pytz
 import xmlrpc.client
 from functools import wraps
-from flask import Flask, current_app
+from flask import current_app
 from flask import request, Response
 from flask_xmlrpcre.xmlrpcre import XMLRPCHandler, Fault
-from flask_compress import Compress
 
-from .nipapconfig import NipapConfig
 from .backend import Nipap, NipapError
 import nipap
 from .authlib import AuthFactory, AuthError
@@ -82,7 +80,7 @@ def requires_auth(f):
         if not isinstance(nipap_args, dict):
             self.logger.debug("Function argument is not struct")
             raise Fault(1000, ("Function argument must be XML-RPC struct/Python dict (Python {} given).".format(
-                type(nipap_args).__name__ )))
+                type(nipap_args).__name__)))
 
         # fetch auth options
         try:

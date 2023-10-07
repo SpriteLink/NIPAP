@@ -7,10 +7,9 @@ import re
 
 import IPy
 
-from pyparsing import Combine, Forward, Group, Literal, nestedExpr, OneOrMore, ParseResults, quotedString, Regex, \
-    QuotedString, Word, ZeroOrMore, alphanums, nums, oneOf
-
-from .errors import *
+from pyparsing import Combine, Forward, Group, Literal, nestedExpr, \
+    ParseResults, quotedString, Regex, QuotedString, Word, ZeroOrMore, \
+    nums, oneOf
 
 
 class SmartParser:
@@ -104,7 +103,7 @@ class SmartParser:
         # IPv4 address
         ipv4_oct = Regex("((2(5[0-5]|[0-4][0-9])|[01]?[0-9][0-9]?))")
         comp_ipv4_address = Combine(ipv4_oct + ('.' + ipv4_oct * 3))
-        ipv4_address = Combine(ipv4_oct + ('.' + ipv4_oct * 3)).setResultsName('ipv4_address')
+        Combine(ipv4_oct + ('.' + ipv4_oct * 3)).setResultsName('ipv4_address')
 
         # IPv6 address
         ipv6_address = Regex(
