@@ -22,6 +22,8 @@ import sys
 
 import IPy
 
+from urllib.parse import quote
+
 import pynipap
 from pynipap import Pool, Prefix, Tag, VRF, NipapError
 from .command import Command
@@ -68,8 +70,12 @@ def setup_connection():
     try:
         con_params = {
             'protocol': determine_protocol(),
-            'username': os.getenv('NIPAP_USERNAME') or cfg.get('global', 'username'),
-            'password': os.getenv('NIPAP_PASSWORD') or cfg.get('global', 'password'),
+            'username': quote(
+                os.getenv('NIPAP_USERNAME') or cfg.get('global', 'username')
+            ),
+            'password': quote(
+                os.getenv('NIPAP_PASSWORD') or cfg.get('global', 'password')
+            ),
             'hostname': os.getenv('NIPAP_HOST') or cfg.get('global', 'hostname'),
             'port'    : os.getenv('NIPAP_PORT') or cfg.get('global', 'port')
         }
