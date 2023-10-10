@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+ACTION=$1
+OLD_VERSION=$2
+NEW_VERSION=$3
+
+# Notify the user that actions needs to be taken when upgrading from a version
+# pre 0.32.0 to a version post 0.32.0
+if [ -n "$OLD_VERSION" ]; then
+	OLD_MAJOR=`echo $OLD_VERSION | cut -d . -f 1`
+	OLD_MINOR=`echo $OLD_VERSION | cut -d . -f 2`
+
+	if [ \( $OLD_MAJOR -le 0 \) -a \( $OLD_MINOR -lt 32 \) ]; then
+		db_input high nipap-www/python3-warning || true
+		db_go
+	fi
+fi

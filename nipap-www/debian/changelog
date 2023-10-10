@@ -1,3 +1,10 @@
+nipap-www (0.32.0-1) stable; urgency=medium
+
+  * nipapd, nipap-www and whoisd running on Python 3 (#1316)
+  * Fix for special characters in passwords in NIPAP CLI
+
+ -- Lukas Garberg <lukas@spritelink.net>  Sat, 07 Oct 2023 22:03:37 +0200
+
 nipap-www (0.31.2-1) stable; urgency=medium
 
   * Removed last bits of Pylons
