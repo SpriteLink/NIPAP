@@ -79,3 +79,24 @@ Description: Adds support for creating XML-RPC APIs to Flask
  * `development version
    <http://bitbucket.org/leafstorm/flask-xml-rpc/get/tip.gz#egg=Flask-XML-RPC-dev>`_
 
+Package: python3-flask-xml-rpc-re
+Source: flask-xml-rpc-re
+Version: 0.1.4-1
+Architecture: all
+Maintainer: Michael Keck <hi@cr0ydon.com>
+Installed-Size: 41
+Depends: python3-flask, python3:any (>= 3.6~)
+Multi-Arch: foreign
+Homepage: https://github.com/Croydon/flask-xml-rpc-reloaded
+Priority: optional
+Section: python
+Filename: pool/extra/f/flask-xml-rpc-re/python3-flask-xml-rpc-re_0.1.4-1_all.deb
+Size: 7664
+SHA256: 9a716b3e7bccee3942feebfeb1cc0d4ce390dc3126fdba951a8d842ec4a6830d
+SHA1: 67e86f620d1fc6fd497680d55dd42c0f74182583
+MD5sum: 49c3100752e0672ec3468af1483a0e8e
+Description: A library that lets your Flask apps provide XML-RPC APIs
+ Flask-XML-RPC-Reloaded is a fork of the original Flask-XML-RPC, which was
+ unfortunately abandoned. This version should be 100% compatible and therefore
+ a drop-in replacement for Flask-XML-RPC.
+
