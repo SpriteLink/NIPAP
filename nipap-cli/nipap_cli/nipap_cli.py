@@ -70,12 +70,8 @@ def setup_connection():
     try:
         con_params = {
             'protocol': determine_protocol(),
-            'username': quote(
-                os.getenv('NIPAP_USERNAME') or cfg.get('global', 'username')
-            ),
-            'password': quote(
-                os.getenv('NIPAP_PASSWORD') or cfg.get('global', 'password')
-            ),
+            'username': os.getenv('NIPAP_USERNAME') or cfg.get('global', 'username'),
+            'password': os.getenv('NIPAP_PASSWORD') or cfg.get('global', 'password'),
             'hostname': os.getenv('NIPAP_HOST') or cfg.get('global', 'hostname'),
             'port'    : os.getenv('NIPAP_PORT') or cfg.get('global', 'port')
         }
@@ -89,6 +85,10 @@ def setup_connection():
     if con_params['password'] is None:
         import getpass
         con_params['password'] = getpass.getpass()
+
+    # Quote username & password
+    con_params['username'] = quote(con_params['username'])
+    con_params['password'] = quote(con_params['password'])
 
     # build XML-RPC URI
     pynipap.xmlrpc_uri = "%(protocol)s://%(username)s:%(password)s@%(hostname)s:%(port)s" % con_params
