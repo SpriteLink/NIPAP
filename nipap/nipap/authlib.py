@@ -540,15 +540,18 @@ class LdapAuth(BaseAuth):
                 self._ldap_search.format(ldap.dn.escape_dn_chars(self.username)),
                 ['cn', 'memberOf'],
             )
+
+            # Data received from LDAP is bytes, make sure to decode/encode
+            # accordingly before using it
             if res[0][1]['cn'][0] is not None:
-                self.full_name = res[0][1]['cn'][0]
+                self.full_name = res[0][1]['cn'][0].decode('utf-8')
             # check for ro_group membership if ro_group is configured
             if self._ldap_ro_group:
-                if self._ldap_ro_group in res[0][1].get('memberOf', []):
+                if self._ldap_ro_group.encode('utf-8') in res[0][1].get('memberOf', []):
                     self.readonly = True
             # check for rw_group membership if rw_group is configured
             if self._ldap_rw_group:
-                if self._ldap_rw_group in res[0][1].get('memberOf', []):
+                if self._ldap_rw_group.encode('utf-8') in res[0][1].get('memberOf', []):
                     self.readonly = False
                 else:
                     # if ro_group is configured, and the user is a member of
