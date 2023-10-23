@@ -210,6 +210,7 @@ if __name__ == '__main__':
         # need a+ to be able to read PID from file
         try:
             lf = open(cfg.get('nipapd', 'pid_file'), 'a+')
+            os.chmod(cfg.get('nipapd', 'pid_file'), 0o644)
             lf.seek(0)
         except IOError as exc:
             logger.error("Unable to open PID file '" + str(exc.filename) + "': " + str(exc.strerror))
