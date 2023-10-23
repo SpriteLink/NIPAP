@@ -16,6 +16,7 @@ CONFIGFILE=/etc/nipap/nipap.conf
 NAME=NIPAPd
 PIDFILE=/var/run/nipap/nipapd.pid
 PIDDIR=`dirname $PIDFILE`
+USER=nipap
 
 . /lib/lsb/init-functions
 
@@ -74,7 +75,7 @@ case "$1" in
 		log_daemon_msg "Stopping NIPAPd XML-RPC server" "nipapd"
 		RUNNING=$(running)
 		if [ -n "$RUNNING" ]; then
-			if start-stop-daemon --stop --pidfile $PIDFILE --retry 30; then
+			if start-stop-daemon --stop --pidfile $PIDFILE --user $USER --retry 30; then
 				log_end_msg 0
 			else
 				log_end_msg 1
