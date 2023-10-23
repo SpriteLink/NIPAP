@@ -17,8 +17,7 @@ jobs:
     strategy:
       matrix:
         install: [ pip, apt ]
-        # Upgrade tests temporary disabled as Python 2 version cannot be installed on Ubuntu 20.04
-        upgrade: [ false ]
+        upgrade: [ true, false ]
         exclude:
           - install: pip
             upgrade: true
@@ -102,10 +101,6 @@ jobs:
       run: |
         # Install NIPAP packages from official repo
         sudo apt install -qq nipapd nipap-www nipap-cli
-        # bump version so that we know we are upgrading beyond what is installed
-        (echo -e 'Version 9999.9.9\n------------------\n * Test version for automatic upgrade test'; cat NEWS) > NEWS2
-        mv NEWS2 NEWS
-        make bumpversion
         # populate answers to nipapd package install questions and reconfigure
         echo 'set nipapd/database_host localhost' | sudo debconf-communicate
         echo 'set nipapd/local_db_autoconf true' | sudo debconf-communicate
@@ -116,9 +111,13 @@ jobs:
         sudo sed -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -i /etc/nipap/nipap.conf
         # create local user for unittest and restart
         sudo nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest
-        sudo /etc/init.d/nipapd restart
-        # if upgrade, add some data to the database that we can verify later
-        nosetests tests/upgrade-before.py
+        sudo systemctl restart nipapd.service
+        # add some data to the database that we can verify later
+        nosetests3 tests/upgrade-before.py
+        # bump version so that we know we are upgrading beyond what is installed
+        (echo -e 'Version 9999.9.9\n------------------\n * Test version for automatic upgrade test'; cat NEWS) > NEWS2
+        mv NEWS2 NEWS
+        make bumpversion
 
     - name: "Build and install Debian packages"
       if: ${{ matrix.install == 'apt' }}
