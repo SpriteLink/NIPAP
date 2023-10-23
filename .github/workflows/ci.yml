@@ -113,7 +113,7 @@ jobs:
         sudo nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest
         sudo systemctl restart nipapd.service
         # add some data to the database that we can verify later
-        nosetests tests/upgrade-before.py
+        nosetests3 tests/upgrade-before.py
         # bump version so that we know we are upgrading beyond what is installed
         (echo -e 'Version 9999.9.9\n------------------\n * Test version for automatic upgrade test'; cat NEWS) > NEWS2
         mv NEWS2 NEWS
