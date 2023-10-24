@@ -112,6 +112,7 @@ jobs:
         # create local user for unittest and restart
         sudo nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n unittest
         sudo systemctl restart nipapd.service
+        sudo systemctl status nipapd.service
         # add some data to the database that we can verify later
         nosetests3 tests/upgrade-before.py
         # bump version so that we know we are upgrading beyond what is installed
@@ -144,6 +145,7 @@ jobs:
         sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"
         sudo sed -e "s/^db_host *=.*/db_host = localhost/" -e "s/{{SYSLOG}}/true/" -e "s/^debug.\+/debug = true/" -e "s/^user/#user/" -i /etc/nipap/nipap.conf
         sudo systemctl restart nipapd.service
+        sudo systemctl status nipapd.service
 
     - name: "Verify pre-upgrade data"
       if: ${{ matrix.upgrade == true }}
@@ -163,6 +165,7 @@ jobs:
     - name: "Accident analysis"
       if: failure()
       run: |
+        sudo systemctl status nipapd.service
         sudo cat /etc/nipap/nipap.conf
         sudo cat /var/log/syslog
         sudo cat /tmp/nipap.log || true
