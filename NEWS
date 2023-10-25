@@ -1,3 +1,7 @@
+Version 0.32.1 - Poseidon
+-------------------------
+ * Fix bug where data fetched from LDAP caused a crash (#1347)
+
 Version 0.32.0 - Poseidon
 -------------------------
  * nipapd, nipap-www and whoisd running on Python 3 (#1316)
