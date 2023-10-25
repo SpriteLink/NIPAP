@@ -1,3 +1,9 @@
+nipap-whoisd (0.32.1-1) stable; urgency=medium
+
+  * Fix bug where data fetched from LDAP caused a crash (#1347)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 25 Oct 2023 16:44:40 +0200
+
 nipap-whoisd (0.32.0-1) stable; urgency=medium
 
   * nipapd, nipap-www and whoisd running on Python 3 (#1316)
