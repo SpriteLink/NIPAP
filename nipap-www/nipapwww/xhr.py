@@ -6,6 +6,8 @@ from pynipap import NipapError, Pool, Prefix, Tag, VRF
 
 from .auth import login_required
 
+from .tracing import create_span
+
 
 bp = Blueprint('xhr', __name__, url_prefix='/xhr')
 
@@ -65,6 +67,7 @@ def extract_pool_attr(req):
 # TODO: Is this used any more?
 @bp.route('/list_vrf')
 @login_required
+@create_span
 def list_vrf():
     """ List VRFs and return JSON encoded result.
     """
@@ -81,6 +84,7 @@ def list_vrf():
 
 @bp.route('/smart_search_vrf', methods=('GET', 'POST'))
 @login_required
+@create_span
 def smart_search_vrf():
     """ Perform a smart VRF search.
 
@@ -131,6 +135,7 @@ def smart_search_vrf():
 
 @bp.route('/add_vrf', methods=('GET', 'POST'))
 @login_required
+@create_span
 def add_vrf():
     """ Add a new VRF to NIPAP and return its data.
     """
@@ -159,6 +164,7 @@ def add_vrf():
 
 @bp.route('/edit_vrf/<id>', methods=('GET', 'POST'))
 @login_required
+@create_span
 def edit_vrf(id):
     """ Edit a VRF.
     """
@@ -193,6 +199,7 @@ def edit_vrf(id):
 
 @bp.route('/remove_vrf/<id>', methods=('GET', 'POST'))
 @login_required
+@create_span
 def remove_vrf(id):
     """ Remove a VRF.
     """
@@ -211,6 +218,7 @@ def remove_vrf(id):
 
 @bp.route('/list_pool', methods=('GET', 'POST'))
 @login_required
+@create_span
 def list_pool():
     """ List pools and return JSON encoded result.
     """
@@ -233,6 +241,7 @@ def list_pool():
 
 @bp.route('/smart_search_pool')
 @login_required
+@create_span
 def smart_search_pool():
     """ Perform a smart pool search.
 
@@ -273,6 +282,7 @@ def smart_search_pool():
 
 @bp.route('/add_pool', methods=('GET', 'POST'))
 @login_required
+@create_span
 def add_pool():
     """ Add a pool.
     """
@@ -307,6 +317,7 @@ def add_pool():
 
 @bp.route('/edit_pool/<id>', methods=('GET', 'POST'))
 @login_required
+@create_span
 def edit_pool(id):
     """ Edit a pool.
     """
@@ -341,6 +352,7 @@ def edit_pool(id):
 
 @bp.route('/remove_pool/<id>', methods=('GET', 'POST'))
 @login_required
+@create_span
 def remove_pool(id):
     """ Remove a pool.
     """
@@ -359,6 +371,7 @@ def remove_pool(id):
 
 @bp.route('/list_prefix', methods=('GET', 'POST'))
 @login_required
+@create_span
 def list_prefix():
     """ List prefixes and return JSON encoded result.
     """
@@ -378,6 +391,7 @@ def list_prefix():
 
 @bp.route('/search_prefix', methods=('GET', 'POST'))
 @login_required
+@create_span
 def search_prefix():
     """ Search prefixes. Does not yet incorporate all the functions of the
         search_prefix API function due to difficulties with transferring
@@ -446,6 +460,7 @@ def search_prefix():
 
 @bp.route('/smart_search_prefix', methods=('GET', 'POST'))
 @login_required
+@create_span
 def smart_search_prefix():
     """ Perform a smart search.
 
@@ -559,6 +574,7 @@ def smart_search_prefix():
 
 @bp.route('/add_prefix', methods=('GET', 'POST'))
 @login_required
+@create_span
 def add_prefix():
     """ Add prefix according to the specification.
 
@@ -676,6 +692,7 @@ def add_prefix():
 
 @bp.route('/edit_prefix/<id>', methods=('GET', 'POST'))
 @login_required
+@create_span
 def edit_prefix(id):
     """ Edit a prefix.
     """
@@ -755,6 +772,7 @@ def edit_prefix(id):
 
 @bp.route('/remove_prefix/<id>', methods=('GET', 'POST'))
 @login_required
+@create_span
 def remove_prefix(id):
     """ Remove a prefix.
     """
@@ -773,6 +791,7 @@ def remove_prefix(id):
 
 @bp.route('/add_current_vrf', methods=('GET', 'POST'))
 @login_required
+@create_span
 def add_current_vrf():
     """ Add VRF to filter list session variable
     """
@@ -798,6 +817,7 @@ def add_current_vrf():
 
 @bp.route('/del_current_vrf', methods=('GET', 'POST'))
 @login_required
+@create_span
 def del_current_vrf():
     """ Remove VRF to filter list session variable
     """
@@ -812,6 +832,7 @@ def del_current_vrf():
 
 @bp.route('/get_current_vrfs')
 @login_required
+@create_span
 def get_current_vrfs():
     """ Return VRF filter list from session variable
 
@@ -856,6 +877,7 @@ def get_current_vrfs():
 
 @bp.route('/list_tags')
 @login_required
+@create_span
 def list_tags(self):
     """ List Tags and return JSON encoded result.
     """

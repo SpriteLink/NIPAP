@@ -38,6 +38,18 @@ def create_app(test_config=None):
     # configure pynipap
     pynipap.xmlrpc_uri = app.config["XMLRPC_URI"]
 
+    # configure tracing
+    if nipap_config.has_section("tracing"):
+        try:
+            import tracing
+            from opentelemetry.instrumentation.wsgi import OpenTelemetryMiddleware
+            tracing.init_tracing("nipap-www", nipap_config.get("tracing", "otlp_grpc_endpoint"))
+            app.wsgi_app = OpenTelemetryMiddleware(app.wsgi_app)
+        except KeyError:
+            pass
+        except ImportError:
+            pass
+
     # Set up blueprints
     from . import auth, ng, prefix, static, version, xhr
     app.register_blueprint(auth.bp)
