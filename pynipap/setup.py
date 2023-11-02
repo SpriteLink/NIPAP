@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from distutils.core import setup
 import sys
@@ -26,7 +26,6 @@ setup(
             'License :: OSI Approved :: MIT License',
             'Natural Language :: English',
             'Operating System :: POSIX :: Linux',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
             'Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware'
             ]

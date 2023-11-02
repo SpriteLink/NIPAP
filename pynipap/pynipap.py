@@ -206,11 +206,7 @@
 """
 import sys
 import logging
-if sys.version_info[0] < 3:
-    import xmlrpclib
-    int = long
-else:
-    import xmlrpc.client as xmlrpclib
+import xmlrpc.client as xmlrpclib
 
 __version__		= "0.32.1"
 __author__		= "Kristian Larsson, Lukas Garberg"

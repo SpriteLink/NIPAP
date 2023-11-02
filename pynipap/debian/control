@@ -3,24 +3,13 @@ Maintainer: Lukas Garberg <lukas@spritelink.net>
 Section: python
 Priority: optional
 Build-Depends: debhelper (>= 8), dh-python,
-               python (>= 2.7) | python2 (>= 2.7),
-               python3 (>= 3.1)
-X-Python-Version: >= 2.7
-X-Python3-Version: >= 3.1
+               python3 (>= 3.6)
+X-Python3-Version: >= 3.6
 Standards-Version: 4.4.0
-
-Package: python-pynipap
-Architecture: all
-Depends: ${misc:Depends}, python (>= 2.7) | python2 (>= 2.7)
-Breaks: ${python:Breaks}
-Description: Python module for accessing NIPAP
- This package contains a client library for NIPAP. It's function is similar to
- a simple ORM, which hides much of the complexity of working directly against
- the XML-RPC interface.
 
 Package: python3-pynipap
 Architecture: all
-Depends: ${misc:Depends}, python3 (>= 3.1)
+Depends: ${misc:Depends}, python3 (>= 3.6)
 Breaks: ${python3:Breaks}
 Description: Python 3 module for accessing NIPAP
  This package contains a client library for NIPAP. It's function is similar to
