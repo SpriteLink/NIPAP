@@ -89,7 +89,6 @@ jobs:
         sudo nipap/nipap-passwd add -u unittest -p gottatest -n unittest
         sudo nipap/nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"
         # install pynipap
-        cd pynipap; sudo python setup.py install; cd ..
         cd pynipap; sudo python3 setup.py install; cd ..
         # install nipap-cli dependencies
         sudo -H pip3 install -r nipap-cli/requirements.txt
