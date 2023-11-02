@@ -14,7 +14,7 @@ from functools import wraps
 from flask import Flask, request, Response, got_request_exception, jsonify
 from flask_restful import Resource, Api, abort
 
-from .backend import Nipap, NipapError
+from .backend import Nipap, NipapError, prefix_search_options_spec
 import nipap
 from .authlib import AuthFactory, AuthError
 
@@ -219,11 +219,15 @@ class NipapPrefixRest(Resource):
 
         query = args.get('prefix')
         search_query = {}
+        search_options = {}
         if query is not None:
             # Create search query dict from request params
             query_parts = []
-            for field, search_value in list(query.items()):
-                query_parts.append(get_query_for_field(field, search_value))
+            for field, value in list(query.items()):
+                if field in prefix_search_options_spec.keys():
+                    search_options[field] = value
+                else:
+                    query_parts.append(get_query_for_field(field, value))
             search_query = query_parts[0]
             for query_part in query_parts[1:]:
                 search_query = {
@@ -233,7 +237,7 @@ class NipapPrefixRest(Resource):
                 }
 
         try:
-            result = self.nip.search_prefix(args.get('auth'), search_query)
+            result = self.nip.search_prefix(args.get('auth'), search_query, search_options)
 
             # mangle result
             result['result'] = [ _mangle_prefix(prefix) for prefix in result['result'] ]
