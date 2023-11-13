@@ -481,6 +481,45 @@ class NipapRestTest(unittest.TestCase):
 
         self.assertTrue(get_prefix_request.text.__contains__('\'prefixeere\' unknown'))
 
+    def test_prefix_pagination(self):
+        """ Add prefixes with the same order_id, expect different number of prefixes in result
+            using max_result and offset
+        """
+
+        # add test prefixes 1.33.[0-59].0/24
+        attr = {}
+        attr['description'] = 'test edit prefix'
+        attr['type'] = 'assignment'
+        attr['order_id'] = 'test_rest'
+        for i in range(0, 60):
+            attr['prefix'] = '1.33.' + str(i) + '.0/24'
+            self._add_prefix(attr)
+
+        parameters = {'order_id': 'test_rest'}
+
+        # Test default max result of 50 amd offset 0
+        get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
+        result = json.loads(get_prefix_request.text)
+        self.assertEqual(50, len(result))
+        self.assertEqual(result[0]['prefix'], '1.33.0.0/24')
+        self.assertEqual(result[49]['prefix'], '1.33.49.0/24')
+
+        # Test max result 100
+        parameters['max_result'] = 60
+        get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
+        result = json.loads(get_prefix_request.text)
+        self.assertEqual(60, len(result))
+        self.assertEqual(result[0]['prefix'], '1.33.0.0/24')
+        self.assertEqual(result[59]['prefix'], '1.33.59.0/24')
+
+        # Test offset 75
+        parameters['offset'] = 35
+        get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
+        result = json.loads(get_prefix_request.text)
+        self.assertEqual(25, len(result))
+        self.assertEqual(result[0]['prefix'], '1.33.35.0/24')
+        self.assertEqual(result[24]['prefix'], '1.33.59.0/24')
+
 
 if __name__ == '__main__':
 

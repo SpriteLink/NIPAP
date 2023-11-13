@@ -449,6 +449,19 @@ _prefix_spec = {
 # read-only from _prefix_spec
 _prefix_attrs = {k: v for k, v in _prefix_spec.items() if not _prefix_spec[k]['ro']}
 
+
+# list of all available search options on a prefix
+prefix_search_options_spec = {
+    'parents_depth': 0,
+    'children_depth': 0,
+    'include_all_parents': False,
+    'include_all_children': False,
+    'include_neighbors': False,
+    'max_result': 50,
+    'offset': 0
+}
+
+
 # list of all attributes on a vrf, including both writable and read-only values
 _vrf_spec = {
         'avps': {
@@ -3091,6 +3104,7 @@ class Nipap:
                 * :attr:`children_depth` - How many levels of children to return. Set to :data:`-1` to include all children.
                 * :attr:`include_all_parents` - Include all parents, no matter what depth is specified.
                 * :attr:`include_all_children` - Include all children, no matter what depth is specified.
+                * :attr:`include_neighbors` - Include neighbors.
                 * :attr:`max_result` - The maximum number of prefixes to return (default :data:`50`).
                 * :attr:`offset` - Offset the result list this many prefixes (default :data:`0`).
 
@@ -3124,7 +3138,7 @@ class Nipap:
 
         # include_parents
         if 'include_all_parents' not in search_options:
-            search_options['include_all_parents'] = False
+            search_options['include_all_parents'] = prefix_search_options_spec['include_all_parents']
         else:
             if search_options['include_all_parents'] not in (True, False):
                 raise NipapValueError(
@@ -3133,7 +3147,7 @@ class Nipap:
 
         # include_children
         if 'include_all_children' not in search_options:
-            search_options['include_all_children'] = False
+            search_options['include_all_children'] = prefix_search_options_spec['include_all_children']
         else:
             if search_options['include_all_children'] not in (True, False):
                 raise NipapValueError("Invalid value for option 'include_all_children'. Only true and false valid. "
@@ -3141,7 +3155,7 @@ class Nipap:
 
         # parents_depth
         if 'parents_depth' not in search_options:
-            search_options['parents_depth'] = 0
+            search_options['parents_depth'] = prefix_search_options_spec['parents_depth']
         else:
             try:
                 search_options['parents_depth'] = int(search_options['parents_depth'])
@@ -3150,7 +3164,7 @@ class Nipap:
 
         # children_depth
         if 'children_depth' not in search_options:
-            search_options['children_depth'] = 0
+            search_options['children_depth'] = prefix_search_options_spec['children_depth']
         else:
             try:
                 search_options['children_depth'] = int(search_options['children_depth'])
@@ -3159,7 +3173,7 @@ class Nipap:
 
         # include_neighbors
         if 'include_neighbors' not in search_options:
-            search_options['include_neighbors'] = False
+            search_options['include_neighbors'] = prefix_search_options_spec['include_neighbors']
         else:
             if search_options['include_neighbors'] not in (True, False):
                 raise NipapValueError("Invalid value for option 'include_neighbors'. Only true and false valid. "
@@ -3167,7 +3181,7 @@ class Nipap:
 
         # max_result
         if 'max_result' not in search_options:
-            search_options['max_result'] = 50
+            search_options['max_result'] = prefix_search_options_spec['max_result']
         else:
             if search_options['max_result'] in (False, None):
                 search_options['max_result'] = None
@@ -3179,7 +3193,7 @@ class Nipap:
 
         # offset
         if 'offset' not in search_options:
-            search_options['offset'] = 0
+            search_options['offset'] = prefix_search_options_spec['offset']
         else:
             try:
                 search_options['offset'] = int(search_options['offset'])
