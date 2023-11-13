@@ -14,7 +14,7 @@ import nipap_cli
 import nipap_cli.nipap_cli
 from nipap_cli.command import Command, CommandError
 from pynipap import NipapError
-
+import tracing
 
 # early close of stdout to avoid broken pipe, see #464
 # If our output is being piped and the receiver of the pipe is killed off before
@@ -87,6 +87,22 @@ if __name__ == '__main__':
     cfg = configparser.ConfigParser(cfg_defaults, allow_no_value=True)
     cfg.read(userrcfile)
     nipap_cli.nipap_cli.cfg = cfg
+
+    if cfg.has_section("tracing"):
+        try:
+            use_grpc = True
+            try:
+                otlp_endpoint = cfg.get("tracing", "otlp_grpc_endpoint")
+            except configparser.NoOptionError:
+                # Send trace via nipapd
+                use_grpc = False
+                use_ssl = cfg.getboolean("global", "use_ssl")
+                otlp_endpoint = "https://" if use_ssl else "http://" + (cfg.get("global", "hostname") +
+                                                                        ":" + cfg.get("global", "port") +
+                                                                        "/v1/traces/")
+            tracing.init_tracing("nipap-cli", otlp_endpoint, use_grpc)
+        except KeyError:
+            pass
 
     # setup our configuration
     nipap_cli.nipap_cli.setup_connection()

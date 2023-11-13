@@ -202,3 +202,9 @@ secret_key = {{WWW_SECRET_KEY}}
 # the web interface, it might contain hints about what credentials to use or
 # just greet the user.
 #welcome_message = Welcome to NIPAP at COMPANY. Please login using your XYZ credentials.
+# Enable OpenTelemetry tracing by uncommenting section.
+# [tracing]
+# Specify OTLP GRPC endpoint. Used to send traces to OpenTelemetry Collector
+# otlp_grpc_endpoint=http://opentelemetry-collector:4317
+# Specify OTLP HTTP endpoint. Used when proxying traces to OpenTelemetry-Collector from nipap-cli
+# otlp_http_endpoint=http://opentelemetry-collector:4318/v1/traces

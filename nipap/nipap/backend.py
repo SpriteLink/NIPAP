@@ -202,6 +202,7 @@ from . import authlib
 from . import smart_parsing
 from . import db_schema
 import nipap
+from .tracing import create_span
 
 # support multiple versions of parsedatetime
 try:
@@ -733,9 +734,9 @@ class Nipap:
         # Create database connection
         while True:
             try:
-                self._con_pg = psycopg2.connect(**db_args)
+                self._con_pg = psycopg2.connect(**db_args, cursor_factory=psycopg2.extras.DictCursor)
                 self._con_pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-                self._curs_pg = self._con_pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                self._curs_pg = self._con_pg.cursor()
                 psycopg2.extras.register_hstore(self._con_pg, globally=True)
             except psycopg2.Error as exc:
                 if re.search("database.*does not exist", str(exc)):
@@ -1169,6 +1170,7 @@ class Nipap:
 
         return where, opt
 
+    @create_span
     @requires_rw
     def add_vrf(self, auth, attr):
         """ Add a new VRF.
@@ -1217,6 +1219,7 @@ class Nipap:
 
         return vrf
 
+    @create_span
     @requires_rw
     def remove_vrf(self, auth, spec):
         """ Remove a VRF.
@@ -1265,6 +1268,7 @@ class Nipap:
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log ' + sql, params)
 
+    @create_span
     def list_vrf(self, auth, spec=None):
         """ Return a list of VRFs matching `spec`.
 
@@ -1305,6 +1309,7 @@ class Nipap:
 
         return res
 
+    @create_span
     def _get_vrf(self, auth, spec, prefix='vrf_'):
         """ Get a VRF based on prefix spec
 
@@ -1336,6 +1341,7 @@ class Nipap:
 
         raise NipapNonExistentError('No matching VRF found.')
 
+    @create_span
     @requires_rw
     def edit_vrf(self, auth, spec, attr):
         """ Update VRFs matching `spec` with attributes `attr`.
@@ -1392,6 +1398,7 @@ class Nipap:
 
         return updated_vrfs
 
+    @create_span
     def search_vrf(self, auth, query, search_options=None):
         """ Search VRF list for VRFs matching `query`.
 
@@ -1521,6 +1528,7 @@ class Nipap:
 
         return {'search_options': search_options, 'result': result}
 
+    @create_span
     def smart_search_vrf(self, auth, query_str, search_options=None, extra_query=None):
         """ Perform a smart search on VRF list.
 
@@ -1689,6 +1697,7 @@ class Nipap:
 
         return where, opt
 
+    @create_span
     @requires_rw
     def add_pool(self, auth, attr):
         """ Create a pool according to `attr`.
@@ -1734,6 +1743,7 @@ class Nipap:
 
         return pool
 
+    @create_span
     @requires_rw
     def remove_pool(self, auth, spec):
         """ Remove a pool.
@@ -1773,6 +1783,7 @@ class Nipap:
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log ' + sql, params)
 
+    @create_span
     def list_pool(self, auth, spec=None):
         """Return a list of pools.
 
@@ -1891,6 +1902,7 @@ class Nipap:
             raise NipapInputError("non-existing pool specified")
         return pool[0]
 
+    @create_span
     @requires_rw
     def edit_pool(self, auth, spec, attr):
         """ Update pool given by `spec` with attributes `attr`.
@@ -1946,6 +1958,7 @@ class Nipap:
 
         return updated_pools
 
+    @create_span
     def search_pool(self, auth, query, search_options=None):
         """ Search pool list for pools matching `query`.
 
@@ -2098,6 +2111,7 @@ class Nipap:
 
         return {'search_options': search_options, 'result': result}
 
+    @create_span
     def smart_search_pool(self, auth, query_str, search_options=None, extra_query=None):
         """ Perform a smart search on pool list.
 
@@ -2323,6 +2337,7 @@ class Nipap:
 
         return where, opt
 
+    @create_span
     @requires_rw
     def add_prefix(self, auth, attr, args=None):
         """ Add a prefix and return its ID.
@@ -2520,6 +2535,7 @@ class Nipap:
 
         return prefix
 
+    @create_span
     @requires_rw
     def edit_prefix(self, auth, spec, attr):
         """ Update prefix matching `spec` with attributes `attr`.
@@ -2649,6 +2665,7 @@ class Nipap:
 
         return updated_prefixes
 
+    @create_span
     def find_free_prefix(self, auth, vrf, args):
         """ Finds free prefixes in the sources given in `args`.
 
@@ -2813,6 +2830,7 @@ class Nipap:
 
         return res
 
+    @create_span
     def list_prefix(self, auth, spec=None):
         """ List prefixes matching the `spec`.
 
@@ -2906,6 +2924,7 @@ class Nipap:
         sql = "DELETE FROM ip_net_plan AS p WHERE " + where
         self._execute(sql, params)
 
+    @create_span
     @requires_rw
     def remove_prefix(self, auth, spec, recursive=False):
         """ Remove prefix matching `spec`.
@@ -2985,6 +3004,7 @@ class Nipap:
                 sql, params = self._sql_expand_insert(audit_params2)
                 self._execute('INSERT INTO ip_net_log ' + sql, params)
 
+    @create_span
     def search_prefix(self, auth, query, search_options=None):
         """ Search prefix list for prefixes matching `query`.
 
@@ -3384,6 +3404,7 @@ class Nipap:
 
         return {'search_options': search_options, 'result': result}
 
+    @create_span
     def smart_search_prefix(self, auth, query_str, search_options=None, extra_query=None):
         """ Perform a smart search on prefix list.
 
@@ -3557,6 +3578,7 @@ class Nipap:
 
         return where, params
 
+    @create_span
     def list_asn(self, auth, asn=None):
         """ List AS numbers matching `spec`.
 
@@ -3596,6 +3618,7 @@ class Nipap:
 
         return res
 
+    @create_span
     @requires_rw
     def add_asn(self, auth, attr):
         """ Add AS number to NIPAP.
@@ -3640,6 +3663,7 @@ class Nipap:
 
         return asn
 
+    @create_span
     @requires_rw
     def edit_asn(self, auth, asn, attr):
         """ Edit AS number
@@ -3693,6 +3717,7 @@ class Nipap:
 
         return updated_asns
 
+    @create_span
     @requires_rw
     def remove_asn(self, auth, asn):
         """ Remove an AS number.
@@ -3732,6 +3757,7 @@ class Nipap:
             sql, params = self._sql_expand_insert(audit_params)
             self._execute('INSERT INTO ip_net_log ' + sql, params)
 
+    @create_span
     def search_asn(self, auth, query, search_options=None):
         """ Search ASNs for entries matching 'query'
 
@@ -3829,6 +3855,7 @@ class Nipap:
 
         return {'search_options': search_options, 'result': result}
 
+    @create_span
     def smart_search_asn(self, auth, query_str, search_options=None, extra_query=None):
         """ Perform a smart search operation among AS numbers
 
@@ -4020,6 +4047,7 @@ class Nipap:
 
         return where, opt
 
+    @create_span
     def search_tag(self, auth, query, search_options=None):
         """ Search Tags for entries matching 'query'
 

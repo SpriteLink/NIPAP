@@ -226,6 +226,34 @@ if __name__ == '__main__':
 
     # flask app setups
     app = Flask(__name__)
+
+    # Configure tracing
+    if cfg.has_section("tracing"):
+        try:
+            from nipap.tracing import init_tracing, setup
+            from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+            from opentelemetry.instrumentation.flask import FlaskInstrumentor
+            otlp_grpc_endpoint = cfg.get("tracing", "otlp_grpc_endpoint")
+            init_tracing("nipapd", otlp_grpc_endpoint)
+            FlaskInstrumentor.instrument_app(app, excluded_urls="/v1/traces")
+            Psycopg2Instrumentor().instrument(enable_commenter=True, commenter_options={})
+
+            # Configure proxy of traces from nipap-cli to collector
+            try:
+                otlp_http_endpoint = cfg.get("tracing", "otlp_http_endpoint")
+                setup(app, otlp_http_endpoint)
+            except configparser.NoOptionError:
+                pass
+            logger.debug('Tracing is enabled')
+        except KeyError:
+            logger.error('Error in tracing configuration. No tracing enabled')
+            pass
+        except ImportError:
+            logger.error('Failed to import tracing libraries. Check dependencies. No tracing enabled')
+            pass
+    else:
+        logger.debug('Tracing is disabled')
+
     Compress(app)
     
     import nipap.rest

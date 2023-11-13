@@ -17,6 +17,8 @@ from flask_restful import Resource, Api, abort
 from .backend import Nipap, NipapError, prefix_search_options_spec
 import nipap
 from .authlib import AuthFactory, AuthError
+from .tracing import create_span_rest
+
 
 def setup(app):
     api = Api(app, prefix="/rest/v1")
@@ -162,9 +164,9 @@ def requires_auth(f):
 
             # authenticated?
             if not auth.authenticate():
-                self.logger.debug("Invalid bearer token.")
+                self.logger.debug("Invalid bearer token")
                 abort(401, error={"code": 401,
-                                  "message": "Invalid bearer token."})
+                                  "message": "Invalid bearer token"})
         else:
             auth = af.get_auth(request.authorization.username,
                     request.authorization.password, auth_source, auth_options or {})
@@ -213,6 +215,7 @@ class NipapPrefixRest(Resource):
 
 
     @requires_auth
+    @create_span_rest
     def get(self, args):
         """ Search/list prefixes
         """
@@ -251,8 +254,8 @@ class NipapPrefixRest(Resource):
             self.logger.error(str(err))
             abort(500, error={"code": 500, "message": "Internal error"})
 
-
     @requires_auth
+    @create_span_rest
     def post(self, args):
         """ Add prefix
         """
@@ -270,8 +273,8 @@ class NipapPrefixRest(Resource):
             self.logger.error(str(err))
             abort(500, error={"code": 500, "message": "Internal error"})
 
-
     @requires_auth
+    @create_span_rest
     def put(self, args):
         """ Edit prefix
         """
@@ -290,8 +293,8 @@ class NipapPrefixRest(Resource):
             self.logger.error(str(err))
             abort(500, error={"code": 500, "message": "Internal error"})
 
-
     @requires_auth
+    @create_span_rest
     def delete(self, args):
         """ Remove prefix
         """

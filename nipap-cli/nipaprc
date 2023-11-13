@@ -46,3 +46,7 @@ default_list_vrf_rt = all
 #
 #   prefix_list_columns = vrf_rt,prefix
 #
+# Enable OpenTelemetry tracing by uncommenting section.
+# [tracing]
+# Specify OTLP GRPC endpoint. If no endpoint is specified traces will be sent via nipapd to OpenTelemetry Collector
+# otlp_grpc_endpoint = http://127.0.0.1:4317

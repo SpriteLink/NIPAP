@@ -77,6 +77,8 @@ import string
 import random
 import requests
 
+from .tracing import create_span_authenticate
+
 try:
     import jwt
 except ImportError:
@@ -336,6 +338,16 @@ class JwtAuth(BaseAuth):
             self._logger.error('Unable to load Python jwt module, please verify it is installed')
             raise AuthError('Unable to authenticate')
 
+        # Decode token
+        try:
+            payload = jwt.decode(
+                self._jwt_token, options={"verify_signature": False})
+            self.username = payload.get('sub')
+            self.full_name = payload.get('name', payload.get('sub'))
+        except jwt.exceptions.DecodeError:
+            raise AuthError('Failed to decode jwt token')
+
+    @create_span_authenticate
     def authenticate(self):
         """ Verify authentication.
 
@@ -403,9 +415,7 @@ class JwtAuth(BaseAuth):
 
         # auth succeeded
         if self._authenticated:
-            self.username = payload.get('sub')
             self.authenticated_as = payload.get('sub')
-            self.full_name = payload.get('name', payload.get('sub'))
             self._logger.debug('successfully authenticated as %s, username' % self.authenticated_as)
         self.trusted = False
 
@@ -495,6 +505,7 @@ class LdapAuth(BaseAuth):
                 self._logger.exception(exc)
                 raise AuthError('Unable to establish secure connection to ldap server')
 
+    @create_span_authenticate
     def authenticate(self):
         """ Verify authentication.
 
@@ -687,6 +698,7 @@ class SqliteAuth(BaseAuth):
             pass
         self._db_conn.commit()
 
+    @create_span_authenticate
     def authenticate(self):
         """ Verify authentication.
 

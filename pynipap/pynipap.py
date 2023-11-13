@@ -253,6 +253,12 @@ class AuthOptions:
             self.options = options
 
 
+try:
+    from tracing import create_span, TracingXMLTransport
+    xml_transport = TracingXMLTransport
+except ImportError:
+    xml_transport = xmlrpclib.Transport
+
 
 class XMLRPCConnection:
     """ Handles a shared XML-RPC connection.
@@ -276,8 +282,10 @@ class XMLRPCConnection:
             raise NipapError('XML-RPC URI not specified')
 
         # creating new instance
-        self.connection = xmlrpclib.ServerProxy(xmlrpc_uri, allow_none=True,
-                use_datetime=True)
+        self.connection = xmlrpclib.ServerProxy(xmlrpc_uri,
+                                                transport=xml_transport(),
+                                                allow_none=True,
+                                                use_datetime=True)
 
         self._logger = logging.getLogger(self.__class__.__name__)
 
@@ -329,6 +337,7 @@ class Tag(Pynipap):
     """
 
     @classmethod
+    @create_span
     def from_dict(cls, tag=None):
         """ Create new Tag-object from dict.
 
@@ -346,6 +355,7 @@ class Tag(Pynipap):
 
 
     @classmethod
+    @create_span
     def search(cls, query, search_opts=None):
         """ Search tags.
 
@@ -423,6 +433,7 @@ class VRF(Pynipap):
 
 
     @classmethod
+    @create_span
     def list(cls, vrf=None):
         """ List VRFs.
 
@@ -452,7 +463,8 @@ class VRF(Pynipap):
 
 
     @classmethod
-    def from_dict(cls, parm, vrf = None):
+    @create_span
+    def from_dict(cls, parm, vrf=None):
         """ Create new VRF-object from dict.
 
             Suitable for creating objects from XML-RPC data.
@@ -487,6 +499,7 @@ class VRF(Pynipap):
 
 
     @classmethod
+    @create_span
     def get(cls, id):
         """ Get the VRF with id 'id'.
         """
@@ -509,6 +522,7 @@ class VRF(Pynipap):
 
 
     @classmethod
+    @create_span
     def search(cls, query, search_opts=None):
         """ Search VRFs.
 
@@ -541,7 +555,8 @@ class VRF(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, query_string, search_options=None, extra_query = None):
+    @create_span
+    def smart_search(cls, query_string, search_options=None, extra_query=None):
         """ Perform a smart VRF search.
 
             Maps to the function
@@ -576,8 +591,7 @@ class VRF(Pynipap):
 
         return result
 
-
-
+    @create_span
     def save(self):
         """ Save changes made to object to NIPAP.
 
@@ -634,8 +648,7 @@ class VRF(Pynipap):
 
         _cache['VRF'][self.id] = self
 
-
-
+    @create_span
     def remove(self):
         """ Remove VRF.
 
@@ -689,7 +702,7 @@ class Pool(Pynipap):
         self.tags = {}
         self.avps = {}
 
-
+    @create_span
     def save(self):
         """ Save changes made to pool to NIPAP.
 
@@ -748,8 +761,7 @@ class Pool(Pynipap):
 
         _cache['Pool'][self.id] = self
 
-
-
+    @create_span
     def remove(self):
         """ Remove pool.
 
@@ -773,6 +785,7 @@ class Pool(Pynipap):
 
 
     @classmethod
+    @create_span
     def get(cls, id):
         """ Get the pool with id 'id'.
         """
@@ -795,6 +808,7 @@ class Pool(Pynipap):
 
 
     @classmethod
+    @create_span
     def search(cls, query, search_opts=None):
         """ Search pools.
 
@@ -828,7 +842,8 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, query_string, search_options=None, extra_query = None):
+    @create_span
+    def smart_search(cls, query_string, search_options=None, extra_query=None):
         """ Perform a smart pool search.
 
             Maps to the function
@@ -867,7 +882,8 @@ class Pool(Pynipap):
 
 
     @classmethod
-    def from_dict(cls, parm, pool = None):
+    @create_span
+    def from_dict(cls, parm, pool=None):
         """ Create new Pool-object from dict.
 
             Suitable for creating objects from XML-RPC data.
@@ -907,6 +923,7 @@ class Pool(Pynipap):
 
 
     @classmethod
+    @create_span
     def list(self, spec=None):
         """ List pools.
 
@@ -979,6 +996,7 @@ class Prefix(Pynipap):
 
 
     @classmethod
+    @create_span
     def get(cls, id):
         """ Get the prefix with id 'id'.
         """
@@ -1001,6 +1019,7 @@ class Prefix(Pynipap):
 
 
     @classmethod
+    @create_span
     def find_free(cls, vrf, args):
         """ Finds a free prefix.
 
@@ -1036,6 +1055,7 @@ class Prefix(Pynipap):
 
 
     @classmethod
+    @create_span
     def search(cls, query, search_opts=None):
         """ Search for prefixes.
 
@@ -1070,7 +1090,8 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def smart_search(cls, query_string, search_options=None, extra_query = None):
+    @create_span
+    def smart_search(cls, query_string, search_options=None, extra_query=None):
         """ Perform a smart prefix search.
 
             Maps to the function
@@ -1109,6 +1130,7 @@ class Prefix(Pynipap):
 
 
     @classmethod
+    @create_span
     def list(cls, spec=None):
         """ List prefixes.
 
@@ -1136,8 +1158,7 @@ class Prefix(Pynipap):
 
         return res
 
-
-
+    @create_span
     def save(self, args=None):
         """ Save prefix to NIPAP.
 
@@ -1251,9 +1272,8 @@ class Prefix(Pynipap):
             if self.pool.id in _cache['Pool']:
                 del _cache['Pool'][self.pool.id]
 
-
-
-    def remove(self, recursive = False):
+    @create_span
+    def remove(self, recursive=False):
         """ Remove the prefix.
 
             Maps to the function :py:func:`nipap.backend.Nipap.remove_prefix`
@@ -1283,7 +1303,8 @@ class Prefix(Pynipap):
 
 
     @classmethod
-    def from_dict(cls, pref, prefix = None):
+    @create_span
+    def from_dict(cls, pref, prefix=None):
         """ Create a Prefix object from a dict.
 
             Suitable for creating Prefix objects from XML-RPC input.
