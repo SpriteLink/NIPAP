@@ -1,3 +1,11 @@
+nipap-cli (0.32.2-1) stable; urgency=medium
+
+  * Add pagination to the REST API (#1361)
+  * Add OpenTelemetry tracing (#1355)
+  * Drop Python 2 support in pynipap (#1356)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 04 Dec 2023 09:07:39 +0100
+
 nipap-cli (0.32.1-1) stable; urgency=medium
 
   * Fix bug where data fetched from LDAP caused a crash (#1347)
