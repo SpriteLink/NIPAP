@@ -134,22 +134,44 @@ Description: Python module for accessing NIPAP
  a simple ORM, which hides much of the complexity of working directly against
  the XML-RPC interface.
 
+Package: python3-importlib-metadata
+Source: importlib-metadata
+Version: 6.11.0-1
+Architecture: all
+Maintainer: Debian Python Team <team+python@tracker.debian.org>
+Installed-Size: 77
+Depends: python3-typing-extensions | python3 (>> 3.8), python3-zipp (>= 0.5), python3:any
+Homepage: https://github.com/python/importlib_metadata
+Priority: optional
+Section: python
+Filename: pool/main/i/importlib-metadata/python3-importlib-metadata_6.11.0-1_all.deb
+Size: 19228
+SHA256: 00da830a130f8b7aa17d836f7897ccbd742fc6bb4803fb1827d48af81f9b2be4
+SHA1: 66929948b03fcbc52d430cab0dc2a2cc7940a463
+MD5sum: 39b8e071c773bb0e7dcb7b6624b84b45
+Description: library to access the metadata for a Python package - Python 3.x
+ Provides an API for accessing an installed package’s metadata, such as its
+ entry points or its top-level name. This functionality intends to replace
+ most uses of pkg_resources entry point API and metadata API.
+ .
+ This package contains Python 3.x module.
+
 Package: python3-opentelemetry-api
 Source: opentelemetry-api
-Version: 1.21.0-1
+Version: 1.21.0-2
 Architecture: all
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Installed-Size: 225
-Depends: python3-deprecated (>= 1.2.6), python3-importlib-metadata, python3:any (>= 3.7~)
+Depends: python3-deprecated (>= 1.2.6), python3-importlib-metadata (>= 6.0), python3-importlib-metadata (<< 7.0), python3:any (>= 3.7~)
 Multi-Arch: foreign
 Homepage: https://github.com/open-telemetry/opentelemetry-python
 Priority: optional
 Section: python
-Filename: pool/main/o/opentelemetry-api/python3-opentelemetry-api_1.21.0-1_all.deb
-Size: 35818
-SHA256: e8acd0a0e50ba73a244e420d39ca2f9a1bfb89c9a118c7d88ec709e2e262bfc5
-SHA1: 4fb62121d304cb924fe1392342c526345ed22fa4
-MD5sum: 85f498c9260a89a82eb0ce6d427765d3
+Filename: pool/main/o/opentelemetry-api/python3-opentelemetry-api_1.21.0-2_all.deb
+Size: 35922
+SHA256: 2f9bffe743381a8281c303ca3484a12f4ca66915bf2905d3eb67e6dd64717552
+SHA1: b609a88ad50bd1f744207951b511ff0db06aad45
+MD5sum: d27cde558bd62e1a50821a86eefee8d1
 Description: OpenTelemetry Python API
 
 Package: python3-opentelemetry-instrumentation

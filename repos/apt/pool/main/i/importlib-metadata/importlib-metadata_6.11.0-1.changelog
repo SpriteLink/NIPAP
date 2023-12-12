@@ -1,0 +1,120 @@
+importlib-metadata (6.11.0-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 12 Dec 2023 15:57:22 +0100
+
+python-importlib-metadata (4.6.4-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 21 Aug 2021 17:35:22 -0700
+
+python-importlib-metadata (4.0.1-1) experimental; urgency=medium
+
+  * Team upload.
+
+  [ Ondřej Nový ]
+  * d/copyright: Bump my copyright year.
+  * d/control: Update Maintainer field with new Debian Python Team
+    contact address.
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Stefano Rivera ]
+  * New upstream release.
+  * Drop patches, no longer needed with current Python 3.
+  * Build-Depend on python3-toml for setup.py.
+  * Update homepage and metadata to github.
+  * Patch: Skip test_find_local() which requires Internet access.
+  * Remove PYBUILD_AFTER_INSTALL cleanup, tests and docs are no longer within
+    the module.
+  * Add autopkgtests that run the upstream test suite.
+  * Bump Standards-Version to 4.5.1, no changes needed.
+  * Bump watch file version to 4.
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 17 May 2021 16:27:09 -0400
+
+python-importlib-metadata (1.6.0-2) unstable; urgency=medium
+
+  * Drop PyPy support.
+  * Bump debhelper compat level to 13.
+
+ -- Ondřej Nový <onovy@debian.org>  Fri, 05 Jun 2020 12:18:53 +0200
+
+python-importlib-metadata (1.6.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * d/p/skip-tests-requiring-pyfakefs.patch: Drop, not needed anymore.
+
+ -- Ondřej Nový <onovy@debian.org>  Mon, 27 Apr 2020 08:22:33 +0200
+
+python-importlib-metadata (1.5.0-2) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * Run tests requiring pyfakefs but only on Python 3 and PyPy.
+
+  [ Sandro Tosi ]
+  * Drop python2 support; Closes: #937832
+
+ -- Sandro Tosi <morph@debian.org>  Tue, 14 Apr 2020 12:42:29 -0400
+
+python-importlib-metadata (1.5.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Rules-Requires-Root: no
+  * Bump Standards-Version to 4.5.0.
+  * Skip tests requiring pyfakefs which we don't have in Debian
+    (yet).
+
+ -- Ondřej Nový <onovy@debian.org>  Mon, 03 Feb 2020 16:53:45 +0100
+
+python-importlib-metadata (1.4.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Rebase patches.
+
+ -- Ondřej Nový <onovy@debian.org>  Sun, 12 Jan 2020 15:02:22 +0100
+
+python-importlib-metadata (0.23-2) unstable; urgency=medium
+
+  * Bump Standards-Version to 4.4.1.
+  * Relax required configparser version in setup.cfg.
+
+ -- Ondřej Nový <onovy@debian.org>  Mon, 21 Oct 2019 14:37:17 +0200
+
+python-importlib-metadata (0.23-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Ondřej Nový <onovy@debian.org>  Thu, 19 Sep 2019 09:32:27 +0200
+
+python-importlib-metadata (0.22-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Add {pypy,python,python3}-packaging to B-D.
+
+ -- Ondřej Nový <onovy@debian.org>  Fri, 13 Sep 2019 13:16:31 +0200
+
+python-importlib-metadata (0.19-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Add gbp.conf.
+
+ -- Ondřej Nový <onovy@debian.org>  Fri, 09 Aug 2019 13:22:28 +0200
+
+python-importlib-metadata (0.18-2) unstable; urgency=medium
+
+  * d/control: Fix wrong Vcs-*.
+  * Add pypy-pathlib2 and python-pathlib2 to depends.
+
+ -- Ondřej Nový <onovy@debian.org>  Thu, 01 Aug 2019 15:03:00 +0200
+
+python-importlib-metadata (0.18-1) unstable; urgency=medium
+
+  * Initial release. (Closes: #932309)
+    - Python 2 version is required for new version of pytest and we can't
+      remove Python 2 version of pytest yet.
+
+ -- Ondřej Nový <onovy@debian.org>  Wed, 17 Jul 2019 15:52:16 +0200

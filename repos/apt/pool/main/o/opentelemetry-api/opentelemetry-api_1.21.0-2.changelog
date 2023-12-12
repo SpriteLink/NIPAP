@@ -1,0 +1,11 @@
+opentelemetry-api (1.21.0-2) UNRELEASED; urgency=low
+
+  * Updated dependency for python3-importlib-metadata.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 12 Dec 2023 16:08:04 +0100
+
+opentelemetry-api (1.21.0-1) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 12 Dec 2023 09:40:20 +0100
