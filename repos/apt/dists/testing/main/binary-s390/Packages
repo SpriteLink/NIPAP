@@ -105,20 +105,20 @@ MD5sum: d9467f507829c1e57827f626adc204de
 Description: OpenTelemetry Python API
 
 Package: opentelemetry-sdk
-Version: 1.21.0-1
+Version: 1.21.0-2
 Architecture: all
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Installed-Size: 430
-Depends: opentelemetry-api (= 1.21.0), python3-typing-extensions, python3:any (>= 3.7~)
+Depends: opentelemetry-api (= 1.21.0~), python3-typing-extensions, python3:any (>= 3.7~)
 Multi-Arch: foreign
 Homepage: https://github.com/open-telemetry/opentelemetry-python
 Priority: optional
 Section: python
-Filename: pool/main/o/opentelemetry-sdk/opentelemetry-sdk_1.21.0-1_all.deb
-Size: 65046
-SHA256: 4a185d894a14ed495162f7e0cf8ee150237824b05f0bba1fd86d31be95f81941
-SHA1: a9f5f207da57ff071d4ac0d155919483abbc398b
-MD5sum: b28fc3ac4fa6aa978cd437756ca5c4db
+Filename: pool/main/o/opentelemetry-sdk/opentelemetry-sdk_1.21.0-2_all.deb
+Size: 65132
+SHA256: 325ec2dc5c99567f35e4c282d3ec52bffb6e7d33fbf2eba530e30f9ad8c360d8
+SHA1: c0c9c822c3b3f898c32dededdaf0ec3bbb1eadc3
+MD5sum: 8046794138dc04c4b737ce7ffe71e45e
 Description: OpenTelemetry Python SDK
 
 Package: python-flask-xml-rpc
