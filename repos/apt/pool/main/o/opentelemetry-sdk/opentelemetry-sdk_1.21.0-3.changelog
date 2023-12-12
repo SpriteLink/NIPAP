@@ -1,3 +1,9 @@
+opentelemetry-sdk (1.21.0-3) UNRELEASED; urgency=low
+
+  * Fixedd dependency to opentelemetry-api.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 12 Dec 2023 12:23:19 +0000
+
 opentelemetry-sdk (1.21.0-2) UNRELEASED; urgency=low
 
   * Fixedd dependency to opentelemetry-api.
