@@ -87,40 +87,6 @@ Description: Neat IP Address Planner XML-RPC daemon
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the XML-RPC daemon.
 
-Package: opentelemetry-api
-Version: 1.21.0-1
-Architecture: all
-Maintainer: Lukas Garberg <lukas@spritelink.net>
-Installed-Size: 225
-Depends: python3-deprecated (>= 1.2.6), python3-importlib-metadata, python3:any (>= 3.7~)
-Multi-Arch: foreign
-Homepage: https://github.com/open-telemetry/opentelemetry-python
-Priority: optional
-Section: python
-Filename: pool/main/o/opentelemetry-api/opentelemetry-api_1.21.0-1_all.deb
-Size: 35802
-SHA256: 3fcbe5461cc11f47160185d43a1af6b99cebe35392c190216c80cd96a0c097a1
-SHA1: cc3008a7dd2eea6cb715692ace69cd588fcb5199
-MD5sum: d9467f507829c1e57827f626adc204de
-Description: OpenTelemetry Python API
-
-Package: opentelemetry-sdk
-Version: 1.21.0-3
-Architecture: all
-Maintainer: Lukas Garberg <lukas@spritelink.net>
-Installed-Size: 430
-Depends: opentelemetry-api (>= 1.21.0-1), python3-typing-extensions, python3:any (>= 3.7~)
-Multi-Arch: foreign
-Homepage: https://github.com/open-telemetry/opentelemetry-python
-Priority: optional
-Section: python
-Filename: pool/main/o/opentelemetry-sdk/opentelemetry-sdk_1.21.0-3_all.deb
-Size: 65172
-SHA256: 35170e048d0905f7ecb8a81f2e82b71afbbd7c9252d0d927112e1b9a8ba0223e
-SHA1: c85d800c631cf498429ea93d0bf15093f22a8e3d
-MD5sum: f1903d28f8c1d96977998c19682f209c
-Description: OpenTelemetry Python SDK
-
 Package: python-flask-xml-rpc
 Source: flask-xml-rpc
 Version: 0.1.2-1
@@ -167,6 +133,168 @@ Description: Python module for accessing NIPAP
  This package contains a client library for NIPAP. It's function is similar to
  a simple ORM, which hides much of the complexity of working directly against
  the XML-RPC interface.
+
+Package: python3-opentelemetry-api
+Source: opentelemetry-api
+Version: 1.21.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 225
+Depends: python3-deprecated (>= 1.2.6), python3-importlib-metadata, python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-api/python3-opentelemetry-api_1.21.0-1_all.deb
+Size: 35818
+SHA256: e8acd0a0e50ba73a244e420d39ca2f9a1bfb89c9a118c7d88ec709e2e262bfc5
+SHA1: 4fb62121d304cb924fe1392342c526345ed22fa4
+MD5sum: 85f498c9260a89a82eb0ce6d427765d3
+Description: OpenTelemetry Python API
+
+Package: python3-opentelemetry-instrumentation
+Source: opentelemetry-instrumentation
+Version: 0.42b0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 93
+Depends: python3-opentelemetry-api (>= 1.4.0), python3-setuptools, python3-wrapt, python3-pkg-resources, python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/opentelemetry-instrumentation
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-instrumentation/python3-opentelemetry-instrumentation_0.42b0-1_all.deb
+Size: 19098
+SHA256: b9790f6be36f7b291a0b75c983589c2e8837ab90db29fef4a48b4a233ec3949e
+SHA1: b4104cdad25ce00e5f802714fed6e514cab5f098
+MD5sum: 4886d450c8bdffeefcfc596d150d96cb
+Description: Instrumentation Tools & Auto Instrumentation for OpenTelemetry Python
+
+Package: python3-opentelemetry-instrumentation-dbapi
+Source: opentelemetry-instrumentation-dbapi
+Version: 0.42b0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 55
+Depends: python3-opentelemetry-api (>= 1.12.0), python3-opentelemetry-instrumentation (>= 0.42b0), python3-opentelemetry-semantic-conventions (>= 0.42b0), python3-wrapt, python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-dbapi
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-instrumentation-dbapi/python3-opentelemetry-instrumentation-dbapi_0.42b0-1_all.deb
+Size: 10800
+SHA256: 486e3ae89d3e39ce6e1c26d8b76246320c7c282e5115e072358ad9fec9864422
+SHA1: 62727fb05c5368fc30a6f2468eacd02815e9c10a
+MD5sum: 00c3532e95fa5ed9cd12c6590c3a5418
+Description: OpenTelemetry Database API instrumentation
+
+Package: python3-opentelemetry-instrumentation-flask
+Source: opentelemetry-instrumentation-flask
+Version: 0.42b0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 64
+Depends: python3-opentelemetry-api (>= 1.12.0), python3-opentelemetry-instrumentation (>= 0.42b0), python3-opentelemetry-instrumentation-wsgi (>= 0.42b0), python3-opentelemetry-semantic-conventions (>= 0.42b0), python3-opentelemetry-util-http (>= 0.42b0), python3-packaging, python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-flask
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-instrumentation-flask/python3-opentelemetry-instrumentation-flask_0.42b0-1_all.deb
+Size: 13400
+SHA256: cff8c9eb16cb62d3f02e15feb271162e2c0a004cee56db57f3827de4641380a6
+SHA1: c48b62776037d049ce6feb734ac03c425d792c6f
+MD5sum: 31b532a4192f339793a9554d78d48862
+Description: Flask instrumentation for OpenTelemetry
+
+Package: python3-opentelemetry-instrumentation-psycopg2
+Source: opentelemetry-instrumentation-psycopg2
+Version: 0.42b0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 47
+Depends: python3-opentelemetry-api (>= 1.12.0), python3-opentelemetry-instrumentation (>= 0.42b0), python3-opentelemetry-instrumentation-dbapi (>= 0.42b0), python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-psycopg2
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-instrumentation-psycopg2/python3-opentelemetry-instrumentation-psycopg2_0.42b0-1_all.deb
+Size: 9742
+SHA256: 87d96a4afdf4f842ffae02d6d0e265099838a8bd5909fa2f223506f7ae02698e
+SHA1: 72a708bd5276bedb0dd003b05e3f5b6880b90c84
+MD5sum: 9799478b77210b561fed2a5e03b70476
+Description: OpenTelemetry psycopg2 instrumentation
+
+Package: python3-opentelemetry-instrumentation-wsgi
+Source: opentelemetry-instrumentation-wsgi
+Version: 0.42b0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 60
+Depends: python3-opentelemetry-api (>= 1.12.0), python3-opentelemetry-instrumentation (>= 0.42b0), python3-opentelemetry-semantic-conventions (>= 0.42b0), python3-opentelemetry-util-http (>= 0.42b0), python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-wsgi
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-instrumentation-wsgi/python3-opentelemetry-instrumentation-wsgi_0.42b0-1_all.deb
+Size: 12740
+SHA256: 6fcab6cb3b19031da876d87d909658f28774ecf44c09913cfef505d061a15acb
+SHA1: e00f84ea9a5c9cf672f28570deb6b64d38b2978e
+MD5sum: 4b60c0c24a09f344922b32122a65f2f0
+Description: WSGI Middleware for OpenTelemetry
+
+Package: python3-opentelemetry-sdk
+Source: opentelemetry-sdk
+Version: 1.21.0-3
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 430
+Depends: python3-opentelemetry-api (>= 1.21.0), python3-opentelemetry-semantic-conventions, python3-typing-extensions, python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-dbapi
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-sdk/python3-opentelemetry-sdk_1.21.0-3_all.deb
+Size: 65214
+SHA256: 0e2fc8ebb669d25dcf22a6d3c10929e40d5a08f98683a2ab91facd1b25164f62
+SHA1: ed9b02a35111b09b96075535e869110cbf967f52
+MD5sum: cd04f7bbd1b940d388966fb3b208416e
+Description: OpenTelemetry Python SDK
+
+Package: python3-opentelemetry-semantic-conventions
+Source: opentelemetry-semantic-conventions
+Version: 0.42b0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 145
+Depends: python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-semantic-conventions
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-semantic-conventions/python3-opentelemetry-semantic-conventions_0.42b0-1_all.deb
+Size: 32662
+SHA256: f6e61cfdf3f718be0fe838d72bc60c5eaea6bfdabfc73e3981f8caa5273c4ed4
+SHA1: 5a9ec9d3124b6b887b0e14e31552106d8a709914
+MD5sum: 352e990510c0b42e18707a67f808b6b7
+Description: OpenTelemetry Semantic Conventions
+
+Package: python3-opentelemetry-util-http
+Source: opentelemetry-util-http
+Version: 0.42b0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 39
+Depends: python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/util/opentelemetry-util-http
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-util-http/python3-opentelemetry-util-http_0.42b0-1_all.deb
+Size: 7456
+SHA256: 264890d768ad891db098e1ea6c2d646f1d276d4cbb0af20e298d1204d4c0eeb7
+SHA1: 3d08d49fd5be676cd299f7f4919fe02386f0a3b4
+MD5sum: 3ba3ce347f01fe157c2019d26306cbee
+Description: Web util for OpenTelemetry
 
 Package: python3-pynipap
 Source: pynipap

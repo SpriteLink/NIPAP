@@ -1,0 +1,5 @@
+opentelemetry-instrumentation-wsgi (0.42b0-1) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 12 Dec 2023 13:19:22 +0100
