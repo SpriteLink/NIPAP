@@ -87,6 +87,40 @@ Description: Neat IP Address Planner XML-RPC daemon
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the XML-RPC daemon.
 
+Package: opentelemetry-api
+Version: 1.21.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 225
+Depends: python3-deprecated (>= 1.2.6), python3-importlib-metadata, python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-api/opentelemetry-api_1.21.0-1_all.deb
+Size: 35802
+SHA256: 3fcbe5461cc11f47160185d43a1af6b99cebe35392c190216c80cd96a0c097a1
+SHA1: cc3008a7dd2eea6cb715692ace69cd588fcb5199
+MD5sum: d9467f507829c1e57827f626adc204de
+Description: OpenTelemetry Python API
+
+Package: opentelemetry-sdk
+Version: 1.21.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 430
+Depends: opentelemetry-api (= 1.21.0), python3-typing-extensions, python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-sdk/opentelemetry-sdk_1.21.0-1_all.deb
+Size: 65046
+SHA256: 4a185d894a14ed495162f7e0cf8ee150237824b05f0bba1fd86d31be95f81941
+SHA1: a9f5f207da57ff071d4ac0d155919483abbc398b
+MD5sum: b28fc3ac4fa6aa978cd437756ca5c4db
+Description: OpenTelemetry Python SDK
+
 Package: python-flask-xml-rpc
 Source: flask-xml-rpc
 Version: 0.1.2-1
