@@ -228,6 +228,24 @@ SHA1: 28314e2e5753e6b62b89676a5b408268c5f774fc
 MD5sum: 0f30aed179f33992d5127ac87253fe16
 Description: OpenTelemetry Collector Protobuf over gRPC Exporter
 
+Package: python3-opentelemetry-exporter-otlp-proto-http
+Source: opentelemetry-exporter-otlp-proto-http
+Version: 1.21.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 73
+Depends: python3-backoff (<< 3.0.0), python3-backoff (>= 1.10.0), python3-deprecated (>= 1.2.6), python3-googleapis-common-protos (>= 1.52), python3-opentelemetry-api (>= 1.15.0), python3-opentelemetry-exporter-otlp-proto-common (>= 1.21.0), python3-opentelemetry-proto (>= 1.21.0), python3-opentelemetry-sdk (>= 1.21.0), python3-requests (>= 2.7), python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-otlp-proto-http
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-exporter-otlp-proto-http/python3-opentelemetry-exporter-otlp-proto-http_1.21.0-1_all.deb
+Size: 11846
+SHA256: 19bd2569abe196603b04c176c807eefad5fe3686dfb7e7d29548467b0b31782a
+SHA1: d835569e89684be8892aacbc87e39ca1a44be2d2
+MD5sum: 19ba37006ffa0c1f5d79a566150f0bd2
+Description: OpenTelemetry Collector Protobuf over HTTP Exporter
+
 Package: python3-opentelemetry-instrumentation
 Source: opentelemetry-instrumentation
 Version: 0.42b0-1
