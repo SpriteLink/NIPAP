@@ -174,6 +174,60 @@ SHA1: b609a88ad50bd1f744207951b511ff0db06aad45
 MD5sum: d27cde558bd62e1a50821a86eefee8d1
 Description: OpenTelemetry Python API
 
+Package: python3-opentelemetry-exporter-otlp
+Source: opentelemetry-exporter-otlp
+Version: 1.21.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 37
+Depends: python3:any (>= 3.7~), python3-opentelemetry-exporter-otlp-proto-grpc (>= 1.21.0), python3-opentelemetry-exporter-otlp-proto-http (>= 1.21.0)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-otlp
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-exporter-otlp/python3-opentelemetry-exporter-otlp_1.21.0-1_all.deb
+Size: 7564
+SHA256: 11855d57196e6b210dcfac212361d7115dc65b13522c0bd1f2585eadc82ba2f6
+SHA1: 86d594e5024234c058caaae39a71aabbfc44352e
+MD5sum: 7335653a0e180b6b2e63539595dbef7d
+Description: OpenTelemetry Collector Exporters
+
+Package: python3-opentelemetry-exporter-otlp-proto-common
+Source: opentelemetry-exporter-otlp-proto-common
+Version: 1.21.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 75
+Depends: python3-backoff (<< 3.0.0), python3-backoff (>= 1.10.0), python3-opentelemetry-proto (>= 1.21.0), python3:any (>= 3.7~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-otlp-proto-common
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-exporter-otlp-proto-common/python3-opentelemetry-exporter-otlp-proto-common_1.21.0-1_all.deb
+Size: 12950
+SHA256: 3d2c3b3e994a7179f5f37e027ad229a4c1d1a5f7cb35ee97644944560f33d8aa
+SHA1: 9aadd6a3e83e07abb99b1d3f172c6a4269cf37eb
+MD5sum: 61f541f8196bbfcea19440d6eee46804
+Description: OpenTelemetry Protobuf encoding
+
+Package: python3-opentelemetry-exporter-otlp-proto-grpc
+Source: opentelemetry-exporter-otlp-proto-grpc
+Version: 1.21.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 78
+Depends: python3-backoff (<< 3.0.0), python3-backoff (>= 1.10.0), python3-deprecated (>= 1.2.6), python3-googleapis-common-protos (>= 1.52), python3-grpcio (<= 2.0.0), python3-grpcio (>= 1.0.0), python3-opentelemetry-api (>= 1.15.0), python3-opentelemetry-exporter-otlp-proto-common (>= 1.21.0), python3-opentelemetry-proto (>= 1.21.0), python3-opentelemetry-sdk (>= 1.21.0), python3:any (>= 3.8~)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-otlp-proto-grpc
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-exporter-otlp-proto-grpc/python3-opentelemetry-exporter-otlp-proto-grpc_1.21.0-1_all.deb
+Size: 13870
+SHA256: 202aa39421f3729f8f947418aa08922836e4d089ce857fac895da8a509de3351
+SHA1: 28314e2e5753e6b62b89676a5b408268c5f774fc
+MD5sum: 0f30aed179f33992d5127ac87253fe16
+Description: OpenTelemetry Collector Protobuf over gRPC Exporter
+
 Package: python3-opentelemetry-instrumentation
 Source: opentelemetry-instrumentation
 Version: 0.42b0-1
@@ -263,6 +317,24 @@ SHA256: 6fcab6cb3b19031da876d87d909658f28774ecf44c09913cfef505d061a15acb
 SHA1: e00f84ea9a5c9cf672f28570deb6b64d38b2978e
 MD5sum: 4b60c0c24a09f344922b32122a65f2f0
 Description: WSGI Middleware for OpenTelemetry
+
+Package: python3-opentelemetry-proto
+Source: opentelemetry-proto
+Version: 1.21.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 234
+Depends: python3-protobuf (>= 3.19), python3:any (>= 3.7~), python3-protobuf (<< 5.0)
+Multi-Arch: foreign
+Homepage: https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-proto
+Priority: optional
+Section: python
+Filename: pool/main/o/opentelemetry-proto/python3-opentelemetry-proto_1.21.0-1_all.deb
+Size: 31492
+SHA256: ae196426479b1c26dbc9fe5ae75617cb15c98edfedf82f109ef78de405c27132
+SHA1: 1998d5c83018213de735047c2c6ef6df483ebf6b
+MD5sum: eb47fcb155e3552f3bbe037f1e255ae7
+Description: OpenTelemetry Python Proto
 
 Package: python3-opentelemetry-sdk
 Source: opentelemetry-sdk

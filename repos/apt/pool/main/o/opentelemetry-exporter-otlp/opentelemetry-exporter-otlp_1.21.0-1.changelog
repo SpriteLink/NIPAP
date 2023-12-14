@@ -1,0 +1,5 @@
+opentelemetry-exporter-otlp (1.21.0-1) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Tue, 12 Dec 2023 16:25:24 +0100
