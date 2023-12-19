@@ -41,9 +41,9 @@ def create_app(test_config=None):
     # configure tracing
     if nipap_config.has_section("tracing"):
         try:
-            import tracing
+            import nipap.tracing
             from opentelemetry.instrumentation.wsgi import OpenTelemetryMiddleware
-            tracing.init_tracing("nipap-www", nipap_config.get("tracing", "otlp_grpc_endpoint"))
+            nipap.tracing.init_tracing("nipap-www", nipap_config.get("tracing", "otlp_grpc_endpoint"))
             app.wsgi_app = OpenTelemetryMiddleware(app.wsgi_app)
         except KeyError:
             pass
