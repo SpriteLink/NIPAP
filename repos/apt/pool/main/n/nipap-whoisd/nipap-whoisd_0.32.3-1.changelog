@@ -1,3 +1,11 @@
+nipap-whoisd (0.32.3-1) stable; urgency=medium
+
+  * Fix broken tracing in WWW UI (#1363)
+  * Add support for forcing OpenTelemetry export over HTTP (#1365)
+  * Bumped versions of some dependencies (#1353, #1357, #1358, #1359)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 22 Jan 2024 22:02:13 +0100
+
 nipap-whoisd (0.32.2-1) stable; urgency=medium
 
   * Add pagination to the REST API (#1361)
