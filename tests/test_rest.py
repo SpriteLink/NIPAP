@@ -158,22 +158,6 @@ class NipapRestTest(unittest.TestCase):
         return res
 
 
-    def _convert_list_of_unicode_to_str(self, list_of_items):
-        """ Converts list of unicode values to string
-
-            This helper function converts keys and values in unicode to string for a list containing nested dictionaries.
-
-            When converting JSON respons back to Python dict the keys and values are
-            added as unicode. This helper function handles the problem, but all types get replaced to strings. Is used for assertEqual.
-        """
-        result = []
-        for item in list_of_items:
-            item = dict([(str(k), str(v)) for k, v in list(item.items())])
-            result.append(item)
-
-        return result
-
-
     def _add_prefix(self, attr):
         request = requests.post(self.server_url, headers=self.headers, json = attr)
         text = request.text
@@ -227,7 +211,6 @@ class NipapRestTest(unittest.TestCase):
         parameters = {'order_id': 'test'}
         list_prefix_request = request = requests.get(self.server_url, headers=self.headers, params=parameters)
         list_prefix = json.loads(list_prefix_request.text)
-        list_prefix = self._convert_list_of_unicode_to_str(list_prefix)
 
         self.assertEqual(self._mangle_prefix_result(list_prefix), [expected])
 
@@ -264,7 +247,6 @@ class NipapRestTest(unittest.TestCase):
 
         expected_list.append(expected)
         expected_list.append(expected_host)
-        expected_list = self._convert_list_of_unicode_to_str(expected_list)
 
         # add another prefix, try with vrf_id = None
         attr['vrf_id'] = None
@@ -279,7 +261,6 @@ class NipapRestTest(unittest.TestCase):
         expected_host2['display_prefix'] = '1.3.3.2/24'
         expected_host2['children'] = '0'
         expected_list.append(expected_host2)
-        expected_list = self._convert_list_of_unicode_to_str(expected_list)
 
         # add another prefix, this time completely without VRF info
         del(attr['vrf_id'])
@@ -294,13 +275,11 @@ class NipapRestTest(unittest.TestCase):
         expected_host3['display_prefix'] = '1.3.3.3/24'
         expected_host3['children'] = '0'
         expected_list.append(expected_host3)
-        expected_list = self._convert_list_of_unicode_to_str(expected_list)
 
         # list of prefixes through GET request
         parameters = {'order_id': 'test'}
         list_prefix_request = request = requests.get(self.server_url, headers=self.headers, params=parameters)
         list_prefix = json.loads(list_prefix_request.text)
-        list_prefix = self._convert_list_of_unicode_to_str(list_prefix)
 
         mangled_result = self._mangle_prefix_result(list_prefix)
 
@@ -430,7 +409,6 @@ class NipapRestTest(unittest.TestCase):
         parameters = {'order_id': search_orderId_value}
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
         result = json.loads(get_prefix_request.text)
-        result = self._convert_list_of_unicode_to_str(result)
 
         self.assertEqual(self._mangle_prefix_result(result), [expected])
 
@@ -459,7 +437,6 @@ class NipapRestTest(unittest.TestCase):
         parameters = {'order_id': search_orderId_value}
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
         result = json.loads(get_prefix_request.text)
-        result = self._convert_list_of_unicode_to_str(result)
 
         self.assertEqual(self._mangle_prefix_result(result), [expected])
 
