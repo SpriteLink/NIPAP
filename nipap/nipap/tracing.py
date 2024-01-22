@@ -10,17 +10,21 @@ try:
     from opentelemetry.sdk.resources import SERVICE_NAME, Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    import opentelemetry.exporter.otlp.proto.http.trace_exporter
     from requests import post
 
     tracer = trace.get_tracer("nipap")
 
-    def init_tracing(service_name, endpoint):
+    def init_tracing(service_name, endpoint, use_grpc=True):
         resource = Resource(attributes={
             SERVICE_NAME: service_name
         })
 
         provider = TracerProvider(resource=resource)
-        processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint))
+        if use_grpc:
+            processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint))
+        else:
+            processor = BatchSpanProcessor(opentelemetry.exporter.otlp.proto.http.trace_exporter.OTLPSpanExporter(endpoint=endpoint))
         provider.add_span_processor(processor)
         trace.set_tracer_provider(provider)
 

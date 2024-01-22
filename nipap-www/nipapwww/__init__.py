@@ -12,7 +12,7 @@ def create_app(test_config=None):
     # dependencies installed. Relevant during initial package build.
     import os
     from flask import Flask, redirect, url_for
-    from nipap.nipapconfig import NipapConfig
+    from nipap.nipapconfig import NipapConfig, NipapConfigError
     import pynipap
 
     # create and configure the app
@@ -43,7 +43,14 @@ def create_app(test_config=None):
         try:
             import nipap.tracing
             from opentelemetry.instrumentation.wsgi import OpenTelemetryMiddleware
-            nipap.tracing.init_tracing("nipap-www", nipap_config.get("tracing", "otlp_grpc_endpoint"))
+
+            if nipap_config.has_option("tracing", "otlp_grpc_endpoint"):
+                nipap.tracing.init_tracing("nipap-www", nipap_config.get("tracing", "otlp_grpc_endpoint"))
+            elif nipap_config.has_option("tracing", "otlp_http_endpoint"):
+                nipap.tracing.init_tracing("nipap-www", nipap_config.get("tracing", "otlp_http_endpoint"), False)
+            else:
+                raise NipapConfigError("Tracing enabled but no OTLP endpoint configured")
+
             app.wsgi_app = OpenTelemetryMiddleware(app.wsgi_app)
         except KeyError:
             pass
