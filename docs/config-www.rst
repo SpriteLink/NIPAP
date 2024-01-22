@@ -44,7 +44,7 @@ from the built-in web server, run the following::
 
 Using the default configuration, the web UI should now be reachable on port
 5000. By default, the NIPAP web UI will look for nipap.conf in /etc/nipap. The
-path can be changed setting the environment variable NIPPA_CONFIG_PATH as
+path can be changed setting the environment variable NIPAP_CONFIG_PATH as
 such::
 
       export NIPAP_CONFIG_PATH=~/.local/etc/nipap/nipap.conf

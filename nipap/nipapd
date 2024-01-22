@@ -233,15 +233,20 @@ if __name__ == '__main__':
             from nipap.tracing import init_tracing, setup
             from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
             from opentelemetry.instrumentation.flask import FlaskInstrumentor
-            otlp_grpc_endpoint = cfg.get("tracing", "otlp_grpc_endpoint")
-            init_tracing("nipapd", otlp_grpc_endpoint)
+
+            if cfg.has_option("tracing", "otlp_grpc_endpoint"):
+                init_tracing("nipapd", cfg.get("tracing", "otlp_grpc_endpoint"))
+            elif cfg.has_option("tracing", "otlp_http_endpoint"):
+                init_tracing("nipapd", cfg.get("tracing", "otlp_http_endpoint"), False)
+            else:
+                raise NipapConfigError("Tracing enabled but no OTLP endpoint configured")
+
             FlaskInstrumentor.instrument_app(app, excluded_urls="/v1/traces")
             Psycopg2Instrumentor().instrument(enable_commenter=True, commenter_options={})
 
             # Configure proxy of traces from nipap-cli to collector
             try:
-                otlp_http_endpoint = cfg.get("tracing", "otlp_http_endpoint")
-                setup(app, otlp_http_endpoint)
+                setup(app, cfg.get("tracing", "otlp_http_endpoint"))
             except configparser.NoOptionError:
                 pass
             logger.debug('Tracing is enabled')
