@@ -18,7 +18,7 @@ psycopg2==2.8.6 --no-binary psycopg2
 pyparsing==2.4.7
 python-dateutil==2.8.1
 pytz==2021.1
-pyjwt==1.5.3
+pyjwt==2.4.0
 tornado==6.3.3
 docutils==0.16
 # optional dependencies below
