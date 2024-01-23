@@ -1,3 +1,9 @@
+Version 0.32.3 - Poseidon
+-------------------------
+ * Fix broken tracing in WWW UI (#1363)
+ * Add support for forcing OpenTelemetry export over HTTP (#1365)
+ * Bumped versions of some dependencies (#1353, #1357, #1358, #1359)
+
 Version 0.32.2 - Poseidon
 -------------------------
  * Add pagination to the REST API (#1361)
