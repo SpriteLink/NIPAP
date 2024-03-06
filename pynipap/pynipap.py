@@ -207,6 +207,9 @@
 import sys
 import logging
 import xmlrpc.client as xmlrpclib
+import urllib.parse
+
+from tracing import create_span
 
 __version__		= "0.32.3"
 __author__		= "Kristian Larsson, Lukas Garberg"
@@ -253,13 +256,6 @@ class AuthOptions:
             self.options = options
 
 
-try:
-    from tracing import create_span, TracingXMLTransport
-    xml_transport = TracingXMLTransport
-except ImportError:
-    xml_transport = xmlrpclib.Transport
-
-
 class XMLRPCConnection:
     """ Handles a shared XML-RPC connection.
     """
@@ -280,6 +276,20 @@ class XMLRPCConnection:
 
         if xmlrpc_uri is None:
             raise NipapError('XML-RPC URI not specified')
+
+        p = urllib.parse.urlsplit(xmlrpc_uri)
+
+        try:
+            from tracing import TracingXMLTransport, TracingXMLSafeTransport
+            if p.scheme == "http":
+                xml_transport = TracingXMLTransport
+            elif p.scheme == "https":
+                xml_transport = TracingXMLSafeTransport
+        except ImportError:
+            if p.scheme == "http":
+                xml_transport = xmlrpclib.Transport
+            elif p.scheme == "https":
+                xml_transport = xmlrpclib.SafeTransport
 
         # creating new instance
         self.connection = xmlrpclib.ServerProxy(xmlrpc_uri,
