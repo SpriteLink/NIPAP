@@ -52,12 +52,11 @@ jobs:
           default-jdk \
           gradle \
           rename \
-          postgresql-12 \
-          postgresql-12-ip4r
+          postgresql-14-ip4r
 
-        # Drop and re-create cluster to be bound to default port
-        for version in `pg_lsclusters | tail -n-2 | awk '{ print $1 }'`; do sudo pg_dropcluster $version main; done
-        sudo pg_createcluster --start 12 main
+        sudo service postgresql start
+        pg_isready
+
         sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
         chmod 0600 ~/.nipaprc
 
@@ -162,6 +161,7 @@ jobs:
     - name: "Accident analysis"
       if: failure()
       run: |
-        sudo cat /etc/nipap/nipap.conf
-        sudo cat /var/log/syslog
+        sudo cat /etc/nipap/nipap.conf || true
+        sudo cat /var/log/syslog || true
+        sudo cat /var/log/postgresql/postgresql-*-main.log || true
         sudo cat /tmp/nipap.log || true
