@@ -17,7 +17,6 @@ setup(
     license=nipapwww.__license__,
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
-    test_suite='nose.collector',
     package_data={'nipapwww': ['i18n/*/LC_MESSAGES/*.mo']},
     data_files=[
         ('/etc/nipap/www', ['nipap-www.wsgi', ]),
