@@ -23,38 +23,38 @@
 # database so that you can later login to the web interface.
 #
 
-FROM ubuntu:xenial
+FROM ubuntu:jammy
 
 MAINTAINER Lukas Garberg <lukas@spritelink.net>
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 ENV NIPAPD_HOST=nipapd NIPAPD_PORT=1337 WWW_USERNAME=guest WWW_PASSWORD=guest
 
 # apt update, upgrade & install packages
 RUN apt-get update -qy && apt-get upgrade -qy \
- && apt-get install -qy apache2 \
-    libapache2-mod-wsgi \
-    devscripts \
-    make \
+ && apt-get install --no-install-recommends -qy apache2 \
+    build-essential \
+    libapache2-mod-wsgi-py3 \
     libpq-dev \
+    libldap-dev \
+    libsasl2-dev \
     libsqlite3-dev \
     postgresql-client \
-    python \
-    python-all \
-    python-docutils \
-    python-pip \
-    python-dev \
-    python-markupsafe \
-    python-jinja2 \
- && pip --no-input install envtpl \
- && rm -rf /var/lib/apt/lists/*
+    python3 \
+    python3-all \
+    python3-pip \
+    python3-dev \
+ && pip3 --no-input install --no-cache-dir envtpl==0.7.2 \
+ && apt-get clean
 
 # Install pynipap, nipap and nipap-www
 COPY pynipap /pynipap
 COPY nipap /nipap
 COPY nipap-www /nipap-www
-RUN cd /pynipap && python setup.py install && \
-    cd /nipap && pip --no-input install -r requirements.txt && python setup.py install && \
-    cd /nipap-www && pip --no-input install -r requirements.txt && python setup.py install && \
+RUN cd /pynipap && python3 setup.py install && \
+    cd /nipap && pip3 --no-input install --no-cache-dir -r requirements.txt && python3 setup.py install && \
+    cd /nipap-www && pip3 --no-input install --no-cache-dir -r requirements.txt && python3 setup.py install && \
     cd ..
 
 EXPOSE 80
