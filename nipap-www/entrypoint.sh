@@ -13,10 +13,6 @@ if [ `nipap-passwd list | egrep -c ^$WWW_USERNAME\\\s` -eq 0 ]; then
     /usr/sbin/nipap-passwd add -u $WWW_USERNAME -p $WWW_PASSWORD -n "NIPAP WWW user" -t
 fi
 
-# Fix permissions
-chown -R www-data:www-data /var/cache/nipap-www
-chmod -R u=rwX /var/cache/nipap-www
-
 # Configure apache
 cat << EOF > /etc/apache2/sites-available/000-default.conf
 <VirtualHost *:80>

@@ -32,41 +32,38 @@
 # via a volume.
 #
 
-FROM ubuntu:bionic
+FROM ubuntu:jammy
 MAINTAINER Kristian Larsson <kristian@spritelink.net>
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 # apt update, upgrade & install packages
 RUN apt-get update -qy && apt-get upgrade -qy \
- && apt-get install -qy devscripts \
-    make \
+ && apt-get install --no-install-recommends -qy build-essential \
     libpq-dev \
+    libldap-dev \
+    libsasl2-dev \
     libsqlite3-dev \
     postgresql-client \
-    software-properties-common \
     python3 \
-    python3-all \
-    python3-pip \
     python3-dev \
-    libsasl2-dev \
-    libldap2-dev \
-    libssl-dev \
- && rm -rf /var/lib/apt/lists/*
+    python3-pip \
+    software-properties-common \
+ && apt-get clean
 
 # Install any additional CA certs from ca_certs folder required by corp proxies etc
-RUN mkdir -p /usr/share/ca-certificates/extra
-COPY ca_certs/*.crt /usr/share/ca-certificates/extra/
-RUN ls /usr/share/ca-certificates/extra/*.crt | sed 's/\/usr\/share\/ca-certificates\///g' >> /etc/ca-certificates.conf
-RUN update-ca-certificates
-RUN pip3 install --upgrade pip
+COPY ca_certs/ /
+RUN mkdir -p /usr/local/share/ca-certificates \
+ && cp /ca_certs/*.crt /usr/local/share/ca-certificates/ || true \
+ && rm -rf /ca_certs \
+ && update-ca-certificates
 RUN pip3 config set global.cert /etc/ssl/certs/ca-certificates.crt
 
 
 COPY nipap /nipap
 WORKDIR /nipap
-RUN pip3 install --no-input envtpl
-RUN pip3 --no-input install -r requirements.txt \
+RUN pip3 --no-input install --no-cache-dir envtpl==0.7.2 \
+ && pip3 --no-input install --no-cache-dir -r requirements.txt \
  && python3 setup.py install
 
 EXPOSE 1337
