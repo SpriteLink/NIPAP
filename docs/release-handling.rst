@@ -58,6 +58,17 @@ packages from the testing branch into stable. Again, commit to gh-pages and so
 forth. Please see "Rolling the deb repo" section for more details.
 
 
+Docker repositories
+-------------------
+The Docker repositories is hosted at Docker Hub and currently updated manually
+when a new release is built. The NIPAP organization can be found at
+https://hub.docker.com/u/nipap.
+
+There are two repositories, one for nipapd and one for the web UI, nipap-www.
+Each build is tagged with the NIPAP version and there are tags pointing towards
+the latest stable ("stable") and testing ("testing") releases.
+
+
 NEWS / Changelog
 ----------------
 There is a NEWS file outlining the differences with every version. It can
@@ -140,6 +151,30 @@ git, commit and push::
 Once a stable version is release, update readthedocs.org to point to the latest
 tag and write a post on Google+ in the NIPAP community and share it from the
 NIPAP account.
+
+
+Rolling the Docker images
+-------------------------
+Make sure you have a clean repo::
+    make clean
+
+Then build the images::
+    docker build -t nipap/nipapd:vX.Y.Z -f Dockerfile.nipapd .
+    docker build -t nipap/nipap-www:vX.Y.Z -f Dockerfile.www .
+Add the testing-tag and push::
+    docker tag nipap/nipapd:vX.Y.Z nipap/nipapd:testing
+    docker tag nipap/nipap-www:vX.Y.Z nipap/nipap-www:testing
+    docker login -u *username*
+    docker push nipap/nipapd:vX.Y.Z
+    docker push nipap/nipapd:testing
+    docker push nipap/nipap-www:vX.Y.Z
+    docker push nipap/nipap-www:testing
+
+Once the new version has been tested for a bit, also tag the version with the stable-tag and push:
+    docker tag nipap/nipapd:vX.Y.Z nipap/nipapd:stable
+    docker tag nipap/nipap-www:vX.Y.Z nipap/nipap-www:stable
+    docker push nipap/nipapd:stable
+    docker push nipap/nipap-www:stable
 
 
 Uploading to PyPi
