@@ -1,5 +1,10 @@
 #! /bin/bash
 
+# If WWW_SECRET_KEY is not set, generate random string
+if [ ! -v WWW_SECRET_KEY ]; then
+	export WWW_SECRET_KEY=`tr -dc A-Za-z0-9 </dev/urandom | head -c 16`
+fi
+
 # Create NIPAP configuration file
 if [ ! -e /etc/nipap/nipap.conf ]; then
     envtpl --keep-template --allow-missing -o /etc/nipap/nipap.conf /nipap/nipap.conf.dist
