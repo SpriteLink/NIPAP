@@ -50,3 +50,5 @@ default_list_vrf_rt = all
 # [tracing]
 # Specify OTLP GRPC endpoint. If no endpoint is specified traces will be sent via nipapd to OpenTelemetry Collector
 # otlp_grpc_endpoint = http://127.0.0.1:4317
+# Set sampler. Valid values are always_on, always_off, parentbased_always_on, parentbased_always_off, traceidratio and parentbased_traceidratio. Default is parentbased_always_on.
+# otel_traces_sampler = always_on

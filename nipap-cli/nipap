@@ -89,6 +89,16 @@ if __name__ == '__main__':
     nipap_cli.nipap_cli.cfg = cfg
 
     if cfg.has_section("tracing"):
+
+        sampler = None
+
+        if cfg.has_option("tracing", "otel_traces_sampler"):
+            trace_sampler = cfg.get("tracing", "otel_traces_sampler")
+            from opentelemetry.sdk.trace.sampling import _KNOWN_SAMPLERS
+            if trace_sampler not in _KNOWN_SAMPLERS:
+                print(f"Unknown otel_traces_sampler '{trace_sampler}'. Valid samplers are: '{list(_KNOWN_SAMPLERS.keys())}'")
+            sampler = _KNOWN_SAMPLERS[trace_sampler]
+
         try:
             use_grpc = True
             try:
@@ -100,7 +110,7 @@ if __name__ == '__main__':
                 otlp_endpoint = "https://" if use_ssl else "http://" + (cfg.get("global", "hostname") +
                                                                         ":" + cfg.get("global", "port") +
                                                                         "/v1/traces/")
-            tracing.init_tracing("nipap-cli", otlp_endpoint, use_grpc)
+            tracing.init_tracing("nipap-cli", otlp_endpoint, sampler, use_grpc)
         except KeyError:
             pass
 
