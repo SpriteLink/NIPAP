@@ -495,16 +495,6 @@ class LdapAuth(BaseAuth):
             self._ldap_search_password = self._cfg.get(base_auth_backend, 'search_password')
             self._ldap_search_conn = ldap.initialize(self._ldap_uri)
 
-        if self._ldap_tls:
-            try:
-                self._ldap_conn.start_tls_s()
-                if self._ldap_search_conn is not None:
-                    self._ldap_search_conn.start_tls_s()
-            except (ldap.CONNECT_ERROR, ldap.SERVER_DOWN) as exc:
-                self._logger.error('Attempted to start TLS with ldap server but failed.')
-                self._logger.exception(exc)
-                raise AuthError('Unable to establish secure connection to ldap server')
-
     @create_span_authenticate
     def authenticate(self):
         """ Verify authentication.
@@ -516,6 +506,17 @@ class LdapAuth(BaseAuth):
         # if authentication has been performed, return last result
         if self._authenticated is not None:
             return self._authenticated
+
+        # Start TLS session, if needed
+        if self._ldap_tls:
+            try:
+                self._ldap_conn.start_tls_s()
+                if self._ldap_search_conn is not None:
+                    self._ldap_search_conn.start_tls_s()
+            except (ldap.CONNECT_ERROR, ldap.SERVER_DOWN) as exc:
+                self._logger.error('Attempted to start TLS with ldap server but failed.')
+                self._logger.exception(exc)
+                raise AuthError('Unable to establish secure connection to ldap server')
 
         try:
             self._ldap_conn.simple_bind_s(self._ldap_binddn_fmt.format(ldap.dn.escape_dn_chars(self.username)),
@@ -585,6 +586,11 @@ class LdapAuth(BaseAuth):
             if self._ldap_rw_group or self._ldap_ro_group:
                 self._authenticated = False
                 return self._authenticated
+        finally:
+            # Unbind from LDAP server
+            self._ldap_conn.unbind_s()
+            if self._ldap_search_conn is not None:
+                self._ldap_search_conn.unbind_s()
 
         self._authenticated = True
 
