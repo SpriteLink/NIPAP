@@ -1,3 +1,13 @@
+nipap-cli (0.32.4-1) stable; urgency=medium
+
+  * Updated Docker packaging (#1374, #1376)
+  * Fixed nipap-cli TLS support which broke when tracing was introduced
+    (#1370)
+  * Added option to configure trace sampling (#1379)
+  * LDAP connection closed after authentication done (#1369)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 20 May 2024 12:56:02 +0200
+
 nipap-cli (0.32.3-1) stable; urgency=medium
 
   * Fix broken tracing in WWW UI (#1363)
