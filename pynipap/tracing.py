@@ -151,3 +151,6 @@ except ImportError:
             return f(*args, **kwargs)
 
         return decorated
+
+    def init_tracing(service_name, endpoint, sampler, use_grpc=True):
+        raise ImportError("Opentelemetry dependencies are missing")

@@ -89,30 +89,36 @@ if __name__ == '__main__':
     nipap_cli.nipap_cli.cfg = cfg
 
     if cfg.has_section("tracing"):
-
-        sampler = None
-
-        if cfg.has_option("tracing", "otel_traces_sampler"):
-            trace_sampler = cfg.get("tracing", "otel_traces_sampler")
-            from opentelemetry.sdk.trace.sampling import _KNOWN_SAMPLERS
-            if trace_sampler not in _KNOWN_SAMPLERS:
-                print(f"Unknown otel_traces_sampler '{trace_sampler}'. Valid samplers are: '{list(_KNOWN_SAMPLERS.keys())}'")
-            sampler = _KNOWN_SAMPLERS[trace_sampler]
-
         try:
-            use_grpc = True
+            sampler = None
+
+            if cfg.has_option("tracing", "otel_traces_sampler"):
+                trace_sampler = cfg.get("tracing", "otel_traces_sampler")
+                from opentelemetry.sdk.trace.sampling import _KNOWN_SAMPLERS
+                import dippen
+                if trace_sampler not in _KNOWN_SAMPLERS:
+                    print(
+                        f"Unknown otel_traces_sampler '{trace_sampler}'. Valid samplers are: '{list(_KNOWN_SAMPLERS.keys())}'",
+                        file=sys.stderr)
+                    sys.exit(1)
+                sampler = _KNOWN_SAMPLERS[trace_sampler]
+
             try:
-                otlp_endpoint = cfg.get("tracing", "otlp_grpc_endpoint")
-            except configparser.NoOptionError:
-                # Send trace via nipapd
-                use_grpc = False
-                use_ssl = cfg.getboolean("global", "use_ssl")
-                otlp_endpoint = "https://" if use_ssl else "http://" + (cfg.get("global", "hostname") +
-                                                                        ":" + cfg.get("global", "port") +
-                                                                        "/v1/traces/")
-            tracing.init_tracing("nipap-cli", otlp_endpoint, sampler, use_grpc)
-        except KeyError:
-            pass
+                use_grpc = True
+                try:
+                    otlp_endpoint = cfg.get("tracing", "otlp_grpc_endpoint")
+                except configparser.NoOptionError:
+                    # Send trace via nipapd
+                    use_grpc = False
+                    use_ssl = cfg.getboolean("global", "use_ssl")
+                    otlp_endpoint = "https://" if use_ssl else "http://" + (cfg.get("global", "hostname") +
+                                                                            ":" + cfg.get("global", "port") +
+                                                                            "/v1/traces/")
+                tracing.init_tracing("nipap-cli", otlp_endpoint, sampler, use_grpc)
+            except KeyError:
+                pass
+        except ImportError:
+            print("Opentelemetry dependencies are missing. Tracing is not enabled", file=sys.stderr)
 
     # setup our configuration
     nipap_cli.nipap_cli.setup_connection()
