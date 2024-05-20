@@ -42,7 +42,7 @@ upload:
 
 clean:
 	$(PYTHON) setup.py clean
-	rm -rf build/ MANIFEST dist/ debian/$(PROJECT)* debian/files .pc/ debian/patches \
+	rm -rf .pybuild/ MANIFEST dist/ debian/$(PROJECT)* debian/files .pc/ debian/patches \
 		debian/.debhelper
 	find . -name '*.pyc' -delete
 	rm -rf data/sessions/container_file/*
