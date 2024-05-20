@@ -233,11 +233,20 @@ if __name__ == '__main__':
             from nipap.tracing import init_tracing, setup
             from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
             from opentelemetry.instrumentation.flask import FlaskInstrumentor
+            from opentelemetry.sdk.trace.sampling import _KNOWN_SAMPLERS
+
+            sampler = None
+
+            if cfg.has_option("tracing", "otel_traces_sampler"):
+                trace_sampler = cfg.get("tracing", "otel_traces_sampler")
+                if trace_sampler not in _KNOWN_SAMPLERS:
+                    raise NipapConfigError(f"Unknown otel_traces_sampler '{trace_sampler}'. Valid samplers are: '{list(_KNOWN_SAMPLERS.keys())}'")
+                sampler = _KNOWN_SAMPLERS[trace_sampler]
 
             if cfg.has_option("tracing", "otlp_grpc_endpoint"):
-                init_tracing("nipapd", cfg.get("tracing", "otlp_grpc_endpoint"))
+                init_tracing("nipapd", cfg.get("tracing", "otlp_grpc_endpoint", sampler))
             elif cfg.has_option("tracing", "otlp_http_endpoint"):
-                init_tracing("nipapd", cfg.get("tracing", "otlp_http_endpoint"), False)
+                init_tracing("nipapd", cfg.get("tracing", "otlp_http_endpoint"), sampler, False)
             else:
                 raise NipapConfigError("Tracing enabled but no OTLP endpoint configured")
 

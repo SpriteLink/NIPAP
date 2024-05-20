@@ -43,11 +43,20 @@ def create_app(test_config=None):
         try:
             import nipap.tracing
             from opentelemetry.instrumentation.wsgi import OpenTelemetryMiddleware
+            from opentelemetry.sdk.trace.sampling import _KNOWN_SAMPLERS
+
+            sampler = None
+
+            if nipap_config.has_option("tracing", "otel_traces_sampler"):
+                trace_sampler = nipap_config.get("tracing", "otel_traces_sampler")
+                if trace_sampler not in _KNOWN_SAMPLERS:
+                    raise NipapConfigError(f"Unknown otel_traces_sampler '{trace_sampler}'. Valid samplers are: {_KNOWN_SAMPLERS}")
+                sampler = _KNOWN_SAMPLERS[trace_sampler]
 
             if nipap_config.has_option("tracing", "otlp_grpc_endpoint"):
-                nipap.tracing.init_tracing("nipap-www", nipap_config.get("tracing", "otlp_grpc_endpoint"))
+                nipap.tracing.init_tracing("nipap-www", nipap_config.get("tracing", "otlp_grpc_endpoint"), sampler)
             elif nipap_config.has_option("tracing", "otlp_http_endpoint"):
-                nipap.tracing.init_tracing("nipap-www", nipap_config.get("tracing", "otlp_http_endpoint"), False)
+                nipap.tracing.init_tracing("nipap-www", nipap_config.get("tracing", "otlp_http_endpoint"), sampler, False)
             else:
                 raise NipapConfigError("Tracing enabled but no OTLP endpoint configured")
 

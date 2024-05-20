@@ -16,21 +16,26 @@ try:
     from opentelemetry.sdk.resources import SERVICE_NAME, Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.sdk.trace.sampling import DEFAULT_ON
     import opentelemetry.exporter.otlp.proto.http.trace_exporter
 
     tracer = trace.get_tracer("pynipap")
 
 
-    def init_tracing(service_name, endpoint, use_grpc=True):
+    def init_tracing(service_name, endpoint, sampler, use_grpc=True):
         resource = Resource(attributes={
             SERVICE_NAME: service_name
         })
 
-        provider = TracerProvider(resource=resource)
+        if sampler is None:
+            sampler = DEFAULT_ON
+
+        provider = TracerProvider(sampler=sampler, resource=resource)
         if use_grpc:
             processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint))
         else:
-            processor = BatchSpanProcessor(opentelemetry.exporter.otlp.proto.http.trace_exporter.OTLPSpanExporter(endpoint=endpoint))
+            processor = BatchSpanProcessor(
+                opentelemetry.exporter.otlp.proto.http.trace_exporter.OTLPSpanExporter(endpoint=endpoint))
         provider.add_span_processor(processor)
         trace.set_tracer_provider(provider)
 
@@ -70,6 +75,7 @@ try:
                 except BaseException:
                     pass
                 return f(*args, **kwargs)
+
         return decorated
 
 
@@ -99,8 +105,9 @@ try:
                 current_span.set_attribute("net.peer.ip", connection.host)
                 current_span.set_attribute("net.peer.port", connection.port)
                 current_span.set_attribute("net.peer.transport", "ip_tcp")
-                connection.putheader("traceparent", "00-" + hex(current_span.get_span_context().trace_id)[2:].zfill(32) + "-" + hex(
-                    current_span.get_span_context().span_id)[2:].zfill(16) + "-01")
+                connection.putheader("traceparent",
+                                     "00-" + hex(current_span.get_span_context().trace_id)[2:].zfill(32) + "-" + hex(
+                                         current_span.get_span_context().span_id)[2:].zfill(16) + "-0" + ("1" if current_span.is_recording() else "0"))
 
             super().send_content(connection, request_body)
 
@@ -131,8 +138,9 @@ try:
                 current_span.set_attribute("net.peer.ip", connection.host)
                 current_span.set_attribute("net.peer.port", connection.port)
                 current_span.set_attribute("net.peer.transport", "ip_tcp")
-                connection.putheader("traceparent", "00-" + hex(current_span.get_span_context().trace_id)[2:].zfill(32) + "-" + hex(
-                    current_span.get_span_context().span_id)[2:].zfill(16) + "-01")
+                connection.putheader("traceparent",
+                                     "00-" + hex(current_span.get_span_context().trace_id)[2:].zfill(32) + "-" + hex(
+                                         current_span.get_span_context().span_id)[2:].zfill(16) + "-0" + ("1" if current_span.is_recording() else "0"))
 
             super().send_content(connection, request_body)
 
@@ -141,4 +149,8 @@ except ImportError:
         @wraps(f)
         def decorated(*args, **kwargs):
             return f(*args, **kwargs)
+
         return decorated
+
+    def init_tracing(service_name, endpoint, sampler, use_grpc=True):
+        raise ImportError("Opentelemetry dependencies are missing")
