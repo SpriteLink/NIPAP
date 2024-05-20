@@ -1,3 +1,11 @@
+Version 0.32.4 - Poseidon
+-------------------------
+ * Updated Docker packaging (#1374, #1376)
+ * Fixed nipap-cli TLS support which broke when tracing was introduced
+   (#1370)
+ * Added option to configure trace sampling (#1379)
+ * LDAP connection closed after authentication done (#1369)
+
 Version 0.32.3 - Poseidon
 -------------------------
  * Fix broken tracing in WWW UI (#1363)
