@@ -6,3 +6,4 @@
 *.deb
 docs/sphinx/_build/
 nipap-www/nipap_www.egg-info
+nipap/nipap.egg-info
