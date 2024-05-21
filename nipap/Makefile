@@ -50,7 +50,7 @@ clean:
 		debian/nipap-common.debhelper.log \
 		debian/nipap-common.postinst.debhelper \
 		debian/nipap-common.prerm.debhelper debian/nipap-common.substvars \
-		debian/.debhelper
+		debian/.debhelper debian/debhelper-build-stamp
 	find . -name '*.pyc' -delete
 
 VER := $(shell head -n1 ../NEWS | awk '{print $$2}')

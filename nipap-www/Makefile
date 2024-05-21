@@ -43,7 +43,7 @@ upload:
 clean:
 	$(PYTHON) setup.py clean
 	rm -rf .pybuild/ MANIFEST dist/ debian/$(PROJECT)* debian/files .pc/ debian/patches \
-		debian/.debhelper nipap_www.egg-info
+		debian/.debhelper nipap_www.egg-info debian/debhelper-build-stamp
 	find . -name '*.pyc' -delete
 	rm -rf data/sessions/container_file/*
 	rm -rf data/sessions/container_file_lock/*
