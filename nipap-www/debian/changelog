@@ -152,7 +152,7 @@ nipap-www (0.29.4-1) stable; urgency=medium
   * Improved logging in backend (#1043, #1047)
   * WSGI file moved to /etc/nipap/www (#880, #1052)
 
- -- Lukas Garberg <lukagarb@arb>  Mon, 26 Sep 2016 06:57:22 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 26 Sep 2016 06:57:22 +0200
 
 nipap-www (0.29.3-1) stable; urgency=medium
 
@@ -173,7 +173,7 @@ nipap-www (0.29.2-1) stable; urgency=medium
     #1005)
   * Fix error handling in nipap-www (#1004, #1006)
 
- -- Kristian Larsson <kll@lingloi>  Fri, 09 Sep 2016 17:45:14 +0200
+ -- Kristian Larsson <kristian@spritelink.net>  Fri, 09 Sep 2016 17:45:14 +0200
 
 nipap-www (0.29.1-1) stable; urgency=medium
 

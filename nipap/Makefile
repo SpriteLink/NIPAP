@@ -42,7 +42,7 @@ upload:
 
 clean:
 	$(PYTHON) setup.py clean
-	rm -rf build/ MANIFEST dist/ debian/tmp debian/nipap-common \
+	rm -rf .pybuild/ MANIFEST dist/ debian/tmp debian/nipap-common \
 		debian/$(PROJECT) debian/nipapd debian/files .pc/ nipapd.8* \
 		nipap-passwd.1* debian/nipapd.debhelper.log \
 		debian/nipapd.postinst.debhelper debian/nipapd.postrm.debhelper \
@@ -50,7 +50,7 @@ clean:
 		debian/nipap-common.debhelper.log \
 		debian/nipap-common.postinst.debhelper \
 		debian/nipap-common.prerm.debhelper debian/nipap-common.substvars \
-		debian/.debhelper
+		debian/.debhelper debian/debhelper-build-stamp nipap.egg-info/
 	find . -name '*.pyc' -delete
 
 VER := $(shell head -n1 ../NEWS | awk '{print $$2}')

@@ -42,7 +42,8 @@ upload:
 clean:
 	$(PYTHON) setup.py clean
 	rm -rf .pybuild/ MANIFEST dist/ debian/files debian/python-pynipap* \
-		debian/python3-pynipap* debian/$(PROJECT).substvars debian/.debhelper
+		debian/python3-pynipap* debian/$(PROJECT).substvars debian/.debhelper \
+		debian/debhelper-build-stamp
 	find . -name '*.pyc' -delete
 
 VER := $(shell head -n1 ../NEWS | awk '{print $$2}')
