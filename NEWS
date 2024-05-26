@@ -1,3 +1,9 @@
+Version 0.32.5 - Poseidon
+-------------------------
+ * Fixed trace proxy (#1385)
+ * Fixed handling of CA certs in Dockerfiles (#1384)
+ * Misc fixes to build system etc (#1383)
+
 Version 0.32.4 - Poseidon
 -------------------------
  * Updated Docker packaging (#1374, #1376)
