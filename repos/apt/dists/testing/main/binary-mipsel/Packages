@@ -1,16 +1,16 @@
 Package: nipap-cli
-Version: 0.32.4-1
+Version: 0.32.5-1
 Architecture: all
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Installed-Size: 224
 Depends: python3 (>= 3.1), python3-ipy, python3-pynipap
 Priority: optional
 Section: python
-Filename: pool/main/n/nipap-cli/nipap-cli_0.32.4-1_all.deb
-Size: 53130
-SHA256: aaf811ec78f2349398f048c7aede0f80b18b5e89c52f4ef9cd16146b18b2a35b
-SHA1: c22c6679cf455c719b4c9bb95c73790585b6c49b
-MD5sum: 6930c928630f53810d2eee10f2f38c17
+Filename: pool/main/n/nipap-cli/nipap-cli_0.32.5-1_all.deb
+Size: 53196
+SHA256: c850502c9d7870d8c44abfeaedcaed744adb9738a065d0d8f9a63e5dcf332729
+SHA1: c011880a94b44de2a65f6af698ddfdf32eb253b1
+MD5sum: 36a0d26e25074b8792fd9a5814dd3740
 Description: Neat IP Address Planner
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing
  large amounts of IP addresses. This is the shell command.
