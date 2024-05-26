@@ -257,13 +257,14 @@ if __name__ == '__main__':
             try:
                 setup(app, cfg.get("tracing", "otlp_http_endpoint"))
             except configparser.NoOptionError:
+                logger.info('Found no OTLP HTTP endpoint, OTLP proxy disabled')
                 pass
-            logger.debug('Tracing is enabled')
+            logger.debug('Tracing is enabled and successfully set up')
         except KeyError:
-            logger.error('Error in tracing configuration. No tracing enabled')
+            logger.error('Error in tracing configuration, tracing not enabled')
             pass
-        except ImportError:
-            logger.error('Failed to import tracing libraries. Check dependencies. No tracing enabled')
+        except ImportError as err:
+            logger.error('Failed to import tracing library %s, tracing not enabled', err.name)
             pass
     else:
         logger.debug('Tracing is disabled')
