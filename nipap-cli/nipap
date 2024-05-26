@@ -111,7 +111,7 @@ if __name__ == '__main__':
                     # Send trace via nipapd
                     use_grpc = False
                     use_ssl = cfg.getboolean("global", "use_ssl")
-                    otlp_endpoint = "https://" if use_ssl else "http://" + (cfg.get("global", "hostname") +
+                    otlp_endpoint = ("https://" if use_ssl else "http://") + (cfg.get("global", "hostname") +
                                                                             ":" + cfg.get("global", "port") +
                                                                             "/v1/traces/")
                 tracing.init_tracing("nipap-cli", otlp_endpoint, sampler, use_grpc)
