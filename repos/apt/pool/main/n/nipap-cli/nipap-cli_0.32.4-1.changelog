@@ -1,11 +1,3 @@
-nipap-cli (0.32.5-1) stable; urgency=medium
-
-  * Fixed trace proxy (#1385)
-  * Fixed handling of CA certs in Dockerfiles (#1384)
-  * Misc fixes to build system etc (#1383)
-
- -- Lukas Garberg <lukas@spritelink.net>  Sun, 26 May 2024 23:02:40 +0200
-
 nipap-cli (0.32.4-1) stable; urgency=medium
 
   * Updated Docker packaging (#1374, #1376)
@@ -160,7 +152,7 @@ nipap-cli (0.29.4-1) stable; urgency=medium
   * Improved logging in backend (#1043, #1047)
   * WSGI file moved to /etc/nipap/www (#880, #1052)
 
- -- Lukas Garberg <lukas@spritelink.net>  Mon, 26 Sep 2016 06:57:23 +0200
+ -- Lukas Garberg <lukagarb@arb>  Mon, 26 Sep 2016 06:57:23 +0200
 
 nipap-cli (0.29.3-1) stable; urgency=medium
 
@@ -181,7 +173,7 @@ nipap-cli (0.29.2-1) stable; urgency=medium
     #1005)
   * Fix error handling in nipap-www (#1004, #1006)
 
- -- Kristian Larsson <kristian@spritelink.net>  Fri, 09 Sep 2016 17:45:14 +0200
+ -- Kristian Larsson <kll@lingloi>  Fri, 09 Sep 2016 17:45:14 +0200
 
 nipap-cli (0.29.1-1) stable; urgency=medium
 
