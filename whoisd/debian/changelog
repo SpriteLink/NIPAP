@@ -1,3 +1,11 @@
+nipap-whoisd (0.32.5-1) stable; urgency=medium
+
+  * Fixed trace proxy (#1385)
+  * Fixed handling of CA certs in Dockerfiles (#1384)
+  * Misc fixes to build system etc (#1383)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Sun, 26 May 2024 23:02:40 +0200
+
 nipap-whoisd (0.32.4-1) stable; urgency=medium
 
   * Updated Docker packaging (#1374, #1376)

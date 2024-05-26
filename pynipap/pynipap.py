@@ -211,7 +211,7 @@ import urllib.parse
 
 from tracing import create_span
 
-__version__		= "0.32.4"
+__version__		= "0.32.5"
 __author__		= "Kristian Larsson, Lukas Garberg"
 __author_email__= "kll@tele2.net, lukas@spritelink.net"
 __copyright__	= "Copyright 2011, Kristian Larsson, Lukas Garberg"

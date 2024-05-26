@@ -52,7 +52,5 @@ VER := $(shell head -n1 ../NEWS | awk '{print $$2}')
 bumpversion:
 	# replace version number in nipapwww/__init__.py
 	sed -i 's/\(__version__\s*= \)"[^"]\+"/\1"$(VER)"/' nipapwww/__init__.py
-	# replace version number in nipap_www.egg-info/PKG-INFO
-	sed -i 's/^Version:.*/Version: $(VER)/' nipap_www.egg-info/PKG-INFO
 	# update debian/changelog
 	../utilities/news2dch.py ../NEWS debian/changelog
