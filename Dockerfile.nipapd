@@ -52,12 +52,14 @@ RUN apt-get update -qy && apt-get upgrade -qy \
  && apt-get clean
 
 # Install any additional CA certs from ca_certs folder required by corp proxies etc
-COPY ca_certs/ /
+RUN mkdir /ca_certs
+COPY ca_certs/ /ca_certs/
 RUN mkdir -p /usr/local/share/ca-certificates \
  && cp /ca_certs/*.crt /usr/local/share/ca-certificates/ || true \
  && rm -rf /ca_certs \
  && update-ca-certificates
 RUN pip3 config set global.cert /etc/ssl/certs/ca-certificates.crt
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 
 COPY nipap /nipap
