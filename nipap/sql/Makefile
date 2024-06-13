@@ -1,4 +1,4 @@
-#.PHONY: install
+#.PHONY: install auth db tables clean clean-db clean-tables
 # vim: ts=8 :
 
 PSQL=psql
@@ -30,15 +30,15 @@ endif
 all:
 	@echo "Please run \"make install\" as postgres user."
 
-
-db:
+auth:
 	createuser -S -D -R $(DB_USER)
 	createdb -O $(DB_USER) $(DB_NAME)
 	-psql -q -c "ALTER USER $(DB_USER) ENCRYPTED PASSWORD '$(DB_PASS)'"
+
+db:
 	-psql -d $(DB_NAME) -c "CREATE EXTENSION ip4r;"
 	-psql -d $(DB_NAME) -c "CREATE EXTENSION hstore;"
 	-psql -d $(DB_NAME) -c "CREATE EXTENSION citext;"
-
 
 tables:
 	PGPASSWORD=$(DB_PASS) cat ip_net.plsql | sed -e 's/%s/$(DB_NAME)/' | psql -q -h localhost -U $(DB_USER) -d $(DB_NAME)
@@ -46,7 +46,7 @@ tables:
 	PGPASSWORD=$(DB_PASS) psql -q -h localhost -U $(DB_USER) -d $(DB_NAME) < triggers.plsql
 
 
-install: db tables
+install: auth db tables
 	@echo "##"
 ifdef PG_PASS_RAND
 	@echo "## A random password was generated '$(DB_PASS)'"
