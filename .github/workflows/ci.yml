@@ -9,6 +9,8 @@ on:
 env:
   ACTIONS_RUNNER_DEBUG: true
   ACTIONS_STEP_DEBUG: true
+  NIPAPD_IMAGE: nipap/nipapd
+  WWW_IMAGE: nipap/nipap-www
 
 jobs:
   test:
@@ -26,16 +28,6 @@ jobs:
     steps:
     - name: "Check out NIPAP repository"
       uses: actions/checkout@v2
-
-    - name: "Hadolint nipapd"
-      uses: hadolint/hadolint-action@v3.1.0
-      with:
-        Dockerfile: Dockerfile.nipapd
-
-    - name: "Hadolint WWW"
-      uses: hadolint/hadolint-action@v3.1.0
-      with:
-        Dockerfile: Dockerfile.www
 
     - name: "Install dependencies and prepare NIPAP"
       run: |
@@ -175,3 +167,130 @@ jobs:
         sudo cat /var/log/syslog || true
         sudo cat /var/log/postgresql/postgresql-*-main.log || true
         sudo cat /tmp/nipap.log || true
+
+  docker:
+    name: docker
+    runs-on: ubuntu-22.04
+    steps:
+
+    - name: "Set up QEMU"
+      uses: docker/setup-qemu-action@v3
+
+    - name: "Set up Docker Buildx"
+      uses: docker/setup-buildx-action@v3
+
+    - name: "Check out NIPAP repository"
+      uses: actions/checkout@v2
+
+    - name: "Hadolint nipapd"
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        Dockerfile: Dockerfile.nipapd
+
+    - name: "Hadolint WWW"
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        Dockerfile: Dockerfile.www
+
+    - name: "nipapd metadata"
+      id: nipapd_meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.NIPAPD_IMAGE }}
+        tags: |
+          type=sha,prefix=
+
+    - name: "Build nipapd Docker image"
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.nipapd
+        load: true
+        tags: |
+          ${{ env.NIPAPD_IMAGE }}:ci
+          ${{ steps.nipapd_meta.outputs.tags }}
+        push: false
+
+    - name: "www metadata"
+      id: www_meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.WWW_IMAGE }}
+        tags: |
+          type=sha,prefix=
+
+    - name: "Build www Docker image"
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.www
+        load: true
+        tags: |
+          ${{ env.WWW_IMAGE }}:ci
+          ${{ steps.www_meta.outputs.tags }}
+        push: false
+
+    - name: "Setup Docker test"
+      run: |
+        # Install dependencies
+        sudo apt install -y \
+          libldap-dev \
+          libsasl2-dev \
+          python3-wheel \
+          python3-nose \
+          python3-requests \
+          postgresql-14-ip4r
+
+        sudo -H pip3 install -r nipap/requirements.txt # needed to run test suite
+
+        # Set up PostgreSQL
+        sudo service postgresql start
+        pg_isready
+        sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres
+
+        # Start nipapd container
+        docker run --rm --network=host -d --name=nipapd_ci -e DB_HOST=127.0.0.1 -e DB_USERNAME=nipap -e DB_PASSWORD=papin ${{ env.NIPAPD_IMAGE }}:ci
+        sleep 10
+        docker logs nipapd_ci
+
+        # Set up for test
+        sudo mkdir -p /etc/nipap
+        sudo docker cp nipapd_ci:/etc/nipap/nipap.conf /etc/nipap/
+        sudo docker cp nipapd_ci:/etc/nipap/local_auth.db /etc/nipap/
+        docker exec -t nipapd_ci nipap-passwd add -u unittest -p gottatest -n unittest
+        docker exec -t nipapd_ci nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"
+
+    - name: "Run docker tests"
+      run: |
+        # Run tests
+        nosetests3 tests/test_xmlrpc.py
+        nosetests3 tests/nipaptest.py
+        nosetests3 tests/test_nipap_ro.py
+        nosetests3 tests/test_rest.py
+
+    - name: "Login to Docker Hub"
+      if: ${{ github.ref_name == 'master' }}
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: "Build and push nipapd Docker image"
+      if: ${{ github.ref_name == 'master' }}
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.nipapd
+        load: true
+        tags: ${{ steps.nipapd_meta.outputs.tags }}
+        push: true
+
+    - name: "Build and push www Docker image"
+      if: ${{ github.ref_name == 'master' }}
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.www
+        load: true
+        tags: ${{ steps.www_meta.outputs.tags }}
+        push: true

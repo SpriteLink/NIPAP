@@ -69,6 +69,6 @@ RUN pip3 --no-input install --no-cache-dir envtpl==0.7.2 \
  && python3 setup.py install
 
 EXPOSE 1337
-ENV LISTEN_ADDRESS=0.0.0.0 LISTEN_PORT=1337 SYSLOG=false DB_PORT=5432 DB_SSLMODE=disable
+ENV LISTEN_ADDRESS=0.0.0.0 LISTEN_PORT=1337 SYSLOG=false DB_PORT=5432 DB_SSLMODE=disable DB_NAME=nipap
 
 ENTRYPOINT ["/nipap/entrypoint.sh"]
