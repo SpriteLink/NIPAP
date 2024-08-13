@@ -49,7 +49,7 @@ try:
             """
             """
 
-            from pynipap import AuthOptions
+            from . import AuthOptions
             signature = inspect.signature(f)
 
             if args[0].__class__ == type:
