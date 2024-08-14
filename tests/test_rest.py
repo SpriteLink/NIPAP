@@ -179,6 +179,8 @@ class NipapRestTest(unittest.TestCase):
 
     def _add_prefix(self, attr):
         request = requests.post(self.server_url, headers=self.headers, json = attr)
+        self.assertEqual(request.status_code, 200,
+                         msg=f"Result status code {request.status_code} != 200, response: {request.text}")
         text = request.text
         result = json.loads(text)
         result = dict([(str(k), str(v)) for k, v in list(result.items())])
