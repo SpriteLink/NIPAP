@@ -13,8 +13,7 @@ import socket
 import nipap_cli
 import nipap_cli.nipap_cli
 from nipap_cli.command import Command, CommandError
-from pynipap import NipapError
-import tracing
+from pynipap import NipapError, init_tracing
 
 # early close of stdout to avoid broken pipe, see #464
 # If our output is being piped and the receiver of the pipe is killed off before
@@ -114,7 +113,7 @@ if __name__ == '__main__':
                     otlp_endpoint = ("https://" if use_ssl else "http://") + (cfg.get("global", "hostname") +
                                                                             ":" + cfg.get("global", "port") +
                                                                             "/v1/traces/")
-                tracing.init_tracing("nipap-cli", otlp_endpoint, sampler, use_grpc)
+                init_tracing("nipap-cli", otlp_endpoint, sampler, use_grpc)
             except KeyError:
                 pass
         except ImportError:
