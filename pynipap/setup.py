@@ -17,7 +17,7 @@ setup(
         author_email = pynipap.__author_email__,
         license = pynipap.__license__,
         url = pynipap.__url__,
-        py_modules = ['pynipap','tracing'],
+        py_modules = ['pynipap'],
         keywords = ['nipap'],
         classifiers = [
             'Development Status :: 4 - Beta',
