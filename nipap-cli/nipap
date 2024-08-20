@@ -78,7 +78,7 @@ if __name__ == '__main__':
     # config defaults
     cfg_defaults = {
         'hostname': 'localhost',
-        'post': 1337,
+        'port': 1337,
         'password': None,
         'prefix_list_columns': None,
         'use_ssl': 'false'
