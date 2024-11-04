@@ -87,8 +87,8 @@ def setup_connection():
         con_params['password'] = getpass.getpass()
 
     # Quote username & password
-    con_params['username'] = quote(con_params['username'])
-    con_params['password'] = quote(con_params['password'])
+    con_params['username'] = quote(con_params['username'], safe="")
+    con_params['password'] = quote(con_params['password'], safe="")
 
     # build XML-RPC URI
     pynipap.xmlrpc_uri = "%(protocol)s://%(username)s:%(password)s@%(hostname)s:%(port)s" % con_params
