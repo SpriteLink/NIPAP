@@ -553,6 +553,8 @@ class LdapAuth(BaseAuth):
                 ['cn', 'memberOf'],
             )
 
+            self._logger.debug("User %s is member of groups: %s", self.username, res[0][1].get('memberOf', []))
+
             # Data received from LDAP is bytes, make sure to decode/encode
             # accordingly before using it
             if res[0][1]['cn'][0] is not None:
@@ -569,7 +571,7 @@ class LdapAuth(BaseAuth):
                     # if ro_group is configured, and the user is a member of
                     # neither the ro_group nor the rw_group, fail authentication.
                     if self._ldap_ro_group:
-                        if self._ldap_ro_group not in res[0][1].get('memberOf', []):
+                        if self._ldap_ro_group.encode('utf-8') not in res[0][1].get('memberOf', []):
                             self._authenticated = False
                             return self._authenticated
                     else:
