@@ -686,7 +686,6 @@ class NipapXMLRPC:
         """
 
         try:
-            self.logger.debug('Entering ssp')
             res = self.nip.smart_search_prefix(
                 args.get('auth'),
                 args.get('query_string'),
@@ -699,10 +698,7 @@ class NipapXMLRPC:
             return res
         except (AuthError, NipapError) as exc:
             self.logger.debug(str(exc))
-            self.logger.exception('unhandled..', exc)
             raise Fault(exc.error_code, str(exc))
-        except Exception as e:
-            self.logger.exception('unhandled..', e)
 
 
     @requires_auth
