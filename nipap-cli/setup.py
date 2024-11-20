@@ -24,9 +24,9 @@ def get_data_files():
 
     files = [
             ('/etc/skel/', ['.nipaprc']),
-            ('/usr/bin/', ['helper-nipap', 'nipap']),
-            ('/usr/share/doc/nipap-cli/', ['bash_complete', 'nipaprc']),
-            ('/usr/share/man/man1/', ['nipap.1'])
+            ('/usr/local/bin/', ['helper-nipap', 'nipap']),
+            ('/usr/local/share/doc/nipap-cli/', ['bash_complete', 'nipaprc']),
+            ('/usr/local/share/man/man1/', ['nipap.1'])
         ]
 
     return files
