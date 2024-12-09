@@ -486,6 +486,10 @@ class LdapAuth(BaseAuth):
             self._logger.error('Unable to load Python ldap module, please verify it is installed')
             raise AuthError('Unable to authenticate')
 
+        # Avoid following referrals for now, as NIPAP doesn't support
+        # initializing a separate connection for them anyway.
+        ldap.set_option(ldap.OPT_REFERRALS, ldap.OPT_OFF)
+
         self._logger.debug('LDAP URI: ' + self._ldap_uri)
         self._ldap_conn = ldap.initialize(self._ldap_uri)
 
@@ -578,7 +582,8 @@ class LdapAuth(BaseAuth):
                         self.readonly = True
 
         except ldap.LDAPError as exc:
-            raise AuthError(exc)
+            self._logger.error("Got LDAP error: %s", exc)
+            raise AuthError("LDAP server returned an error")
         except KeyError:
             raise AuthError('LDAP attribute missing')
         except IndexError:
