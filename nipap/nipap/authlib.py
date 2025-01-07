@@ -345,7 +345,7 @@ class JwtAuth(BaseAuth):
             self.username = payload.get('sub')
             self.full_name = payload.get('name', payload.get('sub'))
         except jwt.exceptions.DecodeError:
-            raise AuthError('Failed to decode jwt token')
+            raise AuthError('Failed to decode JWT token')
 
     @create_span_authenticate
     def authenticate(self):
@@ -384,39 +384,41 @@ class JwtAuth(BaseAuth):
                 options={"verify_aud": False})
 
             # Setting read and write rights
-            if payload.get('groups'):
-                if self._jwt_ro_group in payload.get('groups'):
+            group_claim_name = self._cfg.get('auth.backends.' +
+                                             self.auth_backend,
+                                             'group_claim_name',
+                                             fallback="groups")
+            if group_claim_name in payload:
+                if self._jwt_ro_group in payload[group_claim_name]:
                     self.readonly = True
                     self._authenticated = True
-                elif self._jwt_rw_group in payload.get('groups'):
+                elif self._jwt_rw_group in payload[group_claim_name]:
                     self.readonly = False
                     self._authenticated = True
+                else:
+                    self._authenticated = False
+
+            else:
+                raise AuthError("Missing claim with group belonging in JWT")
+
         # auth failed
         except jwt.exceptions.DecodeError:
-            self._logger.debug('could not decode token because of failed validation')
-            self._authenticated = False
-            return self._authenticated
+            self._logger.debug('Authentication failed - could not decode token because of failed validation')
+            raise AuthError('Failed to decode JWT token')
         except jwt.exceptions.ExpiredSignatureError:
-            self._logger.debug('token\'s signature does not match')
-            self._authenticated = False
-            return self._authenticated
+            self._logger.debug('Authentication failed - token expired')
+            raise AuthError('Token expired')
         except jwt.exceptions.InvalidSignatureError:
-            self._logger.debug('token\'s signature does not match the one provided as part of the token')
-            self._authenticated = False
-            return self._authenticated
+            self._logger.debug('Authentication failed - token\'s signature does not match the one provided as part of the token')
+            raise AuthError('Invalid token signature')
         except jwt.exceptions.InvalidAlgorithmError:
-            self._logger.debug('the specified algorithm is not recognized by PyJWT')
-            self._authenticated = False
-            return self._authenticated
-        except:
-            self._logger.debug('could not authenticate')
-            self._authenticated = False
-            return self._authenticated
+            self._logger.debug('Authentication failed - the specified algorithm is not recognized by PyJWT')
+            raise AuthError("Unknown token signature algorithm")
 
         # auth succeeded
         if self._authenticated:
             self.authenticated_as = payload.get('sub')
-            self._logger.debug('successfully authenticated as %s, username' % self.authenticated_as)
+            self._logger.debug('successfully authenticated as %s using JWT authentication' % self.authenticated_as)
         self.trusted = False
 
         return self._authenticated
