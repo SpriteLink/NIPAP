@@ -223,6 +223,7 @@ __url__			= "http://SpriteLink.github.io/NIPAP"
 # This variable holds the URI to the nipap XML-RPC service which will be used.
 # It must be set before the Pynipap can be used!
 xmlrpc_uri = None
+bearer_token = None
 
 # Caching of objects is enabled per default but can be disabled for certain
 # scenarios. Since we don't have any cache expiration time it can be useful to
@@ -291,11 +292,15 @@ class XMLRPCConnection:
             elif p.scheme == "https":
                 xml_transport = xmlrpclib.SafeTransport
 
+        if bearer_token:
+            headers = (("Authorization", "Bearer " + bearer_token),)
+        else:
+            headers = ()
+
         # creating new instance
         self.connection = xmlrpclib.ServerProxy(xmlrpc_uri,
-                                                transport=xml_transport(),
-                                                allow_none=True,
-                                                use_datetime=True)
+                                                transport=xml_transport(use_datetime=True, headers=headers),
+                                                allow_none=True)
 
         self._logger = logging.getLogger(self.__class__.__name__)
 
