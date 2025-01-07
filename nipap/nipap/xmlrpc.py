@@ -48,15 +48,6 @@ def _mangle_prefix(res):
     return res
 
 
-def authenticate():
-    """ Sends a 401 response that enables basic auth
-    """
-    return Response(
-        'Could not verify your access level for that URL.\n'
-        'You have to login with proper credentials', 401,
-        {'WWW-Authenticate': 'Basic realm="Login Required"'})
-
-
 def requires_auth(f):
     """ Class decorator for XML-RPC functions that requires auth
     """
@@ -105,7 +96,7 @@ def requires_auth(f):
             if auth_header and auth_header.startswith("Bearer"):
                 bearer_token = auth_header.split(" ")[1]
             if not bearer_token:
-                return authenticate()
+                raise Fault(1500, ("Missing authentication method"))
 
         # init AuthFacory()
         af = AuthFactory()
