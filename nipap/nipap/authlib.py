@@ -131,6 +131,7 @@ class AuthFactory:
         self._auth_cache = {}
         self._init_backends()
 
+
     def get_auth_bearer_token(self, bearer_token, authoritative_source, auth_options=None):
         """ Returns an authentication object.
 
@@ -146,16 +147,20 @@ class AuthFactory:
         if auth_options is None:
             auth_options = {}
 
+        # validate arguments
+        if authoritative_source is None:
+            raise AuthError("Missing authoritative_source.")
+
         backend = "jwt"
         self._logger.debug("Using auth backend %s" % backend)
         # Create auth object
         try:
             auth = self._backends[backend](backend, bearer_token, authoritative_source, auth_options)
-        except Exception:
-            traceback.print_exc()
+        except KeyError:
             raise AuthError("Invalid auth backend '%s' specified" % backend)
 
         return auth
+
 
     def get_auth(self, username, password, authoritative_source, auth_options=None):
         """ Returns an authentication object.
@@ -299,6 +304,7 @@ class JwtAuth(BaseAuth):
     _jwt_rw_group = None
     _jwt_ro_group = None
     _authenticated = None
+    _jwks_client = None
 
     def __init__(self, name, jwt_token, authoritative_source,
                  auth_options=None):
@@ -338,6 +344,14 @@ class JwtAuth(BaseAuth):
             self._logger.error('Unable to load Python jwt module, please verify it is installed')
             raise AuthError('Unable to authenticate')
 
+        # Set up JWK client as class variable
+        if self._jwks_client is None:
+            jwk_url = self._cfg.get(base_auth_backend, 'jwk_url')
+            if jwk_url is None:
+                self._logger.error("Missing jwk_url in config")
+                raise AuthError("Authentication error")
+            JwtAuth._jwks_client = jwt.PyJWKClient(jwk_url)
+
         # Decode token
         try:
             payload = jwt.decode(
@@ -346,6 +360,7 @@ class JwtAuth(BaseAuth):
             self.full_name = payload.get('name', payload.get('sub'))
         except jwt.exceptions.DecodeError:
             raise AuthError('Failed to decode JWT token')
+
 
     @create_span_authenticate
     def authenticate(self):
@@ -360,26 +375,12 @@ class JwtAuth(BaseAuth):
             return self._authenticated
 
         try:
-            self._token = self._cfg.get('auth.backends.' +
-                                        self.auth_backend, 'jwk_url')
-            # Fetch JWKs (done when initializing JwtAuth-class),
-            # keep the keys in the class instance
-            jwk_request_response = requests.get(self._token)
-            jwks = jwk_request_response.json()
-            jwk_keys = {}
-            for jwk in jwks['keys']:
-                kid = jwk['kid']
-                jwk_keys[kid] = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
-
-            # Upon auth with a JWT-token
-            # Retrieve key for token
-            jwt_headers = jwt.get_unverified_header(self._jwt_token)
-            jwt_jwk_key = jwk_keys[jwt_headers['kid']]
-
             # Decode and verify token
+            jwt_headers = jwt.get_unverified_header(self._jwt_token)
+            signing_key = self._jwks_client.get_signing_key_from_jwt(self._jwt_token)
             payload = jwt.decode(
                 self._jwt_token,
-                key=jwt_jwk_key,
+                key=signing_key.key,
                 algorithms=[jwt_headers['alg']],
                 options={"verify_aud": False})
 
