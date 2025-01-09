@@ -1,3 +1,17 @@
+nipap-whoisd (0.32.6-1) stable; urgency=medium
+
+  * Fic proxying of traces over TLS in CLI (#1387)
+  * Misc improvements of Dockerfiles (#1389)
+  * Support for global configuration file in CLI (#1395)
+  * Fork nipapd also when running in foreground (#1401)
+  * Fixed a bug related to LDAP RO group handling (#1405)
+  * Avoid following LDAP referrals (#1408)
+  * Misc fixes to JWT auth module (#1410, #1411)
+  * Move pynipap to a package (#1412)
+  * Misc minor bugfixes and cleanups (#1398, #1405, #1406)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 09 Jan 2025 16:28:46 +0100
+
 nipap-whoisd (0.32.5-1) stable; urgency=medium
 
   * Fixed trace proxy (#1385)
