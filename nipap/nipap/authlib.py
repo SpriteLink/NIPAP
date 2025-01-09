@@ -384,23 +384,36 @@ class JwtAuth(BaseAuth):
                 algorithms=[jwt_headers['alg']],
                 options={"verify_aud": False})
 
-            # Setting read and write rights
+            # Fetch group names from list of claims given in config
             group_claim_name = self._cfg.get('auth.backends.' +
                                              self.auth_backend,
-                                             'group_claim_name',
-                                             fallback="groups")
-            if group_claim_name in payload:
-                if self._jwt_ro_group in payload[group_claim_name]:
-                    self.readonly = True
-                    self._authenticated = True
-                elif self._jwt_rw_group in payload[group_claim_name]:
-                    self.readonly = False
-                    self._authenticated = True
-                else:
-                    self._authenticated = False
+                                             'group_claim_name')
+            if group_claim_name is None:
+                self._logger.error("Missing group_claim_name in JWT auth configuration")
+                raise AuthError("Authentication error")
 
+            claim_groups = []
+            for claim_name in map(str.strip, group_claim_name.split(",")):
+                if claim_name in payload:
+                    if type(payload[claim_name]) is str:
+                        claim_groups.append(payload[claim_name])
+                    elif type(payload[claim_name]) is list:
+                        claim_groups += payload[claim_name]
+                    else:
+                        self._logger.error("Unknown type of claim %s (%s)", claim_name, payload[claim_name])
+
+            self._logger.debug("Found groups %s in JWT claims", claim_groups)
+
+            # Validate if the user have RO, RW or nothing
+            if self._jwt_ro_group in claim_groups:
+                self.readonly = True
+                self._authenticated = True
+            elif self._jwt_rw_group in claim_groups:
+                self.readonly = False
+                self._authenticated = True
             else:
-                raise AuthError("Missing claim with group belonging in JWT")
+                self._authenticated = False
+                self._logger.debug("Login failed: JWT missing authorized groups")
 
         # auth failed
         except jwt.exceptions.DecodeError:

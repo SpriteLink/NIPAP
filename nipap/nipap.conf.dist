@@ -183,9 +183,10 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 # Group permissions enables granting read-write or read-only privileges based
 # on a users group membership in JWT.
 #
-#group_claim_name = # name of claim containing groups
 #rw_group =
 #ro_group =
+# name of claim containing groups. Can be a comma-separated list.
+#group_claim_name =
 #
 # Options for the WWW UI
 # ----------------------
