@@ -13,8 +13,7 @@ import socket
 import nipap_cli
 import nipap_cli.nipap_cli
 from nipap_cli.command import Command, CommandError
-from pynipap import NipapError
-import tracing
+from pynipap import NipapError, tracing
 
 # early close of stdout to avoid broken pipe, see #464
 # If our output is being piped and the receiver of the pipe is killed off before

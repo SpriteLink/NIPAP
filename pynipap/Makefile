@@ -49,6 +49,6 @@ clean:
 VER := $(shell head -n1 ../NEWS | awk '{print $$2}')
 bumpversion:
 	# replace version number in pynipap.py
-	sed -i 's/\(__version__\s*= \)"[^"]\+"/\1"$(VER)"/' pynipap.py
+	sed -i 's/\(__version__\s*= \)"[^"]\+"/\1"$(VER)"/' pynipap/__init__.py
 	#         # update debian/changelog
 	../utilities/news2dch.py ../NEWS debian/changelog
