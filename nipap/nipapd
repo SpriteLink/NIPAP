@@ -271,33 +271,6 @@ if __name__ == '__main__':
 
     Compress(app)
     
-    import nipap.rest
-    rest = nipap.rest.setup(app)
-
-    import nipap.xmlrpc
-
-    nipapxml = nipap.xmlrpc.setup(app)
-
-    if not cfg.getboolean('nipapd', 'foreground'):
-        # If we are not running in the foreground, remove current handlers which
-        # include a default streamhandler to stdout to prevent messages on
-        # stdout when in daemon mode.
-        for h in logger.handlers:
-            logger.removeHandler(h)
-
-    # logging
-    if cfg.getboolean('nipapd', 'debug'):
-        logger.setLevel(logging.DEBUG)
-        nipapxml.logger.setLevel(logging.DEBUG)
-        rest.logger.setLevel(logging.DEBUG)
-
-    if cfg.getboolean('nipapd', 'syslog'):
-        log_syslog = logging.handlers.SysLogHandler(address='/dev/log')
-        log_syslog.setFormatter(logging.Formatter("%(levelname)-8s %(message)s"))
-        logger.addHandler(log_syslog)
-        nipapxml.logger.addHandler(log_syslog)
-        rest.logger.addHandler(log_syslog)
-
     # Set up sockets for handling plaintext and SSL connections
     sockets = []
     ssl_sockets = []
@@ -333,6 +306,33 @@ if __name__ == '__main__':
     if num_forks is not False:
         # default is to fork as many processes as there are cores
         tornado.process.fork_processes(num_forks)
+
+    import nipap.rest
+    rest = nipap.rest.setup(app)
+
+    import nipap.xmlrpc
+    nipapxml = nipap.xmlrpc.setup(app)
+
+    if not cfg.getboolean('nipapd', 'foreground'):
+        # If we are not running in the foreground, remove current handlers which
+        # include a default streamhandler to stdout to prevent messages on
+        # stdout when in daemon mode.
+        for h in logger.handlers:
+            logger.removeHandler(h)
+
+    # logging
+    if cfg.getboolean('nipapd', 'debug'):
+        logger.setLevel(logging.DEBUG)
+        nipapxml.logger.setLevel(logging.DEBUG)
+        rest.logger.setLevel(logging.DEBUG)
+
+    if cfg.getboolean('nipapd', 'syslog'):
+        log_syslog = logging.handlers.SysLogHandler(address='/dev/log')
+        log_syslog.setFormatter(logging.Formatter("%(levelname)-8s %(message)s"))
+        logger.addHandler(log_syslog)
+        nipapxml.logger.addHandler(log_syslog)
+        rest.logger.addHandler(log_syslog)
+
 
     if setup_plaintext:
         http_server = HTTPServer(WSGIContainer(app))
