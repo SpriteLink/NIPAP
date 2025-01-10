@@ -15,7 +15,7 @@ env:
 jobs:
   test:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         install: [ pip, apt ]
@@ -54,7 +54,7 @@ jobs:
           default-jdk \
           gradle \
           rename \
-          postgresql-14-ip4r
+          postgresql-16-ip4r
 
         sudo service postgresql start
         pg_isready
@@ -78,7 +78,7 @@ jobs:
       if: ${{ matrix.install == 'pip' }}
       run: |
         # install nipap dependencies
-        sudo -H pip3 install -r nipap/requirements.txt
+        sudo -H pip3 install --break-system-packages -r nipap/requirements.txt
         # SQL
         sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres
         # move configuration file into place
@@ -92,7 +92,7 @@ jobs:
         # install pynipap
         cd pynipap; sudo python3 setup.py install; cd ..
         # install nipap-cli dependencies
-        sudo -H pip3 install -r nipap-cli/requirements.txt
+        sudo -H pip3 install --break-system-packages -r nipap-cli/requirements.txt
         # start nipap backend
         nipap/nipapd --no-pid-file -c /etc/nipap/nipap.conf -df 2>&1 > /tmp/nipap.log &
 
