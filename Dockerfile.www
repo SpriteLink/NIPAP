@@ -23,7 +23,7 @@
 # database so that you can later login to the web interface.
 #
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 MAINTAINER Lukas Garberg <lukas@spritelink.net>
 
@@ -45,7 +45,7 @@ RUN apt-get update -qy && apt-get upgrade -qy \
     python3-all \
     python3-pip \
     python3-dev \
- && pip3 --no-input install --no-cache-dir envtpl==0.7.2 \
+ && pip3 --no-input install --break-system-packages --no-cache-dir envtpl==0.7.2 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -63,9 +63,9 @@ ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 COPY pynipap /pynipap
 COPY nipap /nipap
 COPY nipap-www /nipap-www
-RUN cd /pynipap && python3 setup.py install && \
-    cd /nipap && pip3 --no-input install --no-cache-dir -r requirements.txt && python3 setup.py install && \
-    cd /nipap-www && pip3 --no-input install --no-cache-dir -r requirements.txt && python3 setup.py install && \
+RUN cd /pynipap && pip3 --no-input install --break-system-packages --no-cache-dir . && \
+    cd /nipap && pip3 --no-input install --break-system-packages --no-cache-dir -r requirements.txt && python3 setup.py install && \
+    cd /nipap-www && pip3 --no-input install --break-system-packages --no-cache-dir -r requirements.txt && python3 setup.py install && \
     cd ..
 
 EXPOSE 80

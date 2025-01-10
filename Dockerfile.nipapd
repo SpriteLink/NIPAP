@@ -32,7 +32,7 @@
 # via a volume.
 #
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 MAINTAINER Kristian Larsson <kristian@spritelink.net>
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -65,8 +65,8 @@ ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 COPY nipap /nipap
 WORKDIR /nipap
-RUN pip3 --no-input install --no-cache-dir envtpl==0.7.2 \
- && pip3 --no-input install --no-cache-dir -r requirements.txt \
+RUN pip3 --no-input install --break-system-packages --no-cache-dir envtpl==0.7.2 \
+ && pip3 --no-input install -I --break-system-packages --no-cache-dir -r requirements.txt \
  && python3 setup.py install
 
 EXPOSE 1337
