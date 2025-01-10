@@ -19,7 +19,7 @@ pyparsing==2.4.7
 python-dateutil==2.8.2
 pytz==2024.1
 pyjwt==2.10.1
-tornado==6.4.1
+tornado==6.4.2
 docutils==0.21.1
 # optional dependencies below
 python-ldap==3.4.0
