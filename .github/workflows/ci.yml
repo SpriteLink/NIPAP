@@ -170,7 +170,7 @@ jobs:
 
   docker:
     name: docker
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: "Set up QEMU"
@@ -239,9 +239,9 @@ jobs:
           python3-wheel \
           python3-nose \
           python3-requests \
-          postgresql-14-ip4r
+          postgresql-16-ip4r
 
-        sudo -H pip3 install -r nipap/requirements.txt # needed to run test suite
+        sudo -H pip3 install -I --break-system-packages -r nipap/requirements.txt # needed to run test suite
 
         # Set up PostgreSQL
         sudo service postgresql start
