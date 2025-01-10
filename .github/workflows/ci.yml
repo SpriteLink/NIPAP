@@ -38,6 +38,7 @@ jobs:
 
         # Install dependencies for build and test
         sudo apt install -y \
+          build-essential \
           devscripts \
           fakeroot \
           debhelper \
@@ -78,7 +79,7 @@ jobs:
       if: ${{ matrix.install == 'pip' }}
       run: |
         # install nipap dependencies
-        sudo -H pip3 install --break-system-packages -r nipap/requirements.txt
+        sudo -H pip3 install --break-system-packages -I -r nipap/requirements.txt
         # SQL
         sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres
         # move configuration file into place
