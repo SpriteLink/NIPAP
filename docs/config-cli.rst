@@ -9,7 +9,7 @@ If you haven't already done so, you can create a new user so that you can
 authenticate against nipapd. Execute the following on the machine running
 nipapd to create a new user in the local authentication database::
 
-    nipap-passwd -a *username* -p *username* -n "My CLI user"
+    nipap-passwd add -u *username* -p *username* -n "My CLI user"
 
 Where *username* and *password* is the username and password you wish to
 create. Use the same username and password to fill in your .nipaprc. Here's an
