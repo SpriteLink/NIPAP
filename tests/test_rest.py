@@ -161,10 +161,13 @@ class NipapRestTest(unittest.TestCase):
     def _convert_list_of_unicode_to_str(self, list_of_items):
         """ Converts list of unicode values to string
 
-            This helper function converts keys and values in unicode to string for a list containing nested dictionaries.
+            This helper function converts keys and values in unicode to string
+            for a list containing nested dictionaries.
 
-            When converting JSON respons back to Python dict the keys and values are
-            added as unicode. This helper function handles the problem, but all types get replaced to strings. Is used for assertEqual.
+            When converting JSON respons back to Python dict the keys and
+            values are added as unicode. This helper function handles the
+            problem, but all types get replaced to strings. Is used for
+            assertEqual.
         """
         result = []
         for item in list_of_items:
@@ -210,8 +213,9 @@ class NipapRestTest(unittest.TestCase):
 
         # add 1.3.3.0/24
         request = requests.post(self.server_url, headers=self.headers, json = attr)
-        text = request.text
-        result = json.loads(text)
+        self.assertEqual(request.status_code, 200,
+                         msg=f"Result status code {request.status_code} != 200, response: {request.text}")
+        result = request.json()
         result = dict([(str(k), str(v)) for k, v in list(result.items())])
         attr['id'] = result['id']
         self.assertGreater(int(attr['id']), 0)
@@ -225,8 +229,10 @@ class NipapRestTest(unittest.TestCase):
 
         # list of prefixes through GET request
         parameters = {'order_id': 'test'}
-        list_prefix_request = request = requests.get(self.server_url, headers=self.headers, params=parameters)
-        list_prefix = json.loads(list_prefix_request.text)
+        list_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
+        self.assertEqual(list_prefix_request.status_code, 200,
+                         msg=f"Result status code {list_prefix_request.status_code} != 200, response: {list_prefix_request.text}")
+        list_prefix = list_prefix_request.json()
         list_prefix = self._convert_list_of_unicode_to_str(list_prefix)
 
         self.assertEqual(self._mangle_prefix_result(list_prefix), [expected])
@@ -240,8 +246,9 @@ class NipapRestTest(unittest.TestCase):
 
         # add a host in 1.3.3.0/24
         request = requests.post(self.server_url, headers=self.headers, json = attr, params = parameters)
-        text = request.text
-        result = json.loads(text)
+        self.assertEqual(request.status_code, 200,
+                         msg=f"Result status code {request.status_code} != 200, response: {request.text}")
+        result = request.json()
         result = dict([(str(k), str(v)) for k, v in list(result.items())])
 
         # copy expected from 1.3.3.0/24 since we expect most things to look the
@@ -269,8 +276,10 @@ class NipapRestTest(unittest.TestCase):
         # add another prefix, try with vrf_id = None
         attr['vrf_id'] = None
         request = requests.post(self.server_url, headers=self.headers, json = attr, params = parameters)
+        self.assertEqual(request.status_code, 200,
+                         msg=f"Result status code {request.status_code} != 200, response: {request.text}")
         text = request.text
-        result = json.loads(text)
+        result = request.json()
         result = dict([(str(k), str(v)) for k, v in list(result.items())])
         # update expected list
         expected_host2 = expected_host.copy()
@@ -284,8 +293,9 @@ class NipapRestTest(unittest.TestCase):
         # add another prefix, this time completely without VRF info
         del(attr['vrf_id'])
         request = requests.post(self.server_url, headers=self.headers, json = attr, params = parameters)
-        text = request.text
-        result = json.loads(text)
+        self.assertEqual(request.status_code, 200,
+                         msg=f"Result status code {request.status_code} != 200, response: {request.text}")
+        result = request.json()
         result = dict([(str(k), str(v)) for k, v in list(result.items())])
         # update expected list
         expected_host3 = expected_host.copy()
@@ -298,8 +308,10 @@ class NipapRestTest(unittest.TestCase):
 
         # list of prefixes through GET request
         parameters = {'order_id': 'test'}
-        list_prefix_request = request = requests.get(self.server_url, headers=self.headers, params=parameters)
-        list_prefix = json.loads(list_prefix_request.text)
+        list_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
+        self.assertEqual(list_prefix_request.status_code, 200,
+                         msg=f"Result status code {list_prefix_request.status_code} != 200, response: {list_prefix_request.text}")
+        list_prefix = list_prefix_request.json()
         list_prefix = self._convert_list_of_unicode_to_str(list_prefix)
 
         mangled_result = self._mangle_prefix_result(list_prefix)
@@ -325,6 +337,8 @@ class NipapRestTest(unittest.TestCase):
         parameters = {'id': prefix_id}
         update_attr = {'expires': '2045-12-31T23:59:00+00:00', 'description': 'test prefix edited'}
         request = requests.put(self.server_url, json=update_attr, headers=self.headers, params=parameters)
+        self.assertEqual(request.status_code, 200,
+                         msg=f"Result status code {request.status_code} != 200, response: {request.text}")
         result = request.json()[0]
         result["expires"] = dateutil.parser.parse(result['expires']).astimezone(pytz.utc).isoformat()
         result = dict([(str(k), str(v)) for k, v in result.items()])
@@ -394,8 +408,10 @@ class NipapRestTest(unittest.TestCase):
         # delete prefix
         parameters = {'id': prefix_id}
         request = requests.delete(self.server_url, headers=self.headers, params=parameters)
-        text = request.text
-        result = json.loads(text)
+        self.assertEqual(request.status_code, 200,
+                         msg=f"Result status code {request.status_code} != 200, response: {request.text}")
+
+        result = request.json()
         result = dict([(str(k), str(v)) for k, v in list(result.items())])
 
         expected = {
@@ -429,7 +445,9 @@ class NipapRestTest(unittest.TestCase):
 
         parameters = {'order_id': search_orderId_value}
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
-        result = json.loads(get_prefix_request.text)
+        self.assertEqual(get_prefix_request.status_code, 200,
+                         msg=f"Result status code {get_prefix_request.status_code} != 200, response: {get_prefix_request.text}")
+        result = get_prefix_request.json()
         result = self._convert_list_of_unicode_to_str(result)
 
         self.assertEqual(self._mangle_prefix_result(result), [expected])
@@ -458,7 +476,9 @@ class NipapRestTest(unittest.TestCase):
 
         parameters = {'order_id': search_orderId_value}
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
-        result = json.loads(get_prefix_request.text)
+        self.assertEqual(get_prefix_request.status_code, 200,
+                         msg=f"Result status code {get_prefix_request.status_code} != 200, response: {get_prefix_request.text}")
+        result = get_prefix_request.json()
         result = self._convert_list_of_unicode_to_str(result)
 
         self.assertEqual(self._mangle_prefix_result(result), [expected])
@@ -499,7 +519,9 @@ class NipapRestTest(unittest.TestCase):
 
         # Test default max result of 50 amd offset 0
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
-        result = json.loads(get_prefix_request.text)
+        self.assertEqual(get_prefix_request.status_code, 200,
+                         msg=f"Result status code {get_prefix_request.status_code} != 200, response: {get_prefix_request.text}")
+        result = get_prefix_request.json()
         self.assertEqual(50, len(result))
         self.assertEqual(result[0]['prefix'], '1.33.0.0/24')
         self.assertEqual(result[49]['prefix'], '1.33.49.0/24')
@@ -507,7 +529,9 @@ class NipapRestTest(unittest.TestCase):
         # Test max result 100
         parameters['max_result'] = 60
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
-        result = json.loads(get_prefix_request.text)
+        self.assertEqual(get_prefix_request.status_code, 200,
+                         msg=f"Result status code {get_prefix_request.status_code} != 200, response: {get_prefix_request.text}")
+        result = get_prefix_request.json()
         self.assertEqual(60, len(result))
         self.assertEqual(result[0]['prefix'], '1.33.0.0/24')
         self.assertEqual(result[59]['prefix'], '1.33.59.0/24')
@@ -515,7 +539,9 @@ class NipapRestTest(unittest.TestCase):
         # Test offset 75
         parameters['offset'] = 35
         get_prefix_request = requests.get(self.server_url, headers=self.headers, params=parameters)
-        result = json.loads(get_prefix_request.text)
+        self.assertEqual(get_prefix_request.status_code, 200,
+                         msg=f"Result status code {get_prefix_request.status_code} != 200, response: {get_prefix_request.text}")
+        result = get_prefix_request.json()
         self.assertEqual(25, len(result))
         self.assertEqual(result[0]['prefix'], '1.33.35.0/24')
         self.assertEqual(result[24]['prefix'], '1.33.59.0/24')
@@ -528,7 +554,4 @@ if __name__ == '__main__':
     logging.basicConfig()
     log.setLevel(logging.INFO)
 
-    if sys.version_info >= (2,7):
-        unittest.main(verbosity=2)
-    else:
-        unittest.main()
+    unittest.main(verbosity=2)
