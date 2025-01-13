@@ -66,8 +66,7 @@ ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 COPY nipap /nipap
 WORKDIR /nipap
 RUN pip3 --no-input install --break-system-packages --no-cache-dir envtpl==0.7.2 \
- && pip3 --no-input install -I --break-system-packages --no-cache-dir -r requirements.txt \
- && python3 setup.py install
+ && pip3 --no-input install -I --break-system-packages --no-cache-dir .
 
 EXPOSE 1337
 ENV LISTEN_ADDRESS=0.0.0.0 LISTEN_PORT=1337 SYSLOG=false DB_PORT=5432 DB_SSLMODE=disable DB_NAME=nipap
