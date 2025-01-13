@@ -64,6 +64,10 @@ ldap_auth = [
 [project.urls]
 Homepage = "http://SpriteLink.github.io/NIPAP"
 
+[project.scripts]
+nipapd = "nipap.nipapd:run"
+nipap-passwd = "nipap.nipap_passwd:run"
+
 [tool.setuptools.dynamic]
 version = {attr = "nipap.__version__"}
 

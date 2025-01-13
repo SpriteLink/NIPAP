@@ -19,8 +19,7 @@ def get_data_files():
 
     files = [
         ('/etc/nipap/', ['nipap.conf.dist']),
-        ('/usr/sbin/', ['nipapd', 'nipap-passwd']),
-        ('/usr/share/nipap/sql/', [
+        ('share/nipap/sql/', [
             'sql/upgrade-1-2.plsql',
             'sql/upgrade-2-3.plsql',
             'sql/upgrade-3-4.plsql',
@@ -31,9 +30,9 @@ def get_data_files():
             'sql/triggers.plsql',
             'sql/ip_net.plsql',
         ],
-         ),
-        ('/usr/share/man/man8/', ['nipapd.8']),
-        ('/usr/share/man/man1/', ['nipap-passwd.1']),
+        ),
+        ('share/man/man8/', ['nipapd.8']),
+        ('share/man/man1/', ['nipap-passwd.1']),
     ]
 
     return files

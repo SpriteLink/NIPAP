@@ -1,4 +1,4 @@
-etc
-usr/sbin/nipap-passwd
-usr/sbin/nipapd
+usr/bin/nipapd
+usr/bin/nipap-passwd
 usr/share/nipap
+nipap.conf.dist /etc/nipap/
