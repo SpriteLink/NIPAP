@@ -1,0 +1,81 @@
+[project]
+name = "nipap"
+dynamic = ["version", "description"]
+readme = "README.rst"
+license = {text = "MIT"}
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Developers',
+    'Intended Audience :: System Administrators',
+    'License :: OSI Approved :: MIT License',
+    'Natural Language :: English',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python :: 3'
+]
+keywords = ["nipap"]
+dependencies = [
+  "zipp==3.21.0",
+  "importlib_metadata==8.5.0",
+  "Flask==3.0.3",
+  "Flask-Compress==1.17",
+  "flask-xml-rpc-re==0.1.4",
+  "flask-restx==1.3.0",
+  "requests==2.32.3",
+  "IPy==1.01",
+  "Jinja2==3.1.5",
+  "MarkupSafe==3.0.2",
+  "Werkzeug==3.1.3",
+  "backports.ssl-match-hostname==3.7.0.1",
+  "certifi==2024.12.14",
+  "itsdangerous==2.2.0",
+  "parsedatetime==2.6",
+  "psutil==6.1.1",
+  "psycopg2==2.9.10",
+  "pyparsing==3.2.1",
+  "python-dateutil==2.8.2",
+  "pytz==2024.2",
+  "pyjwt==2.10.1",
+  "tornado==6.4.2",
+#  "docutils==0.21.2"
+]
+
+[project.optional-dependencies]
+instrumentation = [
+  "opentelemetry-api==1.29.0",
+  "opentelemetry-exporter-otlp==1.29.0",
+  "opentelemetry-exporter-otlp-proto-common==1.29.0",
+  "opentelemetry-exporter-otlp-proto-grpc==1.29.0",
+  "opentelemetry-exporter-otlp-proto-http==1.29.0",
+  "opentelemetry-instrumentation==0.50b0",
+  "opentelemetry-instrumentation-dbapi==0.50b0",
+  "opentelemetry-instrumentation-flask==0.50b0",
+  "opentelemetry-instrumentation-psycopg2==0.50b0",
+  "opentelemetry-instrumentation-wsgi==0.50b0",
+  "opentelemetry-proto==1.29.0",
+  "opentelemetry-sdk==1.29.0",
+  "opentelemetry-semantic-conventions==0.50b0",
+  "opentelemetry-util-http==0.50b0"
+]
+
+ldap_auth = [
+  "python-ldap==3.4.4"
+]
+
+[project.urls]
+Homepage = "http://SpriteLink.github.io/NIPAP"
+
+[tool.setuptools.dynamic]
+version = {attr = "nipap.__version__"}
+
+[build-system]
+requires = [
+  "setuptools",
+  # Need to be pinned to 0.20.1 in Ubuntu 24.04 as using the latest 0.21.2
+  # gives a diff during .deb package build. Unfortunately the files are
+  # generated twice - first once in a virtualenv (using the version specified
+  # here) and then once without a virtualenv using the one from the system.
+  # There two runs produce different outputs (wich they shouldn't) causing a
+  # diff and the package utils to b0rk out.
+  "docutils==0.20.1"
+]
+build-backend = "setuptools.build_meta"

@@ -8,7 +8,7 @@ Standards-Version: 4.4.0
 
 Package: nipap-common
 Architecture: all
-Depends: python3 (>= 3.6), ${misc:Depends}, python3-ipy
+Depends: ${misc:Depends}, python3 (>= 3.6), python3-ipy
 Suggests: python3-ldap
 Description: Neat IP Address Planner
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing

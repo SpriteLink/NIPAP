@@ -5,7 +5,6 @@ from docutils.core import publish_cmdline
 from docutils.writers import manpage
 import sys
 import re
-import nipap
 
 
 # return all the extra data files
@@ -42,33 +41,11 @@ def get_data_files():
 
 long_desc = open('README.rst').read()
 short_desc = long_desc.split('\n')[0].split(' - ')[1].strip()
-with open('requirements.txt', 'r') as f:
-
-    requires = [re.sub(r'\s*([\w_\-\.\d]+([<>=]+\S+|)).*', r'\1', x.strip()) for x in f if
-                x.strip() and re.match(r'^\s*\w+', x.strip())]
 
 setup(
-    name='nipap',
-    version=nipap.__version__,
     description=short_desc,
     long_description=long_desc,
-    author=nipap.__author__,
-    author_email=nipap.__author_email__,
-    license=nipap.__license__,
-    url=nipap.__url__,
     packages=['nipap'],
     keywords=['nipap'],
-    install_requires=requires,
     data_files=get_data_files(),
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'Intended Audience :: System Administrators',
-        'Intended Audience :: Telecommunications Industry',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.6',
-        'Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware',
-    ],
 )
