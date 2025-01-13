@@ -43,6 +43,7 @@ jobs:
           fakeroot \
           debhelper \
           dh-python \
+          pybuild-plugin-pyproject \
           junit4 \
           libldap-dev \
           libsasl2-dev \
@@ -50,6 +51,7 @@ jobs:
           python3-nose \
           python3-requests \
           python3-setuptools \
+          python3-build \
           python3-wheel \
           python3-all \
           default-jdk \
@@ -79,7 +81,7 @@ jobs:
       if: ${{ matrix.install == 'pip' }}
       run: |
         # install nipap dependencies
-        sudo -H pip3 install --break-system-packages -I -r nipap/requirements.txt
+        sudo -H pip3 install --break-system-packages -I ./nipap/
         # SQL
         sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres
         # move configuration file into place
@@ -87,15 +89,15 @@ jobs:
         sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf
         sudo sed -e "s/{{LISTEN_ADDRESS}}/127.0.0.1/" -e "s/{{LISTEN_PORT}}/1337/" -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -e "s/{{DB_USERNAME}}/nipap/" -e "s/{{DB_NAME}}/nipap/" -e "s/{{DB_PASSWORD}}/papin/" -e "s/{{DB_SSLMODE}}/require/" -e "s/{{DB_PORT}}/5432/" -e "s/{{DB_HOST}}/localhost/" -e "s/{{SYSLOG}}/true/" -i /etc/nipap/nipap.conf
         # create local user for unittest
-        sudo nipap/nipap-passwd create-database
-        sudo nipap/nipap-passwd add -u unittest -p gottatest -n unittest
-        sudo nipap/nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"
+        sudo nipap-passwd create-database
+        sudo nipap-passwd add -u unittest -p gottatest -n unittest
+        sudo nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"
         # install pynipap
-        cd pynipap; sudo python3 setup.py install; cd ..
+        cd pynipap; sudo -H pip3 install --break-system-packages -I .; cd ..
         # install nipap-cli dependencies
         sudo -H pip3 install --break-system-packages -r nipap-cli/requirements.txt
         # start nipap backend
-        nipap/nipapd --no-pid-file -c /etc/nipap/nipap.conf -df 2>&1 > /tmp/nipap.log &
+        nipapd --no-pid-file -c /etc/nipap/nipap.conf -df 2>&1 > /tmp/nipap.log &
 
     - name: "Install latest release from apt"
       if: ${{ matrix.install == 'apt' && matrix.upgrade == true }}
@@ -141,8 +143,8 @@ jobs:
           sudo sed -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -i /etc/nipap/nipap.conf; \
         fi
         # create local user for unittests
-        sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"
-        sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"
+        sudo nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"
+        sudo nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"
         sudo sed -e "s/^db_host *=.*/db_host = localhost/" -e "s/{{SYSLOG}}/true/" -e "s/^debug.\+/debug = true/" -e "s/^user/#user/" -i /etc/nipap/nipap.conf
         sudo systemctl restart nipapd.service
 
@@ -242,7 +244,7 @@ jobs:
           python3-requests \
           postgresql-16-ip4r
 
-        sudo -H pip3 install -I --break-system-packages -r nipap/requirements.txt # needed to run test suite
+        sudo -H pip3 install -I --break-system-packages ./nipap/ # needed to run test suite
 
         # Set up PostgreSQL
         sudo service postgresql start
