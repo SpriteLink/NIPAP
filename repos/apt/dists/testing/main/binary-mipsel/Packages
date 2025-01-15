@@ -134,6 +134,29 @@ Description: Python module for accessing NIPAP
  a simple ORM, which hides much of the complexity of working directly against
  the XML-RPC interface.
 
+Package: python3-flask-restx
+Source: flask-restx
+Version: 1.3.0-1
+Architecture: all
+Maintainer: Lukas Garberg <lukas@spritelink.net>
+Installed-Size: 8821
+Depends: python3-aniso8601, python3-flask, python3-importlib-resources, python3-jsonschema, python3-tz, python3-werkzeug, python3:any
+Multi-Arch: foreign
+Homepage: https://github.com/python-restx/flask-restx
+Priority: optional
+Section: python
+Filename: pool/main/f/flask-restx/python3-flask-restx_1.3.0-1_all.deb
+Size: 1559536
+SHA256: d1f7d00ea25d18df3174a0c84c755d9d9705a498f4233a4eaee3f84a719f5a87
+SHA1: 1de435b2ed302cab680c2ba3eb73634856fbccb8
+MD5sum: 15c9f457e91a73f723c682a3fe021f8f
+Description: Flask-RESTX is a community driven fork of Flask-RESTPlus
+  Flask-RESTX is an extension for Flask that adds support for quickly building
+  REST APIs. Flask-RESTX encourages best practices with minimal setup. If you
+  are familiar with Flask, Flask-RESTX should be easy to pick up. It provides a
+  coherent collection of decorators and tools to describe your API and expose
+  its documentation properly using Swagger.
+
 Package: python3-importlib-metadata
 Source: importlib-metadata
 Version: 6.11.0-1

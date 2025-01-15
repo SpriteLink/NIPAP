@@ -1,0 +1,5 @@
+flask-restx (1.3.0-1) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 15 Jan 2025 10:56:06 +0100
