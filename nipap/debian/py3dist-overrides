@@ -1,0 +1,3 @@
+flask-restx python3-flask-restx
+Flask python3-flask (>= 2.0.0)
+flask-xml-rpc-re python3-flask-xml-rpc-re
