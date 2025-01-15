@@ -7,22 +7,22 @@
 
 import datetime
 import logging
-import time
 import pytz
-import json
 from functools import wraps
-from flask import Flask, request, Response, got_request_exception, jsonify
-from flask_restful import Resource, Api, abort
+from flask import request, Response, jsonify
+from flask_restx import Resource, Api, Namespace, abort
 
 from .backend import Nipap, NipapError, prefix_search_options_spec
-import nipap
 from .authlib import AuthFactory, AuthError
 from .tracing import create_span_rest
 
+logger = logging.getLogger(__name__)
+
+prefix_ns = Namespace(name="prefixes", description="Prefix operations", validate=True)
 
 def setup(app):
     api = Api(app, prefix="/rest/v1")
-    api.add_resource(NipapPrefixRest, "/prefixes")
+    api.add_namespace(prefix_ns, path="/prefixes")
 
     return app
 
@@ -34,7 +34,10 @@ def combine_request_args():
         request_nipap_username = request.headers.get('NIPAP-Username')
         request_nipap_fullname = request.headers.get('NIPAP-Full-Name')
 
-        request_body = request.json
+        if request.method in ("POST", "PUT"):
+            request_body = request.json
+        else:
+            request_body = None
         request_queries = request.args.to_dict()
 
         if request_authoritative_source:
@@ -112,6 +115,7 @@ def requires_auth(f):
     def decorated(self, *args, **kwargs):
         """
         """
+
         # small hack
         args = args + (combine_request_args(),)
 
@@ -126,7 +130,7 @@ def requires_auth(f):
             self.logger.debug("Malformed request: got %d parameters" % len(args))
             abort(401, error={"code": 401, "message": "Malformed request: got %d parameters" % len(args)})
 
-        if type(nipap_args) != dict:
+        if type(nipap_args) is not dict:
             self.logger.debug("Function argument is not struct")
             abort(401, error={"code": 401, "message": "Function argument is not struct"})
 
@@ -153,7 +157,8 @@ def requires_auth(f):
             if auth_header and auth_header.startswith("Bearer"):
                 bearer_token = auth_header.split(" ")[1]
             if not bearer_token:
-                return authenticate()
+                logger.info("Authentication failed, missing auth method")
+                abort(authenticate())
 
         # init AuthFacory()
         af = AuthFactory()
@@ -164,7 +169,6 @@ def requires_auth(f):
 
             # authenticated?
             if not auth.authenticate():
-                self.logger.debug("Invalid bearer token")
                 abort(401, error={"code": 401,
                                   "message": "Invalid bearer token"})
         else:
@@ -173,7 +177,6 @@ def requires_auth(f):
 
             # authenticated?
             if not auth.authenticate():
-                self.logger.debug("Incorrect username or password.")
                 abort(401, error={"code": 401, "message": "Incorrect username or password"})
 
         # Replace auth options in API call arguments with auth object
@@ -207,9 +210,12 @@ def get_query_for_field(field, search_value):
         }
 
 
-class NipapPrefixRest(Resource):
+@prefix_ns.route("")
+class NipapPrefix(Resource):
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)
+
         self.nip = Nipap()
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -273,6 +279,7 @@ class NipapPrefixRest(Resource):
             self.logger.error(str(err))
             abort(500, error={"code": 500, "message": "Internal error"})
 
+
     @requires_auth
     @create_span_rest
     def put(self, args):
@@ -292,6 +299,7 @@ class NipapPrefixRest(Resource):
         except Exception as err:
             self.logger.error(str(err))
             abort(500, error={"code": 500, "message": "Internal error"})
+
 
     @requires_auth
     @create_span_rest
