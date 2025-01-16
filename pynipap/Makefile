@@ -26,7 +26,7 @@ buildrpm:
 builddeb:
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
-	$(PYTHON) setup.py sdist --dist-dir=../
+	$(PYTHON) -m build --sdist --outdir ../
 	rename -f 's/$(PROJECT)-(\d.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
 	debuild -us -uc
@@ -40,7 +40,6 @@ upload:
 	$(PYTHON) setup.py sdist upload
 
 clean:
-	$(PYTHON) setup.py clean
 	rm -rf .pybuild/ MANIFEST dist/ debian/files debian/python-pynipap* \
 		debian/python3-pynipap* debian/$(PROJECT).substvars debian/.debhelper \
 		debian/debhelper-build-stamp
