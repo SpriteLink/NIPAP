@@ -64,7 +64,7 @@ COPY pynipap /pynipap
 COPY nipap /nipap
 COPY nipap-www /nipap-www
 RUN cd /pynipap && pip3 --no-input install --break-system-packages --no-cache-dir . && \
-    cd /nipap && pip3 --no-input install --break-system-packages --no-cache-dir -r requirements.txt && python3 setup.py install && \
+    cd /nipap && pip3 --no-input install --break-system-packages --no-cache-dir . && \
     cd /nipap-www && pip3 --no-input install --break-system-packages --no-cache-dir -r requirements.txt && python3 setup.py install && \
     cd ..
 

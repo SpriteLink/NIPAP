@@ -85,7 +85,7 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
     old_umask = os.umask(0o077)
 
 
-if __name__ == '__main__':
+def run():
     parser = argparse.ArgumentParser(description='NIPAP backend server')
     parser.add_argument('--auto-install-db', action='store_true', help='automatically install db schema')
     parser.add_argument('--auto-upgrade-db', action='store_true', help='automatically upgrade db schema')
@@ -270,7 +270,7 @@ if __name__ == '__main__':
         logger.debug('Tracing is disabled')
 
     Compress(app)
-    
+
     # Set up sockets for handling plaintext and SSL connections
     sockets = []
     ssl_sockets = []
@@ -358,3 +358,7 @@ if __name__ == '__main__':
     except Exception as exc:
         logger.error(exc)
         sys.exit(1)
+
+
+if __name__ == '__main__':
+    run()
