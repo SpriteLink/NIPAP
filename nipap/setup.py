@@ -18,7 +18,7 @@ def get_data_files():
         sys.exit(1)
 
     files = [
-        ('/etc/nipap/', ['nipap.conf.dist']),
+        ('share/nipap/', ['nipap.conf.dist']),
         ('share/nipap/sql/', [
             'sql/upgrade-1-2.plsql',
             'sql/upgrade-2-3.plsql',
