@@ -43,6 +43,7 @@ jobs:
           fakeroot \
           debhelper \
           dh-python \
+          dh-exec \
           pybuild-plugin-pyproject \
           junit4 \
           libldap-dev \
@@ -94,8 +95,8 @@ jobs:
         sudo nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"
         # install pynipap
         cd pynipap; sudo -H pip3 install --break-system-packages -I .; cd ..
-        # install nipap-cli dependencies
-        sudo -H pip3 install --break-system-packages -r nipap-cli/requirements.txt
+        # install nipap-cli
+        sudo -H pip3 install --break-system-packages ./nipap-cli/
         # start nipap backend
         nipapd --no-pid-file -c /etc/nipap/nipap.conf -df 2>&1 > /tmp/nipap.log &
 
