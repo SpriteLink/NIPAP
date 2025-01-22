@@ -1,3 +1,11 @@
+nipap-whoisd (0.32.7-1) stable; urgency=medium
+
+  * Modernized packaging (#1419, #1420, #1425, #1426, #1427)
+  * Replaced REST framework in nipapd (#1422)
+  * Bugfixes in whois-daemon (#1429)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 22 Jan 2025 13:45:34 +0100
+
 nipap-whoisd (0.32.6-1) stable; urgency=medium
 
   * Fic proxying of traces over TLS in CLI (#1387)
