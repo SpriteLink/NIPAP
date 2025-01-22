@@ -1,3 +1,9 @@
+Version 0.32.7 - Poseidon
+-------------------------
+ * Modernized packaging (#1419, #1420, #1425, #1426, #1427)
+ * Replaced REST framework in nipapd (#1422)
+ * Bugfixes in whois-daemon (#1429)
+
 Version 0.32.6 - Poseidon
 -------------------------
  * Fic proxying of traces over TLS in CLI (#1387)

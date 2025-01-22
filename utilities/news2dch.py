@@ -37,7 +37,7 @@ class NewsFile:
         cur_ver = None
         cur_line = None
         for line in self.content:
-            m = re.match('Version ([0-9]+\.[0-9]+\.[0-9]+)', line)
+            m = re.match(r'''Version ([0-9]+\.[0-9]+\.[0-9]+)''', line)
             if m:
                 cur_ver = m.group(1)
                 self.versions.append(cur_ver)
@@ -46,10 +46,10 @@ class NewsFile:
                 if self.latest_version is None or StrictVersion(m.group(1)) > StrictVersion(self.latest_version):
                     self.latest_version = m.group(1)
             elif cur_ver:
-                m = re.match(' \* (.*)', line)
+                m = re.match(r''' \* (.*)''', line)
                 if m:
                     cur_entry.append(m.group(1).strip())
-                elif not re.match('-------', line) and re.match(' *[^$]+', line):
+                elif not re.match(r'''-------''', line) and re.match(r''' *[^$]+''', line):
                     cur_entry[-1] += " " + line.strip()
 
 
@@ -61,7 +61,7 @@ class DchFile(NewsFile):
         cur_ver = None
         cur_line = None
         for line in self.content:
-            m = re.match('[^ ]+ \(([0-9]+\.[0-9]+\.[0-9]+)-[0-9]+\) [^ ]+; urgency=[^ ]+', line)
+            m = re.match(r'''[^ ]+ \(([0-9]+\.[0-9]+\.[0-9]+)-[0-9]+\) [^ ]+; urgency=[^ ]+''', line)
             if m:
                 cur_ver = m.group(1)
                 self.versions.append(cur_ver)
@@ -70,10 +70,10 @@ class DchFile(NewsFile):
                 if self.latest_version is None or StrictVersion(cur_ver) > StrictVersion(self.latest_version):
                     self.latest_version = m.group(1)
             elif cur_ver:
-                m = re.match('  \* (.*)', line)
+                m = re.match(r'''  \* (.*)''', line)
                 if m:
                     cur_entry.append(m.group(1).strip())
-                elif not re.match('$', line) and re.match(' *[^$]+', line):
+                elif not re.match(r'''$''', line) and re.match(r''' *[^$]+''', line):
                     cur_entry[-1] += " " + line.strip()
 
 
