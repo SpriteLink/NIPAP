@@ -66,7 +66,7 @@ COPY nipap-www /nipap-www
 RUN cd /pynipap && pip3 --no-input install --break-system-packages --no-cache-dir . && \
     cd /nipap && pip3 --no-input install --break-system-packages --no-cache-dir . && \
     cd /nipap-www && pip3 --no-input install --break-system-packages --no-cache-dir . && \
-    mkdir -p /etc/nipap/ && cp nipap-www.wsgi /etc/nipap/ && \
+    mkdir -p /etc/nipap/www/ && cp nipap-www.wsgi /etc/nipap/www/ && \
     cd ..
 
 EXPOSE 80
