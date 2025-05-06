@@ -113,7 +113,7 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 #
 #basedn = ou=Users,dc=example,dc=com       ; base DN
 #uri = ldaps://ldap.example.com            ; LDAP server URI
-#tls = False                            ; initiate TLS, use ldap://
+#tls = false                               ; initiate TLS, use ldap://
 #
 # LDAP style
 #binddn_fmt = uid={},ou=Users,dc=example,dc=com
@@ -185,6 +185,8 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 #
 #rw_group =
 #ro_group =
+# name of claim containing groups. Can be a comma-separated list.
+#group_claim_name =
 #
 # Options for the WWW UI
 # ----------------------
@@ -208,3 +210,5 @@ secret_key = {{WWW_SECRET_KEY}}
 # otlp_grpc_endpoint=http://opentelemetry-collector:4317
 # Specify OTLP HTTP endpoint. Used to send traces to OpenTelemetry Collector but also used when proxying traces to OpenTelemetry-Collector from nipap-cli
 # otlp_http_endpoint=http://opentelemetry-collector:4318/v1/traces
+# Set sampler. Valid values are always_on, always_off, parentbased_always_on, parentbased_always_off, traceidratio and parentbased_traceidratio. Default is parentbased_always_on.
+# otel_traces_sampler = always_on

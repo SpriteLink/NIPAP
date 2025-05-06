@@ -1,4 +1,0 @@
-Flask
-Jinja2
-pynipap
-nipap

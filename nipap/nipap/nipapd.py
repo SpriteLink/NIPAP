@@ -85,7 +85,7 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
     old_umask = os.umask(0o077)
 
 
-if __name__ == '__main__':
+def run():
     parser = argparse.ArgumentParser(description='NIPAP backend server')
     parser.add_argument('--auto-install-db', action='store_true', help='automatically install db schema')
     parser.add_argument('--auto-upgrade-db', action='store_true', help='automatically upgrade db schema')
@@ -233,11 +233,20 @@ if __name__ == '__main__':
             from nipap.tracing import init_tracing, setup
             from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
             from opentelemetry.instrumentation.flask import FlaskInstrumentor
+            from opentelemetry.sdk.trace.sampling import _KNOWN_SAMPLERS
+
+            sampler = None
+
+            if cfg.has_option("tracing", "otel_traces_sampler"):
+                trace_sampler = cfg.get("tracing", "otel_traces_sampler")
+                if trace_sampler not in _KNOWN_SAMPLERS:
+                    raise NipapConfigError(f"Unknown otel_traces_sampler '{trace_sampler}'. Valid samplers are: '{list(_KNOWN_SAMPLERS.keys())}'")
+                sampler = _KNOWN_SAMPLERS[trace_sampler]
 
             if cfg.has_option("tracing", "otlp_grpc_endpoint"):
-                init_tracing("nipapd", cfg.get("tracing", "otlp_grpc_endpoint"))
+                init_tracing("nipapd", cfg.get("tracing", "otlp_grpc_endpoint", sampler))
             elif cfg.has_option("tracing", "otlp_http_endpoint"):
-                init_tracing("nipapd", cfg.get("tracing", "otlp_http_endpoint"), False)
+                init_tracing("nipapd", cfg.get("tracing", "otlp_http_endpoint"), sampler, False)
             else:
                 raise NipapConfigError("Tracing enabled but no OTLP endpoint configured")
 
@@ -248,45 +257,19 @@ if __name__ == '__main__':
             try:
                 setup(app, cfg.get("tracing", "otlp_http_endpoint"))
             except configparser.NoOptionError:
+                logger.info('Found no OTLP HTTP endpoint, OTLP proxy disabled')
                 pass
-            logger.debug('Tracing is enabled')
+            logger.debug('Tracing is enabled and successfully set up')
         except KeyError:
-            logger.error('Error in tracing configuration. No tracing enabled')
+            logger.error('Error in tracing configuration, tracing not enabled')
             pass
-        except ImportError:
-            logger.error('Failed to import tracing libraries. Check dependencies. No tracing enabled')
+        except ImportError as err:
+            logger.error('Failed to import tracing library %s, tracing not enabled', err.name)
             pass
     else:
         logger.debug('Tracing is disabled')
 
     Compress(app)
-    
-    import nipap.rest
-    rest = nipap.rest.setup(app)
-
-    import nipap.xmlrpc
-
-    nipapxml = nipap.xmlrpc.setup(app)
-
-    if not cfg.getboolean('nipapd', 'foreground'):
-        # If we are not running in the foreground, remove current handlers which
-        # include a default streamhandler to stdout to prevent messages on
-        # stdout when in daemon mode.
-        for h in logger.handlers:
-            logger.removeHandler(h)
-
-    # logging
-    if cfg.getboolean('nipapd', 'debug'):
-        logger.setLevel(logging.DEBUG)
-        nipapxml.logger.setLevel(logging.DEBUG)
-        rest.logger.setLevel(logging.DEBUG)
-
-    if cfg.getboolean('nipapd', 'syslog'):
-        log_syslog = logging.handlers.SysLogHandler(address='/dev/log')
-        log_syslog.setFormatter(logging.Formatter("%(levelname)-8s %(message)s"))
-        logger.addHandler(log_syslog)
-        nipapxml.logger.addHandler(log_syslog)
-        rest.logger.addHandler(log_syslog)
 
     # Set up sockets for handling plaintext and SSL connections
     sockets = []
@@ -319,10 +302,37 @@ if __name__ == '__main__':
     except:
         pass
 
-    # pre-fork if we are not running in foreground
-    if not cfg.getboolean('nipapd', 'foreground') and num_forks is not False:
+    # pre-fork unless explicitly disabled
+    if num_forks is not False:
         # default is to fork as many processes as there are cores
         tornado.process.fork_processes(num_forks)
+
+    import nipap.rest
+    rest = nipap.rest.setup(app)
+
+    import nipap.xmlrpc
+    nipapxml = nipap.xmlrpc.setup(app)
+
+    if not cfg.getboolean('nipapd', 'foreground'):
+        # If we are not running in the foreground, remove current handlers which
+        # include a default streamhandler to stdout to prevent messages on
+        # stdout when in daemon mode.
+        for h in logger.handlers:
+            logger.removeHandler(h)
+
+    # logging
+    if cfg.getboolean('nipapd', 'debug'):
+        logger.setLevel(logging.DEBUG)
+        nipapxml.logger.setLevel(logging.DEBUG)
+        rest.logger.setLevel(logging.DEBUG)
+
+    if cfg.getboolean('nipapd', 'syslog'):
+        log_syslog = logging.handlers.SysLogHandler(address='/dev/log')
+        log_syslog.setFormatter(logging.Formatter("%(levelname)-8s %(message)s"))
+        logger.addHandler(log_syslog)
+        nipapxml.logger.addHandler(log_syslog)
+        rest.logger.addHandler(log_syslog)
+
 
     if setup_plaintext:
         http_server = HTTPServer(WSGIContainer(app))
@@ -348,3 +358,7 @@ if __name__ == '__main__':
     except Exception as exc:
         logger.error(exc)
         sys.exit(1)
+
+
+if __name__ == '__main__':
+    run()

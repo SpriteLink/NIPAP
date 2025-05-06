@@ -2,14 +2,18 @@ Source: pynipap
 Maintainer: Lukas Garberg <lukas@spritelink.net>
 Section: python
 Priority: optional
-Build-Depends: debhelper (>= 8), dh-python,
-               python3 (>= 3.6)
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               python3-all,
+               python3-setuptools,
+               pybuild-plugin-pyproject
 X-Python3-Version: >= 3.6
-Standards-Version: 4.4.0
+Standards-Version: 4.6.1
+Homepage: https://spritelink.github.io/NIPAP/
 
 Package: python3-pynipap
 Architecture: all
-Depends: ${misc:Depends}, python3 (>= 3.6)
+Depends: ${misc:Depends}, ${python3:Depends}
 Breaks: ${python3:Breaks}
 Description: Python 3 module for accessing NIPAP
  This package contains a client library for NIPAP. It's function is similar to

@@ -27,8 +27,8 @@ buildrpm:
 builddeb:
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
-	$(PYTHON) setup.py sdist --dist-dir=../ #--prune
-	rename -f 's/$(PROJECT)-(\d.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
+	$(PYTHON) -m build --sdist --outdir=../
+	rename -f 's/nipap_www-(\d.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
 	debuild -us -uc -sa
 
@@ -42,8 +42,8 @@ upload:
 
 clean:
 	$(PYTHON) setup.py clean
-	rm -rf build/ MANIFEST dist/ debian/$(PROJECT)* debian/files .pc/ debian/patches \
-		debian/.debhelper
+	rm -rf .pybuild/ MANIFEST dist/ debian/$(PROJECT)* debian/files .pc/ debian/patches \
+		debian/.debhelper nipap_www.egg-info debian/debhelper-build-stamp
 	find . -name '*.pyc' -delete
 	rm -rf data/sessions/container_file/*
 	rm -rf data/sessions/container_file_lock/*
@@ -52,7 +52,5 @@ VER := $(shell head -n1 ../NEWS | awk '{print $$2}')
 bumpversion:
 	# replace version number in nipapwww/__init__.py
 	sed -i 's/\(__version__\s*= \)"[^"]\+"/\1"$(VER)"/' nipapwww/__init__.py
-	# replace version number in nipap_www.egg-info/PKG-INFO
-	sed -i 's/^Version:.*/Version: $(VER)/' nipap_www.egg-info/PKG-INFO
 	# update debian/changelog
 	../utilities/news2dch.py ../NEWS debian/changelog

@@ -1,21 +1,22 @@
 #! /bin/bash
 
+# If WWW_SECRET_KEY is not set, generate random string
+if [ ! -v WWW_SECRET_KEY ]; then
+	export WWW_SECRET_KEY=`tr -dc A-Za-z0-9 </dev/urandom | head -c 16`
+fi
+
 # Create NIPAP configuration file
 if [ ! -e /etc/nipap/nipap.conf ]; then
-    envtpl --keep-template --allow-missing -o /etc/nipap/nipap.conf /nipap/nipap.conf.dist
+    envtpl --keep-template --allow-missing -o /etc/nipap/nipap.conf /usr/local/share/nipap/nipap.conf.dist
 fi
 
 # Set up local auth database
 if [ ! -e /etc/nipap/local_auth.db ]; then
-    /usr/sbin/nipap-passwd create-database
+    /usr/local/bin/nipap-passwd create-database
 fi
 if [ `nipap-passwd list | egrep -c ^$WWW_USERNAME\\\s` -eq 0 ]; then
-    /usr/sbin/nipap-passwd add -u $WWW_USERNAME -p $WWW_PASSWORD -n "NIPAP WWW user" -t
+    /usr/local/bin/nipap-passwd add -u $WWW_USERNAME -p $WWW_PASSWORD -n "NIPAP WWW user" -t
 fi
-
-# Fix permissions
-chown -R www-data:www-data /var/cache/nipap-www
-chmod -R u=rwX /var/cache/nipap-www
 
 # Configure apache
 cat << EOF > /etc/apache2/sites-available/000-default.conf

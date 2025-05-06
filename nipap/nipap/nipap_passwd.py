@@ -11,8 +11,8 @@ import logging
 import nipap.authlib
 from nipap.nipapconfig import NipapConfig, NipapConfigError
 
-if __name__ == '__main__':
 
+def run():
     # parse arguments
     parser = argparse.ArgumentParser(description='NIPAP User configuration')
     parser.add_argument('action',
@@ -175,3 +175,7 @@ if __name__ == '__main__':
 
     else:
         parser.print_help()
+
+
+if __name__ == '__main__':
+    run()

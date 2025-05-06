@@ -9,11 +9,13 @@ on:
 env:
   ACTIONS_RUNNER_DEBUG: true
   ACTIONS_STEP_DEBUG: true
+  NIPAPD_IMAGE: nipap/nipapd
+  WWW_IMAGE: nipap/nipap-www
 
 jobs:
   test:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         install: [ pip, apt ]
@@ -36,10 +38,13 @@ jobs:
 
         # Install dependencies for build and test
         sudo apt install -y \
+          build-essential \
           devscripts \
           fakeroot \
           debhelper \
           dh-python \
+          dh-exec \
+          pybuild-plugin-pyproject \
           junit4 \
           libldap-dev \
           libsasl2-dev \
@@ -47,17 +52,17 @@ jobs:
           python3-nose \
           python3-requests \
           python3-setuptools \
+          python3-build \
           python3-wheel \
           python3-all \
           default-jdk \
           gradle \
           rename \
-          postgresql-12 \
-          postgresql-12-ip4r
+          postgresql-16-ip4r
 
-        # Drop and re-create cluster to be bound to default port
-        for version in `pg_lsclusters | tail -n-2 | awk '{ print $1 }'`; do sudo pg_dropcluster $version main; done
-        sudo pg_createcluster --start 12 main
+        sudo service postgresql start
+        pg_isready
+
         sed -e 's/username = guest/username = unittest/' -e 's/password = guest/password = gottatest/' nipap-cli/nipaprc > ~/.nipaprc
         chmod 0600 ~/.nipaprc
 
@@ -77,7 +82,7 @@ jobs:
       if: ${{ matrix.install == 'pip' }}
       run: |
         # install nipap dependencies
-        sudo -H pip3 install -r nipap/requirements.txt
+        sudo -H pip3 install --break-system-packages -I ./nipap/
         # SQL
         sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres
         # move configuration file into place
@@ -85,15 +90,15 @@ jobs:
         sudo cp nipap/nipap.conf.dist /etc/nipap/nipap.conf
         sudo sed -e "s/{{LISTEN_ADDRESS}}/127.0.0.1/" -e "s/{{LISTEN_PORT}}/1337/" -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -e "s/{{DB_USERNAME}}/nipap/" -e "s/{{DB_NAME}}/nipap/" -e "s/{{DB_PASSWORD}}/papin/" -e "s/{{DB_SSLMODE}}/require/" -e "s/{{DB_PORT}}/5432/" -e "s/{{DB_HOST}}/localhost/" -e "s/{{SYSLOG}}/true/" -i /etc/nipap/nipap.conf
         # create local user for unittest
-        sudo nipap/nipap-passwd create-database
-        sudo nipap/nipap-passwd add -u unittest -p gottatest -n unittest
-        sudo nipap/nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"
+        sudo nipap-passwd create-database
+        sudo nipap-passwd add -u unittest -p gottatest -n unittest
+        sudo nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"
         # install pynipap
-        cd pynipap; sudo python3 setup.py install; cd ..
-        # install nipap-cli dependencies
-        sudo -H pip3 install -r nipap-cli/requirements.txt
+        cd pynipap; sudo -H pip3 install --break-system-packages -I .; cd ..
+        # install nipap-cli
+        sudo -H pip3 install --break-system-packages ./nipap-cli/
         # start nipap backend
-        nipap/nipapd --no-pid-file -c /etc/nipap/nipap.conf -df 2>&1 > /tmp/nipap.log &
+        nipapd --no-pid-file -c /etc/nipap/nipap.conf -df 2>&1 > /tmp/nipap.log &
 
     - name: "Install latest release from apt"
       if: ${{ matrix.install == 'apt' && matrix.upgrade == true }}
@@ -139,8 +144,8 @@ jobs:
           sudo sed -e "s/#ssl_port.\+$/ssl_port = 1338/" -e "s/#ssl_cert_file.\+$/ssl_cert_file = \/tmp\/ca\/test.bundle.crt/" -e "s/#ssl_key_file.\+$/ssl_key_file = \/tmp\/ca\/test.key/" -i /etc/nipap/nipap.conf; \
         fi
         # create local user for unittests
-        sudo nipap/nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"
-        sudo nipap/nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"
+        sudo nipap-passwd add -u unittest -p gottatest -f /etc/nipap/local_auth.db -n "User for running unit tests"
+        sudo nipap-passwd add -u readonly -p gottatest -f /etc/nipap/local_auth.db --readonly -n "Read-only user for running unit tests"
         sudo sed -e "s/^db_host *=.*/db_host = localhost/" -e "s/{{SYSLOG}}/true/" -e "s/^debug.\+/debug = true/" -e "s/^user/#user/" -i /etc/nipap/nipap.conf
         sudo systemctl restart nipapd.service
 
@@ -162,6 +167,134 @@ jobs:
     - name: "Accident analysis"
       if: failure()
       run: |
-        sudo cat /etc/nipap/nipap.conf
-        sudo cat /var/log/syslog
+        sudo cat /etc/nipap/nipap.conf || true
+        sudo cat /var/log/syslog || true
+        sudo cat /var/log/postgresql/postgresql-*-main.log || true
         sudo cat /tmp/nipap.log || true
+
+  docker:
+    name: docker
+    runs-on: ubuntu-24.04
+    steps:
+
+    - name: "Set up QEMU"
+      uses: docker/setup-qemu-action@v3
+
+    - name: "Set up Docker Buildx"
+      uses: docker/setup-buildx-action@v3
+
+    - name: "Check out NIPAP repository"
+      uses: actions/checkout@v2
+
+    - name: "Hadolint nipapd"
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        Dockerfile: Dockerfile.nipapd
+
+    - name: "Hadolint WWW"
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        Dockerfile: Dockerfile.www
+
+    - name: "nipapd metadata"
+      id: nipapd_meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.NIPAPD_IMAGE }}
+        tags: |
+          type=sha,prefix=
+
+    - name: "Build nipapd Docker image"
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.nipapd
+        load: true
+        tags: |
+          ${{ env.NIPAPD_IMAGE }}:ci
+          ${{ steps.nipapd_meta.outputs.tags }}
+        push: false
+
+    - name: "www metadata"
+      id: www_meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.WWW_IMAGE }}
+        tags: |
+          type=sha,prefix=
+
+    - name: "Build www Docker image"
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.www
+        load: true
+        tags: |
+          ${{ env.WWW_IMAGE }}:ci
+          ${{ steps.www_meta.outputs.tags }}
+        push: false
+
+    - name: "Setup Docker test"
+      run: |
+        # Install dependencies
+        sudo apt install -y \
+          libldap-dev \
+          libsasl2-dev \
+          python3-wheel \
+          python3-nose \
+          python3-requests \
+          postgresql-16-ip4r
+
+        sudo -H pip3 install -I --break-system-packages ./nipap/ # needed to run test suite
+
+        # Set up PostgreSQL
+        sudo service postgresql start
+        pg_isready
+        sudo su -c "cd nipap/sql; PGPASSWORD=papin make install" postgres
+
+        # Start nipapd container
+        docker run --rm --network=host -d --name=nipapd_ci -e DB_HOST=127.0.0.1 -e DB_USERNAME=nipap -e DB_PASSWORD=papin ${{ env.NIPAPD_IMAGE }}:ci
+        sleep 10
+        docker logs nipapd_ci
+
+        # Set up for test
+        sudo mkdir -p /etc/nipap
+        sudo docker cp nipapd_ci:/etc/nipap/nipap.conf /etc/nipap/
+        sudo docker cp nipapd_ci:/etc/nipap/local_auth.db /etc/nipap/
+        docker exec -t nipapd_ci nipap-passwd add -u unittest -p gottatest -n unittest
+        docker exec -t nipapd_ci nipap-passwd add -u readonly -p gottatest --readonly -n "Read-only user for running unit tests"
+
+    - name: "Run docker tests"
+      run: |
+        # Run tests
+        nosetests3 tests/test_xmlrpc.py
+        nosetests3 tests/nipaptest.py
+        nosetests3 tests/test_nipap_ro.py
+        nosetests3 tests/test_rest.py
+
+    - name: "Login to Docker Hub"
+      if: ${{ github.ref_name == 'master' }}
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: "Build and push nipapd Docker image"
+      if: ${{ github.ref_name == 'master' }}
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.nipapd
+        load: true
+        tags: ${{ steps.nipapd_meta.outputs.tags }}
+        push: true
+
+    - name: "Build and push www Docker image"
+      if: ${{ github.ref_name == 'master' }}
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.www
+        load: true
+        tags: ${{ steps.www_meta.outputs.tags }}
+        push: true

@@ -207,25 +207,9 @@
 import sys
 import logging
 import xmlrpc.client as xmlrpclib
+import urllib.parse
 
-__version__		= "0.32.3"
-__author__		= "Kristian Larsson, Lukas Garberg"
-__author_email__= "kll@tele2.net, lukas@spritelink.net"
-__copyright__	= "Copyright 2011, Kristian Larsson, Lukas Garberg"
-__license__		= "MIT"
-__status__		= "Development"
-__url__			= "http://SpriteLink.github.io/NIPAP"
-
-
-# This variable holds the URI to the nipap XML-RPC service which will be used.
-# It must be set before the Pynipap can be used!
-xmlrpc_uri = None
-
-# Caching of objects is enabled per default but can be disabled for certain
-# scenarios. Since we don't have any cache expiration time it can be useful to
-# disable for long running applications.
-CACHE = True
-
+from .tracing import create_span
 class AuthOptions:
     """ A global-ish authentication option container.
 
@@ -253,18 +237,9 @@ class AuthOptions:
             self.options = options
 
 
-try:
-    from tracing import create_span, TracingXMLTransport
-    xml_transport = TracingXMLTransport
-except ImportError:
-    xml_transport = xmlrpclib.Transport
-
-
 class XMLRPCConnection:
     """ Handles a shared XML-RPC connection.
     """
-
-    __shared_state = {}
 
     connection = None
     _logger = None
@@ -278,14 +253,38 @@ class XMLRPCConnection:
             variable is set.
         """
 
+        # This is not a pretty solution, but needed to maintain backwards
+        # compatibility and avoiding circular imports.
+        from . import xmlrpc_uri, bearer_token, CACHE as cache_enabled
+        global CACHE
+        CACHE = cache_enabled
+
         if xmlrpc_uri is None:
             raise NipapError('XML-RPC URI not specified')
 
+        p = urllib.parse.urlsplit(xmlrpc_uri)
+
+        try:
+            from .tracing import TracingXMLTransport, TracingXMLSafeTransport
+            if p.scheme == "http":
+                xml_transport = TracingXMLTransport
+            elif p.scheme == "https":
+                xml_transport = TracingXMLSafeTransport
+        except ImportError:
+            if p.scheme == "http":
+                xml_transport = xmlrpclib.Transport
+            elif p.scheme == "https":
+                xml_transport = xmlrpclib.SafeTransport
+
+        if bearer_token:
+            headers = (("Authorization", "Bearer " + bearer_token),)
+        else:
+            headers = ()
+
         # creating new instance
         self.connection = xmlrpclib.ServerProxy(xmlrpc_uri,
-                                                transport=xml_transport(),
-                                                allow_none=True,
-                                                use_datetime=True)
+                                                transport=xml_transport(use_datetime=True, headers=headers),
+                                                allow_none=True)
 
         self._logger = logging.getLogger(self.__class__.__name__)
 
@@ -1505,6 +1504,10 @@ _cache = {
     'Prefix': {},
     'VRF': {}
 }
+
+# Will be overwritten by import from . when setting up XML-RPC-connection, but
+# needs to be defined here if it's read before the connections is set up.
+CACHE = False
 
 # Map from XML-RPC Fault codes to Exception classes
 _fault_to_exception_map = {

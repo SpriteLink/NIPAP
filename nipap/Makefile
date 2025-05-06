@@ -27,7 +27,7 @@ buildrpm: sql2py
 builddeb: sql2py
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
-	$(PYTHON) setup.py sdist --dist-dir=../ #--prune
+	$(PYTHON) -m build --sdist --outdir=../
 	rename -f 's/$(PROJECT)-(\d.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
 	debuild -us -uc
@@ -42,7 +42,7 @@ upload:
 
 clean:
 	$(PYTHON) setup.py clean
-	rm -rf build/ MANIFEST dist/ debian/tmp debian/nipap-common \
+	rm -rf .pybuild/ MANIFEST dist/ debian/tmp debian/nipap-common \
 		debian/$(PROJECT) debian/nipapd debian/files .pc/ nipapd.8* \
 		nipap-passwd.1* debian/nipapd.debhelper.log \
 		debian/nipapd.postinst.debhelper debian/nipapd.postrm.debhelper \
@@ -50,7 +50,7 @@ clean:
 		debian/nipap-common.debhelper.log \
 		debian/nipap-common.postinst.debhelper \
 		debian/nipap-common.prerm.debhelper debian/nipap-common.substvars \
-		debian/.debhelper
+		debian/.debhelper debian/debhelper-build-stamp nipap.egg-info/ build/
 	find . -name '*.pyc' -delete
 
 VER := $(shell head -n1 ../NEWS | awk '{print $$2}')

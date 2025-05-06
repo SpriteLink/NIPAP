@@ -2,7 +2,7 @@ try:
     import inspect
     from functools import wraps
 
-    from flask import request
+    from flask import request, abort
 
     from opentelemetry import trace, context
     from opentelemetry.trace import SpanKind, StatusCode
@@ -10,17 +10,21 @@ try:
     from opentelemetry.sdk.resources import SERVICE_NAME, Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.sdk.trace.sampling import DEFAULT_ON
     import opentelemetry.exporter.otlp.proto.http.trace_exporter
     from requests import post
 
     tracer = trace.get_tracer("nipap")
 
-    def init_tracing(service_name, endpoint, use_grpc=True):
+    def init_tracing(service_name, endpoint, sampler, use_grpc=True):
         resource = Resource(attributes={
             SERVICE_NAME: service_name
         })
 
-        provider = TracerProvider(resource=resource)
+        if sampler is None:
+            sampler = DEFAULT_ON
+
+        provider = TracerProvider(sampler=sampler, resource=resource)
         if use_grpc:
             processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint))
         else:
@@ -30,9 +34,23 @@ try:
 
 
     def setup(app, endpoint):
+        """ Set up an endpoint which proxies traces to the OpenTelemetry receiver.
+
+            This can be used by for example the NIPAP CLI.
+        """
         @app.route('/v1/traces/', defaults={'path': ''}, methods=["POST"])
         def proxy(path):
-            return post(f'{endpoint}{path}', data=request.data, headers=request.headers).content
+
+            # Remove Host-header as it's set to the host running nipapd.
+            headers = {k: v for k, v in request.headers}
+            headers.pop("Host", None)
+            res = post(f'{endpoint}{path}', data=request.data, headers=headers)
+
+            # Check result and abort with error if not successful
+            if res.status_code >= 400:
+                abort(res.status_code, description=res.text)
+
+            return res.content
 
 
     def create_span(f):

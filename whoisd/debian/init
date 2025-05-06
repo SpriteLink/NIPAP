@@ -11,7 +11,7 @@ set -e
 # Short-Description:	NIPAP whois daemon
 ### END INIT INFO
 
-DAEMON=/usr/sbin/nipap-whoisd
+DAEMON=/usr/bin/nipap-whoisd
 CONFIGFILE=/etc/nipap/whoisd.conf
 NAME=nipap-whoisd
 LONGNAME="NIPAP whois daemon"

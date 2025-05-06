@@ -1,0 +1,52 @@
+[project]
+name = "nipap-www"
+description = "Web frontend for NIPAP"
+dynamic = ["version"]
+license = {text = "MIT"}
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Developers',
+    'Intended Audience :: System Administrators',
+    'License :: OSI Approved :: MIT License',
+    'Natural Language :: English',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python :: 3'
+]
+keywords = ["nipap"]
+dependencies = [
+  "Flask==3.0.3",
+  "Jinja2==3.1.5",
+  "nipap",
+  "pynipap",
+]
+
+[project.optional-dependencies]
+instrumentation = [
+  "opentelemetry-api==1.29.0",
+  "opentelemetry-exporter-otlp==1.29.0",
+  "opentelemetry-exporter-otlp-proto-common==1.29.0",
+  "opentelemetry-exporter-otlp-proto-grpc==1.29.0",
+  "opentelemetry-exporter-otlp-proto-http==1.29.0",
+  "opentelemetry-instrumentation==0.50b0",
+  "opentelemetry-instrumentation-flask==0.50b0",
+  "opentelemetry-instrumentation-wsgi==0.50b0",
+  "opentelemetry-proto==1.29.0",
+  "opentelemetry-sdk==1.29.0",
+  "opentelemetry-semantic-conventions==0.50b0",
+  "opentelemetry-util-http==0.50b0"
+]
+
+[project.urls]
+Homepage = "http://SpriteLink.github.io/NIPAP"
+
+[tool.setuptools]
+packages = ["nipapwww"]
+
+[tool.setuptools.dynamic]
+version = {attr = "nipapwww.__version__"}
+
+[build-system]
+requires = [
+  "setuptools"
+]
+build-backend = "setuptools.build_meta"

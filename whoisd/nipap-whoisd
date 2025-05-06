@@ -157,7 +157,7 @@ if __name__ == '__main__':
         'user': '',
         'group': ''
     }
-    cfg = configparser.ConfigParser(default)
+    cfg = configparser.ConfigParser(default, inline_comment_prefixes=";#")
     cfg.read(args.config_file)
 
     # override config with command line args
@@ -201,7 +201,7 @@ if __name__ == '__main__':
     if cfg.get('whoisd', 'pid_file') != '' and not args.no_pid_file:
         # need a+ to be able to read PID from file
         try:
-            lf = open(cfg.get('whoisd', 'pid_file'), 'a+', 0)
+            lf = open(cfg.get('whoisd', 'pid_file'), 'a+')
         except IOError as exc:
             print("Unable to open PID file '%s': %s" % (
                     str(exc.filename), str(exc.strerror)), file=sys.stderr)

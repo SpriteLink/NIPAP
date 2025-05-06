@@ -131,6 +131,7 @@ class AuthFactory:
         self._auth_cache = {}
         self._init_backends()
 
+
     def get_auth_bearer_token(self, bearer_token, authoritative_source, auth_options=None):
         """ Returns an authentication object.
 
@@ -146,16 +147,20 @@ class AuthFactory:
         if auth_options is None:
             auth_options = {}
 
+        # validate arguments
+        if authoritative_source is None:
+            raise AuthError("Missing authoritative_source.")
+
         backend = "jwt"
         self._logger.debug("Using auth backend %s" % backend)
         # Create auth object
         try:
             auth = self._backends[backend](backend, bearer_token, authoritative_source, auth_options)
-        except Exception:
-            traceback.print_exc()
+        except KeyError:
             raise AuthError("Invalid auth backend '%s' specified" % backend)
 
         return auth
+
 
     def get_auth(self, username, password, authoritative_source, auth_options=None):
         """ Returns an authentication object.
@@ -299,6 +304,7 @@ class JwtAuth(BaseAuth):
     _jwt_rw_group = None
     _jwt_ro_group = None
     _authenticated = None
+    _jwks_client = None
 
     def __init__(self, name, jwt_token, authoritative_source,
                  auth_options=None):
@@ -338,6 +344,14 @@ class JwtAuth(BaseAuth):
             self._logger.error('Unable to load Python jwt module, please verify it is installed')
             raise AuthError('Unable to authenticate')
 
+        # Set up JWK client as class variable
+        if self._jwks_client is None:
+            jwk_url = self._cfg.get(base_auth_backend, 'jwk_url')
+            if jwk_url is None:
+                self._logger.error("Missing jwk_url in config")
+                raise AuthError("Authentication error")
+            JwtAuth._jwks_client = jwt.PyJWKClient(jwk_url)
+
         # Decode token
         try:
             payload = jwt.decode(
@@ -345,7 +359,8 @@ class JwtAuth(BaseAuth):
             self.username = payload.get('sub')
             self.full_name = payload.get('name', payload.get('sub'))
         except jwt.exceptions.DecodeError:
-            raise AuthError('Failed to decode jwt token')
+            raise AuthError('Failed to decode JWT token')
+
 
     @create_span_authenticate
     def authenticate(self):
@@ -360,63 +375,64 @@ class JwtAuth(BaseAuth):
             return self._authenticated
 
         try:
-            self._token = self._cfg.get('auth.backends.' +
-                                        self.auth_backend, 'jwk_url')
-            # Fetch JWKs (done when initializing JwtAuth-class),
-            # keep the keys in the class instance
-            jwk_request_response = requests.get(self._token)
-            jwks = jwk_request_response.json()
-            jwk_keys = {}
-            for jwk in jwks['keys']:
-                kid = jwk['kid']
-                jwk_keys[kid] = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
-
-            # Upon auth with a JWT-token
-            # Retrieve key for token
-            jwt_headers = jwt.get_unverified_header(self._jwt_token)
-            jwt_jwk_key = jwk_keys[jwt_headers['kid']]
-
             # Decode and verify token
+            jwt_headers = jwt.get_unverified_header(self._jwt_token)
+            signing_key = self._jwks_client.get_signing_key_from_jwt(self._jwt_token)
             payload = jwt.decode(
                 self._jwt_token,
-                key=jwt_jwk_key,
+                key=signing_key.key,
                 algorithms=[jwt_headers['alg']],
                 options={"verify_aud": False})
 
-            # Setting read and write rights
-            if payload.get('groups'):
-                if self._jwt_ro_group in payload.get('groups'):
-                    self.readonly = True
-                    self._authenticated = True
-                elif self._jwt_rw_group in payload.get('groups'):
-                    self.readonly = False
-                    self._authenticated = True
+            # Fetch group names from list of claims given in config
+            group_claim_name = self._cfg.get('auth.backends.' +
+                                             self.auth_backend,
+                                             'group_claim_name')
+            if group_claim_name is None:
+                self._logger.error("Missing group_claim_name in JWT auth configuration")
+                raise AuthError("Authentication error")
+
+            claim_groups = []
+            for claim_name in map(str.strip, group_claim_name.split(",")):
+                if claim_name in payload:
+                    if type(payload[claim_name]) is str:
+                        claim_groups.append(payload[claim_name])
+                    elif type(payload[claim_name]) is list:
+                        claim_groups += payload[claim_name]
+                    else:
+                        self._logger.error("Unknown type of claim %s (%s)", claim_name, payload[claim_name])
+
+            self._logger.debug("Found groups %s in JWT claims", claim_groups)
+
+            # Validate if the user have RO, RW or nothing
+            if self._jwt_ro_group in claim_groups:
+                self.readonly = True
+                self._authenticated = True
+            elif self._jwt_rw_group in claim_groups:
+                self.readonly = False
+                self._authenticated = True
+            else:
+                self._authenticated = False
+                self._logger.debug("Login failed: JWT missing authorized groups")
+
         # auth failed
         except jwt.exceptions.DecodeError:
-            self._logger.debug('could not decode token because of failed validation')
-            self._authenticated = False
-            return self._authenticated
+            self._logger.debug('Authentication failed - could not decode token because of failed validation')
+            raise AuthError('Failed to decode JWT token')
         except jwt.exceptions.ExpiredSignatureError:
-            self._logger.debug('token\'s signature does not match')
-            self._authenticated = False
-            return self._authenticated
+            self._logger.debug('Authentication failed - token expired')
+            raise AuthError('Token expired')
         except jwt.exceptions.InvalidSignatureError:
-            self._logger.debug('token\'s signature does not match the one provided as part of the token')
-            self._authenticated = False
-            return self._authenticated
+            self._logger.debug('Authentication failed - token\'s signature does not match the one provided as part of the token')
+            raise AuthError('Invalid token signature')
         except jwt.exceptions.InvalidAlgorithmError:
-            self._logger.debug('the specified algorithm is not recognized by PyJWT')
-            self._authenticated = False
-            return self._authenticated
-        except:
-            self._logger.debug('could not authenticate')
-            self._authenticated = False
-            return self._authenticated
+            self._logger.debug('Authentication failed - the specified algorithm is not recognized by PyJWT')
+            raise AuthError("Unknown token signature algorithm")
 
         # auth succeeded
         if self._authenticated:
             self.authenticated_as = payload.get('sub')
-            self._logger.debug('successfully authenticated as %s, username' % self.authenticated_as)
+            self._logger.debug('successfully authenticated as %s using JWT authentication' % self.authenticated_as)
         self.trusted = False
 
         return self._authenticated
@@ -486,6 +502,10 @@ class LdapAuth(BaseAuth):
             self._logger.error('Unable to load Python ldap module, please verify it is installed')
             raise AuthError('Unable to authenticate')
 
+        # Avoid following referrals for now, as NIPAP doesn't support
+        # initializing a separate connection for them anyway.
+        ldap.set_option(ldap.OPT_REFERRALS, ldap.OPT_OFF)
+
         self._logger.debug('LDAP URI: ' + self._ldap_uri)
         self._ldap_conn = ldap.initialize(self._ldap_uri)
 
@@ -494,16 +514,6 @@ class LdapAuth(BaseAuth):
             self._ldap_search_binddn = self._cfg.get(base_auth_backend, 'search_binddn')
             self._ldap_search_password = self._cfg.get(base_auth_backend, 'search_password')
             self._ldap_search_conn = ldap.initialize(self._ldap_uri)
-
-        if self._ldap_tls:
-            try:
-                self._ldap_conn.start_tls_s()
-                if self._ldap_search_conn is not None:
-                    self._ldap_search_conn.start_tls_s()
-            except (ldap.CONNECT_ERROR, ldap.SERVER_DOWN) as exc:
-                self._logger.error('Attempted to start TLS with ldap server but failed.')
-                self._logger.exception(exc)
-                raise AuthError('Unable to establish secure connection to ldap server')
 
     @create_span_authenticate
     def authenticate(self):
@@ -516,6 +526,17 @@ class LdapAuth(BaseAuth):
         # if authentication has been performed, return last result
         if self._authenticated is not None:
             return self._authenticated
+
+        # Start TLS session, if needed
+        if self._ldap_tls:
+            try:
+                self._ldap_conn.start_tls_s()
+                if self._ldap_search_conn is not None:
+                    self._ldap_search_conn.start_tls_s()
+            except (ldap.CONNECT_ERROR, ldap.SERVER_DOWN) as exc:
+                self._logger.error('Attempted to start TLS with ldap server but failed.')
+                self._logger.exception(exc)
+                raise AuthError('Unable to establish secure connection to ldap server')
 
         try:
             self._ldap_conn.simple_bind_s(self._ldap_binddn_fmt.format(ldap.dn.escape_dn_chars(self.username)),
@@ -552,6 +573,8 @@ class LdapAuth(BaseAuth):
                 ['cn', 'memberOf'],
             )
 
+            self._logger.debug("User %s is member of groups: %s", self.username, res[0][1].get('memberOf', []))
+
             # Data received from LDAP is bytes, make sure to decode/encode
             # accordingly before using it
             if res[0][1]['cn'][0] is not None:
@@ -568,14 +591,15 @@ class LdapAuth(BaseAuth):
                     # if ro_group is configured, and the user is a member of
                     # neither the ro_group nor the rw_group, fail authentication.
                     if self._ldap_ro_group:
-                        if self._ldap_ro_group not in res[0][1].get('memberOf', []):
+                        if self._ldap_ro_group.encode('utf-8') not in res[0][1].get('memberOf', []):
                             self._authenticated = False
                             return self._authenticated
                     else:
                         self.readonly = True
 
         except ldap.LDAPError as exc:
-            raise AuthError(exc)
+            self._logger.error("Got LDAP error: %s", exc)
+            raise AuthError("LDAP server returned an error")
         except KeyError:
             raise AuthError('LDAP attribute missing')
         except IndexError:
@@ -585,6 +609,11 @@ class LdapAuth(BaseAuth):
             if self._ldap_rw_group or self._ldap_ro_group:
                 self._authenticated = False
                 return self._authenticated
+        finally:
+            # Unbind from LDAP server
+            self._ldap_conn.unbind_s()
+            if self._ldap_search_conn is not None:
+                self._ldap_search_conn.unbind_s()
 
         self._authenticated = True
 

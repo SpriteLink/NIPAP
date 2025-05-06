@@ -27,8 +27,8 @@ buildrpm:
 builddeb:
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
-	$(PYTHON) setup.py sdist --dist-dir=../ --prune
-	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
+	$(PYTHON) -m build --sdist --outdir=../
+	rename -f 's/nipap_cli-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
 	debuild -us -uc
 
@@ -45,7 +45,7 @@ clean:
 	rm -rf .pybuild/ MANIFEST dist/ debian/tmp debian/$(PROJECT) debian/files \
 		.pc/ debian/$(PROJECT).debhelper.log debian/$(PROJECT).postinst.debhelper \
 		debian/$(PROJECT).prerm.debhelper debian/$(PROJECT).substvars nipap.1 \
-		debian/.debhelper
+		debian/.debhelper debian/debhelper-build-stamp nipap_cli.egg-info
 	find . -name '*.pyc' -delete
 
 VER := $(shell head -n1 ../NEWS | awk '{print $$2}')

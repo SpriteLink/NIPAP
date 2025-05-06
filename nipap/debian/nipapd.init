@@ -11,7 +11,7 @@ set -e
 # Short-Description:	NIPAP XML-RPC server
 ### END INIT INFO
 
-DAEMON=/usr/sbin/nipapd
+DAEMON=/usr/bin/nipapd
 CONFIGFILE=/etc/nipap/nipap.conf
 NAME=NIPAPd
 PIDFILE=/var/run/nipap/nipapd.pid

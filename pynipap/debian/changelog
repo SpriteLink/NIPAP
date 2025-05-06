@@ -1,3 +1,43 @@
+pynipap (0.32.7-1) stable; urgency=medium
+
+  * Modernized packaging (#1419, #1420, #1425, #1426, #1427)
+  * Replaced REST framework in nipapd (#1422)
+  * Bugfixes in whois-daemon (#1429)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Wed, 22 Jan 2025 13:45:33 +0100
+
+pynipap (0.32.6-1) stable; urgency=medium
+
+  * Fic proxying of traces over TLS in CLI (#1387)
+  * Misc improvements of Dockerfiles (#1389)
+  * Support for global configuration file in CLI (#1395)
+  * Fork nipapd also when running in foreground (#1401)
+  * Fixed a bug related to LDAP RO group handling (#1405)
+  * Avoid following LDAP referrals (#1408)
+  * Misc fixes to JWT auth module (#1410, #1411)
+  * Move pynipap to a package (#1412)
+  * Misc minor bugfixes and cleanups (#1398, #1405, #1406)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Thu, 09 Jan 2025 16:28:44 +0100
+
+pynipap (0.32.5-1) stable; urgency=medium
+
+  * Fixed trace proxy (#1385)
+  * Fixed handling of CA certs in Dockerfiles (#1384)
+  * Misc fixes to build system etc (#1383)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Sun, 26 May 2024 23:02:40 +0200
+
+pynipap (0.32.4-1) stable; urgency=medium
+
+  * Updated Docker packaging (#1374, #1376)
+  * Fixed nipap-cli TLS support which broke when tracing was introduced
+    (#1370)
+  * Added option to configure trace sampling (#1379)
+  * LDAP connection closed after authentication done (#1369)
+
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 20 May 2024 12:56:02 +0200
+
 pynipap (0.32.3-1) stable; urgency=medium
 
   * Fix broken tracing in WWW UI (#1363)
@@ -142,7 +182,7 @@ pynipap (0.29.4-1) stable; urgency=medium
   * Improved logging in backend (#1043, #1047)
   * WSGI file moved to /etc/nipap/www (#880, #1052)
 
- -- Lukas Garberg <lukagarb@arb>  Mon, 26 Sep 2016 06:57:20 +0200
+ -- Lukas Garberg <lukas@spritelink.net>  Mon, 26 Sep 2016 06:57:20 +0200
 
 pynipap (0.29.3-1) stable; urgency=medium
 
@@ -163,7 +203,7 @@ pynipap (0.29.2-1) stable; urgency=medium
     #1005)
   * Fix error handling in nipap-www (#1004, #1006)
 
- -- Kristian Larsson <kll@lingloi>  Fri, 09 Sep 2016 17:45:14 +0200
+ -- Kristian Larsson <kristian@spritelink.net>  Fri, 09 Sep 2016 17:45:14 +0200
 
 pynipap (0.29.1-1) stable; urgency=medium
 
