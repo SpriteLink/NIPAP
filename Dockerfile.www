@@ -72,4 +72,8 @@ RUN cd /pynipap && pip3 --no-input install --break-system-packages --no-cache-di
 EXPOSE 80
 VOLUME [ "/var/log/apache2" ]
 
+VOLUME /run/apache2
+VOLUME /etc/apache2
+VOLUME /etc/nipap
+
 ENTRYPOINT [ "/nipap-www/entrypoint.sh" ]

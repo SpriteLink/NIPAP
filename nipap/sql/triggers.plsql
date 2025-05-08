@@ -311,7 +311,7 @@ BEGIN
 	-- free addresses
 	NEW.free_addresses := NEW.total_addresses - NEW.used_addresses;
 
-
+/*
 	--
 	---- Inherited Tags --------------------------------------------------------
 	-- Update inherited tags
@@ -322,7 +322,7 @@ BEGIN
 	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
 		NEW.inherited_tags := array_undup(array_cat(new_parent.inherited_tags, new_parent.tags));
 	END IF;
-
+*/
 
 	-- all is well, return
 	RETURN NEW;
@@ -762,6 +762,7 @@ BEGIN
 		END IF;
 	END IF;
 
+/*
 	--
 	---- Inherited Tags --------------------------------------------------------
 	-- Update inherited tags
@@ -788,7 +789,7 @@ BEGIN
 		PERFORM calc_tags(OLD.vrf_id, OLD.prefix);
 		PERFORM calc_tags(NEW.vrf_id, NEW.prefix);
 	END IF;
-
+*/
 
 	-- all is well, return
 	RETURN NEW;
