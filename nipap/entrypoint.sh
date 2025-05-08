@@ -2,7 +2,7 @@
 
 mkdir -p /etc/nipap/
 envtpl --allow-missing --keep-template /usr/local/share/nipap/nipap.conf.dist -o /etc/nipap/nipap.conf
-/bin/bash /nipap/wait-for-it.sh -t 60 $DB_HOST:$DB_PORT -- sleep 5
+#/bin/bash /nipap/wait-for-it.sh -t 60 $DB_HOST:$DB_PORT -- sleep 5
 
 /usr/local/bin/nipap-passwd create-database
 if [ -n "$NIPAP_USERNAME" -a -n "$NIPAP_PASSWORD" ]; then
