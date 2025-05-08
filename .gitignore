@@ -7,3 +7,14 @@
 docs/sphinx/_build/
 nipap-www/nipap_www.egg-info
 nipap/nipap.egg-info
+
+/.idea/
+*.idea/
+/**/target
+*/target/*
+*/target/**
+*.iml
+**dependency-reduced-pom.xml
+*.project
+*.classpath
+*.settings
