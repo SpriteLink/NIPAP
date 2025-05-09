@@ -264,7 +264,7 @@ _pool_spec = {
             'ro': False,
         },
         'member_prefixes_v6': {
-            'column': 'po.member_prefixes_v',
+            'column': 'po.member_prefixes_v6',
             'ro': False,
         },
         'name': {
