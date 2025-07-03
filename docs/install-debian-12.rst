@@ -1,5 +1,5 @@
 Getting started for sysadmins
----
+----
 This guide will walk you through the setup process to get NIPAP up and running
 on a Debian 12.0 (Bookworm). With no prior experience of NIPAP, it should take
 about 10 minutes.
