@@ -1,12 +1,12 @@
 Getting started for sysadmins
 -----------------------------
 This guide will walk you through the setup process to get NIPAP up and running
-on a Debian 12.0 (Bookworm). With no prior experience of NIPAP, it should take
-about 10 minutes.
+on a Debian 12.0 (Bookworm). With no prior experience of NIPAP, the base installation
+detailed here should take about a minute (plus the time to download the required packages).
 
-The instructions assume you are logged in as 'root', however NIPAP will
-run as user 'nipap'. If you would rather run the installation process as a
-user other than root, add 'sudo' commands where appropriate.
+Whilst NIPAP will run as user 'nipap', these instructions assume you are logged in as
+'root'. If you would rather run the installation process as a user other than root,
+log in as that user and add 'sudo' commands where appropriate.
 
 Please see `install-unix <install-unix.rst>`_ for installation instructions
 on non-Debian like Unix systems.
