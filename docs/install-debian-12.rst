@@ -53,14 +53,14 @@ Python, you will need 'python-pynipap'. If you want, you can install the nipapd
 backend on one machine and the CLI and/or web on another.
 
 If you don't install the packages in the order below, you will have to manually
-dpkg-reconfigure nipap-www.
+'dpkg-reconfigure nipap-www'.
 
 Install everything apart from nipap-www::
 
  apt -y install nipapd nipap-common nipap-whoisd nipap-cli nipap-www
 
 During installation, the packages will prompt you for various values. Answer
-'Yes' to all the Yes/No questions.
+'Yes' to all the Yes/No questions and accept any other defaults.
 
 Finally, install nipap-www, selecting 'Yes' to all the questions asked.::
 
