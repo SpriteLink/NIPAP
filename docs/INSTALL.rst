@@ -7,8 +7,11 @@ script) and above all, that it is tested.
 
 Installation
 ------------
-If you are running a Debian system or a Debian derivative, see
+If you are running an older Debian system (7, Wheezy) or a Debian derivative, see
 `installing on Debian <install-debian.rst>`_ for instructions.
+
+If you are running Debian 12 (Bookworm), see `installing on Debian 12 <install-debian-12.rst>`_
+for instructions.
 
 NIPAP should be able to run on any Unix-like operating system but you will need
 to install dependencies and NIPAP manually. See `installing on Unix systems
