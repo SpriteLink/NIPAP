@@ -9,7 +9,8 @@ Whilst NIPAP will run as user 'nipap', these instructions assume you are logged 
 log in as that user and add 'sudo' commands where appropriate.
 
 Please see `install-unix <install-unix.rst>`_ for installation instructions
-on non-Debian like Unix systems.
+on non-Debian like Unix systems or `install-debian <install-debian.rst>`_ for older
+Debian systems.
 
 Debian 12 (Bookworm) installation
 ---------------------------------
