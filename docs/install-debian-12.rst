@@ -1,6 +1,5 @@
 Getting started for sysadmins
-----
-
+-----------------------------
 This guide will walk you through the setup process to get NIPAP up and running
 on a Debian 12.0 (Bookworm). With no prior experience of NIPAP, it should take
 about 10 minutes.
@@ -13,8 +12,7 @@ Please see `install-unix <install-unix.rst>`_ for installation instructions
 on non-Debian like Unix systems.
 
 Debian 12 (Bookworm) installation
------
-
+---------------------------------
 Start by bringing the system up to date::
 
  apt update && apt -y upgrade
@@ -73,7 +71,6 @@ database server and all the other necessary dependencies installed.
 
 Web UI
 ------
-
 The user added to the local authentication database by the installation script
 is merely used by the web interface to talk to the backend.
 
