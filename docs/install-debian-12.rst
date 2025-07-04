@@ -17,17 +17,17 @@ Please see `install-unix <install-unix.rst>`_ for installation instructions
 on non-Debian like Unix systems or `install-debian <install-debian.rst>`_ for older
 Debian systems.
 
-Debian 12 (Bookworm) installation
-=================================
+Installation
+============
 
 Step 1 - Bring system up to date and install dependencies
 ---------------------------------------------------------
 
-Bring system up to date:::
+Bring system up to date::
 
  apt update && apt -y upgrade
 
-And then install the dependencies:::
+And then install the dependencies::
 
  # PostgreSQL
  apt -y install gnupg curl postgresql postgresql-common postgresql-contrib postgresql-ip4r
@@ -37,7 +37,7 @@ And then install the dependencies:::
 Step 2 - Add NIPAP repository
 -----------------------------
 
-As we're going to install from the NIPAP repository, we need to add the key, update sources and then update apt:::
+As we're going to install from the NIPAP repository, we need to add the key, update sources and then update apt::
 
  # Download key, put it in a format 'apt' can understand and put it in the keyrings directory
  curl -fsSL https://spritelink.github.io/NIPAP/nipap.gpg.key | gpg --dearmor > /usr/share/keyrings/nipap-keyring.gpg
@@ -46,7 +46,7 @@ As we're going to install from the NIPAP repository, we need to add the key, upd
  # And upate apt
  apt update
 
-There are now seven new packages available:::
+There are now seven new packages available::
 
 * nipap-cli - Command line client. Can be installed remotely from nipapd if required.
 * nipap-common - Library with common stuff needed by all the other components.
@@ -61,14 +61,14 @@ Step 3 - Install NIPAP
 
 **Note** If you don't install the packages in the order below, you will have to manually run ``dpkg-reconfigure nipap-www``.
 
-Install everything apart from nipap-www:::
+Install everything apart from nipap-www::
 
  apt -y install nipapd nipap-common nipap-whoisd nipap-cli
 
 During installation, the packages will prompt you for various values. Answer
 'Yes' to all the Yes/No questions and accept any other defaults.
 
-Finally, install nipap-www, selecting 'Yes' to all the questions asked.::
+Finally, install nipap-www, selecting 'Yes' to all the questions asked::
 
  apt -y install nipap-www
 
