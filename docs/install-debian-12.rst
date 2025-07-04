@@ -1,7 +1,5 @@
-========================================
 Installing NIPAP on Debian 12 (Bookworm)
 ========================================
-
 
 Introduction
 ------------
@@ -19,10 +17,8 @@ Please see `install-unix <install-unix.rst>`_ for installation instructions
 on non-Debian like Unix systems or `install-debian <install-debian.rst>`_ for older
 Debian systems.
 
-
 Debian 12 (Bookworm) installation
 =================================
-
 
 Step 1 - Bring system up to date and install dependencies
 ---------------------------------------------------------
@@ -39,7 +35,7 @@ And then install the dependencies:::
  apt -y install apache2 libapache2-mod-wsgi-py3
 
 Step 2 - Add NIPAP repository
-=============================
+-----------------------------
 
 As we're going to install from the NIPAP repository, we need to add the key, update sources and then update apt:::
 
@@ -61,7 +57,7 @@ There are now seven new packages available:::
 * python3-pynipap - Python 3 module for accessing NIPAP
  
 Step 3 - Install NIPAP
-======================
+----------------------
 
 **Note** If you don't install the packages in the order below, you will have to manually run ``dpkg-reconfigure nipap-www``.
 
@@ -77,7 +73,7 @@ Finally, install nipap-www, selecting 'Yes' to all the questions asked.::
  apt -y install nipap-www
 
 Step 4 - Web UI
-===============
+---------------
 
 The user added to the local authentication database by the installation script
 is merely used by the web interface to talk to the backend. To access the Web UI,
