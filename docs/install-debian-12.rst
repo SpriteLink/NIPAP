@@ -31,9 +31,7 @@ And then install the dependencies::
 
  # PostgreSQL
  apt -y install gnupg curl postgresql postgresql-common postgresql-contrib postgresql-ip4r
- # Apache
- apt -y install apache2 libapache2-mod-wsgi-py3
-
+ 
 Step 2 - Add NIPAP repository
 -----------------------------
 
@@ -46,7 +44,7 @@ As we're going to install from the NIPAP repository, we need to add the key, upd
  # And upate apt
  apt update
 
-There are now seven new packages available::
+There are now seven new packages available:
 
 * nipap-cli - Command line client. Can be installed remotely from nipapd if required.
 * nipap-common - Library with common stuff needed by all the other components.
@@ -76,8 +74,9 @@ Step 4 - Web UI
 ---------------
 
 The user added to the local authentication database by the installation script
-is merely used by the web interface to talk to the backend. To access the Web UI,
-a number of other steps need to be taken.
+is merely used by the web interface to talk to the backend. Assuming you have
+said 'Yes' to the various options offered in Step 3, the configuration file will
+be updated accordingly.
 
 See `config-www <config-www.rst>`_ for configuration of the web UI and how to
 serve it using a web server.

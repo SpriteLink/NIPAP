@@ -1,5 +1,11 @@
 Configuration of the web UI
----------------------------
+===========================
+
+**NOTE** If you followed the Debian installation instructions and installed the *nipap-www*
+package saying 'Yes' to all the options, the user account will have been created and the
+configuration file updated accordingly. In this case, you do not need to follow the instructions
+in this section. 
+
 Make sure the web UI is installed before proceeding with configuration of it.
 
 The web interface needs its own user account to authenticate towards the
@@ -27,13 +33,14 @@ server to serve the NIPAP web UI you should be able to login with this user::
 
 
 Serving the web UI
-------------------
+==================
 The NIPAP web UI is built on the web framework Flask can be served by any
 WGSI-capable web server such as Apache httpd with mod_wsgi. For quick tests and
 development Flask's own web server is handy.
 
 Flask
-======
+-----
+
 Using Flask is the easiest way to get the NIPAP web UI up and running, but
 it's not really suitable for production deployment. To serve the NIPAP web UI
 from the built-in web server, run the following::
@@ -49,8 +56,52 @@ such::
 
       export NIPAP_CONFIG_PATH=~/.local/etc/nipap/nipap.conf
 
+Apache2 Debian quick script
+---------------------------
+
+In Debian, the following script will create the site file and configure Apache2.
+This can be pasted directly to the command line::
+
+    # Create new virtual host site
+    cat > /etc/apache2/sites-available/nipap.conf <<EOF
+    <VirtualHost *:80>
+      ServerName nipap.example.com
+      DocumentRoot /var/cache/nipap-www/
+      ServerAdmin admin@nipap.example.com
+      WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
+
+    <Directory /etc/nipap/www/>
+        Require all granted
+    </Directory>
+
+    <Directory /var/cache/nipap-www/>
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/nipap_error.log
+    CustomLog ${APACHE_LOG_DIR}/nipap_access.log combined
+
+    </VirtualHost>
+    EOF
+
+    # Enable WSGI (it is likely already enabled, but here just to make sure)
+    a2enmod wsgi
+
+    # Enable the site we've just created
+    a2ensite nipap.conf
+    
+    # Make sure Apache2 can write to the cache
+    chown -R www-data:www-data /var/cache/nipap-www
+    chmod -R 770 /var/cache/nipap-www
+
+    # And finally, restart Apache2
+    systemctl restart apache2
+
+This should make the site *nipap.example.com* available on port 80.
+
 Apache httpd with mod_wsgi
-==========================
+--------------------------
+
 Begin by installing Apache httpd with mod_wsgi::
 
     apt-get install libapache2-mod-wsgi-py3
@@ -64,6 +115,35 @@ If you are using Apache 2.4 you will also need to add the lines::
     <Directory /etc/nipap/www/>
         Require all granted
     </Directory>
+
+In Debian, the following script will create the site file and configure Apache2::
+
+    cat > /etc/apache2/sites-available/nipap.conf <<EOF
+    <VirtualHost *:80>
+      ServerName nipap.example.com
+      DocumentRoot /var/cache/nipap-www/
+      ServerAdmin admin@nipap.example.com
+      WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
+
+    <Directory /etc/nipap/www/>
+        Require all granted
+    </Directory>
+
+    <Directory /var/cache/nipap-www/>
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/nipap_error.log
+    CustomLog ${APACHE_LOG_DIR}/nipap_access.log combined
+    EOF
+
+    a2enmod wsgi
+    a2ensite nipap.conf
+    
+    chown -R www-data:www-data /var/cache/nipap-www
+    chmod -R u=rwX /var/cache/nipap-www
+    systemctl restart apache2
+
 
 The web server needs to be able to write to its cache, alter the permissions of
 /var/cache/nipap-www so that the web server can write to it and preferrably
