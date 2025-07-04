@@ -1,64 +1,69 @@
+========================================
+Installing NIPAP on Debian 12 (Bookworm)
+========================================
+
 Getting started for sysadmins
 -----------------------------
 This guide will walk you through the setup process to get NIPAP up and running
 on a Debian 12.0 (Bookworm). With no prior experience of NIPAP, the base installation
-detailed here should take about a minute (plus the time to download the required packages).
+detailed here should take a couple of minutes (plus the time to download and install
+the required packages).
 
-Whilst NIPAP will run as user 'nipap', these instructions assume you are logged in as
-'root'. If you would rather run the installation process as a user other than root,
-log in as that user and add 'sudo' commands where appropriate.
+After installation, NIPAP will run as user 'nipap', however these instructions assume you
+are logged in as 'root'. If you would rather run the installation process as a user other
+than root, log in as that user and add 'sudo' commands where appropriate.
 
 Please see `install-unix <install-unix.rst>`_ for installation instructions
 on non-Debian like Unix systems or `install-debian <install-debian.rst>`_ for older
 Debian systems.
 
 Debian 12 (Bookworm) installation
----------------------------------
-Start by bringing the system up to date::
+=================================
+
+Step 1 - Bring system up to date and install dependencies
+---------------------------------------------------------
+
+Bring system up to date:::
 
  apt update && apt -y upgrade
 
-And then install the dependencies::
+And then install the dependencies:::
 
- apt -y install gnupg curl postgresql postgresql-common postgresql-ip4r apache2 libapache2-mod-wsgi-py3
+ # PostgreSQL
+ apt -y install gnupg curl postgresql postgresql-common postgresql-contrib postgresql-ip4r
+ # Apache
+ apt -y install apache2 libapache2-mod-wsgi-py3
 
-We're going to use the NIPAP repository, so we need to install the key, update sources and then update apt.::
+Step 2 - Add NIPAP repository
+-----------------------------
 
+As we're going to install from the NIPAP repository, we need to add the key, update sources and then update apt:::
+
+ # Download key, put it in a format 'apt' can understand and put it in the keyrings directory
  curl -fsSL https://spritelink.github.io/NIPAP/nipap.gpg.key | gpg --dearmor > /usr/share/keyrings/nipap-keyring.gpg
+ # Add the repository to our sources
  echo "deb [signed-by=/usr/share/keyrings/nipap-keyring.gpg] http://spritelink.github.io/NIPAP/repos/apt stable main extra" > /etc/apt/sources.list.d/nipap.list
+ # And upate apt
  apt update
 
-There are now seven new packages::
+There are now seven new packages available:::
 
- root@debian:~# apt-cache search nipap
- nipap-cli - Neat IP Address Planner
- nipap-common - Neat IP Address Planner
- nipap-whoisd - Neat IP Address Planner
- nipap-www - web frontend for NIPAP
- nipapd - Neat IP Address Planner XML-RPC daemon
- python-pynipap - Python module for accessing NIPAP
- python3-pynipap - Python 3 module for accessing NIPAP
- root@debian:~#
+* nipap-cli - Command line client. Can be installed remotely from nipapd if required.
+* nipap-common - Library with common stuff needed by all the other components.
+* nipap-whoisd - Translator between WHOIS and XML-RPC.
+* nipap-www - Web frontend GUI. Can be installed remotely from nipapd if required.
+* nipapd - The XML-RPC backend daemon which is a required component of the NIPAP system. It essentially represents the content of the database over an XML-RPC interface, allowing additions, deletions and modifications.
+* python-pynipap - Python module for accessing NIPAP
+* python3-pynipap - Python 3 module for accessing NIPAP
+ 
+Step 3 - Install NIPAP
+----------------------
 
-The 'nipapd' package contains the XML-RPC backend daemon which is a required
-component of the NIPAP system. It essentially represents the content of the
-database over an XML-RPC interface, allowing additions, deletions and
-modifications. 'nipap-common' is a library with common stuff needed by all the
-other components, so regardless which one you choose, you will get this one.
-'nipap-cli' is, not very surprisingly, a CLI client for NIPAP while 'nipap-www'
-is the web GUI. 'nipap-whoisd' is a whois frontend to the NIPAP backend.
-Choose your favourite interface (cli or web or both) and install it, you
-will automatically get 'python-pynipap' which is the client-side library for
-Python applications and since both the web GUI and CLI client is written in
-Python, you will need 'python-pynipap'. If you want, you can install the nipapd
-backend on one machine and the CLI and/or web on another.
+**Note** If you don't install the packages in the order below, you will have to manually run ``dpkg-reconfigure nipap-www``.
 
-If you don't install the packages in the order below, you will have to manually
-'dpkg-reconfigure nipap-www'.
+Install everything apart from nipap-www:::
 
-Install everything apart from nipap-www::
-
- apt -y install nipapd nipap-common nipap-whoisd nipap-cli nipap-www
+ apt -y install nipapd nipap-common nipap-whoisd nipap-cli
 
 During installation, the packages will prompt you for various values. Answer
 'Yes' to all the Yes/No questions and accept any other defaults.
@@ -67,13 +72,12 @@ Finally, install nipap-www, selecting 'Yes' to all the questions asked.::
 
  apt -y install nipap-www
 
-After the installation is done, you will have the PostgreSQL
-database server and all the other necessary dependencies installed.
+Step 4 - Web UI
+---------------
 
-Web UI
-------
 The user added to the local authentication database by the installation script
-is merely used by the web interface to talk to the backend.
+is merely used by the web interface to talk to the backend. To access the Web UI,
+a number of other steps need to be taken.
 
 See `config-www <config-www.rst>`_ for configuration of the web UI and how to
 serve it using a web server.
