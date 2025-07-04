@@ -76,7 +76,7 @@ file at /etc/nipap/nipap.conf contains templates that aren't replaced and cause 
 this, run the following at the command line and this will hard code the xmlrpc_uri to use
 ``localhost:1337``::
 
-    sed -i 's/{{NIPAPD_HOST}}:{{NIPAPD_PORT}}/localhost:1337/g' config.txt
+    sed -i 's/{{NIPAPD_HOST}}:{{NIPAPD_PORT}}/localhost:1337/g' /etc/nipap/nipap.conf
 
 Assuming you have said 'Yes' to the various options offered in Step 3, the configuration file will
 be updated accordingly and the only thing you have to do is to install and configure Apache2.
@@ -115,6 +115,7 @@ The following script can be pasted directly to the command line (but change
     a2ensite nipap.conf
     
     # Make sure Apache2 can write to the cache
+    mkdir -p /var/cache/nipap-www
     chown -R www-data:www-data /var/cache/nipap-www
     chmod -R 770 /var/cache/nipap-www
 
@@ -122,6 +123,12 @@ The following script can be pasted directly to the command line (but change
     systemctl restart apache2
 
 This should make the site *nipap.example.com* available on port 80.
+
+Add a user::
+
+    nipap-passwd add --username mywebuser --password mywebpassword --name "my web user"
+
+And you should be good to go.
 
 Step 4a - Using Caddy to proxy NIPAP
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
