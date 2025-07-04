@@ -74,9 +74,48 @@ Step 4 - Web UI
 ---------------
 
 The user added to the local authentication database by the installation script
-is merely used by the web interface to talk to the backend. Assuming you have
+is used by the web interface to talk to the backend. Assuming you have
 said 'Yes' to the various options offered in Step 3, the configuration file will
-be updated accordingly.
+be updated accordingly and the only thing you have to do is to install and configure
+Apache2. The following script can be pasted directly to the command line (but
+change ``ServerName nipap.example.com`` to suit your site.)::
 
-See `config-www <config-www.rst>`_ for configuration of the web UI and how to
-serve it using a web server.
+    # Create new virtual host site
+    cat > /etc/apache2/sites-available/nipap.conf <<EOF
+    <VirtualHost *:80>
+      ServerName nipap.example.com
+      DocumentRoot /var/cache/nipap-www/
+      ServerAdmin admin@nipap.example.com
+      WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
+
+    <Directory /etc/nipap/www/>
+        Require all granted
+    </Directory>
+
+    <Directory /var/cache/nipap-www/>
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/nipap_error.log
+    CustomLog ${APACHE_LOG_DIR}/nipap_access.log combined
+
+    </VirtualHost>
+    EOF
+
+    # Enable WSGI (it is likely already enabled, but here just to make sure)
+    a2enmod wsgi
+
+    # Enable the site we've just created
+    a2ensite nipap.conf
+    
+    # Make sure Apache2 can write to the cache
+    chown -R www-data:www-data /var/cache/nipap-www
+    chmod -R 770 /var/cache/nipap-www
+
+    # And finally, restart Apache2
+    systemctl restart apache2
+
+This should make the site *nipap.example.com* available on port 80.
+
+Alternatively, the page `config-www <config-www.rst>`_ lists other methods of serving
+the Web UI.

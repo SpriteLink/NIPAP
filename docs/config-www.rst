@@ -56,49 +56,6 @@ such::
 
       export NIPAP_CONFIG_PATH=~/.local/etc/nipap/nipap.conf
 
-Apache2 Debian quick script
----------------------------
-
-In Debian, the following script will create the site file and configure Apache2.
-This can be pasted directly to the command line::
-
-    # Create new virtual host site
-    cat > /etc/apache2/sites-available/nipap.conf <<EOF
-    <VirtualHost *:80>
-      ServerName nipap.example.com
-      DocumentRoot /var/cache/nipap-www/
-      ServerAdmin admin@nipap.example.com
-      WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
-
-    <Directory /etc/nipap/www/>
-        Require all granted
-    </Directory>
-
-    <Directory /var/cache/nipap-www/>
-        Require all granted
-    </Directory>
-
-    ErrorLog ${APACHE_LOG_DIR}/nipap_error.log
-    CustomLog ${APACHE_LOG_DIR}/nipap_access.log combined
-
-    </VirtualHost>
-    EOF
-
-    # Enable WSGI (it is likely already enabled, but here just to make sure)
-    a2enmod wsgi
-
-    # Enable the site we've just created
-    a2ensite nipap.conf
-    
-    # Make sure Apache2 can write to the cache
-    chown -R www-data:www-data /var/cache/nipap-www
-    chmod -R 770 /var/cache/nipap-www
-
-    # And finally, restart Apache2
-    systemctl restart apache2
-
-This should make the site *nipap.example.com* available on port 80.
-
 Apache httpd with mod_wsgi
 --------------------------
 
@@ -115,35 +72,6 @@ If you are using Apache 2.4 you will also need to add the lines::
     <Directory /etc/nipap/www/>
         Require all granted
     </Directory>
-
-In Debian, the following script will create the site file and configure Apache2::
-
-    cat > /etc/apache2/sites-available/nipap.conf <<EOF
-    <VirtualHost *:80>
-      ServerName nipap.example.com
-      DocumentRoot /var/cache/nipap-www/
-      ServerAdmin admin@nipap.example.com
-      WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
-
-    <Directory /etc/nipap/www/>
-        Require all granted
-    </Directory>
-
-    <Directory /var/cache/nipap-www/>
-        Require all granted
-    </Directory>
-
-    ErrorLog ${APACHE_LOG_DIR}/nipap_error.log
-    CustomLog ${APACHE_LOG_DIR}/nipap_access.log combined
-    EOF
-
-    a2enmod wsgi
-    a2ensite nipap.conf
-    
-    chown -R www-data:www-data /var/cache/nipap-www
-    chmod -R u=rwX /var/cache/nipap-www
-    systemctl restart apache2
-
 
 The web server needs to be able to write to its cache, alter the permissions of
 /var/cache/nipap-www so that the web server can write to it and preferrably
