@@ -48,7 +48,7 @@ There are now seven new packages available:
 
 * nipap-cli - Command line client. Can be installed remotely from nipapd if required.
 * nipap-common - Library with common stuff needed by all the other components.
-* nipap-whoisd - Translator between WHOIS and XML-RPC.
+* nipap-whoisd - Translator between WHOIS and XML-RPC. We'll ignore this for the moment as it requires separate configuration.
 * nipap-www - Web frontend GUI. Can be installed remotely from nipapd if required.
 * nipapd - The XML-RPC backend daemon which is a required component of the NIPAP system. It essentially represents the content of the database over an XML-RPC interface, allowing additions, deletions and modifications.
 * python-pynipap - Python module for accessing NIPAP
@@ -61,7 +61,7 @@ Step 3 - Install NIPAP
 
 Install everything apart from nipap-www::
 
- apt -y install nipapd nipap-common nipap-whoisd nipap-cli
+ apt -y install nipapd nipap-common nipap-cli
 
 During installation, the packages will prompt you for various values. Answer
 'Yes' to all the Yes/No questions and accept any other defaults.
@@ -74,11 +74,20 @@ Step 4 - Web UI
 ---------------
 
 The user added to the local authentication database by the installation script
-is used by the web interface to talk to the backend. Assuming you have
-said 'Yes' to the various options offered in Step 3, the configuration file will
-be updated accordingly and the only thing you have to do is to install and configure
-Apache2. The following script can be pasted directly to the command line (but
-change ``ServerName nipap.example.com`` to suit your site.)::
+is used by the web interface to talk to the backend. But... By default, the NIPAP configuration
+file at /etc/nipap/nipap.conf contains templates that aren't replaced and cause errors. To avoid
+this, run the following at the command line and this will hard code the xmlrpc_uri to use
+``localhost:1337``::
+
+    sed -i 's/{{NIPAPD_HOST}}:{{NIPAPD_PORT}}/localhost:1337/g' config.txt
+
+Assuming you have said 'Yes' to the various options offered in Step 3, the configuration file will
+be updated accordingly and the only thing you have to do is to install and configure Apache2.
+The following script can be pasted directly to the command line (but change
+``ServerName nipap.example.com`` to suit your site.)::
+
+    # Install Apache2 and WSGI module.
+    apt -y install apache2 libapache2-mod-wsgi-py3
 
     # Create new virtual host site
     cat > /etc/apache2/sites-available/nipap.conf <<EOF
@@ -117,5 +126,25 @@ change ``ServerName nipap.example.com`` to suit your site.)::
 
 This should make the site *nipap.example.com* available on port 80.
 
-Alternatively, the page `config-www <config-www.rst>`_ lists other methods of serving
-the Web UI.
+Step 4a - Using Caddy to proxy NIPAP
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you are proxying NIPAP behind Caddy, the caddy definition may need to change
+the host header (the example assumes that the public facing address of the site
+is ``nipap.example.com`` and the ``ServerName`` definition of the internal site is ``nipap.internal``)::
+
+    nipap.example.com {
+        reverse_proxy http://192.0.2.100 {
+            header_up Host nipap.internal
+        }
+    }
+        
+Step 4b - Other methods of serving the web UI
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The page `config-www <config-www.rst>`_ lists other methods of serving the Web UI.
+
+Step 5 - CLI
+------------
+
+The page `config-cli <config-cli.rst>`_ details the CLI configuration.
