@@ -17,9 +17,6 @@ Please see `install-unix <install-unix.rst>`_ for installation instructions
 on non-Debian like Unix systems or `install-debian <install-debian.rst>`_ for older
 Debian systems.
 
-Installation
-============
-
 Step 1 - Bring system up to date and install dependencies
 ---------------------------------------------------------
 
@@ -90,7 +87,7 @@ The following script can be pasted directly to the command line (but change
     apt -y install apache2 libapache2-mod-wsgi-py3
 
     # Create new virtual host site
-    cat > /etc/apache2/sites-available/nipap.conf <<EOF
+    cat > /etc/apache2/sites-available/nipap.conf <<'EOF'
     <VirtualHost *:80>
       ServerName nipap.example.com
       DocumentRoot /var/cache/nipap-www/
