@@ -64,8 +64,8 @@ COPY pynipap /pynipap
 COPY nipap /nipap
 COPY nipap-www /nipap-www
 RUN pip3 --no-input install --break-system-packages --no-cache-dir ./pynipap/ && \
-    pip3 --no-input install --break-system-packages --no-cache-dir ./nipap/ && \
-    pip3 --no-input install --break-system-packages --no-cache-dir ./nipap-www/ && \
+    pip3 --no-input install --break-system-packages --no-cache-dir './nipap/[instrumentation,ldap_auth]' && \
+    pip3 --no-input install --break-system-packages --no-cache-dir './nipap-www/[instrumentation,ldap_auth]' && \
     mkdir -p /etc/nipap/www/ && cp ./nipap-www/nipap-www.wsgi /etc/nipap/www/
 
 EXPOSE 80
