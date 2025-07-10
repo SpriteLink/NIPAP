@@ -36,6 +36,10 @@ instrumentation = [
   "opentelemetry-util-http==0.50b0"
 ]
 
+ldap_auth = [
+  "python-ldap==3.4.4"
+]
+
 [project.urls]
 Homepage = "http://SpriteLink.github.io/NIPAP"
 
