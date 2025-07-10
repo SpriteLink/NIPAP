@@ -63,11 +63,10 @@ ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 COPY pynipap /pynipap
 COPY nipap /nipap
 COPY nipap-www /nipap-www
-RUN cd /pynipap && pip3 --no-input install --break-system-packages --no-cache-dir . && \
-    cd /nipap && pip3 --no-input install --break-system-packages --no-cache-dir . && \
-    cd /nipap-www && pip3 --no-input install --break-system-packages --no-cache-dir . && \
-    mkdir -p /etc/nipap/www/ && cp nipap-www.wsgi /etc/nipap/www/ && \
-    cd ..
+RUN pip3 --no-input install --break-system-packages --no-cache-dir ./pynipap/ && \
+    pip3 --no-input install --break-system-packages --no-cache-dir ./nipap/ && \
+    pip3 --no-input install --break-system-packages --no-cache-dir ./nipap-www/ && \
+    mkdir -p /etc/nipap/www/ && cp ./nipap-www/nipap-www.wsgi /etc/nipap/www/
 
 EXPOSE 80
 VOLUME [ "/var/log/apache2" ]
