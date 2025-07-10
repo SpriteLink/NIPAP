@@ -2,7 +2,8 @@ Getting started for sysadmins
 -----------------------------
 This guide will walk you through the setup process to get NIPAP up and running
 on a Debian 7.0 (wheezy) or Ubuntu 12.04 or later system. With no prior
-experience it should take about 15 minutes.
+experience it should take about 15 minutes. If you are running Debian 12 (Bookworm),
+see `installing on Debian 12 <install-debian-12.rst>`_ for instructions.
 
 Debian and Debian derivatives (primarily Ubuntu) are the only distributions
 supported at this time. It is certainly possible to install on other Linux
