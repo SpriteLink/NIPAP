@@ -34,7 +34,7 @@ dependencies = [
   "python-dateutil==2.8.2",
   "pytz==2024.2",
   "pyjwt==2.10.1",
-  "tornado==6.4.2",
+  "tornado==6.5",
 #  "docutils==0.21.2"
 ]
 
