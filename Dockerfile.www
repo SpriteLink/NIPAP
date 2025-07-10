@@ -25,7 +25,7 @@
 
 FROM ubuntu:noble
 
-MAINTAINER Lukas Garberg <lukas@spritelink.net>
+LABEL org.opencontainers.image.authors="Kristian Larsson <kristian@spritelink.net>, Lukas Garberg <lukas@spritelink.net>"
 
 ENV DEBIAN_FRONTEND=noninteractive
 

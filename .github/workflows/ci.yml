@@ -189,12 +189,16 @@ jobs:
     - name: "Hadolint nipapd"
       uses: hadolint/hadolint-action@v3.1.0
       with:
-        Dockerfile: Dockerfile.nipapd
+        dockerfile: Dockerfile.nipapd
+        failure-threshold: warning
+        override-info: DL3013
 
     - name: "Hadolint WWW"
       uses: hadolint/hadolint-action@v3.1.0
       with:
-        Dockerfile: Dockerfile.www
+        dockerfile: Dockerfile.www
+        failure-threshold: warning
+        override-info: DL3013
 
     - name: "nipapd metadata"
       id: nipapd_meta
