@@ -523,3 +523,14 @@ BEGIN
 	RETURN (part_one::bigint << 32) + part_two::bigint;
 END;
 $_$ LANGUAGE plpgsql IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION tf_kafka_produce_event() RETURNS trigger AS $$
+BEGIN
+	IF TG_OP = 'DELETE' THEN
+		INSERT INTO kafka_produce_event (table_name, event_type, payload) VALUES (TG_TABLE_NAME, TG_OP, row_to_json(OLD)::jsonb);
+	ELSIF OLD IS DISTINCT FROM NEW THEN
+		INSERT INTO kafka_produce_event (table_name, event_type, payload) VALUES (TG_TABLE_NAME, TG_OP, row_to_json(NEW)::jsonb);
+	END IF;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
