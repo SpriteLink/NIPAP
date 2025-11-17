@@ -57,7 +57,7 @@ def _connect_db(cfg):
 
 def _create_kafka_producer(cfg):
     if KafkaProducer is None:
-        LOG.error("kafka-python not installed, kafka producer disabled")
+        LOG.error("kafka-python-ng not installed, kafka producer disabled")
         return None
 
     brokers = None
@@ -139,11 +139,11 @@ def _create_kafka_producer(cfg):
 def _ensure_producer(cfg, base_delay=1, max_delay=60):
     """
     Ensure a KafkaProducer is available. If broker(s) are unavailable, keep retrying
-    with exponential backoff until a producer can be created. If kafka-python is not
+    with exponential backoff until a producer can be created. If kafka-python-ng is not
     installed, return None immediately.
     """
     if KafkaProducer is None:
-        LOG.error("kafka-python not installed; cannot create KafkaProducer")
+        LOG.error("kafka-python-ng not installed; cannot create KafkaProducer")
         return None
 
     attempt = 0
@@ -236,7 +236,7 @@ def run(config_path=None):
     # indefinitely if brokers are unavailable, ensuring the process keeps trying to connect.
     producer = _ensure_producer(cfg)
     if producer is None:
-        # _ensure_producer returns None if kafka-python isn't installed or config invalid
+        # _ensure_producer returns None if kafka-python-ng isn't installed or config invalid
         LOG.error("Kafka producer not available (missing dependency or bad config), exiting kafka_producer process")
         return
 
