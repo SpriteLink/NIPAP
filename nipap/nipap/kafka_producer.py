@@ -186,6 +186,16 @@ def _send_with_backoff(producer, topic, value, key=None, max_retries=10, base_de
             time.sleep(min(delay, max_delay))
             delay *= 2.0
 
+def _table_to_topic(topic_prefix, table):
+  if (table == "ip_net_plan"):
+    return topic_prefix + "prefix"
+  elif (table == "ip_net_vrf"):
+    return topic_prefix + "vrf"
+  elif (table == "ip_net_pool"):
+    return topic_prefix + "pool"
+  else:
+    raise ValueError("Unknown table for kafka topic mapping: %s" % table)
+
 
 def run(config_path=None):
     """
@@ -265,7 +275,7 @@ def run(config_path=None):
                     etype = row['event_type']
                     payload = row['payload']
 
-                    topic = f"{topic_prefix}{table}"
+                    topic = _table_to_topic(topic_prefix, table)
                     message = {'event_type': etype, 'payload': payload}
                     # send with retries and exponential backoff
                     sent = _send_with_backoff(producer, topic, message, payload.get('id'))
