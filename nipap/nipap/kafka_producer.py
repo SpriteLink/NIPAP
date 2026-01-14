@@ -61,11 +61,8 @@ def _create_kafka_producer(cfg):
         return None
 
     brokers = None
-    try:
-        if cfg.has_option('kafka', 'brokers'):
-            brokers = cfg.get('kafka', 'brokers')
-    except Exception:
-        brokers = None
+    if cfg.has_option('kafka', 'brokers'):
+        brokers = cfg.get('kafka', 'brokers')
 
     if not brokers:
         LOG.error("No 'kafka.brokers' configured, kafka producer disabled")
@@ -213,21 +210,8 @@ def run(config_path=None):
 
     LOG.info("Starting kafka producer (config: %s)", config_path)
 
-    # poll interval seconds
-    poll_interval = 2
-    try:
-        if cfg.has_option('kafka', 'poll_interval'):
-            poll_interval = int(cfg.get('kafka', 'poll_interval'))
-    except Exception:
-        poll_interval = 2
-
-    # topic prefix default
-    topic_prefix = "nipap."
-    try:
-        if cfg.has_option('kafka', 'topic_prefix'):
-            topic_prefix = cfg.get('kafka', 'topic_prefix')
-    except Exception:
-        topic_prefix = "nipap."
+    poll_interval = int(cfg.get('kafka', 'poll_interval'))
+    topic_prefix = cfg.get('kafka', 'topic_prefix')
 
     conn = _connect_db(cfg)
     cur = conn.cursor()
@@ -331,6 +315,17 @@ def run(config_path=None):
             else:
                 conn.rollback()
 
+        except psycopg2.InterfaceError as e:
+            LOG.error("Database interface error in kafka_producer loop: %s. Reconnecting to database.", e)
+            try:
+                conn.close()
+            except Exception:
+                pass
+            # reconnect to database and update cursor
+            conn = _connect_db(cfg)
+            cur = conn.cursor()
+            # backoff before next attempt
+            time.sleep(max(1, poll_interval))
         except Exception as e:
             LOG.exception("Unexpected error in kafka_producer loop: %s", e)
             try:

@@ -19,7 +19,7 @@ DEFAULT = {
     'db_sslmode': 'require',
     'auth_cache_timeout': '3600',
     'user': '',
-    'group': ''
+    'group': '',
 }
 
 
@@ -50,6 +50,8 @@ class NipapConfig(configparser.ConfigParser):
 
             self.read_config_file()
 
+            self.set_default_values_in_sections()
+
     def read_config_file(self):
         """ Read the configuration file
         """
@@ -63,6 +65,11 @@ class NipapConfig(configparser.ConfigParser):
             self.read_file(cfg_fp)
         except IOError as exc:
             raise NipapConfigError(str(exc))
+
+    def set_default_values_in_sections(self):
+        if 'kafka' in self:
+            self['kafka'].setdefault('poll_interval', '2')
+            self['kafka'].setdefault('topic_prefix', 'nipap.')
 
 
 class NipapConfigError(Exception):
