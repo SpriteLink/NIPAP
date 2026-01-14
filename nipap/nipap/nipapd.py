@@ -181,6 +181,47 @@ def run():
         print("ERROR:", str(exc), file=sys.stderr)
         sys.exit(1)
 
+    # Kafka integration: enable/disable DB triggers and start producer process
+    try:
+        kafka_enabled = False
+        try:
+            if cfg.has_section('kafka'):
+                kafka_enabled = cfg.getboolean('kafka', 'enabled')
+        except Exception:
+            kafka_enabled = False
+
+        # Toggle triggers produced by the SQL install depending on config.
+        # If the triggers do not exist yet (fresh DB), these ALTER TABLE commands
+        # will simply fail and we log the warning.
+        try:
+            if kafka_enabled:
+                nip._execute("ALTER TABLE ip_net_plan ENABLE TRIGGER trigger_kafka_ip_net_plan;")
+                nip._execute("ALTER TABLE ip_net_vrf ENABLE TRIGGER trigger_kafka_ip_net_vrf;")
+                nip._execute("ALTER TABLE ip_net_pool ENABLE TRIGGER trigger_kafka_ip_net_pool;")
+                logger.info("Kafka DB triggers enabled by configuration")
+            else:
+                nip._execute("ALTER TABLE ip_net_plan DISABLE TRIGGER trigger_kafka_ip_net_plan;")
+                nip._execute("ALTER TABLE ip_net_vrf DISABLE TRIGGER trigger_kafka_ip_net_vrf;")
+                nip._execute("ALTER TABLE ip_net_pool DISABLE TRIGGER trigger_kafka_ip_net_pool;")
+                logger.info("Kafka DB triggers disabled by configuration")
+        except Exception as e:
+            logger.warning("Could not toggle kafka triggers (may not be installed yet): %s", e)
+
+        # Start the external kafka producer process if configured to do so.
+        if kafka_enabled:
+            import subprocess
+            python_exe = sys.executable or 'python3'
+            try:
+                # Run the producer in a separate process; pass the current config path.
+                cmd = [python_exe, '-c', "from nipap.kafka_producer import run; run(r'{}')".format(args.config_file)]
+                subprocess.Popen(cmd)
+                logger.info("Launched kafka_producer subprocess")
+            except Exception as e:
+                logger.error("Failed to start kafka_producer subprocess: %s", e)
+    except Exception:
+        # Do not abort startup if kafka integration fails for any reason.
+        logger.exception("Unexpected error while setting up kafka integration, continuing startup")
+
     if args.dbversion:
         print("nipap db schema:", nip._get_db_version())
         sys.exit(0)
@@ -310,8 +351,8 @@ def run():
     import nipap.rest
     rest = nipap.rest.setup(app)
 
-    import nipap.xmlrpc
-    nipapxml = nipap.xmlrpc.setup(app)
+    import nipap.nipap_xmlrpc
+    nipapxml = nipap.nipap_xmlrpc.setup(app)
 
     if not cfg.getboolean('nipapd', 'foreground'):
         # If we are not running in the foreground, remove current handlers which

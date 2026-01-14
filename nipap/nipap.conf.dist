@@ -212,3 +212,41 @@ secret_key = {{WWW_SECRET_KEY}}
 # otlp_http_endpoint=http://opentelemetry-collector:4318/v1/traces
 # Set sampler. Valid values are always_on, always_off, parentbased_always_on, parentbased_always_off, traceidratio and parentbased_traceidratio. Default is parentbased_always_on.
 # otel_traces_sampler = always_on
+
+#
+# Kafka event producer configuration
+#
+[kafka]
+# Enable running the external kafka producer process (true/false)
+# If true, nipapd will spawn the kafka_producer as a separate process.
+enabled = false
+
+# Comma-separated list of Kafka brokers, e.g. localhost:9092,broker2:9092
+#brokers = localhost:9092
+
+# Poll interval in seconds for the kafka producer to poll the DB
+#poll_interval = 2
+
+# Topic prefix for produced events (defaults to "nipap.")
+#topic_prefix = nipap.
+
+# Security protocol for Kafka connection (e.g., PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)
+# Defaults to PLAINTEXT if not specified
+#security_protocol = PLAINTEXT
+
+# SASL authentication settings (required when using SASL_PLAINTEXT or SASL_SSL)
+# SASL mechanism to use (e.g., PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
+#sasl_mechanism = PLAIN
+
+# SASL username for authentication
+#sasl_username = your_username
+
+# SASL password for authentication
+#sasl_password = your_password
+
+# SSL/TLS settings (used with SSL or SASL_SSL security protocols)
+# Path to CA certificate file for SSL/TLS certificate verification
+#ssl_cafile = /path/to/ca-cert.pem
+
+# Enable/disable SSL hostname verification (true/false)
+#ssl_check_hostname = true
