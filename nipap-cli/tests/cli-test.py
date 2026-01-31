@@ -6,7 +6,7 @@
 import unittest
 
 import sys
-sys.path.insert(0, '..')
+sys.path.insert(0,  os.path.join(os.path.dirname(__file__) ,'..')
 from nipap_cli import nipap_cli
 from nipap_cli.command import Command, CommandError, InvalidCommand
 
@@ -33,7 +33,7 @@ def complete_a_option1(arg):
 
     match = []
     for straw in [ 'FOO', 'FOD', 'BAR' ]:
-        if straw.find(arg) == 0:
+        if straw.startswith(arg):
             match.append(straw)
 
     return match
