@@ -20,7 +20,7 @@ fi
 
 # Configure apache
 cat << EOF > /etc/apache2/sites-available/000-default.conf
-<VirtualHost *:80>
+<VirtualHost *:8080>
     WSGIScriptAlias / /etc/nipap/www/nipap-www.wsgi
     ErrorLog \${APACHE_LOG_DIR}/error.log
     CustomLog \${APACHE_LOG_DIR}/access.log combined

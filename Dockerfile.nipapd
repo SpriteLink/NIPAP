@@ -69,7 +69,15 @@ WORKDIR /nipap
 RUN pip3 --no-input install --break-system-packages --no-cache-dir envtpl==0.7.2 \
  && pip3 --no-input install -I --break-system-packages --no-cache-dir '.[instrumentation,ldap_auth]'
 
+# Create non-root user and set up directories with correct permissions
+RUN groupadd -r -g 10000 nipap && useradd -r -u 10000 -g nipap nipap \
+ && mkdir -p /etc/nipap \
+ && chown -R nipap:nipap /etc/nipap \
+ && chown -R nipap:nipap /nipap
+
 EXPOSE 1337
 ENV LISTEN_ADDRESS=0.0.0.0 LISTEN_PORT=1337 SYSLOG=false DB_PORT=5432 DB_SSLMODE=disable DB_NAME=nipap
+
+USER nipap:nipap
 
 ENTRYPOINT ["/nipap/entrypoint.sh"]
