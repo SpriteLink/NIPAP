@@ -78,6 +78,6 @@ RUN groupadd -r -g 10000 nipap && useradd -r -u 10000 -g nipap nipap \
 EXPOSE 1337
 ENV LISTEN_ADDRESS=0.0.0.0 LISTEN_PORT=1337 SYSLOG=false DB_PORT=5432 DB_SSLMODE=disable DB_NAME=nipap
 
-USER nipap
+USER nipap:nipap
 
 ENTRYPOINT ["/nipap/entrypoint.sh"]
