@@ -973,3 +973,22 @@ CREATE TRIGGER trigger_ip_net_pool__u_before
 	WHEN (OLD.ipv4_default_prefix_length IS DISTINCT FROM NEW.ipv4_default_prefix_length
 		OR OLD.ipv6_default_prefix_length IS DISTINCT FROM NEW.ipv6_default_prefix_length)
 	EXECUTE PROCEDURE tf_ip_net_pool__iu_before();
+
+-- Triggers that write to kafka_produce_event
+CREATE TRIGGER trigger_kafka_ip_net_plan
+	AFTER INSERT OR UPDATE OR DELETE
+	ON ip_net_plan
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_kafka_produce_event();
+
+CREATE TRIGGER trigger_kafka_ip_net_vrf
+	AFTER INSERT OR UPDATE OR DELETE
+	ON ip_net_vrf
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_kafka_produce_event();
+
+CREATE TRIGGER trigger_kafka_ip_net_pool
+	AFTER INSERT OR UPDATE OR DELETE
+	ON ip_net_pool
+	FOR EACH ROW
+	EXECUTE PROCEDURE tf_kafka_produce_event();

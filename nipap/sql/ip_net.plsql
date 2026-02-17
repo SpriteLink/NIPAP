@@ -4,7 +4,7 @@
 --
 --------------------------------------------
 
-COMMENT ON DATABASE %s IS 'NIPAP database - schema version: 7';
+COMMENT ON DATABASE %s IS 'NIPAP database - schema version: 8';
 
 CREATE EXTENSION IF NOT EXISTS ip4r;
 CREATE EXTENSION IF NOT EXISTS hstore;
@@ -256,3 +256,18 @@ CREATE INDEX ip_net_log__vrf__index ON ip_net_log(vrf_id);
 CREATE INDEX ip_net_log__prefix__index ON ip_net_log(prefix_id);
 CREATE INDEX ip_net_log__pool__index ON ip_net_log(pool_id);
 
+--
+-- Kafka event table and triggers
+--
+-- This table is used as a queue for the external kafka_producer process.
+-- Triggers on the core tables insert events here. The daemon will enable or
+-- disable these triggers at startup depending on configuration.
+--
+CREATE TABLE IF NOT EXISTS kafka_produce_event (
+	id SERIAL PRIMARY KEY,
+	table_name TEXT NOT NULL,
+	event_type TEXT NOT NULL,
+	payload JSONB,
+	processed BOOLEAN DEFAULT FALSE,
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
