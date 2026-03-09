@@ -4,6 +4,7 @@
 #
 
 import unittest
+from urllib.parse import quote, urlparse
 
 import sys
 sys.path.insert(0, '..')
@@ -296,6 +297,36 @@ class CliCheck(unittest.TestCase):
             (test_c, ['FOO', 'HAR'], { 'cb_a_option1': 'BAR' }, set())
         )
 
+
+class TestPasswordEncoding(unittest.TestCase):
+
+    def _build_uri(self, username, password):
+        return "http://%(username)s:%(password)s@localhost:1337" % {
+            'username': quote(username, safe=''),
+            'password': quote(password, safe=''),
+        }
+
+    def test_slash_in_password(self):
+        uri = self._build_uri('admin', 'pass/word')
+        parsed = urlparse(uri)
+        self.assertEqual(parsed.username, 'admin')
+        self.assertEqual(parsed.password, 'pass/word')
+
+    def test_at_in_password(self):
+        uri = self._build_uri('admin', 'p@ssword')
+        parsed = urlparse(uri)
+        self.assertEqual(parsed.password, 'p@ssword')
+
+    def test_colon_in_password(self):
+        uri = self._build_uri('admin', 'pass:word')
+        parsed = urlparse(uri)
+        self.assertEqual(parsed.password, 'pass:word')
+
+    def test_multiple_special_chars(self):
+        uri = self._build_uri('user/name', 'p@ss/w:rd!')
+        parsed = urlparse(uri)
+        self.assertEqual(parsed.username, 'user/name')
+        self.assertEqual(parsed.password, 'p@ss/w:rd!')
 
 if __name__ == '__main__':
     unittest.main()
