@@ -902,15 +902,6 @@ class Nipap:
         except psycopg2.Warning as warn:
             self._logger.warning(warn)
 
-    def _lastrowid(self):
-        """ Get ID of last inserted column.
-        """
-
-        # TODO: hmm, we can do this by doing fetchone() on our cursor
-        self._execute("SELECT lastval() AS last")
-        for row in self._curs_pg:
-            return row['last']
-
     def _sql_expand_insert(self, spec, key_prefix='', col_prefix=''):
         """ Expand a dict so it fits in a INSERT clause
         """
@@ -1196,10 +1187,10 @@ class Nipap:
         self._check_attr(attr, req_attr, _vrf_attrs)
 
         insert, params = self._sql_expand_insert(attr)
-        sql = "INSERT INTO ip_net_vrf " + insert
+        sql = "INSERT INTO ip_net_vrf " + insert + " RETURNING id"
 
         self._execute(sql, params)
-        vrf_id = self._lastrowid()
+        vrf_id = self._curs_pg.fetchone()[0]
         vrf = self.list_vrf(auth, {'id': vrf_id})[0]
 
         # write to audit table
@@ -1722,10 +1713,10 @@ class Nipap:
         self._check_pool_attr(attr, req_attr)
 
         insert, params = self._sql_expand_insert(attr)
-        sql = "INSERT INTO ip_net_pool " + insert
+        sql = "INSERT INTO ip_net_pool " + insert + " RETURNING id"
 
         self._execute(sql, params)
-        pool_id = self._lastrowid()
+        pool_id = self._curs_pg.fetchone()[0]
         pool = self.list_pool(auth, {'id': pool_id})[0]
 
         # write to audit table
@@ -2502,10 +2493,10 @@ class Nipap:
             attr['expires'] = _parse_expires(attr['expires'])
 
         insert, params = self._sql_expand_insert(attr)
-        sql = "INSERT INTO ip_net_plan " + insert
+        sql = "INSERT INTO ip_net_plan " + insert + " RETURNING id"
 
         self._execute(sql, params)
-        prefix_id = self._lastrowid()
+        prefix_id = self._curs_pg.fetchone()[0]
         prefix = self.list_prefix(auth, {'id': prefix_id})[0]
 
         # write to audit table
