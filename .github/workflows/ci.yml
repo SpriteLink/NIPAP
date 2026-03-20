@@ -128,14 +128,13 @@ jobs:
       run: |
         # build new NIPAP packages
         make builddeb
+        # Pre-seed debconf answers before installing packages
+        echo "nipapd nipapd/database_host string localhost" | sudo debconf-set-selections
+        echo "nipapd nipapd/local_db_autoconf boolean true" | sudo debconf-set-selections
+        echo "nipapd nipapd/startup boolean true" | sudo debconf-set-selections
+        echo "nipapd nipapd/local_db_upgrade boolean true" | sudo debconf-set-selections
         # install the newly built nipap packages
         sudo apt install -o Dpkg::Options::="--force-confnew" ./nipap*.deb ./python*-pynipap*.deb
-        # populate answers to nipapd package install questions and reconfigure
-        echo 'set nipapd/database_host localhost' | sudo debconf-communicate
-        echo 'set nipapd/local_db_autoconf true' | sudo debconf-communicate
-        echo 'set nipapd/startup true' | sudo debconf-communicate
-        echo 'set nipapd/local_db_upgrade true' | sudo debconf-communicate
-        sudo dpkg-reconfigure nipapd
         # Enable SSL
         if [ `grep -c ssl_port /etc/nipap/nipap.conf` -eq 0 ]; then \
           # No SSL config in file - add from scratch
