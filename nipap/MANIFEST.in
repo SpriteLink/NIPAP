@@ -1,3 +1,5 @@
 include README.rst MANIFEST.in
 include *.man.rst
 include requirements.txt
+include nipap.conf.dist
+recursive-include sql *.plsql
