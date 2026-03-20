@@ -71,6 +71,23 @@ nipap-passwd = "nipap.nipap_passwd:run"
 [tool.setuptools.dynamic]
 version = {attr = "nipap.__version__"}
 
+[tool.setuptools.data-files]
+"share/nipap" = ["nipap.conf.dist"]
+"share/nipap/sql" = [
+    "sql/upgrade-1-2.plsql",
+    "sql/upgrade-2-3.plsql",
+    "sql/upgrade-3-4.plsql",
+    "sql/upgrade-4-5.plsql",
+    "sql/upgrade-5-6.plsql",
+    "sql/upgrade-6-7.plsql",
+    "sql/upgrade-7-8.plsql",
+    "sql/functions.plsql",
+    "sql/triggers.plsql",
+    "sql/ip_net.plsql",
+]
+"share/man/man8" = ["nipapd.8"]
+"share/man/man1" = ["nipap-passwd.1"]
+
 [build-system]
 requires = [
   "setuptools",
