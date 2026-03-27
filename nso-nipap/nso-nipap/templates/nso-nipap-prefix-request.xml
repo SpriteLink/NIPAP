@@ -1,0 +1,23 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+  <services xmlns="http://tail-f.com/ns/ncs">
+  <nipap xmlns="http://spritelink.net/nipap/settings">
+  <from-pool>
+    <name>{ $POOL_NAME }</name>
+    <request>
+      <name>{ $ALLOCATION_NAME }</name>
+      <attributes>
+        <customer_id when="{ $CUSTOMER_ID != '-1' }">{ $CUSTOMER_ID }</customer_id>
+        <description when="{ $DESCRIPTION != '-1' }">{ $DESCRIPTION }</description>
+        <node when="{ $NODE != '-1' }">{ $NODE }</node>
+        <order_id when="{ $ORDER_ID != '-1' }">{ $ORDER_ID }</order_id>
+      </attributes>
+      <arguments>
+        <family>{ $FAMILY }</family>
+        <prefix-length>{ $PREFIX_LENGTH }</prefix-length>
+      </arguments>
+      <redeploy-service>{ $SERVICE }</redeploy-service>
+    </request>
+  </from-pool>
+  </nipap>
+  </services>
+</config-template>
