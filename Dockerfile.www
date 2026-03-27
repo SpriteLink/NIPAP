@@ -68,7 +68,19 @@ RUN pip3 --no-input install --break-system-packages --no-cache-dir ./pynipap/ &&
     pip3 --no-input install --break-system-packages --no-cache-dir './nipap-www/[instrumentation,ldap_auth]' && \
     mkdir -p /etc/nipap/www/ && cp ./nipap-www/nipap-www.wsgi /etc/nipap/www/
 
-EXPOSE 80
+# Create non-root user and configure Apache to run as non-root on port 8080
+RUN groupadd -r -g 10000 nipap && useradd -r -u 10000 -g nipap nipap \
+ && mkdir -p /var/run/apache2 /var/lock/apache2 /var/log/apache2 \
+ && chown -R nipap:nipap /var/run/apache2 /var/lock/apache2 /var/log/apache2 \
+ && chown -R nipap:nipap /etc/nipap \
+ && chown -R nipap:nipap /nipap-www \
+ && chown -R nipap:nipap /etc/apache2 \
+ && sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf \
+ && sed -i 's/:80/:8080/' /etc/apache2/sites-available/000-default.conf
+
+EXPOSE 8080
 VOLUME [ "/var/log/apache2" ]
+
+USER nipap
 
 ENTRYPOINT [ "/nipap-www/entrypoint.sh" ]
