@@ -561,7 +561,8 @@ class LdapAuth(BaseAuth):
         try:
             # Create separate connection for search?
             if self._ldap_search_conn is not None:
-                self._ldap_search_conn.simple_bind(self._ldap_search_binddn, self._ldap_search_password)
+                self._ldap_search_conn.simple_bind_s(
+                    self._ldap_search_binddn, self._ldap_search_password)
                 search_conn = self._ldap_search_conn
             else:
                 search_conn = self._ldap_conn
