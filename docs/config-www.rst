@@ -1,5 +1,11 @@
 Configuration of the web UI
----------------------------
+===========================
+
+**NOTE** If you followed the Debian installation instructions and installed the *nipap-www*
+package saying 'Yes' to all the options, the user account will have been created and the
+configuration file updated accordingly. In this case, you do not need to follow the instructions
+in this section. 
+
 Make sure the web UI is installed before proceeding with configuration of it.
 
 The web interface needs its own user account to authenticate towards the
@@ -27,13 +33,14 @@ server to serve the NIPAP web UI you should be able to login with this user::
 
 
 Serving the web UI
-------------------
+==================
 The NIPAP web UI is built on the web framework Flask can be served by any
 WGSI-capable web server such as Apache httpd with mod_wsgi. For quick tests and
 development Flask's own web server is handy.
 
 Flask
-======
+-----
+
 Using Flask is the easiest way to get the NIPAP web UI up and running, but
 it's not really suitable for production deployment. To serve the NIPAP web UI
 from the built-in web server, run the following::
@@ -50,7 +57,8 @@ such::
       export NIPAP_CONFIG_PATH=~/.local/etc/nipap/nipap.conf
 
 Apache httpd with mod_wsgi
-==========================
+--------------------------
+
 Begin by installing Apache httpd with mod_wsgi::
 
     apt-get install libapache2-mod-wsgi-py3
