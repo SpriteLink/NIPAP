@@ -33,7 +33,7 @@ dependencies = [
   "pyparsing==3.2.1",
   "python-dateutil==2.8.2",
   "pytz==2024.2",
-  "pyjwt==2.10.1",
+  "pyjwt==2.13.0",
   "kafka-python-ng==2.2.3",
   "tornado==6.5.5",
 #  "docutils==0.21.2"
