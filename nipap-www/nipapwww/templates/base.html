@@ -5,6 +5,7 @@
 		<title>{{ g.page_title|default('NIPAP') }}</title>
 		<meta charset="utf-8">
 		<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+		<script src="{{ url_for('static', filename='theme.js') }}"></script>
 		<link rel="stylesheet" href="{{ url_for("static", filename="css/jquery-ui-1.12.1.min.css") }}">
 		<link rel="stylesheet" href="{{ url_for("static", filename="css/bootstrap-3.2.0.min.css") }}">
 		<link rel="stylesheet" href="{{ url_for("static", filename="css/nipap.css") }}?v={{ g.www_version }}">
@@ -65,6 +66,7 @@
 				ng_compile = angular.element($('html')).injector().get('$compile');
 			});
 		</script>
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 		{% block head %}
 		{% endblock %}
 	</head>
@@ -96,6 +98,11 @@
 			</div>
 			<div class="menu_entry" style="position: absolute; right: 30px; padding-top: 0px;">
 				<ol style="display: block; list-style: none outside none; margin: 0; padding: 0;">
+					<li style="display: inline-block; padding: 0; margin: 0 10px 0 0;">
+					<button id="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Dark mode" title="Dark mode">
+						<span class="theme-switch-thumb" aria-hidden="true"></span>
+					</button>
+					</li>
 					<li style="display: inline-block; padding: 0; margin: 0;">
 					<a href="{{ url_for('auth.logout') }}" class="menu_link">Log out</a>
 					</li>
