@@ -7,13 +7,17 @@
     } catch (error) {
         // The switch still works when browser storage is unavailable.
     }
-    if (preference !== 'dark' && preference !== 'light') preference = null;
+    if (preference !== 'dark' && preference !== 'light') {
+        preference = null;
+    }
 
     function applyTheme() {
         var dark = preference ? preference === 'dark' : systemTheme.matches;
         document.documentElement.dataset.theme = dark ? 'dark' : 'light';
         var control = document.getElementById('theme-switch');
-        if (control) control.setAttribute('aria-checked', String(dark));
+        if (control) {
+            control.setAttribute('aria-checked', String(dark));
+        }
     }
 
     applyTheme();
@@ -40,13 +44,17 @@
             select(document.documentElement.dataset.theme !== 'dark');
         });
         control.addEventListener('pointerdown', function (event) {
-            if (!event.isPrimary || event.button !== 0) return;
+            if (!event.isPrimary || event.button !== 0) {
+                return;
+            }
             startX = event.clientX;
             dragged = false;
             control.setPointerCapture(event.pointerId);
         });
         control.addEventListener('pointerup', function (event) {
-            if (startX === null) return;
+            if (startX === null) {
+                return;
+            }
             var distance = event.clientX - startX;
             startX = null;
             if (Math.abs(distance) > 8) {
