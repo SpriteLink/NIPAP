@@ -138,3 +138,23 @@
     color: var(--theme-text);
     border-color: var(--theme-border);
 }
+
+/* Keep action links readable instead of inheriting the normal link color. */
+[data-theme="dark"] .btn.btn-success {
+    background: #286c38;
+    color: #fff;
+    border-color: #5cb85c;
+    text-shadow: none;
+}
+
+[data-theme="dark"] .btn.btn-success:is(:hover, :focus, :active, .active),
+[data-theme="dark"] .open > .btn.btn-success.dropdown-toggle {
+    background: #20582e;
+    color: #fff;
+    border-color: #5cb85c;
+}
+
+[data-theme="dark"] .btn.btn-success:focus-visible {
+    outline: 2px solid #93c5fd;
+    outline-offset: 3px;
+}
