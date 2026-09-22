@@ -102,6 +102,8 @@
 }
 [data-theme="dark"] :is(.required, .text-danger) { color: #ff9c9c; }
 [data-theme="dark"] .prefix_added_entry { background: #204535; color: #d6f5e1; }
+[data-theme="dark"] .login-result-error { background: #4a2428; color: #ffd6d6; }
+[data-theme="dark"] .login-result-success { background: #204535; color: #d6f5e1; }
 [data-theme="dark"] .popup_menu h3 { background: var(--theme-panel); text-shadow: none; }
 
 [data-theme="dark"] #query_string {

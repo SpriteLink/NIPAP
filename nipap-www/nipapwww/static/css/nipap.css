@@ -1013,3 +1013,17 @@ tbody.listing > tr:hover {
 #floating_prefix_header {
 	background-color: #FFFFFF;
 }
+
+.login-result {
+	padding: 15px;
+}
+
+.login-result-error {
+	background-color: #ffcccc;
+	color: #651b1b;
+}
+
+.login-result-success {
+	background-color: #ccffcc;
+	color: #17452b;
+}
