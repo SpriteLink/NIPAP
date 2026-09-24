@@ -1023,7 +1023,9 @@ tbody.listing > tr:hover {
 	color: #651b1b;
 }
 
-.login-result-success {
+.login-result-success,
+.result-success {
+	padding: 15px;
 	background-color: #ccffcc;
 	color: #17452b;
 }
