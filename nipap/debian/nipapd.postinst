@@ -147,6 +147,9 @@ case "$1" in
 
 		db_stop
 
+		if [ -d /run/systemd/system ]; then
+			systemctl daemon-reload
+		fi
 		# finally start nipapd
 		invoke-rc.d nipapd start
 		;;

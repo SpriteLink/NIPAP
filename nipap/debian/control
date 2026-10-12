@@ -5,7 +5,9 @@ Priority: optional
 Build-Depends: debhelper-compat (= 13),
                dh-python,
                python3-all,
-               python3-setuptools
+               python3-setuptools,
+               python3-docutils,
+               pybuild-plugin-pyproject
 Standards-Version: 4.6.1
 Homepage: https://spritelink.github.io/NIPAP/
 Rules-Requires-Root: no
@@ -13,7 +15,7 @@ Rules-Requires-Root: no
 Package: nipap-common
 Architecture: all
 Multi-Arch: foreign
-Depends: ${misc:Depends}, ${python3:Depends}
+Depends: ${misc:Depends}, ${python3:Depends}, python3-pkg-resources
 Suggests: python3-ldap
 Description: Neat IP Address Planner
  The Neat IP Address Planner, NIPAP, is a system built for efficiently managing

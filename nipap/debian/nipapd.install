@@ -4,3 +4,4 @@ usr/share/nipap
 usr/share/nipap/nipap.conf.dist etc/nipap
 usr/share/man/man8/nipapd.8
 usr/share/man/man1/nipap-passwd.1
+debian/nipapd.service.d/*.conf usr/lib/systemd/system/nipapd.service.d

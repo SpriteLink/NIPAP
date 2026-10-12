@@ -41,10 +41,12 @@ def exit_cleanup():
     except psutil.NoSuchProcess:
         return
 
-    children = p.children
-
-    for pid in children(recursive=True):
-        os.kill(pid.pid, signal.SIGTERM)
+    for child in p.children(recursive=True):
+        try:
+            os.kill(child.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            # A child may already have exited during shutdown.
+            pass
 
 
 @atexit.register
@@ -55,9 +57,9 @@ def at_exit():
 def handle_sigterm(sig, frame):
     """ Handle SIGTERM
     """
-    exit_cleanup()
-    # and make a clean exit ourselves
-    # sys.exit(0)
+    # Let atexit clean up children, and avoid re-entering during shutdown.
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    sys.exit(0)
 
 
 # register signal handler for SIGTERM
@@ -260,6 +262,8 @@ def run():
         except IOError:
             logger.error('NIPAPd already running (pid: ' + lf.read().strip() + ')')
             sys.exit(1)
+        # Daemonization resets umask; restrict PID file writes to its owner.
+        os.fchmod(lf.fileno(), 0o644)
         logger.debug('Writing PID to file: ' + cfg.get('nipapd', 'pid_file'))
         lf.truncate(0)
         lf.write('%d\n' % os.getpid())

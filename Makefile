@@ -34,7 +34,7 @@ buildrpm:
 
 builddeb:
 	for PROJ in $(SUBPROJ); do \
-		cd $$PROJ; make builddeb; cd ..; \
+		$(MAKE) -C $$PROJ builddeb || exit $$?; \
 	done
 
 ifeq ($(CURBRANCH), $(shell echo -n 'gh-pages'))

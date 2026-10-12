@@ -16,6 +16,7 @@ CONFIGFILE=/etc/nipap/nipap.conf
 NAME=NIPAPd
 PIDFILE=/var/run/nipap/nipapd.pid
 PIDDIR=`dirname $PIDFILE`
+DAEMON_NAME=nipapd
 
 . /lib/lsb/init-functions
 
@@ -46,6 +47,10 @@ running() {
 		chown nipap:nipap $PIDDIR
 	fi
 
+	# Older daemon versions created the PID file with mode 0666.
+	if [ -f "$PIDFILE" ] && [ "$(stat -c %a "$PIDFILE")" != "644" ]; then
+		chmod 0644 "$PIDFILE"
+	fi
 	if [ $(flock -xn $PIDFILE -c 'echo 1' 2> /dev/null) ]; then
 		echo -n
 		rm -f $PIDFILE > /dev/null 2>&1
@@ -74,7 +79,7 @@ case "$1" in
 		log_daemon_msg "Stopping NIPAPd XML-RPC server" "nipapd"
 		RUNNING=$(running)
 		if [ -n "$RUNNING" ]; then
-			if start-stop-daemon --stop --pidfile $PIDFILE --retry 30; then
+			if start-stop-daemon --stop --name $DAEMON_NAME --pidfile $PIDFILE --retry 30; then
 				log_end_msg 0
 			else
 				log_end_msg 1
@@ -87,7 +92,7 @@ case "$1" in
 		log_daemon_msg "Reloading NIPAPd XML-RPC server's configuration" "nipapd"
 		RUNNING=$(running)
 		if [ -n "$RUNNING" ]; then
-			if start-stop-daemon --stop --signal HUP --pidfile $PIDFILE; then
+			if start-stop-daemon --stop --name $DAEMON_NAME --signal HUP --pidfile $PIDFILE; then
 				log_end_msg 0
 			else
 				log_end_msg 1
@@ -103,7 +108,7 @@ case "$1" in
 		log_daemon_msg "Restarting NIPAPd XML-RPC server" "nipapd"
 		RUNNING=$(running)
 		if [ -n "$RUNNING" ]; then
-			if start-stop-daemon --stop --pidfile $PIDFILE; then
+			if start-stop-daemon --stop --name $DAEMON_NAME --pidfile $PIDFILE --retry 30; then
 				if start-stop-daemon --start --exec $DAEMON -- -c $CONFIGFILE $ARGS; then
 					log_end_msg 0
 				else
