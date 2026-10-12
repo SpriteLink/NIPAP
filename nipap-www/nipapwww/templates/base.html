@@ -4,6 +4,7 @@
 	<head>
 		<title>{{ g.page_title|default('NIPAP') }}</title>
 		<meta charset="utf-8">
+		<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 		<link rel="stylesheet" href="{{ url_for("static", filename="css/jquery-ui-1.12.1.min.css") }}">
 		<link rel="stylesheet" href="{{ url_for("static", filename="css/bootstrap-3.2.0.min.css") }}">
 		<link rel="stylesheet" href="{{ url_for("static", filename="css/nipap.css") }}?v={{ g.www_version }}">
