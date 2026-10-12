@@ -58,7 +58,7 @@ instrumentation = [
 ]
 
 ldap_auth = [
-  "python-ldap==3.4.4"
+  "python-ldap==3.4.5"
 ]
 
 [project.urls]
