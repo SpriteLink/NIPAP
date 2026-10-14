@@ -14,6 +14,7 @@ from pyparsing import Combine, Forward, Group, Literal, nestedExpr, \
 
 class SmartParser:
     attributes = {}
+    allow_avp_search = False
     match_operators = ['=', '!=', '<', '>', '<=', '>=', '<<', '>>', '<<=',
                        '>>=', '~', '~*', '!~', '!~*']
     boolean_operators = ['and', 'AND', 'or', 'OR']
@@ -264,7 +265,13 @@ class SmartParser:
             },
         }
 
-        if key in self.attributes:
+        if self.allow_avp_search and key.startswith('avp.'):
+            if not key[4:] or op not in ('=', '!='):
+                dictsql['interpretation']['error'] = True
+                dictsql['interpretation']['error_message'] = (
+                    'AVP searches require a key and = or !=')
+                success = False
+        elif key in self.attributes:
             if isinstance(self.attributes[key], list):
                 if val not in self.attributes[key]:
                     dictsql['interpretation']['error'] = True
@@ -413,6 +420,7 @@ class PoolSmartParser(SmartParser):
 
 
 class PrefixSmartParser(SmartParser):
+    allow_avp_search = True
     attributes = {
         'added': True,
         'alarm_priority': ['warning', 'low', 'medium', 'high', 'critical'],
@@ -449,6 +457,17 @@ class PrefixSmartParser(SmartParser):
         """ Do magic matching of single words or quoted string
         """
         self._logger.debug("parsing string: %s of type: %s", part[0], part.getName())
+
+        if (part.getName() == 'word' and part[0].startswith('avp.')
+                and part[0][4:]):
+            return {
+                'operator': 'avp_exists', 'val1': part[0], 'val2': True,
+                'interpretation': {
+                    'string': part[0], 'interpretation': 'AVP key exists',
+                    'attribute': part[0],
+                    'operator': 'avp_exists', 'error': False,
+                },
+            }
 
         if part.getName() == 'tag':
             self._logger.debug("Query part '%s' interpreted as tag", part[0])

@@ -236,6 +236,7 @@ function displaySearchHelp() {
 		   "<h4>IP addresses / prefixes</h4>Searching for IP addresses are specially treated and will only match in the IP address column. Simply enter a complete IPv4 or IPv6 address and it will be automatically interpreted as an IP address.<br/><br/>It is possible to match entire prefixes and all their content by searching for a prefix in CIDR notation (e.g. 192.168.1.0/24). Searching for 192.168.1.x or 192.168.1 (as some would expect to match everything in 192.168.1.0/24) will not work as they will not be interpreted as prefixes but as text." +
 		   "<h4>VRF selector</h4>The VRF selector is located in the top left corner and is used to filter the prefix search to prefixes within the listed VRFs. Press the + to add one or more VRFs to the VRF list. Prefix search results will only include prefixes that are within the VRFs in the list. If no VRFs are specified with the VRF selector the prefix search will list prefixes from all VRFs. " +
 		   "<h4>Matching tags</h4>To search for a prefix with a certain tag, simply type '#foo', where 'foo' is the name of the tag. The search will match any prefix that has this tag set or that 'inherits' it from an encompassing prefix. Only exact matches are given and it is not possible to use regexp or similar to match tags." +
+		   "<h4>Matching AVPs</h4>Use avp.site to find prefixes with that AVP key, regardless of its value. Use avp.site=stockholm to match an attribute-value pair, or avp.site!=stockholm to match a different value. Both require the key to exist on the prefix. Keys and values are case-sensitive; AVPs are not inherited. Quote values containing spaces, for example avp.site=&quot;Stockholm office&quot;. Combine conditions with AND or OR." +
 		   "<h3>Examples</h3>" +
 		   "To find what the IP address 192.168.1.1 is used for:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;192.168.1.1" +
 		   "<br/><br/>To list all addresses inside 172.16.0.0/24:<br/><br/>&nbsp;&nbsp;&nbsp;&nbsp;172.16.0.0/24" +
@@ -1232,6 +1233,8 @@ function parseInterp(query, container) {
 		} else if (interp.attribute == 'prefix' && interp.operator == 'equals') {
 			text += ' equal to <b>' + interp.string + '</b>';
 			tooltip = "The " + interp.interpretation + " must equal " + interp.string;
+		} else if (interp.operator == 'avp_exists') {
+			tooltip = 'The AVP key must exist on the prefix; its value can be anything.';
 		} else if (interp.interpretation == 'expression') {
 			text += ", '" + interp.attribute + "' " + operator_map[interp.operator] + " value";
 			tooltip += "The attribute '" + interp.attribute + "' must be " + operator_map[interp.operator] + " to provided value.";

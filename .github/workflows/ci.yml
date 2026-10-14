@@ -158,6 +158,7 @@ jobs:
         REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
       run: |
         nosetests3 tests/test_xmlrpc.py
+        python3 -m unittest discover -s tests -p test_prefix_avp_search.py
         nosetests3 tests/nipaptest.py
         nosetests3 tests/test_cli.py
         nosetests3 tests/test_nipap_ro.py
