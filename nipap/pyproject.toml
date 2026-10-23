@@ -25,7 +25,7 @@ dependencies = [
   "Jinja2==3.1.6",
   "MarkupSafe==3.0.2",
   "Werkzeug==3.1.9",
-  "certifi==2024.12.14",
+  "certifi==2026.10.19",
   "itsdangerous==2.2.0",
   "parsedatetime==2.6",
   "psutil==6.1.1",
