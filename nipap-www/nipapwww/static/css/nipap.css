@@ -1009,3 +1009,23 @@ tbody.listing > tr:hover {
 /*
  * $("#length_info_row").animate({ backgroundColor: "#ffffff" }, 1).delay(200).animate({ backgroundColor: "#dddd33" }, 300).delay(200).animate({ backgroundColor: "#ffffee" }, 1000);
 */
+
+#floating_prefix_header {
+	background-color: #FFFFFF;
+}
+
+.login-result {
+	padding: 15px;
+}
+
+.login-result-error {
+	background-color: #ffcccc;
+	color: #651b1b;
+}
+
+.login-result-success,
+.result-success {
+	padding: 15px;
+	background-color: #ccffcc;
+	color: #17452b;
+}
