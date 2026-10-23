@@ -110,6 +110,27 @@
 }
 
 [data-theme="dark"] :is(input, textarea)::placeholder { color: var(--theme-muted); }
+
+[data-theme="dark"] tags-input .tags .tag-item {
+    background: var(--theme-hover);
+    color: var(--theme-text);
+    border-color: var(--theme-border);
+}
+
+[data-theme="dark"] tags-input .tags .tag-item.selected {
+    background: #5a2b35;
+    border-color: #ff9c9c;
+}
+
+[data-theme="dark"] tags-input .tags .tag-item .remove-button {
+    color: var(--theme-text);
+}
+
+[data-theme="dark"] tags-input .tags .tag-item .remove-button:hover,
+[data-theme="dark"] tags-input .tags .tag-item .remove-button:active {
+    color: #ff9c9c;
+}
+
 [data-theme="dark"] :is(.row_match, .selector_entry_name, .selector > div > a, .popup_menu > a) {
     color: var(--theme-text);
 }
