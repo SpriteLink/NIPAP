@@ -1796,36 +1796,45 @@ class Nipap:
 
         self._logger.debug("list_pool called; spec: %s", spec)
 
-        sql = """SELECT DISTINCT (po.id),
-                        po.id,
-                        po.name,
-                        po.description,
-                        po.default_type,
-                        po.ipv4_default_prefix_length,
-                        po.ipv6_default_prefix_length,
-                        po.member_prefixes_v4,
-                        po.member_prefixes_v6,
-                        po.used_prefixes_v4,
-                        po.used_prefixes_v6,
-                        po.free_prefixes_v4,
-                        po.free_prefixes_v6,
-                        po.total_prefixes_v4,
-                        po.total_prefixes_v6,
-                        po.total_addresses_v4,
-                        po.total_addresses_v6,
-                        po.used_addresses_v4,
-                        po.used_addresses_v6,
-                        po.free_addresses_v4,
-                        po.free_addresses_v6,
-                        po.tags,
-                        po.avps,
-                        vrf.id AS vrf_id,
-                        vrf.rt AS vrf_rt,
-                        vrf.name AS vrf_name,
-                        (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool_id=po.id ORDER BY prefix) AS a) AS prefixes
-                FROM ip_net_pool AS po
-                LEFT OUTER JOIN ip_net_plan AS inp ON (inp.pool_id = po.id)
-                LEFT OUTER JOIN ip_net_vrf AS vrf ON (vrf.id = inp.vrf_id)"""
+        sql = """WITH plan_agg AS (
+              SELECT
+                p.pool_id,
+                array_agg(p.prefix::text ORDER BY p.prefix) AS prefixes,
+                MIN(p.vrf_id) AS vrf_id
+              FROM ip_net_plan p
+              GROUP BY p.pool_id
+            )
+            SELECT
+              po.id,
+              po.name,
+              po.description,
+              po.default_type,
+              po.ipv4_default_prefix_length,
+              po.ipv6_default_prefix_length,
+              po.member_prefixes_v4,
+              po.member_prefixes_v6,
+              po.used_prefixes_v4,
+              po.used_prefixes_v6,
+              po.free_prefixes_v4,
+              po.free_prefixes_v6,
+              po.total_prefixes_v4,
+              po.total_prefixes_v6,
+              po.total_addresses_v4,
+              po.total_addresses_v6,
+              po.used_addresses_v4,
+              po.used_addresses_v6,
+              po.free_addresses_v4,
+              po.free_addresses_v6,
+              po.tags,
+              po.avps,
+              vrf.id   AS vrf_id,
+              vrf.rt   AS vrf_rt,
+              vrf.name AS vrf_name,
+              pa.prefixes
+            FROM ip_net_pool po
+            LEFT JOIN plan_agg pa ON pa.pool_id = po.id
+            LEFT JOIN ip_net_vrf vrf ON vrf.id = pa.vrf_id """
+
         params = list()
 
         # expand spec
@@ -2061,38 +2070,53 @@ class Nipap:
         self._logger.debug('search_pool search_options: %s', search_options)
 
         where, opt = self._expand_pool_query(query)
-        sql = """SELECT DISTINCT (po.id),
-                        po.id,
-                        po.name,
-                        po.description,
-                        po.default_type,
-                        po.ipv4_default_prefix_length,
-                        po.ipv6_default_prefix_length,
-                        po.member_prefixes_v4,
-                        po.member_prefixes_v6,
-                        po.used_prefixes_v4,
-                        po.used_prefixes_v6,
-                        po.free_prefixes_v4,
-                        po.free_prefixes_v6,
-                        po.total_prefixes_v4,
-                        po.total_prefixes_v6,
-                        po.total_addresses_v4,
-                        po.total_addresses_v6,
-                        po.used_addresses_v4,
-                        po.used_addresses_v6,
-                        po.free_addresses_v4,
-                        po.free_addresses_v6,
-                        po.tags,
-                        po.avps,
-                        vrf.id AS vrf_id,
-                        vrf.rt AS vrf_rt,
-                        vrf.name AS vrf_name,
-                        (SELECT array_agg(prefix::text) FROM (SELECT prefix FROM ip_net_plan WHERE pool_id=po.id ORDER BY prefix) AS a) AS prefixes
-                FROM ip_net_pool AS po
-                LEFT OUTER JOIN ip_net_plan AS inp ON (inp.pool_id = po.id)
-                LEFT OUTER JOIN ip_net_vrf AS vrf ON (vrf.id = inp.vrf_id)
-                WHERE """ + where + """ ORDER BY po.name
-                LIMIT %s OFFSET %s""" % (search_options['max_result'], search_options['offset'])
+        sql = """WITH filtered_pools AS (
+                  SELECT po.id,
+                    po.name,
+                    po.description,
+                    po.default_type,
+                    po.tags,
+                    po.avps,
+                    po.ipv4_default_prefix_length,
+                    po.ipv6_default_prefix_length,
+                    po.member_prefixes_v4,
+                    po.member_prefixes_v6,
+                    po.used_prefixes_v4,
+                    po.used_prefixes_v6,
+                    po.free_prefixes_v4,
+                    po.free_prefixes_v6,
+                    po.total_prefixes_v4,
+                    po.total_prefixes_v6,
+                    po.total_addresses_v4,
+                    po.total_addresses_v6,
+                    po.used_addresses_v4,
+                    po.used_addresses_v6,
+                    po.free_addresses_v4,
+                    po.free_addresses_v6
+                  FROM ip_net_pool po
+                  WHERE """ + where + """ ORDER BY po.name LIMIT """ + str(search_options['max_result']) + """ OFFSET """ + str(search_options['offset']) + """
+                )
+                SELECT fp.*,
+                       vrf.id AS vrf_id,
+                       vrf.rt AS vrf_rt,
+                       vrf.name AS vrf_name,
+                       pfx.prefixes
+                FROM filtered_pools fp
+                LEFT JOIN LATERAL (
+                  SELECT array_agg(prefix::text ORDER BY prefix) AS prefixes
+                  FROM ip_net_plan
+                  WHERE pool_id = fp.id
+                ) pfx ON true
+                LEFT JOIN LATERAL (
+                  SELECT v.id,
+                    v.rt,
+                    v.name
+                  FROM ip_net_plan p
+                  JOIN ip_net_vrf v ON v.id = p.vrf_id
+                  WHERE p.pool_id = fp.id
+                  LIMIT 1
+                ) vrf ON true
+                ORDER BY fp.name """
 
         self._execute(sql, opt)
 
